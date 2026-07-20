@@ -11,10 +11,8 @@
 
 namespace KDC {
 
-bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                           std::function<void(int32_t, QString)> progressCallback, QString &outMessage) {
-    (void) desiredVersion;
-
+bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+                           QString &outMessage) {
     const auto &urlStr = versionInfo.downloadUrl;
     if (urlStr.empty()) {
         LOG_ERROR(Log::instance()->getLogger(), "Download URL is empty.");
