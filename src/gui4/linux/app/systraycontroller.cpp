@@ -19,7 +19,6 @@
 #include "systraycontroller.h"
 
 #include "app/cache/appcache.h"
-#include "app/services/commservice.h"
 
 #include <QAction>
 #include <QApplication>
@@ -45,9 +44,6 @@ bool forceNoTrayRequested() {
 }
 #endif
 
-QString toQString(const SyncStatus status) {
-    return QString::fromStdString(toString(status));
-}
 QString toQString(const TrayIconState state) {
     switch (state) {
         using enum TrayIconState;
@@ -144,25 +140,21 @@ void SystemTrayController::initialize() {
     _isInitialized = true;
 }
 
-void SystemTrayController::observe(AppCache &appCache, const CommService &commService) {
+void SystemTrayController::observe(AppCache &appCache) {
     _appCache = &appCache;
     _hasSyncErrors = !_appCache->syncErrors().empty();
 
     (void) connect(&appCache, &AppCache::syncsChanged, this, [this] {
         qCDebug(lcSystemTrayController) << "Sync cache changed, refreshing tray icon state";
-        reconcileKnownSyncStatuses();
         refreshIconState();
     });
+    (void) connect(&appCache, &AppCache::syncStatusChanged, this, [this](const SyncDbId) { refreshIconState(); });
     (void) connect(&appCache, &AppCache::syncErrorsChanged, this, [this] {
         qCDebug(lcSystemTrayController) << "Sync errors changed, refreshing tray icon state";
         _hasSyncErrors = !_appCache->syncErrors().empty();
         refreshIconState();
     });
-    (void) connect(&commService, &CommService::syncProgressInfo, this,
-                   [this](const SyncDbId syncDbId, const SyncStatus status, const SyncStep, const int64_t, const int64_t,
-                          const int64_t, const int64_t, const int64_t) { onSyncProgressInfo(syncDbId, status); });
 
-    reconcileKnownSyncStatuses();
     refreshIconState();
 }
 
@@ -318,7 +310,11 @@ void SystemTrayController::refreshIconState() {
         return;
     }
 
-    if (std::ranges::any_of(_syncStatuses, [](const auto &entry) { return isSyncStatus(entry.second); })) {
+    const auto syncs = _appCache->syncs();
+    if (std::ranges::any_of(syncs, [this](const BaseSync &sync) {
+            const auto runtimeInfo = _appCache->syncRuntimeInfo(sync.dbId());
+            return runtimeInfo.has_value() && isSyncStatus(runtimeInfo->status);
+        })) {
         setIconState(TrayIconState::Sync);
         return;
     }
@@ -333,43 +329,15 @@ void SystemTrayController::refreshIconState() {
         return;
     }
 
-    if (!_syncStatuses.empty() &&
-        std::ranges::all_of(_syncStatuses, [](const auto &entry) { return isPauseStatus(entry.second); })) {
+    if (!syncs.empty() && std::ranges::all_of(syncs, [this](const BaseSync &sync) {
+            const auto runtimeInfo = _appCache->syncRuntimeInfo(sync.dbId());
+            return runtimeInfo.has_value() && isPauseStatus(runtimeInfo->status);
+        })) {
         setIconState(TrayIconState::Pause);
         return;
     }
 
     setIconState(TrayIconState::Neutral);
-}
-
-void SystemTrayController::reconcileKnownSyncStatuses() {
-    if (!_appCache) {
-        _syncStatuses.clear();
-        return;
-    }
-
-    const auto syncs = _appCache->syncs();
-    (void) std::erase_if(_syncStatuses, [&syncs](const auto &entry) {
-        return std::ranges::none_of(syncs, [&entry](const BaseSync &sync) { return sync.dbId() == entry.first; });
-    });
-
-    for (const auto &sync: syncs) {
-        (void) _syncStatuses.try_emplace(sync.dbId(), SyncStatus::Undefined);
-    }
-}
-
-void SystemTrayController::onSyncProgressInfo(const SyncDbId syncDbId, const SyncStatus status) {
-    const auto previousStatusIt = _syncStatuses.find(syncDbId);
-    if (previousStatusIt != _syncStatuses.end() && previousStatusIt->second == status) {
-        return;
-    }
-
-    qCInfo(lcSystemTrayController) << "Sync status changed for tray icon | syncDbId:" << syncDbId << "| from:"
-                                   << (previousStatusIt == _syncStatuses.end() ? QStringLiteral("Unknown")
-                                                                               : toQString(previousStatusIt->second))
-                                   << "| to:" << toQString(status);
-    _syncStatuses[syncDbId] = status;
-    refreshIconState();
 }
 
 void SystemTrayController::onTrayActivated(const QSystemTrayIcon::ActivationReason reason) {
