@@ -53,7 +53,7 @@ runs:
         shell: cmd
 
       - name: Restore extension packages
-        run : nuget restore extensions/windows/cfapi/kDriveExt.sln
+        run : dotnet nuget restore extensions/windows/cfapi/kDriveExt.sln
         shell: powershell
 
       - name: Import Windows certificate
