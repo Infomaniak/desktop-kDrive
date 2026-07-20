@@ -61,6 +61,7 @@ AbstractNetworkJob::TimeoutHelper AbstractNetworkJob::_timeoutHelper;
 
 AbstractNetworkJob::AbstractNetworkJob() :
     _requestUuid(CommonUtility::generateUUID()) {
+    const std::scoped_lock lock(_contextMutex);
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
@@ -398,6 +399,8 @@ void AbstractNetworkJob::clearSession() {
 }
 
 void AbstractNetworkJob::abortSession() {
+    const std::scoped_lock lock(_mutexSession);
+
     if (_session) {
         try {
             if (_session->connected()) {
@@ -605,7 +608,7 @@ bool AbstractNetworkJob::isError500(const Poco::Net::HTTPResponse::HTTPStatus ht
     shouldRetry = false;
     switch (httpErrorCode) {
         case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
-            // Retry only if the job is an uploadSessionChunckJob, as 502 error can be due to a GATEWAY error which can be caused
+            // Retry only if the job is an uploadSessionChunkJob, as 502 error can be due to a GATEWAY error which can be caused
             // by poor network connexion dropping during the upload of a big file. In this case, retrying can help to complete the
             // upload.
             shouldRetry = dynamic_cast<UploadSessionChunkJob *>(this) != nullptr;
