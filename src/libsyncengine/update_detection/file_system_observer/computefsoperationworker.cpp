@@ -174,9 +174,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
     bool nodeIdReused = false;
-#if defined(KD_LINUX)
     isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused);
-#endif
 
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
@@ -726,7 +724,6 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-#if defined(KD_LINUX)
 void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                               const std::shared_ptr<const Snapshot> snapshot, bool &isReused) const {
     isReused = false;
@@ -748,7 +745,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
      * - the creation date,
      * - the modification date,
      * - the size,
-     * - the path (this is needed as some software might delete and recreate a file when saving it, wich will change all the
+     * - the path (this is needed as some software might delete and recreate a file when saving it, which will change all the
      *             previous properties, but the file is still the same)
      */
 
@@ -794,7 +791,6 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
                                         << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
 }
-#endif
 
 ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {

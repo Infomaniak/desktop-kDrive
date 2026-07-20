@@ -562,7 +562,6 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResul
                                                  _syncPal->snapshot(side), nodeId, side));
 }
 
-#if defined(KD_LINUX)
 void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
     // Simulate a Delete operation of the local folder named "A".
     (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
@@ -594,6 +593,5 @@ void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Delete, tmpOp));
     // Create operations have been removed.
 }
-#endif
 
 } // namespace KDC

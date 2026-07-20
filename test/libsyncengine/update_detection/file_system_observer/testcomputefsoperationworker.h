@@ -99,11 +99,9 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
 
         void testHasChangedSinceLastSeen();
 
-#if defined(KD_LINUX)
         // Create operations on local items that reused the identifiers deleted local items are removed from the computed
-        // operation list. This also holds for every descendants of such items.
+        // operation list. This also holds for every descendant of such items.
         void testPostponeCreateOperationsOnReusedIds();
-#endif
 
     private:
         void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
