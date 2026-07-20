@@ -41,26 +41,3 @@ public extension UIDriveContext {
         )
     }
 }
-
-public struct UIAvailableDriveContext: Sendable, Equatable, Hashable, Identifiable {
-    public let availableDrive: UIAvailableDrive
-    public let account: UIAccount?
-
-    public var id: UIAvailableDrive.ID {
-        availableDrive.id
-    }
-
-    public init(availableDrive: UIAvailableDrive, account: UIAccount?) {
-        self.availableDrive = availableDrive
-        self.account = account
-    }
-}
-
-public extension UIAvailableDriveContext {
-    init(availableDrive: AvailableDrive, account: Account?) {
-        self.init(
-            availableDrive: UIAvailableDrive(availableDrive: availableDrive),
-            account: account.map { UIAccount(account: $0) }
-        )
-    }
-}

@@ -30,7 +30,7 @@ struct UserSection: View {
     let user: UIUser
 
     let synchronizedDrives: [UIDriveContext]
-    let availableDrives: [UIAvailableDriveContext]
+    let availableDrives: [UIAvailableDrive]
 
     enum DomainError: LocalizedError {
         case impossibleToDeleteUser
@@ -56,11 +56,11 @@ struct UserSection: View {
                 )
             }
 
-            ForEach(availableDrives) { driveContext in
+            ForEach(availableDrives) { availableDrive in
                 AccountDriveCellView(
                     userDbId: user.dbId,
-                    drive: driveContext.availableDrive,
-                    organizationName: driveContext.account?.name,
+                    drive: availableDrive,
+                    organizationName: availableDrive.accountName,
                     isSynchronized: false
                 )
             }
@@ -98,6 +98,6 @@ struct UserSection: View {
     UserSection(
         user: PreviewHelper.user,
         synchronizedDrives: [PreviewHelper.driveContext1],
-        availableDrives: [PreviewHelper.availableDriveContext1]
+        availableDrives: [PreviewHelper.availableDrive1]
     )
 }
