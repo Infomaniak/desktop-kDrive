@@ -40,18 +40,26 @@ public final class FileTreeChildrenFetcher {
                 driveId: driveDbId,
                 nodeId: nodeId
             )
-            return nodes.map {
-                let size = $0.size == -1 ? nil : $0.size
+
+            return nodes.map { item in
                 return FileTreeItem(
-                    id: $0.nodeId,
-                    name: $0.name,
-                    size: size,
+                    id: item.nodeId,
+                    name: item.name,
+                    size: nil,
                     isFolder: true,
-                    isEnabled: !$0.accessDenied
+                    isEnabled: !item.accessDenied
                 )
             }
         } catch {
             return []
         }
+    }
+
+    public func fetchSize(for item: FileTreeItem) async -> Int64? {
+        try? await NodeJobs().getFolderSize(
+            userDbId: userDbId,
+            driveId: driveDbId,
+            nodeId: item.id
+        )
     }
 }

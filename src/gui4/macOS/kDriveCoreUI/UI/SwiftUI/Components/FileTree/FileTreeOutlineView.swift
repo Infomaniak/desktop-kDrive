@@ -17,10 +17,11 @@
  */
 
 import AppKit
+import InfomaniakConcurrency
 import kDriveResources
 
 final class FileTreeNode {
-    let item: FileTreeItem
+    private(set) var item: FileTreeItem
     weak var parent: FileTreeNode?
 
     var children: [FileTreeNode]?
@@ -45,10 +46,23 @@ final class FileTreeNode {
     var isFolder: Bool {
         return item.isFolder
     }
+
+    func updateSize(_ size: Int64?) {
+        item = FileTreeItem(
+            id: item.id,
+            name: item.name,
+            path: item.path,
+            size: size,
+            isFolder: item.isFolder,
+            isEnabled: item.isEnabled
+        )
+    }
 }
 
 @MainActor
 public final class FileTreeOutlineView: NSView {
+    private static let maxNetworkingParallelism = 4
+
     public var childrenFetcher: FileTreeChildrenFetcher?
     public var onBlacklistChange: ((Set<String>) -> Void)?
 
@@ -58,6 +72,9 @@ public final class FileTreeOutlineView: NSView {
 
     private var rootNodes: [FileTreeNode] = []
     private var blacklist: Set<String> = []
+
+    private var loadTasks: [String: Task<Void, Never>] = [:]
+    private var sizeTasks: [String: Task<Void, Never>] = [:]
 
     private enum Column {
         static let checkbox = NSUserInterfaceItemIdentifier("FileTree.checkbox")
@@ -77,10 +94,20 @@ public final class FileTreeOutlineView: NSView {
     }
 
     public func setRootItems(_ items: [FileTreeItem], initialBlacklist: Set<String>) {
+        cancelLoadingTasks()
+
         blacklist = initialBlacklist
         rootNodes = items.map { FileTreeNode(item: $0, parent: nil) }
         outlineView.reloadData()
         updateHeaderCheckbox()
+
+        guard let fetcher = childrenFetcher else { return }
+        loadSizes(for: rootNodes.filter(\.isFolder), using: fetcher)
+    }
+
+    deinit {
+        loadTasks.values.forEach { $0.cancel() }
+        sizeTasks.values.forEach { $0.cancel() }
     }
 
     private func setupOutlineView() {
@@ -152,8 +179,13 @@ public final class FileTreeOutlineView: NSView {
 
         node.isLoading = true
 
-        Task {
+        let task = Task { [weak self, weak node] in
+            guard let self, let node else { return }
+            defer { self.loadTasks.removeValue(forKey: node.item.id) }
+
             let loadedItems = await fetcher.fetchChildren(for: node.item)
+
+            guard !Task.isCancelled else { return }
 
             node.isLoading = false
             let loadedNodes = loadedItems.map { FileTreeNode(item: $0, parent: node) }
@@ -171,7 +203,45 @@ public final class FileTreeOutlineView: NSView {
                 outlineView.expandItem(node)
             }
             refreshSelectionDisplay()
+
+            loadSizes(for: loadedNodes, using: fetcher)
         }
+        loadTasks[node.item.id] = task
+    }
+
+    private func loadSizes(for nodes: [FileTreeNode], using fetcher: FileTreeChildrenFetcher) {
+        let items = nodes.map(\.item)
+        guard !items.isEmpty else { return }
+
+        let taskIdentifier = UUID().uuidString
+        let task = Task { [weak self] in
+            guard let self else { return }
+            defer { self.sizeTasks.removeValue(forKey: taskIdentifier) }
+
+            let sizes = await items.concurrentMap(customConcurrency: Self.maxNetworkingParallelism) { item in
+                await fetcher.fetchSize(for: item)
+            }
+
+            guard !Task.isCancelled else { return }
+            for (node, size) in zip(nodes, sizes) {
+                node.updateSize(size)
+
+                let row = outlineView.row(forItem: node)
+                guard row >= 0 else { continue }
+                outlineView.reloadData(
+                    forRowIndexes: IndexSet(integer: row),
+                    columnIndexes: IndexSet(integer: outlineView.column(withIdentifier: Column.size))
+                )
+            }
+        }
+        sizeTasks[taskIdentifier] = task
+    }
+
+    private func cancelLoadingTasks() {
+        loadTasks.values.forEach { $0.cancel() }
+        sizeTasks.values.forEach { $0.cancel() }
+        loadTasks.removeAll()
+        sizeTasks.removeAll()
     }
 
     // MARK: - Derived checkbox state
