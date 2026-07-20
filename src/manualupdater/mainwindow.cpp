@@ -223,6 +223,9 @@ void MainWindow::postToUi(const QPointer<MainWindow> self, F &&fn) {
 bool MainWindow::buildDownloadUrl(VersionInfo &info, const std::string &desiredVersion, bool &versionChanged, QString &error) {
     const std::string oldVersion = info.fullVersion();
     versionChanged = (oldVersion != desiredVersion);
+    if (!versionChanged) {
+        return true;
+    }
     if (const auto pos = info.downloadUrl.find(oldVersion); pos != std::string::npos) {
         (void) info.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
         return true;
@@ -251,7 +254,7 @@ void MainWindow::runInstall(const std::stop_token &stopToken, const std::string 
     }
     if (versionChanged) {
         LOGW_INFO(Log::instance()->getLogger(), L"Version changed.");
-        specificVersion.checksum.clear(); // we can't know the checksum when the version is manual enter by the user
+        specificVersion.checksum.clear(); // we can't know the checksum when the version is manually enter by the user
     }
 
     if (stopToken.stop_requested()) return;

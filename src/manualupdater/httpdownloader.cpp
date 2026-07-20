@@ -31,6 +31,7 @@
 #include <Poco/JSON/Parser.h>
 #include <fstream>
 #include <memory>
+#include <QString>
 #include <sstream>
 
 namespace KDC {
@@ -82,7 +83,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
         if (result.statusCode == Poco::Net::HTTPResponse::HTTP_OK) {
             result.success = true;
         } else {
-            result.error = std::format("HTTP {} {}", result.statusCode, response.getReason());
+            result.error = QStringLiteral("HTTP %1 %2").arg(result.statusCode).arg(QString::fromStdString(response.getReason())).toStdString();
         }
     } catch (const Poco::Exception &e) {
         result.error = e.displayText();
@@ -112,20 +113,20 @@ HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, cons
         result.statusCode = static_cast<uint16_t>(response.getStatus());
 
         if (result.statusCode != Poco::Net::HTTPResponse::HTTP_OK) {
-            result.error = std::format("HTTP {} {}", result.statusCode, response.getReason());
+            result.error = QStringLiteral("HTTP %1 %2").arg(result.statusCode).arg(QString::fromStdString(response.getReason())).toStdString();
             return result;
         }
 
         std::ofstream outFile(destPath, std::ios::binary);
         if (!outFile) {
-            result.error = std::format("Failed to open file for writing: {}", destPath.string());
+            result.error = QStringLiteral("Failed to open file for writing: %1").arg(QString::fromStdString(destPath.string())).toStdString();
             return result;
         }
 
         std::array<char, 8192> buffer{};
         while (respStream.read(buffer.data(), buffer.size()) || respStream.gcount() > 0) {
             if (!outFile.write(buffer.data(), respStream.gcount())) {
-                result.error = std::format("Failed to write to file: {}", destPath.string());
+                result.error = QStringLiteral("Failed to write to file: %1").arg(QString::fromStdString(destPath.string())).toStdString();
                 return result;
             }
         }
