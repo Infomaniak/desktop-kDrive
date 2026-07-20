@@ -26,15 +26,12 @@
 #include <QSystemTrayIcon>
 #include <QTimer>
 
-#include <unordered_map>
-
 class QAction;
 class QWindow;
 
 namespace KDC {
 
 class AppCache;
-class CommService;
 
 enum class TrayIconState {
     Neutral,
@@ -58,7 +55,7 @@ class SystemTrayController final : public QObject {
         explicit SystemTrayController(QObject *const parent = nullptr);
 
         void initialize();
-        void observe(AppCache &appCache, const CommService &commService);
+        void observe(AppCache &appCache);
         void setMainWindow(QWindow *const window);
         void setProductStateInitialized(bool initialized);
         void setNotificationActive(bool active);
@@ -80,8 +77,6 @@ class SystemTrayController final : public QObject {
         void attemptTrayActivation();
         void activateTrayMode();
         void refreshIconState();
-        void reconcileKnownSyncStatuses();
-        void onSyncProgressInfo(SyncDbId syncDbId, SyncStatus status);
         void onTrayActivated(QSystemTrayIcon::ActivationReason reason);
 
         AppCache *_appCache = nullptr;
@@ -91,7 +86,6 @@ class SystemTrayController final : public QObject {
         QAction *_openAction = nullptr;
         QAction *_settingsAction = nullptr;
         QAction *_quitAction = nullptr;
-        std::unordered_map<SyncDbId, SyncStatus> _syncStatuses;
         bool _hasSyncErrors = false;
         TrayIconState _iconState = TrayIconState::Neutral;
         QTimer _trayAvailabilityRetryTimer;
