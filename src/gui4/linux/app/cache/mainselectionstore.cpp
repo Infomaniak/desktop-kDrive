@@ -60,8 +60,7 @@ std::optional<SyncRuntimeInfo> MainSelectionStore::currentSyncRuntimeInfo() cons
 void MainSelectionStore::selectSync(const qint64 syncDbId) {
     const auto typedSyncDbId = static_cast<SyncDbId>(syncDbId);
     _lastRequestedSyncDbId = typedSyncDbId;
-    const auto context = _cache.syncContext(typedSyncDbId);
-    if (!context.has_value()) {
+    if (const auto context = _cache.syncContext(typedSyncDbId); !context.has_value()) {
         qCWarning(lcMainSelectionStore) << "Requested sync not in context, falling back | syncDbId:" << typedSyncDbId;
         ensureValidSelection();
         return;
