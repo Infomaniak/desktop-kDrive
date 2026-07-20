@@ -28,9 +28,9 @@ class SentryNativeConan(ConanFile):
 
     options = {
         "shared": [True, False],
-        "qt_version": ["6.2.3", "6.5.3", "6.8.3"],
+        "qt_version": ["6.8.3"],
     }
-    default_options = {"shared": True, "qt_version": "6.2.3"}
+    default_options = {"shared": True, "qt_version": "6.8.3"}
 
     @property
     def _is_linux_arm(self):
