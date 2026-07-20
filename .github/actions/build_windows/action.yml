@@ -52,10 +52,6 @@ runs:
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
 
-      - name: Restore extension packages
-        run : dotnet nuget restore extensions/windows/cfapi/kDriveExt.sln
-        shell: powershell
-
       - name: Import Windows certificate
         env:
           WINDOWS_KSP_CLIENT_CERT: ${{ inputs.ksp_client_cert }}
@@ -123,6 +119,8 @@ runs:
             -Arch amd64 `
             -HostArch amd64 `
             -SkipAutomaticLocation
+
+          msbuild ./extensions/windows/cfapi/kDriveExt.sln /t:Restore
 
           $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
