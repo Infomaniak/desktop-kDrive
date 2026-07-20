@@ -25,6 +25,8 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
+#include <Poco/JSON/Object.h>
+
 namespace KDC {
 
 namespace {
