@@ -58,7 +58,7 @@ extension MacOSPermission {
         case .endpointSecurityExtension:
             return [.openSystemSettings, .openSecurityExtensions, .enableKDrive]
         case .fullDiskAccess:
-            return [.openPrivacySecurity, .enableFullDiskAccess, .restartAppIfNecessary]
+            return [.openPrivacySecurity, .enableFullDiskAccess]
         }
     }
 
@@ -69,7 +69,6 @@ extension MacOSPermission {
 
         case openPrivacySecurity
         case enableFullDiskAccess
-        case restartAppIfNecessary
 
         var value: String {
             switch self {
@@ -83,8 +82,6 @@ extension MacOSPermission {
                 return KDriveLocalizable.instructionOpenPrivacySecurity
             case .enableFullDiskAccess:
                 return KDriveLocalizable.instructionFullDisk
-            case .restartAppIfNecessary:
-                return KDriveLocalizable.instructionRestartIfNecessary
             }
         }
 
