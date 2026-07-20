@@ -204,7 +204,7 @@ public final class FileTreeOutlineView: NSView {
             }
             refreshSelectionDisplay()
 
-            self.loadSizes(for: loadedNodes, using: fetcher)
+            loadSizes(for: loadedNodes, using: fetcher)
         }
         loadTasks[node.item.id] = task
     }
