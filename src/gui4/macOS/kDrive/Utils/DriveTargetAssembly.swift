@@ -39,8 +39,8 @@ final class DriveTargetAssembly: TargetAssembly {
             Factory(type: PreferencesViewRouter.self) { _, _ in
                 PreferencesViewRouter(defaultTab: .general)
             },
-            Factory(type: InfomaniakLoginable.self) { _, _ in
-                InfomaniakLogin(config: Self.loginConfig)
+            Factory(type: WebBrowserLoginServiceable.self) { _, _ in
+                WebBrowserLoginService(config: Self.loginConfig)
             },
             Factory(type: SidebarNotificationPresenting.self) { _, _ in
                 SidebarNotificationPresenter()
