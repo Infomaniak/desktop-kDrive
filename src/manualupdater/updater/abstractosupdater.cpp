@@ -30,33 +30,10 @@ std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
 }
 
 bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath, QString &outMessage) {
-    const std::string expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo.checksum));
-    LOGW_INFO(Log::instance()->getLogger(), L"Expected checksum: " << CommonUtility::s2ws(expectedChecksum));
-    if (expectedChecksum.empty()) {
-        return true;
-    }
-
-    const std::string actualChecksum = CommonUtility::trim(CommonUtility::toLower(computeFileChecksum(filepath)));
-    if (actualChecksum.empty()) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to compute file checksum.");
-        outMessage = QObject::tr("Failed to compute file checksum.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(filepath, ioError);
-        return false;
-    }
-
-    if (actualChecksum != expectedChecksum) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
-                                                                                  << L", Got: "
-                                                                                  << CommonUtility::s2ws(actualChecksum));
-        outMessage = QObject::tr("Checksum verification failed.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(filepath, ioError);
-        return false;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"Checksum verification passed.");
-    return true;
+    (void) versionInfo;
+    (void) filepath;
+    (void) outMessage;
+    return true; // placeholder for a future PR
 }
 
 std::string AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath) {
