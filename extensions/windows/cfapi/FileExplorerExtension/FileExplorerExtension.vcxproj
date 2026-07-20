@@ -56,7 +56,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Windows.Storage.Provider.CloudFilesContract">
-      <HintPath>$(WindowsSDK_MetadataPathVersioned)\Windows.Storage.Provider.CloudFilesContract\3.0.0.0\Windows.Storage.Provider.CloudFilesContract.winmd</HintPath>
+      <HintPath>$(WindowsSDK_MetadataPathVersioned)\Windows.Storage.Provider.CloudFilesContract\7.0.0.0\Windows.Storage.Provider.CloudFilesContract.winmd</HintPath>
       <IsWinMDFile>true</IsWinMDFile>
       <IsSystemReference>true</IsSystemReference>
     </Reference>
