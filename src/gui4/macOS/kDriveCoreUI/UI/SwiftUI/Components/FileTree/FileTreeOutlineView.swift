@@ -61,6 +61,8 @@ final class FileTreeNode {
 
 @MainActor
 public final class FileTreeOutlineView: NSView {
+    private static let maxNetworkingParallelism = 4
+
     public var childrenFetcher: FileTreeChildrenFetcher?
     public var onBlacklistChange: ((Set<String>) -> Void)?
 
@@ -216,7 +218,7 @@ public final class FileTreeOutlineView: NSView {
             guard let self else { return }
             defer { self.sizeTasks.removeValue(forKey: taskIdentifier) }
 
-            let sizes = await items.concurrentMap(customConcurrency: 4) { item in
+            let sizes = await items.concurrentMap(customConcurrency: Self.maxNetworkingParallelism) { item in
                 await fetcher.fetchSize(for: item)
             }
 
