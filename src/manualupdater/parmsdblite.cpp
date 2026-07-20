@@ -6,6 +6,11 @@
 namespace {
 constexpr char SELECT_APP_STATE_REQUEST_ID[] = "select_value_from_key";
 constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE key=?1;";
+#define SELECT_VERSION_REQUEST_ID "select_version"
+#define SELECT_VERSION_REQUEST \
+    "SELECT value "            \
+    "FROM version;"
+
 } // namespace
 
 namespace KDC {
@@ -18,6 +23,7 @@ std::shared_ptr<ParmsDbLite> ParmsDbLite::instance(const std::filesystem::path &
     if (!db->init("")) {
         return nullptr;
     }
+    if (!db->createAndPrepareRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return nullptr;
     return db;
 }
 
