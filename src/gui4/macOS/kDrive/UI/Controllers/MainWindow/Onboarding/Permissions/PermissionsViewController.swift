@@ -75,7 +75,11 @@ extension MacOSPermission {
             case .openSystemSettings:
                 return KDriveLocalizable.instructionOpenSystemSettings
             case .openSecurityExtensions:
-                return KDriveLocalizable.instructionOpenSecurityExtensions
+                if #available(macOS 15.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensions
+                } else {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsLegacy
+                }
             case .enableKDrive:
                 return KDriveLocalizable.instructionEnableKDrive
             case .openPrivacySecurity:
@@ -88,7 +92,11 @@ extension MacOSPermission {
         var argument: String? {
             switch self {
             case .openSecurityExtensions:
-                return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
+                if #available(macOS 15.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsArgument
+                } else {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsArgumentLegacy
+                }
             case .enableKDrive:
                 return KDriveLocalizable.instructionEnableKDriveArgument
             case .openPrivacySecurity:
@@ -103,7 +111,11 @@ extension MacOSPermission {
             case .openSystemSettings:
                 return KDriveLocalizable.instructionOpenSystemSettingsLink
             case .openSecurityExtensions:
-                return KDriveLocalizable.instructionOpenSecurityExtensionsLink
+                if #available(macOS 15.0, *) {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsLink
+                } else {
+                    return KDriveLocalizable.instructionOpenSecurityExtensionsLinkLegacy
+                }
             case .openPrivacySecurity:
                 return KDriveLocalizable.instructionOpenPrivacySecurityLink
             default:
