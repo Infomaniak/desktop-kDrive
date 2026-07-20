@@ -50,12 +50,14 @@ public struct NewSyncCandidate {
     public let remoteFolder: SyncRemoteFolder
     public let localFolder: URL?
     public let blackList: [String]
+    public let useLightSync: Bool
 
-    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: URL?, blackList: [String]) {
+    public init(origin: SyncOrigin, remoteFolder: SyncRemoteFolder, localFolder: URL?, blackList: [String], useLightSync: Bool) {
         self.origin = origin
         self.remoteFolder = remoteFolder
         self.localFolder = localFolder
         self.blackList = blackList
+        self.useLightSync = useLightSync
     }
 }
 
@@ -65,11 +67,7 @@ public protocol SyncCreator: Sendable {
 }
 
 public final class SyncCreationService: SyncCreator {
-    private let useLightSyncIfPossible: Bool
-
-    public init(useLightSyncIfPossible: Bool = true) {
-        self.useLightSyncIfPossible = useLightSyncIfPossible
-    }
+    public init() {}
 
     @discardableResult
     public func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
@@ -77,7 +75,8 @@ public final class SyncCreationService: SyncCreator {
 
         let localFolderURL = try await getLocalFolderURL(for: sync)
 
-        let useLightSync = try await shouldUseLightSync(at: localFolderURL)
+        let volumeSupportsLightSync = try await canUseLightSync(at: localFolderURL)
+        let useLightSync = sync.useLightSync && volumeSupportsLightSync
         let metadata = getMetadata(for: sync, useLightSync: useLightSync, localFolderURL: localFolderURL)
 
         try createDestinationIfNecessary(at: localFolderURL)
@@ -133,11 +132,7 @@ public final class SyncCreationService: SyncCreator {
         )
     }
 
-    private func shouldUseLightSync(at url: URL) async throws -> Bool {
-        guard useLightSyncIfPossible else {
-            return false
-        }
-
+    public func canUseLightSync(at url: URL) async throws -> Bool {
         let bestMode = try await UtilityJobs().getBestVirtualFileSystemMode(path: url.path)
         return bestMode == .Mac
     }

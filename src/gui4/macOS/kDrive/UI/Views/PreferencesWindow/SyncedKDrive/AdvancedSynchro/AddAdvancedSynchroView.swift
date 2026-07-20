@@ -183,7 +183,8 @@ struct AddAdvancedSynchroView: View {
                 origin: .storedDrive(cachedDrive),
                 remoteFolder: remoteFolder,
                 localFolder: localFolder,
-                blackList: []
+                blackList: [],
+                useLightSync: true
             )
             try await SyncCreationService().create(from: syncCandidate)
 

@@ -94,6 +94,6 @@ struct ConfigurableSynchroView: View {
 }
 
 #Preview {
-    ConfigurableSynchroView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []))
+    ConfigurableSynchroView(configuration: SynchroConfiguration(drive: PreviewHelper.drive1, blackList: [], useLightSync: true))
         .padding()
 }
