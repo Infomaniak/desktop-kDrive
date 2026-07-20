@@ -334,7 +334,6 @@ bool Db::init(const std::string &version) {
 
     if (!createAndPrepareRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
     if (!createAndPrepareRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
-    if (!createAndPrepareRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
 
     if (!version.empty()) {
         // Check if DB is already initialized
@@ -346,6 +345,7 @@ bool Db::init(const std::string &version) {
         if (dbExists) {
             // Check version
             LOG_DEBUG(_logger, "Check DB version");
+            if (!createAndPrepareRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
 
             bool found = false;
             if (!selectVersion(_fromVersion, found)) {
@@ -357,6 +357,7 @@ bool Db::init(const std::string &version) {
                 return false;
             }
 
+            queryFree(SELECT_VERSION_REQUEST_ID);
 
             // Upgrade DB
             if (!upgrade(_fromVersion, version)) {
