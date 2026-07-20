@@ -79,6 +79,7 @@ class SyncSelectorModel final : public QAbstractListModel {
         };
 
         void rebuild();
+        void appendDriveEntries(std::vector<Entry> &entries, const DriveContext &driveContext) const;
         void handleSelectionChanged();
         [[nodiscard]] qint32 rowForSyncDbId(SyncDbId syncDbId) const;
 
