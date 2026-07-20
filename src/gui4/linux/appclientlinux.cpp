@@ -125,8 +125,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
-    qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
-                                          "AppRouter is owned by AppClientLinux and exposed as appRouter.");
+    (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
+                                                 "AppRouter is owned by AppClientLinux and exposed as appRouter.");
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
             qCWarning(lcAppClientLinux) << "QML warning:" << warning.toString();
@@ -173,6 +173,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 #endif
     }
 }
+template<typename>
+constexpr auto AppClientLinux::qt_create_metaobjectdata() {}
 
 void AppClientLinux::setupTranslations() {
     // Catalogs are id-based: qsTrId(id) returns the raw id when no translation is loaded. Install
