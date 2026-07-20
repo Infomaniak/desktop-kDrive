@@ -98,8 +98,8 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     SyncPath cacheDirectoryPath;
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _syncPal->cacheDirectory()->path(cacheDirectoryPath).code());
 
-    std::string fallbackFSType;
-    std::string fsType = CommonUtility::fileSystemType(_syncPal->localPath(), fallbackFSType);
+    std::string fsType;
+    std::string fallbackFSType = CommonUtility::fileSystemType(_syncPal->localPath(), fsType);
 
     SyncName allowedName = Str("test-test");
     bool hasForbiddenChars = false;
