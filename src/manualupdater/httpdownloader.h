@@ -11,7 +11,7 @@ class HttpDownloader {
     public:
         struct Result {
                 bool success = false;
-                uint16_t statusCode;
+                uint16_t statusCode = 0;
                 std::string body;
                 std::string error;
         };

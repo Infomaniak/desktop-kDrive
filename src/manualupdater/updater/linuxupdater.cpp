@@ -74,6 +74,8 @@ bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::function<v
                 std::filesystem::perm_options::add);
     } catch (const std::filesystem::filesystem_error &e) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to make AppImage executable: " << CommonUtility::s2ws(e.what()));
+        outMessage = QObject::tr("Failed to make AppImage executable: %1").arg(QString::fromUtf8(e.what()));
+        return false;
     }
 
     progressCallback(90, QObject::tr("Opening download folder..."));

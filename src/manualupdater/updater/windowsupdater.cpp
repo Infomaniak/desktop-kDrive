@@ -9,8 +9,7 @@
 #include <QProcess>
 
 namespace KDC {
-
-bool WindowsUpdater::install(const VersionInfo &versionInfo, std::function<void(int32_t, QString)> progressCallback,
+bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
                              QString &outMessage) {
     SyncPath filepath;
     if (!getInstallerPath(versionInfo, filepath)) {
