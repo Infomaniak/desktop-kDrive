@@ -244,6 +244,7 @@ enum CacheData {
     static var expectedAvailableDrive = AvailableDrive(
         driveId: expectedAvailableDriveId,
         accountId: expectedAccountId,
+        accountName: "My Account",
         userDbId: expectedUserDbId,
         userId: expectedUserAPIId,
         name: expectedAvailableDriveName,
@@ -272,6 +273,7 @@ enum CacheData {
     static var secondAvailableDrive = AvailableDrive(
         driveId: secondAvailableDriveId,
         accountId: expectedAccountId,
+        accountName: "My Account",
         userDbId: secondUserDbId,
         userId: secondUserAPIId,
         name: secondAvailableDriveName,

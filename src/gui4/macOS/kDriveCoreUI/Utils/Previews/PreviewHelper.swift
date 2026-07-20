@@ -65,11 +65,6 @@ public enum PreviewHelper {
         account: PreviewHelper.account
     )
 
-    public static let availableDriveContext1 = UIAvailableDriveContext(
-        availableDrive: PreviewHelper.availableDrive1,
-        account: PreviewHelper.account
-    )
-
     public static let drive1 = UIDrive(
         dbId: 1,
         driveId: 1,
@@ -88,12 +83,14 @@ public enum PreviewHelper {
     public static let availableDrive1 = UIAvailableDrive(
         driveId: 1,
         userDbId: 1,
+        accountName: "Tim Cook",
         name: "Tim Drive",
         hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let availableDrive2 = UIAvailableDrive(
         driveId: 2,
         userDbId: 1,
+        accountName: "Tim Cook",
         name: "Drive Pro Max",
         hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
