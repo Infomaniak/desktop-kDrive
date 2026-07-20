@@ -7,7 +7,7 @@ namespace KDC {
 class LinuxUpdater final : public AbstractOsUpdater {
     public:
         bool install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                     std::function<void(int, QString)> progressCallback, QString &outMessage) override;
+                     std::function<void(int32_t, QString)> progressCallback, QString &outMessage) override;
 };
 
 } // namespace KDC

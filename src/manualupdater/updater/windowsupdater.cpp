@@ -12,7 +12,7 @@
 namespace KDC {
 
 bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                             std::function<void(int, QString)> progressCallback, QString &outMessage) {
+                             std::function<void(int32_t, QString)> progressCallback, QString &outMessage) {
     (void) desiredVersion;
 
     SyncPath filepath;
@@ -25,8 +25,7 @@ bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::string &
     auto ioError = IoError::Success;
     (void) IoHelper::deleteItem(filepath, ioError);
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Failed to remove existing installer " << Utility::formatSyncPath(filepath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to remove existing installer " << Utility::formatSyncPath(filepath));
     }
 
     progressCallback(30, QObject::tr("Downloading installer..."));
@@ -50,10 +49,8 @@ bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::string &
     }
 
     progressCallback(60, QObject::tr("Verifying file integrity..."));
-    if (!versionInfo.checksum.empty()) {
-        if (!verifyFileChecksum(versionInfo, filepath, outMessage)) {
-            return false;
-        }
+    if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, filepath, outMessage)) {
+        return false;
     }
 
     progressCallback(80, QObject::tr("Verifying digital signature..."));
@@ -95,9 +92,8 @@ bool WindowsUpdater::getInstallerPath(const VersionInfo &versionInfo, SyncPath &
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath, QString &outMessage) {
     if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"The digital signature of installer "
-                                                              << Utility::formatSyncPath(filepath)
-                                                              << L" is invalid. Aborting update.");
+        LOGW_ERROR(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
+                                                                                        << L" is invalid. Aborting update.");
         outMessage = QObject::tr("Digital signature verification failed.");
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(filepath, ioError);

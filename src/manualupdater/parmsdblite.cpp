@@ -44,7 +44,7 @@ bool ParmsDbLite::selectAppUid(std::string &appUid, bool &found) {
         LOG_WARN(_logger, "Cannot reset query bindings: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
-    if (!queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(AppStateKey::AppUid))) {
+    if (!queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int32_t>(AppStateKey::AppUid))) {
         LOG_WARN(_logger, "Cannot bind query value: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }

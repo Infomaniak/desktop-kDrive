@@ -22,7 +22,7 @@ class AbstractOsUpdater {
          * @return true if the operation succeeded.
          */
         virtual bool install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                             std::function<void(int, QString)> progressCallback, QString &outMessage) = 0;
+                             std::function<void(int32_t, QString)> progressCallback, QString &outMessage) = 0;
 
     protected:
         [[nodiscard]] static bool verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath,

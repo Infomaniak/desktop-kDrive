@@ -27,7 +27,7 @@ class MainWindow : public QMainWindow {
         void onInstallClicked();
         void onVersionTextChanged(const QString &text) const;
         void onInstallFinished(bool success, const QString &message);
-        void onInstallProgress(int percent, const QString &message);
+        void onInstallProgress(int32_t percent, const QString &message) const;
 
     private:
         void setupUi();
@@ -47,7 +47,7 @@ class MainWindow : public QMainWindow {
         std::string _installedVersion;
         VersionInfo _fetchedVersionInfo;
 
-        std::thread _workerThread;
+        std::jthread _workerThread;
         std::atomic<bool> _installInProgress{false};
 };
 
