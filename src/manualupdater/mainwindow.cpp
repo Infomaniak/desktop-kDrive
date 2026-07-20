@@ -14,6 +14,7 @@
 #include <thread>
 #include <regex>
 #include <string>
+#include <utility>
 
 namespace KDC {
 
@@ -112,9 +113,6 @@ void MainWindow::updateCurrentVersionLabel() const {
         return;
     }
 
-    LOGW_INFO(Log::instance()->getLogger(),
-              L"Current kDrive version: " << QString::fromStdString(_installedVersion).toStdWString());
-
     _currentVersionLabel->setText(tr("Installed version: <b>%1</b>").arg(QString::fromStdString(_installedVersion)));
 }
 
@@ -187,111 +185,9 @@ void MainWindow::onInstallClicked() {
     _installInProgress = true;
 
     const VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
-    QPointer<MainWindow> weakThis = this;
 
-    _workerThread = std::jthread([weakThis, desiredVersion, fetchedInfo](std::stop_token stopToken) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Starting installation thread for version " << QString::fromStdString(desiredVersion).toStdWString());
-        QString message;
-
-        // Bail out early if a stop was already requested before we got going.
-        if (stopToken.stop_requested()) {
-            LOGW_INFO(Log::instance()->getLogger(), L"Installation cancelled before start.");
-            return;
-        }
-
-        // Build specific version info with user-specified version
-        VersionInfo specificVersion = fetchedInfo;
-        specificVersion.checksum.clear(); // we don't know the specific version's checksum
-        const std::string originalUrl = specificVersion.downloadUrl;
-        const std::string oldVersion = specificVersion.fullVersion();
-        LOGW_INFO(Log::instance()->getLogger(), L"OLD version: " << QString::fromStdString(oldVersion).toStdWString());
-
-
-        if (auto pos = specificVersion.downloadUrl.find(oldVersion); pos != std::string::npos) {
-            (void) specificVersion.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
-        } else if (auto posTag = specificVersion.downloadUrl.find(specificVersion.tag); posTag != std::string::npos) {
-            (void) specificVersion.downloadUrl.replace(posTag, specificVersion.tag.length(), desiredVersion);
-        } else {
-            message = QObject::tr("Failed to construct download URL for version %1.").arg(QString::fromStdString(desiredVersion));
-            LOGW_INFO(Log::instance()->getLogger(), message.toStdWString());
-            if (weakThis) {
-                const bool posted = QMetaObject::invokeMethod(
-                        weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
-                if (!posted) {
-                    LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post onInstallFinished to main thread.");
-                }
-            }
-            return;
-        }
-
-        LOGW_INFO(Log::instance()->getLogger(), L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
-        LOGW_INFO(Log::instance()->getLogger(), L"Target download URL for version "
-                                                        << QString::fromStdString(desiredVersion).toStdWString() << L": "
-                                                        << QString::fromStdString(specificVersion.downloadUrl).toStdWString());
-
-        if (stopToken.stop_requested()) {
-            LOGW_INFO(Log::instance()->getLogger(), L"Installation cancelled before download.");
-            return;
-        }
-
-        if (weakThis) {
-            const bool posted = QMetaObject::invokeMethod(
-                    weakThis,
-                    [weakThis]() {
-                        weakThis->_statusLog->append(QObject::tr("Downloading installer..."));
-                        weakThis->_progressBar->setValue(30);
-                    },
-                    Qt::QueuedConnection);
-            if (!posted) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post Downloading installer message to main thread.");
-            }
-        }
-
-        auto updater = createOsUpdater();
-        if (!updater) {
-            message = QObject::tr("Failed to create OS-specific updater.");
-            if (weakThis) {
-                const bool posted = QMetaObject::invokeMethod(
-                        weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
-                if (!posted) {
-                    LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post onInstallFinished to main thread.");
-                }
-            }
-            return;
-        }
-
-        auto progressCallback = [weakThis](const int32_t percent, const QString &msg) {
-            if (!weakThis) return;
-            const bool posted = QMetaObject::invokeMethod(
-                    weakThis,
-                    [weakThis, percent, msg]() {
-                        weakThis->_progressBar->setValue(percent);
-                        if (!msg.isEmpty()) {
-                            weakThis->_statusLog->append(msg);
-                        }
-                    },
-                    Qt::QueuedConnection);
-            if (!posted) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post progress update to main thread.");
-            }
-        };
-
-        if (stopToken.stop_requested()) {
-            LOGW_INFO(Log::instance()->getLogger(), L"Installation cancelled before install step.");
-            return;
-        }
-
-        const bool success = updater->install(specificVersion, desiredVersion, progressCallback, message);
-
-        if (weakThis) {
-            const bool posted = QMetaObject::invokeMethod(
-                    weakThis, [weakThis, success, message]() { weakThis->onInstallFinished(success, message); },
-                    Qt::QueuedConnection);
-            if (!posted) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post onInstallFinished to main thread.");
-            }
-        }
+    _workerThread = std::jthread([this, desiredVersion, fetchedInfo = _fetchedVersionInfo](const std::stop_token &st) {
+        runInstall(st, desiredVersion, fetchedInfo);
     });
 }
 
@@ -314,6 +210,75 @@ void MainWindow::onInstallFinished(const bool success, const QString &message) {
         _statusLog->append(tr("Failed: %1").arg(message));
         (void) QMessageBox::critical(this, tr("Installation Failed"), message);
     }
+}
+
+template<typename F>
+void MainWindow::postToUi(const QPointer<MainWindow> self, F &&fn) {
+    if (!self) return;
+    if (const bool posted = QMetaObject::invokeMethod(self, std::forward<F>(fn), Qt::QueuedConnection); !posted) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to post callback to main thread.");
+    }
+}
+
+bool MainWindow::buildDownloadUrl(VersionInfo &info, const std::string &desiredVersion, bool &versionChanged, QString &error) {
+    const std::string oldVersion = info.fullVersion();
+    versionChanged = (oldVersion != desiredVersion);
+    if (const auto pos = info.downloadUrl.find(oldVersion); pos != std::string::npos) {
+        (void) info.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
+        return true;
+    }
+    if (const auto posTag = info.downloadUrl.find(info.tag); posTag != std::string::npos) {
+        (void) info.downloadUrl.replace(posTag, info.tag.length(), desiredVersion);
+        return true;
+    }
+    error = tr("Failed to construct download URL for version %1.").arg(QString::fromStdString(desiredVersion));
+    return false;
+}
+
+
+void MainWindow::runInstall(const std::stop_token &stopToken, const std::string &desiredVersion, VersionInfo fetchedInfo) {
+    QPointer self = this;
+
+    if (stopToken.stop_requested()) return;
+
+    VersionInfo specificVersion = std::move(fetchedInfo);
+
+    bool versionChanged = false;
+    if (QString error; !buildDownloadUrl(specificVersion, desiredVersion, versionChanged, error)) {
+        LOGW_INFO(Log::instance()->getLogger(), error.toStdWString());
+        postToUi(self, [self, error] { self->onInstallFinished(false, error); });
+        return;
+    }
+    if (versionChanged) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Version changed.");
+        specificVersion.checksum.clear(); // we can't know the checksum when the version is manual enter by the user
+    }
+
+    if (stopToken.stop_requested()) return;
+
+    postToUi(self, [self] {
+        self->_statusLog->append(tr("Downloading installer..."));
+        self->_progressBar->setValue(30);
+    });
+
+    auto updater = createOsUpdater();
+    if (!updater) {
+        postToUi(self, [self] { self->onInstallFinished(false, tr("Failed to create OS-specific updater.")); });
+        return;
+    }
+
+    auto progressCallback = [self](const int32_t percent, const QString &msg) {
+        postToUi(self, [self, percent, msg] {
+            self->_progressBar->setValue(percent);
+            if (!msg.isEmpty()) self->_statusLog->append(msg);
+        });
+    };
+
+    if (stopToken.stop_requested()) return;
+
+    QString message;
+    const bool success = updater->install(specificVersion, desiredVersion, progressCallback, message);
+    postToUi(self, [self, success, message] { self->onInstallFinished(success, message); });
 }
 
 } // namespace KDC

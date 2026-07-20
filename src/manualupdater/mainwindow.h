@@ -3,6 +3,7 @@
 #include "updaterdata.h"
 
 #include "libcommon/utility/types.h"
+#include "log/log.h"
 
 #include <QMainWindow>
 #include <QLineEdit>
@@ -15,7 +16,6 @@
 #include <thread>
 
 namespace KDC {
-
 class MainWindow : public QMainWindow {
         Q_OBJECT
 
@@ -35,6 +35,12 @@ class MainWindow : public QMainWindow {
         void fetchAndSetDefaultVersion();
         bool validateInputVersion(const std::string &inputVersion, std::string &errorMsg) const;
 
+        template<typename F>
+        static void postToUi(QPointer<MainWindow> self, F &&fn);
+
+        static bool buildDownloadUrl(VersionInfo &info, const std::string &desiredVersion, bool &versionChanged, QString &error);
+        void runInstall(const std::stop_token &stopToken, const std::string &desiredVersion, VersionInfo fetchedInfo);
+
         QLabel *_currentVersionLabel = nullptr;
         QLabel *_desiredVersionLabel = nullptr;
         QLineEdit *_versionInput = nullptr;
@@ -50,5 +56,6 @@ class MainWindow : public QMainWindow {
         std::jthread _workerThread;
         std::atomic<bool> _installInProgress{false};
 };
+
 
 } // namespace KDC
