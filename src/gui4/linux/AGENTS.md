@@ -31,6 +31,8 @@
 - For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
 - Keep `ParametersStore` as a server-confirmed parameters snapshot only. Do not add global draft/pending state there;
   screen-specific drafts, such as proxy edition, belong to the owning UI/view model.
+- Keep per-sync runtime status and progress exclusively in `AppCache`. Consumers such as the system tray and future UI
+  adapters must observe and query that shared state instead of maintaining private copies.
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
@@ -72,9 +74,9 @@
 - `main.cpp`: process entry point + single-instance lock file.
 - `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection, GNOME-compatible tray menu
-  actions, fallback-to-window startup behavior, retry loop for late tray availability, and main QML window show/hide
-  behavior.
+- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache`,
+  GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late tray availability, and
+  main QML window show/hide behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
@@ -85,17 +87,20 @@
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers.
-- `app/cache/appcache.*`: durable graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs,
-  split sync/server errors, per-user available drives, cascade removals, and derived read models.
+- `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
+  single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
+  and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
-    - Drops push mutations before `CachePopulator::bootstrapCompleted()` and logs the invariant violation.
+    - Routes entity and sync-runtime pushes after population; drops earlier mutations and logs the invariant violation.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
-  `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
+  `SyncRuntimeInfo`, `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
     - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
       `DriveInfo` type in Linux v4.
 - `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
     - Emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
       but the underlying cache graph changes.
+    - Exposes selected-sync runtime through its dedicated accessor and signal so progress ticks do not rebuild the
+      configured graph context.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
   configs.
 - `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`).
