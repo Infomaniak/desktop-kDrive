@@ -86,16 +86,14 @@ void BaseSync::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
            const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
            VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
-           bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           int64_t listingCursorTimestamp, bool toDelete) :
+           bool hasFullyCompleted, const std::string &navigationPaneClsid, CursorStore cursorStore, bool toDelete) :
+
     BaseSync(dbId, driveDbId, localPath, targetPath, targetNodeId, supportVfs, virtualFileMode, navigationPaneClsid),
     _localNodeId(localNodeId),
     _paused(paused),
     _notificationsDisabled(notificationsDisabled),
     _dbPath(dbPath),
     _hasFullyCompleted(hasFullyCompleted),
-    _listingCursor(listingCursor),
-    _listingCursorTimestamp(listingCursorTimestamp),
+    _cursorStore(std::move(cursorStore)),
     _toDelete(toDelete) {}
-
 } // namespace KDC
