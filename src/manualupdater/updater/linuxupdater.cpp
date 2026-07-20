@@ -44,8 +44,7 @@ bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::function<v
 
     progressCallback(30, QObject::tr(""));
 
-    const auto result = HttpDownloader::downloadFile(urlStr, destPath);
-    if (!result.success) {
+    if (const auto result = HttpDownloader::downloadFile(urlStr, destPath); !result.success) {
         if (result.statusCode == 404) {
             LOGW_WARN(Log::instance()->getLogger(), L"Version not found (404).");
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
