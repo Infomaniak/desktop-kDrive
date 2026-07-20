@@ -18,16 +18,10 @@
 
 import Cocoa
 import InfomaniakDI
-import InfomaniakLogin
 import kDriveCore
 import kDriveCoreUI
 
 final class DriveTargetAssembly: TargetAssembly {
-    static let loginConfig = InfomaniakLogin.Config(
-        clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
-        redirectURI: "kdrive://auth-desktop"
-    )
-
     override static func getTargetServices() -> [Factory] {
         return [
             Factory(type: MainWindowRouter.self) { _, _ in
@@ -40,7 +34,11 @@ final class DriveTargetAssembly: TargetAssembly {
                 PreferencesViewRouter(defaultTab: .general)
             },
             Factory(type: WebBrowserLoginServiceable.self) { _, _ in
-                WebBrowserLoginService(config: Self.loginConfig)
+                WebBrowserLoginService(
+                    loginURL: "https://login.infomaniak.com/",
+                    clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
+                    redirectURI: "kdrive://auth-desktop"
+                )
             },
             Factory(type: SidebarNotificationPresenting.self) { _, _ in
                 SidebarNotificationPresenter()
