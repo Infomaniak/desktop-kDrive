@@ -16,11 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import AuthenticationServices
+import AppKit
 import Combine
 import Foundation
 import InfomaniakDI
-import InfomaniakLogin
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -33,27 +32,35 @@ final class LoginViewModel: ObservableObject {
         case loadingUser
     }
 
-    @LazyInjectService private var loginService: InfomaniakLoginable
+    @LazyInjectService private var loginService: WebBrowserLoginServiceable
 
     @Published private(set) var loginState: LoginState = .idle
     @Published var isShowingError = false
 
     private var bindStore = Set<AnyCancellable>()
+    private var loginTimeoutTask: Task<Void, Never>?
 
     private let flowCoordinator: OnboardingFlowCoordinator
+
+    private static let loginTimeoutSeconds: UInt64 = 300
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
     }
 
-    func startWebAuthenticationLogin(anchor: ASPresentationAnchor?) {
+    func startWebAuthenticationLogin() {
         loginState = .waitingForWebAuthentication
-        loginService.asWebAuthenticationLoginFrom(
-            anchor: anchor ?? ASPresentationAnchor(),
-            useEphemeralSession: true,
-            hideCreateAccountButton: true,
-            delegate: self
-        )
+        loginService.loginInDefaultBrowser(delegate: self)
+        scheduleLoginTimeout()
+    }
+
+    private func scheduleLoginTimeout() {
+        loginTimeoutTask?.cancel()
+        loginTimeoutTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: Self.loginTimeoutSeconds * 1_000_000_000)
+            guard !Task.isCancelled, let self, self.loginState == .waitingForWebAuthentication else { return }
+            self.loginState = .idle
+        }
     }
 
     func openAccountRegistrationProcess() {
@@ -75,8 +82,10 @@ final class LoginViewModel: ObservableObject {
     }
 }
 
-extension LoginViewModel: InfomaniakLoginDelegate {
+extension LoginViewModel: WebBrowserLoginDelegate {
     func didCompleteLoginWith(code: String, verifier: String) {
+        loginTimeoutTask?.cancel()
+
         Task {
             do {
                 loginState = .loadingUser
@@ -90,12 +99,8 @@ extension LoginViewModel: InfomaniakLoginDelegate {
     }
 
     func didFailLoginWith(error: any Error) {
+        loginTimeoutTask?.cancel()
         loginState = .idle
-
-        guard (error as? ASWebAuthenticationSessionError)?.code != .canceledLogin else {
-            return
-        }
-
         handleLoginFailure(error: error)
     }
 

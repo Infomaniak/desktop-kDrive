@@ -74,7 +74,7 @@ final class LoginViewController: OnboardingStepViewController {
 
     @objc private func openLoginWebView() {
         matomo.track(eventWithCategory: .onboardingWelcomePage, name: "openSignInWeb")
-        viewModel.startWebAuthenticationLogin(anchor: view.window)
+        viewModel.startWebAuthenticationLogin()
     }
 
     @objc private func openCreateAccount() {
