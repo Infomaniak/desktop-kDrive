@@ -109,38 +109,7 @@ void SyncSelectorModel::rebuild() {
     std::vector<Entry> entries;
 
     for (const auto &driveContext: _cache.driveContexts()) {
-        const auto color = driveColor(driveContext.drive);
-        const bool warning = driveHasWarning(driveContext.drive);
-        const QString driveName = QString::fromStdString(driveContext.drive.name());
-
-        const auto classicSyncCount = static_cast<std::size_t>(std::ranges::count_if(
-                driveContext.syncInfos, [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); }));
-        const auto appendSync = [&](const BaseSync &syncInfo) {
-            const bool isClassic = syncInfo.targetNodeId().empty();
-            const auto syncContext = _cache.syncContext(syncInfo.dbId());
-            const auto errorCount = syncContext.has_value() ? static_cast<qint32>(syncContext->errors.size()) : 0;
-            const bool usePreciseClassicLabel = isClassic && classicSyncCount > 1;
-            entries.emplace_back(Entry{
-                    isClassic ? EntryType::ClassicSync : EntryType::AdvancedSync,
-                    syncInfo.dbId(),
-                    usePreciseClassicLabel || !isClassic ? localFolderName(syncInfo) : driveName,
-                    usePreciseClassicLabel || !isClassic ? driveName : QString{},
-                    color,
-                    errorCount,
-                    warning,
-            });
-        };
-
-        for (const auto &syncInfo: driveContext.syncInfos) {
-            if (syncInfo.targetNodeId().empty()) {
-                appendSync(syncInfo);
-            }
-        }
-        for (const auto &syncInfo: driveContext.syncInfos) {
-            if (!syncInfo.targetNodeId().empty()) {
-                appendSync(syncInfo);
-            }
-        }
+        appendDriveEntries(entries, driveContext);
     }
 
     beginResetModel();
@@ -150,6 +119,44 @@ void SyncSelectorModel::rebuild() {
 
     if (selectedRow() != previousSelectedRow) {
         emit selectedRowChanged();
+    }
+}
+
+/**
+ * Appends classic synchronization rows before advanced synchronization rows for a configured drive.
+ */
+void SyncSelectorModel::appendDriveEntries(std::vector<Entry> &entries, const DriveContext &driveContext) const {
+    const auto color = driveColor(driveContext.drive);
+    const bool warning = driveHasWarning(driveContext.drive);
+    const QString driveName = QString::fromStdString(driveContext.drive.name());
+
+    const auto classicSyncCount = static_cast<std::size_t>(std::ranges::count_if(
+            driveContext.syncInfos, [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); }));
+    const auto appendSync = [&](const BaseSync &syncInfo) {
+        const bool isClassic = syncInfo.targetNodeId().empty();
+        const auto syncContext = _cache.syncContext(syncInfo.dbId());
+        const auto errorCount = syncContext.has_value() ? static_cast<qint32>(syncContext->errors.size()) : 0;
+        const bool usePreciseClassicLabel = isClassic && classicSyncCount > 1;
+        entries.push_back({
+                isClassic ? EntryType::ClassicSync : EntryType::AdvancedSync,
+                syncInfo.dbId(),
+                usePreciseClassicLabel || !isClassic ? localFolderName(syncInfo) : driveName,
+                usePreciseClassicLabel || !isClassic ? driveName : QString{},
+                color,
+                errorCount,
+                warning,
+        });
+    };
+
+    for (const auto &syncInfo: driveContext.syncInfos) {
+        if (syncInfo.targetNodeId().empty()) {
+            appendSync(syncInfo);
+        }
+    }
+    for (const auto &syncInfo: driveContext.syncInfos) {
+        if (!syncInfo.targetNodeId().empty()) {
+            appendSync(syncInfo);
+        }
     }
 }
 
