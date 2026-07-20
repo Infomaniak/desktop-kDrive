@@ -130,8 +130,7 @@ class Sync : public BaseSync {
              const std::filesystem::path &targetPath, const NodeId &targetNodeId = NodeId(), bool paused = false,
              bool supportVfs = false, VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
-             const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
-             int64_t listingCursorTimestamp = 0);
+             const std::string &navigationPaneClsid = std::string(), CursorStore cursorStore = defaultCursorStore);
 
         [[nodiscard]] const NodeId &localNodeId() const { return _localNodeId; }
         void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
@@ -143,18 +142,25 @@ class Sync : public BaseSync {
         void setDbPath(const std::filesystem::path &dbPath) { _dbPath = dbPath; }
         [[nodiscard]] bool hasFullyCompleted() const { return _hasFullyCompleted; }
         void setHasFullyCompleted(const bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
-        [[nodiscard]] const std::string &listingCursor() const { return _listingCursor; }
-        void setListingCursor(const std::string &listingCursor) { _listingCursor = listingCursor; }
-        [[nodiscard]] int64_t listingCursorTimestamp() const { return _listingCursorTimestamp; }
-        void setListingCursorTimestamp(const int64_t listingCursorTimestamp) { _listingCursorTimestamp = listingCursorTimestamp; }
-        void setListingCursor(const std::string &listingCursor, const int64_t timestamp) {
-            _listingCursor = listingCursor;
-            _listingCursorTimestamp = timestamp;
+        [[nodiscard]] const CursorStore &getCursorStore() const { return _cursorStore; };
+        void setCursorStore(const CursorStore &cursors) {
+            _cursorStore = cursors;
+            for (const auto specialFolder: {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments,
+                                            SpecialRemoteFolder::Shared, SpecialRemoteFolder::CustomTarget}) {
+                if (!_cursorStore.contains(specialFolder)) _cursorStore[specialFolder] = {};
+            }
         }
-        void listingCursor(std::string &listingCursor, int64_t &timestamp) const {
-            listingCursor = _listingCursor;
-            timestamp = _listingCursorTimestamp;
+        void setFolderCursor(const SpecialRemoteFolder specialFolder, const CursorData &cursorData) {
+            _cursorStore[specialFolder] = cursorData;
         }
+
+        void getFolderCursor(const SpecialRemoteFolder specialFolder, CursorData &cursorData) const {
+            if (!_cursorStore.contains(specialFolder)) {
+                cursorData = {};
+            } else
+                cursorData = _cursorStore.at(specialFolder);
+        }
+
 
     private:
         NodeId _localNodeId;
@@ -162,8 +168,7 @@ class Sync : public BaseSync {
         bool _notificationsDisabled{false};
         std::filesystem::path _dbPath;
         bool _hasFullyCompleted{false};
-        std::string _listingCursor;
-        int64_t _listingCursorTimestamp{0};
+        CursorStore _cursorStore = defaultCursorStore;
 };
 
 } // namespace KDC
