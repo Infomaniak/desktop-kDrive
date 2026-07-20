@@ -120,7 +120,6 @@ runs:
             -HostArch amd64 `
             -SkipAutomaticLocation
 
-          msbuild ./extensions/windows/cfapi/kDriveExt.sln /t:Restore
 
           $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
