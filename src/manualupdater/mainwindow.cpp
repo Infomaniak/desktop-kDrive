@@ -274,7 +274,16 @@ void MainWindow::runInstall(const std::string &desiredVersion, VersionInfo fetch
     };
 
     QString message;
-    const bool success = updater->install(specificVersion, progressCallback, message);
+    bool success = false;
+    try {
+        success = updater->install(specificVersion, progressCallback, message);
+    } catch (const std::exception &e) {
+        success = false;
+        message = QStringLiteral("Update failed: %1").arg(QString::fromUtf8(e.what()));
+    } catch (...) {
+        success = false;
+        message = QStringLiteral("Update failed due to an unknown error.");
+    }
     postToUi(self, [self, success, message] { self->onInstallFinished(success, message); });
 }
 
