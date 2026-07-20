@@ -49,30 +49,30 @@ void MainWindow::setupUi() {
     setWindowTitle(tr("kDrive Recovery Updater"));
     resize(500, 350);
 
-    auto *centralWidget = new QWidget(this);
+    auto *const centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
 
-    auto *mainLayout = new QVBoxLayout(centralWidget);
+    auto *const mainLayout = new QVBoxLayout(centralWidget);
     mainLayout->setContentsMargins(20, 20, 20, 20);
     mainLayout->setSpacing(15);
 
     // Info group
-    auto *infoGroup = new QGroupBox(tr("Current Installation"), centralWidget);
-    auto *infoLayout = new QVBoxLayout(infoGroup);
+    auto *const infoGroup = new QGroupBox(tr("Current Installation"), centralWidget);
+    auto *const infoLayout = new QVBoxLayout(infoGroup);
     _currentVersionLabel = new QLabel(tr("Detecting version..."), infoGroup);
     _currentVersionLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     infoLayout->addWidget(_currentVersionLabel);
     mainLayout->addWidget(infoGroup);
 
     // Input group
-    auto *inputGroup = new QGroupBox(tr("Desired kDrive Version"), centralWidget);
-    auto *inputLayout = new QVBoxLayout(inputGroup);
+    auto *const inputGroup = new QGroupBox(tr("Desired kDrive Version"), centralWidget);
+    auto *const inputLayout = new QVBoxLayout(inputGroup);
 
     auto inputRow = std::make_unique<QHBoxLayout>();
     _desiredVersionLabel = new QLabel(tr("Version:"), inputGroup);
     _versionInput = new QLineEdit(inputGroup);
     _versionInput->setPlaceholderText(tr("e.g., 3.6.10"));
-    const auto *validator =
+    const auto *const validator =
             new QRegularExpressionValidator(QRegularExpression(QString::fromLatin1(kVersionRegexPattern)), _versionInput);
     _versionInput->setValidator(validator);
     inputRow->addWidget(_desiredVersionLabel);
