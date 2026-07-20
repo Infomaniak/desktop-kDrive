@@ -54,7 +54,7 @@ void TestInfoDynamicStruct::testErrorInfoRoundTrip() {
     CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, parsed.conflictType());
     CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, parsed.inconsistencyType());
     CPPUNIT_ASSERT_EQUAL(CancelType::Move, parsed.cancelType());
-    CPPUNIT_ASSERT_EQUAL(false, parsed.isAutoResolved());
+    CPPUNIT_ASSERT_EQUAL(source.isAutoResolved(), parsed.isAutoResolved());
 }
 
 void TestInfoDynamicStruct::testNodeInfoRoundTrip() {
