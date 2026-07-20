@@ -204,7 +204,7 @@ public final class FileTreeOutlineView: NSView {
             refreshSelectionDisplay()
 
             for child in loadedNodes {
-                self.loadSize(for: child, using: fetcher)
+                loadSize(for: child, using: fetcher)
             }
         }
         loadTasks[node.item.id] = task
@@ -222,11 +222,11 @@ public final class FileTreeOutlineView: NSView {
 
             node.updateSize(size)
 
-            let row = self.outlineView.row(forItem: node)
+            let row = outlineView.row(forItem: node)
             guard row >= 0 else { return }
-            self.outlineView.reloadData(
+            outlineView.reloadData(
                 forRowIndexes: IndexSet(integer: row),
-                columnIndexes: IndexSet(integer: self.outlineView.column(withIdentifier: Column.size))
+                columnIndexes: IndexSet(integer: outlineView.column(withIdentifier: Column.size))
             )
         }
 
