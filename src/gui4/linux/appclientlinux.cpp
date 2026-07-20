@@ -53,7 +53,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 
     qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
     _systemTrayController.initialize();
-    _systemTrayController.observe(_appCache, _serverCommService);
+    _systemTrayController.observe(_appCache);
 
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
