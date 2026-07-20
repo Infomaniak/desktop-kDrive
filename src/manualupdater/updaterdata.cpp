@@ -10,35 +10,34 @@
 namespace KDC {
 
 DistributionChannel UpdaterData::defaultDistributionChannel() {
-    LOGW_INFO(Log::instance()->getLogger(), L"Determining default distribution channel" << CommonUtility::platform());
     switch (CommonUtility::platform()) {
         case Platform::LinuxAMD:
         case Platform::LinuxARM:
-            LOGW_INFO(Log::instance()->getLogger(), L"Default distribution channel: Prod");
             return DistributionChannel::Prod;
         case Platform::MacOS:
         case Platform::Windows:
         case Platform::WindowsServer:
-        case Platform::Unknown:
-        case Platform::EnumEnd:
-            LOGW_INFO(Log::instance()->getLogger(), L"Default distribution channel: Internal");
             return DistributionChannel::Internal;
+        case Platform::EnumEnd:
+            return DistributionChannel::EnumEnd;
+        case Platform::Unknown:
+        default:
+            return DistributionChannel::Unknown;
     }
-    return DistributionChannel::Internal;
 }
 
 bool UpdaterData::initialize() {
     bool alreadyExist = false;
     const auto dbPath = Db::makeDbName(alreadyExist);
     if (dbPath.empty() || !alreadyExist) {
-        LOGW_INFO(Log::instance()->getLogger(), L"kDrive database not found at: " << Path2WStr(dbPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"kDrive database not found at: " << Path2WStr(dbPath));
         _isInstalled = false;
-        return true;
+        return false;
     }
 
     _db = ParmsDbLite::instance(dbPath);
     if (!_db) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Failed to open kDrive database at: " << Path2WStr(dbPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to open kDrive database at: " << Path2WStr(dbPath));
         _isInstalled = false;
         return false;
     }
@@ -47,23 +46,19 @@ bool UpdaterData::initialize() {
 
     bool found = false;
     if (!_db->selectVersion(_installedVersion, found) || !found) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Failed to retrieve kDrive version from database at: " << Path2WStr(dbPath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to retrieve kDrive version from database at: " << Path2WStr(dbPath));
         _isInstalled = false;
         return false;
     }
 
-    std::string appUid;
     found = false;
-    if (!_db->selectAppUid(appUid, found) || !found) {
+    if (!_db->selectAppUid(_appId, found) || !found) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to retrieve app UID from database");
         _isInstalled = false;
         return false;
     }
-    _appId = appUid;
 
     _isInstalled = true;
     return true;
 }
-
 } // namespace KDC
