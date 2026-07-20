@@ -285,7 +285,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     // If not found in cache, get the FS type and mount point from the OS.
     SyncPath mountPoint;
     if (!CommonUtility::fileSystemInfo(targetPath, fsType, mountPoint)) {
-        return {};
+        return fallbackFileSystemType();
     }
 
     fsType = CommonUtility::toUpper(fsType);
@@ -295,6 +295,9 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
         fallbackFSType = fsType;
     } else {
         fallbackFSType = underlyingFileSystemType(targetPath);
+        if (fallbackFSType.empty()) {
+            return fallbackFileSystemType();
+        }
     }
 
     (void) cache.fsTypeMap.insert_or_assign(mountPoint, std::make_pair(fsType, fallbackFSType));
