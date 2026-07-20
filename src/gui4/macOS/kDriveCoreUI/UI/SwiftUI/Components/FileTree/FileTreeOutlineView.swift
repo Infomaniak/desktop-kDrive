@@ -17,6 +17,7 @@
  */
 
 import AppKit
+import InfomaniakConcurrency
 import kDriveResources
 
 final class FileTreeNode {
@@ -99,9 +100,7 @@ public final class FileTreeOutlineView: NSView {
         updateHeaderCheckbox()
 
         guard let fetcher = childrenFetcher else { return }
-        for node in rootNodes where node.isFolder {
-            loadSize(for: node, using: fetcher)
-        }
+        loadSizes(for: rootNodes.filter(\.isFolder), using: fetcher)
     }
 
     deinit {
@@ -203,34 +202,37 @@ public final class FileTreeOutlineView: NSView {
             }
             refreshSelectionDisplay()
 
-            for child in loadedNodes {
-                loadSize(for: child, using: fetcher)
-            }
+            self.loadSizes(for: loadedNodes, using: fetcher)
         }
         loadTasks[node.item.id] = task
     }
 
-    private func loadSize(for node: FileTreeNode, using fetcher: FileTreeChildrenFetcher) {
-        let nodeIdentifier = node.item.id
-        let task = Task { [weak self, weak node] in
-            guard let self, let node else { return }
-            defer { self.sizeTasks.removeValue(forKey: nodeIdentifier) }
+    private func loadSizes(for nodes: [FileTreeNode], using fetcher: FileTreeChildrenFetcher) {
+        let items = nodes.map(\.item)
+        guard !items.isEmpty else { return }
 
-            let size = await fetcher.fetchSize(for: node.item)
+        let taskIdentifier = UUID().uuidString
+        let task = Task { [weak self] in
+            guard let self else { return }
+            defer { self.sizeTasks.removeValue(forKey: taskIdentifier) }
+
+            let sizes = await items.concurrentMap(customConcurrency: 4) { item in
+                await fetcher.fetchSize(for: item)
+            }
 
             guard !Task.isCancelled else { return }
+            for (node, size) in zip(nodes, sizes) {
+                node.updateSize(size)
 
-            node.updateSize(size)
-
-            let row = outlineView.row(forItem: node)
-            guard row >= 0 else { return }
-            outlineView.reloadData(
-                forRowIndexes: IndexSet(integer: row),
-                columnIndexes: IndexSet(integer: outlineView.column(withIdentifier: Column.size))
-            )
+                let row = outlineView.row(forItem: node)
+                guard row >= 0 else { continue }
+                outlineView.reloadData(
+                    forRowIndexes: IndexSet(integer: row),
+                    columnIndexes: IndexSet(integer: outlineView.column(withIdentifier: Column.size))
+                )
+            }
         }
-
-        sizeTasks[nodeIdentifier] = task
+        sizeTasks[taskIdentifier] = task
     }
 
     private func cancelLoadingTasks() {
