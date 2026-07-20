@@ -31,7 +31,7 @@ public class PreferencesViewModel: ObservableObject {
 
     @Published private(set) var users = [UIUser]()
 
-    @Published private(set) var availableDrive = OrderedDictionary<UIUser.ID, [UIAvailableDriveContext]>()
+    @Published private(set) var availableDrive = OrderedDictionary<UIUser.ID, [UIAvailableDrive]>()
     @Published private(set) var synchronizedDrive = OrderedDictionary<UIUser.ID, [UIDriveContext]>()
 
     private var bindStore = Set<AnyCancellable>()
@@ -62,7 +62,7 @@ public class PreferencesViewModel: ObservableObject {
 
     private func updateUsers(_ users: IndexedUsers) {
         var refreshedUsers = [UIUser]()
-        var refreshedAvailableDrives = OrderedDictionary<UIUser.ID, [UIAvailableDriveContext]>()
+        var refreshedAvailableDrives = OrderedDictionary<UIUser.ID, [UIAvailableDrive]>()
         var refreshedSynchronizedDrives = OrderedDictionary<UIUser.ID, [UIDriveContext]>()
 
         for user in users.values {
@@ -70,9 +70,7 @@ public class PreferencesViewModel: ObservableObject {
             refreshedUsers.append(uiUser)
 
             var synchronizedDrivesID = Set<Int32>()
-            var accountsByAccountId = [Int32: Account]()
             for account in user.accounts.values {
-                accountsByAccountId[account.accountId] = account
                 for drive in account.drives.values {
                     refreshedSynchronizedDrives[uiUser.id, default: []].append(UIDriveContext(drive: drive, account: account))
                     synchronizedDrivesID.insert(drive.driveId)
@@ -82,12 +80,9 @@ public class PreferencesViewModel: ObservableObject {
 
             for availableDrive in user.availableDrives.values {
                 guard !synchronizedDrivesID.contains(availableDrive.driveId) else { continue }
-                refreshedAvailableDrives[uiUser.id, default: []].append(UIAvailableDriveContext(
-                    availableDrive: availableDrive,
-                    account: accountsByAccountId[availableDrive.accountId]
-                ))
+                refreshedAvailableDrives[uiUser.id, default: []].append(UIAvailableDrive(availableDrive: availableDrive))
             }
-            refreshedAvailableDrives[uiUser.id, default: []].sort { $0.availableDrive.name < $1.availableDrive.name }
+            refreshedAvailableDrives[uiUser.id, default: []].sort { $0.name < $1.name }
         }
 
         self.users = refreshedUsers
