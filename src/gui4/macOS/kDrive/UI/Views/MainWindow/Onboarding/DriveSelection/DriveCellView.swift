@@ -80,6 +80,26 @@ final class DriveCellView: NSView {
         return textField
     }()
 
+    private lazy var accountNameLabel: NSTextField = {
+        let textField = NSTextField(labelWithString: drive.accountName)
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.font = NSFont.Tokens.subheadline
+        textField.textColor = ColorToken.Text.tertiary.asNSColor
+        textField.usesSingleLineMode = true
+        textField.maximumNumberOfLines = 1
+        textField.lineBreakMode = .byTruncatingTail
+        return textField
+    }()
+
+    private lazy var labelsStackView: NSStackView = {
+        let stackView = NSStackView(views: [titleLabel, accountNameLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        stackView.spacing = 0
+        return stackView
+    }()
+
     init(drive: UIAvailableDrive) {
         self.drive = drive
         super.init(frame: .zero)
@@ -100,10 +120,10 @@ final class DriveCellView: NSView {
     private func setupView() {
         addSubview(checkbox)
         addSubview(driveIcon)
-        addSubview(titleLabel)
+        addSubview(labelsStackView)
 
         NSLayoutConstraint.activate([
-            checkbox.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+            checkbox.centerYAnchor.constraint(equalTo: driveIcon.centerYAnchor),
             checkbox.leadingAnchor.constraint(equalTo: leadingAnchor, constant: AppPadding.padding8),
 
             driveIcon.leadingAnchor.constraint(equalTo: checkbox.trailingAnchor, constant: AppPadding.padding8),
@@ -112,9 +132,9 @@ final class DriveCellView: NSView {
             driveIcon.heightAnchor.constraint(equalToConstant: 20),
             driveIcon.widthAnchor.constraint(equalTo: driveIcon.heightAnchor),
 
-            titleLabel.centerYAnchor.constraint(equalTo: driveIcon.centerYAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -AppPadding.padding8),
+            labelsStackView.centerYAnchor.constraint(equalTo: driveIcon.centerYAnchor),
+            labelsStackView.leadingAnchor.constraint(equalTo: driveIcon.trailingAnchor, constant: AppPadding.padding8),
+            labelsStackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -AppPadding.padding8),
 
             widthAnchor.constraint(equalToConstant: 264)
         ])
@@ -126,7 +146,7 @@ final class DriveCellView: NSView {
         let alphaValue = isEnabled ? 1.0 : 0.5
         checkbox.alphaValue = alphaValue
         driveIcon.alphaValue = alphaValue
-        titleLabel.alphaValue = alphaValue
+        labelsStackView.alphaValue = alphaValue
 
         toolTip = isEnabled ? nil : KDriveLocalizable.onboardingAlreadySyncedDriveTooltip
     }
