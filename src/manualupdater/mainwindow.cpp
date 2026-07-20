@@ -26,7 +26,7 @@ bool isValidVersion(const std::string &version) {
 }
 } // namespace
 
-MainWindow::MainWindow(const UpdaterData &updaterData, QWidget *parent) :
+MainWindow::MainWindow(const UpdaterData &updaterData, QWidget *const parent) :
     QMainWindow(parent),
     _updaterData(updaterData),
     _installedVersion(updaterData.installedVersion()) {
@@ -102,8 +102,8 @@ void MainWindow::setupUi() {
     _statusLog->setPlaceholderText(tr("Status log will appear here..."));
     mainLayout->addWidget(_statusLog, 1);
 
-    connect(_installButton, &QPushButton::clicked, this, &MainWindow::onInstallClicked);
-    connect(_versionInput, &QLineEdit::textChanged, this, &MainWindow::onVersionTextChanged);
+    (void) connect(_installButton, &QPushButton::clicked, this, &MainWindow::onInstallClicked);
+    (void) connect(_versionInput, &QLineEdit::textChanged, this, &MainWindow::onVersionTextChanged);
 }
 
 void MainWindow::updateCurrentVersionLabel() const {
@@ -177,7 +177,7 @@ void MainWindow::onInstallClicked() {
 
     const std::string desiredVersion = _versionInput->text().toStdString();
     if (std::string errorMsg; !validateInputVersion(desiredVersion, errorMsg)) {
-        QMessageBox::warning(this, tr("Validation Error"), QString::fromStdString(errorMsg));
+        (void) QMessageBox::warning(this, tr("Validation Error"), QString::fromStdString(errorMsg));
         return;
     }
 
@@ -189,64 +189,81 @@ void MainWindow::onInstallClicked() {
     const VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
     QPointer<MainWindow> weakThis = this;
 
-    _workerThread = std::thread([weakThis, desiredVersion, fetchedInfo]() {
+    _workerThread = std::jthread([weakThis, desiredVersion, fetchedInfo](std::stop_token stopToken) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"Starting installation thread for version " << QString::fromStdString(desiredVersion).toStdWString());
-
-        bool success = false;
         QString message;
+
+        // Bail out early if a stop was already requested before we got going.
+        if (stopToken.stop_requested()) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Installation cancelled before start.");
+            return;
+        }
 
         // Build specific version info with user-specified version
         VersionInfo specificVersion = fetchedInfo;
         specificVersion.checksum.clear(); // we don't know the specific version's checksum
-
         const std::string originalUrl = specificVersion.downloadUrl;
         const std::string oldVersion = specificVersion.fullVersion();
         LOGW_INFO(Log::instance()->getLogger(), L"OLD version: " << QString::fromStdString(oldVersion).toStdWString());
 
+
         if (auto pos = specificVersion.downloadUrl.find(oldVersion); pos != std::string::npos) {
-            specificVersion.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
-        } else if (pos = specificVersion.downloadUrl.find(specificVersion.tag); pos != std::string::npos) {
-            specificVersion.downloadUrl.replace(pos, specificVersion.tag.length(), desiredVersion);
+            (void) specificVersion.downloadUrl.replace(pos, oldVersion.length(), desiredVersion);
+        } else if (auto posTag = specificVersion.downloadUrl.find(specificVersion.tag); posTag != std::string::npos) {
+            (void) specificVersion.downloadUrl.replace(posTag, specificVersion.tag.length(), desiredVersion);
         } else {
             message = QObject::tr("Failed to construct download URL for version %1.").arg(QString::fromStdString(desiredVersion));
             LOGW_INFO(Log::instance()->getLogger(), message.toStdWString());
             if (weakThis) {
-                QMetaObject::invokeMethod(
+                const bool posted = QMetaObject::invokeMethod(
                         weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
+                if (!posted) {
+                    LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post onInstallFinished to main thread.");
+                }
             }
             return;
         }
 
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"Target download URL for version " << QString::fromStdString(desiredVersion).toStdWString() << L": "
-                                                      << QString::fromStdString(specificVersion.downloadUrl).toStdWString());
+        LOGW_INFO(Log::instance()->getLogger(), L"Original download URL: " << QString::fromStdString(originalUrl).toStdWString());
+        LOGW_INFO(Log::instance()->getLogger(), L"Target download URL for version "
+                                                        << QString::fromStdString(desiredVersion).toStdWString() << L": "
+                                                        << QString::fromStdString(specificVersion.downloadUrl).toStdWString());
+
+        if (stopToken.stop_requested()) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Installation cancelled before download.");
+            return;
+        }
 
         if (weakThis) {
-            QMetaObject::invokeMethod(
+            const bool posted = QMetaObject::invokeMethod(
                     weakThis,
                     [weakThis]() {
                         weakThis->_statusLog->append(QObject::tr("Downloading installer..."));
                         weakThis->_progressBar->setValue(30);
                     },
                     Qt::QueuedConnection);
+            if (!posted) {
+                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post Downloading installer message to main thread.");
+            }
         }
 
         auto updater = createOsUpdater();
         if (!updater) {
             message = QObject::tr("Failed to create OS-specific updater.");
             if (weakThis) {
-                QMetaObject::invokeMethod(
+                const bool posted = QMetaObject::invokeMethod(
                         weakThis, [weakThis, message]() { weakThis->onInstallFinished(false, message); }, Qt::QueuedConnection);
+                if (!posted) {
+                    LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post onInstallFinished to main thread.");
+                }
             }
             return;
         }
 
-        auto progressCallback = [weakThis](int percent, const QString &msg) {
+        auto progressCallback = [weakThis](const int32_t percent, const QString &msg) {
             if (!weakThis) return;
-            QMetaObject::invokeMethod(
+            const bool posted = QMetaObject::invokeMethod(
                     weakThis,
                     [weakThis, percent, msg]() {
                         weakThis->_progressBar->setValue(percent);
@@ -255,36 +272,47 @@ void MainWindow::onInstallClicked() {
                         }
                     },
                     Qt::QueuedConnection);
+            if (!posted) {
+                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post progress update to main thread.");
+            }
         };
 
-        success = updater->install(specificVersion, desiredVersion, progressCallback, message);
+        if (stopToken.stop_requested()) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Installation cancelled before install step.");
+            return;
+        }
+
+        const bool success = updater->install(specificVersion, desiredVersion, progressCallback, message);
 
         if (weakThis) {
-            QMetaObject::invokeMethod(
+            const bool posted = QMetaObject::invokeMethod(
                     weakThis, [weakThis, success, message]() { weakThis->onInstallFinished(success, message); },
                     Qt::QueuedConnection);
+            if (!posted) {
+                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to post onInstallFinished to main thread.");
+            }
         }
     });
 }
 
-void MainWindow::onInstallProgress(int percent, const QString &message) {
+void MainWindow::onInstallProgress(const int32_t percent, const QString &message) const {
     _progressBar->setValue(percent);
     if (!message.isEmpty()) {
         _statusLog->append(message);
     }
 }
 
-void MainWindow::onInstallFinished(bool success, const QString &message) {
+void MainWindow::onInstallFinished(const bool success, const QString &message) {
     _installInProgress = false;
     _progressBar->setValue(success ? 100 : 0);
     _installButton->setEnabled(true);
     if (success) {
         _statusLog->append(tr("Success: %1").arg(message));
-        QMessageBox::information(this, tr("Installation Complete"), message);
-        close();
+        (void) QMessageBox::information(this, tr("Installation Complete"), message);
+        (void) close();
     } else {
         _statusLog->append(tr("Failed: %1").arg(message));
-        QMessageBox::critical(this, tr("Installation Failed"), message);
+        (void) QMessageBox::critical(this, tr("Installation Failed"), message);
     }
 }
 

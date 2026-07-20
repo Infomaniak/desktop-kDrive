@@ -12,7 +12,7 @@
 namespace KDC {
 
 bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                           std::function<void(int, QString)> progressCallback, QString &outMessage) {
+                           std::function<void(int32_t, QString)> progressCallback, QString &outMessage) {
     (void) desiredVersion;
 
     const auto &urlStr = versionInfo.downloadUrl;
@@ -30,7 +30,7 @@ bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::string &de
     }
 
     const SyncPath destDir = std::filesystem::path(homeDir) / "Applications";
-    std::filesystem::create_directories(destDir);
+    (void) std::filesystem::create_directories(destDir);
 
     const auto pos = urlStr.find_last_of('/');
     if (pos == std::string::npos) {
@@ -65,10 +65,8 @@ bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::string &de
     }
 
     progressCallback(55, QObject::tr("Verifying file integrity..."));
-    if (!versionInfo.checksum.empty()) {
-        if (!verifyFileChecksum(versionInfo, destPath, outMessage)) {
-            return false;
-        }
+    if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, destPath, outMessage)) {
+        return false;
     }
 
     progressCallback(70, QObject::tr("Making AppImage executable..."));
@@ -78,8 +76,7 @@ bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::string &de
                 std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
                 std::filesystem::perm_options::add);
     } catch (const std::filesystem::filesystem_error &e) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Failed to make AppImage executable: " << CommonUtility::s2ws(e.what()));
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to make AppImage executable: " << CommonUtility::s2ws(e.what()));
     }
 
     progressCallback(90, QObject::tr("Opening download folder..."));

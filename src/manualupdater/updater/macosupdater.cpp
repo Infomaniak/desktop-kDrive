@@ -12,7 +12,7 @@
 
 namespace KDC {
 
-static bool runOsascriptDelete(const QString &posixPath, QString &outMessage) {
+static bool runOsascriptDelete(const QString &posixPath) {
     QProcess p;
     p.setProgram(QStringLiteral("/usr/bin/osascript"));
     p.setArguments(QStringList{QStringLiteral("-e"),
@@ -25,15 +25,14 @@ static bool runOsascriptDelete(const QString &posixPath, QString &outMessage) {
     }
     if (p.exitCode() != 0) {
         const auto err = QString::fromUtf8(p.readAllStandardError());
-        LOGW_WARN(Log::instance()->getLogger(), L"osascript delete failed for: "
-                                                             << CommonUtility::s2ws(posixPath.toStdString()) << L" — "
-                                                             << err.toStdWString());
+        LOGW_WARN(Log::instance()->getLogger(), L"osascript delete failed for: " << CommonUtility::s2ws(posixPath.toStdString())
+                                                                                 << L" — " << err.toStdWString());
     }
     return true;
 }
 
 bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                           std::function<void(int, QString)> progressCallback, QString &outMessage) {
+                           std::function<void(int32_t, QString)> progressCallback, QString &outMessage) {
     (void) desiredVersion; // the XML URL already encodes the version
 
     const auto &appcastUrl = versionInfo.downloadUrl;
@@ -62,7 +61,7 @@ bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::string &de
     }
 
     const QString pkgPath = QString::fromStdString(tmpDir.string()) + QStringLiteral("/") + pkgFilename;
-    std::filesystem::remove(SyncPath(pkgPath.toStdString()));
+    (void) std::filesystem::remove(SyncPath(pkgPath.toStdString()));
 
     progressCallback(40, QObject::tr("Downloading package..."));
 
@@ -82,10 +81,8 @@ bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::string &de
     }
 
     progressCallback(55, QObject::tr("Verifying file integrity..."));
-    if (!versionInfo.checksum.empty()) {
-        if (!verifyFileChecksum(versionInfo, SyncPath(pkgPath.toStdString()), outMessage)) {
-            return false;
-        }
+    if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, SyncPath(pkgPath.toStdString()), outMessage)) {
+        return false;
     }
 
     progressCallback(70, QObject::tr("Verifying digital signature..."));
@@ -94,13 +91,13 @@ bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::string &de
     }
     progressCallback(85, QObject::tr("Removing old application..."));
     if (std::filesystem::exists("/Applications/kDrive/kDrive Uninstaller.app")) {
-        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive Uninstaller.app"), outMessage);
+        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive Uninstaller.app"));
     }
     if (std::filesystem::exists("/Applications/kDrive/kDrive.app")) {
-        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive.app"), outMessage);
+        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive.app"));
     }
     if (std::filesystem::exists("/Applications/kDrive")) {
-        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive"), outMessage);
+        (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive"));
     }
 
     progressCallback(95, QObject::tr("Opening installer..."));
@@ -122,10 +119,9 @@ bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QStrin
     }
 
     const SyncPath appcastXmlPath = tmpDir / "appcast.xml";
-    std::filesystem::remove(appcastXmlPath);
+    (void) std::filesystem::remove(appcastXmlPath);
 
-    const auto result = HttpDownloader::downloadFile(appcastUrl, appcastXmlPath);
-    if (!result.success) {
+    if (const auto result = HttpDownloader::downloadFile(appcastUrl, appcastXmlPath); !result.success) {
         if (result.statusCode == 404) {
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
         } else {
@@ -142,7 +138,7 @@ bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QStrin
 
     QXmlStreamReader reader(&file);
     while (!reader.atEnd() && !reader.hasError()) {
-        reader.readNext();
+        (void) reader.readNext();
         if (reader.isStartElement() && reader.name() == QStringLiteral("enclosure")) {
             const auto attrs = reader.attributes();
             // Prefer the direct .pkg downloadUrl if present
@@ -179,8 +175,7 @@ bool MacOSUpdater::verifyPackageSignature(const SyncPath &pkgPath, QString &outM
         return false;
     }
 
-    const int exitCode = process.exitCode();
-    if (exitCode != 0) {
+    if (const int32_t exitCode = process.exitCode(); exitCode != 0) {
         LOGW_ERROR(Log::instance()->getLogger(), L"pkgutil --check-signature failed with exit code " << exitCode);
         outMessage = QObject::tr("Digital signature verification failed.");
         auto ioError = IoError::Success;
@@ -190,8 +185,7 @@ bool MacOSUpdater::verifyPackageSignature(const SyncPath &pkgPath, QString &outM
 
     const QString output = QString::fromUtf8(process.readAllStandardOutput());
     if (!output.contains(QStringLiteral("Status: signed by"))) {
-        LOGW_ERROR(Log::instance()->getLogger(),
-                   L"Package is not signed. Output: " << CommonUtility::s2ws(output.toStdString()));
+        LOGW_ERROR(Log::instance()->getLogger(), L"Package is not signed. Output: " << CommonUtility::s2ws(output.toStdString()));
         outMessage = QObject::tr("Digital signature verification failed.");
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(pkgPath, ioError);

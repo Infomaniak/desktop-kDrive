@@ -74,7 +74,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
         Poco::Net::HTTPResponse response;
         std::istream &respStream = session->receiveResponse(response);
 
-        result.statusCode = static_cast<int>(response.getStatus());
+        result.statusCode = static_cast<uint16_t>(response.getStatus());
 
         std::string body(std::istreambuf_iterator<char>(respStream), (std::istreambuf_iterator<char>()));
         result.body = std::move(body);
@@ -94,39 +94,38 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
     return result;
 }
 
-HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const SyncPath &destPath, long timeoutSeconds) {
+HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, const SyncPath &destPath,
+                                                    const int64_t timeoutSeconds) {
     Result result;
     try {
         std::string path;
-        auto session = createHttpsSession(url, Poco::Timespan(timeoutSeconds, 0), path);
+        const auto session = createHttpsSession(url, Poco::Timespan(timeoutSeconds, 0), path);
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
         request.set("User-Agent", CommonUtility::userAgentString());
 
-        session->sendRequest(request);
+        (void) session->sendRequest(request);
 
         Poco::Net::HTTPResponse response;
         std::istream &respStream = session->receiveResponse(response);
 
-        result.statusCode = static_cast<int>(response.getStatus());
+        result.statusCode = static_cast<uint16_t>(response.getStatus());
 
         if (result.statusCode != Poco::Net::HTTPResponse::HTTP_OK) {
-            result.error = "HTTP " + std::to_string(result.statusCode) + " " + response.getReason();
+            result.error = std::format("HTTP {} {}", result.statusCode, response.getReason());
             return result;
         }
 
         std::ofstream outFile(destPath, std::ios::binary);
         if (!outFile) {
-            result.error = "Failed to open file for writing: " + destPath.string();
+            result.error = std::format("Failed to open file for writing: {}", destPath.string());
             return result;
         }
 
         std::array<char, 8192> buffer{};
         while (respStream.read(buffer.data(), buffer.size()) || respStream.gcount() > 0) {
-            outFile.write(buffer.data(), respStream.gcount());
-            if (!outFile) {
-                result.error = "Failed to write to file: " + destPath.string();
-                outFile.close();
+            if (!outFile.write(buffer.data(), respStream.gcount())) {
+                result.error = std::format("Failed to write to file: {}", destPath.string());
                 return result;
             }
         }
