@@ -29,9 +29,9 @@ std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
 #endif
 }
 
-bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath,
-                                           QString &outMessage) {
+bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath, QString &outMessage) {
     const std::string expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo.checksum));
+    LOGW_INFO(Log::instance()->getLogger(), L"Expected checksum: " << CommonUtility::s2ws(expectedChecksum));
     if (expectedChecksum.empty()) {
         return true;
     }
@@ -46,9 +46,9 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
     }
 
     if (actualChecksum != expectedChecksum) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: "
-                                                              << CommonUtility::s2ws(expectedChecksum) << L", Got: "
-                                                              << CommonUtility::s2ws(actualChecksum));
+        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
+                                                                                  << L", Got: "
+                                                                                  << CommonUtility::s2ws(actualChecksum));
         outMessage = QObject::tr("Checksum verification failed.");
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(filepath, ioError);

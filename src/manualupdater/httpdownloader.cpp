@@ -69,7 +69,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
         request.set("User-Agent", CommonUtility::userAgentString());
         request.set("Accept", "application/json");
 
-        session->sendRequest(request);
+        (void) session->sendRequest(request);
 
         Poco::Net::HTTPResponse response;
         std::istream &respStream = session->receiveResponse(response);
@@ -82,7 +82,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
         if (result.statusCode == Poco::Net::HTTPResponse::HTTP_OK) {
             result.success = true;
         } else {
-            result.error = "HTTP " + std::to_string(result.statusCode) + " " + response.getReason();
+            result.error = std::format("HTTP {} {}", result.statusCode, response.getReason());
         }
     } catch (const Poco::Exception &e) {
         result.error = e.displayText();
