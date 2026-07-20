@@ -11,7 +11,6 @@ class MacOSUpdater final : public AbstractOsUpdater {
 
     private:
         static bool downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage);
-        [[nodiscard]] static bool verifyPackageSignature(const SyncPath &pkgPath, QString &outMessage);
 };
 
 } // namespace KDC

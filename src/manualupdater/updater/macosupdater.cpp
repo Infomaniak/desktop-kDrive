@@ -1,9 +1,9 @@
 #include "macosupdater.h"
-#include "httpdownloader.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
+#include "manualupdater/httpdownloader.h"
 
 #include <QProcess>
 #include <QXmlStreamReader>
@@ -157,40 +157,6 @@ bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QStrin
         return false;
     }
 
-    return true;
-}
-
-bool MacOSUpdater::verifyPackageSignature(const SyncPath &pkgPath, QString &outMessage) {
-    QProcess process;
-    process.setProgram(QStringLiteral("pkgutil"));
-    process.setArguments(QStringList{QStringLiteral("--check-signature"), QString::fromStdString(pkgPath.string())});
-    process.start();
-    if (!process.waitForFinished(30000)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"pkgutil --check-signature timed out.");
-        outMessage = QObject::tr("Signature verification timed out.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(pkgPath, ioError);
-        return false;
-    }
-
-    if (const int32_t exitCode = process.exitCode(); exitCode != 0) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"pkgutil --check-signature failed with exit code " << exitCode);
-        outMessage = QObject::tr("Digital signature verification failed.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(pkgPath, ioError);
-        return false;
-    }
-
-    const QString output = QString::fromUtf8(process.readAllStandardOutput());
-    if (!output.contains(QStringLiteral("Status: signed by"))) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"Package is not signed. Output: " << CommonUtility::s2ws(output.toStdString()));
-        outMessage = QObject::tr("Digital signature verification failed.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(pkgPath, ioError);
-        return false;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"Package signature verification passed.");
     return true;
 }
 

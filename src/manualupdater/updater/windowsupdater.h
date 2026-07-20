@@ -11,7 +11,6 @@ class WindowsUpdater final : public AbstractOsUpdater {
 
     private:
         [[nodiscard]] static bool getInstallerPath(const VersionInfo &versionInfo, SyncPath &path);
-        [[nodiscard]] static bool verifyDigitalSignature(const SyncPath &filepath, QString &outMessage);
 };
 
 } // namespace KDC

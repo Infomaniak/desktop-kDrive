@@ -1,11 +1,10 @@
 #include "windowsupdater.h"
-#include "httpdownloader.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/utility/digitalsignaturechecker_win.h"
 #include "libcommon/utility/utility.h"
+#include "manualupdater/httpdownloader.h"
 
 #include <QProcess>
 
@@ -28,8 +27,7 @@ bool WindowsUpdater::install(const VersionInfo &versionInfo, std::function<void(
 
     progressCallback(30, QObject::tr("Downloading installer..."));
 
-    const auto result = HttpDownloader::downloadFile(versionInfo.downloadUrl, filepath);
-    if (!result.success) {
+    if (const auto result = HttpDownloader::downloadFile(versionInfo.downloadUrl, filepath); !result.success) {
         if (result.statusCode == 404) {
             LOGW_WARN(Log::instance()->getLogger(), L"Version not found (404).");
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
@@ -51,16 +49,12 @@ bool WindowsUpdater::install(const VersionInfo &versionInfo, std::function<void(
         return false;
     }
 
-    progressCallback(80, QObject::tr("Verifying digital signature..."));
-    if (!verifyDigitalSignature(filepath, outMessage)) {
-        return false;
-    }
 
     progressCallback(90, QObject::tr("Starting installer..."));
     LOGW_INFO(Log::instance()->getLogger(), L"Starting installer " << Utility::formatSyncPath(filepath));
 
-    const QString program = QString::fromStdWString(filepath.wstring());
-    if (!QProcess::startDetached(program, QStringList{QStringLiteral("/S"), QStringLiteral("/launch")})) {
+    if (const QString program = QString::fromStdWString(filepath.wstring());
+        !QProcess::startDetached(program, QStringList{QStringLiteral("/S"), QStringLiteral("/launch")})) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Failed to launch installer.");
         outMessage = QObject::tr("Failed to launch installer.");
         return false;
@@ -88,16 +82,5 @@ bool WindowsUpdater::getInstallerPath(const VersionInfo &versionInfo, SyncPath &
     return true;
 }
 
-bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath, QString &outMessage) {
-    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"The digital signature of installer " << Utility::formatSyncPath(filepath)
-                                                                                        << L" is invalid. Aborting update.");
-        outMessage = QObject::tr("Digital signature verification failed.");
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(filepath, ioError);
-        return false;
-    }
-    return true;
-}
 
 } // namespace KDC
