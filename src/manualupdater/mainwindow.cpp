@@ -280,7 +280,7 @@ void MainWindow::runInstall(const std::stop_token &stopToken, const std::string 
     if (stopToken.stop_requested()) return;
 
     QString message;
-    const bool success = updater->install(specificVersion, desiredVersion, progressCallback, message);
+    const bool success = updater->install(specificVersion, progressCallback, message);
     postToUi(self, [self, success, message] { self->onInstallFinished(success, message); });
 }
 

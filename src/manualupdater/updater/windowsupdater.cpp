@@ -11,10 +11,8 @@
 
 namespace KDC {
 
-bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                             std::function<void(int32_t, QString)> progressCallback, QString &outMessage) {
-    (void) desiredVersion;
-
+bool WindowsUpdater::install(const VersionInfo &versionInfo, std::function<void(int32_t, QString)> progressCallback,
+                             QString &outMessage) {
     SyncPath filepath;
     if (!getInstallerPath(versionInfo, filepath)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to get installer path.");

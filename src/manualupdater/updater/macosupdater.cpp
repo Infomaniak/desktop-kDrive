@@ -31,10 +31,8 @@ static bool runOsascriptDelete(const QString &posixPath) {
     return true;
 }
 
-bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::string &desiredVersion,
-                           std::function<void(int32_t, QString)> progressCallback, QString &outMessage) {
-    (void) desiredVersion; // the XML URL already encodes the version
-
+bool MacOSUpdater::install(const VersionInfo &versionInfo, std::function<void(int32_t, QString)> progressCallback,
+                           QString &outMessage) {
     const auto &appcastUrl = versionInfo.downloadUrl;
     if (appcastUrl.empty()) {
         outMessage = QObject::tr("Download URL is empty.");
