@@ -6,10 +6,8 @@
 namespace {
 constexpr char SELECT_APP_STATE_REQUEST_ID[] = "select_value_from_key";
 constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE key=?1;";
-#define SELECT_VERSION_REQUEST_ID "select_version"
-#define SELECT_VERSION_REQUEST \
-    "SELECT value "            \
-    "FROM version;"
+constexpr char SELECT_VERSION_REQUEST_ID[] = "select_version";
+constexpr char SELECT_VERSION_REQUEST[] = "SELECT value FROM version;";
 
 } // namespace
 
