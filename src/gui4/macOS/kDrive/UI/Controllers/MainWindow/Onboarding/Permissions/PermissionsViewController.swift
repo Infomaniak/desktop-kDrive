@@ -218,10 +218,6 @@ final class PermissionsViewController: OnboardingStepViewController {
 
         stackView.insertArrangedSubview(instructionsStack, at: 2)
         stackView.setCustomSpacing(AppPadding.padding24, after: instructionsStack)
-
-        for step in 1 ... 3 {
-            instructionsStack.addArrangedSubview(PermissionInstructionCell(step: step, title: .init(string: "")))
-        }
     }
 
     private func updateUIForPermission(_ permission: MacOSPermission) {
@@ -257,16 +253,18 @@ final class PermissionsViewController: OnboardingStepViewController {
     }
 
     private func setupInstructions(for permission: MacOSPermission) {
-        for index in 0 ..< permission.instructions.count {
-            let instruction = permission.instructions[index]
-            let attributedString = createAttributedString(for: instruction)
+        for subview in instructionsStack.arrangedSubviews {
+            instructionsStack.removeArrangedSubview(subview)
+            subview.removeFromSuperview()
+        }
 
-            let instructionCell = instructionCell(at: index)
-            instructionCell?.title = attributedString
+        for (index, instruction) in permission.instructions.enumerated() {
+            let instructionCell = PermissionInstructionCell(step: index + 1, title: createAttributedString(for: instruction))
             if let hint = instruction.hint {
-                instructionCell?.hint = hint
-                instructionCell?.hintLabel.textColor = ColorToken.Status.Strong.warning.asNSColor
+                instructionCell.hint = hint
+                instructionCell.hintLabel.textColor = ColorToken.Status.Strong.warning.asNSColor
             }
+            instructionsStack.addArrangedSubview(instructionCell)
         }
     }
 
@@ -328,6 +326,9 @@ final class PermissionsViewController: OnboardingStepViewController {
     }
 
     private func instructionCell(at index: Int) -> PermissionInstructionCell? {
+        guard instructionsStack.arrangedSubviews.indices.contains(index) else {
+            return nil
+        }
         return instructionsStack.arrangedSubviews[index] as? PermissionInstructionCell
     }
 }
