@@ -3,6 +3,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
+#include <QApplication>
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);

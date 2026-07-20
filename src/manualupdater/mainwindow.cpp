@@ -186,8 +186,8 @@ void MainWindow::onInstallClicked() {
 
     const VersionInfo fetchedInfo = _fetchedVersionInfo; // copy for thread safety
 
-    _workerThread = std::jthread([this, desiredVersion, fetchedInfo = _fetchedVersionInfo](const std::stop_token &st) {
-        runInstall(st, desiredVersion, fetchedInfo);
+    _workerThread = std::thread([this, desiredVersion, fetchedInfo = _fetchedVersionInfo]() {
+        runInstall(desiredVersion, fetchedInfo);
     });
 }
 
@@ -239,10 +239,8 @@ bool MainWindow::buildDownloadUrl(VersionInfo &info, const std::string &desiredV
 }
 
 
-void MainWindow::runInstall(const std::stop_token &stopToken, const std::string &desiredVersion, VersionInfo fetchedInfo) {
+void MainWindow::runInstall(const std::string &desiredVersion, VersionInfo fetchedInfo) {
     QPointer self = this;
-
-    if (stopToken.stop_requested()) return;
 
     VersionInfo specificVersion = std::move(fetchedInfo);
 
@@ -256,8 +254,6 @@ void MainWindow::runInstall(const std::stop_token &stopToken, const std::string 
         LOGW_INFO(Log::instance()->getLogger(), L"Version changed.");
         specificVersion.checksum.clear(); // we can't know the checksum when the version is manually enter by the user
     }
-
-    if (stopToken.stop_requested()) return;
 
     postToUi(self, [self] {
         self->_statusLog->append(tr("Downloading installer..."));
@@ -276,8 +272,6 @@ void MainWindow::runInstall(const std::stop_token &stopToken, const std::string 
             if (!msg.isEmpty()) self->_statusLog->append(msg);
         });
     };
-
-    if (stopToken.stop_requested()) return;
 
     QString message;
     const bool success = updater->install(specificVersion, progressCallback, message);
