@@ -39,7 +39,7 @@ class MainWindow : public QMainWindow {
         static void postToUi(QPointer<MainWindow> self, F &&fn);
 
         static bool buildDownloadUrl(VersionInfo &info, const std::string &desiredVersion, bool &versionChanged, QString &error);
-        void runInstall(const std::stop_token &stopToken, const std::string &desiredVersion, VersionInfo fetchedInfo);
+        void runInstall(const std::string &desiredVersion, VersionInfo fetchedInfo);
 
         QLabel *_currentVersionLabel = nullptr;
         QLabel *_desiredVersionLabel = nullptr;
@@ -53,7 +53,7 @@ class MainWindow : public QMainWindow {
         std::string _installedVersion;
         VersionInfo _fetchedVersionInfo;
 
-        std::jthread _workerThread;
+        std::thread _workerThread;
         std::atomic<bool> _installInProgress{false};
 };
 
