@@ -985,8 +985,14 @@ void TestUtility::testFileSystemInfo() {
                    mountPoint == R"(C:\)");
 #else
     // /!\ Docker containers use overlayfs
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint));
+    CPPUNIT_ASSERT(fsType == fsType::EXT234 || fsType == "OVERLAYFS");
+    CPPUNIT_ASSERT(mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) &&
                    (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint));
+    CPPUNIT_ASSERT(fsType == fsType::EXT234 || fsType == "OVERLAYFS");
+    CPPUNIT_ASSERT(mountPoint == "/");
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
                    (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
     // TODO: implement these tests on the CI.
