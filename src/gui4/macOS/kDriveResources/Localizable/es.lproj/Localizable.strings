@@ -815,10 +815,10 @@
 "informationBlockTmpDirAccessErrorTitle" = "Conexión a kDrive interrumpida";
 
 /* loco:6a5f21a860fed997a40cfc45 */
-"instructionEnableBackgroundActivity" = "En «Actualización de aplicaciones en segundo plano», activa kDrive";
+"instructionEnableBackgroundActivity" = "En «Actualización en segundo plano», activa kDrive";
 
 /* loco:6a5f21c0aa99ab499a097e82 */
-"instructionEnableBackgroundActivityArgument" = "Actualización de aplicaciones en segundo plano";
+"instructionEnableBackgroundActivityArgument" = "Actualización en segundo plano";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activar kDrive.app";
@@ -836,25 +836,25 @@
 "instructionFullDiskHint" = "Debe activar las autorizaciones antes de continuar";
 
 /* loco:6a5f2134015fb9713f080a45 */
-"instructionOpenLoginItems" = "Seleccionar elementos de inicio de sesión y extensiones";
+"instructionOpenLoginItems" = "Seleccionar Ítems de inicio y extensiones";
 
 /* loco:6a5f2172e2e3f0313908bcc5 */
-"instructionOpenLoginItemsLink" = "Iniciar sesión: Elementos y extensiones";
+"instructionOpenLoginItemsLink" = "Ítems de inicio y extensiones";
 
 /* loco:69314c4aba85c2962d068dc2 */
-"instructionOpenPrivacySecurity" = "Vaya a Confidencialidad y seguridad > Acceso total al disco";
+"instructionOpenPrivacySecurity" = "Vaya a Privacidad y seguridad > Acceso total al disco";
 
 /* loco:69314c54606d30eb26081743 */
 "instructionOpenPrivacySecurityArgument" = "Acceso total al disco";
 
 /* loco:69314c62739c205c410aa082 */
-"instructionOpenPrivacySecurityLink" = "Confidencialidad y seguridad";
+"instructionOpenPrivacySecurityLink" = "Privacidad y seguridad";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Selecciona «Elementos de inicio de sesión y extensiones» > «Extensiones de seguridad para terminales»";
+"instructionOpenSecurityExtensions" = "Selecciona «Ítems de inicio y extensiones» > «Extensiones de seguridad de puntos finales»";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
-"instructionOpenSecurityExtensionsArgument" = "Extensiones de seguridad para dispositivos finales";
+"instructionOpenSecurityExtensionsArgument" = "Extensiones de seguridad de puntos finales";
 
 /* loco:6930592bfd6c86f6690db6d5 */
 "instructionOpenSecurityExtensionsArgumentLegacy" = "Extensiones de seguridad";
@@ -863,7 +863,7 @@
 "instructionOpenSecurityExtensionsLegacy" = "Seleccione Abrir y Extensiones > Extensiones de seguridad";
 
 /* loco:6a5dec91ef4352b17c064f32 */
-"instructionOpenSecurityExtensionsLink" = "Iniciar sesión: Elementos y extensiones";
+"instructionOpenSecurityExtensionsLink" = "Ítems de inicio y extensiones";
 
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Abrir y Extensiones";

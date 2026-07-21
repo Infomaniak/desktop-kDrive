@@ -815,10 +815,10 @@
 "informationBlockTmpDirAccessErrorTitle" = "Verbindung zu kDrive unterbrochen";
 
 /* loco:6a5f21a860fed997a40cfc45 */
-"instructionEnableBackgroundActivity" = "Aktivieren Sie unter „Hintergrundaktualisierung von Apps“ die Option „kDrive“";
+"instructionEnableBackgroundActivity" = "Aktivieren Sie unter „Hintergrund­aktualisierung“ die Option „kDrive“";
 
 /* loco:6a5f21c0aa99ab499a097e82 */
-"instructionEnableBackgroundActivityArgument" = "Aktualisierung von Apps im Hintergrund";
+"instructionEnableBackgroundActivityArgument" = "Hintergrund­aktualisierung";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivieren Sie kDrive.app";
@@ -836,10 +836,10 @@
 "instructionFullDiskHint" = "Sie müssen die Berechtigungen aktivieren, bevor Sie fortfahren können";
 
 /* loco:6a5f2134015fb9713f080a45 */
-"instructionOpenLoginItems" = "„Anmeldeobjekte und Erweiterungen“ auswählen";
+"instructionOpenLoginItems" = "„Anmeldeobjekte & Erweiterungen“ auswählen";
 
 /* loco:6a5f2172e2e3f0313908bcc5 */
-"instructionOpenLoginItemsLink" = "Anmeldeobjekte und Erweiterungen";
+"instructionOpenLoginItemsLink" = "Anmeldeobjekte & Erweiterungen";
 
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Gehen Sie zu Privatsphäre und Sicherheit > Vollzugriff auf das Laufwerk";
@@ -851,10 +851,10 @@
 "instructionOpenPrivacySecurityLink" = "Privatsphäre und Sicherheit";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Wählen Sie „Anmeldeobjekte und Erweiterungen“ > „Endpoint Security-Erweiterungen“";
+"instructionOpenSecurityExtensions" = "Wählen Sie „Anmeldeobjekte & Erweiterungen“ > „Endpunktsicherheits-Erweiterungen“";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
-"instructionOpenSecurityExtensionsArgument" = "Erweiterungen für die Endgerätesicherheit";
+"instructionOpenSecurityExtensionsArgument" = "Endpunktsicherheits-Erweiterungen";
 
 /* loco:6930592bfd6c86f6690db6d5 */
 "instructionOpenSecurityExtensionsArgumentLegacy" = "Sicherheitserweiterungen";
@@ -863,7 +863,7 @@
 "instructionOpenSecurityExtensionsLegacy" = "Wählen Sie Öffnen und Erweiterungen > Sicherheitserweiterungen";
 
 /* loco:6a5dec91ef4352b17c064f32 */
-"instructionOpenSecurityExtensionsLink" = "Anmeldeobjekte und Erweiterungen";
+"instructionOpenSecurityExtensionsLink" = "Anmeldeobjekte & Erweiterungen";
 
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Öffnen und Erweiterungen";

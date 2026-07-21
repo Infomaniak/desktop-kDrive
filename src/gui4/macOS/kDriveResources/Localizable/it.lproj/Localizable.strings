@@ -815,10 +815,10 @@
 "informationBlockTmpDirAccessErrorTitle" = "Connessione a kDrive interrotta";
 
 /* loco:6a5f21a860fed997a40cfc45 */
-"instructionEnableBackgroundActivity" = "In \"Aggiornamento in background delle app\", abilita kDrive";
+"instructionEnableBackgroundActivity" = "In \"Aggiornamento app in background\", abilita kDrive";
 
 /* loco:6a5f21c0aa99ab499a097e82 */
-"instructionEnableBackgroundActivityArgument" = "Aggiornamento in background delle app";
+"instructionEnableBackgroundActivityArgument" = "Aggiornamento app in background";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Attivare kDrive.app";
@@ -836,25 +836,25 @@
 "instructionFullDiskHint" = "È necessario attivare le autorizzazioni prima di proseguire";
 
 /* loco:6a5f2134015fb9713f080a45 */
-"instructionOpenLoginItems" = "Seleziona elementi di accesso ed estensioni";
+"instructionOpenLoginItems" = "Seleziona Elementi login ed estensioni";
 
 /* loco:6a5f2172e2e3f0313908bcc5 */
-"instructionOpenLoginItemsLink" = "Elementi di accesso ed estensioni";
+"instructionOpenLoginItemsLink" = "Elementi login ed estensioni";
 
 /* loco:69314c4aba85c2962d068dc2 */
-"instructionOpenPrivacySecurity" = "Andare in Riservatezza e sicurezza > Accesso all’intero disco";
+"instructionOpenPrivacySecurity" = "Andare in Privacy e sicurezza > Accesso all’intero disco";
 
 /* loco:69314c54606d30eb26081743 */
 "instructionOpenPrivacySecurityArgument" = "Accesso all’intero disco";
 
 /* loco:69314c62739c205c410aa082 */
-"instructionOpenPrivacySecurityLink" = "Riservatezza e sicurezza";
+"instructionOpenPrivacySecurityLink" = "Privacy e sicurezza";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Seleziona \"Elementi di accesso ed estensioni\" > \"Estensioni di sicurezza degli endpoint\"";
+"instructionOpenSecurityExtensions" = "Seleziona \"Elementi login ed estensioni\" > \"Estensioni di sicurezza endpoint\"";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
-"instructionOpenSecurityExtensionsArgument" = "Estensioni per la sicurezza degli endpoint";
+"instructionOpenSecurityExtensionsArgument" = "Estensioni di sicurezza endpoint";
 
 /* loco:6930592bfd6c86f6690db6d5 */
 "instructionOpenSecurityExtensionsArgumentLegacy" = "Estensioni di sicurezza";
@@ -863,7 +863,7 @@
 "instructionOpenSecurityExtensionsLegacy" = "Selezionare Apri ed Estensioni > Estensioni di sicurezza";
 
 /* loco:6a5dec91ef4352b17c064f32 */
-"instructionOpenSecurityExtensionsLink" = "Elementi di accesso ed estensioni";
+"instructionOpenSecurityExtensionsLink" = "Elementi login ed estensioni";
 
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Apri ed Estensioni";

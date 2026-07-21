@@ -816,10 +816,10 @@ Ouvrez les Préférences macOS pour les activer.";
 "informationBlockTmpDirAccessErrorTitle" = "Connexion à kDrive interrompue";
 
 /* loco:6a5f21a860fed997a40cfc45 */
-"instructionEnableBackgroundActivity" = "Dans « Actualisation des applications en arrière-plan », activez kDrive";
+"instructionEnableBackgroundActivity" = "Dans « Actualisation en arrière-plan », activez kDrive";
 
 /* loco:6a5f21c0aa99ab499a097e82 */
-"instructionEnableBackgroundActivityArgument" = "Actualisation des applications en arrière-plan";
+"instructionEnableBackgroundActivityArgument" = "Actualisation en arrière-plan";
 
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activez kDrive.app";
@@ -837,10 +837,10 @@ Ouvrez les Préférences macOS pour les activer.";
 "instructionFullDiskHint" = "Vous devez activer les autorisations avant de continuer";
 
 /* loco:6a5f2134015fb9713f080a45 */
-"instructionOpenLoginItems" = "Sélectionner les éléments de connexion et les extensions";
+"instructionOpenLoginItems" = "Sélectionner Ouverture et extensions";
 
 /* loco:6a5f2172e2e3f0313908bcc5 */
-"instructionOpenLoginItemsLink" = "Éléments de connexion et extensions";
+"instructionOpenLoginItemsLink" = "Ouverture et extensions";
 
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Allez dans Confidentialité et sécurité > Accès complet au disque";
@@ -852,10 +852,10 @@ Ouvrez les Préférences macOS pour les activer.";
 "instructionOpenPrivacySecurityLink" = "Confidentialité et sécurité";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Sélectionnez « Éléments de connexion et extensions » > « Extensions de sécurité des terminaux »";
+"instructionOpenSecurityExtensions" = "Sélectionnez « Ouverture et extensions » > « Extensions de sécurité de point de terminaison »";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
-"instructionOpenSecurityExtensionsArgument" = "Extensions de sécurité des terminaux";
+"instructionOpenSecurityExtensionsArgument" = "Extensions de sécurité de point de terminaison";
 
 /* loco:6930592bfd6c86f6690db6d5 */
 "instructionOpenSecurityExtensionsArgumentLegacy" = "Extensions de sécurité";
@@ -864,7 +864,7 @@ Ouvrez les Préférences macOS pour les activer.";
 "instructionOpenSecurityExtensionsLegacy" = "Sélectionnez Ouverture et extensions > Extensions de sécurité";
 
 /* loco:6a5dec91ef4352b17c064f32 */
-"instructionOpenSecurityExtensionsLink" = "Éléments de connexion et extensions";
+"instructionOpenSecurityExtensionsLink" = "Ouverture et extensions";
 
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Ouverture et extensions";
