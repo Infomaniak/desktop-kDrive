@@ -55,7 +55,7 @@ ExitInfo ErrorListJob::serializeOutputParms() {
 ExitInfo ErrorListJob::process() {
     ExitInfo exitInfo = ServerRequests::getErrorList(_limit, _errorList);
     if (!exitInfo) {
-        LOG_WARN(_logger, "Error in ServerRequests::getErrorInfoList: " << exitInfo);
+        LOG_WARN(_logger, "Error in ServerRequests::getErrorList: " << exitInfo);
         addError(Error(ERR_ID, exitInfo));
         return exitInfo;
     }
