@@ -1544,11 +1544,11 @@ ExitCode ServerRequests::getExclusionAppList(const bool def, std::vector<Exclusi
 
 ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionApp> &list) {
     list.clear();
-    std::vector<ExclusionApp> stdVectorAppInfo;
+    std::vector<ExclusionApp> stdVectorApp;
 
-    const auto exitInfo = getExclusionAppList(def, stdVectorAppInfo);
+    const auto exitInfo = getExclusionAppList(def, stdVectorApp);
 
-    for (auto &appInfo: stdVectorAppInfo) {
+    for (auto &appInfo: stdVectorApp) {
         list.append(std::move(appInfo));
     }
 
