@@ -36,7 +36,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFolderContainsNonExcludedItemWithNonExcludedFile);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemMixed);
         CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist);
-        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesPathNotMatchingAnyRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule);
         CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule);
         CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule);
         CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule);
