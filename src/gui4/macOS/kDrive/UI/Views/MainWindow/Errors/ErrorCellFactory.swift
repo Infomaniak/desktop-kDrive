@@ -236,7 +236,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveLoggingErrorTitle,
                 description: KDriveLocalizable.driveLoggingErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonConnectAccount) { manager.navigateToLoginPage() }
+                action: .init(title: KDriveLocalizable.buttonConnectAccount) {
+                    matomo.track(eventWithCategory: .logginErrorPage, name: "openSignInWeb")
+                    manager.navigateToLoginPage()
+                }
             )
         case .networkOther:
             return makeCell(
