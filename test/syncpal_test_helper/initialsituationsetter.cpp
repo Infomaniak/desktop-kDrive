@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "setinitialsituation.h"
+#include "initialsituationsetter.h"
 
 #include "syncpal/syncpal.h"
 
@@ -42,7 +42,7 @@ namespace KDC {
 // ─────────────────────────────────────────────────
 //
 
-Situation::Situation(const StringType &jsonDescription) {
+Situation::Situation(const SyncName &jsonDescription) {
     try {
         Poco::JSON::Parser parser;
         _jsonObject = parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();
@@ -66,9 +66,9 @@ const Poco::JSON::Object::Ptr &Situation::jsonObject() const noexcept {
 
 bool Situation::operator==(const Situation &other) const noexcept {
     std::ostringstream oss;
-    Poco::JSON::Stringifier::stringify(_jsonObject, oss);
+    Poco::JSON::Stringifier::stringify(_jsonObject, oss, /*indent=*/0);
     std::ostringstream otherOss;
-    Poco::JSON::Stringifier::stringify(other._jsonObject, otherOss);
+    Poco::JSON::Stringifier::stringify(other._jsonObject, otherOss, /*indent=*/0);
     return oss.str() == otherOss.str();
 }
 
@@ -80,28 +80,24 @@ void Situation::log() const {
 
 //
 // ─────────────────────────────────────────────────
-// SetInitialSituation
+// InitialSituationSetter
 // ─────────────────────────────────────────────────
 //
 
-SetInitialSituation::SetInitialSituation(const std::shared_ptr<SyncPal> syncPal) {
+InitialSituationSetter::InitialSituationSetter(const std::shared_ptr<SyncPal> syncPal) {
     setSyncpal(syncPal);
 }
 
-void SetInitialSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
+void InitialSituationSetter::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
 
-    _remoteDriveDbId.reset();
-    _remoteRootId.clear();
     _remoteNodeIds.clear();
     if (_syncPal) {
-        _remoteDriveDbId = _syncPal->driveDbId();
-        _remoteRootId = *_syncPal->syncDb()->rootNode().nodeIdRemote();
-        _remoteNodeIds[{}] = _remoteRootId;
+        _remoteNodeIds[{}] = *_syncPal->syncDb()->rootNode().nodeIdRemote();
     }
 }
 
-bool SetInitialSituation::run(const std::string &localJsonDescription, const std::string &remoteJsonDescription) {
+bool InitialSituationSetter::run(const std::string &localJsonDescription, const std::string &remoteJsonDescription) {
     if (!_syncPal) return false;
 
     try {
@@ -111,19 +107,19 @@ bool SetInitialSituation::run(const std::string &localJsonDescription, const std
 
         return true;
     } catch (const SituationGeneratorException &e) {
-        LOG_WARN(Log::instance()->getLogger(), "SetInitialSituation::run: " << e.what());
+        LOG_WARN(Log::instance()->getLogger(), "InitialSituationSetter::run: " << e.what());
         return false;
     }
 }
 
-void SetInitialSituation::generateInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
+void InitialSituationSetter::generateInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
     if (!_syncPal) throw SituationGeneratorException("Invalid parameters!");
 
     generateSituation(localSituation, ReplicaSide::Local);
     generateSituation(remoteSituation, ReplicaSide::Remote);
 }
 
-void SetInitialSituation::generateSituation(const Situation &situation, const ReplicaSide side) {
+void InitialSituationSetter::generateSituation(const Situation &situation, const ReplicaSide side) {
     const auto &obj = situation.jsonObject();
     if (obj->isArray("content")) {
         addItem(side, obj->getArray("content"), {});
@@ -133,7 +129,7 @@ void SetInitialSituation::generateSituation(const Situation &situation, const Re
     }
 }
 
-void SetInitialSituation::addItem(const ReplicaSide side, Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
+void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
     std::vector<std::string> keys;
     obj->getNames(keys);
 
@@ -153,7 +149,7 @@ void SetInitialSituation::addItem(const ReplicaSide side, Poco::JSON::Object::Pt
     }
 }
 
-void SetInitialSituation::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
+void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
     for (size_t i = 0; i < arr->size(); ++i) {
         const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
@@ -179,7 +175,7 @@ void SetInitialSituation::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr
     }
 }
 
-void SetInitialSituation::addItem(const ReplicaSide side, const ItemDesc &desc, const NodeId &parentId) {
+void InitialSituationSetter::addItem(const ReplicaSide side, const ItemDesc &desc, const NodeId &parentId) {
     if (side == ReplicaSide::Local) {
         insertLocalItem(desc, parentId);
     } else {
@@ -187,7 +183,7 @@ void SetInitialSituation::addItem(const ReplicaSide side, const ItemDesc &desc, 
     }
 }
 
-void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) {
+void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) {
     const SyncPath namePath(desc.name);
     if (namePath.is_absolute() || namePath.filename() != namePath || namePath.empty()) {
         throw SituationGeneratorException("Invalid item name: '" + SyncName2Str(desc.name) + "'");
@@ -220,14 +216,14 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
     }
 }
 
-SyncPath SetInitialSituation::localFilePathForUpload(const ItemDesc &desc) {
+SyncPath InitialSituationSetter::localFilePathForUpload(const ItemDesc &desc) {
     if (const auto it = _localItemPaths.find(desc.id); it != _localItemPaths.end()) {
         return _syncPal->localPath() / it->second;
     }
 
     // Remote-only item: no local counterpart was generated, create a scratch file to upload from.
     if (!_uploadScratchDir.has_value()) {
-        _uploadScratchDir.emplace("setInitialSituationUpload");
+        _uploadScratchDir.emplace("InitialSituationSetterUpload");
     }
     const SyncPath scratchPath = _uploadScratchDir->path() / desc.name;
     testhelpers::generateTestFile(scratchPath);
@@ -235,22 +231,18 @@ SyncPath SetInitialSituation::localFilePathForUpload(const ItemDesc &desc) {
     return scratchPath;
 }
 
-void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
-    if (!_remoteDriveDbId.has_value() || _remoteRootId.empty()) return;
+void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
+    if (_remoteNodeIds.at({}).empty()) return;
 
     try {
         NodeId parentRemoteId;
-        if (parentId.empty()) {
-            parentRemoteId = _remoteRootId;
-        } else {
-            try {
-                parentRemoteId = _remoteNodeIds.at(parentId);
-            } catch (const std::out_of_range &) {
-                throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
-            }
+        try {
+            parentRemoteId = _remoteNodeIds.at(parentId);
+        } catch (const std::out_of_range &) {
+            throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
         }
         if (desc.type == NodeType::Directory) {
-            CreateDirJob job(nullptr, *_remoteDriveDbId, parentRemoteId, desc.name);
+            CreateDirJob job(nullptr, _syncPal->driveDbId(), parentRemoteId, desc.name);
             (void) job.runSynchronously();
             _remoteNodeIds[desc.id] = job.nodeId();
         } else {
@@ -258,7 +250,7 @@ void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &p
             // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
             // the current time is used.
             const auto now = std::time(nullptr);
-            UploadJob job(nullptr, *_remoteDriveDbId, localFilePath, desc.name, parentRemoteId, now, now);
+            UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, now, now);
             (void) job.runSynchronously();
             _remoteNodeIds[desc.id] = job.nodeId();
         }

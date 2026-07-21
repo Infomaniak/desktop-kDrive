@@ -41,7 +41,7 @@ class OperationsParserException final : public std::runtime_error {
 
 /**
  * @brief Wraps a JSON description of a list of local/remote operations to apply on top of an existing
- * situation (see Situation / SetInitialSituation in setinitialsituation.h).
+ * situation (see Situation / InitialSituationSetter in initialsituationsetter.h).
  * Supported operation types: Create, Edit, Delete and Move, e.g.:
  * {
  *    "operations": [

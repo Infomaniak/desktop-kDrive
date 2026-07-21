@@ -28,7 +28,7 @@ set(testsyncengine_SRCS
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
         # SyncpalTestHelper
         ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
-        ../syncpal_test_helper/setinitialsituation.h ../syncpal_test_helper/setinitialsituation.cpp
+        ../syncpal_test_helper/initialsituationsetter.h ../syncpal_test_helper/initialsituationsetter.cpp
         ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp

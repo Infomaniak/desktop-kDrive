@@ -42,13 +42,11 @@ class SituationGeneratorException final : public std::runtime_error {
 
 /**
  * @brief Wraps a JSON description of a local or remote directory situation.
- * See SetInitialSituation for the two supported JSON formats.
+ * See InitialSituationSetter for the two supported JSON formats.
  */
 class Situation {
     public:
-        using StringType = std::filesystem::path::string_type;
-
-        explicit Situation(const StringType &jsonDescription);
+        explicit Situation(const SyncName &jsonDescription);
 
         // Reads the JSON from a file instead of an inline string. Throws the same way the
         // constructor does if the content isn't valid.
@@ -119,10 +117,10 @@ class Situation {
  *
  * where leaf values / "File" types are files, and the other nodes are directories.
  */
-class SetInitialSituation {
+class InitialSituationSetter {
     public:
-        SetInitialSituation() = default;
-        explicit SetInitialSituation(std::shared_ptr<SyncPal> syncPal);
+        InitialSituationSetter() = default;
+        explicit InitialSituationSetter(std::shared_ptr<SyncPal> syncPal);
 
         // JSON = same format documented on the class.
         // Constructs a Situation for each side from localJsonDescription/remoteJsonDescription (which validates
@@ -132,8 +130,6 @@ class SetInitialSituation {
         bool run(const std::string &localJsonDescription, const std::string &remoteJsonDescription);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
-
-        [[nodiscard]] const NodeId &remoteRootId() const { return _remoteRootId; }
 
         // Builds the local and remote situations independently, so that different content can be requested on
         // each side (e.g. to set up conflicting or asymmetrical initial states). Either situation may be left
@@ -165,8 +161,6 @@ class SetInitialSituation {
 
         std::shared_ptr<SyncPal> _syncPal;
 
-        NodeId _remoteRootId;
-        std::optional<DriveDbId> _remoteDriveDbId;
         std::unordered_map<NodeId, SyncPath, StringHashFunction, std::equal_to<>>
                 _localItemPaths; // item id (lowercase) -> local relative path
         std::unordered_map<NodeId, NodeId, StringHashFunction, std::equal_to<>>

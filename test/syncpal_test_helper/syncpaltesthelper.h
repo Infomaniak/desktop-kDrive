@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "setinitialsituation.h"
+#include "initialsituationsetter.h"
 #include "OperationsExecutor.h"
 
 #include <memory>
@@ -28,10 +28,10 @@ class SyncPal;
 
 /**
  * @brief Single entry point for setting up and driving Syncpal-based tests: building an initial
- * Db/update-tree/filesystem situation from a JSON description (via SetInitialSituation), applying
+ * Db/update-tree/filesystem situation from a JSON description (via InitialSituationSetter), applying
  * operations on top of it (via OperationsExecutor), and (eventually) driving a sync run.
  *
- * See Situation (setinitialsituation.h) for the supported situation JSON formats, and Operations
+ * See Situation (initialsituationsetter.h) for the supported situation JSON formats, and Operations
  * (OperationsExecutor.h) for the supported operations JSON format.
  */
 class SyncpalTestHelper {
@@ -46,7 +46,7 @@ class SyncpalTestHelper {
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
         // Builds localSituation and remoteSituation independently (see
-        // SetInitialSituation::generateInitialSituation) against the SyncPal passed to the constructor (or set
+        // InitialSituationSetter::generateInitialSituation) against the SyncPal passed to the constructor (or set
         // via setSyncpal). localSituation and remoteSituation may differ.
         // returns false if invalid
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
@@ -66,7 +66,7 @@ class SyncpalTestHelper {
     private:
         std::shared_ptr<SyncPal> _syncPal;
 
-        SetInitialSituation _setInitialSituation;
+        InitialSituationSetter _setInitialSituation;
         OperationsExecutor _executeOperations;
 };
 

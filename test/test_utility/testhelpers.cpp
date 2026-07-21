@@ -73,12 +73,12 @@ void generateOrEditTestFile(const SyncPath &path) {
 void setTestFileSize(const SyncPath &path, uint64_t size) {
     const std::string str{"0123456789"};
     std::ofstream ofs(path, std::ios_base::in | std::ios_base::trunc);
-    const uint64_t fullChunks = size / str.length();
-    const uint64_t remainder = size % str.length();
-    for (uint64_t i = 0; i < fullChunks; i++) {
+    const uint64_t nbOfChunks = size / str.length();
+    const uint64_t remainderSize = size % str.length();
+    for (uint64_t i = 0; i < nbOfChunks; i++) {
         ofs << str;
     }
-    ofs << str.substr(0, remainder);
+    ofs << str.substr(0, remainderSize);
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {
