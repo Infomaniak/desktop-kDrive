@@ -17,7 +17,9 @@
  */
 
 import Foundation
+import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
@@ -37,6 +39,8 @@ extension SynchroError {
 }
 
 struct ErrorCellFactory {
+    @InjectService private var matomo: MatomoUtils
+
     func make(error: SynchroError, isAdmin: Bool, manager: SynchroErrorManager) -> AnyView {
         guard let cell = generateCellForErrorKind(error, isAdmin: isAdmin, manager: manager) else {
             return AnyView(UnknownErrorCellView(error: error, manager: manager))
@@ -195,14 +199,20 @@ struct ErrorCellFactory {
                     error: error,
                     title: KDriveLocalizable.driveLockedErrorTitle,
                     description: KDriveLocalizable.driveLockedAdminErrorDescription,
-                    action: .init(title: KDriveLocalizable.buttonUpdateSubscription) { await manager.openShopURL(error) }
+                    action: .init(title: KDriveLocalizable.buttonUpdateSubscription) {
+                        matomo.track(eventWithCategory: .notRenewErrorPage, name: "openRenewWeb")
+                        await manager.openShopURL(error)
+                    }
                 )
             } else {
                 return makeCell(
                     error: error,
                     title: KDriveLocalizable.driveLockedErrorTitle,
                     description: KDriveLocalizable.driveLockedErrorDescription,
-                    action: .init(title: KDriveLocalizable.buttonRefresh) { await manager.tryToRestartSynchro(error) }
+                    action: .init(title: KDriveLocalizable.buttonRefresh) {
+                        matomo.track(eventWithCategory: .notRenewErrorPage, name: "startSync")
+                        await manager.tryToRestartSynchro(error)
+                    }
                 )
             }
         case .invalidSyncDirAccess:
