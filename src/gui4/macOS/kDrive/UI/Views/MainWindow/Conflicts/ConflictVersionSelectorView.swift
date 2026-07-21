@@ -219,6 +219,8 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func confirmResolution() async {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errors, name: "validateConflictResolution")
         var keepLocalErrorDbIds: [Int32] = []
         var keepRemoteErrorDbIds: [Int32] = []
         for (errorDbId, choice) in selection {
