@@ -136,7 +136,8 @@ if(UNIX)
         utf8proc)
     if(NOT APPLE)
         target_link_libraries(${libcommon_NAME}
-                "uuid")   # For UUID generation
+                "uuid"  # For UUID generation
+                mount)
     endif()
 elseif(WIN32)
     target_link_libraries(${libcommon_NAME}

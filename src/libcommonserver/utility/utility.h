@@ -117,7 +117,6 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::string nodeSet2str(const NodeSet &set);
 
-        inline static int pathDepth(const SyncPath &path) { return (int) std::distance(path.begin(), path.end()); }
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);
@@ -211,15 +210,6 @@ struct COMMONSERVER_EXPORT Utility {
          */
         static ExitInfo tryCreateTmpFile(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testFile"));
 
-#if defined(KD_LINUX)
-        /*
-         This method makes a more accurate detection of the file system type on Linux, correcting the possibly wrong guess
-         of `Utility::fileSystemName` when it returns "EXT2/3/4". In this case, the method tries to create a file in the cache
-         directory. This method circumvents the fact that `statfs` can mistake "exFAT" with the more permissive "EXT2/3/4" when
-         a USB stick is used.
-        */
-        static ExitInfo getFileSystemName(std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName);
-#endif
         static ExitInfo checkIfFileNamesCanEndWithSpace([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
                                                         bool &canEndWithSpace);
 
