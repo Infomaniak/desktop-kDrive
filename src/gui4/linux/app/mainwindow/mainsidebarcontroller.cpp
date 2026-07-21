@@ -42,7 +42,7 @@ MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectio
 }
 
 qint32 MainSidebarController::entryCount() const {
-    return static_cast<qint32>(_syncSelectorModel.rowCount());
+    return _syncSelectorModel.rowCount();
 }
 
 qint32 MainSidebarController::selectedRow() const {
