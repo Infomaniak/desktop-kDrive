@@ -1,4 +1,5 @@
 Path,Type
+$SYSROOT,BlackList
 $HOME,WhiteListSubFolder
 $HOME/.cache,BlackList
 $HOME/.local/share/Trash,BlackList

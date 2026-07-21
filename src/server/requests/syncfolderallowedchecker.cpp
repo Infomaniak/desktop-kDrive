@@ -46,7 +46,8 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
 
     LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: found " << rules.size() << " rules");
 
-    const QString candidateDir = QDir::cleanPath(Path2QStr(path)) + '/';
+    QString candidateDir = QDir::cleanPath(Path2QStr(path));
+    if (!candidateDir.endsWith('/')) candidateDir += '/';
 
     const SyncFolderRule *bestMatch = nullptr;
     SyncPath bestMatchExpandedPath;
@@ -62,9 +63,9 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"isSyncFolderAllowedByRules: expanded rule syncPath: " << Utility::formatSyncPath(expandedRulePath));
 
-        if (const QString ruleDir = QDir::cleanPath(Path2QStr(expandedRulePath)) + '/';
-            !candidateDir.startsWith(ruleDir, Qt::CaseSensitive))
-            continue;
+        QString ruleDir = QDir::cleanPath(Path2QStr(expandedRulePath));
+        if (!ruleDir.endsWith('/')) ruleDir += '/';
+        if (!candidateDir.startsWith(ruleDir, Qt::CaseSensitive)) continue;
         LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: rule matched");
 
         if (const int32_t depth = Utility::pathDepth(expandedRulePath); depth > bestDepth) {
@@ -78,8 +79,8 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"isSyncFolderAllowedByRules: bestMatch syncPath: " << Utility::formatSyncPath(bestMatchExpandedPath));
     } else {
-        allowed = false;
-        LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules RESULT: allowed=false (no matching rule)");
+        allowed = true; // whiteList by default,(useful if the user mount a USB key on E:
+        LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules RESULT: allowed=true (no matching rule)");
         return ExitCode::Ok;
     }
 
@@ -115,21 +116,16 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
 
 SyncPath SyncFolderAllowedChecker::expandRulePath(const SyncPath &rulePath) {
     QString pathStr = Path2QStr(rulePath);
-
     const QString homeDir = QDir::homePath();
-    (void) pathStr.replace("$HOME", homeDir);
 
-    QString user = qEnvironmentVariable("USER");
-    if (user.isEmpty()) {
-        user = qEnvironmentVariable("USERNAME");
-    }
-    if (!user.isEmpty()) {
-        (void) pathStr.replace("$USER", user);
-    }
 
-    if (pathStr.startsWith("~")) {
-        (void) pathStr.replace(0, 1, homeDir);
-    }
+    // $HOME -> user profile / home directory.
+    pathStr.replace("$HOME", homeDir);
+
+    // $SYSROOT -> root of the volume the home dir lives on.
+    // Windows -> "C:/", macOS/Linux -> "/". Handles UNC paths too, no #ifdef.
+    const QString sysRoot = Path2QStr(QStr2Path(homeDir).root_path());
+    pathStr.replace("$SYSROOT", sysRoot);
 
     return QStr2Path(pathStr);
 }
