@@ -750,7 +750,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
      */
 
     // Check if the creation date has changed
-    if (snapshot->createdAt(localNodeId) == dbNode.created().value()) {
+    if (dbNode.created().has_value() && snapshot->createdAt(localNodeId) == *dbNode.created()) {
         return;
     }
 

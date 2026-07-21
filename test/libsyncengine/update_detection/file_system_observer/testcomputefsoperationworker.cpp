@@ -65,16 +65,16 @@ void TestComputeFSOperationWorker::setUp() {
     ParmsDb::instance(_localParmsTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync
-    int userId = atoi(testVariables.userId.c_str());
+    UserId userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(testVariables.accountId.c_str()));
+    AccountId accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    int driveDbId = 1;
-    int driveId = atoi(testVariables.driveId.c_str());
+    DriveDbId driveDbId = 1;
+    DriveId driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
@@ -592,6 +592,81 @@ void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_aa", OperationType::Delete, tmpOp));
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Delete, tmpOp));
     // Create operations have been removed.
+}
+
+void TestComputeFSOperationWorker::testIsReusedNodeId() {
+    DbNode rootDbNode;
+    rootDbNode.setNodeIdLocal("1");
+    rootDbNode.setNodeIdRemote("1");
+
+    const NodeId localNodeId{"123"};
+    DbNode dbNode;
+    bool isReused = false;
+
+    // Remote node IDs are never reused.
+    auto liveSnapshot = std::make_shared<LiveSnapshot>(ReplicaSide::Remote, rootDbNode);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node ID that does not belong to the local snapshot cannot be reused.
+    liveSnapshot = std::make_shared<LiveSnapshot>(ReplicaSide::Local, rootDbNode);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with a different node type did reuse a node ID.
+    const SnapshotItem itemFileType(localNodeId, *rootDbNode.nodeIdLocal(), Str("item"), testhelpers::defaultTime,
+                                    testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    (void) liveSnapshot->updateItem(itemFileType);
+    dbNode.setType(NodeType::Directory);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type and the same creation date did not reuse a
+    // node ID.
+    dbNode.setType(NodeType::File);
+    dbNode.setCreated(testhelpers::defaultTime);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type and the same name did not reuse a
+    // node ID.
+    dbNode.setNameLocal(Str("item"));
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local directory whose node ID is the ID of a snapshot item with the same node type, a different name and a different
+    // creation date did reuse a node ID.
+    const SnapshotItem itemWithDirType(localNodeId, *rootDbNode.nodeIdLocal(), Str("directory_item"), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize, false, true,
+                                       true);
+    (void) liveSnapshot->updateItem(itemWithDirType);
+    dbNode.setCreated(testhelpers::defaultTime + 1);
+    dbNode.setNameLocal(Str("another_item_name"));
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different
+    // creation date but the same last modified date did not reuse a node ID.
+    (void) liveSnapshot->updateItem(itemFileType);
+    dbNode.setType(NodeType::File);
+    dbNode.setCreated(testhelpers::defaultTime + 1);
+    dbNode.setNameLocal(Str("another_item_name"));
+    dbNode.setLastModifiedLocal(testhelpers::defaultTime);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different creation a
+    // date, a different last modified date but the same size, did not reuse a node ID.
+    dbNode.setLastModifiedLocal(testhelpers::defaultTime + 1);
+    dbNode.setSize(testhelpers::defaultFileSize);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different
+    // creation a date, a different last modified date and a different size, did reuse a node ID.
+    dbNode.setSize(testhelpers::defaultFileSize + 1);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(isReused);
 }
 
 } // namespace KDC

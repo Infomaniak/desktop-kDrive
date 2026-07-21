@@ -49,6 +49,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         CPPUNIT_TEST(testExclusion);
         CPPUNIT_TEST(testIsInUnsyncedList);
         CPPUNIT_TEST(testHasChangedSinceLastSeen);
+        CPPUNIT_TEST(testIsReusedNodeId);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testPostponeCreateOperationsOnReusedIds);
 #endif
@@ -102,6 +103,9 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture, public TestBas
         // Create operations on local items that reused the identifiers deleted local items are removed from the computed
         // operation list. This also holds for every descendant of such items.
         void testPostponeCreateOperationsOnReusedIds();
+
+        // Test that the method ComputeFSOperationWorker::isReusedNodeId correctly identifies reused node IDs.
+        void testIsReusedNodeId();
 
     private:
         void testIsInUnsyncedList(bool expectedResult, const NodeId &nodeId, ReplicaSide side) const;
