@@ -1132,13 +1132,6 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
 
-    // Sync folder rule
-    if (!createAndPrepareRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE)) return false;
-    if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
-        return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
-    }
-    queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
 
 #if defined(KD_MACOS)
     // Exclusion App
@@ -1164,6 +1157,11 @@ bool ParmsDb::create(bool &retry) {
         return false;
     }
 
+    // Sync folder rule
+    if (!createSyncFolderRule()) {
+        LOG_WARN(_logger, "Error in createSyncFolderRule");
+        return false;
+    }
     // Migration old selectivesync table
     if (!createAndPrepareRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE)) return false;
     if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
@@ -1172,6 +1170,18 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
 
+    return true;
+}
+
+bool ParmsDb::createSyncFolderRule() {
+    int errId = 0;
+    std::string error;
+    if (!createAndPrepareRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE)) return false;
+    if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
+        queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
+        return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
+    }
+    queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
     return true;
 }
 
@@ -1330,12 +1340,15 @@ bool ParmsDb::upgradeTables() {
     }
 
     // Sync folder rule table
-    if (!createAndPrepareRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE)) return false;
-    if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
-        return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
+    tableName = "sync_folder_rule";
+    exist = false;
+    if (!tableExists(tableName, exist)) return false;
+    if (!exist) {
+        if (!createSyncFolderRule()) {
+            LOG_WARN(_logger, "Error in createSyncFolderRule");
+            return false;
+        }
     }
-    queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
 
     // Sync table
     tableName = "sync";

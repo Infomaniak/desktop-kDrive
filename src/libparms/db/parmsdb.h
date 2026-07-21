@@ -170,6 +170,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool createAppState();
         bool prepareAppState();
+        bool createSyncFolderRule();
 
         void fillSyncWithQueryResult(Sync &sync, const char *requestId);
 
