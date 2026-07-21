@@ -18,6 +18,7 @@
 
 import AppKit
 import InfomaniakConcurrency
+import InfomaniakDI
 import kDriveResources
 
 final class FileTreeNode {
@@ -299,6 +300,12 @@ public final class FileTreeOutlineView: NSView {
         let row = outlineView.row(for: sender)
         guard row >= 0, let node = outlineView.item(atRow: row) as? FileTreeNode else { return }
         toggleSelection(of: node)
+        @InjectService var matomo: MatomoUtils
+        if displayState(of: node) == .on {
+            matomo.track(eventWithCategory: .exclusionSelector, name: "selectDir")
+        } else {
+            matomo.track(eventWithCategory: .exclusionSelector, name: "unselectDir")
+        }
     }
 
     private func toggleSelection(of node: FileTreeNode) {
