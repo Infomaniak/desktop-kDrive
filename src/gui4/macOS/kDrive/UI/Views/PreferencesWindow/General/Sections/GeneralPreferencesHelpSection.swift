@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -23,6 +24,7 @@ import SwiftUI
 
 struct GeneralPreferencesHelpSection: View {
     @Environment(\.openURL) private var openURL
+    @LazyInjectService var matomo: MatomoUtils
 
     static let feedbackURL = URL(string: KDriveLocalizable.feedbackURL)!
 
@@ -30,12 +32,14 @@ struct GeneralPreferencesHelpSection: View {
         Section {
             IKLabeledContent(KDriveLocalizable.needHelpSetting) {
                 Button(KDriveLocalizable.buttonHelpdesk) {
+                    matomo.track(eventWithCategory: .generalSettingsPage, name: "openSupportWeb")
                     openURL(URLConstants.help)
                 }
             }
 
             IKLabeledContent(KDriveLocalizable.feedbackSetting) {
                 Button(KDriveLocalizable.buttonFeedback) {
+                    matomo.track(eventWithCategory: .generalSettingsPage, name: "openFeedbackWeb")
                     openURL(GeneralPreferencesHelpSection.feedbackURL)
                 }
             }

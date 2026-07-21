@@ -88,8 +88,10 @@ struct VersionManagementView: View {
     }
 
     private func updateApp() {
+        @InjectService var matomo: MatomoUtils
         Task {
             do {
+                matomo.track(eventWithCategory: .generalSettingsPage, name: "startUpdate")
                 try await UpdaterJobs().startInstaller()
             } catch {
                 self.error = .cannotStartInstall
