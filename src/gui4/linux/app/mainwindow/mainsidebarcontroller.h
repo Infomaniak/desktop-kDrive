@@ -39,7 +39,7 @@ class MainSidebarController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(QAbstractItemModel *syncsModel READ syncsModel CONSTANT)
         Q_PROPERTY(qint32 syncCount READ syncCount NOTIFY syncCountChanged)
-        Q_PROPERTY(qint32 selectedRow READ selectedRow NOTIFY currentSyncContextChanged)
+        Q_PROPERTY(qint32 selectedRow READ selectedRow NOTIFY selectedRowChanged)
         Q_PROPERTY(QString currentDriveName READ currentDriveName NOTIFY currentSyncContextChanged)
         Q_PROPERTY(QColor currentDriveColor READ currentDriveColor NOTIFY currentSyncContextChanged)
         Q_PROPERTY(bool canOpenCurrentSyncFolder READ canOpenCurrentSyncFolder NOTIFY currentSyncContextChanged)
@@ -61,6 +61,7 @@ class MainSidebarController final : public QObject {
 
     signals:
         void currentSyncContextChanged();
+        void selectedRowChanged();
         void syncCountChanged();
 
     private:

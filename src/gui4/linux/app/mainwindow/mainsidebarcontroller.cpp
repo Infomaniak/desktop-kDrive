@@ -40,6 +40,7 @@ MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectio
     _syncListModel(cache, selectionStore, this) {
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncContextChanged, this,
                    &MainSidebarController::currentSyncContextChanged);
+    (void) connect(&_syncListModel, &SyncListModel::selectedRowChanged, this, &MainSidebarController::selectedRowChanged);
     (void) connect(&_syncListModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::syncCountChanged);
 }
 
