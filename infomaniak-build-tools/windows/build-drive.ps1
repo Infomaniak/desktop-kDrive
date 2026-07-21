@@ -276,7 +276,7 @@ function Build-Extension {
     $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     Write-Host "Building extension with AUMID: $aumid"
 
-    msbuild "$extPath\kDriveExt.sln" /t:Restore 
+    msbuild "$extPath\kDriveExt.sln" /t:Restore /p:RestorePackagesConfig=true
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_DEBUG_AUMID="$aumid" /p:KDC_RELEASE_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
