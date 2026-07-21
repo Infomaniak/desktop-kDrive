@@ -42,6 +42,7 @@ struct FolderChipView: View {
 }
 
 struct AddAdvancedSynchroView: View {
+    @LazyInjectService private var matomo: MatomoUtils
     @Environment(\.dismiss) private var dismiss
 
     @EnvironmentObject private var viewModel: AddAdvancedSynchroFlowViewModel
@@ -82,6 +83,9 @@ struct AddAdvancedSynchroView: View {
                             allowedContentTypes: [.directory],
                             onCompletion: handleSelectedDirectory
                         )
+                        .onChange(of: isShowingFileImporter) { isShowing in
+                            matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "openSyncDir")
+                        }
 
                         if let localFolder = viewModel.localFolder {
                             FolderChipView(folderName: localFolder.lastPathComponent)
