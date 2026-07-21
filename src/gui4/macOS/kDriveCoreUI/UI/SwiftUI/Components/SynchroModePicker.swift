@@ -16,11 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveResources
 import SwiftUI
 
 public struct SynchroModePicker: View {
+    @LazyInjectService private var matomo: MatomoUtils
     @State private var isConvertingSynchro = false
 
     @State private var selectedMode: UISynchroMode
@@ -77,11 +79,15 @@ public struct SynchroModePicker: View {
             presenting: modePendingConfirmation
         ) { pendingMode in
             Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                matomo.track(eventWithCategory: .driveManagementPage, name: "cancelSyncModeSwitch")
                 selectedMode = synchroMode
             }
             Button(pendingMode == .storeOnline
                 ? KDriveLocalizable.buttonChangeToOnline
-                : KDriveLocalizable.buttonChangeToOffline) { synchroMode = pendingMode }
+                : KDriveLocalizable.buttonChangeToOffline) {
+                    matomo.track(eventWithCategory: .driveManagementPage, name: "confirmSyncModeSwitch")
+                    synchroMode = pendingMode
+                }
         } message: { _ in
             Text(KDriveLocalizable.dialogSyncModeChangeWarningContent)
         }

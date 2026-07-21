@@ -25,6 +25,7 @@ import Sentry
 import SwiftUI
 
 struct SyncedKDriveView: View {
+    @LazyInjectService private var matomo: MatomoUtils
     let drive: UIDrive
 
     @State private var mainSynchro: UISynchro?
@@ -55,6 +56,7 @@ struct SyncedKDriveView: View {
                 Section {
                     IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
                         Button(mainSynchro.localPath.path) {
+                            matomo.track(eventWithCategory: .driveManagementPage, name: "openSyncDir")
                             NSWorkspace.shared.open(mainSynchro.localPath)
                         }
                         .buttonStyle(.plain)
@@ -144,6 +146,7 @@ struct SyncedKDriveView: View {
     }
 
     private func navigateToManageSynchro() {
+        matomo.track(eventWithCategory: .driveManagementPage, name: "showItemExclusion")
         Task {
             @InjectService var cache: CoherentCache
             guard let mainSynchro, let drive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
@@ -168,6 +171,7 @@ struct SyncedKDriveView: View {
     }
 
     private func navigateToAdvancedSynchro() {
+        matomo.track(eventWithCategory: .driveManagementPage, name: "manageAdvancedSync")
         @InjectService var router: PreferencesViewRouter
         router.append(.advancedSynchros(drive))
     }
