@@ -36,8 +36,8 @@ Item {
         anchors.right: parent.right
         driveName: root.controller.currentDriveName
         driveColor: root.controller.currentDriveColor
-        interactive: root.controller.syncCount > 0
-        showChevron: root.controller.syncCount > 0
+        interactive: root.controller.syncCount > 1
+        showChevron: root.controller.syncCount > 1
         onTriggered: syncPopup.open()
     }
 
