@@ -36,6 +36,10 @@ struct AdvancedPreferencesDebugOptionsView: View {
                 helperText: nil,
                 isOn: $automaticCleaning
             )
+            .onChange(of: automaticCleaning) { _ in
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge")
+            }
 
             ToggleView(
                 title: KDriveLocalizable.extendedLogSetting,
