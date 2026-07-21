@@ -67,7 +67,7 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void testFolderContainsNonExcludedItemMixed();
 
         void isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist();
-        void isSyncFolderAllowedByRules_deniesPathNotMatchingAnyRule();
+        void isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule();
         void isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule();
         void isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule();
         void isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule();

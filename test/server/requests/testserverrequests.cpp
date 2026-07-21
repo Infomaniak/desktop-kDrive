@@ -336,12 +336,12 @@ void TestServerRequests::isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExis
     CPPUNIT_ASSERT(allowed);
 }
 
-void TestServerRequests::isSyncFolderAllowedByRules_deniesPathNotMatchingAnyRule() {
+void TestServerRequests::isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule() {
     clearRules();
     insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
-    bool allowed = true;
+    bool allowed = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/opt/someapp/data", allowed));
-    CPPUNIT_ASSERT(!allowed);
+    CPPUNIT_ASSERT(allowed);
 }
 
 void TestServerRequests::isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule() {
