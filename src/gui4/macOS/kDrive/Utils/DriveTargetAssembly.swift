@@ -35,7 +35,7 @@ final class DriveTargetAssembly: TargetAssembly {
             },
             Factory(type: WebBrowserLoginServiceable.self) { _, _ in
                 WebBrowserLoginService(
-                    loginURL: "https://login.infomaniak.com/",
+                    loginURL: URL(string: "https://login.infomaniak.com/")!,
                     clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
                     redirectURI: "kdrive://auth-desktop"
                 )
