@@ -60,6 +60,8 @@ struct AdvancedPreferencesDebugEnableView: View {
     }
 
     private func openDebugFolder() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .advancedSettingsPage, name: "openLogFolder")
         let debugURL = generateDebugFolderURL()
         guard FileManager.default.fileExists(atPath: debugURL.path) else {
             isShowingOpenURLError = true
