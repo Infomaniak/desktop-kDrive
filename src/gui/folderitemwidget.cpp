@@ -183,7 +183,7 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
         GuiUtility::makePrintablePath(name);
         _nameLabel->setText(name);
 
-        QString path = syncInfoClient->localPath();
+        QString path = Path2QStr(syncInfoClient->localPath());
         GuiUtility::makePrintablePath(path);
         _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
     }
@@ -417,7 +417,7 @@ void FolderItemWidget::onOpenFolder(const QString &link) {
         return;
     }
 
-    emit openFolder(syncInfoClient->localPath());
+    emit openFolder(Path2QStr(syncInfoClient->localPath()));
 }
 
 void FolderItemWidget::onPauseTriggered() {
@@ -471,7 +471,7 @@ void FolderItemWidget::retranslateUi() {
 
     setToolTipsEnabled(!isBeingDeleted());
 
-    QString path = syncInfoClient->localPath();
+    QString path = Path2QStr(syncInfoClient->localPath());
     GuiUtility::makePrintablePath(path);
     _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
 

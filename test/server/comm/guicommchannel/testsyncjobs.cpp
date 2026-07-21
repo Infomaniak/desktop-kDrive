@@ -82,9 +82,13 @@ void TestGuiCommChannel::testSyncInfoListJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
 
-        const SyncInfo si1(1, 1, "/Users/test/kDrive1", "", "", true, VirtualFileMode::Win, "");
-        const SyncInfo si2(2, 1, "/Users/test/kDrive2", "folder1", "999", false, VirtualFileMode::Off,
-                           "{645FF040-5081-101B-9F08-00AA002F954E}");
+        Sync si1(1, 1, "/Users/test/kDrive1", "", "");
+        si1.setSupportVfs(true);
+        si1.setVirtualFileMode(VirtualFileMode::Win);
+        Sync si2(2, 1, "/Users/test/kDrive2", "123", "folder1", "999");
+        si2.setSupportVfs(false);
+        si2.setVirtualFileMode(VirtualFileMode::Off);
+        si2.setNavigationPaneClsid("{645FF040-5081-101B-9F08-00AA002F954E}");
 
         syncInfoListJob->_syncInfoList = {si1, si2};
     };
@@ -274,8 +278,8 @@ void TestGuiCommChannel::testSyncAddJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAddJob = std::dynamic_pointer_cast<SyncAddJob>(job);
 
-        syncAddJob->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                          "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAddJob->sync() = Sync(1, 1, "/Users/test/kDrive1", "", "test", "999", false, true, VirtualFileMode::Win, false, "",
+                                  false, "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -340,8 +344,8 @@ void TestGuiCommChannel::testSyncAdd2Job() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAdd2Job = std::dynamic_pointer_cast<SyncAdd2Job>(job);
 
-        syncAdd2Job->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                           "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAdd2Job->sync() = Sync(1, 1, "/Users/test/kDrive1", "", "test", "999", false, true, VirtualFileMode::Win, false, "",
+                                   false, "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

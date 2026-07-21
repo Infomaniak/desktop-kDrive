@@ -66,15 +66,13 @@ ExitInfo AbstractSyncAddJob::deserializeInputParms() {
 }
 
 ExitInfo AbstractSyncAddJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncInfo, _syncInfo, info2DynamicVar<SyncInfo>);
+    writeParamValue(outParamsSyncInfo, _sync, info2DynamicVar<Sync>);
 
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractSyncAddJob::process(const SyncInfo &syncInfo) {
+ExitInfo AbstractSyncAddJob::process(const Sync &sync) {
     // Check if sync is valid
-    Sync sync;
-    ServerRequests::syncInfoToSync(syncInfo, sync);
     if (const auto exitInfo = _commManager->appServer().checkIfSyncIsValid(sync); !exitInfo) {
         LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
         addError(Error(sync.dbId(), ERR_ID, exitInfo));
@@ -95,11 +93,11 @@ ExitInfo AbstractSyncAddJob::process(const SyncInfo &syncInfo) {
     if (const auto exitInfo =
                 _commManager->appServer().initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
         !exitInfo) {
-        _commManager->appServer().stopSyncTask(syncInfo.dbId());
+        _commManager->appServer().stopSyncTask(sync.dbId());
 
         // Delete sync from DB
-        if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
-            LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
+        if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(sync.dbId()); !exitInfo2) {
+            LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << sync.dbId() << " : " << exitInfo2);
             addError(Error(ERR_ID, exitInfo));
         }
 
@@ -110,7 +108,7 @@ ExitInfo AbstractSyncAddJob::process(const SyncInfo &syncInfo) {
     Utility::restartFinderExtension();
 #endif
 
-    _syncInfo = syncInfo;
+    _sync = sync;
     return ExitCode::Ok;
 }
 

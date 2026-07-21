@@ -25,7 +25,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
 
-#include "libparms/db/sync.h"
+#include "libcommon/data/sync.h"
 #include "libparms/db/parmsdb.h"
 
 #include <queue>

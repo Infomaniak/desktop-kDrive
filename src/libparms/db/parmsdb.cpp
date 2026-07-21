@@ -2793,7 +2793,7 @@ bool ParmsDb::getNewSyncDbId(SyncDbId &dbId) {
     }
 
     dbId = 1;
-    for (const Sync &sync: syncList) {
+    for (const BaseSync &sync: syncList) {
         // NB: syncList is sorted by dbId
         if (sync.dbId() > dbId) {
             break;

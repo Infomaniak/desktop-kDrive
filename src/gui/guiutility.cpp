@@ -564,7 +564,7 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     QString warningMsg;
     for (const auto &sync: syncInfoMap) {
         const QString syncFolderName = sync.second.name();
-        const SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
+        const SyncPath syncLocalPath = sync.second.localPath();
 
         if (syncLocalPath == directoryPath) {
             warn = true;

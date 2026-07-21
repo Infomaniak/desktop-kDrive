@@ -372,8 +372,8 @@ void DrivePreferencesWidget::askDisableLiteSync(const std::function<void(bool, b
     qint64 localFoldersSize = 0;
     qint64 localFoldersDiskSize = 0;
     if (auto syncInfoIt = _gui->syncInfoMap().find(syncDbId); syncInfoIt != _gui->syncInfoMap().end()) {
-        localFoldersSize += KDC::GuiUtility::folderSize(syncInfoIt->second.localPath());
-        localFoldersDiskSize += KDC::GuiUtility::folderDiskSize(syncInfoIt->second.localPath());
+        localFoldersSize += KDC::GuiUtility::folderSize(Path2QStr(syncInfoIt->second.localPath()));
+        localFoldersDiskSize += KDC::GuiUtility::folderDiskSize(Path2QStr(syncInfoIt->second.localPath()));
     }
 
     qint64 diskSpaceMissing = localFoldersSize - localFoldersDiskSize - freeSize;
@@ -944,7 +944,7 @@ void DrivePreferencesWidget::onSearchItemDoubleClicked(const QModelIndex &index)
 
     for (const auto &[_, sync]: _gui->syncInfoMap()) {
         // Look for item on local replica.
-        const QString filepath = sync.localPath() + nodeInfo.path();
+        const QString filepath = Path2QStr(sync.localPath()) + nodeInfo.path();
         if (QFileInfo::exists(filepath)) {
             GuiUtility::openFolder(filepath);
             return;
@@ -980,7 +980,7 @@ void DrivePreferencesWidget::onUnsyncTriggered(const SyncDbId syncDbId) {
     CustomMessageBox msgBox(QMessageBox::Question,
                             tr("Do you really want to stop syncing the folder <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
-                                    .arg(syncInfoMapIt->second.localPath()),
+                                    .arg(Path2QStr(syncInfoMapIt->second.localPath())),
                             QMessageBox::NoButton, this);
     msgBox.addButton(tr("REMOVE FOLDER SYNC CONNECTION"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -996,7 +996,7 @@ void DrivePreferencesWidget::onUnsyncTriggered(const SyncDbId syncDbId) {
         folderBloc->setEnabledRecursively(false);
 
         if (const auto &syncInfoMapIt_ = _gui->syncInfoMap().find(syncDbId); syncInfoMapIt != _gui->syncInfoMap().end()) {
-            CommonGuiUtility::removeDirIcon(syncInfoMapIt_->second.localPath());
+            CommonGuiUtility::removeDirIcon(Path2QStr(syncInfoMapIt_->second.localPath()));
         }
 
         // Remove sync
@@ -1004,8 +1004,8 @@ void DrivePreferencesWidget::onUnsyncTriggered(const SyncDbId syncDbId) {
             qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::removeSync";
             CustomMessageBox msgBoxRemoveSync(
                     QMessageBox::Warning,
-                    tr("Failed to stop syncing the folder <i>%1</i>.").arg(syncInfoMapIt->second.localPath()), QMessageBox::Ok,
-                    this);
+                    tr("Failed to stop syncing the folder <i>%1</i>.").arg(Path2QStr(syncInfoMapIt->second.localPath())),
+                    QMessageBox::Ok, this);
 
             // Re-enable GUI sync-related actions.
             folderBloc->setEnabledRecursively(true);

@@ -34,10 +34,10 @@ set(libcommon_SRCS
     data/drive.h data/drive.cpp
     data/driveavailable.h data/driveavailable.cpp
     data/user.h data/user.cpp
-    info/syncinfo.h info/syncinfo.cpp
+    data/sync.h data/sync.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
-    info/errorinfo.h info/errorinfo.cpp
+    data/error.h data/error.cpp
     info/parametersinfo.h info/parametersinfo.cpp
     info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp

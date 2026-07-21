@@ -52,9 +52,9 @@ ExitInfo SyncAdd2Job::deserializeInputParms() {
 
 ExitInfo SyncAdd2Job::process() {
     // Add sync in DB
-    SyncInfo syncInfo;
+    Sync sync;
     if (const auto exitInfo = ServerRequests::addSync(_driveDbId, localFolderPath(), serverFolderPath(), serverFolderNodeId(),
-                                                      liteSync(), syncInfo);
+                                                      liteSync(), sync);
         !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - driveDbId="
                                    << _driveDbId << L" local " << Utility::formatSyncPath(localFolderPath()) << L" server "
@@ -64,10 +64,10 @@ ExitInfo SyncAdd2Job::process() {
         return exitInfo;
     }
 
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(sync);
     _commManager->sendGuiSignal(signalSyncAddedJob);
 
-    return AbstractSyncAddJob::process(syncInfo);
+    return AbstractSyncAddJob::process(sync);
 }
 
 } // namespace KDC

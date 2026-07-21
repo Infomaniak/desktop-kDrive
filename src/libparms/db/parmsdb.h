@@ -22,14 +22,14 @@
 #include "parameters.h"
 #include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
-#include "sync.h"
+#include "libcommon/data/sync.h"
 #include "exclusiontemplate.h"
 #include "syncfolderrule.h"
 
 #if defined(KD_MACOS)
 #include "exclusionapp.h"
 #endif
-#include "error.h"
+#include "libcommon/data/error.h"
 #include "migrationselectivesync.h"
 
 #include "libcommonserver/db/db.h"

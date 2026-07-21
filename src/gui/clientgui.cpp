@@ -189,7 +189,7 @@ void ClientGui::onFixConflictingFilesCompleted(const SyncDbId syncDbId, uint64_t
             KDC::CustomMessageBox msgBox(QMessageBox::Warning,
                                          tr("Failed to fix conflict(s) on %1 item(s) in sync folder: %2")
                                                  .arg(nbErrors)
-                                                 .arg(syncInfoMapIt->second.localPath()),
+                                                 .arg(Path2QStr(syncInfoMapIt->second.localPath())),
                                          QMessageBox::Ok);
             msgBox.exec();
         }
@@ -289,7 +289,7 @@ void ClientGui::computeOverallSyncStatus() {
             QString syncMessage = trayTooltipStatusString(
                     syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(), syncInfoMapIt.second.paused());
 
-            QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
+            QString shortLocalPath = shortGuiLocalPath(Path2QStr(syncInfoMapIt.second.localPath()));
             allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
         }
         trayMessage = allStatusStrings.join(QLatin1String("\n"));
@@ -345,7 +345,7 @@ const QString ClientGui::folderPath(const SyncDbId syncDbId, const QString &file
     QString fullFilePath;
     const auto syncInfoIt = _syncInfoMap.find(syncDbId);
     if (syncInfoIt != _syncInfoMap.end()) {
-        fullFilePath = syncInfoIt->second.localPath() + dirSeparator + filePath;
+        fullFilePath = Path2QStr(syncInfoIt->second.localPath()) + dirSeparator + filePath;
     }
 
     return fullFilePath;
@@ -899,9 +899,9 @@ void ClientGui::getWebviewDriveLink(const DriveDbId driveDbId, QString &driveLin
     }
 }
 
-void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<ErrorInfo> &errorInfoList) {
-    if (_errorInfoMap.find(driveDbId) != _errorInfoMap.end()) {
-        errorInfoList = _errorInfoMap[driveDbId];
+void ClientGui::errorList(const DriveDbId driveDbId, QList<Error> &errorList) {
+    if (_errorMap.find(driveDbId) != _errorMap.end()) {
+        errorList = _errorMap[driveDbId];
     }
 }
 
@@ -929,9 +929,9 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 }
 
 ExitCode ClientGui::loadError(const DriveDbId driveDbId, const SyncDbId syncDbId, ErrorLevel level) {
-    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
+    const ExitCode exitCode = GuiRequests::getErrorList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorList for level=" << level;
     }
 
     return exitCode;
@@ -946,15 +946,15 @@ void ClientGui::onRefreshErrorList() {
     bool versionLocked = false;
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
-        _errorInfoMap[0].clear();
+        _errorMap[0].clear();
         if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevel::Server)) {
             return;
         }
 
-        _generalErrorsCounter = static_cast<Count>(_errorInfoMap[0].count());
+        _generalErrorsCounter = static_cast<Count>(_errorMap[0].count());
         emit errorAdded(0);
-        for (const auto &errorInfo: _errorInfoMap[0]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+        for (const auto &error: _errorMap[0]) {
+            versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
         }
 
         _driveWithNewErrorSet.remove(0);
@@ -963,7 +963,7 @@ void ClientGui::onRefreshErrorList() {
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
         const auto driveDbId = *it;
-        _errorInfoMap[driveDbId].clear();
+        _errorMap[driveDbId].clear();
 
         const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
         if (driveInfoMapIt == _driveInfoMap.end()) {
@@ -980,10 +980,10 @@ void ClientGui::onRefreshErrorList() {
 
         Count unresolvedErrorsCount = 0;
         Count autoResolvedErrorsCount = 0;
-        for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+        for (const auto &error: _errorMap[driveDbId]) {
+            versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
 
-            if (errorInfo.autoResolved()) {
+            if (error.isAutoResolved()) {
                 ++autoResolvedErrorsCount;
             } else {
                 ++unresolvedErrorsCount;
@@ -1311,14 +1311,14 @@ void ClientGui::onDriveRemoved(const DriveDbId driveDbId) {
     }
 }
 
-void ClientGui::onSyncAdded(const SyncInfo &syncInfo) {
+void ClientGui::onSyncAdded(const BaseSync &syncInfo) {
     _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
+void ClientGui::onSyncUpdated(const BaseSync &syncInfo) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncInfo.dbId());
     if (syncInfoMapIt != _syncInfoMap.end()) {
         syncInfoMapIt->second.setDriveDbId(syncInfo.driveDbId());
@@ -1335,7 +1335,7 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 void ClientGui::onRemoveSync(const SyncDbId syncDbId) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt != _syncInfoMap.end()) {
-        CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+        CommonGuiUtility::removeDirIcon(Path2QStr(syncInfoMapIt->second.localPath()));
     }
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCode::Ok) {
@@ -1381,7 +1381,7 @@ void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, c
                 QMessageBox::Warning,
                 tr(R"(%1 items have been deleted from your from your local sync folder <a style="%2" href="file:///%3">%3</a>. To avoid unintended deletions the synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
                         .arg(nbFiles)
-                        .arg(CommonUtility::linkStyle, localPath),
+                        .arg(CommonUtility::linkStyle, Path2QStr(localPath)),
                 QMessageBox::Yes | QMessageBox::No);
         _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
         msgBox->showExitButton(false);
@@ -1418,7 +1418,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     const auto msgBox = new CustomMessageBox(
             QMessageBox::Information,
             tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
-                    .arg(CommonUtility::linkStyle, localPath, trashUrl),
+                    .arg(CommonUtility::linkStyle, Path2QStr(localPath), trashUrl),
             QMessageBox::Ok);
     _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
     msgBox->setCheckboxVisible(true);
@@ -1568,10 +1568,10 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
         // Open the widget on the current desktop
         WId windowObject = raiseWidget->winId();
         objc_object *nsviewObject = reinterpret_cast<objc_object *>(windowObject);
-        objc_object *nsWindowObject = ((id (*)(id, SEL)) objc_msgSend)(nsviewObject, sel_registerName("window"));
+        objc_object *nsWindowObject = ((id(*)(id, SEL)) objc_msgSend)(nsviewObject, sel_registerName("window"));
         int NSWindowCollectionBehaviorCanJoinAllSpaces = 1 << 0;
-        ((id (*)(id, SEL, int)) objc_msgSend)(nsWindowObject, sel_registerName("setCollectionBehavior:"),
-                                              NSWindowCollectionBehaviorCanJoinAllSpaces);
+        ((id(*)(id, SEL, int)) objc_msgSend)(nsWindowObject, sel_registerName("setCollectionBehavior:"),
+                                             NSWindowCollectionBehaviorCanJoinAllSpaces);
 #endif
 
         // Qt has a bug which causes parent-less dialogs to pop-under.
@@ -1628,14 +1628,14 @@ bool ClientGui::loadInfoMaps() {
     }
 
     // Load sync list
-    QList<SyncInfo> syncInfoList;
-    exitCode = GuiRequests::getSyncInfoList(syncInfoList);
+    QList<BaseSync> syncInfoList;
+    exitCode = GuiRequests::getSyncList(syncInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getSyncInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getSyncList";
         return false;
     }
 
-    for (const SyncInfo &syncInfo: syncInfoList) {
+    for (const BaseSync &syncInfo: syncInfoList) {
         _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
     }
 

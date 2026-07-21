@@ -25,8 +25,8 @@
 #include "libcommon/data/account.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/data/driveavailable.h"
-#include "libcommon/info/syncinfo.h"
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/sync.h"
+#include "libcommon/data/error.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
@@ -49,7 +49,7 @@ struct GuiRequests {
         static ExitCode getAccountList(QList<Account> &list);
         static ExitCode getDriveInfoList(QList<Drive> &list);
         static ExitCode updateDrive(const Drive &drive);
-        static ExitCode getSyncInfoList(QList<SyncInfo> &list);
+        static ExitCode getSyncList(QList<BaseSync> &list);
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
         static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);
@@ -67,8 +67,8 @@ struct GuiRequests {
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
-        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<ErrorInfo> &list);
-        static ExitCode getConflictList(DriveDbId driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list);
+        static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
+        static ExitCode getConflictList(DriveDbId driveDbId, const QList<ConflictType> &filter, QList<Error> &list);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
