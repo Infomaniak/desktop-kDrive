@@ -66,6 +66,17 @@ enum UIConflictResolutionStrategy: String, Identifiable, CaseIterable {
             return KDriveLocalizable.labelConflictStrategyKeepLocalDescription(count)
         }
     }
+
+    var matomoName: String {
+        switch self {
+        case .keepMostRecent:
+            return "keepMostRecent"
+        case .keepRemote:
+            return "keepRemote"
+        case .keepLocal:
+            return "keepOnline"
+        }
+    }
 }
 
 struct StrategyView: View {
@@ -101,6 +112,8 @@ struct StrategyView: View {
 }
 
 struct QuickConflictsResolutionView: View {
+    @LazyInjectService private var matomo: MatomoUtils
+
     @State private var isShowingGenericError = false
     @State private var isLoadingButton = false
 
@@ -138,6 +151,9 @@ struct QuickConflictsResolutionView: View {
                 }
                 .labelsHidden()
                 .pickerStyle(.inline)
+                .onChange(of: selectedStrategy) { newValue in
+                    matomo.track(eventWithCategory: .batchConflictResolutionPage, name: newValue.matomoName)
+                }
 
                 HStack {
                     LoadingButton(isLoading: $isLoadingButton, action: applyQuickChange) {
@@ -155,6 +171,7 @@ struct QuickConflictsResolutionView: View {
     }
 
     private func applyQuickChange() {
+        matomo.track(eventWithCategory: .batchConflictResolutionPage, name: "apply")
         Task {
             isLoadingButton = true
 
@@ -184,6 +201,7 @@ struct QuickConflictsResolutionView: View {
     }
 
     private func navigateToConflictList() {
+        matomo.track(eventWithCategory: .batchConflictResolutionPage, name: "openIndividualResolution")
         @InjectService var router: MainViewRouter
         router.append(.conflictsList)
     }
