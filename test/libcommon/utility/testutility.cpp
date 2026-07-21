@@ -1460,6 +1460,8 @@ void TestUtility::testPathDepth() {
         path /= "dir";
         CPPUNIT_ASSERT_EQUAL(i, CommonUtility::pathDepth(path));
     }
+}
+
 void TestUtility::testHomeDirectoryPath() {
     SyncPath homePath;
     const auto exitInfo = CommonUtility::homeDirectoryPath(homePath);
