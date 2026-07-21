@@ -153,6 +153,8 @@ final class MainWindowController: NSWindowController {
             }
         case .updateRequired:
             setViewController(UpdateRequiredViewController())
+        case .enableBackgroundActivity:
+            setViewController(EnableBackgroundActivityViewController())
         }
     }
 
@@ -198,6 +200,20 @@ final class MainWindowController: NSWindowController {
         #endif
     }
 
+    private func presentBackgroundActivityViewIfNecessary() -> Bool {
+        @InjectService var permissionHander: MacOSPermissionHandling
+        guard !permissionHander.isBackgroundActivityEnabled() else {
+            if case .enableBackgroundActivity = router.currentRoute {
+                navigateAfterPreloading(state: xpcConnectionProvider.guiConnectionState)
+                return false
+            }
+            return false
+        }
+
+        router.navigate(to: .enableBackgroundActivity)
+        return true
+    }
+
     // MARK: - Search
 
     @objc func showSearchSheet() {
@@ -211,6 +227,7 @@ final class MainWindowController: NSWindowController {
 extension MainWindowController: NSWindowDelegate {
     func windowDidBecomeMain(_ notification: Notification) {
         Task {
+            guard !presentBackgroundActivityViewIfNecessary() else { return }
             await presentPermissionsViewIfNecessary()
         }
     }

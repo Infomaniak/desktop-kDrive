@@ -18,6 +18,7 @@
 
 import Cocoa
 import Foundation
+import ServiceManagement
 
 public enum MacOSPermission: Sendable {
     case endpointSecurityExtension
@@ -32,6 +33,7 @@ protocol AuthorizationChecker: Sendable {
 public protocol MacOSPermissionHandling: Sendable {
     func isAuthorized(for permission: MacOSPermission) async -> Bool
     func systemPreferencesURL(for permission: MacOSPermission) -> URL?
+    func isBackgroundActivityEnabled() -> Bool
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
@@ -53,6 +55,18 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
 
     public func systemPreferencesURL(for permission: MacOSPermission) -> URL? {
         return authorizationCheckers[permission]?.systemPreferencesURL
+    }
+
+    public func isBackgroundActivityEnabled() -> Bool {
+        #if DEBUG
+        return false
+        #else
+        guard #available(macOS 13.0, *) else {
+            return true
+        }
+
+        return SMAppService.mainApp.status == .enabled
+        #endif
     }
 }
 

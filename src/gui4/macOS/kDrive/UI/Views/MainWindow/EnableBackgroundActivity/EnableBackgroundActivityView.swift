@@ -104,8 +104,7 @@ struct EnableBackgroundActivityView: View {
         .frame(minWidth: 600, minHeight: 300)
     }
 
-    private func navigateIfBackgroundActivityIsEnabled() {
-    }
+    private func navigateIfBackgroundActivityIsEnabled() {}
 }
 
 #Preview {

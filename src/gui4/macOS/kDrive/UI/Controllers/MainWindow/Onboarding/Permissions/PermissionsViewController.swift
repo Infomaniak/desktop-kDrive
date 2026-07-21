@@ -169,7 +169,7 @@ extension MacOSPermission {
             ]
             attributedString.addAttributes(basicAttributes, range: NSRange(location: 0, length: attributedString.length))
 
-            if let argument = argument {
+            if let argument {
                 let range = (attributedString.string as NSString).range(of: argument)
                 attributedString.addAttribute(.font, value: NSFont.Tokens.bodyEmphasized, range: range)
             }
