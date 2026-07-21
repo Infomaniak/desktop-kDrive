@@ -4,21 +4,21 @@
       "major": 3,
       "minor": 8,
       "patch": 6,
-      "build": 3,
+      "build": 4,
       "year": 2026
     },
     "macOS": {
       "major": 3,
       "minor": 8,
       "patch": 6,
-      "build": 3,
+      "build": 4,
       "year": 2026
     },
     "Windows": {
       "major": 4,
       "minor": 0,
       "patch": 0,
-      "build": 8,
+      "build": 9,
       "year": 2026
     }
   }
