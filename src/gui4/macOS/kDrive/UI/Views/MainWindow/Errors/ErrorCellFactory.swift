@@ -131,7 +131,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errForbiddenCharTitle,
                 description: KDriveLocalizable.errForbiddenCharDescription(error.nodeLabel, error.nodeLabel),
-                action: .renameItem(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    matomo.track(eventWithCategory: .errors, name: "manageUnsupportedChar")
+                    await manager.renameItem(error)
+                }
             )
         case .forbiddenCharOnlySpaces:
             return makeCell(
@@ -158,7 +161,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errPathLengthTitle(error.nodeLabel),
                 description: KDriveLocalizable.errPathLengthDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonOpenParentFolder) { manager.openParentFolder(error) }
+                action: .init(title: KDriveLocalizable.buttonOpenParentFolder) {
+                    matomo.track(eventWithCategory: .errors, name: "managePathTooLong")
+                    manager.openParentFolder(error)
+                }
             )
         case .notEnoughDiskSpace:
             return makeCell(
@@ -269,7 +275,6 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveLoggingErrorTitle,
                 description: KDriveLocalizable.driveLoggingErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonConnectAccount) {
-                    matomo.track(eventWithCategory: .errors, name: "manageInvalidToken")
                     manager.navigateToLoginPage()
                 }
             )
@@ -291,14 +296,20 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
                 description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageInvalidToken")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .systemSyncDirDiskMissing:
             return makeCell(
                 error: error,
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirDiskMissing")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .systemUnableToStartVFS:
             return makeCell(
@@ -306,6 +317,7 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errSystemUnableToStartVfsTitle,
                 description: KDriveLocalizable.errSystemUnableToStartVfsDescription,
                 action: .init(title: KDriveLocalizable.buttonActivateOfflineSync) {
+                    matomo.track(eventWithCategory: .errors, name: "manageLiteSyncError")
                     manager.showActivateOfflineSynchroSheet(error)
                 }
             )
@@ -350,7 +362,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirChanged,
-                action: .errorResolutionTip(error, manager: manager)
+                action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirChanged")
+                    manager.showResolutionTipsSheet(error)
+                }
             )
         case .temporaryDirAccess:
             return makeCell(

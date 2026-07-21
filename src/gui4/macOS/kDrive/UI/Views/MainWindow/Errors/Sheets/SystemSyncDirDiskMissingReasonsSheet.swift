@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -41,6 +42,8 @@ struct SystemSyncDirDiskMissingReasonsSheet: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonClose, role: .cancel) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirDiskMissing")
                     dismiss()
                 }
             }

@@ -173,6 +173,8 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func previewVersion(_ type: ConflictType, error: SynchroError) {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errors, name: "showConflictVersion")
         Task {
             @InjectService var cache: CoherentCache
             guard let context = await cache.getSynchroContext(Int32(error.metadata.synchroDbId)) else {

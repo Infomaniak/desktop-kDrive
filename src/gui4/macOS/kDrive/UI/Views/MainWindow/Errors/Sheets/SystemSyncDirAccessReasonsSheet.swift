@@ -93,6 +93,8 @@ struct SystemSyncDirAccessReasonsSheet: View {
     }
 
     private func openParentFolder() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errors, name: "syncDirAccessErrorOpenFolder")
         synchroErrorManager.openParentFolder(error)
         dismiss()
     }
