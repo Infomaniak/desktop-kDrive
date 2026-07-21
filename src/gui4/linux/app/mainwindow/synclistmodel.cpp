@@ -113,9 +113,9 @@ qint32 SyncListModel::rowForSyncDbId(const SyncDbId syncDbId) const {
     if (syncDbId == 0) {
         return -1;
     }
-    for (qint32 row = 0; row < static_cast<qint32>(_contexts.size()); ++row) {
-        if (_contexts[static_cast<std::size_t>(row)].syncInfo.dbId() == syncDbId) {
-            return row;
+    for (std::size_t row = 0; row < _contexts.size(); ++row) {
+        if (_contexts[row].syncInfo.dbId() == syncDbId) {
+            return static_cast<qint32>(row);
         }
     }
     return -1;
