@@ -106,7 +106,8 @@ bool OperationsExecutor::run(const ReplicaSide side, const std::string &jsonDesc
         execute(side, operations);
 
         return true;
-    } catch (const OperationsParserException &) {
+    } catch (const OperationsParserException &e) {
+        LOG_WARN(Log::instance()->getLogger(), "OperationsExecutor::run: " << e.what());
         return false;
     }
 }
@@ -151,8 +152,7 @@ void OperationsExecutor::validateRelativePath(const SyncPath &path, const std::s
 OperationsExecutor::OperationDesc OperationsExecutor::parseOperation(const Poco::JSON::Object::Ptr &obj) {
     if (!obj) throw OperationsParserException("Each operation must be an object");
 
-    static const std::string OPERATION_TYPE_KEY = "type";
-    const std::string typeStr = obj->optValue<std::string>(OPERATION_TYPE_KEY, "");
+    const std::string typeStr = obj->optValue<std::string>("type", "");
 
     OperationDesc desc;
     if (typeStr == "Create") {
@@ -163,7 +163,14 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseOperation(const Poco:
 
         const std::string nameStr = obj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw OperationsParserException("Create operation missing 'name'");
-        desc.path = Str2Path(nameStr);
+        const SyncName name = Str2SyncName(nameStr);
+        if (name.find(Str2SyncName("/")) != SyncName::npos || name.find(Str2SyncName("\\")) != SyncName::npos) {
+            throw OperationsParserException("'name' must be a simple item name, not a path: '" + nameStr + "'");
+        }
+
+        const std::string pathStr = obj->optValue<std::string>("path", "");
+        desc.path = pathStr.empty() ? SyncPath(name) : Str2Path(pathStr) / name;
+        if (!pathStr.empty()) validateRelativePath(Str2Path(pathStr), "path");
         validateRelativePath(desc.path, "name");
 
         desc.size = obj->optValue<int64_t>(

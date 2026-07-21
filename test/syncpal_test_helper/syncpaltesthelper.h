@@ -45,8 +45,9 @@ class SyncpalTestHelper {
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
-        // Builds localSituation and remoteSituation (see SetInitialSituation::generateInitialSituation)
-        // against the SyncPal passed to the constructor (or set via setSyncpal).
+        // Builds localSituation and remoteSituation independently (see
+        // SetInitialSituation::generateInitialSituation) against the SyncPal passed to the constructor (or set
+        // via setSyncpal). localSituation and remoteSituation may differ.
         // returns false if invalid
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
         bool getSituation(const Situation &localSituation, const Situation &remoteSituation) const;

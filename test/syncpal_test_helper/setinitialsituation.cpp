@@ -29,8 +29,8 @@
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Parser.h>
+#include <Poco/JSON/Stringifier.h>
 
-#include <algorithm>
 #include <fstream>
 #include <sstream>
 
@@ -42,11 +42,10 @@ namespace KDC {
 // ─────────────────────────────────────────────────
 //
 
-Situation::Situation(const StringType &jsonDescription) :
-    _jsonDescription(jsonDescription) {
+Situation::Situation(const StringType &jsonDescription) {
     try {
         Poco::JSON::Parser parser;
-        (void) parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();
+        _jsonObject = parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &) {
         throw SituationGeneratorException("Invalid Situation JSON");
     }
@@ -61,13 +60,21 @@ Situation Situation::fromFile(const std::filesystem::path &filePath) {
     return Situation(Str2SyncName(buffer.str()));
 }
 
-const Situation::StringType &Situation::json() const noexcept {
-    return _jsonDescription;
+const Poco::JSON::Object::Ptr &Situation::jsonObject() const noexcept {
+    return _jsonObject;
+}
+
+bool Situation::operator==(const Situation &other) const noexcept {
+    std::ostringstream oss;
+    Poco::JSON::Stringifier::stringify(_jsonObject, oss);
+    std::ostringstream otherOss;
+    Poco::JSON::Stringifier::stringify(other._jsonObject, otherOss);
+    return oss.str() == otherOss.str();
 }
 
 void Situation::log() const {
     std::ostringstream oss;
-    Poco::JSON::Stringifier::stringify(_jsonDescription, oss, 2);
+    Poco::JSON::Stringifier::stringify(_jsonObject, oss, 2);
     LOGW_INFO(Log::instance()->getLogger(), CommonUtility::s2ws(oss.str()));
 }
 
@@ -94,58 +101,59 @@ void SetInitialSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     }
 }
 
-bool SetInitialSituation::run(const std::string &jsonDescription) {
+bool SetInitialSituation::run(const std::string &localJsonDescription, const std::string &remoteJsonDescription) {
     if (!_syncPal) return false;
 
     try {
-        const Situation situation{Str2SyncName(jsonDescription)};
-        generateInitialSituation(situation);
+        const Situation localSituation{Str2SyncName(localJsonDescription)};
+        const Situation remoteSituation{Str2SyncName(remoteJsonDescription)};
+        generateInitialSituation(localSituation, remoteSituation);
 
         return true;
-    } catch (const SituationGeneratorException &) {
+    } catch (const SituationGeneratorException &e) {
+        LOG_WARN(Log::instance()->getLogger(), "SetInitialSituation::run: " << e.what());
         return false;
     }
 }
 
-void SetInitialSituation::generateInitialSituation(const Situation &situation) {
+void SetInitialSituation::generateInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
     if (!_syncPal) throw SituationGeneratorException("Invalid parameters!");
 
-    Poco::JSON::Object::Ptr obj;
-    try {
-        Poco::JSON::Parser parser;
-        obj = parser.parse(SyncName2Str(situation.json())).extract<Poco::JSON::Object::Ptr>();
-    } catch (Poco::Exception &) {
-        throw SituationGeneratorException("Invalid JSON input");
-    }
+    generateSituation(localSituation, ReplicaSide::Local);
+    generateSituation(remoteSituation, ReplicaSide::Remote);
+}
 
+void SetInitialSituation::generateSituation(const Situation &situation, const ReplicaSide side) {
+    const auto &obj = situation.jsonObject();
     if (obj->isArray("content")) {
-        addItem(obj->getArray("content"), {});
+        addItem(side, obj->getArray("content"), {});
     } else {
-        addItem(obj);
+        // No "content" array: legacy format, where the object's own keys are the items.
+        addItem(side, obj);
     }
 }
 
-void SetInitialSituation::addItem(Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
+void SetInitialSituation::addItem(const ReplicaSide side, Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
     std::vector<std::string> keys;
     obj->getNames(keys);
 
     for (const auto &key: keys) {
-        const NodeType type = !obj->isObject(key) ? NodeType::File : NodeType::Directory;
+        const NodeType type = obj->isObject(key) ? NodeType::Directory : NodeType::File;
         ItemDesc desc;
         desc.type = type;
         desc.id = parentId.empty() ? key : parentId + "/" + key;
         desc.name = Str2SyncName(CommonUtility::toUpper(key));
         desc.size = type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
-        addItem(desc, parentId);
+        addItem(side, desc, parentId);
 
         if (obj->isObject(key)) {
             const auto &childObj = obj->getObject(key);
-            addItem(childObj, desc.id);
+            addItem(side, childObj, desc.id);
         }
     }
 }
 
-void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
+void SetInitialSituation::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
     for (size_t i = 0; i < arr->size(); ++i) {
         const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
@@ -163,17 +171,20 @@ void SetInitialSituation::addItem(Poco::JSON::Array::Ptr arr, const NodeId &pare
         desc.name = Str2SyncName(nameStr);
         desc.size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
-        addItem(desc, parentId);
+        addItem(side, desc, parentId);
 
         if (type == NodeType::Directory && itemObj->isArray("content")) {
-            addItem(itemObj->getArray("content"), desc.id);
+            addItem(side, itemObj->getArray("content"), desc.id);
         }
     }
 }
 
-void SetInitialSituation::addItem(const ItemDesc &desc, const NodeId &parentId) {
-    insertLocalItem(desc, parentId);
-    insertRemoteItem(desc, parentId);
+void SetInitialSituation::addItem(const ReplicaSide side, const ItemDesc &desc, const NodeId &parentId) {
+    if (side == ReplicaSide::Local) {
+        insertLocalItem(desc, parentId);
+    } else {
+        insertRemoteItem(desc, parentId);
+    }
 }
 
 void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) {
@@ -182,15 +193,21 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
         throw SituationGeneratorException("Invalid item name: '" + SyncName2Str(desc.name) + "'");
     }
 
-    const SyncPath parentRelPath = parentId.empty() ? SyncPath{} : _localItemPaths.at(parentId);
+    SyncPath parentRelPath;
+    if (!parentId.empty()) {
+        try {
+            parentRelPath = _localItemPaths.at(parentId);
+        } catch (const std::out_of_range &) {
+            throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
+        }
+    }
     const SyncPath relPath = parentRelPath / namePath;
     _localItemPaths[desc.id] = relPath;
     const SyncPath localRoot = _syncPal->localPath().lexically_normal();
     const SyncPath fullPath = (localRoot / relPath).lexically_normal();
 
     // Ensure the resulting path stays within the local sync root (guards against traversal via "..").
-    const auto [rootEnd, fullBegin] = std::mismatch(localRoot.begin(), localRoot.end(), fullPath.begin(), fullPath.end());
-    if (rootEnd != localRoot.end()) {
+    if (!CommonUtility::isSubDir(localRoot, fullPath)) {
         throw SituationGeneratorException("Item path escapes the local sync root: '" + fullPath.string() + "'");
     }
 
@@ -198,27 +215,57 @@ void SetInitialSituation::insertLocalItem(const ItemDesc &desc, const NodeId &pa
     if (desc.type == NodeType::Directory) {
         (void) IoHelper::createDirectory(fullPath, true, ioError);
     } else {
-        (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
         testhelpers::generateTestFile(fullPath);
         if (desc.size > 0) testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
     }
 }
 
+SyncPath SetInitialSituation::localFilePathForUpload(const ItemDesc &desc) {
+    if (const auto it = _localItemPaths.find(desc.id); it != _localItemPaths.end()) {
+        return _syncPal->localPath() / it->second;
+    }
+
+    // Remote-only item: no local counterpart was generated, create a scratch file to upload from.
+    if (!_uploadScratchDir.has_value()) {
+        _uploadScratchDir.emplace("setInitialSituationUpload");
+    }
+    const SyncPath scratchPath = _uploadScratchDir->path() / desc.name;
+    testhelpers::generateTestFile(scratchPath);
+    if (desc.size > 0) testhelpers::setTestFileSize(scratchPath, static_cast<uint64_t>(desc.size));
+    return scratchPath;
+}
+
 void SetInitialSituation::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
     if (!_remoteDriveDbId.has_value() || _remoteRootId.empty()) return;
-    const NodeId parentRemoteId = parentId.empty() ? _remoteRootId : _remoteNodeIds.at(parentId);
-    if (desc.type == NodeType::Directory) {
-        CreateDirJob job(nullptr, *_remoteDriveDbId, parentRemoteId, desc.name);
-        (void) job.runSynchronously();
-        _remoteNodeIds[desc.id] = job.nodeId();
-    } else {
-        const SyncPath localFilePath = _syncPal->localPath() / _localItemPaths.at(desc.id);
-        // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
-        // the current time is used.
-        const auto now = std::time(nullptr);
-        UploadJob job(nullptr, *_remoteDriveDbId, localFilePath, desc.name, parentRemoteId, now, now);
-        (void) job.runSynchronously();
-        _remoteNodeIds[desc.id] = job.nodeId();
+
+    try {
+        NodeId parentRemoteId;
+        if (parentId.empty()) {
+            parentRemoteId = _remoteRootId;
+        } else {
+            try {
+                parentRemoteId = _remoteNodeIds.at(parentId);
+            } catch (const std::out_of_range &) {
+                throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
+            }
+        }
+        if (desc.type == NodeType::Directory) {
+            CreateDirJob job(nullptr, *_remoteDriveDbId, parentRemoteId, desc.name);
+            (void) job.runSynchronously();
+            _remoteNodeIds[desc.id] = job.nodeId();
+        } else {
+            const SyncPath localFilePath = localFilePathForUpload(desc);
+            // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
+            // the current time is used.
+            const auto now = std::time(nullptr);
+            UploadJob job(nullptr, *_remoteDriveDbId, localFilePath, desc.name, parentRemoteId, now, now);
+            (void) job.runSynchronously();
+            _remoteNodeIds[desc.id] = job.nodeId();
+        }
+    } catch (const SituationGeneratorException &) {
+        throw;
+    } catch (const std::exception &e) {
+        throw SituationGeneratorException(std::string("Failed to insert remote item: ") + e.what());
     }
 }
 

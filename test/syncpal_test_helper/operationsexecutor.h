@@ -46,11 +46,13 @@ class OperationsParserException final : public std::runtime_error {
  * {
  *    "operations": [
  *        { "type": "Edit", "path": "C/D/e", "newSize": 1234 },
- *        { "type": "Create", "itemType": "File", "name": "C/D/f", "size": 5678 },
+ *        { "type": "Create", "itemType": "File", "path": "C/D", "name": "f", "size": 5678 },
  *        { "type": "Delete", "path": "F/G/H" },
  *        { "type": "Move", "fromPath": "I/J/k", "toPath": "L/m" }
  *    ]
  * }
+ * Note: for Create, "path" is the parent directory the item is created into (optional, defaults to the sync
+ * root) and "name" is the item's own name (not a path).
  */
 class Operations {
     public:
@@ -103,7 +105,8 @@ class OperationsExecutor {
     private:
         struct OperationDesc {
                 OperationType type = OperationType::None;
-                SyncPath path; // Create ("name"), Edit / Delete ("path"): item affected, relative to the sync root.
+                SyncPath path; // Create: resolved as "path" (parent dir) / "name" (item name). Edit / Delete ("path"):
+                               // item affected, relative to the sync root.
                 SyncPath fromPath; // Move ("fromPath"): source item, relative to the sync root.
                 SyncPath toPath; // Move ("toPath"): destination item, relative to the sync root.
                 NodeType itemType = NodeType::File; // Create ("itemType"): File or Directory.

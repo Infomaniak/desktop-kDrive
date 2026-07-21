@@ -21,6 +21,7 @@
 
 #include "syncpal/syncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "libcommonserver/log/log.h"
 
 namespace KDC {
 
@@ -49,15 +50,13 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
     if (!_syncPal) return false;
 
     try {
-        // generateInitialSituation() creates the described items on both the real local filesystem and
-        // the real remote drive in one call (every item is inserted on both sides at once, just like
-        // OperationsExecutor does for operations). Calling it a second time with the same content would
-        // create duplicate local/remote items. Local and remote are therefore expected to match here, so
-        // only one call is needed. The SyncPal is then run so it discovers the generated items itself and
-        // populates its own Db/update-trees/snapshots with real ids.
-        if (!(localSituation == remoteSituation)) return false;
-        _setInitialSituation.generateInitialSituation(localSituation);
-    } catch (const SituationGeneratorException &) {
+        // generateInitialSituation() creates the local and remote situations independently on the real local
+        // filesystem and the real remote drive, so localSituation and remoteSituation may differ (e.g. to set
+        // up conflicting or asymmetrical initial states). The SyncPal is then run so it discovers the
+        // generated items itself and populates its own Db/update-trees/snapshots with real ids.
+        _setInitialSituation.generateInitialSituation(localSituation, remoteSituation);
+    } catch (const SituationGeneratorException &e) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncpalTestHelper::setInitialSituation: " << e.what());
         return false;
     }
 
@@ -111,7 +110,8 @@ bool SyncpalTestHelper::execute(const ReplicaSide side, const Operations &operat
 
     try {
         _executeOperations.execute(side, operations);
-    } catch (const OperationsParserException &) {
+    } catch (const OperationsParserException &e) {
+        LOG_WARN(Log::instance()->getLogger(), "SyncpalTestHelper::execute: " << e.what());
         return false;
     }
 

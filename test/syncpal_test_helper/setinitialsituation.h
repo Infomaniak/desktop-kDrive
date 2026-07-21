@@ -18,13 +18,16 @@
 
 #pragma once
 
+#include "libcommon/utility/types.h"
 #include "utility/types.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -51,14 +54,22 @@ class Situation {
         // constructor does if the content isn't valid.
         [[nodiscard]] static Situation fromFile(const std::filesystem::path &filePath);
 
-        const StringType &json() const noexcept;
+        // Situations are immutable once parsed and not meant to be duplicated: forbid copies (the parsed
+        // JSON is only stored once, moves are still allowed).
+        Situation(const Situation &) = delete;
+        Situation &operator=(const Situation &) = delete;
+        Situation(Situation &&) = default;
+        Situation &operator=(Situation &&) = default;
 
-        bool operator==(const Situation &other) const noexcept = default;
+        // The parsed JSON object, ready to be consumed without re-parsing.
+        const Poco::JSON::Object::Ptr &jsonObject() const noexcept;
+
+        bool operator==(const Situation &other) const noexcept;
 
         void log() const;
 
     private:
-        StringType _jsonDescription;
+        Poco::JSON::Object::Ptr _jsonObject;
 };
 
 /**
@@ -71,7 +82,10 @@ class Situation {
  * it is up to the caller to run a real sync pass (e.g. SyncpalTestHelper::executeSyncUntilEnd) afterwards so that the
  * SyncPal discovers the generated items itself and populates its own Db/update-trees/snapshots with real ids.
  *
- * Two JSON formats are supported for `run` / `generateInitialSituation`:
+ * `run` / `generateInitialSituation` take one Situation for the local side and one for the remote side, so
+ * differing (e.g. conflicting or asymmetrical) initial situations can be set up on each side independently.
+ *
+ * Two JSON formats are supported for each side's description:
  *
  * Legacy format: the key is the node ID (lowercase), object values are directories, non-object values are files,
  * and names are automatically set to the uppercase version of the ID:
@@ -111,16 +125,20 @@ class SetInitialSituation {
         explicit SetInitialSituation(std::shared_ptr<SyncPal> syncPal);
 
         // JSON = same format documented on the class.
-        // Constructs a Situation from jsonDescription (which validates it) and builds the initial situation
-        // against the SyncPal passed to the constructor (or set via setSyncpal).
+        // Constructs a Situation for each side from localJsonDescription/remoteJsonDescription (which validates
+        // them) and builds the initial situation against the SyncPal passed to the constructor (or set via
+        // setSyncpal). Either description may describe an empty situation if that side shouldn't be populated.
         // returns false if invalid
-        bool run(const std::string &jsonDescription);
+        bool run(const std::string &localJsonDescription, const std::string &remoteJsonDescription);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
         [[nodiscard]] const NodeId &remoteRootId() const { return _remoteRootId; }
 
-        void generateInitialSituation(const Situation &situation);
+        // Builds the local and remote situations independently, so that different content can be requested on
+        // each side (e.g. to set up conflicting or asymmetrical initial states). Either situation may be left
+        // empty (no "content" and no keys) if that side shouldn't be populated.
+        void generateInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
 
     private:
         struct ItemDesc {
@@ -130,12 +148,20 @@ class SetInitialSituation {
                 int64_t size = 0;
         };
 
-        void addItem(Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
-        void addItem(Poco::JSON::Array::Ptr arr, const std::string &parentId);
-        void addItem(const ItemDesc &desc, const std::string &parentId);
+        // side: Local -> creates real filesystem items only. Remote -> creates real remote API items only.
+        void generateSituation(const Situation &situation, ReplicaSide side);
+
+        void addItem(ReplicaSide side, Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
+        void addItem(ReplicaSide side, Poco::JSON::Array::Ptr arr, const std::string &parentId);
+        void addItem(ReplicaSide side, const ItemDesc &desc, const std::string &parentId);
 
         void insertLocalItem(const ItemDesc &desc, const NodeId &parentId);
         void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId);
+
+        // Returns the local path to upload from for a remote file item: the real generated local item if one
+        // exists at the same id (both sides describe it), otherwise a scratch file generated on the fly in a
+        // dedicated temporary directory (lazily created), for remote-only situations.
+        SyncPath localFilePathForUpload(const ItemDesc &desc);
 
         std::shared_ptr<SyncPal> _syncPal;
 
@@ -145,6 +171,7 @@ class SetInitialSituation {
                 _localItemPaths; // item id (lowercase) -> local relative path
         std::unordered_map<NodeId, NodeId, StringHashFunction, std::equal_to<>>
                 _remoteNodeIds; // item id (lowercase) -> real remote NodeId
+        std::optional<LocalTemporaryDirectory> _uploadScratchDir; // used only for remote-only file items
 };
 
 } // namespace KDC

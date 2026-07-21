@@ -252,10 +252,6 @@ void TestIntegration::testSimpleUpload() {
             {
                 "type" : "Directory",
                 "name" : "A",
-                "createdAt" : )" + std::to_string(dirTime) +
-                                           R"(,
-                "lastModifiedAt" : )" + std::to_string(dirTime) +
-                                           R"(,
                 "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
             },
             {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
@@ -266,7 +262,7 @@ void TestIntegration::testSimpleUpload() {
     const Operations localoperations{Str2SyncName(R"({
         "operations": [
             { "type": "Delete", "path":"A/AA/AAA" },
-            { "type": "Create", "itemType": "File", "name": "A/AA/BBB" }
+            { "type": "Create", "itemType": "File", "path": "A/AA", "name": "BBB" }
         ]
     })")};
     auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
@@ -322,7 +318,7 @@ void TestIntegration::testNestedRemoteOperations() {
     const Operations remoteOperations{Str2SyncName(R"({
         "operations": [
             { "type": "Create", "itemType": "Directory", "name": "A" },
-            { "type": "Create", "itemType": "File", "name": "A/AAA" }
+            { "type": "Create", "itemType": "File", "path": "A", "name": "AAA" }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOperations));
