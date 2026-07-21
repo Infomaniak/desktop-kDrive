@@ -87,6 +87,7 @@ public extension MatomoUtils {
         public static let asleepErrorPage = EventCategory(displayName: "asleepErrorPage")
         public static let driveAccessDeniedPage = EventCategory(displayName: "driveAccessDeniedPage")
         public static let logginErrorPage = EventCategory(displayName: "logginErrorPage")
+        public static let maintenanceErrorPage = EventCategory(displayName: "maintenanceErrorPage")
         public static let notRenewErrorPage = EventCategory(displayName: "notRenewErrorPage")
         public static let UpdateDialog = EventCategory(displayName: "UpdateDialog")
     }

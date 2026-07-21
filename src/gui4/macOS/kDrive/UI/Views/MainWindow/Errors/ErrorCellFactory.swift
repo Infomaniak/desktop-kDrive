@@ -191,7 +191,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errDriveMaintenanceTitle,
                 description: KDriveLocalizable.errDriveMaintenanceDescription,
-                action: .init(title: KDriveLocalizable.buttonRefresh) { await manager.refreshErrors(error) }
+                action: .init(title: KDriveLocalizable.buttonRefresh) {
+                    matomo.track(eventWithCategory: .maintenanceErrorPage, name: "startSync")
+                    await manager.refreshErrors(error)
+                }
             )
         case .backErrorDriveNotRenew:
             if isAdmin {
