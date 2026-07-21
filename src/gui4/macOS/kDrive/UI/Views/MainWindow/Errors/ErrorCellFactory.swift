@@ -178,7 +178,6 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveAccessDeniedErrorTitle,
                 description: KDriveLocalizable.driveAccessDeniedErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonRetry) {
-                    matomo.track(eventWithCategory: .driveAccessDeniedPage, name: "startSync")
                     await manager.tryToRestartSynchro(error)
                 }
             )
@@ -188,7 +187,6 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveAsleepErrorTitle,
                 description: KDriveLocalizable.backErrorDriveAsleepDescription,
                 action: .init(title: KDriveLocalizable.buttonWakeUp) {
-                    matomo.track(eventWithCategory: .asleepErrorPage, name: "openRenewWeb")
                     await manager.openWebPageDrive(error)
                 }
             )
@@ -198,7 +196,6 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errDriveMaintenanceTitle,
                 description: KDriveLocalizable.errDriveMaintenanceDescription,
                 action: .init(title: KDriveLocalizable.buttonRefresh) {
-                    matomo.track(eventWithCategory: .maintenanceErrorPage, name: "startSync")
                     await manager.refreshErrors(error)
                 }
             )
@@ -209,7 +206,6 @@ struct ErrorCellFactory {
                     title: KDriveLocalizable.driveLockedErrorTitle,
                     description: KDriveLocalizable.driveLockedAdminErrorDescription,
                     action: .init(title: KDriveLocalizable.buttonUpdateSubscription) {
-                        matomo.track(eventWithCategory: .notRenewErrorPage, name: "openRenewWeb")
                         await manager.openShopURL(error)
                     }
                 )
@@ -219,7 +215,6 @@ struct ErrorCellFactory {
                     title: KDriveLocalizable.driveLockedErrorTitle,
                     description: KDriveLocalizable.driveLockedErrorDescription,
                     action: .init(title: KDriveLocalizable.buttonRefresh) {
-                        matomo.track(eventWithCategory: .notRenewErrorPage, name: "startSync")
                         await manager.tryToRestartSynchro(error)
                     }
                 )
@@ -243,7 +238,6 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.driveLoggingErrorTitle,
                 description: KDriveLocalizable.driveLoggingErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonConnectAccount) {
-                    matomo.track(eventWithCategory: .logginErrorPage, name: "openSignInWeb")
                     manager.navigateToLoginPage()
                 }
             )
