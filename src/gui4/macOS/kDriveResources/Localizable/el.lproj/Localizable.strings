@@ -472,6 +472,12 @@
 /* loco:699c5de5e592726401053953 */
 "duplicateNamesErrorTitle" = "Διπλά ονόματα";
 
+/* loco:6a5f1fef9e6b79cec10e40d3 */
+"enableBackgroundActivityDescription" = "Το kDrive πρέπει να παραμείνει ενεργό στις ρυθμίσεις του Mac σας για να ενημερώνονται τα αρχεία σας.";
+
+/* loco:6a5f1fc352e21d55a0025802 */
+"enableBackgroundActivityTitle" = "Επανενεργοποιήστε το kDrive για να συνεχίσετε";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Καταγραφή διαγνωστικών πληροφοριών στον υπολογιστή μου.";
 
@@ -808,6 +814,12 @@
 /* loco:69c4e8b82884a264150d2583 */
 "informationBlockTmpDirAccessErrorTitle" = "Διακόπηκε η σύνδεση με το kDrive";
 
+/* loco:6a5f21a860fed997a40cfc45 */
+"instructionEnableBackgroundActivity" = "Στην επιλογή «Ανανέωση εφαρμογών στο παρασκήνιο», ενεργοποιήστε το kDrive";
+
+/* loco:6a5f21c0aa99ab499a097e82 */
+"instructionEnableBackgroundActivityArgument" = "Ανανέωση εφαρμογών στο παρασκήνιο";
+
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Ενεργοποιήστε το kDrive.app";
 
@@ -823,6 +835,12 @@
 /* loco:69314c248389940c6c08d902 */
 "instructionFullDiskHint" = "Πρέπει να ενεργοποιήσετε τις εξουσιοδοτήσεις πριν συνεχίσετε";
 
+/* loco:6a5f2134015fb9713f080a45 */
+"instructionOpenLoginItems" = "Επιλογή στοιχείων σύνδεσης και επεκτάσεων";
+
+/* loco:6a5f2172e2e3f0313908bcc5 */
+"instructionOpenLoginItemsLink" = "Στοιχεία σύνδεσης & Επεκτάσεις";
+
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Μεταβείτε στο Απόρρητο και ασφάλεια > Πλήρης πρόσβαση στον δίσκο";
 
@@ -833,7 +851,7 @@
 "instructionOpenPrivacySecurityLink" = "Απόρρητο και ασφάλεια";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Επιλέξτε «Στοιχεία σύνδεσης και επεκτάσεις» > «Επεκτάσεις ασφάλειας τερματικών»";
+"instructionOpenSecurityExtensions" = "Επιλέξτε «Στοιχεία σύνδεσης & Επεκτάσεις» > «Επεκτάσεις ασφάλειας τερματικών συσκευών»";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
 "instructionOpenSecurityExtensionsArgument" = "Επεκτάσεις ασφάλειας τερματικών συσκευών";
