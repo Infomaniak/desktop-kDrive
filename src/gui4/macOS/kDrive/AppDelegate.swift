@@ -72,6 +72,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls {
+            handleAuthenticationCallback(url)
+        }
+    }
+
+    private func handleAuthenticationCallback(_ url: URL) {
+        guard let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              urlComponents.scheme == "kdrive",
+              urlComponents.host == "auth-desktop",
+              let queryItems = urlComponents.queryItems,
+              let code = queryItems.first(where: { $0.name == "code" })?.value,
+              let state = queryItems.first(where: { $0.name == "state" })?.value else {
+            return
+        }
+
+        @InjectService var loginService: WebBrowserLoginServiceable
+        loginService.didReceiveAuthorizationCode(code: code, state: state)
+    }
+
     @objc func showAboutPanel() {
         let credits = NSAttributedString(
             string: KDriveLocalizable.aboutKDriveDescription,

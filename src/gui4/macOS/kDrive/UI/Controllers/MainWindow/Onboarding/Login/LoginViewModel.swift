@@ -58,8 +58,8 @@ final class LoginViewModel: ObservableObject {
         loginTimeoutTask?.cancel()
         loginTimeoutTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: Self.loginTimeoutSeconds * 1_000_000_000)
-            guard !Task.isCancelled, let self, self.loginState == .waitingForWebAuthentication else { return }
-            self.loginState = .idle
+            guard !Task.isCancelled, let self, loginState == .waitingForWebAuthentication else { return }
+            loginState = .idle
         }
     }
 
