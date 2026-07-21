@@ -36,6 +36,10 @@ struct AdvancedPreferencesDebugEnableView: View {
                 helperText: nil,
                 isOn: $enableDebugLogs
             )
+            .onChange(of: enableDebugLogs) { _ in
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogIsOn")
+            }
         } header: {
             AdvancedPreferencesDebugHeaderView()
         } footer: {
