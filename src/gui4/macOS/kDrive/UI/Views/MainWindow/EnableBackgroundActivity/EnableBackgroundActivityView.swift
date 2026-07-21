@@ -21,6 +21,21 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
+private struct CircleBackground: View {
+    let color: Color
+
+    var body: some View {
+        if #available(macOS 26.0, *) {
+            Circle()
+                .fill(color)
+                .glassEffect()
+        } else {
+            Circle()
+                .fill(color)
+        }
+    }
+}
+
 struct InstructionView: View {
     let index: Int
     let label: AttributedString
@@ -31,13 +46,15 @@ struct InstructionView: View {
                 .font(.Tokens.subheadline)
                 .padding(6)
                 .foregroundStyle(.white)
-                .background(ColorToken.Accent.secondary.asColor, in: .circle)
+                .background {
+                    CircleBackground(color: ColorToken.Accent.secondary.asColor)
+                }
 
             Text(label)
                 .font(.Tokens.body)
                 .foregroundStyle(ColorToken.Text.secondary.asColor)
         }
-        .padding(.vertical, AppPadding.padding8)
+        .padding(.vertical, AppPadding.padding4)
     }
 }
 
@@ -60,21 +77,18 @@ struct EnableBackgroundActivityView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(0..<Self.instructions.count, id: \.self) { index in
+                        ForEach(0 ..< Self.instructions.count, id: \.self) { index in
                             InstructionView(
                                 index: index + 1,
                                 label: AttributedString(Self.instructions[index].attributedString)
                             )
-
-                            if index < Self.instructions.count - 1 {
-                                Divider()
-                                    .tint(ColorToken.Surface.tertiary.asColor.opacity(0.2))
-                                    .frame(height: 2)
-                            }
                         }
                     }
+
+                    Button(KDriveLocalizable.buttonKDriveIsActivated, action: navigateIfBackgroundActivityIsEnabled)
+                        .buttonStyle(.borderedProminent)
                 }
-                .padding(AppPadding.page)
+                .padding(AppPadding.padding48)
                 .frame(maxHeight: .infinity, alignment: .center)
                 .frame(width: proxy.size.width * 0.66)
 
@@ -86,6 +100,11 @@ struct EnableBackgroundActivityView: View {
                 .background(ColorToken.Surface.secondary.asColor)
             }
         }
+        .ignoresSafeArea()
+        .frame(minWidth: 600, minHeight: 300)
+    }
+
+    private func navigateIfBackgroundActivityIsEnabled() {
     }
 }
 

@@ -318,41 +318,6 @@ final class PermissionsViewController: OnboardingStepViewController {
         }
     }
 
-    private func createAttributedString(for instruction: MacOSPermission.Instruction) -> NSMutableAttributedString {
-        let attributedString = NSMutableAttributedString(string: instruction.value)
-
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.setParagraphStyle(.default)
-        paragraphStyle.alignment = .left
-        paragraphStyle.lineBreakMode = .byWordWrapping
-
-        let basicAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.Tokens.body,
-            .foregroundColor: ColorToken.Text.secondary.asNSColor,
-            .paragraphStyle: paragraphStyle,
-            .cursor: NSCursor.arrow
-        ]
-        attributedString.addAttributes(basicAttributes, range: NSRange(location: 0, length: attributedString.length))
-
-        if let argument = instruction.argument {
-            let range = (attributedString.string as NSString).range(of: argument)
-            attributedString.addAttribute(.font, value: NSFont.Tokens.bodyEmphasized, range: range)
-        }
-
-        if let link = instruction.link, let linkURL = instruction.linkURL {
-            let range = (attributedString.string as NSString).range(of: link)
-            let attributes: [NSAttributedString.Key: Any] = [
-                .font: NSFont.Tokens.bodyEmphasized,
-                .foregroundColor: ColorToken.Action.primary.asNSColor,
-                .link: linkURL,
-                .cursor: NSCursor.pointingHand
-            ]
-            attributedString.addAttributes(attributes, range: range)
-        }
-
-        return attributedString
-    }
-
     private func setupButtons(for permission: MacOSPermission) {
         primaryButton.isHidden = false
         primaryButton.target = self
