@@ -61,13 +61,16 @@ bool UpdateTreeWorker::resetNodes() {
             tmpBlacklist);
 
     auto nodeIt = _updateTree->nodes().begin();
+    std::unordered_set<NodeId> toDeleteNode;
+
     while (nodeIt != _updateTree->nodes().end()) {
         const auto node = nodeIt->second;
+        const auto nodeId = nodeIt->first;
+        ++nodeIt;
 
         // Make sure no node flagged with status "ToDelete" or blacklisted node remains in the update tree
         if (node->status() == NodeStatus::ToDelete || (node->id().has_value() && tmpBlacklist.contains(node->id().value()))) {
-            nodeIt++;
-            if (!_updateTree->deleteNode(node)) return false;
+            (void) toDeleteNode.emplace(nodeId);
             continue;
         }
 
@@ -77,8 +80,14 @@ bool UpdateTreeWorker::resetNodes() {
         node->setPreviousId(std::nullopt);
         node->setStatus(NodeStatus::Unprocessed);
         node->clearMoveOriginInfos();
-        ++nodeIt;
     }
+
+    for (const auto &nodeId: toDeleteNode) {
+        const auto node = _updateTree->getNodeById(nodeId);
+        if (!node) continue; // The node might have been deleted because it was a child of another deleted node.
+        if (!_updateTree->deleteNode(node)) return false;
+    }
+
     return true;
 }
 
