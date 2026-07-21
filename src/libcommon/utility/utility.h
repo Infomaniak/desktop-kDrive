@@ -96,6 +96,10 @@ struct COMMON_EXPORT CommonUtility {
         */
         static std::string fileSystemType(const SyncPath &targetPath, std::string &fsType,
                                           const UseCache useCache = UseCache::Yes);
+        static std::string fileSystemType(const SyncPath &targetPath, const UseCache useCache = UseCache::Yes) {
+            std::string fsType;
+            return fileSystemType(targetPath, fsType, useCache);
+        }
 
         static bool isManagedFS(const std::string &fsType);
         static bool isNTFS(const SyncPath &targetPath);

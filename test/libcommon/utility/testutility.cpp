@@ -1020,14 +1020,14 @@ void TestUtility::testFileSystemType() {
     // External disk.
     /*
     CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
-                         CommonUtility::fileSystemType("/Volumes/EXFAT PART", fsType, CommonUtility::UseCache::No));
+                         CommonUtility::fileSystemType("/Volumes/EXFAT PART", CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT, CommonUtility::fileSystemType("/Volumes/EXFAT PART", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT, CommonUtility::fileSystemType("/Volumes/EXFAT PART"));
 
     CPPUNIT_ASSERT_EQUAL(fsType::FAT,
-                         CommonUtility::fileSystemType("/Volumes/FAT PART", fsType, CommonUtility::UseCache::No));
+                         CommonUtility::fileSystemType("/Volumes/FAT PART", CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/Volumes/FAT PART", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/Volumes/FAT PART"));
     */
     // AppleVirtIOFS (Parallels Desktop shared folder for instance).
     /*
@@ -1073,23 +1073,23 @@ void TestUtility::testFileSystemType() {
     /*
     CPPUNIT_ASSERT_EQUAL(
             fsType::EXFAT,
-            CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fsType, CommonUtility::UseCache::No));
+            CommonUtility::fileSystemType("/media/parallels/EXFAT PART", CommonUtility::UseCache::No));
 
     CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
-                         CommonUtility::fileSystemType("/media/parallels/EXFAT PART", fsType));
+                         CommonUtility::fileSystemType("/media/parallels/EXFAT PART"));
 
     CPPUNIT_ASSERT_EQUAL(fsType::FAT,
-                         CommonUtility::fileSystemType("/media/parallels/FAT PART", fsType, CommonUtility::UseCache::No));
+                         CommonUtility::fileSystemType("/media/parallels/FAT PART", CommonUtility::UseCache::No));
 
-    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/media/parallels/FAT PART", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/media/parallels/FAT PART"));
     */
     // Fuse (Parallels Desktop shared folder for instance).
     /*
     CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
-                         CommonUtility::fileSystemType("/media/psf/EXFAT PART", fsType, CommonUtility::UseCache::No));
+                         CommonUtility::fileSystemType("/media/psf/EXFAT PART", CommonUtility::UseCache::No));
 
     CPPUNIT_ASSERT_EQUAL(fsType::FAT,
-                         CommonUtility::fileSystemType("/media/psf/FAT PART", fsType, CommonUtility::UseCache::No));
+                         CommonUtility::fileSystemType("/media/psf/FAT PART", CommonUtility::UseCache::No));
     */
 #endif
 }

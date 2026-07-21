@@ -65,8 +65,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
     ExitCode exitCode = ExitCode::Unknown;
     sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
-        std::string fsType;
-        std::string fallbackFSType = CommonUtility::fileSystemType(_syncPal->localPath(), fsType);
+        std::string fallbackFSType = CommonUtility::fileSystemType(_syncPal->localPath());
         // If fallbackFSType is undefined (empty), the allowed characters will be the default ones for the OS
         perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
         exitCode = checkRemoteTree(fallbackFSType, node, parentPath);
