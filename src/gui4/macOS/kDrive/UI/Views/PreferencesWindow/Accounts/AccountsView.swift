@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -40,6 +41,8 @@ struct AccountsView: View {
                 Section {
                     Button(KDriveLocalizable.buttonConnectAccount) {
                         (NSApp.delegate as? AppDelegate)?.openOnboardingWindow()
+                        @InjectService var matomo: MatomoUtils
+                        matomo.track(eventWithCategory: .accountsSettingsPage, name: "openOnboarding")
                     }
                     .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity, alignment: .trailing)
