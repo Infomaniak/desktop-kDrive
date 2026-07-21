@@ -309,7 +309,7 @@ final class PermissionsViewController: OnboardingStepViewController {
         }
 
         for (index, instruction) in permission.instructions.enumerated() {
-            let instructionCell = PermissionInstructionCell(step: index + 1, title: createAttributedString(for: instruction))
+            let instructionCell = PermissionInstructionCell(step: index + 1, title: instruction.attributedString)
             if let hint = instruction.hint {
                 instructionCell.hint = hint
                 instructionCell.hintLabel.textColor = ColorToken.Status.Strong.warning.asNSColor

@@ -59,7 +59,7 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
 
     public func isBackgroundActivityEnabled() -> Bool {
         #if DEBUG
-        return false
+        return true
         #else
         guard #available(macOS 13.0, *) else {
             return true
