@@ -62,6 +62,7 @@ QColor MainSidebarController::currentDriveColor() const {
 }
 
 bool MainSidebarController::canOpenCurrentSyncFolder() const {
+    // Keep this QML-facing capability check free of filesystem I/O because bindings may evaluate it frequently.
     const auto context = _selectionStore.currentSyncContext();
     return context.has_value() && !context->syncInfo.localPath().empty();
 }
@@ -76,6 +77,7 @@ void MainSidebarController::selectSync(const qint64 syncDbId) {
 }
 
 bool MainSidebarController::openCurrentSyncFolder() const {
+    // Do not reuse canOpenCurrentSyncFolder(): the action must read the current context once and validate the filesystem.
     const auto context = _selectionStore.currentSyncContext();
     if (!context.has_value()) {
         qCWarning(lcMainSidebarController) << "Cannot open sync folder without a current synchronization";
