@@ -22,7 +22,6 @@
 
 #include <QAbstractListModel>
 
-#include <cstdint>
 #include <vector>
 
 namespace KDC {
@@ -38,7 +37,7 @@ class SyncListModel final : public QAbstractListModel {
         Q_PROPERTY(qint32 selectedRow READ selectedRow NOTIFY selectedRowChanged)
 
     public:
-        enum Role : uint16_t {
+        enum Role {
             SyncDbIdRole = Qt::UserRole + 1,
             DriveNameRole,
             DriveColorRole,
