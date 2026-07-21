@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -58,6 +59,8 @@ struct DistributionChannelView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonValidate) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .generalSettingsPage, name: "changeReleaseChannel")
                     updateDistributionChannel()
                     dismiss()
                 }
