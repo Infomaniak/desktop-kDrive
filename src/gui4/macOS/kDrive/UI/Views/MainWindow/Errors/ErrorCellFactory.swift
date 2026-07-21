@@ -177,7 +177,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveAccessDeniedErrorTitle,
                 description: KDriveLocalizable.driveAccessDeniedErrorDescription,
-                action: .init(title: KDriveLocalizable.buttonRetry) { await manager.tryToRestartSynchro(error) }
+                action: .init(title: KDriveLocalizable.buttonRetry) {
+                    matomo.track(eventWithCategory: .driveAccessDeniedPage, name: "startSync")
+                    await manager.tryToRestartSynchro(error)
+                }
             )
         case .backErrorDriveAsleep:
             return makeCell(
