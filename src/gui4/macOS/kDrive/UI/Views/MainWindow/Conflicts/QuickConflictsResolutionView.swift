@@ -74,7 +74,7 @@ enum UIConflictResolutionStrategy: String, Identifiable, CaseIterable {
         case .keepRemote:
             return "keepRemote"
         case .keepLocal:
-            return "keepOnline"
+            return "keepLocal"
         }
     }
 }
