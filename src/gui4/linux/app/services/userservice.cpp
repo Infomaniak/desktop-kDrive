@@ -119,7 +119,6 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
                 }
 
                 if (!result.error.isEmpty() || !result.errorDescription.isEmpty()) {
-                    _serviceEventBus.notifyGenericError(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
                     SentryService::reportError(
                             QStringLiteral("Login failed"),
                             QStringLiteral("error: %1 | description: %2").arg(result.error, result.errorDescription));
@@ -129,7 +128,6 @@ void UserService::requestLoginToken(const QString &code, const QString &codeVeri
 
                 if (!exitInfo) {
                     notifyRequestFailure(exitInfo, RequestNum::LOGIN_REQUESTTOKEN);
-                    SentryService::reportError("Login failed", toString(exitInfo));
                     emit loginTokenFailed(QString(), QString());
                     return;
                 }
