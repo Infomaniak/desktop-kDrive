@@ -167,10 +167,10 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
 # this option enables the default GUI for the current platform when building the src folder
-# (src/gui4 on Windows, legacy Qt GUI in src/gui on Linux/macOS)
+# (src/gui4 on Windows/macOS, Qt GUI in src/gui on Linux)
 option(BUILD_GUI "BUILD_GUI" ON)
 
-# this option adds src/gui to the subdirectories when building the src folder 
+# this option enables the legacy Qt GUI on Windows/macOS
 option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
 
 # build the tests
