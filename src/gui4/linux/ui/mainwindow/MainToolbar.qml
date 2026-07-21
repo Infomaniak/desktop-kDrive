@@ -19,6 +19,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import kDrive.UI
 
 Rectangle {
@@ -65,84 +66,75 @@ Rectangle {
         spacing: IKSpacing.s8
 
         HeaderIconButton {
-            label: "?"
-            onTriggered: root.appRouter.openSupport()
+            glyph: "?"
+            text: qsTrId("infomaniakSupport")
+            onClicked: root.appRouter.openSupport()
         }
 
         HeaderIconButton {
-            label: "||"
-            onTriggered: root.appRouter.requestPauseCurrentSync()
+            glyph: "||"
+            text: qsTrId("buttonPause")
+            onClicked: root.appRouter.requestPauseCurrentSync()
         }
 
-        Rectangle {
+        Button {
             id: searchButton
-
-            property bool hovered: false
 
             width: 132
             height: 36
-            radius: height / 2
-            color: hovered ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
-            border.width: 1
-            border.color: IKColors.surfaceTertiary
+            leftPadding: IKSpacing.s12
+            rightPadding: IKSpacing.s12
+            focusPolicy: Qt.StrongFocus
+            hoverEnabled: true
+            text: qsTrId("buttonSearch")
+            onClicked: root.appRouter.requestSearch()
 
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onEntered: searchButton.hovered = true
-                onExited: searchButton.hovered = false
-                onClicked: root.appRouter.requestSearch()
+            contentItem: Text {
+                text: searchButton.text
+                color: IKColors.textTertiary
+                font.pixelSize: IKFonts.bodySize
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
             }
 
-            Row {
-                anchors.left: parent.left
-                anchors.leftMargin: IKSpacing.s12
-                anchors.right: parent.right
-                anchors.rightMargin: IKSpacing.s12
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: IKSpacing.s8
-
-                Text {
-                    text: qsTrId("buttonSearch")
-                    color: IKColors.textTertiary
-                    font.pixelSize: IKFonts.bodySize
-                    elide: Text.ElideRight
-                }
+            background: Rectangle {
+                radius: height / 2
+                color: searchButton.hovered || searchButton.down ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
+                border.width: searchButton.visualFocus ? 2 : 1
+                border.color: searchButton.visualFocus ? IKColors.accentPrimary : IKColors.surfaceTertiary
             }
         }
     }
 
-    component HeaderIconButton: Rectangle {
+    component HeaderIconButton: ToolButton {
         id: buttonRoot
 
-        signal triggered()
-
-        property string label: ""
-        property bool hovered: false
+        required property string glyph
 
         width: 32
         height: 32
-        radius: width / 2
-        color: hovered ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
-        border.width: 1
-        border.color: IKColors.surfaceTertiary
+        focusPolicy: Qt.StrongFocus
+        hoverEnabled: true
+        display: AbstractButton.IconOnly
 
-        Text {
-            anchors.centerIn: parent
-            text: buttonRoot.label
+        contentItem: Text {
+            text: buttonRoot.glyph
             color: IKColors.textSecondary
             font.pixelSize: IKFonts.bodySize
             font.weight: IKFonts.emphasized
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onEntered: buttonRoot.hovered = true
-            onExited: buttonRoot.hovered = false
-            onClicked: buttonRoot.triggered()
+        background: Rectangle {
+            radius: width / 2
+            color: buttonRoot.hovered || buttonRoot.down ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
+            border.width: buttonRoot.visualFocus ? 2 : 1
+            border.color: buttonRoot.visualFocus ? IKColors.accentPrimary : IKColors.surfaceTertiary
         }
+
+        ToolTip.visible: buttonRoot.hovered || buttonRoot.activeFocus
+        ToolTip.text: buttonRoot.text
+        ToolTip.delay: 500
     }
 }

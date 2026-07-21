@@ -73,7 +73,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
                    &SentryService::updateAuthenticatedUser);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, [this] {
-        if (_systemTrayController.trayModeActive() || _appCache.driveContexts().empty()) {
+        if (_systemTrayController.trayModeActive() || _appCache.syncContexts().empty()) {
             return;
         }
 
@@ -127,6 +127,7 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
     (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
+    _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
             qCWarning(lcAppClientLinux) << "QML warning:" << warning.toString();
@@ -173,8 +174,6 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
 #endif
     }
 }
-template<typename>
-constexpr auto AppClientLinux::qt_create_metaobjectdata() {}
 
 void AppClientLinux::setupTranslations() {
     // Catalogs are id-based: qsTrId(id) returns the raw id when no translation is loaded. Install
@@ -197,7 +196,7 @@ void AppClientLinux::setupTranslations() {
 }
 
 void AppClientLinux::openMainWindow() {
-    if (_appCache.driveContexts().empty()) {
+    if (_appCache.syncContexts().empty()) {
         _onboardingSessionManager.openOnboardingWindow();
         return;
     }
