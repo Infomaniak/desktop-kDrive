@@ -120,12 +120,12 @@ SyncPath SyncFolderAllowedChecker::expandRulePath(const SyncPath &rulePath) {
 
 
     // $HOME -> user profile / home directory.
-    pathStr.replace("$HOME", homeDir);
+    (void) pathStr.replace("$HOME", homeDir);
 
     // $SYSROOT -> root of the volume the home dir lives on.
     // Windows -> "C:/", macOS/Linux -> "/". Handles UNC paths too, no #ifdef.
     const QString sysRoot = Path2QStr(QStr2Path(homeDir).root_path());
-    pathStr.replace("$SYSROOT", sysRoot);
+    (void) pathStr.replace("$SYSROOT", sysRoot);
 
     return QStr2Path(pathStr);
 }
