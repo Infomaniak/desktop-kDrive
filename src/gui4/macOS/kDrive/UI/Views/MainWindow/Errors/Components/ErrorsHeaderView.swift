@@ -20,6 +20,7 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
+import InfomaniakDI
 
 struct ErrorsHeaderView: View {
     @State private var isLoading = false
@@ -56,6 +57,8 @@ struct ErrorsHeaderView: View {
 
     private func refreshList() async {
         guard let synchroDbId else { return }
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errorPage, name: "refreshErrors")
         do {
             isLoading = true
             _ = try await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))
