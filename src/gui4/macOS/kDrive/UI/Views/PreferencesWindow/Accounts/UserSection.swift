@@ -16,12 +16,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct UserSection: View {
+    @LazyInjectService private var matomo: MatomoUtils
+
     @State private var isShowingDisconnectUserAlert = false
 
     @State private var isShowingErrorAlert = false
@@ -66,13 +69,17 @@ struct UserSection: View {
             }
 
             Button(KDriveLocalizable.buttonDisconnectAccount, role: .destructive) {
+                matomo.track(eventWithCategory: .accountsSettingsPage, name: "disconnect")
                 isShowingDisconnectUserAlert = true
             }
             .buttonStyle(.borderless)
             .tint(.red)
             .alert(KDriveLocalizable.dialogRemoveAccountTitle, isPresented: $isShowingDisconnectUserAlert) {
-                Button(KDriveLocalizable.buttonKeepAccount, role: .cancel) {}
+                Button(KDriveLocalizable.buttonKeepAccount, role: .cancel) {
+                    matomo.track(eventWithCategory: .accountsSettingsPage, name: "cancelDisconnect")
+                }
                 Button(KDriveLocalizable.buttonLogOut, role: .destructive) {
+                    matomo.track(eventWithCategory: .accountsSettingsPage, name: "confirmDisconnect")
                     logOutAccount()
                 }
             } message: {
