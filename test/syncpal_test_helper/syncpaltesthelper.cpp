@@ -71,6 +71,14 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     const auto timeOutDuration = std::chrono::minutes(2);
     const TimerUtility timeoutTimer;
 
+    // Give the OS a short grace period to deliver its file system change notification (e.g. FSEvents on macOS
+    // can have noticeable latency compared to inotify/ReadDirectoryChangesW) before we start observing
+    // idleness below. Without this, a just-applied local operation might not have flipped
+    // _localFSObserverWorker->updating() to true yet, so the very first idle check could wrongly consider the
+    // sync as already settled and return before the change is even detected.
+    static constexpr auto fsEventGracePeriod = std::chrono::milliseconds(500);
+    Utility::msleep(static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(fsEventGracePeriod).count()));
+
     // Wait for end of sync (A sync is considered ended when it stays in Idle for more than minWaitTime)
     TimerUtility idleTimer;
     bool wasIdle = false;

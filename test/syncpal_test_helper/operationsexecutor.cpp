@@ -123,12 +123,9 @@ void OperationsExecutor::execute(const ReplicaSide side, const Operations &opera
         applyOperation(side, desc);
     }
 
-    // Remote operations are applied directly via API jobs, bypassing the SyncPal's own remote polling. Force
-    // an immediate refresh so the change is detected right away instead of waiting for the next poll interval,
-    // which could otherwise race with (and be missed by) the caller's subsequent executeSyncUntilEnd().
-    if (side == ReplicaSide::Remote && _syncPal) {
-        _syncPal->_remoteFSObserverWorker->forceUpdate();
-    }
+    // Both local and remote operations are applied via real side effects (direct filesystem writes / real API
+    // calls), just like genuine user actions, so the SyncPal's own observers (local file system watcher /
+    // remote long-poll notifications) will detect them on their own without any artificial forced refresh.
 }
 
 const SyncPath &OperationsExecutor::remoteOperationsTemporaryDirPath() {
