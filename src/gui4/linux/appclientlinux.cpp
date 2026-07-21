@@ -62,6 +62,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
     (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
+        // Normal UTILITY_QUIT paths stop the application before the server closes the socket. This cleanup therefore runs only
+        // when an established IPC connection is lost unexpectedly.
         _systemTrayController.setProductStateInitialized(false);
         _appRouter.hideMainWindow();
         _appCache.clearAll();
