@@ -5,7 +5,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy, rm, rmdir, replace_in_file
+from conan.tools.files import copy, rm, rmdir, replace_in_file, load, save
 from conan.tools.microsoft import is_msvc, is_msvc_static_runtime, msvc_runtime_flag
 from conan.tools.scm import Git
 
@@ -222,6 +222,10 @@ class PocoConan(ConanFile):
         # is already visible there without promotion, so only find_package()/promote when the
         # target doesn't already exist.
         zlib_cmake = os.path.join(self.source_folder, "dependencies", "zlib", "CMakeLists.txt")
+        # Normalize line endings to ensure replace_in_file works across platforms
+        zlib_content = load(self, zlib_cmake)
+        zlib_content = zlib_content.replace("\r\n", "\n")
+        save(self, zlib_cmake, zlib_content)
         replace_in_file(self, zlib_cmake,
             """if(POCO_UNBUNDLED)
 \tfind_package(ZLIB REQUIRED)
