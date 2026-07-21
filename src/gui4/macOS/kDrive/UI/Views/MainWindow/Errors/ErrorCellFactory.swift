@@ -187,7 +187,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveAsleepErrorTitle,
                 description: KDriveLocalizable.backErrorDriveAsleepDescription,
-                action: .init(title: KDriveLocalizable.buttonWakeUp) { await manager.openWebPageDrive(error) }
+                action: .init(title: KDriveLocalizable.buttonWakeUp) {
+                    matomo.track(eventWithCategory: .asleepErrorPage, name: "openRenewWeb")
+                    await manager.openWebPageDrive(error)
+                }
             )
         case .backErrorDriveMaintenance:
             return makeCell(

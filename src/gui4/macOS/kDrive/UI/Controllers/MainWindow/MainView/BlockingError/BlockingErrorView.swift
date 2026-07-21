@@ -96,7 +96,11 @@ struct BlockingErrorView: View {
             } else {
                 restartSynchro()
             }
-        case .wakingUp, .maintenance, .accessDenied:
+        case .wakingUp:
+            @InjectService var matomo: MatomoUtils
+            matomo.track(eventWithCategory: .asleepErrorPage, name: "startSync")
+            restartSynchro()
+        case .maintenance, .accessDenied:
             restartSynchro()
         case .loggingError:
             @InjectService var router: MainWindowRouter
