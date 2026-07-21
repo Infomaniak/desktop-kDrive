@@ -27,6 +27,8 @@
 - Do not duplicate method documentation between headers and implementation files. Document public API contracts in
   headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
+- Use the domain aliases from `libcommon/utility/types.h` whenever they match the represented concept. Keep `int` and Qt
+  numeric types when required by an overridden Qt API or a QML boundary, and make that constraint explicit when unclear.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
 - For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
 - Keep `ParametersStore` as a server-confirmed parameters snapshot only. Do not add global draft/pending state there;

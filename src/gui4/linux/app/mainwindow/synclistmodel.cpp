@@ -18,17 +18,13 @@
 
 #include "app/mainwindow/synclistmodel.h"
 
+#include "app/appconstants.h"
+
 #include <QColor>
 
 #include <cstddef>
 
 namespace KDC {
-
-namespace {
-
-const QColor defaultDriveColor{QStringLiteral("#0098FF")};
-
-} // namespace
 
 SyncListModel::SyncListModel(const AppCache &cache, MainSelectionStore &selectionStore, QObject *const parent) :
     QAbstractListModel(parent),
@@ -62,7 +58,7 @@ QVariant SyncListModel::data(const QModelIndex &index, const int role) const {
             return QString::fromStdString(context.drive.name());
         case DriveColorRole: {
             const QColor color{QString::fromStdString(context.drive.color())};
-            return color.isValid() ? color : defaultDriveColor;
+            return color.isValid() ? color : AppConstants::Drive::defaultColor();
         }
         case ErrorCountRole:
             return static_cast<qint32>(context.errors.size());
