@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "OperationsExecutor.h"
+#include "operationsexecutor.h"
 
 #include "syncpal/syncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"

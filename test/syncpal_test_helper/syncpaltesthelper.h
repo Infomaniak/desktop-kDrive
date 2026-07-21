@@ -19,7 +19,7 @@
 #pragma once
 
 #include "initialsituationsetter.h"
-#include "OperationsExecutor.h"
+#include "operationsexecutor.h"
 
 #include <memory>
 
@@ -32,7 +32,7 @@ class SyncPal;
  * operations on top of it (via OperationsExecutor), and (eventually) driving a sync run.
  *
  * See Situation (initialsituationsetter.h) for the supported situation JSON formats, and Operations
- * (OperationsExecutor.h) for the supported operations JSON format.
+ * (operationsexecutor.h) for the supported operations JSON format.
  */
 class SyncpalTestHelper {
     public:
