@@ -32,7 +32,7 @@ Rectangle {
     property int badgeCount: 0
     property bool notificationDot: false
     property url trailingIconSource
-    property bool hovered: false
+    readonly property bool hovered: pointerArea.enabled && pointerArea.containsMouse
     readonly property bool pressed: pointerArea.pressed
     signal triggered
 
@@ -108,8 +108,6 @@ Rectangle {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton
         cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onEntered: root.hovered = true
-        onExited: root.hovered = false
         onClicked: root.triggered()
     }
 }

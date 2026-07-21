@@ -29,7 +29,7 @@ Rectangle {
     property string driveName: ""
     property color driveColor: IKColors.driveDefaultColor
     property bool selected: false
-    property bool hovered: false
+    readonly property bool hovered: pointerArea.enabled && pointerArea.containsMouse
     property bool interactive: true
     property bool showChevron: false
     signal triggered
@@ -79,13 +79,13 @@ Rectangle {
     }
 
     MouseArea {
+        id: pointerArea
+
         anchors.fill: parent
         enabled: root.interactive
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton
         cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onEntered: root.hovered = true
-        onExited: root.hovered = false
         onClicked: root.triggered()
     }
 }
