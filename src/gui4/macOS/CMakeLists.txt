@@ -55,7 +55,6 @@ add_dependencies(build_kDrive_client
     ${libsyncengine_NAME}
     ${libparms_NAME}
     ${APPLICATION_EXECUTABLE}
-    ${APPLICATION_CLIENT_EXECUTABLE}
     updater
     ${APPLICATION_EXECUTABLE}_vfs_mac
 )

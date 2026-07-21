@@ -157,6 +157,7 @@ runs:
       - name : Create sentry client artifacts
         run: |
           sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
+          mv ${{ github.workspace }}/build-macos/client/install/kDrive.gui.src.zip ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip
           mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
           cp -r ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
           cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
@@ -303,4 +304,3 @@ runs:
       - name: Clean-up generated code
         run : rm -rf build-macos/
         shell: bash
-
