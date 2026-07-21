@@ -25,7 +25,7 @@
 namespace KDC {
 
 OnboardingEntryDecision determineOnboardingEntry(const AppCache &appCache) {
-    if (!appCache.driveContexts().empty()) {
+    if (!appCache.syncContexts().empty()) {
         return {};
     }
 
