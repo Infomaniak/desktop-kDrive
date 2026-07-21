@@ -18,6 +18,7 @@
 
 #include "app/mainwindow/mainsidebarcontroller.h"
 
+#include "app/appconstants.h"
 #include "libcommon/utility/types.h"
 
 #include <QDesktopServices>
@@ -27,12 +28,6 @@
 Q_LOGGING_CATEGORY(lcMainSidebarController, "gui.v4.mainsidebarcontroller", QtInfoMsg)
 
 namespace KDC {
-
-namespace {
-
-const QColor defaultDriveColor{QStringLiteral("#0098FF")};
-
-} // namespace
 
 MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectionStore &selectionStore, QObject *const parent) :
     QObject(parent),
@@ -45,7 +40,7 @@ MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectio
 }
 
 qint32 MainSidebarController::syncCount() const {
-    return static_cast<qint32>(_syncListModel.rowCount());
+    return _syncListModel.rowCount();
 }
 
 qint32 MainSidebarController::selectedRow() const {
@@ -60,10 +55,10 @@ QString MainSidebarController::currentDriveName() const {
 QColor MainSidebarController::currentDriveColor() const {
     const auto context = _selectionStore.currentSyncContext();
     if (!context.has_value()) {
-        return defaultDriveColor;
+        return AppConstants::Drive::defaultColor();
     }
     const QColor color{QString::fromStdString(context->drive.color())};
-    return color.isValid() ? color : defaultDriveColor;
+    return color.isValid() ? color : AppConstants::Drive::defaultColor();
 }
 
 bool MainSidebarController::canOpenCurrentSyncFolder() const {
