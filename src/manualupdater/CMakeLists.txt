@@ -10,6 +10,7 @@ set(SOURCES
         updaterdata.cpp
         httpdownloader.cpp
         parmsdblite.cpp
+        processchecker.cpp
         updater/abstractosupdater.cpp
 )
 
@@ -26,6 +27,7 @@ set(HEADERS
         updaterdata.h
         httpdownloader.h
         parmsdblite.h
+        processchecker.h
         updater/abstractosupdater.h
 )
 

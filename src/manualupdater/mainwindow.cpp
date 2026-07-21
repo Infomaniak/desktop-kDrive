@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "updaterdata.h"
+#include "processchecker.h"
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
@@ -177,6 +178,19 @@ void MainWindow::onInstallClicked() {
         (void) QMessageBox::warning(this, tr("Validation Error"), QString::fromStdString(errorMsg));
         return;
     }
+
+    // --- pre-install: ensure kDrive is not running ---
+    if (KDUpdater::ProcessChecker::isKDriveRunning()) {
+        _statusLog->append(tr("kDrive is currently running. Attempting to close it..."));
+        QString errorMsg;
+        if (!KDUpdater::ProcessChecker::terminateKDrive(errorMsg)) {
+            (void) QMessageBox::warning(this, tr("kDrive is running"), errorMsg);
+            _statusLog->append(tr("Failed to close kDrive: %1").arg(errorMsg));
+            return;
+        }
+        _statusLog->append(tr("kDrive has been closed."));
+    }
+    // --- proceed with install ---
 
     _statusLog->append(tr("Starting download of kDrive %1...").arg(QString::fromStdString(desiredVersion)));
     _progressBar->setValue(10);
