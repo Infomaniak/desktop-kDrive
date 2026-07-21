@@ -22,7 +22,7 @@ import QtQuick
 import QtQuick.Effects
 import kDrive.UI
 
-// Provides an interactive sidebar row whose selection, disabled, notification, and trailing-accessory states combine.
+// Reusable sidebar row supporting selection, disabled styling, notifications, and an optional trailing icon.
 Rectangle {
     id: root
 
