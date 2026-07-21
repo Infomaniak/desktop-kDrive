@@ -46,7 +46,8 @@ QStringList pidsForProcess(const QString &name) {
     proc.start(QStringLiteral("pgrep"), QStringList{QStringLiteral("-x"), name});
 #endif
     if (!proc.waitForStarted(5000)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"ProcessChecker: failed to start pgrep/tasklist for " << name.toStdWString());
+        LOGW_WARN(KDC::Log::instance()->getLogger(),
+                  L"ProcessChecker: failed to start pgrep/tasklist for " << name.toStdWString());
         return {};
     }
     if (!proc.waitForFinished(5000)) {
@@ -105,11 +106,10 @@ bool gracefulQuit(const QStringList &names) {
 
 #if defined(KD_MACOS)
         // Try osascript "tell application ... to quit" first for the GUI
-        if (name == QLatin1String("kDrive_client")) {
+        if (name == QLatin1String("kDrive")) {
             QProcess appleScript;
             appleScript.start(QStringLiteral("osascript"),
-                              QStringList{QStringLiteral("-e"),
-                                          QStringLiteral("tell application \"%1\" to quit").arg(name)});
+                              QStringList{QStringLiteral("-e"), QStringLiteral("tell application \"%1\" to quit").arg(name)});
             if (appleScript.waitForStarted(3000) && appleScript.waitForFinished(3000)) {
                 anySuccess = true;
                 continue;
@@ -202,8 +202,9 @@ bool ProcessChecker::terminateKDrive(QString &outMessage) {
     }
 
     LOGW_ERROR(KDC::Log::instance()->getLogger(), L"ProcessChecker: could not terminate kDrive processes.");
-    outMessage = QObject::tr("Could not close the running kDrive application. "
-                             "Please close it manually and try again.");
+    outMessage = QObject::tr(
+            "Could not close the running kDrive application. "
+            "Please close it manually and try again.");
     return false;
 }
 
