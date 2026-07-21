@@ -68,8 +68,6 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <EntryPointProjectUniqueName>..\FileExplorerExtension\FileExplorerExtension.vcxproj</EntryPointProjectUniqueName>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-    <PackageCertificateThumbprint>95C8D8A52FA3834BAC5625A36F73F3FD82E75135</PackageCertificateThumbprint>
-    <UserSecretsId>96f5b548-4670-4bcb-a526-ac4ede2a537e</UserSecretsId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DefaultLanguage>en-US</DefaultLanguage>
