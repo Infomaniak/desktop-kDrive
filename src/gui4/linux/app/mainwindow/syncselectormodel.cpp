@@ -137,15 +137,9 @@ void SyncSelectorModel::appendDriveEntries(std::vector<Entry> &entries, const Dr
         const auto syncContext = _cache.syncContext(syncInfo.dbId());
         const auto errorCount = syncContext.has_value() ? static_cast<qint32>(syncContext->errors.size()) : 0;
         const bool usePreciseClassicLabel = isClassic && classicSyncCount > 1;
-        entries.push_back({
-                isClassic ? EntryType::ClassicSync : EntryType::AdvancedSync,
-                syncInfo.dbId(),
-                usePreciseClassicLabel || !isClassic ? localFolderName(syncInfo) : driveName,
-                usePreciseClassicLabel || !isClassic ? driveName : QString{},
-                color,
-                errorCount,
-                warning,
-        });
+        (void) entries.emplace_back(isClassic ? EntryType::ClassicSync : EntryType::AdvancedSync, syncInfo.dbId(),
+                                    usePreciseClassicLabel || !isClassic ? localFolderName(syncInfo) : driveName,
+                                    usePreciseClassicLabel || !isClassic ? driveName : QString{}, color, errorCount, warning);
     };
 
     for (const auto &syncInfo: driveContext.syncInfos) {
