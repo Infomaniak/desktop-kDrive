@@ -355,7 +355,10 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.errLocalFileAccessTitle(error.nodeLabel),
                 description: KDriveLocalizable.errLocalFileAccessDescription(error.nodeLabel),
-                action: .init(title: KDriveLocalizable.buttonManage) { manager.showLocalAccessSheet(error) }
+                action: .init(title: KDriveLocalizable.buttonManage) {
+                    matomo.track(eventWithCategory: .errors, name: "manageFileAccessError")
+                    manager.showLocalAccessSheet(error)
+                }
             )
         case .dataSyncDirChanged:
             return makeCell(
