@@ -11,15 +11,6 @@
       }
     },
     {
-      "identity" : "ios-login",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Infomaniak/ios-login.git",
-      "state" : {
-        "branch" : "chore/swift-5.10",
-        "revision" : "e8001a1bcb7d4267eb5db106ee97ed10c5047317"
-      }
-    },
-    {
       "identity" : "lottie-spm",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/airbnb/lottie-spm.git",
