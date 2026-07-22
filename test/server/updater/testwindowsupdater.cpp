@@ -157,6 +157,8 @@ void TestWindowsUpdater::testIsSignatureValid() {
 }
 
 void TestWindowsUpdater::testIsSignatureValidExtended() {
+    if (!testhelpers::isExtendedTest()) return;
+
     static const std::string appUid("1234567890");
     static const std::vector<DistributionChannel> channels = {DistributionChannel::Internal, DistributionChannel::Beta,
                                                               DistributionChannel::Prod};
@@ -193,8 +195,9 @@ void TestWindowsUpdater::testIsSignatureValidExtended() {
         CPPUNIT_ASSERT(!downloadJob.hasHttpError());
         CPPUNIT_ASSERT(std::filesystem::exists(installerPath));
 
-        CPPUNIT_ASSERT_MESSAGE("Digital signature is invalid for installer: " + toString(channel) + " - " + installerPath.string(),
-                               DigitalSignatureChecker_win(SyncPath(installerPath)).isSignatureValid());
+        CPPUNIT_ASSERT_MESSAGE(
+                "Digital signature is invalid for installer: " + toString(channel) + " - " + installerPath.string(),
+                DigitalSignatureChecker_win(SyncPath(installerPath)).isSignatureValid());
     }
 }
 
