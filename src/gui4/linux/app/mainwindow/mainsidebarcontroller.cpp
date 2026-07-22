@@ -37,6 +37,7 @@ MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectio
                    &MainSidebarController::currentSyncContextChanged);
     (void) connect(&_syncListModel, &SyncListModel::selectedRowChanged, this, &MainSidebarController::selectedRowChanged);
     (void) connect(&_syncListModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::syncCountChanged);
+    (void) connect(&_syncListModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::currentSyncContextChanged);
 }
 
 qint32 MainSidebarController::syncCount() const {
@@ -47,9 +48,12 @@ qint32 MainSidebarController::selectedRow() const {
     return _syncListModel.selectedRow();
 }
 
-QString MainSidebarController::currentDriveName() const {
-    const auto context = _selectionStore.currentSyncContext();
-    return context.has_value() ? QString::fromStdString(context->drive.name()) : QString{};
+QString MainSidebarController::currentTitle() const {
+    return selectedData(SyncListModel::TitleRole).toString();
+}
+
+QString MainSidebarController::currentSubtitle() const {
+    return selectedData(SyncListModel::SubtitleRole).toString();
 }
 
 QColor MainSidebarController::currentDriveColor() const {
@@ -99,6 +103,11 @@ bool MainSidebarController::openCurrentSyncFolder() const {
         return false;
     }
     return true;
+}
+
+QVariant MainSidebarController::selectedData(const SyncListModel::Role role) const {
+    const qint32 row = _syncListModel.selectedRow();
+    return row < 0 ? QVariant{} : _syncListModel.data(_syncListModel.index(row, 0), role);
 }
 
 } // namespace KDC
