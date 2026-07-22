@@ -19,6 +19,7 @@
 #include "digitalsignaturechecker_win.h"
 
 #include <windows.h>
+#include <Softpub.h>
 #include <wincrypt.h>
 #include <wintrust.h>
 #include <stdio.h>
@@ -28,6 +29,7 @@
 #include <string>
 
 #pragma comment(lib, "crypt32.lib")
+#pragma comment(lib, "wintrust")
 
 #define ENCODING (X509_ASN_ENCODING | PKCS_7_ASN_ENCODING)
 
@@ -36,11 +38,33 @@ namespace KDC {
 DigitalSignatureChecker_win::DigitalSignatureChecker_win(const SyncPath &packageAbsolutePath) :
     _packageAbsolutePath(packageAbsolutePath) {
     std::source_location srcLoc;
-    _signatureIsValid = extractSignatureInfo(_signatureInfo, srcLoc);
-    if (!_signatureIsValid) {
+    _signatureInfoExtracted = extractSignatureInfo(_signatureInfo, srcLoc);
+    if (!_signatureInfoExtracted) {
         LOG_WARN(Log::instance()->getLogger(), "DigitalSignatureChecker_win::extractSignatureInfo failed on line: "
                                                        << toString(srcLoc) << " with error: " << GetLastError());
     }
+}
+
+bool DigitalSignatureChecker_win::isSignatureValid() const {
+    if (!_signatureInfoExtracted) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "DigitalSignatureChecker_win::isSignatureValid called but signature info was not extracted.");
+        return false;
+    }
+
+    if (!CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak"))) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                 L"DigitalSignatureChecker_win::isSignatureValid called but signature subject does not contain 'Infomaniak'. "
+                 "Subject: "
+                         << SyncName2WStr(_signatureInfo._subject));
+    }
+
+    if (!verifySignatureTrustChain()) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "DigitalSignatureChecker_win::verifySignatureTrustChain failed with error: " << GetLastError());
+        return false;
+    }
+
 }
 
 namespace {
@@ -51,7 +75,8 @@ using SPROG_PUBLISHERINFO = struct {
 };
 using PSPROG_PUBLISHERINFO = SPROG_PUBLISHERINFO *;
 
-BOOL extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo, std::source_location &srcLoc) {
+bool extractCertificateInfo(const PCCERT_CONTEXT pCertContext, DigitalSignatureInfo &signatureInfo,
+                            std::source_location &srcLoc) {
     // Get Serial Number.
     std::wstringstream ss;
     for (DWORD i = 0; i < pCertContext->pCertInfo->SerialNumber.cbData; i++) {
@@ -298,4 +323,53 @@ bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &sig
     return fResult;
 }
 
+bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
+    LONG lStatus;
+    DWORD dwLastError;
+
+    WCHAR szFileName[MAX_PATH];
+    (void) lstrcpynW(szFileName, _packageAbsolutePath.c_str(), MAX_PATH);
+
+    WINTRUST_FILE_INFO FileData;
+    memset(&FileData, 0, sizeof(FileData));
+    FileData.cbStruct = sizeof(WINTRUST_FILE_INFO);
+    FileData.pcwszFilePath = szFileName;
+    FileData.hFile = NULL;
+    FileData.pgKnownSubject = NULL;
+
+    GUID WVTPolicyGUID = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+    WINTRUST_DATA WinTrustData;
+
+    memset(&WinTrustData, 0, sizeof(WinTrustData));
+    WinTrustData.cbStruct = sizeof(WinTrustData);
+    WinTrustData.pPolicyCallbackData = NULL;
+    WinTrustData.pSIPClientData = NULL;
+    WinTrustData.dwUIChoice = WTD_UI_NONE;
+    WinTrustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+    WinTrustData.dwUnionChoice = WTD_CHOICE_FILE;
+    WinTrustData.dwStateAction = WTD_STATEACTION_VERIFY;
+
+    // Verification sets this value.
+    WinTrustData.hWVTStateData = NULL;
+
+    WinTrustData.pwszURLReference = NULL;
+    WinTrustData.dwUIContext = 0;
+
+    // Set pFile.
+    WinTrustData.pFile = &FileData;
+
+    lStatus = WinVerifyTrust(NULL, &WVTPolicyGUID, &WinTrustData);
+    bool isValid = lStatus == ERROR_SUCCESS;
+
+    if (!isValid) {
+        LOGW_INFO(Log::instance()->getLogger(), L"DigitalSignatureChecker_win::verifySignatureTrustChain - The file "
+                                                        << szFileName << L" is not signed - lStatus = " << lStatus);
+    }
+
+    // Any hWVTStateData must be released by a call with close.
+    WinTrustData.dwStateAction = WTD_STATEACTION_CLOSE;
+    lStatus = WinVerifyTrust(NULL, &WVTPolicyGUID, &WinTrustData);
+
+    return isValid;
+}
 } // namespace KDC
