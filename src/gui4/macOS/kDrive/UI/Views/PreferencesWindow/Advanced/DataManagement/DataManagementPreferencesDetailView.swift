@@ -54,7 +54,8 @@ struct DataManagementPreferencesDetailView: View {
         }
         .onChange(of: allowTracking) { newValue in
             @InjectService var matomo: MatomoUtils
-            matomo.track(eventWithCategory: .advancedSettingsPage, name: item.matomoName)
+
+            matomo.track(eventWithCategory: .advancedSettingsPage, name: item.matomoName, value: allowTracking)
             updateValue(\.$allowTracking, item.keyPath, newValue: newValue)
         }
     }
