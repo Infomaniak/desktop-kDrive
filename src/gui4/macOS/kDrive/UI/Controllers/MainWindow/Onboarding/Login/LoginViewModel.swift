@@ -54,6 +54,11 @@ final class LoginViewModel: ObservableObject {
         scheduleLoginTimeout()
     }
 
+    func cancelWebAuthenticationLogin() {
+        loginTimeoutTask?.cancel()
+        loginState = .idle
+    }
+
     private func scheduleLoginTimeout() {
         loginTimeoutTask?.cancel()
         loginTimeoutTask = Task { [weak self] in
