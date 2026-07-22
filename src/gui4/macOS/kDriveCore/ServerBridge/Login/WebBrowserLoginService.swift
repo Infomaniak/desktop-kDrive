@@ -34,6 +34,7 @@ public enum WebBrowserLoginError: Error {
 @MainActor
 public protocol WebBrowserLoginServiceable: AnyObject {
     func loginInDefaultBrowser(delegate: WebBrowserLoginDelegate)
+    func cancelLogin()
     func didReceiveAuthorizationCode(code: String, state: String)
 }
 
@@ -73,21 +74,26 @@ public final class WebBrowserLoginService: WebBrowserLoginServiceable {
     }
 
     public func didReceiveAuthorizationCode(code: String, state: String) {
-        guard let codeVerifier, let expectedState = self.state else { return }
+        guard let delegate, let codeVerifier, let expectedState = self.state else { return }
 
         reset()
 
         guard state == expectedState else {
-            delegate?.didFailLoginWith(error: WebBrowserLoginError.stateMismatch)
+            delegate.didFailLoginWith(error: WebBrowserLoginError.stateMismatch)
             return
         }
 
-        delegate?.didCompleteLoginWith(code: code, verifier: codeVerifier)
+        delegate.didCompleteLoginWith(code: code, verifier: codeVerifier)
+    }
+
+    public func cancelLogin() {
+        reset()
     }
 
     private func reset() {
         codeVerifier = nil
         state = nil
+        delegate = nil
     }
 
     // MARK: - URL building
