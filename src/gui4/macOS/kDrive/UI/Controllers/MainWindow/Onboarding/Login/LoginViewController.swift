@@ -30,6 +30,14 @@ final class LoginViewController: OnboardingStepViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
+    private let cancelButton: NSButton = {
+        let button = NSButton(title: KDriveLocalizable.buttonCancel, target: nil, action: nil)
+        button.bezelStyle = .push
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
+        return button
+    }()
+
     init(flowCoordinator: OnboardingFlowCoordinator) {
         viewModel = LoginViewModel(flowCoordinator: flowCoordinator)
         super.init(nibName: nil, bundle: nil)
@@ -70,6 +78,15 @@ final class LoginViewController: OnboardingStepViewController {
         secondaryButton.title = KDriveLocalizable.buttonCreateAccount
         secondaryButton.target = self
         secondaryButton.action = #selector(openCreateAccount)
+
+        cancelButton.target = self
+        cancelButton.action = #selector(cancelLogin)
+        view.addSubview(cancelButton)
+
+        NSLayoutConstraint.activate([
+            cancelButton.topAnchor.constraint(equalTo: buttonsStack.bottomAnchor, constant: AppPadding.padding16),
+            cancelButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor)
+        ])
     }
 
     @objc private func openLoginWebView() {
@@ -82,14 +99,21 @@ final class LoginViewController: OnboardingStepViewController {
         viewModel.openAccountRegistrationProcess()
     }
 
+    @objc private func cancelLogin() {
+        viewModel.cancelWebAuthenticationLogin()
+    }
+
     private func handleStateUpdate(_ newState: LoginViewModel.LoginState) {
         switch newState {
         case .idle:
             hideLoadingButtonsLabel()
+            cancelButton.isHidden = true
         case .waitingForWebAuthentication:
             showLoadingButtonsLabel(withText: KDriveLocalizable.onboardingLoginHintWebAuth)
+            cancelButton.isHidden = false
         case .loadingUser:
             showLoadingButtonsLabel(withText: KDriveLocalizable.onboardingLoginHintLoading)
+            cancelButton.isHidden = true
         }
     }
 
