@@ -399,8 +399,6 @@ void AbstractNetworkJob::clearSession() {
 }
 
 void AbstractNetworkJob::abortSession() {
-    const std::scoped_lock lock(_mutexSession);
-
     if (_session) {
         try {
             if (_session->connected()) {
