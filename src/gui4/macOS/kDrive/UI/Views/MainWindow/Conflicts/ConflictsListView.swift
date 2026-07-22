@@ -16,11 +16,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
-import InfomaniakDI
 
 struct ConflictsToResolve: Sendable, Identifiable {
     var id: String {
@@ -32,7 +32,7 @@ struct ConflictsToResolve: Sendable, Identifiable {
 
 struct ConflictsListView: View {
     @LazyInjectService private var matomo: MatomoUtils
-    
+
     @State private var search = ""
     @State private var isShowingVersionSelectorSheet: ConflictsToResolve?
 

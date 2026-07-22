@@ -86,13 +86,15 @@ public struct SynchroModePicker: View {
                 matomo.track(eventWithCategory: category, name: name)
                 selectedMode = synchroMode
             }
-            Button(pendingMode == .storeOnline
-                ? KDriveLocalizable.buttonChangeToOnline
-                : KDriveLocalizable.buttonChangeToOffline) {
-                    let (category, name) = matomoByParent(isCancelChoice: false)
-                    matomo.track(eventWithCategory: category, name: name, value: pendingMode != .storeOnline)
-                    synchroMode = pendingMode
-                }
+            Button(
+                pendingMode == .storeOnline
+                    ? KDriveLocalizable.buttonChangeToOnline
+                    : KDriveLocalizable.buttonChangeToOffline
+            ) {
+                let (category, name) = matomoByParent(isCancelChoice: false)
+                matomo.track(eventWithCategory: category, name: name, value: pendingMode != .storeOnline)
+                synchroMode = pendingMode
+            }
         } message: { _ in
             Text(KDriveLocalizable.dialogSyncModeChangeWarningContent)
         }
