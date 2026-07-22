@@ -17,6 +17,7 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <FileProvider/FileProvider.h>
 
 // Server protocol (Ext => Server)
 @protocol XPCFileProExtProtocol
@@ -26,7 +27,8 @@
 // Client protocol (Server => Ext)
 @protocol XPCFileProExtRemoteProtocol
 
-- (void)initConnection:(void (^)(BOOL))callback;
+- (void)initConnection:(void (^_Nonnull)(BOOL))callback;
+- (void)createItem:(NSString *_Nonnull)parentId fileName:(NSString *_Nonnull)name creationDate:(NSDate *_Nonnull)cDate contentModificationDate:(NSDate *_Nonnull)mDate contentType:(UTType *_Nonnull)type contents:(NSURL *_Nullable)url progressCallback:(void(^_Nullable)(NSUInteger size))progressCbk completionCallback:(void(^_Nullable)(NSString *_Nonnull nodeId, NSString *_Nonnull version))completionCbk;
 
 @end
 

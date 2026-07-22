@@ -11,6 +11,6 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
-- (instancetype)initWithItemIdentifier:(NSFileProviderItemIdentifier)itemIdentifier NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithTemplate:(NSFileProviderItem)template identifier:(NSFileProviderItemIdentifier)identifier version:(NSString*)version NS_DESIGNATED_INITIALIZER;
 
 @end

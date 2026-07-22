@@ -92,9 +92,9 @@
     [_loginItemAgentConnection resume];
     
     // Get server endpoint from login item agent
-    NSLog(@"[KD] Get server ext endpoint from login item agent");
+    NSLog(@"[KD] Get server Finder ext endpoint from login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] serverExtEndpoint:^(NSXPCListenerEndpoint *endpoint) {
-        NSLog(@"[KD] Server ext endpoint received %@", endpoint);
+        NSLog(@"[KD] Server Finder ext endpoint received %@", endpoint);
         if (endpoint) {
             [self connectToServer:endpoint];
         }

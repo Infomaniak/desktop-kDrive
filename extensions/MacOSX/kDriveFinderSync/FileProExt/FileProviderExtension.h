@@ -7,5 +7,10 @@
 
 #import <FileProvider/FileProvider.h>
 
-@interface FileProviderExtension : NSObject<NSFileProviderReplicatedExtension>
+#import "xpcClientProxy.h"
+
+@interface FileProviderExtension : NSObject<NSFileProviderReplicatedExtension, XPCClientProxyDelegate> {
+    XPCClientProxy *_xpcClientProxy;
+}
+
 @end

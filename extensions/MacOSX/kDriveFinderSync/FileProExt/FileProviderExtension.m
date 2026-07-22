@@ -28,35 +28,37 @@
 }
 
 - (nonnull NSProgress *)createItemBasedOnTemplate:(nonnull NSFileProviderItem)itemTemplate fields:(NSFileProviderItemFields)fields contents:(nullable NSURL *)url options:(NSFileProviderCreateItemOptions)options request:(nonnull NSFileProviderRequest *)request completionHandler:(nonnull void (^)(NSFileProviderItem _Nullable, NSFileProviderItemFields, BOOL, NSError * _Nullable))completionHandler {
-    // TODO: a new item was created on disk, process the item's creation
-
     NSLog(@"identifier = %@", itemTemplate.itemIdentifier);
-
+    
     if (fields & NSFileProviderItemFilename)
         NSLog(@"filename = %@", itemTemplate.filename);
-
+    
     if (fields & NSFileProviderItemParentItemIdentifier)
         NSLog(@"parent = %@", itemTemplate.parentItemIdentifier);
-
+    
     if (fields & NSFileProviderItemCreationDate)
         NSLog(@"creation date = %@", itemTemplate.creationDate);
-
+    
     if (fields & NSFileProviderItemContentModificationDate)
         NSLog(@"modification date = %@", itemTemplate.contentModificationDate);
     
+    NSUInteger size = 0;
     if (fields & NSFileProviderItemContents) {
         NSLog(@"content type = %@", itemTemplate.contentType);
         NSAssert(url != nil, @"url is null");
         NSData *data = [NSData dataWithContentsOfURL:url];
-        NSLog(@"File size = %lu", (unsigned long)data.length);
+        size = data.length;
+        NSLog(@"File size = %lu", (unsigned long)size);
     }
+        
+    // TODO: Call XPC create function
 
     
-    // TODO: Call XPC create function
+    NSProgress *progress = [NSProgress progressWithTotalUnitCount:size];
+    FileProviderItem *item = [[FileProviderItem alloc] initWithTemplate:itemTemplate identifier:itemTemplate.itemIdentifier version:@"1"];
+    completionHandler(item, 0, false, nil);
     
-    NSFileProviderItemFields remainingFields = 0;
-    completionHandler(itemTemplate, remainingFields, false, nil);
-    return [[NSProgress alloc] init];
+    return progress;
 }
 
 - (nonnull NSProgress *)deleteItemWithIdentifier:(nonnull NSFileProviderItemIdentifier)identifier baseVersion:(nonnull NSFileProviderItemVersion *)version options:(NSFileProviderDeleteItemOptions)options request:(nonnull NSFileProviderRequest *)request completionHandler:(nonnull void (^)(NSError * _Nullable))completionHandler {
@@ -80,7 +82,7 @@
 
     // TODO: implement the actual lookup
 
-    completionHandler([[FileProviderItem alloc] initWithItemIdentifier:identifier], nil);
+    //completionHandler([[FileProviderItem alloc] initWithItemIdentifier:identifier], nil);
     return [[NSProgress alloc] init];
 }
 
