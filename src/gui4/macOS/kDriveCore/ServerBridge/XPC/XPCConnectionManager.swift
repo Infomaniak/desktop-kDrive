@@ -181,9 +181,8 @@ import InfomaniakDI
             guard let self else { return }
             appConnection?.invalidate()
             appConnection = nil
-            scheduleRetryToConnectToServer()
             Task { @MainActor [weak self] in
-                self?.guiConnectionState = .notConnected
+                self?.guiConnectionState = .serverCrashed
             }
         }
 

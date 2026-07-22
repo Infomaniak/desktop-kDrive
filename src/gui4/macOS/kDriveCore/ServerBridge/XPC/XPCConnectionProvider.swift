@@ -23,6 +23,7 @@ public enum XPCConnectionState {
     case connected
     case notConnected
     case error
+    case serverCrashed
 }
 
 public protocol XPCConnectionProvider: Sendable {
