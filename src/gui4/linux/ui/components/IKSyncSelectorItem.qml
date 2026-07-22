@@ -19,73 +19,94 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Effects
 import kDrive.UI
 
-// Presents one configured synchronization by drive name and color, with an optional dropdown chevron.
-Rectangle {
+// Presents one configured synchronization by title, drive color, and optional subtitle and dropdown chevron.
+Button {
     id: root
 
-    property string driveName: ""
+    property string title: ""
+    property string subtitle: ""
     property color driveColor: IKColors.driveDefaultColor
     property bool selected: false
-    readonly property bool hovered: pointerArea.enabled && pointerArea.containsMouse
     property bool interactive: true
     property bool showChevron: false
+    readonly property bool hasSubtitle: subtitle.length > 0
     signal triggered
 
-    implicitHeight: IKMainWindow.syncSelectorHeight
-    radius: IKRadius.r4
-    color: selected || hovered ? IKColors.surfaceTertiary : IKColors.surfacePrimary
+    implicitHeight: hasSubtitle ? IKMainWindow.syncSelectorAdvancedHeight : IKMainWindow.syncSelectorHeight
+    padding: 0
+    enabled: interactive
+    focusPolicy: interactive ? Qt.StrongFocus : Qt.NoFocus
+    hoverEnabled: interactive
+    text: hasSubtitle ? title + ", " + subtitle : title
+    onClicked: triggered()
 
-    IKDriveIcon {
-        id: driveIcon
-
-        anchors.left: parent.left
-        anchors.leftMargin: IKSpacing.s8
-        anchors.verticalCenter: parent.verticalCenter
-        driveColor: root.driveColor
+    background: Rectangle {
+        radius: IKRadius.r4
+        color: root.selected || root.down || root.hovered ? IKColors.surfaceTertiary : IKColors.surfacePrimary
+        border.width: root.visualFocus ? 2 : 0
+        border.color: IKColors.accentPrimary
     }
 
-    Text {
-        anchors.left: driveIcon.right
-        anchors.leftMargin: IKSpacing.s8
-        anchors.right: chevron.left
-        anchors.rightMargin: IKSpacing.s8
-        anchors.verticalCenter: parent.verticalCenter
-        text: root.driveName
-        color: IKColors.textPrimary
-        font.pixelSize: IKFonts.bodySize
-        elide: Text.ElideRight
-    }
+    contentItem: Item {
+        IKDriveIcon {
+            id: driveIcon
 
-    Image {
-        id: chevron
+            anchors.left: parent.left
+            anchors.leftMargin: IKSpacing.s8
+            anchors.verticalCenter: parent.verticalCenter
+            driveColor: root.driveColor
+        }
 
-        anchors.right: parent.right
-        anchors.rightMargin: IKSpacing.s8
-        anchors.verticalCenter: parent.verticalCenter
-        width: root.showChevron ? IKIconSizes.small : 0
-        height: IKIconSizes.small
-        visible: root.showChevron
-        source: "qrc:/assets/main/chevron-down.svg"
-        sourceSize.width: width
-        sourceSize.height: height
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            colorization: 1
-            colorizationColor: IKColors.textSecondary
+        Column {
+            anchors.left: driveIcon.right
+            anchors.leftMargin: IKSpacing.s8
+            anchors.right: chevron.left
+            anchors.rightMargin: IKSpacing.s8
+            anchors.verticalCenter: parent.verticalCenter
+
+            Text {
+                width: parent.width
+                text: root.title
+                color: IKColors.textPrimary
+                font.pixelSize: IKFonts.bodySize
+                elide: Text.ElideRight
+            }
+
+            Text {
+                width: parent.width
+                visible: root.hasSubtitle
+                text: root.subtitle
+                color: IKColors.textSecondary
+                font.pixelSize: IKFonts.subheadlineSize
+                elide: Text.ElideRight
+            }
+        }
+
+        Image {
+            id: chevron
+
+            anchors.right: parent.right
+            anchors.rightMargin: IKSpacing.s8
+            anchors.verticalCenter: parent.verticalCenter
+            width: root.showChevron ? IKIconSizes.small : 0
+            height: IKIconSizes.small
+            visible: root.showChevron
+            source: "qrc:/assets/main/chevron-down.svg"
+            sourceSize.width: width
+            sourceSize.height: height
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                colorization: 1
+                colorizationColor: IKColors.textSecondary
+            }
         }
     }
 
-    MouseArea {
-        id: pointerArea
-
-        anchors.fill: parent
-        enabled: root.interactive
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton
+    HoverHandler {
         cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: root.triggered()
     }
 }
