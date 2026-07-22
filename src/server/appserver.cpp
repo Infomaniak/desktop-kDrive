@@ -374,6 +374,15 @@ void AppServer::init() {
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
 
+#if defined(KD_MACOS)
+    // On macOS, the GUI client and the server rendezvous through the login item agent (XPC broker): the server publishes its
+    // GUI XPC endpoint to the agent, then the client fetches it from the agent. After a version upgrade the agent must be
+    // restarted so a stale instance from the previous version is replaced. This restart MUST happen *before* the CommManager
+    // publishes the server endpoint (below), otherwise the freshly published endpoint would be killed along with the agent,
+    // leaving the client unable to ever obtain it.
+    if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
+#endif
+
     if (useCommManager(false)) {
         // Init CommManager
         LOG_DEBUG(_logger, "Init CommManager");
@@ -473,10 +482,6 @@ void AppServer::init() {
         quitLater();
         return;
     }
-
-#if defined(KD_MACOS)
-    if (ParmsDb::instance()->versionUpdated()) Utility::restartLoginItemAgent();
-#endif
 
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
