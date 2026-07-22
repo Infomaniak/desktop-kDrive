@@ -403,21 +403,9 @@ struct ErrorCellFactory {
 }
 
 extension ErrorCellView.Action {
-    static func renameItem(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
-        return ErrorCellView.Action(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
-            await manager.renameItem(error)
-        }
-    }
-
     static func manageDiskSpace(manager: SynchroErrorManager) -> Self {
         return ErrorCellView.Action(title: KDriveLocalizable.buttonManageDiskSpace) {
             manager.openPreferencesSystemStorage()
-        }
-    }
-
-    static func errorResolutionTip(_ error: SynchroError, manager: SynchroErrorManager) -> Self {
-        return ErrorCellView.Action(title: KDriveLocalizable.buttonErrorResolutionTip) {
-            manager.showResolutionTipsSheet(error)
         }
     }
 }
