@@ -23,6 +23,7 @@ QtObject {
     readonly property real sidebarWidth: 240
     readonly property real sidebarItemHeight: 36
     readonly property real syncSelectorHeight: 32
+    readonly property real syncSelectorAdvancedHeight: 44
     readonly property real syncSelectorIconSize: 14
     readonly property real errorBadgeSize: 8
     readonly property real notificationBadgeMinSize: 20
