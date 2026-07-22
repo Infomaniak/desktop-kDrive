@@ -128,7 +128,7 @@ class PocoConan(ConanFile):
         # Since Poco 1.15.x, Foundation's Unicode support is unbundled onto utf8proc.
         self.requires("utf8proc/[>=2.5.0 <3]")
         if self.options.enable_xml:
-            self.requires("expat/[>=2.8.1]", transitive_headers=True)
+            self.requires("expat/[>=2.8.1 <3]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
             if self.settings.os == "Macos":
                 self.requires("openssl-macos/3.6.3", options={ "shared": True })
