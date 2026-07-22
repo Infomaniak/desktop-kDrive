@@ -63,8 +63,9 @@ bool ComputeFSOperationWorker::isLocalTimestampValid(const NodeId &localNodeId, 
                         (std::chrono::system_clock::now() + std::chrono::years(1)).time_since_epoch())
                         .count();
         modificationTime > currentTimePlusOneYear || modificationTime < 0) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" has an invalid modification ("
-                                            << modificationTime << L"). Item is ignored.");
+        LOGW_SYNCPAL_WARN(_logger, L"Item " << Utility::formatSyncPath(relativePath)
+                                            << L" has an invalid modification time (" << modificationTime
+                                            << L"). Item is ignored.");
         const Error error(_syncPal->syncDbId(), localNodeId, "", nodeType, relativePath, ConflictType::None,
                           InconsistencyType::InvalidTimestamp);
         _syncPal->addError(error);
