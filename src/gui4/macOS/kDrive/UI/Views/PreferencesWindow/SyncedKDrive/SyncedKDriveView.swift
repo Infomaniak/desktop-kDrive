@@ -204,7 +204,7 @@ struct SyncedKDriveView: View {
     }
 
     private func enableMainSynchro() {
-        // TODO: Add Matomo here
+        matomo.track(eventWithCategory: .driveManagementPage, name: "create")
         // TODO: Add logic here
     }
 }
