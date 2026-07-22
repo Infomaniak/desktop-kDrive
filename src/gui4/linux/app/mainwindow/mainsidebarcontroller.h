@@ -40,7 +40,8 @@ class MainSidebarController final : public QObject {
         Q_PROPERTY(QAbstractItemModel *syncsModel READ syncsModel CONSTANT)
         Q_PROPERTY(qint32 syncCount READ syncCount NOTIFY syncCountChanged)
         Q_PROPERTY(qint32 selectedRow READ selectedRow NOTIFY selectedRowChanged)
-        Q_PROPERTY(QString currentDriveName READ currentDriveName NOTIFY currentSyncContextChanged)
+        Q_PROPERTY(QString currentTitle READ currentTitle NOTIFY currentSyncContextChanged)
+        Q_PROPERTY(QString currentSubtitle READ currentSubtitle NOTIFY currentSyncContextChanged)
         Q_PROPERTY(QColor currentDriveColor READ currentDriveColor NOTIFY currentSyncContextChanged)
         Q_PROPERTY(bool canOpenCurrentSyncFolder READ canOpenCurrentSyncFolder NOTIFY currentSyncContextChanged)
         Q_PROPERTY(qint32 currentErrorCount READ currentErrorCount NOTIFY currentSyncContextChanged)
@@ -51,7 +52,8 @@ class MainSidebarController final : public QObject {
         [[nodiscard]] QAbstractItemModel *syncsModel() { return &_syncListModel; }
         [[nodiscard]] qint32 syncCount() const;
         [[nodiscard]] qint32 selectedRow() const;
-        [[nodiscard]] QString currentDriveName() const;
+        [[nodiscard]] QString currentTitle() const;
+        [[nodiscard]] QString currentSubtitle() const;
         [[nodiscard]] QColor currentDriveColor() const;
         [[nodiscard]] bool canOpenCurrentSyncFolder() const;
         [[nodiscard]] qint32 currentErrorCount() const;
@@ -65,6 +67,8 @@ class MainSidebarController final : public QObject {
         void syncCountChanged();
 
     private:
+        [[nodiscard]] QVariant selectedData(SyncListModel::Role role) const;
+
         MainSelectionStore &_selectionStore;
         SyncListModel _syncListModel;
 };
