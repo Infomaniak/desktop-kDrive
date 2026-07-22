@@ -135,11 +135,13 @@ struct AdvancedPreferencesDebugSendView: View {
 
     var body: some View {
         Section {
-            HStack(spacing: AppPadding.padding8) {
-                BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)
+            HStack(spacing: 0) {
+                HStack(spacing: AppPadding.padding8) {
+                    BadgeView(image: KDriveResources.headphones.swiftUIImage, color: ColorToken.Accent.primary.asColor)
+                    Text(KDriveLocalizable.infomaniakSupport)
+                }
 
-                Text(KDriveLocalizable.infomaniakSupport)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Spacer(minLength: AppPadding.padding8)
 
                 Button(KDriveLocalizable.buttonSendLog) {
                     isShowingSheet = true
