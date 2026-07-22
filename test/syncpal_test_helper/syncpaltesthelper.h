@@ -55,6 +55,10 @@ class SyncpalTestHelper {
         bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         bool executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const;
 
+        // Waits (polling) up to `timeout` for a real change to be detected by the observers. Returns false if
+        // nothing showed up within `timeout`.
+        bool waitForDetectedUpdate(std::chrono::milliseconds timeout = std::chrono::milliseconds(10000)) const;
+
         bool pauseSync() const;
         bool stopSync() const;
 

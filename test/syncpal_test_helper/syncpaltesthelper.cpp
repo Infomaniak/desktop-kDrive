@@ -18,6 +18,7 @@
 
 #include "syncpaltesthelper.h"
 #include "libcommon/utility/timerutility.h"
+#include "test_utility/timeouthelper.h"
 
 #include "syncpal/syncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -68,23 +69,11 @@ bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) const
 }
 
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
+    // Give a pending change a chance to be detected before checking for idleness below.
+    (void) waitForDetectedUpdate();
+
     const auto timeOutDuration = std::chrono::minutes(2);
     const TimerUtility timeoutTimer;
-
-    // Give the OS some time to deliver its file system change notification before we start observing idleness
-    // below (e.g. FSEvents on macOS can have noticeable, CI-load-dependent latency compared to
-    // inotify/ReadDirectoryChangesW). Without this, a just-applied local operation might not have flipped
-    // _localFSObserverWorker->updating() to true yet, so the very first idle check could wrongly consider the
-    // sync as already settled and return before the change is even detected. Rather than a fixed sleep (which
-    // would either be wasteful or insufficient depending on conditions), actively wait until either observer
-    // reports it is updating, or until a dedicated timeout elapses (in which case there may simply be nothing
-    // new to detect, e.g. on the very first call before any operation was applied).
-    static constexpr auto fsEventWaitTimeout = std::chrono::seconds(10);
-    const TimerUtility fsEventWaitTimer;
-    while (!_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating()) {
-        if (fsEventWaitTimer.elapsed<std::chrono::seconds>() >= fsEventWaitTimeout) break;
-        Utility::msleep(50);
-    }
 
     // Wait for end of sync (A sync is considered ended when it stays in Idle for more than minWaitTime)
     TimerUtility idleTimer;
@@ -110,6 +99,18 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
 bool SyncpalTestHelper::executeSyncUpToStep([[maybe_unused]] const int64_t targetStep,
                                             [[maybe_unused]] const int64_t timeout) const {
     return false;
+}
+
+bool SyncpalTestHelper::waitForDetectedUpdate(const std::chrono::milliseconds timeout) const {
+    if (!_syncPal) return false;
+
+    return TimeoutHelper::waitFor(
+            [this]() {
+                return _syncPal->restart() || _syncPal->_localFSObserverWorker->updating() ||
+                       _syncPal->_remoteFSObserverWorker->updating() || _syncPal->liveSnapshot(ReplicaSide::Local).updated() ||
+                       _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
+            },
+            timeout, std::chrono::milliseconds(50));
 }
 
 bool SyncpalTestHelper::pauseSync() const {
