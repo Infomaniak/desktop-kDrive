@@ -121,8 +121,8 @@ struct StorageView: View {
 
         @InjectService var router: PreferencesViewRouter
         router.setCurrentTab(.accounts)
-        if let currentDrive = mainViewModel.currentDrive {
-            router.append(.syncedKDrive(currentDrive))
+        if let currentDrive = mainViewModel.currentDrive, let userDbId = mainViewModel.currentUser?.dbId {
+            router.append(.syncedKDrive(currentDrive, userDbId: userDbId))
         }
     }
 
