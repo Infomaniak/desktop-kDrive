@@ -655,7 +655,7 @@ void TestComputeFSOperationWorker::testIsReusedNodeId() {
     _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
     CPPUNIT_ASSERT(!isReused);
 
-    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different creation a
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different creation
     // date, a different last modified date but the same size, did not reuse a node ID.
     dbNode.setLastModifiedLocal(testhelpers::defaultTime + 1);
     dbNode.setSize(testhelpers::defaultFileSize);
