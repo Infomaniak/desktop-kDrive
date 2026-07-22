@@ -185,9 +185,9 @@ std::shared_ptr<Handler> Handler::instance() {
     }
     // Sentry is disabled (e.g. KDRIVE_SENTRY_ENVIRONMENT="") or not yet initialized. This is a legitimate runtime
     // state, not a programming error: return a shared, inert handler so instance()->... calls are safe no-ops
-    // (all Sentry paths are guarded by _isSentryActivated == false). Cached to avoid allocating on every call.
-    static std::shared_ptr<Handler> disabledInstance(new Handler());
-    return disabledInstance;
+    // (all Sentry paths are guarded by _isSentryActivated == false).
+    struct DisabledHandler final : Handler {};
+    return std::make_shared<DisabledHandler>();
 }
 
 void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &dsnOverride,
@@ -319,7 +319,7 @@ void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &
     // Init sentry. A non-zero result means Sentry (an optional telemetry component) failed to start, e.g. the
     // crashpad handler is missing or the database path is not writable. That is a runtime failure, not a
     // programming error: log it and keep Sentry inert instead of aborting the whole application.
-    if (const int res = sentry_init(options); res != 0) {
+    if (const int32_t res = sentry_init(options); res != 0) {
         std::cerr << "sentry_init returned " << res << "; Sentry disabled" << std::endl;
         _instance->_isSentryActivated = false;
         return; // sentry_init takes ownership of `options`; do not free them here.
