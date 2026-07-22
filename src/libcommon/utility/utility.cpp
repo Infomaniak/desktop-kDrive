@@ -82,9 +82,6 @@ constexpr std::string_view liteSyncExtBundleIdStr = "com.infomaniak.drive.deskto
 constexpr std::string_view loginItemAgentIdStr = "com.infomaniak.drive.desktopclient.LoginItemAgent";
 #endif
 
-// Poco 1.15.x may miss default Dynamic::Struct<std::string> instantiation in some builds.
-template class Poco::Dynamic::Struct<std::string>;
-
 namespace KDC {
 
 std::mutex CommonUtility::_generateRandomStringMutex;
