@@ -90,7 +90,7 @@ public struct SynchroModePicker: View {
                 ? KDriveLocalizable.buttonChangeToOnline
                 : KDriveLocalizable.buttonChangeToOffline) {
                     let (category, name) = matomoByParent(isCancelChoice: false)
-                    matomo.track(eventWithCategory: category, name: name)
+                    matomo.track(eventWithCategory: category, name: name, value: pendingMode != .storeOnline)
                     synchroMode = pendingMode
                 }
         } message: { _ in

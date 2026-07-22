@@ -38,7 +38,7 @@ struct AdvancedPreferencesDebugOptionsView: View {
             )
             .onChange(of: automaticCleaning) { _ in
                 @InjectService var matomo: MatomoUtils
-                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge")
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge", value: automaticCleaning)
             }
 
             ToggleView(

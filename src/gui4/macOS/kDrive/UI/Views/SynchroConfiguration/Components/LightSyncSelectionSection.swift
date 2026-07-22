@@ -49,7 +49,11 @@ struct LightSyncSelectionSection: View {
                         }
                         .onChange(of: useLightSync) { newValue in
                             @InjectService var matomo: MatomoUtils
-                            matomo.track(eventWithCategory: .driveSetupDialog, name: "changeSyncMode")
+                            matomo.track(
+                                eventWithCategory: .driveSetupDialog,
+                                name: "changeSyncMode",
+                                value: useLightSync
+                            )
                             viewModel.updateConfiguration(configuration.id, useLightSync: newValue)
                         }
                         .disabled(!supportsLightSync)
