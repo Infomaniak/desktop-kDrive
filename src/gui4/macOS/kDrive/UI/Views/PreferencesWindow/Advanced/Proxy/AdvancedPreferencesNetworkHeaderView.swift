@@ -43,7 +43,7 @@ struct AdvancedPreferencesNetworkHeaderView: View {
                 }
             }
             .labelsHidden()
-            .onChange(of: selectedProxyType) { newValue in
+            .onChange(of: selectedProxyType) { _ in
                 @InjectService var matomo: MatomoUtils
                 matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeProxyMode")
             }

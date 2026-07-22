@@ -83,7 +83,7 @@ struct AddAdvancedSynchroView: View {
                             allowedContentTypes: [.directory],
                             onCompletion: handleSelectedDirectory
                         )
-                        .onChange(of: isShowingFileImporter) { isShowing in
+                        .onChange(of: isShowingFileImporter) { _ in
                             matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "openSyncDir")
                         }
 

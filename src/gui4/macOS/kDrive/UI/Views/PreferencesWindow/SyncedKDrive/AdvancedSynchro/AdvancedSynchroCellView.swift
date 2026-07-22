@@ -72,9 +72,9 @@ struct AdvancedSynchroCellView: View {
                     Button(role: .destructive, action: {
                         matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "delete")
                         onDelete()
-                    }) {
+                    }, label: {
                         Label(KDriveLocalizable.buttonRemoveSync, resource: KDriveResources.trash)
-                    }
+                    })
                 } label: {
                     Image(systemName: "ellipsis")
                 }
