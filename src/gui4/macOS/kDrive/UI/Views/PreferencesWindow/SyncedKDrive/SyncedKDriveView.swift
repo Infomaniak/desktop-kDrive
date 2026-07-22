@@ -101,6 +101,23 @@ struct SyncedKDriveView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            } else {
+                Section {
+                    HStack(spacing: AppPadding.padding8) {
+                        Text(KDriveLocalizable.labelSynchronisation)
+                            .foregroundStyle(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text(KDriveLocalizable.notSyncedDrive)
+                            .foregroundStyle(.secondary)
+                        Button(KDriveLocalizable.buttonEnable, action: enableMainSynchro)
+                            .buttonStyle(.bordered)
+                    }
+                }
+
+                Section {
+                    FormNavigationCell(title: KDriveLocalizable.advancedSyncTitle, navigate: navigateToAdvancedSynchro)
+                }
             }
         }
         .groupedFormatStyle()
@@ -184,6 +201,11 @@ struct SyncedKDriveView: View {
 
         @InjectService var router: PreferencesViewRouter
         router.append(.accounts)
+    }
+
+    private func enableMainSynchro() {
+        // TODO: Add Matomo here
+        // TODO: Add logic here
     }
 }
 
