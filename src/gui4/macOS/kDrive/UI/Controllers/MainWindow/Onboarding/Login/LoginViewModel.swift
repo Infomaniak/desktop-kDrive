@@ -56,6 +56,7 @@ final class LoginViewModel: ObservableObject {
 
     func cancelWebAuthenticationLogin() {
         loginTimeoutTask?.cancel()
+        loginService.cancelLogin()
         loginState = .idle
     }
 
@@ -65,6 +66,7 @@ final class LoginViewModel: ObservableObject {
             try? await Task.sleep(nanoseconds: Self.loginTimeoutSeconds * 1_000_000_000)
 
             guard !Task.isCancelled, self?.loginState == .waitingForWebAuthentication else { return }
+            self?.loginService.cancelLogin()
             self?.loginState = .idle
         }
     }
