@@ -18,6 +18,8 @@
 
 #include "availabledrivesmodel.h"
 
+#include "app/appconstants.h"
+
 #include <QColor>
 #include <QCoreApplication>
 
@@ -27,8 +29,6 @@
 namespace KDC {
 
 namespace {
-
-const QColor defaultDriveColor{QStringLiteral("#0098FF")};
 
 [[nodiscard]] QString normalizedAccountName(const AvailableDriveContext &context) {
     if (!context.availableDrive.accountName().empty()) {
@@ -111,7 +111,7 @@ QVariant AvailableDrivesModel::data(const QModelIndex &index, const int role) co
             if (const QColor color{QString::fromStdString(context.availableDrive.color())}; color.isValid()) {
                 return color;
             }
-            return defaultDriveColor;
+            return AppConstants::Drive::defaultColor();
         case SelectedRole:
             return context.alreadyConfigured || isRowSelected(row);
         case AlreadyConfiguredRole:
