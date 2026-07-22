@@ -26,7 +26,9 @@ import SwiftUI
 
 struct SyncedKDriveView: View {
     @LazyInjectService private var matomo: MatomoUtils
+
     let drive: UIDrive
+    let userDbId: Int
 
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
@@ -36,6 +38,12 @@ struct SyncedKDriveView: View {
     @State private var isShowingGenericError = false
 
     @State private var blacklistNodes: Set<String>?
+
+    @State private var isShowingSynchronizeDriveView = false
+
+    private var configuration: SynchroConfiguration {
+        SynchroConfiguration(drive: drive, blackList: [], useLightSync: true)
+    }
 
     var body: some View {
         Form {
@@ -112,6 +120,14 @@ struct SyncedKDriveView: View {
                             .foregroundStyle(.secondary)
                         Button(KDriveLocalizable.buttonEnable, action: enableMainSynchro)
                             .buttonStyle(.bordered)
+                            .sheet(isPresented: $isShowingSynchronizeDriveView) {
+                                SynchroConfigurationFlowView(
+                                    userDbId: userDbId,
+                                    configurations: [configuration],
+                                    onConfirm: configureMainSynchro,
+                                    onCancel: hideSynchronizeDriveSheet
+                                )
+                            }
                     }
                 }
 
@@ -205,10 +221,43 @@ struct SyncedKDriveView: View {
 
     private func enableMainSynchro() {
         matomo.track(eventWithCategory: .driveManagementPage, name: "create")
-        // TODO: Add logic here
+        isShowingSynchronizeDriveView = true
+    }
+
+    private func configureMainSynchro(_ configurations: [SynchroConfiguration]) async {
+        do {
+            if let configuration = configurations.first {
+                try await synchronizeDrive(from: configuration)
+            }
+            hideSynchronizeDriveSheet()
+        } catch {
+            hideSynchronizeDriveSheet()
+            isShowingGenericError = true
+        }
+    }
+
+    private func synchronizeDrive(from configuration: SynchroConfiguration) async throws {
+        @InjectService var cache: CoherentCache
+        guard let drive = await cache.getAvailableDrive(driveDb: Int32(configuration.drive.id), userDbId: Int32(userDbId)) else {
+            return
+        }
+
+        let syncCandidate = NewSyncCandidate(
+            origin: .availableDrive(drive),
+            remoteFolder: .kDriveRoot,
+            localFolder: configuration.localFolder.url,
+            blackList: configuration.blackList,
+            useLightSync: configuration.useLightSync
+        )
+
+        try await SyncCreationService().create(from: syncCandidate)
+    }
+
+    private func hideSynchronizeDriveSheet() {
+        isShowingSynchronizeDriveView = false
     }
 }
 
 #Preview {
-    SyncedKDriveView(drive: PreviewHelper.drive1)
+    SyncedKDriveView(drive: PreviewHelper.drive1, userDbId: 0)
 }

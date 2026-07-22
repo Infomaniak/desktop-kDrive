@@ -57,7 +57,7 @@ enum PreferencesViewDetail: RouterDetail {
     case accounts
     case advanced
 
-    case syncedKDrive(UIDrive)
+    case syncedKDrive(UIDrive, userDbId: Int)
     case advancedSynchros(UIDrive)
     case network
 

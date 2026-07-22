@@ -91,7 +91,7 @@ struct AccountDriveCellView: View {
         guard let drive = drive as? UIDrive else { return }
 
         @InjectService var router: PreferencesViewRouter
-        router.append(.syncedKDrive(drive))
+        router.append(.syncedKDrive(drive, userDbId: userDbId))
     }
 
     private func showSynchronizeDriveSheet() {
