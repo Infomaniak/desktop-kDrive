@@ -39,7 +39,8 @@ class SyncListModel final : public QAbstractListModel {
     public:
         enum Role {
             SyncDbIdRole = Qt::UserRole + 1,
-            DriveNameRole,
+            TitleRole,
+            SubtitleRole,
             DriveColorRole,
             ErrorCountRole,
             SelectedRole,
