@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -26,6 +27,8 @@ import SwiftUI
 
 struct SyncedKDriveView: View {
     @InjectService private var matomo: MatomoUtils
+    @InjectService private var cacheObservable: CoherentCacheObservable
+
     let drive: UIDrive
     let userDbId: Int
 
@@ -42,6 +45,10 @@ struct SyncedKDriveView: View {
 
     private var configuration: SynchroConfiguration {
         SynchroConfiguration(drive: drive, blackList: [], useLightSync: true)
+    }
+
+    private var drivePublisher: AnyPublisher<Drive?, Never> {
+        cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(drive.dbId))
     }
 
     var body: some View {
@@ -138,8 +145,11 @@ struct SyncedKDriveView: View {
         .groupedFormatStyle()
         .task {
             await fetchSynchros()
+        }
+        .task(id: mainSynchro?.dbId) {
             await fetchBlacklistedNodes()
         }
+        .onReceive(drivePublisher.receive(on: RunLoop.main), perform: updateMainSynchro)
         .sheet(item: $synchroToDelete) { synchro in
             RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
         }
@@ -148,11 +158,15 @@ struct SyncedKDriveView: View {
 
     private func fetchSynchros() async {
         @InjectService var coherentCache: CoherentCache
-        guard let driveSynchros = await coherentCache.getDrive(driveDbId: Int32(drive.dbId))?.synchros.values else {
+        guard let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId)) else {
             return
         }
 
-        let freshMainSynchro = driveSynchros
+        updateMainSynchro(from: cachedDrive)
+    }
+
+    private func updateMainSynchro(from cachedDrive: Drive?) {
+        let freshMainSynchro = cachedDrive?.synchros.values
             .map { UISynchro(synchro: $0) }
             .first { $0.targetNodeId == nil }
 
