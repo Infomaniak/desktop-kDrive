@@ -54,17 +54,17 @@ bool DigitalSignatureChecker_win::isSignatureValid() const {
 
     if (!CommonUtility::containsInsensitive(_signatureInfo._subject, Str("Infomaniak"))) {
         LOGW_WARN(Log::instance()->getLogger(),
-                 L"DigitalSignatureChecker_win::isSignatureValid called but signature subject does not contain 'Infomaniak'. "
-                 "Subject: "
-                         << SyncName2WStr(_signatureInfo._subject));
-    }
-
-    if (!verifySignatureTrustChain()) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "DigitalSignatureChecker_win::verifySignatureTrustChain failed with error: " << GetLastError());
+                  L"DigitalSignatureChecker_win::isSignatureValid called but signature subject does not contain 'Infomaniak'. "
+                  "Subject: "
+                          << SyncName2WStr(_signatureInfo._subject));
         return false;
     }
 
+    if (!verifySignatureTrustChain()) {
+        LOG_WARN(Log::instance()->getLogger(), "DigitalSignatureChecker_win::verifySignatureTrustChain failed" << GetLastError());
+        return false;
+    }
+    return true;
 }
 
 namespace {
@@ -345,7 +345,8 @@ bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
     WinTrustData.pPolicyCallbackData = NULL;
     WinTrustData.pSIPClientData = NULL;
     WinTrustData.dwUIChoice = WTD_UI_NONE;
-    WinTrustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+    WinTrustData.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
+    WinTrustData.dwProvFlags |= WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
     WinTrustData.dwUnionChoice = WTD_CHOICE_FILE;
     WinTrustData.dwStateAction = WTD_STATEACTION_VERIFY;
 
