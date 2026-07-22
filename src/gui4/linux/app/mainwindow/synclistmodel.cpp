@@ -19,12 +19,32 @@
 #include "app/mainwindow/synclistmodel.h"
 
 #include "app/appconstants.h"
+#include "libcommon/utility/types.h"
 
 #include <QColor>
 
+#include <algorithm>
 #include <cstddef>
 
 namespace KDC {
+
+namespace {
+
+QString localFolderName(const BaseSync &syncInfo) {
+    const QString folderName = Path2QStr(syncInfo.localPath().filename());
+    return folderName.isEmpty() ? Path2QStr(syncInfo.localPath()) : folderName;
+}
+
+bool needsPreciseLabel(const SyncContext &context, const std::vector<SyncContext> &contexts) {
+    if (!context.syncInfo.targetNodeId().empty()) {
+        return true;
+    }
+    return std::ranges::count_if(contexts, [&context](const SyncContext &candidate) {
+               return candidate.drive.dbId() == context.drive.dbId() && candidate.syncInfo.targetNodeId().empty();
+           }) > 1;
+}
+
+} // namespace
 
 SyncListModel::SyncListModel(const AppCache &cache, MainSelectionStore &selectionStore, QObject *const parent) :
     QAbstractListModel(parent),
@@ -53,9 +73,17 @@ QVariant SyncListModel::data(const QModelIndex &index, const int role) const {
     switch (role) {
         case SyncDbIdRole:
             return static_cast<qint64>(context.syncInfo.dbId());
-        case DriveNameRole:
-        case Qt::DisplayRole:
-            return QString::fromStdString(context.drive.name());
+        case TitleRole:
+        case Qt::DisplayRole: {
+            const QString folderName = localFolderName(context.syncInfo);
+            return needsPreciseLabel(context, _contexts) && !folderName.isEmpty() ? folderName
+                                                                                  : QString::fromStdString(context.drive.name());
+        }
+        case SubtitleRole: {
+            return needsPreciseLabel(context, _contexts) && !localFolderName(context.syncInfo).isEmpty()
+                           ? QString::fromStdString(context.drive.name())
+                           : QString{};
+        }
         case DriveColorRole: {
             const QColor color{QString::fromStdString(context.drive.color())};
             return color.isValid() ? color : AppConstants::Drive::defaultColor();
@@ -71,8 +99,8 @@ QVariant SyncListModel::data(const QModelIndex &index, const int role) const {
 
 QHash<int, QByteArray> SyncListModel::roleNames() const {
     return {
-            {SyncDbIdRole, "syncDbId"},     {DriveNameRole, "driveName"}, {DriveColorRole, "driveColor"},
-            {ErrorCountRole, "errorCount"}, {SelectedRole, "isSelected"},
+            {SyncDbIdRole, "syncDbId"},     {TitleRole, "title"},           {SubtitleRole, "subtitle"},
+            {DriveColorRole, "driveColor"}, {ErrorCountRole, "errorCount"}, {SelectedRole, "isSelected"},
     };
 }
 
