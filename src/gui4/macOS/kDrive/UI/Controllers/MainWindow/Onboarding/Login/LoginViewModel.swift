@@ -42,7 +42,7 @@ final class LoginViewModel: ObservableObject {
 
     private let flowCoordinator: OnboardingFlowCoordinator
 
-    private static let loginTimeoutSeconds: UInt64 = 300
+    private static let loginTimeoutSeconds: UInt64 = 120 // 2 minutes
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
@@ -58,8 +58,9 @@ final class LoginViewModel: ObservableObject {
         loginTimeoutTask?.cancel()
         loginTimeoutTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: Self.loginTimeoutSeconds * 1_000_000_000)
-            guard !Task.isCancelled, let self, loginState == .waitingForWebAuthentication else { return }
-            loginState = .idle
+
+            guard !Task.isCancelled, self?.loginState == .waitingForWebAuthentication else { return }
+            self?.loginState = .idle
         }
     }
 
