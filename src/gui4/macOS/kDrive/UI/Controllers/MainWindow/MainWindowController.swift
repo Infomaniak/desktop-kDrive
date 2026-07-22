@@ -116,6 +116,9 @@ final class MainWindowController: NSWindowController {
             router.navigate(to: .preloading(isShowingError: false))
         case .error:
             router.navigate(to: .preloading(isShowingError: true))
+        case .serverCrashed:
+            IKLogger.general.error("[KD] Server crashed, terminating the app")
+            NSApp.terminate(nil)
         case .connected:
             Task {
                 guard await !presentPermissionsViewIfNecessary() else { return }
