@@ -35,6 +35,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/mainwindow/mainsidebarcontroller.cpp
+        app/mainwindow/mainsidebarcontroller.h
+        app/mainwindow/synclistmodel.cpp
+        app/mainwindow/synclistmodel.h
         app/navigation/approuter.cpp
         app/navigation/approuter.h
         app/onboarding/availabledrivesmodel.cpp
@@ -111,12 +115,18 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
+        ui/components/IKBadge.qml
+        ui/components/IKDriveIcon.qml
+        ui/components/IKSidebarItem.qml
+        ui/components/IKSyncSelectorItem.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/HomePlaceholder.qml
-        ui/windows/main/MainSidebarPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
+        ui/windows/main/SidebarHeaderView.qml
+        ui/windows/main/SidebarView.qml
+        ui/windows/main/SyncSelectorView.qml
         ui/windows/main/StoragePlaceholder.qml
         ${GUI_GENERATED_QML_FILES}
         ui/windows/onboarding/DriveCellView.qml
@@ -138,6 +148,11 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/main/activities.svg
+        ui/assets/main/chevron-down.svg
+        ui/assets/main/folder.svg
+        ui/assets/main/house.svg
+        ui/assets/main/storage.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg
