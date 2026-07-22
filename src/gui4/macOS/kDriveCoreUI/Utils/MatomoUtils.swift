@@ -16,22 +16,33 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
+import InfomaniakDI
+import kDriveCore
 import MatomoTracker
 import OSLog
 
 public final class MatomoUtils {
+    @LazyInjectService private var settingsCacheObservable: SettingsCacheObservable
+
     private let tracker: MatomoTracker
     private let enableLogger: Bool
+
+    private var cancellable: AnyCancellable?
 
     public init(siteId: String, baseURL: URL, enableLogger: Bool = false) {
         tracker = MatomoTracker(siteId: siteId, baseURL: baseURL)
 
         #if DEBUG || TEST
         self.enableLogger = enableLogger
+        optOut(true)
         #else
         self.enableLogger = false
+        optOut(!UserDefaults.standard.lastKnownMatomoEnabled)
         #endif
+
+        observePreferences()
     }
 
     public func optOut(_ optOut: Bool) {
@@ -51,6 +62,15 @@ public final class MatomoUtils {
 
     public func track(eventWithCategory category: EventCategory, action: UserAction = .click, name: String, value: Bool) {
         track(eventWithCategory: category, action: action, name: name, value: value ? 1 : 0)
+    }
+
+    private func observePreferences() {
+        cancellable = settingsCacheObservable.settingsPublisher
+            .map(\.matomoEnabled)
+            .removeDuplicates()
+            .sink { [weak self] isEnabled in
+                self?.optOut(!isEnabled)
+            }
     }
 }
 

@@ -60,7 +60,10 @@ public actor SettingsCache: SettingsCaching, SettingsCacheObservable {
 
     func setSettings(_ settings: ParametersInfo) {
         self.settings = settings
+
         UserDefaults.standard.lastKnownSentryEnabled = settings.sentryEnabled
+        UserDefaults.standard.lastKnownMatomoEnabled = settings.matomoEnabled
+
         settingsSubject.send(settings)
     }
 }

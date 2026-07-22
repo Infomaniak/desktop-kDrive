@@ -58,11 +58,7 @@ final class DriveTargetAssembly: TargetAssembly {
                 SettingsObserver()
             },
             Factory(type: MatomoUtils.self) { _, _ in
-                let matomo = MatomoUtils(siteId: Constants.matomoId, baseURL: URLConstants.matomo)
-                #if DEBUG
-                matomo.optOut(true)
-                #endif
-                return matomo
+                MatomoUtils(siteId: Constants.matomoId, baseURL: URLConstants.matomo)
             }
         ]
     }
