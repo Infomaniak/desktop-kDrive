@@ -43,9 +43,9 @@ extension VisibleActivities {
     var matomoName: String {
         switch self {
         case .myActivityOnly:
-            return "showAllActivities"
-        case .allActivities:
             return "showMyActivities"
+        case .allActivities:
+            return "showAllActivities"
         }
     }
 }

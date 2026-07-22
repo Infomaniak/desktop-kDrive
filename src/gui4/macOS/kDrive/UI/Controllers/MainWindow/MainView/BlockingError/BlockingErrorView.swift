@@ -111,7 +111,7 @@ struct BlockingErrorView: View {
             matomo.track(eventWithCategory: .driveAccessDeniedPage, name: "startSync")
             restartSynchro()
         case .loggingError:
-            matomo.track(eventWithCategory: .logginErrorPage, name: "openSignInWeb")
+            matomo.track(eventWithCategory: .loginErrorPage, name: "openSignInWeb")
             @InjectService var router: MainWindowRouter
             router.navigate(to: .onboarding(nil, nil, .login))
         }

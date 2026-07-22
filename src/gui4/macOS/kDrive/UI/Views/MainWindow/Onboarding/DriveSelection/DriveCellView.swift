@@ -167,13 +167,13 @@ final class DriveCellView: NSView {
         isActivated = false
         needsDisplay = true
 
+        let wasSelected = state == .on
         toggleDrive?(drive)
 
-        if state == .on {
-            matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "selectDrive")
-        } else {
-            matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "unselectDrive")
-        }
+        matomo.track(
+            eventWithCategory: .onboardingSyncConfigurationPage,
+            name: wasSelected ? "unselectDrive" : "selectDrive"
+        )
     }
 }
 

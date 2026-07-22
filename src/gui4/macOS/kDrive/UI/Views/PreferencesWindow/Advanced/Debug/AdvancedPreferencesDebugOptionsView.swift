@@ -36,9 +36,10 @@ struct AdvancedPreferencesDebugOptionsView: View {
                 helperText: nil,
                 isOn: $automaticCleaning
             )
-            .onChange(of: automaticCleaning) { _ in
+            .onChange(of: automaticCleaning) { newValue in
+                guard newValue != repository.parametersInfo.shouldPurgeOldLogs else { return }
                 @InjectService var matomo: MatomoUtils
-                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge", value: automaticCleaning)
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge", value: newValue)
             }
 
             ToggleView(
@@ -72,9 +73,11 @@ struct AdvancedPreferencesDebugOptionsView: View {
             updateRepositoryValue(\.$extendedLog, \.isExtendedLogEnabled, newValue: newValue, repository: repository)
         }
         .onChange(of: debugLevel) { newValue in
+            updateRepositoryValue(\.$debugLevel, \.logLevel, newValue: newValue, repository: repository)
+
+            guard newValue != repository.parametersInfo.logLevel else { return }
             @InjectService var matomo: MatomoUtils
             matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogVerbosity")
-            updateRepositoryValue(\.$debugLevel, \.logLevel, newValue: newValue, repository: repository)
         }
     }
 

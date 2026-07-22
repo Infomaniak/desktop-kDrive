@@ -17,10 +17,8 @@
  */
 
 import Foundation
-import InfomaniakDI
 import MatomoTracker
 import OSLog
-import SwiftUI
 
 public final class MatomoUtils {
     private let tracker: MatomoTracker
@@ -86,7 +84,7 @@ public extension MatomoUtils {
         public static let exclusionSelector = EventCategory(displayName: "exclusionSelector")
         public static let asleepErrorPage = EventCategory(displayName: "asleepErrorPage")
         public static let driveAccessDeniedPage = EventCategory(displayName: "driveAccessDeniedPage")
-        public static let logginErrorPage = EventCategory(displayName: "logginErrorPage")
+        public static let loginErrorPage = EventCategory(displayName: "loginErrorPage")
         public static let maintenanceErrorPage = EventCategory(displayName: "maintenanceErrorPage")
         public static let notRenewErrorPage = EventCategory(displayName: "notRenewErrorPage")
         public static let UpdateDialog = EventCategory(displayName: "UpdateDialog")

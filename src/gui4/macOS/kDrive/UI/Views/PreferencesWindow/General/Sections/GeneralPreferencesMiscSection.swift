@@ -37,14 +37,18 @@ struct GeneralPreferencesMiscSection: View {
                 selection: $notificationsState
             )
             .onChange(of: notificationsState) { newValue in
-                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeNotifications")
                 updateRepositoryValue(\.$notificationsState, \.notificationsState, newValue: newValue, repository: repository)
+
+                guard newValue != repository.parametersInfo.notificationsState else { return }
+                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeNotifications")
             }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
                 .onChange(of: launchOnStartup) { newValue in
-                    matomo.track(eventWithCategory: .generalSettingsPage, name: "changeAutoStart")
                     updateRepositoryValue(\.$launchOnStartup, \.launchOnStartup, newValue: newValue, repository: repository)
+
+                    guard newValue != repository.parametersInfo.launchOnStartup else { return }
+                    matomo.track(eventWithCategory: .generalSettingsPage, name: "changeAutoStart")
                 }
 
             HStack {
@@ -60,13 +64,15 @@ struct GeneralPreferencesMiscSection: View {
                     .labelsHidden()
             }
             .onChange(of: moveDeletedFilesToTrash) { newValue in
-                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeMoveToTrash")
                 updateRepositoryValue(
                     \.$moveDeletedFilesToTrash,
                     \.moveDeletedFilesToTrash,
                     newValue: newValue,
                     repository: repository
                 )
+
+                guard newValue != repository.parametersInfo.moveDeletedFilesToTrash else { return }
+                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeMoveToTrash")
             }
         }
         .onAppear {

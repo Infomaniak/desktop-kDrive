@@ -42,8 +42,6 @@ struct SystemSyncDirDiskMissingReasonsSheet: View {
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonClose, role: .cancel) {
-                    @InjectService var matomo: MatomoUtils
-                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirDiskMissing")
                     dismiss()
                 }
             }
