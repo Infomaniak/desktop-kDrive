@@ -259,6 +259,8 @@ void TestIntegration::testSimpleUpload() {
     })")};
     CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
 
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
     const Operations localoperations{Str2SyncName(R"({
         "operations": [
             { "type": "Delete", "path":"A/AA/AAA" },
@@ -267,6 +269,9 @@ void TestIntegration::testSimpleUpload() {
     })")};
     auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
     auto remotesyncdirname = _remoteSyncDir.name(); // this is for debug, to find where is the tmp kDrive dir
+
+    LOGW_DEBUG(Log::instance()->getLogger(),
+              L"testSimpleUpload: localPath=" << testpath.native() << L", remoteSyncDir=" << remotesyncdirname);
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
