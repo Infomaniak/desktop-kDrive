@@ -54,6 +54,25 @@ void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
     _localReusedIds.clear();
 }
 
+bool ComputeFSOperationWorker::isLocalTimestampValid(const NodeId &localNodeId, const NodeType nodeType,
+                                                     const SyncTime modificationTime, const SyncPath &relativePath) const {
+    if (nodeType != NodeType::File) return true;
+
+    if (const SyncTime currentTimePlusOneYear =
+                std::chrono::duration_cast<std::chrono::seconds>(
+                        (std::chrono::system_clock::now() + std::chrono::years(1)).time_since_epoch())
+                        .count();
+        modificationTime > currentTimePlusOneYear || modificationTime < 0) {
+        LOGW_SYNCPAL_WARN(_logger, L"Item " << Utility::formatSyncPath(relativePath) << L" has an invalid modification ("
+                                            << modificationTime << L"). Item is ignored.");
+        const Error error(_syncPal->syncDbId(), localNodeId, "", nodeType, relativePath, ConflictType::None,
+                          InconsistencyType::InvalidTimestamp);
+        _syncPal->addError(error);
+        return false;
+    }
+    return true;
+}
+
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
@@ -169,6 +188,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
+
     // Detect DELETE
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
@@ -281,6 +301,11 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     // Detect EDIT
     const SyncTime snapshotModificationTime = snapshot->lastModified(nodeId);
+
+    if (side == ReplicaSide::Local && !isLocalTimestampValid(nodeId, dbNode.type(), snapshotModificationTime, snapshotPath)) {
+        return ExitCode::Ok;
+    }
+
     // On FAT filesystems, the time resolution for modification time is 2 seconds. Therefor, we ignore EDIT operations if the
     // difference between modification time in DB and the one on the filesystem is less or equal to 1sec.
     const bool sameModifiedTime =
@@ -528,9 +553,14 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                 continue;
             }
 
+            const auto modificationTime = snapshot->lastModified(nodeId);
+            if (side == ReplicaSide::Local && !isLocalTimestampValid(nodeId, type, modificationTime, snapshotPath)) {
+                continue;
+            }
+
             // Create operation
             auto fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
-                                                      snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
+                                                      modificationTime, snapshotSize, snapshotPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }
