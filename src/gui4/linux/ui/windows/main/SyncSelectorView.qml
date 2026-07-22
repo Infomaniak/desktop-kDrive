@@ -34,7 +34,8 @@ Item {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        driveName: root.controller.currentDriveName
+        title: root.controller.currentTitle
+        subtitle: root.controller.currentSubtitle
         driveColor: root.controller.currentDriveColor
         interactive: root.controller.syncCount > 1
         showChevron: root.controller.syncCount > 1
@@ -49,7 +50,18 @@ Item {
         width: root.width
         height: Math.min(syncList.contentHeight + IKSpacing.s8 * 2, IKMainWindow.syncSelectorPopupMaxHeight)
         padding: IKSpacing.s8
+        focus: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+        onOpened: Qt.callLater(function() {
+            if (syncList.currentItem) {
+                syncList.currentItem.forceActiveFocus()
+            }
+        })
+        onClosed: {
+            if (currentSyncItem.interactive) {
+                currentSyncItem.forceActiveFocus()
+            }
+        }
 
         background: Rectangle {
             radius: IKRadius.r8
@@ -76,7 +88,8 @@ Item {
                 required property var model
 
                 width: syncList.width
-                driveName: model.driveName
+                title: model.title
+                subtitle: model.subtitle
                 driveColor: model.driveColor
                 selected: model.isSelected
                 onTriggered: {
