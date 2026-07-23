@@ -330,36 +330,36 @@ bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
     WCHAR szFileName[MAX_PATH] = {0};
     (void) lstrcpynW(szFileName, _packageAbsolutePath.c_str(), MAX_PATH);
 
-    WINTRUST_FILE_INFO FileData;
-    (void) memset(&FileData, 0, sizeof(FileData));
-    FileData.cbStruct = sizeof(WINTRUST_FILE_INFO);
-    FileData.pcwszFilePath = szFileName;
-    FileData.hFile = nullptr;
-    FileData.pgKnownSubject = nullptr;
+    WINTRUST_FILE_INFO fileData;
+    (void) memset(&fileData, 0, sizeof(fileData));
+    fileData.cbStruct = sizeof(WINTRUST_FILE_INFO);
+    fileData.pcwszFilePath = szFileName;
+    fileData.hFile = nullptr;
+    fileData.pgKnownSubject = nullptr;
 
-    GUID WVTPolicyGUID = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-    WINTRUST_DATA WinTrustData;
+    GUID wvtPolicyGUID = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+    WINTRUST_DATA winTrustData;
 
-    (void) memset(&WinTrustData, 0, sizeof(WinTrustData));
-    WinTrustData.cbStruct = sizeof(WinTrustData);
-    WinTrustData.pPolicyCallbackData = nullptr;
-    WinTrustData.pSIPClientData = nullptr;
-    WinTrustData.dwUIChoice = WTD_UI_NONE;
-    WinTrustData.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
-    WinTrustData.dwProvFlags |= WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
-    WinTrustData.dwUnionChoice = WTD_CHOICE_FILE;
-    WinTrustData.dwStateAction = WTD_STATEACTION_VERIFY;
+    (void) memset(&winTrustData, 0, sizeof(winTrustData));
+    winTrustData.cbStruct = sizeof(winTrustData);
+    winTrustData.pPolicyCallbackData = nullptr;
+    winTrustData.pSIPClientData = nullptr;
+    winTrustData.dwUIChoice = WTD_UI_NONE;
+    winTrustData.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
+    winTrustData.dwProvFlags |= WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
+    winTrustData.dwUnionChoice = WTD_CHOICE_FILE;
+    winTrustData.dwStateAction = WTD_STATEACTION_VERIFY;
 
     // Verification sets this value.
-    WinTrustData.hWVTStateData = nullptr;
+    winTrustData.hWVTStateData = nullptr;
 
-    WinTrustData.pwszURLReference = nullptr;
-    WinTrustData.dwUIContext = 0;
+    winTrustData.pwszURLReference = nullptr;
+    winTrustData.dwUIContext = 0;
 
     // Set pFile.
-    WinTrustData.pFile = &FileData;
+    winTrustData.pFile = &fileData;
 
-    lStatus = WinVerifyTrust(nullptr, &WVTPolicyGUID, &WinTrustData);
+    lStatus = WinVerifyTrust(nullptr, &wvtPolicyGUID, &winTrustData);
     bool isValid = lStatus == ERROR_SUCCESS;
 
     if (!isValid) {
@@ -368,8 +368,8 @@ bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
     }
 
     // Any hWVTStateData must be released by a call with close.
-    WinTrustData.dwStateAction = WTD_STATEACTION_CLOSE;
-    lStatus = WinVerifyTrust(nullptr, &WVTPolicyGUID, &WinTrustData);
+    winTrustData.dwStateAction = WTD_STATEACTION_CLOSE;
+    lStatus = WinVerifyTrust(nullptr, &wvtPolicyGUID, &winTrustData);
 
     return isValid;
 }
