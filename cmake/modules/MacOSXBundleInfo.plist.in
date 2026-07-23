@@ -82,6 +82,20 @@
             </array>
         </dict>
     </array>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>oauth-desktop</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>kdrive</string>
+            </array>
+        </dict>
+    </array>
+
     <key>LoginItemAgentMachName</key>
     <string>@TEAM_IDENTIFIER_PREFIX@@APPLICATION_REV_DOMAIN@.LoginItemAgent</string>
 
