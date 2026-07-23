@@ -1575,7 +1575,8 @@ SyncTime CommonUtility::getCurrentSyncTime() {
 }
 
 SyncTime CommonUtility::getCurrentSyncTimeWithOffset(const std::chrono::seconds offset) {
-    return (std::chrono::system_clock::now() + offset).time_since_epoch().count();
+    return std::chrono::duration_cast<std::chrono::seconds>((std::chrono::system_clock::now() + offset).time_since_epoch())
+            .count();
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
