@@ -612,13 +612,19 @@ void AppServer::quitLater(const int32_t delayMs) {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
-    // Stop sync and remove it from syncPalMap
+    // Stop sync and remove it from syncPalMap.
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
-        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
+        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo << ". Aborting.");
+
+        // Early exit. This is important if behavior == SyncPal::DbBehaviorAfterStop::Remove,
+        // as VFS unregistration in the next step would delete of every dehydrated placeholders on Windows,
+        // causing thus unwanted deletions of synchronized files on restart.
+        return;
     }
 
-    // Stop Vfs
-    if (const auto exitInfo = stopVfs(syncDbId, true); !exitInfo) {
+    // Stop and unregister Vfs.
+    // On Windows, VFS unregistration causes the deletion of every dehydrated placeholders.
+    if (const auto exitInfo = stopVfs(syncDbId, VfsStopOption::Unregister); !exitInfo) {
         LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
@@ -658,7 +664,7 @@ void AppServer::stopAllSyncPals() {
 void AppServer::stopAllVfs() {
     const std::scoped_lock lock(vfsMapMutex);
     for (const auto &[syncDbId, _]: vfsMap) {
-        if (const auto exitInfo = stopVfs(syncDbId, false); !exitInfo) {
+        if (const auto exitInfo = stopVfs(syncDbId, VfsStopOption::KeepRegistered); !exitInfo) {
             LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << exitInfo);
         }
     }
@@ -4249,7 +4255,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     return ExitCode::Ok;
 }
 
-ExitInfo AppServer::stopVfs(const SyncDbId syncDbId, const bool unregister) {
+ExitInfo AppServer::stopVfs(const SyncDbId syncDbId, const VfsStopOption vfsStopOption) {
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId);
 
     // Stop Vfs
@@ -4265,7 +4271,7 @@ ExitInfo AppServer::stopVfs(const SyncDbId syncDbId, const bool unregister) {
         return {ExitCode::DataError, ExitCause::Unknown};
     }
 
-    vfsMapIt->second->stop(unregister);
+    vfsMapIt->second->stop(vfsStopOption == VfsStopOption::Unregister);
 
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId << " done");
 
@@ -4312,8 +4318,8 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
         // Stop sync
         syncPalMapIt->second->stop();
 
-        // Stop Vfs
-        if (const auto exitInfo = stopVfs(syncDbId, true); !exitInfo) {
+        // Stop and unregister Vfs.
+        if (const auto exitInfo = stopVfs(syncDbId, VfsStopOption::Unregister); !exitInfo) {
             LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << sync.dbId() << " : " << exitInfo);
             return exitInfo;
         }

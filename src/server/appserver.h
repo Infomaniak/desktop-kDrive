@@ -183,7 +183,12 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void loadUsersInfo() { onLoadInfo(); }
 
-        [[nodiscard]] ExitInfo stopVfs(SyncDbId syncDbId, bool unregister);
+        enum class VfsStopOption {
+            Unregister,
+            KeepRegistered
+        };
+
+        [[nodiscard]] ExitInfo stopVfs(SyncDbId syncDbId, VfsStopOption stopOption);
         [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
