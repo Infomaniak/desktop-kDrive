@@ -37,11 +37,11 @@ jobs:
           submodules: recursive
       - name: Build Windows
         uses: ./.github/actions/build_windows
-        with:  
+        with:
           debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
           debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
-    
+
   build-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -61,9 +61,9 @@ jobs:
           submodules: recursive
       - name: Build macOS
         uses: ./.github/actions/build_macos
-        with:  
+        with:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
-    
+
 
 # Tests Windows
   Test-Windows:
@@ -84,7 +84,7 @@ jobs:
 
        - name: Run test
          uses: ./.github/actions/test_windows
-         with:  
+         with:
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
@@ -95,7 +95,7 @@ jobs:
       fail-fast: false
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Linux, X64 ]
+    runs-on: [ self-hosted, Linux, X64, linux-test ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
@@ -107,7 +107,7 @@ jobs:
 
        - name: Run test
          uses: ./.github/actions/test_linux
-         with:  
+         with:
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
@@ -130,7 +130,7 @@ jobs:
 
        - name: Run test
          uses: ./.github/actions/test_macos
-         with:  
+         with:
             test_name: ${{ matrix.test_name }}
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
