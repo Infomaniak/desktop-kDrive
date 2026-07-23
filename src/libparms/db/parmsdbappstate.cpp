@@ -46,6 +46,7 @@ constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadSt
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_NoUpdate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_NotifyBeforeDelete[] = "1";
 
 namespace KDC {
 
@@ -115,6 +116,8 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
+    if (!insertAppState(AppStateKey::NotifyBeforeDelete, APP_STATE_KEY_DEFAULT_NotifyBeforeDelete)) {
+        LOG_WARN(_logger, "Error while inserting default value for NotifyBeforeDelete");
     // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
     // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
     // no need to display the banner.
@@ -126,7 +129,7 @@ bool ParmsDb::insertDefaultAppState() {
     return true;
 }
 
-bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bool updateOnlyIfEmpty /*= false*/) {
+bool ParmsDb::insertAppState(const AppStateKey key, const std::string &value, const bool updateOnlyIfEmpty /*= false*/) {
     const std::scoped_lock lock(_mutex);
     std::string valueStr = value;
     if (valueStr.empty()) {
@@ -165,7 +168,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, const bo
     return true;
 }
 
-bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found) {
+bool ParmsDb::selectAppState(const AppStateKey key, AppStateValue &value, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
     std::string valueStr;
@@ -194,7 +197,7 @@ bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found)
     return true;
 };
 
-bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &found) {
+bool ParmsDb::updateAppState(const AppStateKey key, const AppStateValue &value, bool &found) {
     AppStateValue existingValue;
     int errId = 0;
 
