@@ -78,7 +78,7 @@ void TestSocketComm::testServerListen() {
     clientSideChannel->sendMessage(Str("Hello world"));
 
     // Wait for the server to receive the message
-    remainWait = 1000; // wait max 1 second
+    remainWait = 100; // wait max 1 second
     while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -122,6 +122,11 @@ void TestSocketComm::testServerCallbacks() {
 
     // Close the client side channel to trigger lost connection callback
     clientSideChannel->close();
+
+    // Force a read on the server side channel to detect the peer close and
+    // trigger lostConnectionCbk() — required because available() can no longer
+    // be used as a proxy for EOF with TLS sockets.
+    serverSidechannel->readMessage();
 
     // Wait for the lost connection callback to be called
     remainWait = 400; // wait max 4 seconds
