@@ -28,12 +28,15 @@
 #include <QDir>
 #include <QLocale>
 #include <QQmlContext>
+#include <QQmlError>
 #include <QScreen>
 #include <QStringList>
 #include <QSysInfo>
+#include <QTimer>
 #include <QTranslator>
 #include <QVariant>
 #include <QWindow>
+#include <QQmlEngine>
 
 #include <chrono>
 #include <thread>
@@ -59,7 +62,10 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
     (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
+        // Normal UTILITY_QUIT paths stop the application before the server closes the socket. This cleanup therefore runs only
+        // when an established IPC connection is lost unexpectedly.
         _systemTrayController.setProductStateInitialized(false);
+        _appRouter.hideMainWindow();
         _appCache.clearAll();
         _parametersStore.clear();
     });
@@ -68,6 +74,14 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    [this] { _systemTrayController.setProductStateInitialized(true); });
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
                    &SentryService::updateAuthenticatedUser);
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, [this] {
+        if (_systemTrayController.trayModeActive() || _appCache.syncContexts().empty()) {
+            return;
+        }
+
+        qCInfo(lcAppClientLinux) << "Opening main window after bootstrap because tray fallback mode is active";
+        openMainWindow();
+    });
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
@@ -77,6 +91,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
                    &SystemTrayController::hideMainWindow);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this,
+                   [this] { QTimer::singleShot(0, this, &AppClientLinux::openMainWindow); });
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
@@ -111,7 +127,16 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
+    (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
+                                                 "AppRouter is owned by AppClientLinux and exposed as appRouter.");
+    _qmlEngine.setOutputWarningsToStandardError(false);
+    (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
+        for (const auto &warning: warnings) {
+            qCWarning(lcAppClientLinux) << "QML warning:" << warning.toString();
+        }
+    });
     _qmlEngine.setInitialProperties({
+            {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
@@ -173,13 +198,24 @@ void AppClientLinux::setupTranslations() {
 }
 
 void AppClientLinux::openMainWindow() {
-    if (_appCache.driveContexts().empty()) {
+    if (_appCache.syncContexts().empty()) {
         _onboardingSessionManager.openOnboardingWindow();
         return;
     }
 
-    qCInfo(lcAppClientLinux) << "Main window open skipped: main content is not implemented"
-                             << "| configuredDrives:" << _appCache.driveContexts().size();
+    _mainSelectionStore.ensureValidSelection();
+    _appRouter.showMainWindow();
+    _systemTrayController.showMainWindow();
+    _serverCommService.requestActivateLoadInfo([](const ExitInfo &exitInfo) {
+        if (!exitInfo) {
+            qCWarning(lcAppClientLinux) << "Main window live info refresh failed | code:" << exitInfo.code()
+                                        << "/ cause:" << exitInfo.cause();
+        }
+    });
+    qCInfo(lcAppClientLinux) << "Main window opened"
+                             << "| configuredDrives:" << _appCache.driveContexts().size()
+                             << "| configuredSyncs:" << _appCache.syncContexts().size()
+                             << "| currentSyncDbId:" << _mainSelectionStore.currentSyncDbId();
 }
 
 void AppClientLinux::setupLogging() {

@@ -47,8 +47,9 @@
   put multi-service onboarding backend effects in a dedicated onboarding coordinator.
 - Keep only `OnboardingSessionManager` process-long. Onboarding state, flow, coordinators, and view models belong to an
   ephemeral `OnboardingSession` and must not be exposed as root QML context properties.
-- Route tray and server main-window activation requests through `OnboardingSessionManager` while onboarding is the only
-  displayable Linux v4 content. If onboarding is not required, keep the window hidden and log why no route can be shown.
+- Route tray and server main-window activation requests through `AppClientLinux::openMainWindow()`. It delegates to
+  `OnboardingSessionManager` only when no sync is configured; otherwise it activates `AppRouter` and shows the main
+  window shell.
 - When ending an onboarding session, unpublish it so QML unloads the onboarding `Loader`, then destroy it with
   `deleteLater()`. Invalidate session-scoped asynchronous results before allowing a new session to consume them.
 - Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login into
@@ -72,7 +73,8 @@
 ## Current Structure
 
 - `main.cpp`: process entry point + single-instance lock file.
-- `appclientlinux.*`: top-level app wiring (logging, IPC lifecycle, dispatcher/service/coordinator ownership).
+- `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
+  dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache`,
   GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late tray availability, and
@@ -101,6 +103,8 @@
       but the underlying cache graph changes.
     - Exposes selected-sync runtime through its dedicated accessor and signal so progress ticks do not rebuild the
       configured graph context.
+- `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
+  it must not read `AppCache`, call backend services, or decide whether onboarding is required.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
   configs.
 - `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`).
@@ -119,8 +123,8 @@
   controller/model.
 - `app/onboarding/onboardingsessionmanager.*`: process-long nullable-session owner and the only onboarding object exposed
   at the root QML boundary. It creates a session after cache bootstrap and unpublishes it before deferred destruction. It
-  accepts activation requests while onboarding is the only available route and rejects them with an explanatory log when
-  no displayable session exists.
+  accepts activation requests while onboarding is required and rejects them with an explanatory log when no onboarding
+  route is displayable. On successful onboarding completion, `AppClientLinux` opens the main window route.
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
   onboarding UI actions such as opening account signup and drive-offer URLs, plus synchronization/ready presentation
@@ -131,8 +135,7 @@
   login-specific workflow logic.
 - `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It derives
   collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only failed and
-  not-yet-attempted work for retry, reconciles the parent-first cache snapshot after a failed `SYNC_ADD`, and temporarily
-  opens every configured sync root in the system file manager from the ready screen.
+  not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a failed `SYNC_ADD`.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
@@ -149,8 +152,11 @@
   confirmation.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
-- `ui/`: QML shell, onboarding screens, design tokens, and bundled UI assets such as tray icons and onboarding Lottie
-  animations.
+- `ui/`: QML shell, onboarding screens, main-window screens, design tokens, and bundled UI assets such as tray icons and
+  onboarding Lottie animations.
+    - `ui/mainwindow/`: main-window shell and temporary placeholders. The shell is loaded only when `AppRouter` marks
+      the main window active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in
+      cache-backed QML models.
     - `ui/window/`: shared QML frameless-window shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
