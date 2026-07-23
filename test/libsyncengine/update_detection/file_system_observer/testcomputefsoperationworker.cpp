@@ -578,32 +578,47 @@ void TestComputeFSOperationWorker::testIsLocalTimestampValid() {
     const bool isLink = false;
 
     // Directories are always valid regardless of the timestamp value.
+    auto modificationTime = SyncTime{-1};
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::Directory, filestat.creationTime, -1, fullPath, isLink));
+            fileNodeId, NodeType::Directory, filestat.creationTime, fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(SyncTime{-1}, modificationTime);
+
+    modificationTime = justBeyondOneYear;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::Directory, filestat.creationTime, justBeyondOneYear, fullPath, isLink));
+            fileNodeId, NodeType::Directory, filestat.creationTime, fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(justBeyondOneYear, modificationTime);
 
     // A file with the current timestamp is valid.
+    modificationTime = now;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::File, filestat.creationTime, now, fullPath, isLink));
+            fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(now, modificationTime);
 
     // A file with timestamp 0 (Unix epoch) is valid — it is not negative.
+    modificationTime = 0;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::File, filestat.creationTime, 0, fullPath, isLink));
+            fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(SyncTime{0}, modificationTime);
 
     // A file with a timestamp just within one year in the future is valid.
+    modificationTime = justWithinOneYear;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::File, filestat.creationTime, justWithinOneYear, fullPath, isLink));
+            fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(justWithinOneYear, modificationTime);
 
     // Invalid timestamps on files are corrected when possible.
+    modificationTime = -1;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::File, filestat.creationTime, -1, fullPath, isLink));
+            fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
     IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT(filestat.modificationTime >= now - 5);
+    CPPUNIT_ASSERT(modificationTime >= now - 5);
 
+    modificationTime = justBeyondOneYear;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
-            fileNodeId, NodeType::File, filestat.creationTime, justBeyondOneYear, fullPath, isLink));
+            fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT(modificationTime >= now - 5);
 }
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
