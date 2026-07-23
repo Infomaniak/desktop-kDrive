@@ -172,15 +172,16 @@ void OldCommServer::onNewConnection() {
         return;
     }
 
-    LOG_DEBUG(Log::instance()->getLogger(), "New connection");
-
-    if (_tcpSocket) {
-        disconnect(_tcpSocket);
-        if (_tcpSocket->isOpen()) {
-            _tcpSocket->close();
+    if (_tcpSocket && _tcpSocket->state() == QAbstractSocket::ConnectedState) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Rejecting new connection, already have an active connection");
+        if (auto *rejectedSocket = _tcpServer.nextPendingConnection()) {
+            rejectedSocket->close();
+            rejectedSocket->deleteLater();
         }
-        _tcpSocket->deleteLater();
+        return;
     }
+
+    LOG_DEBUG(Log::instance()->getLogger(), "New connection");
 
     _tcpSocket = _tcpServer.nextPendingConnection();
     if (!_tcpSocket || !_tcpSocket->isValid()) {
