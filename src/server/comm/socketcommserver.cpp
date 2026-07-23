@@ -32,12 +32,8 @@ static Poco::Net::Context::Ptr getSecureContext() {
     static Poco::Net::Context::Ptr ctx = nullptr;
     if (!ctx) {
         SelfSignedCert::generateIfNeeded();
-        ctx = new Poco::Net::Context(
-                Poco::Net::Context::TLS_SERVER_USE,
-                SelfSignedCert::keyPath().string(),
-                SelfSignedCert::certPath().string(),
-                "",
-                Poco::Net::Context::VERIFY_NONE);
+        ctx = new Poco::Net::Context(Poco::Net::Context::TLS_SERVER_USE, SelfSignedCert::keyPath().string(),
+                                     SelfSignedCert::certPath().string(), "", Poco::Net::Context::VERIFY_NONE);
         ctx->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
     }
     return ctx;
@@ -83,6 +79,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
 #pragma pop_macro("max")
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::receiveBytes: " << ex.displayText());
+        _isClosing = true;
         lostConnectionCbk();
         close();
         _pendingRead = false;
@@ -92,6 +89,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     if (lenReceived <= 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
                   (lenReceived == 0 ? "Socket connection closed by peer" : "Socket connection error"));
+        _isClosing = true;
         lostConnectionCbk();
         close();
         _pendingRead = false;
@@ -117,11 +115,13 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
         written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::sendBytes: " << ex.displayText());
+        _isClosing = true;
         return 0;
     }
 
     if (written < 0) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket connection error on sendBytes");
+        _isClosing = true;
         lostConnectionCbk();
         close();
         return 0;
@@ -142,18 +142,6 @@ void SocketCommChannel::callbackHandler() {
             break;
         }
 
-        try {
-            if (_socket.available() == 0) {
-                LOG_DEBUG(Log::instance()->getLogger(), "Socket connection closed by peer");
-                lostConnectionCbk();
-                break;
-            }
-        } catch (Poco::Exception &ex) {
-            LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
-            lostConnectionCbk();
-            break;
-        }
-
         _pendingRead = true;
         readyReadCbk();
         while (!_isClosing && _pendingRead) { // Wait until readData is called before polling again
@@ -164,7 +152,14 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        return static_cast<uint64_t>((std::max) (0, _socket.available()));
+        int avail = _socket.available();
+        if (avail > 0) return static_cast<uint64_t>(avail);
+        // For TLS sockets, available() may return 0 even when encrypted data is pending.
+        // Fall back to poll() to detect readability.
+        if (_socket.poll(Poco::Timespan(0, 0), Poco::Net::Socket::SELECT_READ)) {
+            return 1; // Data is likely available to be read
+        }
+        return 0;
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
         return static_cast<uint64_t>(0);
@@ -321,15 +316,15 @@ void SocketCommServer::execute() {
 
         // Eagerly complete the TLS handshake so that encrypted data on the wire
         // is already decrypted when the callback thread polls for it later.
+        Poco::Net::SecureStreamSocket secureSocket(socket);
         try {
-            Poco::Net::SecureStreamSocket secureSocket(socket);
             secureSocket.completeHandshake();
         } catch (Poco::Exception &ex) {
             LOG_WARN(Log::instance()->getLogger(), "TLS handshake failed after accept: " << ex.displayText());
             // Let the channel handle the error through normal polling.
         }
 
-        const auto channel = makeCommChannel(socket);
+        const auto channel = makeCommChannel(secureSocket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
             std::function<void()> postponedLostConnectionCbk = [this, ch]() {
                 auto channelPtr = std::dynamic_pointer_cast<SocketCommChannel>(ch);
@@ -365,7 +360,7 @@ void SocketCommServer::execute() {
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // Join and remove all postponed lost-connection callback threads
-    for (const auto& thread: _postponedLostConnectionCbks) {
+    for (const auto &thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }
