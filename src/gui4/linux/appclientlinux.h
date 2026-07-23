@@ -22,6 +22,7 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/parametersstore.h"
+#include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
@@ -36,7 +37,7 @@
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
-#include "ui/window/windowdecorationcontroller.h"
+#include "ui/chrome/windowdecorationcontroller.h"
 
 #include <QApplication>
 #include <QLoggingCategory>
@@ -55,6 +56,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
  * - CommService: typed request/signal facade over IPC.
  * - CachePipeline: unique bridge from CommService push signals to AppCache.
  * - CachePopulator: sequential initial snapshot loader for the graph-backed cache.
+ * - MainSidebarController: configured-sync presentation and main-sidebar actions.
  * - ServiceActionTracker: durable UI-facing pending-action state.
  * - ServiceEventBus: transient cross-service events (errors, notifications, ...).
  * - WindowDecorationController: platform-specific input regions for frameless windows.
@@ -100,6 +102,7 @@ class AppClientLinux : public QApplication {
         ParametersStore _parametersStore{this};
         CachePipeline _cachePipeline{_serverCommService, _appCache, this};
         MainSelectionStore _mainSelectionStore{_appCache, this};
+        MainSidebarController _mainSidebarController{_appCache, _mainSelectionStore, this};
         ParametersService _parametersService{_serverCommService, _parametersStore, this};
         AppRouter _appRouter{this};
         ServiceActionTracker _serviceActionTracker{this};
