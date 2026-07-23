@@ -114,8 +114,8 @@ struct GuiRequests {
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
-        static ExitCode getAppState(AppStateKey key, AppStateValue &value);
-        static ExitCode updateAppState(AppStateKey key, const AppStateValue &value);
+        static ExitInfo getAppState(AppStateKey key, AppStateValue &value);
+        static ExitInfo updateAppState(AppStateKey key, const AppStateValue &value);
         static ExitCode getLogDirEstimatedSize(uint64_t &size);
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
         static ExitCode cancelLogUploadToSupport();
