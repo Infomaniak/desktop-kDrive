@@ -19,6 +19,9 @@
 #include "testincludes.h"
 #include "server/comm/socketcommserver.h"
 
+#include <Poco/Net/SecureStreamSocket.h>
+#include <Poco/Net/Context.h>
+
 #include <log4cplus/logger.h>
 
 namespace KDC {
@@ -54,6 +57,8 @@ class TestSocketComm : public CppUnit::TestFixture, public TestBase {
     public:
         void setUp() final;
         void tearDown() override;
+
+        static Poco::Net::SecureStreamSocket newSecureClient(Poco::UInt16 port);
 
         void testServerListen();
         void testServerCallbacks();

@@ -22,6 +22,9 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
+#include <Poco/Net/SecureServerSocket.h>
+#include <Poco/Net/SecureStreamSocket.h>
+#include <Poco/Net/Context.h>
 #include <Poco/Net/Socket.h>
 #include <Poco/Net/ServerSocket.h>
 
@@ -69,7 +72,7 @@ class SocketCommServer : public AbstractCommServer {
         virtual std::shared_ptr<SocketCommChannel> makeCommChannel(Poco::Net::StreamSocket &socket) const = 0;
 
     private:
-        Poco::Net::ServerSocket _serverSocket;
+        Poco::Net::SecureServerSocket _serverSocket;
         std::recursive_mutex _channelsMutex;
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
         bool _isListening = false;

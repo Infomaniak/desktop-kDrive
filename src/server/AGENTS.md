@@ -17,7 +17,9 @@ The GUI sends typed **job requests** to the server over the IPC channel. Each ca
 
 Platform breakdown:
 - **macOS** → XPC (`GuiCommServer extends XPCCommServer`, see `xpccommserver_mac.h`)
-- **Windows / Linux** → TCP socket (`GuiCommServer extends SocketCommServer`, see `socketcommserver.h`)
+- **Windows / Linux** → TLS over TCP socket (`GuiCommServer extends SocketCommServer`, see `socketcommserver.h`)
+  - `SocketCommServer` uses `Poco::Net::SecureServerSocket` (TLS 1.2+) with a runtime-generated self-signed RSA certificate stored in `AppSupportDir/server_cert.pem` + `server_key.pem`.
+  - Certificate verification is disabled (`VERIFY_NONE`) because the peer is always localhost; this prevents passive sniffing but not active MITM on loopback.
 
 ```bash
 # Find all GUI-facing job classes

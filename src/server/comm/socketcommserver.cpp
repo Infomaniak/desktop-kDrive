@@ -20,10 +20,28 @@
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/utility/selfsignedcert.h"
+
+#include <Poco/Net/Context.h>
 
 namespace KDC {
 
 constexpr char host[] = "127.0.0.1";
+
+static Poco::Net::Context::Ptr getSecureContext() {
+    static Poco::Net::Context::Ptr ctx = nullptr;
+    if (!ctx) {
+        SelfSignedCert::generateIfNeeded();
+        ctx = new Poco::Net::Context(
+                Poco::Net::Context::TLS_SERVER_USE,
+                SelfSignedCert::keyPath().string(),
+                SelfSignedCert::certPath().string(),
+                "",
+                Poco::Net::Context::VERIFY_NONE);
+        ctx->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+    }
+    return ctx;
+}
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
@@ -176,7 +194,8 @@ bool SocketCommChannel::joinCallbackThread() noexcept {
 }
 
 SocketCommServer::SocketCommServer(const std::string &name) :
-    AbstractCommServer(name) {}
+    AbstractCommServer(name),
+    _serverSocket(getSecureContext()) {}
 
 SocketCommServer::~SocketCommServer() {
     try {
@@ -299,6 +318,16 @@ void SocketCommServer::execute() {
         }
 
         if (_stopAsked) break;
+
+        // Eagerly complete the TLS handshake so that encrypted data on the wire
+        // is already decrypted when the callback thread polls for it later.
+        try {
+            Poco::Net::SecureStreamSocket secureSocket(socket);
+            secureSocket.completeHandshake();
+        } catch (Poco::Exception &ex) {
+            LOG_WARN(Log::instance()->getLogger(), "TLS handshake failed after accept: " << ex.displayText());
+            // Let the channel handle the error through normal polling.
+        }
 
         const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
