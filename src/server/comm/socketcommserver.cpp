@@ -185,6 +185,11 @@ SocketCommServer::~SocketCommServer() {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in SocketCommChannel::close: " << ex.what());
     }
 
+    // Ensure the server thread is joined even if it exited on its own (e.g., after accepting a single connection)
+    if (_serverSocketThread && _serverSocketThread->joinable()) {
+        _serverSocketThread->join();
+    }
+
     joinAndClearPostponedLostConnectionCbks();
 }
 
@@ -281,7 +286,7 @@ void SocketCommServer::execute() {
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
     saveCommPort(getPort());
-    if (!_stopAsked) {
+    while (!_stopAsked) {
         try {
             _serverSocket.listen();
         } catch (Poco::Exception &ex) {
@@ -298,10 +303,7 @@ void SocketCommServer::execute() {
             return;
         }
 
-        if (_stopAsked) {
-            _isListening = false;
-            return;
-        }
+        if (_stopAsked) break;
 
         const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
@@ -329,6 +331,7 @@ void SocketCommServer::execute() {
         }
         newConnectionCbk();
         channel->startCallbackThread();
+        break;
     }
     _isListening = false;
 }
