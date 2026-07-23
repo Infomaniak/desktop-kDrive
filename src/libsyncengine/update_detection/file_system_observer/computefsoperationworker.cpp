@@ -65,8 +65,9 @@ bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeId &localNode
     if (const SyncTime currentTimePlusOneYear =
                 currentTime + std::chrono::duration_cast<std::chrono::seconds>(std::chrono::years(1)).count();
         modificationTime > currentTimePlusOneYear || modificationTime < 0) {
-        LOGW_WARN(_logger, L"Modification time of item " << Utility::formatSyncPath(absolutePath)
-                                                         << L"is more than 1 year into the future, trying to fix it.");
+        LOGW_WARN(_logger, L"Modification time of item "
+                                   << Utility::formatSyncPath(absolutePath)
+                                   << L"is more than 1 year into the future. Setting it with current time.");
 
         // Try to fix local timestamp
         if (const auto ioError = IoHelper::setFileDates(absolutePath, creationTime, currentTime, isLink);
