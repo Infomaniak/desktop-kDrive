@@ -24,6 +24,7 @@ add_definitions(-D_UNICODE)
 set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
+    utility/selfsignedcert.h utility/selfsignedcert.cpp
     utility/stateholder.h
     utility/jsonparserutility.h
     # Db

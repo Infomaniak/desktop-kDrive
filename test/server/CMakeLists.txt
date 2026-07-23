@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML Net)
+find_package(Poco 1.13.3 REQUIRED XML Net NetSSL)
 
 set(CMAKE_AUTOMOC ON)
 
