@@ -377,7 +377,7 @@ enum class Scope {
 };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
-using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState, bool>;
 
 //
 // Concepts
