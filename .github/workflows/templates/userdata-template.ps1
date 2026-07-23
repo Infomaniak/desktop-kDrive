@@ -43,10 +43,16 @@ Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger `
     -Principal $Principal -Force | Out-Null
 
 # If Admin already has an interactive session open at the time this script runs,
-# start run.cmd immediately rather than waiting for the next logon.
+# start the runner immediately rather than waiting for the next logon.
+#
+# IMPORTANT: this user-data script is executed by cloudbase-init under its own
+# (cloud-init) identity. Calling Start-Process here would launch run.cmd as the
+# cloud-init account. Instead we start the scheduled task, which always runs
+# under its configured principal ($AdminAccount, RunLevel Highest), so the
+# runner correctly inherits the Administrator identity.
 $adminSession = Get-Process -Name explorer -IncludeUserName -ErrorAction SilentlyContinue |
     Where-Object { $_.UserName -like "*$AdminAccount" }
 
 if ($adminSession) {
-    Start-Process -FilePath "$RunnerDir\run.cmd" -WorkingDirectory $RunnerDir
+    Start-ScheduledTask -TaskName $TaskName
 }
