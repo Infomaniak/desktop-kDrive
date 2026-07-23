@@ -22,7 +22,7 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-struct ConflictsToResolve: Sendable, Identifiable {
+struct ConflictsToResolve: Identifiable {
     var id: String {
         return errors.map(\.metadata.path).joined(separator: ",")
     }
@@ -31,7 +31,7 @@ struct ConflictsToResolve: Sendable, Identifiable {
 }
 
 struct ConflictsListView: View {
-    @LazyInjectService private var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
 
     @State private var search = ""
     @State private var isShowingVersionSelectorSheet: ConflictsToResolve?

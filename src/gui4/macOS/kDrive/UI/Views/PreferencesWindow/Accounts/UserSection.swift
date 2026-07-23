@@ -23,7 +23,7 @@ import kDriveResources
 import SwiftUI
 
 struct UserSection: View {
-    @LazyInjectService private var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
 
     @State private var isShowingDisconnectUserAlert = false
 

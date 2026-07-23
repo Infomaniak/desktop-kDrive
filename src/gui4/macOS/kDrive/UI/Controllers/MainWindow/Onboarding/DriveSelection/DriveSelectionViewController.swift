@@ -29,7 +29,7 @@ enum OnboardingLinks {
 }
 
 final class DriveSelectionViewController: OnboardingStepViewController {
-    @LazyInjectService var matomo: MatomoUtils
+    @LazyInjectService private var matomo: MatomoUtils
 
     private let viewModel: DriveSelectionViewModel
     private let flowCoordinator: OnboardingFlowCoordinator

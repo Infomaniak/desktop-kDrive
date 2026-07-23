@@ -24,7 +24,7 @@ import Sentry
 import SwiftUI
 
 struct BlacklistPreferencesView: View {
-    @LazyInjectService private var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
 
     @State private var initialBlacklist: Set<String> = []
     @State private var blackList: Set<String> = []

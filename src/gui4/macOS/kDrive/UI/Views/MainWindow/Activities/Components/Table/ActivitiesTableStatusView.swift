@@ -62,7 +62,7 @@ struct StateIndicator: StatusIndicator {
 }
 
 struct ActivitiesTableStatusView: View {
-    @LazyInjectService var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
 
     let context: UISynchroNodeContext
 

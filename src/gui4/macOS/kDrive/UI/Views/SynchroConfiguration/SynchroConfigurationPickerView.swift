@@ -24,7 +24,7 @@ import SwiftUI
 
 struct SynchroConfigurationPickerView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
-    @LazyInjectService var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
 
     @State private var isLoading = false
 

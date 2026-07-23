@@ -24,7 +24,7 @@ import SwiftUI
 
 struct GeneralPreferencesHelpSection: View {
     @Environment(\.openURL) private var openURL
-    @LazyInjectService var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
 
     static let feedbackURL = URL(string: KDriveLocalizable.feedbackURL)!
 

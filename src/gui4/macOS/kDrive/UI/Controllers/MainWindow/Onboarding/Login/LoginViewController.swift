@@ -24,7 +24,7 @@ import kDriveCoreUI
 import kDriveResources
 
 final class LoginViewController: OnboardingStepViewController {
-    @LazyInjectService var matomo: MatomoUtils
+    @LazyInjectService private var matomo: MatomoUtils
 
     private let viewModel: LoginViewModel
 

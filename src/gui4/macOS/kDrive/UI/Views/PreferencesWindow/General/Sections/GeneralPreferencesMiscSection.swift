@@ -22,7 +22,7 @@ import kDriveResources
 import SwiftUI
 
 struct GeneralPreferencesMiscSection: View {
-    @LazyInjectService var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
     @ObservedObject var repository: PreferencesRepository
 
     @State private var notificationsState: UINotificationState = .never

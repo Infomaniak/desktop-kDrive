@@ -41,7 +41,7 @@ final class MainViewController: IKSplitViewController {
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
     @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
-    @LazyInjectService var matomo: MatomoUtils
+    @LazyInjectService private var matomo: MatomoUtils
 
     private let viewModel = MainViewModel()
 

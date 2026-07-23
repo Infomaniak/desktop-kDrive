@@ -28,7 +28,7 @@ final class NonInteractiveButton: NSButton {
 }
 
 final class DriveCellView: NSView {
-    @LazyInjectService var matomo: MatomoUtils
+    @LazyInjectService private var matomo: MatomoUtils
 
     enum Tokens {
         static let backgroundColor = ColorToken.Surface.secondary.asNSColor

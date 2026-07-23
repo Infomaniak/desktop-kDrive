@@ -24,7 +24,8 @@ import Sentry
 import SwiftUI
 
 struct AdvancedSynchroCellView: View {
-    @LazyInjectService private var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
+
     @State private var synchroMode: UISynchroMode
     @State private var committedSynchroMode: UISynchroMode
     @State private var blacklistNodes: Set<String>?

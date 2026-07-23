@@ -42,7 +42,7 @@ struct FolderChipView: View {
 }
 
 struct AddAdvancedSynchroView: View {
-    @LazyInjectService private var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
     @Environment(\.dismiss) private var dismiss
 
     @EnvironmentObject private var viewModel: AddAdvancedSynchroFlowViewModel

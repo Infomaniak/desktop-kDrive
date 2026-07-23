@@ -25,7 +25,7 @@ import Sentry
 import SwiftUI
 
 struct SyncedKDriveView: View {
-    @LazyInjectService private var matomo: MatomoUtils
+    @InjectService private var matomo: MatomoUtils
     let drive: UIDrive
 
     @State private var mainSynchro: UISynchro?
