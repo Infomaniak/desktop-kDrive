@@ -305,8 +305,7 @@ std::string CommonUtility::fileSystemType(const SyncPath &targetPath, std::strin
     return fallbackFSType;
 }
 
-bool CommonUtility::isManagedFS(const std::string &fsType)
-{
+bool CommonUtility::isManagedFS(const std::string &fsType) {
     return fsType == fsType::NTFS || fsType == fsType::APFS || fsType == fsType::HFS || fsType == fsType::FAT ||
            fsType == fsType::EXFAT || fsType == fsType::EXT234;
 }
@@ -1569,6 +1568,14 @@ bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime tim
                                                                                : 0;
     const auto diff = time1 > time2 ? time1 - time2 : time2 - time1;
     return diff <= timeDifferenceThresholdForEdit;
+}
+
+SyncTime CommonUtility::getCurrentSyncTime() {
+    return getCurrentSyncTimeWithOffset(std::chrono::seconds(0));
+}
+
+SyncTime CommonUtility::getCurrentSyncTimeWithOffset(const std::chrono::seconds offset) {
+    return (std::chrono::system_clock::now() + offset).time_since_epoch().count();
 }
 
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {

@@ -60,10 +60,8 @@ bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeId &localNode
                                                          const bool isLink, SyncTime &modificationTime) const {
     if (nodeType != NodeType::File) return true;
 
-    const auto currentTime =
-            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    if (const SyncTime currentTimePlusOneYear =
-                currentTime + std::chrono::duration_cast<std::chrono::seconds>(std::chrono::years(1)).count();
+    const auto currentTime = CommonUtility::getCurrentSyncTime();
+    if (const SyncTime currentTimePlusOneYear = CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1));
         modificationTime > currentTimePlusOneYear || modificationTime < 0) {
         LOGW_WARN(_logger, L"Modification time of item "
                                    << Utility::formatSyncPath(absolutePath)
