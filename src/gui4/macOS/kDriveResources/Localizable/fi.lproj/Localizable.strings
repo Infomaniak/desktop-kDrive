@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Ota virheenkorjauksen kirjaus käyttöön";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "Tässä kansiossa on jo toinen %@, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %@-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Ristiriitaiset nimet, isojen ja pienten kirjainten huomioiminen";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "Sinulla ei ole tarvittavia käyttöoikeuksia lisätäksesi %@ tähän sijaintiin.\nPyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Näytä lähdekoodi";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Käynnistä sovellus uudelleen tarvittaessa";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Seuraa synkronointiasi entistä helpommin.";

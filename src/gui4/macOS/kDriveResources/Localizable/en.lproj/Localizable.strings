@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Enable debug logging";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "Another %@ with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %@ in kDrive online to synchronize it on your device.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Case-sensitive name conflict";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "You do not have the required permissions to add a %@ to this location.\nRequest access from the owner or administrator.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "View source code";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Restart the application if required";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Keep track of your syncs more easily.";

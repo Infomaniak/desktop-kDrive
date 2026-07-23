@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Aktivér fejlfindingslogning";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "En anden %@, hvis navn kun adskiller sig ved store/små bogstaver, findes allerede i denne mappe. Denne type navn understøttes ikke af kDrive Windows-applikationen. Omdøb en af %@-mapperne fra kDrive online, så du kan synkronisere den på din pc.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Modstridende navne, skelner mellem store og små bogstaver";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "Du har ikke de nødvendige tilladelser til at tilføje en %@ til denne placering.\nAnmod om adgang fra ejeren eller administratoren.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Se kildekode";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Genstart programmet, hvis det kræves";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Hold nemmere styr på dine synkroniseringer.";

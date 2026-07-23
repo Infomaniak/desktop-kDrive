@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Debug-Protokollierung aktivieren";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "Ein weiteres %@, dessen Name sich nur in der Gross-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Namenskonflikte in Gross- und Kleinschreibung";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "Sie haben nicht die erforderlichen Berechtigungen, um %@ zu diesem Speicherort hinzuzufügen.\nFordern Sie den Zugriff beim Eigentümer oder Administrator an.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Quellcode anzeigen";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Starten Sie die Anwendung auf Wunsch neu";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Verfolgen Sie Ihre Synchronisierungen ganz einfach.";

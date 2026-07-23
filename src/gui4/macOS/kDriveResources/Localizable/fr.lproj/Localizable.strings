@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Activer l’enregistrement des informations de débogage";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "Un autre %@ dont le nom diffère uniquement par les majuscules/minuscules existe déjà dans ce dossier. Ce type de nom n’est pas pris en charge par l’application kDrive Windows. Renommez l’un des %@ depuis kDrive en ligne pour pouvoir le synchroniser sur votre PC.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Conflit de noms à la casse près";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "Vous n’avez pas les droits nécessaires pour ajouter un %@ à cet emplacement.\nDemandez l’accès au propriétaire ou à l’administrateur.";
 
@@ -653,7 +659,8 @@
 "errSystemErrorSyncDirAccessTitle" = "Dossier de synchronisation inaccessible";
 
 /* loco:6a2197c042aa240e310a72b2 */
-"errSystemLiteSyncNotAllowedDescription" = "LiteSync n’a pas les autorisations nécessaires pour fonctionner.\n Ouvrez les Préférences macOS pour les activer.";
+"errSystemLiteSyncNotAllowedDescription" = "LiteSync n’a pas les autorisations nécessaires pour fonctionner.\n
+Ouvrez les Préférences macOS pour les activer.";
 
 /* loco:6a2197a5620b19f3600003a2 */
 "errSystemLiteSyncNotAllowedTitle" = "Autorisation requise";
@@ -1518,3 +1525,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Voir le code source";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Redémarrez l’application si demandé";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Suivez vos synchronisations plus simplement.";

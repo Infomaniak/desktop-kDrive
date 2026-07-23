@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Foutopsporingsregistratie inschakelen";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "Er bestaat al een andere %@ waarvan de naam alleen verschilt in hoofdletters/kleine letters in deze map. Dit type naam wordt niet ondersteund door de kDrive Windows applicatie. Hernoem een van de %@ mappen van kDrive online zodat u deze op uw pc kunt synchroniseren.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Conflicterende namen, hoofdlettergevoelig";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "U heeft niet de vereiste rechten om een %@ toe te voegen aan deze locatie.\nVraag toegang aan bij de eigenaar of beheerder.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Broncode bekijken";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Start de applicatie opnieuw als dit wordt gevraagd";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Houd uw synchronisaties eenvoudiger bij.";
