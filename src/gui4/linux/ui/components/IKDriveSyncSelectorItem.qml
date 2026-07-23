@@ -63,7 +63,7 @@ Button {
         return ""
     }
     readonly property string truncatedTextUnderFocus: {
-        if (!activeFocus) {
+        if (!visualFocus) {
             return ""
         }
         if (titleText.truncated && subtitleText.truncated) {
