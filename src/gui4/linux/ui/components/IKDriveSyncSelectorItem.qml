@@ -39,6 +39,17 @@ Button {
     property bool showChevron: false
     readonly property bool advancedSync: entryType === SyncSelectorModel.AdvancedSync
     readonly property bool hasSubtitle: subtitle.length > 0
+    readonly property string accessibleStatusDescription: {
+        const descriptions = []
+        if (warning) {
+            descriptions.push(qsTrId("logLevelWarning"))
+        }
+        if (errorCount > 0) {
+            descriptions.push(qsTrId("informationBlockSynchroErrorTitle", errorCount)
+                              .replace("<b>", "").replace("</b>", ""))
+        }
+        return descriptions.join(". ")
+    }
     readonly property string truncatedTextUnderPointer: {
         if (!pointerArea.containsMouse) {
             return ""
@@ -51,6 +62,24 @@ Button {
         }
         return ""
     }
+    readonly property string truncatedTextUnderFocus: {
+        if (!activeFocus) {
+            return ""
+        }
+        if (titleText.truncated && subtitleText.truncated) {
+            return text
+        }
+        if (titleText.truncated) {
+            return title
+        }
+        if (subtitleText.truncated) {
+            return subtitle
+        }
+        return ""
+    }
+    readonly property string truncatedText: truncatedTextUnderPointer.length > 0
+                                                  ? truncatedTextUnderPointer
+                                                  : truncatedTextUnderFocus
     signal triggered
 
     function textContainsPointer(textItem) {
@@ -64,6 +93,7 @@ Button {
     focusPolicy: interactive ? Qt.StrongFocus : Qt.NoFocus
     hoverEnabled: interactive
     text: hasSubtitle ? title + ", " + subtitle : title
+    Accessible.description: accessibleStatusDescription
     onClicked: triggered()
 
     background: Rectangle {
@@ -161,7 +191,7 @@ Button {
             }
 
             IKBadge {
-                dot: !root.warning && root.errorCount > 0
+                dot: root.errorCount > 0
             }
 
             Image {
@@ -195,10 +225,10 @@ Button {
     ToolTip {
         id: truncatedTextTooltip
 
-        visible: root.truncatedTextUnderPointer.length > 0
+        visible: root.truncatedText.length > 0
         delay: IKMainWindow.syncSelectorTooltipDelay
         timeout: -1
-        text: root.truncatedTextUnderPointer
+        text: root.truncatedText
         padding: IKMainWindow.syncSelectorTooltipPadding
 
         contentItem: Text {
