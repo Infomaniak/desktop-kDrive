@@ -26,12 +26,9 @@
 #include "app/services/serviceeventbus.h"
 #include "libcommon/utility/types.h"
 
-#include <QDesktopServices>
 #include <QDir>
 #include <QLoggingCategory>
 #include <QPointer>
-#include <QSet>
-#include <QUrl>
 
 namespace KDC {
 
@@ -54,8 +51,6 @@ OnboardingSyncCreationCoordinator::OnboardingSyncCreationCoordinator(OnboardingF
                    &OnboardingSyncCreationCoordinator::startSynchronization);
     (void) connect(&_flowController, &OnboardingFlowController::synchronizationRetryRequested, this,
                    &OnboardingSyncCreationCoordinator::createNextSynchronization);
-    (void) connect(&_flowController, &OnboardingFlowController::synchronizedFoldersOpenRequested, this,
-                   &OnboardingSyncCreationCoordinator::openSynchronizedFolders);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationCompleted, this,
                    &OnboardingSyncCreationCoordinator::handleCacheReconciliationCompleted);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationFailed, this,
@@ -64,7 +59,6 @@ OnboardingSyncCreationCoordinator::OnboardingSyncCreationCoordinator(OnboardingF
 
 void OnboardingSyncCreationCoordinator::startSynchronization() {
     _pendingDriveKeys.clear();
-    _createdLocalPaths.clear();
 
     const auto selectedDriveKeys = _onboardingState.selectedAvailableDriveKeys();
     (void) _pendingDriveKeys.insert(_pendingDriveKeys.end(), selectedDriveKeys.begin(), selectedDriveKeys.end());
@@ -160,27 +154,25 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Creating onboarding sync | driveId:" << key.driveId << "/ localPath:" << config.localPath;
     const QPointer<OnboardingSyncCreationCoordinator> self(this);
-    _commService.requestSyncAdd(
-            request, [self, key, localPath = config.localPath](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
-                if (!self) {
-                    return;
-                }
+    _commService.requestSyncAdd(request, [self, key](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
+        if (!self) {
+            return;
+        }
 
-                if (!exitInfo) {
-                    self->_serviceEventBus.notifyGenericError(exitInfo, RequestNum::SYNC_ADD);
-                    self->handleCreationFailure(true);
-                    return;
-                }
+        if (!exitInfo) {
+            self->_serviceEventBus.notifyGenericError(exitInfo, RequestNum::SYNC_ADD);
+            self->handleCreationFailure(true);
+            return;
+        }
 
-                qCInfo(lcOnboardingSyncCreationCoordinator)
-                        << "Onboarding sync created | driveId:" << key.driveId << "/ syncDbId:" << syncInfo.dbId();
-                self->_createdLocalPaths.push_back(localPath);
-                self->_onboardingState.unselectAvailableDrive(key);
-                if (!self->_pendingDriveKeys.empty() && self->_pendingDriveKeys.front() == key) {
-                    self->_pendingDriveKeys.pop_front();
-                }
-                self->createNextSynchronization();
-            });
+        qCInfo(lcOnboardingSyncCreationCoordinator)
+                << "Onboarding sync created | driveId:" << key.driveId << "/ syncDbId:" << syncInfo.dbId();
+        self->_onboardingState.unselectAvailableDrive(key);
+        if (!self->_pendingDriveKeys.empty() && self->_pendingDriveKeys.front() == key) {
+            self->_pendingDriveKeys.pop_front();
+        }
+        self->createNextSynchronization();
+    });
 }
 
 void OnboardingSyncCreationCoordinator::discardPendingSynchronization(const AvailableDriveKey &key) {
@@ -245,29 +237,6 @@ void OnboardingSyncCreationCoordinator::handleCacheReconciliationFailed() {
     _cacheReconciliationPending = false;
     qCWarning(lcOnboardingSyncCreationCoordinator) << "Cache reconciliation failed after onboarding SYNC_ADD failure";
     _flowController.failSynchronization();
-}
-
-void OnboardingSyncCreationCoordinator::openSynchronizedFolders() {
-    QSet<QString> localPaths;
-    for (const auto &syncInfo: _appCache.syncs()) {
-        if (!syncInfo.localPath().empty()) {
-            (void) localPaths.insert(QDir::cleanPath(Path2QStr(syncInfo.localPath())));
-        }
-    }
-    for (const auto &localPath: _createdLocalPaths) {
-        if (!localPath.isEmpty()) {
-            (void) localPaths.insert(QDir::cleanPath(localPath));
-        }
-    }
-
-    for (const auto &localPath: localPaths) {
-        qCInfo(lcOnboardingSyncCreationCoordinator) << "Opening synchronized folder:" << localPath;
-        if (!QDesktopServices::openUrl(QUrl::fromLocalFile(localPath))) {
-            qCWarning(lcOnboardingSyncCreationCoordinator) << "Failed to open synchronized folder:" << localPath;
-        }
-    }
-
-    _flowController.completeOnboarding();
 }
 
 QString OnboardingSyncCreationCoordinator::defaultLocalPath(const QString &driveName) const {
