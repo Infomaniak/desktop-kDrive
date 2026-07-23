@@ -28,9 +28,6 @@
 #include <iostream>
 #include <string>
 
-#pragma comment(lib, "crypt32.lib")
-#pragma comment(lib, "wintrust")
-
 #define ENCODING (X509_ASN_ENCODING | PKCS_7_ASN_ENCODING)
 
 namespace KDC {
