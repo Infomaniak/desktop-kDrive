@@ -35,6 +35,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/navigation/approuter.cpp
+        app/navigation/approuter.h
         app/onboarding/availabledrivesmodel.cpp
         app/onboarding/availabledrivesmodel.h
         app/onboarding/driveselectioncontroller.cpp
@@ -91,6 +93,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKOnboarding.qml
+        ui/tokens/IKMainWindow.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
@@ -108,6 +111,13 @@ set(GUI_QML_FILES # .qml files for the app
         ui/window/IKShadowedWindow.qml
         ui/window/IKWindowControlButton.qml
         ui/window/IKWindowHeader.qml
+        ui/mainwindow/ActivitiesPlaceholder.qml
+        ui/mainwindow/BlockingErrorPlaceholder.qml
+        ui/mainwindow/HomePlaceholder.qml
+        ui/mainwindow/MainSidebarPlaceholder.qml
+        ui/mainwindow/MainToolbar.qml
+        ui/mainwindow/MainWindowView.qml
+        ui/mainwindow/StoragePlaceholder.qml
         ${GUI_GENERATED_QML_FILES}
         ui/onboarding/DriveCellView.qml
         ui/onboarding/DriveIconView.qml
