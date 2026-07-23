@@ -46,6 +46,7 @@ class SocketCommServerTest : public SocketCommServer {
 class TestSocketComm : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSocketComm);
         CPPUNIT_TEST(testServerListen);
+        CPPUNIT_TEST(testServerAcceptsSingleConnection);
         CPPUNIT_TEST(testServerCallbacks);
         CPPUNIT_TEST(testChannelReadyReadCallback);
         CPPUNIT_TEST(testChannelReadAndWriteData);
@@ -56,6 +57,7 @@ class TestSocketComm : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
         void testServerListen();
+        void testServerAcceptsSingleConnection();
         void testServerCallbacks();
         void testChannelReadyReadCallback();
         void testChannelReadAndWriteData();
