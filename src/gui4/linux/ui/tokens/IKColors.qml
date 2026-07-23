@@ -40,10 +40,10 @@ QtObject {
         // NeutralBlue
         readonly property color neutralBlue50: "#F6F8FC"
         readonly property color neutralBlue100: "#EDF1F8"
-        readonly property color neutralBlue200: "#DCEDF0"
+        readonly property color neutralBlue200: "#DCE3F0"
         readonly property color neutralBlue300: "#C5CDDB"
         readonly property color neutralBlue500: "#424752"
-        readonly property color neutralBlue600: "#1F241D"
+        readonly property color neutralBlue600: "#1F242E"
         readonly property color neutralBlue700: "#191D24"
         readonly property color neutralBlue800: "#101419"
         readonly property color neutralBlue900: "#0C0F13"
@@ -65,19 +65,19 @@ QtObject {
         readonly property color green500: "#3EBF4D"
 
         // Orange
-        readonly property color orange100: "#FFD3F5"
+        readonly property color orange100: "#FFF5D3"
         readonly property color orange300: "#FFD46D"
-        readonly property color orange400: "#FFB532"
+        readonly property color orange400: "#FFB632"
         readonly property color orange500: "#FF9D0A"
-        readonly property color orange800: "#A14B04"
+        readonly property color orange800: "#A14B0B"
 
         // Brown
         readonly property color brown950: "#461E04"
 
         // Brand
         readonly property color infomaniak: "#0098FF"
-        readonly property color kDrive500: "#FFB632"
-        readonly property color kDrive600: "#FF9D0A"
+        readonly property color kDrive500: "#5C89F7"
+        readonly property color kDrive600: "#446FDD"
     }
 
     readonly property Primitives _p: Primitives {}
