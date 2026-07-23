@@ -20,31 +20,74 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import kDrive.UI
+import "mainwindow"
 import "onboarding"
 
 IKShadowedWindow {
     id: mainWindow
 
+    required property var appRouter
     required property var onboardingSessionManager
     required property var systemTrayController
+
+    readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
 
     visible: false
     contentWidth: 900
     contentHeight: 600
     minimumContentWidth: 720
     minimumContentHeight: 520
-    title: onboardingLoader.session ? onboardingLoader.session.flowController.title : qsTr("kDrive")
-    surfaceColor: IKColors.onboardingSurfacePrimary
+    title: onboardingActive ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
+    surfaceColor: onboardingActive ? IKColors.onboardingSurfacePrimary : IKColors.surfacePrimary
     customShadowEnabled: true
-    headerOverlaysContent: true
+    headerOverlaysContent: onboardingActive
     windowTitleVisible: false
 
-    headerBackgroundData: Rectangle {
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        width: parent.width * IKOnboarding.illustrationPanelWidthRatio
-        color: IKColors.onboardingSurfaceSecondary
+    headerBackgroundData: Item {
+        anchors.fill: parent
+
+        Rectangle {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            visible: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
+            width: IKMainWindow.sidebarWidth
+            color: IKColors.surfaceSecondary
+        }
+
+        Rectangle {
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            visible: mainWindow.onboardingActive
+            width: parent.width * IKOnboarding.illustrationPanelWidthRatio
+            color: IKColors.onboardingSurfaceSecondary
+        }
+    }
+
+    headerData: Item {
+        anchors.fill: parent
+        visible: !mainWindow.onboardingActive && mainWindow.appRouter.mainWindowActive
+
+        Text {
+            anchors.left: parent.left
+            anchors.leftMargin: IKSpacing.s16
+            anchors.verticalCenter: parent.verticalCenter
+            text: "kDrive"
+            color: IKColors.textPrimary
+            font.pixelSize: IKFonts.headlineSize
+            font.weight: IKFonts.emphasized
+        }
+
+        MainToolbar {
+            anchors.left: parent.left
+            anchors.leftMargin: IKMainWindow.sidebarWidth
+            anchors.right: parent.right
+            anchors.rightMargin: IKSpacing.s8
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            appRouter: mainWindow.appRouter
+        }
     }
 
     onClosing: close => {
@@ -87,11 +130,27 @@ IKShadowedWindow {
         }
     }
 
+    Loader {
+        id: mainWindowLoader
+
+        anchors.fill: parent
+        active: mainWindow.appRouter.mainWindowActive && !mainWindow.onboardingActive
+        sourceComponent: mainWindowComponent
+    }
+
     Component {
         id: onboardingComponent
 
         OnboardingWindow {
             session: onboardingLoader.session
+        }
+    }
+
+    Component {
+        id: mainWindowComponent
+
+        MainWindowView {
+            appRouter: mainWindow.appRouter
         }
     }
 }
