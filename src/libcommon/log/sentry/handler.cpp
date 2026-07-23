@@ -180,13 +180,14 @@ sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closur
 }
 
 std::shared_ptr<Handler> Handler::instance() {
-    if (!_instance) {
-        assert(false && "Handler must be initialized before calling instance");
-        // TODO: When the logger will be moved to the common library, add a log there.
-        return std::shared_ptr<Handler>(new Handler()); // Create a dummy instance to avoid crash but should never
-                                                        // happen (the sentry will not be sent)
+    if (_instance) {
+        return _instance;
     }
-    return _instance;
+    // Sentry is disabled (e.g. KDRIVE_SENTRY_ENVIRONMENT="") or not yet initialized. This is a legitimate runtime
+    // state, not a programming error: return a shared, inert handler so instance()->... calls are safe no-ops
+    // (all Sentry paths are guarded by _isSentryActivated == false).
+    struct DisabledHandler final : Handler {};
+    return std::make_shared<DisabledHandler>();
 }
 
 void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &dsnOverride,
@@ -315,12 +316,14 @@ void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &
 #endif
     sentry_options_set_max_spans(options, 1000); // Maximum number of spans per transaction
 
-    // Init sentry
-    int res = sentry_init(options);
-    if (res) {
-        std::cerr << "sentry_init returned " << res << std::endl;
+    // Init sentry. A non-zero result means Sentry (an optional telemetry component) failed to start, e.g. the
+    // crashpad handler is missing or the database path is not writable. That is a runtime failure, not a
+    // programming error: log it and keep Sentry inert instead of aborting the whole application.
+    if (const int32_t res = sentry_init(options); res != 0) {
+        std::cerr << "sentry_init returned " << res << "; Sentry disabled" << std::endl;
+        _instance->setIsSentryActivated(false);
+        return; // sentry_init takes ownership of `options`; do not free them here.
     }
-    assert(res == 0);
     _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
@@ -332,7 +335,7 @@ void Handler::shutdown() {
     // and Handler::shutdown's scope owns the shared_ptr and decrements the refcount at the end of the method, so it is properly
     // destroyed once sentry_close() has returned, ensuring the Handler outlives any in-flight Sentry callbacks.
     const auto instance = std::move(_instance);
-    instance->_isSentryActivated = false;
+    instance->setIsSentryActivated(false);
     try {
         sentry_close();
     } catch (const std::exception &e) {
