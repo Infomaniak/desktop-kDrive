@@ -64,8 +64,8 @@ LiteSyncDialog::LiteSyncDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) 
     _actionIconColor(QColor()),
     _actionIconSize(QSize()),
     _needToSave(false),
-    _defaultAppList(QList<ExclusionAppInfo>()),
-    _userAppList(QList<ExclusionAppInfo>()) {
+    _defaultAppList(QList<ExclusionApp>()),
+    _userAppList(QList<ExclusionApp>()) {
     initUI();
     updateUI();
 }
@@ -191,9 +191,9 @@ void LiteSyncDialog::updateUI() {
     setResizable(true);
 }
 
-void LiteSyncDialog::addApp(const ExclusionAppInfo &appInfo, bool readOnly, int &row, QString scrollToAppId, int &scrollToRow) {
-    QStandardItem *appIdItem = new QStandardItem(appInfo.appId());
-    QStandardItem *appNameItem = new QStandardItem(appInfo.description());
+void LiteSyncDialog::addApp(const ExclusionApp &appInfo, bool readOnly, int &row, QString scrollToAppId, int &scrollToRow) {
+    QStandardItem *appIdItem = new QStandardItem(QString::fromStdString(appInfo.appId()));
+    QStandardItem *appNameItem = new QStandardItem(QString::fromStdString(appInfo.description()));
     QStandardItem *actionItem = new QStandardItem();
 
     QList<QStandardItem *> itemList;
@@ -213,7 +213,7 @@ void LiteSyncDialog::addApp(const ExclusionAppInfo &appInfo, bool readOnly, int 
     }
 
     row++;
-    if (!scrollToAppId.isEmpty() && appInfo.appId() == scrollToAppId) {
+    if (!scrollToAppId.isEmpty() && appInfo.appId() == scrollToAppId.toStdString()) {
         scrollToRow = row;
     }
 }
@@ -319,7 +319,7 @@ void LiteSyncDialog::onAddAppButtonTriggered(bool checked) {
         QString appId;
         QString appName;
         dialog.appInfo(appId, appName);
-        _userAppList.append(ExclusionAppInfo(appId, appName, false));
+        _userAppList.append(ExclusionApp(appId.toStdString(), appName.toStdString(), false));
 
         // Reload table
         loadAppTable(appId);
@@ -343,7 +343,7 @@ void LiteSyncDialog::onTableViewClicked(const QModelIndex &index) {
                         QString appId = _appsTableModel->index(index.row(), tableColumn::AppId).data(Qt::DisplayRole).toString();
                         const auto appIt = _userAppList.constBegin();
                         while (appIt != _userAppList.constEnd()) {
-                            if (appId == appIt->appId()) {
+                            if (appId.toStdString() == appIt->appId()) {
                                 _userAppList.erase(appIt);
                                 break;
                             }

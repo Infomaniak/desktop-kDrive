@@ -31,11 +31,10 @@
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/proxyconfiginfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
-#include "libcommon/info/exclusionappinfo.h"
+#include "libcommon/data/exclusionapp.h"
 #include "libparms/db/parameters.h"
 
 #include "libparms/db/exclusiontemplate.h"
-#include "libparms/db/exclusionapp.h"
 #include "libsyncengine/login/login.h"
 #include "libsyncengine/progress/syncfileitem.h"
 
@@ -72,11 +71,11 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getExclusionTemplateList(bool def, std::vector<ExclusionTemplateInfo> &list);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &list);
         static ExitInfo setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list);
-        static ExitCode setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list);
+        static ExitCode setExclusionAppList(const bool def, const std::vector<ExclusionApp> &list);
         static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list);
-        static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &list);
-        static ExitCode getExclusionAppList(bool def, std::vector<ExclusionAppInfo> &list);
-        static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &list);
+        static ExitCode getExclusionAppList(bool def, QList<ExclusionApp> &list);
+        static ExitCode getExclusionAppList(bool def, std::vector<ExclusionApp> &list);
+        static ExitCode setExclusionAppList(bool def, const QList<ExclusionApp> &list);
         static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
         static ExitInfo getErrorList(int limit, std::vector<Error> &list);
         static ExitCode getConflictList(SyncDbId syncDbId, const std::unordered_set<ConflictType> &filter,
@@ -159,8 +158,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                                              ExclusionTemplateInfo &exclusionTemplateInfo);
         static void exclusionTemplateInfoToExclusionTemplate(const ExclusionTemplateInfo &exclusionTemplateInfo,
                                                              ExclusionTemplate &exclusionTemplate);
-        static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
-        static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
         static bool isDisplayableError(const Error &error);
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
         static ExitCode fixProxyConfig();
