@@ -260,7 +260,7 @@ ExitInfo UploadJob::readLink() {
 
         _data = Path2Str(_linkTarget);
     } else if (_linkType == LinkType::Hardlink) {
-        // For savety, cannot happen (IoHelper::getItemType doesn't detect hardlinks)
+        // For safety, cannot happen (IoHelper::getItemType doesn't detect hardlinks)
         LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_absoluteFilePath));
         return {ExitCode::SystemError, ExitCause::OperationCanceled};
     } else if (_linkType == LinkType::Junction) {
