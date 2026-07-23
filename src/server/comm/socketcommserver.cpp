@@ -281,7 +281,7 @@ void SocketCommServer::execute() {
 
     LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
     saveCommPort(getPort());
-    while (!_stopAsked) {
+    if (!_stopAsked) {
         try {
             _serverSocket.listen();
         } catch (Poco::Exception &ex) {
@@ -298,7 +298,10 @@ void SocketCommServer::execute() {
             return;
         }
 
-        if (_stopAsked) break;
+        if (_stopAsked) {
+            _isListening = false;
+            return;
+        }
 
         const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
@@ -326,17 +329,12 @@ void SocketCommServer::execute() {
         }
         newConnectionCbk();
         channel->startCallbackThread();
-
-        // Clear terminated postponed lost-connection callback threads to avoid accumulating too many threads in case of many
-        // connections/disconnections (edge case as the application is not expected to handle more than one connection at a time,
-        // but better be safe)
-        joinAndClearPostponedLostConnectionCbks();
     }
     _isListening = false;
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // Join and remove all postponed lost-connection callback threads
-    for (const auto& thread: _postponedLostConnectionCbks) {
+    for (const auto &thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }
