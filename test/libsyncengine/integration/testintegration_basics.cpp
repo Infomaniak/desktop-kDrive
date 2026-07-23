@@ -267,11 +267,11 @@ void TestIntegration::testSimpleUpload() {
             { "type": "Create", "itemType": "File", "path": "A/AA", "name": "BBB" }
         ]
     })")};
-    auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
-    auto remotesyncdirname = _remoteSyncDir.name(); // this is for debug, to find where is the tmp kDrive dir
+    const auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
+    const auto remotesyncdirname = _remoteSyncDir.name(); // this is for debug, to find where is the tmp kDrive dir
 
-    LOGW_DEBUG(Log::instance()->getLogger(),
-              L"testSimpleUpload: localPath=" << testpath.native() << L", remoteSyncDir=" << remotesyncdirname);
+    LOG_DEBUG(Log::instance()->getLogger(), "testSimpleUpload: localPath=" << testpath.string() << ", remoteSyncDir="
+                                                                            << SyncName2Str(remotesyncdirname));
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
@@ -285,7 +285,6 @@ void TestIntegration::testSimpleUpload() {
     const auto remoteDeletedFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/AAA"));
     CPPUNIT_ASSERT(!remoteDeletedFileInfo.isValid());
 
-    auto path = _syncPal->localPath(); // this is for debug, to find where is the tmp dir)
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "C"));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "CC"));
