@@ -555,9 +555,9 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
 }
 
 void TestComputeFSOperationWorker::testIsLocalTimestampValid() {
-    const NodeId fileNodeId = "l_ba";
+    const NodeId fileNodeId = "dummyId";
     const SyncName filename = Str("testFile");
-    LocalTemporaryDirectory tmpDir;
+    const LocalTemporaryDirectory tmpDir;
     const auto fullPath = tmpDir.path() / filename;
     testhelpers::generateOrEditTestFile(fullPath);
 
@@ -566,15 +566,11 @@ void TestComputeFSOperationWorker::testIsLocalTimestampValid() {
     IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     CPPUNIT_ASSERT(found);
 
-    const auto toSyncTime = [](const std::chrono::system_clock::time_point &tp) -> SyncTime {
-        return std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
-    };
-
-    const SyncTime now = toSyncTime(std::chrono::system_clock::now());
+    const SyncTime now = CommonUtility::getCurrentSyncTime();
     const SyncTime justWithinOneYear =
-            toSyncTime(std::chrono::system_clock::now() + std::chrono::years(1) - std::chrono::seconds(10));
+            CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1) - std::chrono::seconds(10));
     const SyncTime justBeyondOneYear =
-            toSyncTime(std::chrono::system_clock::now() + std::chrono::years(1) + std::chrono::seconds(10));
+            CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1) + std::chrono::seconds(10));
     const bool isLink = false;
 
     // Directories are always valid regardless of the timestamp value.
@@ -612,13 +608,13 @@ void TestComputeFSOperationWorker::testIsLocalTimestampValid() {
             fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
     IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
     CPPUNIT_ASSERT(found);
-    CPPUNIT_ASSERT(filestat.modificationTime >= now - 5);
-    CPPUNIT_ASSERT(modificationTime >= now - 5);
+    CPPUNIT_ASSERT(filestat.modificationTime >= now);
+    CPPUNIT_ASSERT(modificationTime >= now);
 
     modificationTime = justBeyondOneYear;
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(
             fileNodeId, NodeType::File, filestat.creationTime, fullPath, isLink, modificationTime));
-    CPPUNIT_ASSERT(modificationTime >= now - 5);
+    CPPUNIT_ASSERT(modificationTime >= now);
 }
 
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
