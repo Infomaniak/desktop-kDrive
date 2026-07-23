@@ -21,7 +21,7 @@
 #include "customdialog.h"
 #include "customcheckbox.h"
 #include "gui/clientgui.h"
-#include "libcommon/info/exclusionappinfo.h"
+#include "libcommon/data/exclusionapp.h"
 
 #include <QTableView>
 #include <QStandardItemModel>
@@ -52,15 +52,15 @@ class LiteSyncDialog : public CustomDialog {
         QColor _actionIconColor;
         QSize _actionIconSize;
         bool _needToSave;
-        QList<ExclusionAppInfo> _defaultAppList;
-        QList<ExclusionAppInfo> _userAppList;
+        QList<ExclusionApp> _defaultAppList;
+        QList<ExclusionApp> _userAppList;
 
         inline QColor actionIconColor() const { return _actionIconColor; }
         inline QSize actionIconSize() const { return _actionIconSize; }
 
         void initUI();
         void updateUI();
-        void addApp(const ExclusionAppInfo &appInfo, bool readOnly, int &row, QString scrollToAppId, int &scrollToRow);
+        void addApp(const ExclusionApp &appInfo, bool readOnly, int &row, QString scrollToAppId, int &scrollToRow);
         void setActionIconColor(const QColor &color);
         void setActionIconSize(const QSize &size);
         void setActionIcon();
