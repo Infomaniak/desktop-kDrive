@@ -324,26 +324,26 @@ bool DigitalSignatureChecker_win::extractSignatureInfo(DigitalSignatureInfo &sig
 }
 
 bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
-    LONG lStatus;
-    DWORD dwLastError;
+    LONG lStatus = 0;
+    DWORD dwLastError = 0;
 
-    WCHAR szFileName[MAX_PATH];
+    WCHAR szFileName[MAX_PATH] = {0};
     (void) lstrcpynW(szFileName, _packageAbsolutePath.c_str(), MAX_PATH);
 
     WINTRUST_FILE_INFO FileData;
-    memset(&FileData, 0, sizeof(FileData));
+    (void) memset(&FileData, 0, sizeof(FileData));
     FileData.cbStruct = sizeof(WINTRUST_FILE_INFO);
     FileData.pcwszFilePath = szFileName;
-    FileData.hFile = NULL;
-    FileData.pgKnownSubject = NULL;
+    FileData.hFile = nullptr;
+    FileData.pgKnownSubject = nullptr;
 
     GUID WVTPolicyGUID = WINTRUST_ACTION_GENERIC_VERIFY_V2;
     WINTRUST_DATA WinTrustData;
 
-    memset(&WinTrustData, 0, sizeof(WinTrustData));
+    (void) memset(&WinTrustData, 0, sizeof(WinTrustData));
     WinTrustData.cbStruct = sizeof(WinTrustData);
-    WinTrustData.pPolicyCallbackData = NULL;
-    WinTrustData.pSIPClientData = NULL;
+    WinTrustData.pPolicyCallbackData = nullptr;
+    WinTrustData.pSIPClientData = nullptr;
     WinTrustData.dwUIChoice = WTD_UI_NONE;
     WinTrustData.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
     WinTrustData.dwProvFlags |= WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
@@ -351,15 +351,15 @@ bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
     WinTrustData.dwStateAction = WTD_STATEACTION_VERIFY;
 
     // Verification sets this value.
-    WinTrustData.hWVTStateData = NULL;
+    WinTrustData.hWVTStateData = nullptr;
 
-    WinTrustData.pwszURLReference = NULL;
+    WinTrustData.pwszURLReference = nullptr;
     WinTrustData.dwUIContext = 0;
 
     // Set pFile.
     WinTrustData.pFile = &FileData;
 
-    lStatus = WinVerifyTrust(NULL, &WVTPolicyGUID, &WinTrustData);
+    lStatus = WinVerifyTrust(nullptr, &WVTPolicyGUID, &WinTrustData);
     bool isValid = lStatus == ERROR_SUCCESS;
 
     if (!isValid) {
@@ -369,7 +369,7 @@ bool DigitalSignatureChecker_win::verifySignatureTrustChain() const {
 
     // Any hWVTStateData must be released by a call with close.
     WinTrustData.dwStateAction = WTD_STATEACTION_CLOSE;
-    lStatus = WinVerifyTrust(NULL, &WVTPolicyGUID, &WinTrustData);
+    lStatus = WinVerifyTrust(nullptr, &WVTPolicyGUID, &WinTrustData);
 
     return isValid;
 }

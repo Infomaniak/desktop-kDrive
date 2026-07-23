@@ -135,7 +135,7 @@ void TestWindowsUpdater::testOnUpdateFound() {
 
 void TestWindowsUpdater::testIsSignatureValid() {
     // Empty path.
-    CPPUNIT_ASSERT(!DigitalSignatureChecker_win({}).isSignatureValid());
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win("").isSignatureValid());
     // Path to non-existing file.
     CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath("A/B/C")).isSignatureValid());
     // Path to existing file but not signed.
@@ -172,7 +172,7 @@ void TestWindowsUpdater::testIsSignatureValidExtended() {
     const LocalTemporaryDirectory tmpDir("TestWindowsUpdater");
 
     // Fetch the download link of each channel, keeping only distinct URLs to avoid downloading the same version twice.
-    std::map<std::string, DistributionChannel> downloadUrls;
+    std::map<std::string, DistributionChannel, std::less<>> downloadUrls;
     for (const auto channel: channels) {
         GetAppVersionJob job(channel, appUid, userIdList);
         (void) job.runSynchronously();
@@ -186,7 +186,7 @@ void TestWindowsUpdater::testIsSignatureValidExtended() {
     }
 
     // Download each distinct version and check its digital signature.
-    unsigned int index = 0;
+    int8_t index = 0;
     for (const auto &[downloadUrl, channel]: downloadUrls) {
         const auto installerPath = tmpDir.path() / ("installer-" + std::to_string(index++) + ".exe");
 
