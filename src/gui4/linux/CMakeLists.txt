@@ -35,6 +35,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/mainwindow/mainsidebarcontroller.cpp
+        app/mainwindow/mainsidebarcontroller.h
+        app/mainwindow/synclistmodel.cpp
+        app/mainwindow/synclistmodel.h
         app/navigation/approuter.cpp
         app/navigation/approuter.h
         app/onboarding/availabledrivesmodel.cpp
@@ -79,8 +83,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/systraycontroller.cpp
         app/systraycontroller.h
-        ui/window/windowdecorationcontroller.cpp
-        ui/window/windowdecorationcontroller.h
+        ui/chrome/windowdecorationcontroller.cpp
+        ui/chrome/windowdecorationcontroller.h
 )
 
 set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
@@ -99,37 +103,43 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(GUI_GENERATED_QML_FILES
-        ui/onboarding/animations/LoaderStrokeAnimation.qml
-        ui/onboarding/animations/SyncFileDarkAnimation.qml
-        ui/onboarding/animations/SyncFileLightAnimation.qml
+        ui/windows/onboarding/animations/LoaderStrokeAnimation.qml
+        ui/windows/onboarding/animations/SyncFileDarkAnimation.qml
+        ui/windows/onboarding/animations/SyncFileLightAnimation.qml
 )
 
 set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QMLLINT TRUE)
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
-        ui/window/IKShadowedWindow.qml
-        ui/window/IKWindowControlButton.qml
-        ui/window/IKWindowHeader.qml
-        ui/mainwindow/ActivitiesPlaceholder.qml
-        ui/mainwindow/BlockingErrorPlaceholder.qml
-        ui/mainwindow/HomePlaceholder.qml
-        ui/mainwindow/MainSidebarPlaceholder.qml
-        ui/mainwindow/MainToolbar.qml
-        ui/mainwindow/MainWindowView.qml
-        ui/mainwindow/StoragePlaceholder.qml
+        ui/chrome/IKShadowedWindow.qml
+        ui/chrome/IKWindowControlButton.qml
+        ui/chrome/IKWindowHeader.qml
+        ui/components/IKBadge.qml
+        ui/components/IKDriveIcon.qml
+        ui/components/IKSidebarItem.qml
+        ui/components/IKSyncSelectorItem.qml
+        ui/windows/main/ActivitiesPlaceholder.qml
+        ui/windows/main/BlockingErrorPlaceholder.qml
+        ui/windows/main/HomePlaceholder.qml
+        ui/windows/main/MainToolbar.qml
+        ui/windows/main/MainWindowView.qml
+        ui/windows/main/SidebarHeaderView.qml
+        ui/windows/main/SidebarView.qml
+        ui/windows/main/SyncSelectorView.qml
+        ui/windows/main/StoragePlaceholder.qml
         ${GUI_GENERATED_QML_FILES}
-        ui/onboarding/DriveCellView.qml
-        ui/onboarding/DriveIconView.qml
-        ui/onboarding/DriveSelectionView.qml
-        ui/onboarding/DrivesListView.qml
-        ui/onboarding/LabeledAvatarView.qml
-        ui/onboarding/LoginView.qml
-        ui/onboarding/NoDriveAvailableView.qml
-        ui/onboarding/OnboardingAnimationsView.qml
-        ui/onboarding/OnboardingWindow.qml
-        ui/onboarding/ReadyView.qml
-        ui/onboarding/SynchronizationView.qml
+        ui/windows/onboarding/DriveCellView.qml
+        ui/windows/onboarding/DriveIconView.qml
+        ui/windows/onboarding/DriveSelectionView.qml
+        ui/windows/onboarding/DrivesListView.qml
+        ui/windows/onboarding/LabeledAvatarView.qml
+        ui/windows/onboarding/LoginView.qml
+        ui/windows/onboarding/NoDriveAvailableView.qml
+        ui/windows/onboarding/OnboardingAnimationsView.qml
+        ui/windows/onboarding/OnboardingWindow.qml
+        ui/windows/onboarding/ReadyView.qml
+        ui/windows/onboarding/SynchronizationView.qml
         ${GUI_QML_SINGLETON_FILES}
 )
 
@@ -138,6 +148,11 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/main/activities.svg
+        ui/assets/main/chevron-down.svg
+        ui/assets/main/folder.svg
+        ui/assets/main/house.svg
+        ui/assets/main/storage.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg
