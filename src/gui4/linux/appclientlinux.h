@@ -22,6 +22,7 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/parametersstore.h"
+#include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
@@ -77,6 +78,7 @@ class AppClientLinux : public QApplication {
         MainSelectionStore &mainSelectionStore() { return _mainSelectionStore; }
         ParametersStore &parametersStore() { return _parametersStore; }
         ParametersService &parametersService() { return _parametersService; }
+        AppRouter &appRouter() { return _appRouter; }
         ServiceActionTracker &serviceActionTracker() { return _serviceActionTracker; }
         ServiceEventBus &serviceEventBus() { return _serviceEventBus; }
 
@@ -99,6 +101,7 @@ class AppClientLinux : public QApplication {
         CachePipeline _cachePipeline{_serverCommService, _appCache, this};
         MainSelectionStore _mainSelectionStore{_appCache, this};
         ParametersService _parametersService{_serverCommService, _parametersStore, this};
+        AppRouter _appRouter{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
         SentryService _sentryService{_parametersService, _appCache, _parametersStore, this};
