@@ -232,7 +232,7 @@ void TestSocketComm::testChannelReadAndWriteData() {
 void TestSocketComm::testServerAcceptsSingleConnection() {
     // Start the server
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testServerAcceptsSingleConnection");
-    _socketCommServerTest->listen();
+    CPPUNIT_ASSERT_MESSAGE("Server failed to start listening", _socketCommServerTest->listen());
 
     // Create client socket 1 and connect to the server
     Poco::Net::StreamSocket clientSocket1;
@@ -240,12 +240,11 @@ void TestSocketComm::testServerAcceptsSingleConnection() {
     auto clientSideChannel1 = std::make_shared<SocketCommChannelTest>(clientSocket1);
 
     // Wait for the server to accept the first connection
-    int remainWait = 100; // wait max 1 second
-    while (_socketCommServerTest->connections().empty() && remainWait-- > 0) {
+    for (int32_t remainWait = 100; remainWait > 0 && _socketCommServerTest->connections().empty(); --remainWait) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     CPPUNIT_ASSERT_MESSAGE("Server should accept first connection", !_socketCommServerTest->connections().empty());
-    CPPUNIT_ASSERT_EQUAL(size_t(1), _socketCommServerTest->connections().size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), _socketCommServerTest->connections().size());
 
     // Try to connect client 2 - server should not accept a second connection
     Poco::Net::StreamSocket clientSocket2;
@@ -253,19 +252,18 @@ void TestSocketComm::testServerAcceptsSingleConnection() {
         clientSocket2.connect(
                 Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()),
                 Poco::Timespan(0, 500000)); // 500ms timeout
-    } catch (Poco::Exception &) {
-        // Connection refused or timeout is acceptable — server is no longer accepting
+    } catch (Poco::Exception &ex) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Second client connect failed as expected: " << ex.displayText());
     }
 
     // Wait to see if a second connection is accepted (it should not)
-    remainWait = 100; // wait max 1 second
-    while (_socketCommServerTest->connections().size() < 2 && remainWait-- > 0) {
+    for (int32_t remainWait = 100; remainWait > 0 && _socketCommServerTest->connections().size() < 2; --remainWait) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
     CPPUNIT_ASSERT_EQUAL_MESSAGE(
             "Server should not accept more than one connection",
-            size_t(1),
+            static_cast<size_t>(1),
             _socketCommServerTest->connections().size());
 }
 } // namespace KDC
