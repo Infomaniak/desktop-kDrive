@@ -54,6 +54,9 @@ struct ErrorsView: View {
     }
 
     private func navigateBackToActivities() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errorPage, name: "openActivity")
+
         @InjectService var router: MainViewRouter
         router.removeLast()
     }

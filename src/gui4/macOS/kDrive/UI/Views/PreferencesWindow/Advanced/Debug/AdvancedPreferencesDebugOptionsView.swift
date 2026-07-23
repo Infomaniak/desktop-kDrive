@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -35,6 +36,11 @@ struct AdvancedPreferencesDebugOptionsView: View {
                 helperText: nil,
                 isOn: $automaticCleaning
             )
+            .onChange(of: automaticCleaning) { newValue in
+                guard newValue != repository.parametersInfo.shouldPurgeOldLogs else { return }
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogPurge", value: newValue)
+            }
 
             ToggleView(
                 title: KDriveLocalizable.extendedLogSetting,
@@ -68,6 +74,10 @@ struct AdvancedPreferencesDebugOptionsView: View {
         }
         .onChange(of: debugLevel) { newValue in
             updateRepositoryValue(\.$debugLevel, \.logLevel, newValue: newValue, repository: repository)
+
+            guard newValue != repository.parametersInfo.logLevel else { return }
+            @InjectService var matomo: MatomoUtils
+            matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogVerbosity")
         }
     }
 

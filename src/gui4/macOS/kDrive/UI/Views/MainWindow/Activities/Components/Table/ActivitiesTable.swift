@@ -81,6 +81,8 @@ struct ActivitiesTable: View {
     }
 
     private func openParentFolder(of context: UISynchroNodeContext) {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .activityPage, name: "openItemFolder")
         @InjectService var nodeURLGenerator: NodeURLGenerator
         let url = nodeURLGenerator.localURL(for: context.node.parentFolder.path, synchroPath: context.synchro.localPath)
 

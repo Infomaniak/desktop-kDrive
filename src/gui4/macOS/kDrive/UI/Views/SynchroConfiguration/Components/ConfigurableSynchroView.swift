@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -87,6 +88,8 @@ struct ConfigurableSynchroView: View {
             }
 
             Button(KDriveLocalizable.buttonConfigure) {
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .driveSetupDialog, name: "configureSync")
                 viewModel.navigate(to: .configureSynchro(configuration))
             }
         }

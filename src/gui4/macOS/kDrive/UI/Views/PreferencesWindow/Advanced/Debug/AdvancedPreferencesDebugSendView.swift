@@ -64,8 +64,10 @@ struct SendDebugFolderView: View {
             handleLogUploadStatus(status)
         }
         .toolbar {
+            @InjectService var matomo: MatomoUtils
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isSendingDebugFolder) {
+                    matomo.track(eventWithCategory: .advancedSettingsPage, name: "sendLogToSupport")
                     await sendFolder()
                 } label: {
                     Text(KDriveLocalizable.buttonSend)
@@ -75,6 +77,7 @@ struct SendDebugFolderView: View {
 
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                    matomo.track(eventWithCategory: .advancedSettingsPage, name: "cancelLogToSupport")
                     cancelLogUploadIfNeeded()
                 }
             }

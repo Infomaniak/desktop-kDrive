@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -54,6 +55,8 @@ struct FolderFoldersSelectionSection: View {
 
                 HStack {
                     Button(KDriveLocalizable.buttonSelectFolders) {
+                        @InjectService var matomo: MatomoUtils
+                        matomo.track(eventWithCategory: .driveSetupDialog, name: "changeSyncExclusions")
                         viewModel.navigate(to: .selectFolders(configuration))
                     }
                     .buttonStyle(.borderedProminent)

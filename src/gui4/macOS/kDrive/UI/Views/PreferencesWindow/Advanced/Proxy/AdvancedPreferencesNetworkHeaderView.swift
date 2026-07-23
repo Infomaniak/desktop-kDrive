@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -42,6 +43,10 @@ struct AdvancedPreferencesNetworkHeaderView: View {
                 }
             }
             .labelsHidden()
+            .onChange(of: selectedProxyType) { _ in
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeProxyMode")
+            }
         }
     }
 }

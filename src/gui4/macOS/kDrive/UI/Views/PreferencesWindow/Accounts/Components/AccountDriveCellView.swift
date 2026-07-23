@@ -85,6 +85,9 @@ struct AccountDriveCellView: View {
     }
 
     private func manageSynchronizedDrive() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .accountsSettingsPage, name: "openDriveSettings")
+
         guard let drive = drive as? UIDrive else { return }
 
         @InjectService var router: PreferencesViewRouter

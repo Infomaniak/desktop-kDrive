@@ -17,6 +17,7 @@
  */
 
 import CppInterop
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -47,6 +48,12 @@ struct LightSyncSelectionSection: View {
                             useLightSync = configuration.useLightSync
                         }
                         .onChange(of: useLightSync) { newValue in
+                            @InjectService var matomo: MatomoUtils
+                            matomo.track(
+                                eventWithCategory: .driveSetupDialog,
+                                name: "changeSyncMode",
+                                value: useLightSync
+                            )
                             viewModel.updateConfiguration(configuration.id, useLightSync: newValue)
                         }
                         .disabled(!supportsLightSync)

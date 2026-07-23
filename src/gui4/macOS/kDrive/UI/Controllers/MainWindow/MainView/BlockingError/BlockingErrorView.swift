@@ -22,6 +22,8 @@ import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
+    @InjectService private var matomo: MatomoUtils
+
     @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
@@ -87,18 +89,29 @@ struct BlockingErrorView: View {
     private func handleAction() {
         switch blockingError.error {
         case .asleep:
+            matomo.track(eventWithCategory: .asleepErrorPage, name: "openRenewWeb")
             NSWorkspace.shared.open(URLConstants.kDrive(for: blockingError.drive.driveId))
         case .notRenew:
             if blockingError.drive.isAdmin {
+                matomo.track(eventWithCategory: .notRenewErrorPage, name: "openRenewWeb")
                 @InjectService var nodeURLGenerator: NodeURLGenerator
                 let shopURL = nodeURLGenerator.shopURL(forDriveId: Int(blockingError.drive.driveId))
                 NSWorkspace.shared.open(shopURL)
             } else {
+                matomo.track(eventWithCategory: .notRenewErrorPage, name: "startSync")
                 restartSynchro()
             }
-        case .wakingUp, .maintenance, .accessDenied:
+        case .wakingUp:
+            matomo.track(eventWithCategory: .asleepErrorPage, name: "startSync")
+            restartSynchro()
+        case .maintenance:
+            matomo.track(eventWithCategory: .maintenanceErrorPage, name: "startSync")
+            restartSynchro()
+        case .accessDenied:
+            matomo.track(eventWithCategory: .driveAccessDeniedPage, name: "startSync")
             restartSynchro()
         case .loggingError:
+            matomo.track(eventWithCategory: .loginErrorPage, name: "openSignInWeb")
             @InjectService var router: MainWindowRouter
             router.navigate(to: .onboarding(nil, nil, .login))
         }

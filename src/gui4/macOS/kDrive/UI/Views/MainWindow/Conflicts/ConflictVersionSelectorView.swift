@@ -38,6 +38,8 @@ struct ConflictInfo: Equatable {
 }
 
 struct ConflictVersionSelectorView: View {
+    @LazyInjectService private var matomo: MatomoUtils
+
     @Environment(\.dismiss) private var dismiss
 
     @State private var isLoadingConfirmButton = false
@@ -173,6 +175,9 @@ struct ConflictVersionSelectorView: View {
     }
 
     private func previewVersion(_ type: ConflictType, error: SynchroError) {
+        let matomoValue: Bool = type == .local
+        matomo.track(eventWithCategory: .errors, name: "showConflictVersion", value: matomoValue)
+
         Task {
             @InjectService var cache: CoherentCache
             guard let context = await cache.getSynchroContext(Int32(error.metadata.synchroDbId)) else {
@@ -228,6 +233,9 @@ struct ConflictVersionSelectorView: View {
             case .remote:
                 keepRemoteErrorDbIds.append(Int32(errorDbId))
             }
+
+            let matomoValue: Bool = choice == .local
+            matomo.track(eventWithCategory: .errors, name: "validateConflictResolution", value: matomoValue)
         }
 
         do {

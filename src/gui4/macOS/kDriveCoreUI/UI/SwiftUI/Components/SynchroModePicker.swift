@@ -16,24 +16,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveResources
 import SwiftUI
 
 public struct SynchroModePicker: View {
+    @LazyInjectService private var matomo: MatomoUtils
     @State private var isConvertingSynchro = false
 
     @State private var selectedMode: UISynchroMode
     @State private var modePendingConfirmation: UISynchroMode?
 
+    private var isCallFromAdvancedSync: Bool
+
     @Binding var synchroMode: UISynchroMode
 
     let synchroDbId: Int
 
-    public init(synchroDbId: Int, synchroMode: Binding<UISynchroMode>) {
+    public init(synchroDbId: Int, synchroMode: Binding<UISynchroMode>, isCallFromAdvancedSync: Bool = false) {
         self.synchroDbId = synchroDbId
         _synchroMode = synchroMode
         _selectedMode = State(initialValue: synchroMode.wrappedValue)
+        self.isCallFromAdvancedSync = isCallFromAdvancedSync
     }
 
     public var body: some View {
@@ -77,13 +82,28 @@ public struct SynchroModePicker: View {
             presenting: modePendingConfirmation
         ) { pendingMode in
             Button(KDriveLocalizable.buttonCancel, role: .cancel) {
+                let (category, name) = matomoByParent(isCancelChoice: true)
+                matomo.track(eventWithCategory: category, name: name)
                 selectedMode = synchroMode
             }
-            Button(pendingMode == .storeOnline
-                ? KDriveLocalizable.buttonChangeToOnline
-                : KDriveLocalizable.buttonChangeToOffline) { synchroMode = pendingMode }
+            Button(
+                pendingMode == .storeOnline
+                    ? KDriveLocalizable.buttonChangeToOnline
+                    : KDriveLocalizable.buttonChangeToOffline
+            ) {
+                let (category, name) = matomoByParent(isCancelChoice: false)
+                matomo.track(eventWithCategory: category, name: name, value: pendingMode != .storeOnline)
+                synchroMode = pendingMode
+            }
         } message: { _ in
             Text(KDriveLocalizable.dialogSyncModeChangeWarningContent)
+        }
+    }
+
+    func matomoByParent(isCancelChoice: Bool) -> (category: MatomoUtils.EventCategory, name: String) {
+        switch isCallFromAdvancedSync {
+        case true: return (.advancedSettingsPage, isCancelChoice ? "cancelSyncModeSwitch" : "confirmSyncModeSwitch")
+        case false: return (.driveManagementPage, isCancelChoice ? "cancelSyncModeSwitch" : "confirmSyncModeSwitch")
         }
     }
 }

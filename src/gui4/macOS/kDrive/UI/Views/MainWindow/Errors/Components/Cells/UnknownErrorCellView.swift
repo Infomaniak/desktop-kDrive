@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -81,6 +82,8 @@ struct UnknownErrorCellView: View {
                 title: KDriveLocalizable.defaultErrorTitle,
                 description: KDriveLocalizable.unexpectedErrorTeachingTipContent,
                 action: .init(title: KDriveLocalizable.buttonContactSupport) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .errors, name: "manageUnexpectedError")
                     manager.openSupportURL()
                 }
             )

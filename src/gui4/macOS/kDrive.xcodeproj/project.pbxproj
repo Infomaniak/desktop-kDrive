@@ -17,6 +17,7 @@
 		7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = 7A9074A42F59D1350089E4F1 /* InfomaniakDI */; };
 		7A97962C2F0EB51100E36DDE /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 7A97962B2F0EB51100E36DDE /* Collections */; };
 		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
+		A21547ED30091405009CCB6A /* MatomoTracker in Frameworks */ = {isa = PBXBuildFile; productRef = A21547EC30091405009CCB6A /* MatomoTracker */; };
 		A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = A7776BC92FE519E400989B60 /* InfomaniakDI */; };
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
@@ -317,6 +318,7 @@
 			files = (
 				F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */,
 				A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */,
+				A21547ED30091405009CCB6A /* MatomoTracker in Frameworks */,
 				F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -467,6 +469,7 @@
 			name = kDriveCoreUI;
 			packageProductDependencies = (
 				A7776BC92FE519E400989B60 /* InfomaniakDI */,
+				A21547EC30091405009CCB6A /* MatomoTracker */,
 			);
 			productName = kDriveCoreUI;
 			productReference = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */;
@@ -604,6 +607,7 @@
 				F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				7A97962A2F0EB51100E36DDE /* XCRemoteSwiftPackageReference "swift-collections" */,
 				A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */,
+				A221F1B0300912900061C832 /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 37A1C4272E546A5200596DBB /* Products */;
@@ -1325,6 +1329,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		A221F1B0300912900061C832 /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/matomo-org/matomo-sdk-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.8.0;
+			};
+		};
 		A7DC29A62F3C94BF00879B3D /* XCRemoteSwiftPackageReference "swift-foundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Infomaniak/swift-foundation.git";
@@ -1382,6 +1394,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */;
 			productName = InfomaniakConcurrency;
+		};
+		A21547EC30091405009CCB6A /* MatomoTracker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A221F1B0300912900061C832 /* XCRemoteSwiftPackageReference "matomo-sdk-ios" */;
+			productName = MatomoTracker;
 		};
 		A7776BC92FE519E400989B60 /* InfomaniakDI */ = {
 			isa = XCSwiftPackageProductDependency;

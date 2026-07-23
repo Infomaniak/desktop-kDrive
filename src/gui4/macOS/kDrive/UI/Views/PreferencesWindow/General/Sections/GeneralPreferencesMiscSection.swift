@@ -16,11 +16,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 struct GeneralPreferencesMiscSection: View {
+    @InjectService private var matomo: MatomoUtils
     @ObservedObject var repository: PreferencesRepository
 
     @State private var notificationsState: UINotificationState = .never
@@ -36,11 +38,17 @@ struct GeneralPreferencesMiscSection: View {
             )
             .onChange(of: notificationsState) { newValue in
                 updateRepositoryValue(\.$notificationsState, \.notificationsState, newValue: newValue, repository: repository)
+
+                guard newValue != repository.parametersInfo.notificationsState else { return }
+                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeNotifications")
             }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
                 .onChange(of: launchOnStartup) { newValue in
                     updateRepositoryValue(\.$launchOnStartup, \.launchOnStartup, newValue: newValue, repository: repository)
+
+                    guard newValue != repository.parametersInfo.launchOnStartup else { return }
+                    matomo.track(eventWithCategory: .generalSettingsPage, name: "changeAutoStart")
                 }
 
             HStack {
@@ -62,6 +70,9 @@ struct GeneralPreferencesMiscSection: View {
                     newValue: newValue,
                     repository: repository
                 )
+
+                guard newValue != repository.parametersInfo.moveDeletedFilesToTrash else { return }
+                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeMoveToTrash")
             }
         }
         .onAppear {

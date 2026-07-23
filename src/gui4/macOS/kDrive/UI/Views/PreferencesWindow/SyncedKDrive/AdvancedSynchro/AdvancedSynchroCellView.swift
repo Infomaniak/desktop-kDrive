@@ -24,6 +24,8 @@ import Sentry
 import SwiftUI
 
 struct AdvancedSynchroCellView: View {
+    @InjectService private var matomo: MatomoUtils
+
     @State private var synchroMode: UISynchroMode
     @State private var committedSynchroMode: UISynchroMode
     @State private var blacklistNodes: Set<String>?
@@ -55,16 +57,25 @@ struct AdvancedSynchroCellView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Menu {
-                    Button(action: openInFinder) {
+                    Button {
+                        matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "openSyncDir")
+                        openInFinder()
+                    } label: {
                         Label(KDriveLocalizable.buttonOpenInFinder, resource: KDriveResources.finder)
                     }
-                    Button(action: openInBrowser) {
+                    Button {
+                        matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "openRemoteSyncDir")
+                        openInBrowser()
+                    } label: {
                         Label(KDriveLocalizable.buttonOpenInBrowser, resource: KDriveResources.squareArrowDiagonalUp)
                     }
                     Divider()
-                    Button(role: .destructive, action: onDelete) {
+                    Button(role: .destructive, action: {
+                        matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "delete")
+                        onDelete()
+                    }, label: {
                         Label(KDriveLocalizable.buttonRemoveSync, resource: KDriveResources.trash)
-                    }
+                    })
                 } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -78,6 +89,7 @@ struct AdvancedSynchroCellView: View {
 
             IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
                 Button(synchro.localPath.path) {
+                    matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "openSyncDir")
                     NSWorkspace.shared.open(synchro.localPath)
                 }
                 .buttonStyle(.plain)
@@ -97,7 +109,7 @@ struct AdvancedSynchroCellView: View {
                 }
             }
 
-            SynchroModePicker(synchroDbId: synchro.dbId, synchroMode: $synchroMode)
+            SynchroModePicker(synchroDbId: synchro.dbId, synchroMode: $synchroMode, isCallFromAdvancedSync: true)
                 .disabled(!synchro.supportsVirtualFileSystem)
                 .onChange(of: synchroMode) { newValue in
                     guard newValue != committedSynchroMode else { return }
@@ -138,6 +150,7 @@ struct AdvancedSynchroCellView: View {
         guard let userDbId, let driveId else {
             return
         }
+        matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "showItemExclusion")
 
         @InjectService var router: PreferencesViewRouter
         router.append(.blacklist(userDbId, driveId, synchro.dbId, rootNodeId: synchro.targetNodeId))

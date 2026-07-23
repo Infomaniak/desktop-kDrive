@@ -162,11 +162,14 @@ struct SynchroStatusView: View {
     }
 
     private func didTapStateButton(for state: HomeState) {
+        @InjectService var matomo: MatomoUtils
         switch state {
         case .synchroIsRunning:
             @InjectService var router: MainViewRouter
+            matomo.track(eventWithCategory: .homePage, name: "openActivity")
             router.setCurrentTab(.activities)
         case .synchroIsPaused:
+            matomo.track(eventWithCategory: .homePage, name: "startSync")
             resumeSynchro()
         default:
             break

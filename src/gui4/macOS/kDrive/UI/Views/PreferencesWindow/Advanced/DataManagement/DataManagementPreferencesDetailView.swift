@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -53,6 +54,10 @@ struct DataManagementPreferencesDetailView: View {
         }
         .onChange(of: allowTracking) { newValue in
             updateValue(\.$allowTracking, item.keyPath, newValue: newValue)
+
+            guard newValue != settings[keyPath: item.keyPath] else { return }
+            @InjectService var matomo: MatomoUtils
+            matomo.track(eventWithCategory: .advancedSettingsPage, name: item.matomoName, value: newValue)
         }
     }
 

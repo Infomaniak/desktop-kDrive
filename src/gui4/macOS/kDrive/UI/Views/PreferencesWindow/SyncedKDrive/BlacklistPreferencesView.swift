@@ -24,6 +24,8 @@ import Sentry
 import SwiftUI
 
 struct BlacklistPreferencesView: View {
+    @InjectService private var matomo: MatomoUtils
+
     @State private var initialBlacklist: Set<String> = []
     @State private var blackList: Set<String> = []
 
@@ -65,6 +67,7 @@ struct BlacklistPreferencesView: View {
     }
 
     private func saveChanges() async {
+        matomo.track(eventWithCategory: .exclusionSelector, name: "Confirm")
         do {
             isLoadingButton = true
             try await BlacklistJobs().setBlacklistedNodeList(syncDbId: Int32(synchroDbId), nodeIdList: Array(blackList))
@@ -77,6 +80,7 @@ struct BlacklistPreferencesView: View {
     }
 
     private func goBack() {
+        matomo.track(eventWithCategory: .exclusionSelector, name: "Cancel")
         @InjectService var router: PreferencesViewRouter
         router.removeLast()
     }

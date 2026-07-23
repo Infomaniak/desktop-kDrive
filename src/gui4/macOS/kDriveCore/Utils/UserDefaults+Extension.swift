@@ -24,6 +24,7 @@ public extension UserDefaults {
         public static let shouldPresentOnboarding = "shouldPresentOnboarding"
         public static let selectedSynchroDbId = "selectedSynchroDbId"
         public static let lastKnownSentryEnabled = "lastKnownSentryEnabled"
+        public static let lastKnownMatomoEnabled = "lastKnownMatomoEnabled"
     }
 }
 
@@ -43,6 +44,15 @@ public extension UserDefaults {
         }
         set {
             set(newValue, forKey: Key.lastKnownSentryEnabled)
+        }
+    }
+
+    var lastKnownMatomoEnabled: Bool {
+        get {
+            object(forKey: Key.lastKnownMatomoEnabled) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Key.lastKnownMatomoEnabled)
         }
     }
 }
