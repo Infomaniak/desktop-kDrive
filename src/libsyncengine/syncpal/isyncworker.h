@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
+#include <atomic>
 #include <thread>
 
 #define LOOP_PAUSE_SLEEP_PERIOD 200 // 0.2 sec
@@ -35,7 +36,7 @@ constexpr int64_t longPauseDuration = 60000 * 60; // 1 h
 class ISyncWorker {
     public:
         ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                    const std::chrono::seconds &startDelay = std::chrono::seconds(0), bool testing = false);
+                    const std::chrono::seconds &startDelay = std::chrono::seconds(0));
         virtual ~ISyncWorker();
 
         virtual void start();
@@ -47,8 +48,12 @@ class ISyncWorker {
         std::string name() const { return _name; }
         std::string shortName() const { return _shortName; }
 
-        bool isRunning() const { return _isRunning; }
-        bool stopAsked() const { return _stopAsked; }
+        bool isRunning() const;
+        bool stopAsked() const;
+
+        void setRunningFlagValue(bool isRunning);
+        void setStopAsked(bool stopAsked);
+
         ExitCode exitCode() const { return _exitCode; }
         ExitCause exitCause() const { return _exitCause; }
 
@@ -58,15 +63,16 @@ class ISyncWorker {
         } // Minimum pause duration is 1 min
         void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
 
-        void setTesting(bool testing) { _testing = testing; }
+        virtual void resume() { start(); }
+
         [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _syncPal->cacheDirectory(); }
 
     protected:
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;
 
-        bool _testing{false};
         virtual void init();
+        void startExecutionThread();
 
     protected:
         //! Wait for a delay. Allows to postpone the start of the worker to smooth the load.
@@ -82,13 +88,14 @@ class ISyncWorker {
 
         virtual SyncDbId syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
+
     private:
         const std::string _name;
         const std::string _shortName;
         const std::chrono::seconds _startDelay{0};
         std::unique_ptr<StdLoggingThread> _thread{nullptr};
-        bool _stopAsked{false};
-        bool _isRunning{false};
+        std::atomic<bool> _stopAsked{false};
+        std::atomic<bool> _isRunning{false};
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};
         int64_t _pauseDuration{defaultPauseDuration};

@@ -69,11 +69,13 @@ static const std::string dataKey = "data";
 static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
+static const std::string uploadUrlKey = "upload_url";
 static const std::string preferenceKey = "preference";
 static const std::string preferencesKey = "preferences";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";
+static const std::string actionsFilesKey = "actions_files";
 static const std::string actionKey = "action";
 static const std::string fileIdKey = "file_id";
 static const std::string fileTypeKey = "file_type";
@@ -81,6 +83,7 @@ static const std::string timestampKey = "timestamp";
 static const std::string createdAtKey = "created_at";
 static const std::string lastModifiedAtKey = "last_modified_at";
 static const std::string lastModifiedByKey = "last_modified_by";
+static const std::string executedAtKey = "executed_at";
 static const std::string addedAtKey = "added_at";
 static const std::string pathKey = "path";
 static const std::string destinationKey = "destination";
@@ -139,6 +142,8 @@ enum class ActionCode {
     ActionCodeEdit,
     ActionCodeAccess,
     ActionCodeTrash, // The file has been put into the trash
+    ActionCodeTrashInherited, // The parent of an item has been put into the trash: this action should be filtered out thanks to
+                              // the backend API. Meanwhile, it is ignored.
     ActionCodeDelete, // The file has been completely deleted from the trash
     ActionCodeMoveIn,
     ActionCodeMoveOut,

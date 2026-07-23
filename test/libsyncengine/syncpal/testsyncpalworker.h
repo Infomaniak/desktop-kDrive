@@ -67,7 +67,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         SyncPath _localPath;
         SyncPath _remotePath;
 
-        void setUpTestInternalPause(const std::chrono::steady_clock::duration &longPollDuration);
+        void setUpTestInternalPause();
 
         /* This test ensure that a RFSO network error while the synchronization is idle lead to a pause state immediately and
          * that the synchronization is automatically restarted when the network is back.
@@ -116,12 +116,13 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 using RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker;
                 void setNetworkAvailability(bool networkAvailable) { _networkAvailable = networkAvailable; }
                 void simulateFSEvent() { _liveSnapshot.startUpdate(); }
-                void setLongPollDuration(std::chrono::steady_clock::duration duration) { _longPollDuration = duration; }
 
             private:
                 bool _networkAvailable{true};
-                std::chrono::steady_clock::duration _longPollDuration = std::chrono::seconds(50);
-                ExitInfo sendLongPoll(bool &changes) override;
+                ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
+                                            RemoteFileSystemObserverWorker::LongPollJobMap &longPollJobs) override;
+                ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &, ForcedUpdate, const LongPollJobMap &,
+                                                    bool &hasChanges) override;
                 ExitInfo generateInitialSnapshot() override;
         };
 

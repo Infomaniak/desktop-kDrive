@@ -23,31 +23,28 @@
 
 namespace KDC {
 
-GetSizeJob::GetSizeJob(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) :
-    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
-    _nodeId(nodeId),
-    _size(0) {
+GetSizeJob::GetSizeJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
-GetSizeJob::GetSizeJob(const DriveDbId driveDbId, const NodeId &nodeId) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _nodeId(nodeId) {
+GetSizeJob::GetSizeJob(const DriveDbId driveDbId, RemoteNodeId nodeId) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _nodeId(std::move(nodeId)) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+    _apiVersion = 2;
 }
 
 ExitInfo GetSizeJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
-    }
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
-    if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-                return {};
-            }
-        }
+    if (!jsonRes()) return ExitCode::Ok;
+
+    if (Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+        dataObj && !JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 
     return ExitCode::Ok;
@@ -58,6 +55,7 @@ ExitInfo GetSizeJob::handleError(const std::string &replyBody, const Poco::URI &
         // Access to the directory is forbidden
         return ExitCode::Ok;
     }
+
     return AbstractTokenNetworkJob::handleError(replyBody, uri);
 }
 
@@ -66,6 +64,7 @@ std::string GetSizeJob::getSpecificUrl() {
     str += "/files/";
     str += _nodeId;
     str += "/sizes";
+
     return str;
 }
 

@@ -18,6 +18,8 @@
 
 #include "snapshotitem.h"
 
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 namespace KDC {
 
 SnapshotItem::SnapshotItem(const NodeId &id) :
@@ -43,15 +45,6 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
 }
 
-void SnapshotItem::setId(const NodeId &id) {
-    _id = id;
-    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
-}
-
-void SnapshotItem::setParentId(const NodeId &newParentId) {
-    _parentId = newParentId;
-    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
-}
 
 void SnapshotItem::setName(const SyncName &newName) {
     _name = newName;
@@ -169,6 +162,37 @@ void SnapshotItem::removeChild(const std::shared_ptr<SnapshotItem> child) {
 
 void SnapshotItem::removeAllChildren() {
     _children.clear();
+}
+
+RemoteSnapshotItem::RemoteSnapshotItem(const RemoteNodeId &id) :
+    SnapshotItem(id) {}
+
+RemoteSnapshotItem::RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeId &parentId, const SyncName &name,
+                                       const SyncTime createdAt, const SyncTime lastModified, const NodeType type,
+                                       const int64_t size, const bool isLink, const bool canWrite, const bool canShare) :
+    SnapshotItem(id, parentId, name, createdAt, lastModified, type, size, isLink, canWrite, canShare) {}
+
+
+ExitInfo RemoteSnapshotItem::setV2Id(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &v3NewId) {
+    auto v2Id = v3NewId;
+
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, v2Id); !exitInfo) return exitInfo;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+
+    _id = v2Id;
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteSnapshotItem::setV2ParentId(const UserDbId userDbId, const DriveId driveId, const RemoteNodeId &v3NewParentId) {
+    auto v2Id = v3NewParentId;
+
+    if (const auto exitInfo = ApiTranslator::translateV3ToV2(userDbId, driveId, v2Id); !exitInfo) return exitInfo;
+    _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
+
+    _parentId = v2Id;
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

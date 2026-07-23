@@ -52,61 +52,85 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
 
 namespace {
 
-bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
-    return (!w1 || w1->exitCode() == ExitCode::Ok) && (!w2 || w2->exitCode() == ExitCode::Ok);
+bool hasSuccessfullyFinished(const SyncPalWorker::ReplicaWorkers &workers) {
+    return std::ranges::none_of(
+            workers, [](const auto &pair) { return pair.second.worker && pair.second.worker->exitCode() != ExitCode::Ok; });
 }
 
-bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
-    const auto dataError = (w1 && w1->exitCode() == ExitCode::DataError) || (w2 && w2->exitCode() == ExitCode::DataError);
-    const auto backError = (w1 && w1->exitCode() == ExitCode::BackError) || (w2 && w2->exitCode() == ExitCode::BackError);
-    const auto logicError = (w1 && w1->exitCode() == ExitCode::LogicError) || (w2 && w2->exitCode() == ExitCode::LogicError);
-    return dataError || backError || logicError;
+bool shouldBeStoppedAndRestarted(const SyncPalWorker::ReplicaWorkers &workers) {
+    const std::unordered_set<ExitCode> interruptingExitCodes = {ExitCode::DataError, ExitCode::BackError, ExitCode::LogicError};
+
+    return std::ranges::any_of(workers, [&interruptingExitCodes](const auto &pair) {
+        return pair.second.worker && interruptingExitCodes.contains(pair.second.worker->exitCode());
+    });
 }
 
-bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
-    const auto dbError = (w1 && w1->exitCode() == ExitCode::DbError) || (w2 && w2->exitCode() == ExitCode::DbError);
-    const auto systemError = (w1 && w1->exitCode() == ExitCode::SystemError) || (w2 && w2->exitCode() == ExitCode::SystemError);
-    const auto updateRequired =
-            (w1 && w1->exitCode() == ExitCode::UpdateRequired) || (w2 && w2->exitCode() == ExitCode::UpdateRequired);
-    const auto invalidSyncError =
-            (w1 && w1->exitCode() == ExitCode::InvalidSync) || (w2 && w2->exitCode() == ExitCode::InvalidSync);
-    const auto invalidToken =
-            (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
-    const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
-                               (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
-    const auto tooManyDeletes = (w1 && w1->exitCode() == ExitCode::TooManyDeleteOperations) ||
-                                (w2 && w2->exitCode() == ExitCode::TooManyDeleteOperations);
+bool shouldBeStopped(const SyncPalWorker::ReplicaWorkers &workers) {
+    const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError, ExitCode::SystemError, ExitCode::UpdateRequired,
+                                                            ExitCode::InvalidSync, ExitCode::InvalidToken};
 
-    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound || tooManyDeletes;
+    const bool hasStoppingExitCode = std::ranges::any_of(workers, [&stoppingExitCodes](const auto &pair) {
+        return pair.second.worker && stoppingExitCodes.contains(pair.second.worker->exitCode());
+    });
+
+    const bool hasDriveAccessError = std::ranges::any_of(workers, [](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::BackError &&
+               pair.second.worker->exitCause() == ExitCause::DriveAccessError;
+    });
+
+    return hasStoppingExitCode || hasDriveAccessError;
+}
+
+bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
+    const std::unordered_set<ExitCause> exitCausesWithoutConsequences = {
+            ExitCause::NotEnoughDiskSpace, ExitCause::FileAccessError, ExitCause::TmpDirAccessError,
+            ExitCause::SyncDirAccessError, ExitCause::SyncDirDiskMissing};
+
+    return std::ranges::any_of(workers, [&exitCausesWithoutConsequences](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::SystemError &&
+               exitCausesWithoutConsequences.contains(pair.second.worker->exitCause());
+    });
 }
 
 } // namespace
 
-bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 /*= nullptr*/) {
+bool SyncPalWorker::shouldBePaused(const SyncPalWorker::ReplicaWorkers &workers) {
+    const std::unordered_set<ExitCause> blockingExitCauses = {ExitCause::Http5xx, ExitCause::HttpErr,
+                                                              ExitCause::MissingReplyData};
+    const std::unordered_set<ExitCause> syncDirNotAccessibleExitCauses = {ExitCause::SyncDirAccessError,
+                                                                          ExitCause::SyncDirDiskMissing};
     resetPauseDuration();
 
-    const auto networkIssue =
-            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
-                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
-                                     w1->exitCause() == ExitCause::MissingReplyData)) ||
-                                   (w2 && w2->exitCode() == ExitCode::BackError &&
-                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
-                                     w2->exitCause() == ExitCause::MissingReplyData));
+    if (handleRateLimited(workers)) return true;
 
-    const auto syncDirNotAccessible =
-            (w1 && w1->exitCode() == ExitCode::SystemError &&
-             (w1->exitCause() == ExitCause::SyncDirAccessError || w1->exitCause() == ExitCause::SyncDirDiskMissing)) ||
-            (w2 && w2->exitCode() == ExitCode::SystemError &&
-             (w2->exitCause() == ExitCause::SyncDirAccessError || w2->exitCause() == ExitCause::SyncDirDiskMissing));
-    const auto invalidOperation =
-            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
+    bool networkIssue = false;
+    bool httpBlockingError = false;
+    bool syncDirNotAccessible = false;
+    bool invalidOperation = false;
+    bool rfsoError = false;
 
-    std::shared_ptr<RemoteFileSystemObserverWorker> r1 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w1);
-    std::shared_ptr<RemoteFileSystemObserverWorker> r2 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w2);
-    const auto rfsoError = (r1 != nullptr && r1->exitCode() != ExitCode::Ok) || (r2 != nullptr && r2->exitCode() != ExitCode::Ok);
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+        if (const bool hasWorker = workers.contains(side) && workers.at(side).worker; !hasWorker) continue;
 
-    if (handleRateLimited(w1, w2)) return true;
+        auto worker = workers.at(side).worker;
+
+        if (worker->exitCode() == ExitCode::NetworkError) networkIssue = true;
+        if (worker->exitCode() == ExitCode::BackError && blockingExitCauses.contains(worker->exitCause())) {
+            httpBlockingError = true;
+        }
+
+        if (worker->exitCode() == ExitCode::SystemError &&
+            syncDirNotAccessibleExitCauses.contains(workers.at(side).worker->exitCause())) {
+            syncDirNotAccessible = true;
+        }
+
+        if (worker->exitCode() == ExitCode::InvalidOperation) invalidOperation = true;
+
+        if (const auto rfsoWorker = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(worker);
+            rfsoWorker && rfsoWorker->exitCode() != ExitCode::Ok) {
+            rfsoError = true;
+        }
+    }
 
     if (httpBlockingError || rfsoError) {
         handleBackError();
@@ -116,20 +140,34 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
     return networkIssue || syncDirNotAccessible || invalidOperation;
 }
 
-bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
-    if ((w1 && w1->exitCode() == ExitCode::RateLimited) || (w2 && w2->exitCode() == ExitCode::RateLimited)) {
-        const auto newPauseDuration =
-                std::max(w1 ? w1->pauseDuration() : defaultPauseDuration, w2 ? w2->pauseDuration() : defaultPauseDuration);
-        if (newPauseDuration != pauseDuration()) {
-            LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
-            setPauseDuration(newPauseDuration);
+bool SyncPalWorker::handleRateLimited(const SyncPalWorker::ReplicaWorkers &workers) {
+    bool shouldHandleRateLimit = false;
+
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+        if (const bool hasWorker = workers.contains(side) && workers.at(side).worker; !hasWorker) continue;
+
+        if (workers.at(side).worker->exitCode() == ExitCode::RateLimited) {
+            shouldHandleRateLimit = true;
+
+            if (const auto newPauseDuration = workers.at(side).worker->pauseDuration(); newPauseDuration != pauseDuration()) {
+                LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms due to rate limiting");
+                setPauseDuration(newPauseDuration);
+            }
+
+            break;
         }
-        return true;
     }
-    return false;
+
+    return shouldHandleRateLimit;
 }
 
-void SyncPalWorker::handleBackError(void) {
+bool shouldRequireUpdate(const SyncPalWorker::ReplicaWorkers &workers) {
+    return std::ranges::any_of(workers, [](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::UpdateRequired;
+    });
+}
+
+void SyncPalWorker::handleBackError() {
     auto computedDelay = static_cast<int64_t>(
             backoffVariable::baseDelay *
             std::pow(backoffVariable::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t) 10)));
@@ -239,6 +277,90 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
     return ExitCode::Ok;
 }
 
+void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
+    LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << fsoWorker.worker->name());
+    fsoWorker.isInProgress = true;
+    fsoWorker.worker->start();
+}
+
+void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncStep step) {
+    LOG_IF_FAIL(rfsoWorker.worker && rfsoWorker.side == ReplicaSide::Remote)
+
+    static const std::string resumeMessage = "Resuming RFSO until the synchronization leaves the Idle state.";
+
+    switch (step) {
+        case SyncStep::Idle: {
+            if (rfsoWorker.isInProgress) return;
+
+            if (!rfsoWorker.isResumable) {
+                startFSOWorker(rfsoWorker);
+                rfsoWorker.isResumable = true;
+            } else {
+                LOG_DEBUG(_logger, resumeMessage);
+                rfsoWorker.worker->resume();
+                rfsoWorker.isInProgress = true;
+            }
+            break;
+        }
+        case SyncStep::UpdateDetection1: {
+            if (!rfsoWorker.isInProgress) return;
+
+            LOG_DEBUG(_logger, "Stopping RFSO as long as the synchronization does not reach the Done or Idle state.");
+            stopAndWaitForExitOfWorker(rfsoWorker.worker);
+            rfsoWorker.isInProgress = false;
+            break;
+        }
+        case SyncStep::Done: {
+            if (rfsoWorker.isInProgress) return;
+
+            LOG_DEBUG(_logger, resumeMessage);
+            rfsoWorker.worker->resume();
+            rfsoWorker.isInProgress = true;
+            break;
+        }
+        default:
+            return;
+    }
+}
+
+void SyncPalWorker::adaptFSOWorkerActivityToSyncState(Worker &fsoWorker, bool &syncDirChanged) {
+    auto worker = fsoWorker.worker;
+
+    if (worker == nullptr || worker->isRunning()) return;
+
+    if (fsoWorker.isInProgress) {
+        LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << fsoWorker.worker->name());
+        fsoWorker.isInProgress = false;
+        stopAndWaitForExitOfWorker(fsoWorker.worker);
+        if (shouldBePaused({{fsoWorker.side, fsoWorker}}) && !pauseAsked()) {
+            pause();
+            return;
+        }
+
+        syncDirChanged = worker->exitCode() == ExitCode::DataError && worker->exitCause() == ExitCause::SyncDirChanged;
+        if (syncDirChanged) return;
+
+        if (shouldBeStopped({{fsoWorker.side, fsoWorker}}) && !stopAsked()) stop();
+
+    } else if (!pauseAsked() && fsoWorker.side == ReplicaSide::Remote) {
+        adaptRFSOWorkerToSyncState(fsoWorker, _step);
+    } else if (!pauseAsked()) {
+        LOG_IF_FAIL(fsoWorker.side == ReplicaSide::Local);
+        startFSOWorker(fsoWorker);
+    }
+}
+
+void SyncPalWorker::startWorkers(bool &isStepInProgress, ReplicaWorkers &stepWorkers,
+                                 ReplicaInputSharedObjects &inputSharedObject) {
+    LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
+    isStepInProgress = true;
+
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+        if (inputSharedObject.contains(side) && inputSharedObject.at(side)) inputSharedObject.at(side)->startRead();
+        if (stepWorkers.contains(side) && stepWorkers.at(side).worker) stepWorkers.at(side).worker->start();
+    }
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
@@ -275,47 +397,26 @@ void SyncPalWorker::execute() {
 
     // Sync loop
     LOG_SYNCPAL_DEBUG(_logger, "Start sync loop");
-    bool isFSOInProgress[2] = {false, false};
-    std::shared_ptr<ISyncWorker> fsoWorkers[2] = {_syncPal->_localFSObserverWorker, _syncPal->_remoteFSObserverWorker};
+    ReplicaWorkers fsoWorkers = {{ReplicaSide::Local, Worker(ReplicaSide::Local, _syncPal->_localFSObserverWorker)},
+                                 {ReplicaSide::Remote, Worker(ReplicaSide::Remote, _syncPal->_remoteFSObserverWorker)}};
     bool isStepInProgress = false;
-    std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
-    std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
+    ReplicaWorkers stepWorkers = {{ReplicaSide::Local, Worker(ReplicaSide::Local)},
+                                  {ReplicaSide::Remote, Worker(ReplicaSide::Remote)}};
+
+    ReplicaInputSharedObjects inputSharedObject = {{ReplicaSide::Local, nullptr}, {ReplicaSide::Remote, nullptr}};
     time_t lastEstimateUpdate = 0;
+
     for (;;) {
-        bool syncDirChanged = false;
         // Check File System Observer workers status
-        for (int index = 0; index < 2; index++) {
-            if (fsoWorkers[index] && !fsoWorkers[index]->isRunning()) {
-                if (isFSOInProgress[index]) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Stop FSO worker " << index);
-                    isFSOInProgress[index] = false;
-                    stopAndWaitForExitOfWorker(fsoWorkers[index]);
-                    if (shouldBePaused(fsoWorkers[index], nullptr) && !pauseAsked()) {
-                        pause();
-                        continue;
-                    }
+        bool syncDirChanged = false;
 
-                    syncDirChanged = fsoWorkers[index]->exitCode() == ExitCode::DataError &&
-                                     fsoWorkers[index]->exitCause() == ExitCause::SyncDirChanged;
-                    if (syncDirChanged) {
-                        break;
-                    }
+        adaptFSOWorkerActivityToSyncState(fsoWorkers.at(ReplicaSide::Local), syncDirChanged);
+        if (!syncDirChanged) adaptFSOWorkerActivityToSyncState(fsoWorkers.at(ReplicaSide::Remote));
 
-                    if (shouldBeStopped(fsoWorkers[index], nullptr) && !stopAsked()) {
-                        stop();
-                    }
-                } else if (!pauseAsked()) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << index);
-                    isFSOInProgress[index] = true;
-                    fsoWorkers[index]->start();
-                }
-            }
-        }
-
-        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g migration from an other device)
+        // Manage SyncDir change (might happen if the sync folder is deleted and recreated e.g., migration from another device).
         if (syncDirChanged && !tryToFixDbNodeIdsAfterSyncDirChange()) {
             LOG_SYNCPAL_INFO(_logger,
-                             "Sync dir changed and we are unable to automaticaly fix syncDb, stopping all workers and exiting");
+                             "Sync dir changed and we are unable to automatically fix syncDb, stopping all workers and exiting.");
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
             exitCode = ExitCode::DataError;
             setExitCause(ExitCause::SyncDirChanged);
@@ -324,10 +425,7 @@ void SyncPalWorker::execute() {
 
         // Manage stop
         if (stopAsked()) {
-            // Stop all workers
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-
-            // Exit
             exitCode = ExitCode::Ok;
             break;
         }
@@ -335,7 +433,7 @@ void SyncPalWorker::execute() {
         // Manage pause
         while ((_pauseAsked || _isPaused) &&
                (_step == SyncStep::Idle ||
-                _step == SyncStep::Propagation2)) { // Pause only if we are idle or in Propagation2 (because it needs network)
+                _step == SyncStep::Propagation2)) { // Pause only if we are Idle or in Propagation2 (because it needs network)
             if (!_isPaused) {
                 // Pause workers
                 _pauseAsked = false;
@@ -362,16 +460,17 @@ void SyncPalWorker::execute() {
 
         if (isStepInProgress) {
             // Check workers status
-            if (hasSuccessfullyFinished(stepWorkers[0], stepWorkers[1])) {
+            if (hasSuccessfullyFinished(stepWorkers)) {
                 // Next step
                 const SyncStep step = nextStep();
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
+                    adaptRFSOWorkerToSyncState(fsoWorkers.at(ReplicaSide::Remote), step);
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
-            } else if (shouldBePaused(stepWorkers[0], stepWorkers[1])) {
+            } else if (shouldBePaused(stepWorkers)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and pause sync
@@ -379,7 +478,7 @@ void SyncPalWorker::execute() {
                 isStepInProgress = false;
                 pause();
                 continue;
-            } else if (shouldBeStoppedAndRestarted(stepWorkers[0], stepWorkers[1])) {
+            } else if (shouldBeStoppedAndRestarted(stepWorkers)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -387,31 +486,14 @@ void SyncPalWorker::execute() {
                 _syncPal->tryToInvalidateSnapshots();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
-            } else if (shouldBeStopped(stepWorkers[0], stepWorkers[1])) {
+            } else if (shouldBeStopped(stepWorkers)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has aborted");
 
-                // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-                const bool isIgnoredSystemError = (stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
-                                                   (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                                                    stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
-                                                    stepWorkers[0]->exitCause() == ExitCause::TmpDirAccessError ||
-                                                    stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError ||
-                                                    stepWorkers[0]->exitCause() == ExitCause::SyncDirDiskMissing)) ||
-                                                  (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
-                                                   (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                                                    stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
-                                                    stepWorkers[1]->exitCause() == ExitCause::TmpDirAccessError ||
-                                                    stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError ||
-                                                    stepWorkers[1]->exitCause() == ExitCause::SyncDirDiskMissing));
-                const bool hasTooManyDeletes =
-                        (stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::TooManyDeleteOperations) ||
-                        (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::TooManyDeleteOperations);
-                if (isIgnoredSystemError || hasTooManyDeletes) {
-                    // Exit without error
+
+                if (shouldExitWithoutError(stepWorkers)) {
                     exitCode = ExitCode::Ok;
-                } else if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::UpdateRequired) ||
-                           (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::UpdateRequired)) {
+                } else if (shouldRequireUpdate(stepWorkers)) {
                     exitCode = ExitCode::UpdateRequired;
                 } else {
                     exitCode = ExitCode::FatalError;
@@ -419,23 +501,11 @@ void SyncPalWorker::execute() {
                 }
                 break;
             }
-        } else {
-            // Start workers
-            LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " start");
-            isStepInProgress = true;
-            for (int index = 0; index < 2; index++) {
-                if (inputSharedObject[index]) {
-                    inputSharedObject[index]->startRead();
-                }
-                if (stepWorkers[index]) {
-                    stepWorkers[index]->start();
-                }
-            }
-        }
+        } else
+            startWorkers(isStepInProgress, stepWorkers, inputSharedObject);
 
-        if (exitCode != ExitCode::Unknown) {
-            break;
-        }
+
+        if (exitCode != ExitCode::Unknown) break;
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
@@ -504,8 +574,7 @@ std::string SyncPalWorker::stepName(SyncStep step) {
     return "<" + toString(step) + ">";
 }
 
-void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
-                             std::shared_ptr<SharedObject> (&inputSharedObject)[2]) {
+void SyncPalWorker::initStep(SyncStep step, ReplicaWorkers &workers, ReplicaInputSharedObjects &inputSharedObjects) {
     if (step == SyncStep::UpdateDetection1) {
         sentry::pTraces::basic::Sync(syncDbId()).start();
     }
@@ -513,12 +582,14 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
     sentry::syncStepToPTrace(step, syncDbId())->start();
 
     _step = step;
+
+    workers = {{ReplicaSide::Local, Worker(ReplicaSide::Local)},
+               {ReplicaSide::Remote, Worker(ReplicaSide::Remote)},
+               {ReplicaSide::Both, Worker(ReplicaSide::Both)}};
+    inputSharedObjects = {{ReplicaSide::Local, nullptr}, {ReplicaSide::Remote, nullptr}};
+
     switch (step) {
         case SyncStep::Idle:
-            workers[0] = nullptr;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
             _syncPal->freeSnapshotsCopies();
@@ -526,63 +597,39 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->resetConsecutiveBackErrors();
             break;
         case SyncStep::UpdateDetection1:
-            workers[0] = _syncPal->computeFSOperationsWorker();
-            workers[1] = nullptr;
+            workers.at(ReplicaSide::Local).worker = _syncPal->computeFSOperationsWorker();
             _syncPal->copySnapshots();
             LOG_IF_FAIL(_syncPal->syncDb()->cache().reloadIfNeeded());
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
             _syncPal->setRestart(false);
             break;
         case SyncStep::UpdateDetection2:
-            workers[0] = _syncPal->_localUpdateTreeWorker;
-            workers[1] = _syncPal->_remoteUpdateTreeWorker;
-            inputSharedObject[0] = _syncPal->operationSet(ReplicaSide::Local);
-            inputSharedObject[1] = _syncPal->operationSet(ReplicaSide::Remote);
+            workers.at(ReplicaSide::Local).worker = _syncPal->_localUpdateTreeWorker;
+            workers.at(ReplicaSide::Remote).worker = _syncPal->_remoteUpdateTreeWorker;
+            inputSharedObjects[ReplicaSide::Local] = _syncPal->operationSet(ReplicaSide::Local);
+            inputSharedObjects[ReplicaSide::Remote] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
         case SyncStep::Reconciliation1:
-            workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
-            workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->updateTree(ReplicaSide::Remote);
-            inputSharedObject[1] = nullptr;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_platformInconsistencyCheckerWorker;
+            inputSharedObjects[ReplicaSide::Remote] = _syncPal->updateTree(ReplicaSide::Remote);
             break;
         case SyncStep::Reconciliation2:
-            workers[0] = _syncPal->_conflictFinderWorker;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_conflictFinderWorker;
             break;
         case SyncStep::Reconciliation3:
-            workers[0] = _syncPal->_conflictResolverWorker;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_conflictResolverWorker;
             break;
         case SyncStep::Reconciliation4:
-            workers[0] = _syncPal->_operationsGeneratorWorker;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_operationsGeneratorWorker;
             break;
         case SyncStep::Propagation1:
-            workers[0] = _syncPal->_operationsSorterWorker;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_operationsSorterWorker;
             _syncPal->startEstimateUpdates();
             break;
         case SyncStep::Propagation2:
-            workers[0] = _syncPal->_executorWorker;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
+            workers.at(ReplicaSide::Both).worker = _syncPal->_executorWorker;
             _syncPal->syncDb()->cache().clear(); // Cache is not needed anymore, free resources
             break;
         case SyncStep::Done:
-            workers[0] = nullptr;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
             _syncPal->setManyDeleteOpsUserChoice(TooManyDeletesUserChoice::None);
             if (!_syncPal->restart()) {
@@ -591,31 +638,24 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             }
             if (_syncPal->updateTreesNeedToBeCleared()) {
                 LOG_SYNCPAL_DEBUG(_logger, "Clearing update trees");
-                _syncPal->_localUpdateTree->clear();
-                _syncPal->_remoteUpdateTree->clear();
+                _syncPal->updateTree(ReplicaSide::Local)->clear();
+                _syncPal->updateTree(ReplicaSide::Remote)->clear();
                 _syncPal->setUpdateTreesNeedToBeCleared(false);
             }
             sentry::pTraces::basic::Sync(syncDbId()).stop();
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");
-            workers[0] = nullptr;
-            workers[1] = nullptr;
-            inputSharedObject[0] = nullptr;
-            inputSharedObject[1] = nullptr;
             break;
     }
 }
 
-void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
-                                  std::shared_ptr<SharedObject> (&inputSharedObject)[2], bool reset) {
+void SyncPalWorker::initStepFirst(ReplicaWorkers &workers, ReplicaInputSharedObjects &inputSharedObjects, bool reset) {
     LOG_SYNCPAL_DEBUG(_logger, "Restart sync");
 
-    if (reset) {
-        _syncPal->resetSharedObjects();
-    }
+    if (reset) _syncPal->resetSharedObjects();
 
-    initStep(SyncStep::Idle, workers, inputSharedObject);
+    initStep(SyncStep::Idle, workers, inputSharedObjects);
 }
 
 SyncStep SyncPalWorker::nextStep() const {
@@ -623,16 +663,16 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStep::Idle: {
             const bool areLiveSnapshotsValid =
                     _syncPal->liveSnapshot(ReplicaSide::Local).isValid() && _syncPal->liveSnapshot(ReplicaSide::Remote).isValid();
-            const bool areFSOWorkersRunning =
+            const bool areWorkersRunning =
                     _syncPal->_localFSObserverWorker->isRunning() && _syncPal->_remoteFSObserverWorker->isRunning();
-            const bool areFSOWorkersInitializing =
+            const bool areWorkersInitializing =
                     _syncPal->_localFSObserverWorker->initializing() || _syncPal->_remoteFSObserverWorker->initializing();
-            const bool areFSOWorkersUpdating =
+            const bool areWorkersUpdating =
                     _syncPal->_localFSObserverWorker->updating() || _syncPal->_remoteFSObserverWorker->updating();
             const bool areLiveSnapshotsUpdated =
                     _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
-            if (areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+            if (areLiveSnapshotsValid && areWorkersRunning && !areWorkersInitializing && !areWorkersUpdating &&
                 (areLiveSnapshotsUpdated || _syncPal->restart()))
                 return SyncStep::UpdateDetection1;
             else {
@@ -697,29 +737,24 @@ void SyncPalWorker::stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> work
     worker->waitForExit();
 }
 
-void SyncPalWorker::stopWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
-    for (int index = 0; index < 2; index++) {
-        if (workers[index]) {
-            workers[index]->stop();
-        }
+void SyncPalWorker::stopWorkers(ReplicaWorkers &workers) {
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+        if (workers.contains(side) && workers.at(side).worker) workers.at(side).worker->stop();
     }
 }
 
-void SyncPalWorker::waitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
-    for (int index = 0; index < 2; index++) {
-        if (workers[index]) {
-            workers[index]->waitForExit();
-        }
+void SyncPalWorker::waitForExitOfWorkers(ReplicaWorkers &workers) {
+    for (const auto side: {ReplicaSide::Local, ReplicaSide::Remote, ReplicaSide::Both}) {
+        if (workers.contains(side) && workers.at(side).worker) workers.at(side).worker->waitForExit();
     }
 }
 
-void SyncPalWorker::stopAndWaitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
+void SyncPalWorker::stopAndWaitForExitOfWorkers(ReplicaWorkers &workers) {
     stopWorkers(workers);
     waitForExitOfWorkers(workers);
 }
 
-void SyncPalWorker::stopAndWaitForExitOfAllWorkers(std::shared_ptr<ISyncWorker> fsoWorkers[2],
-                                                   std::shared_ptr<ISyncWorker> stepWorkers[2]) {
+void SyncPalWorker::stopAndWaitForExitOfAllWorkers(ReplicaWorkers &fsoWorkers, ReplicaWorkers &stepWorkers) {
     LOG_SYNCPAL_INFO(_logger, "***** Stop");
 
     // Stop workers

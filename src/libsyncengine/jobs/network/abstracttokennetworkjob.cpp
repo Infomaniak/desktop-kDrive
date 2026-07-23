@@ -58,12 +58,10 @@ void AbstractTokenNetworkJob::checkParametersValidity() {
     }
 }
 
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const UserId userId,
-                                                 const DriveDbId driveDbId, const DriveId driveId,
-                                                 const bool returnJson /*= true*/) :
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const UserDbId userDbId, const DriveDbId driveDbId,
+                                                 const DriveId driveId, const bool returnJson /*= true*/) :
     _apiType(apiType),
     _userDbId(userDbId),
-    _userId(userId),
     _driveDbId(driveDbId),
     _driveId(driveId),
     _returnJson(returnJson) {
@@ -82,7 +80,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
 }
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const bool returnJson /*= true*/) :
-    AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
+    AbstractTokenNetworkJob(apiType, 0, 0, 0, returnJson) {}
 
 ExitCause AbstractTokenNetworkJob::getExitCause() const {
     if (exitInfo().cause() == ExitCause::Unknown) {
@@ -393,6 +391,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
         throw DataError(err);
     }
 
+    _userId = user.userId();
 
 #ifndef NDEBUG
     const auto debugAccessToken = getAccessTokenFromEnv(user.userId());
@@ -411,15 +410,17 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
             LOG_WARN(_logger, err);
             throw TokenError(err);
         }
-        _userToApiKeyMap[_userDbId] = {login, user.userId()};
+
+        _userToApiKeyMap[_userDbId] = {login, _userId};
+
 #ifndef NDEBUG
     } else {
         ApiToken apiToken;
         apiToken.setAccessToken(debugAccessToken);
         auto login = std::make_shared<Login>();
         login->setApiToken(apiToken);
+        _userToApiKeyMap[_userDbId] = {login, _userId};
         LOG_INFO(_logger, "Using API token from environment variable KDRIVE_DEBUG_API_TOKEN for userDbId=" << _userDbId);
-        _userToApiKeyMap[_userDbId] = {login, user.userId()};
     }
 #endif
 }
@@ -466,6 +467,17 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
     }
 
     return account;
+}
+
+DriveId AbstractTokenNetworkJob::getDriveId(const DriveDbId driveDbId) {
+    const std::scoped_lock lock(_cacheMutex);
+
+    if (const auto it = _driveToApiKeyMap.find(driveDbId); it != _driveToApiKeyMap.end()) {
+        return it->second.driveId;
+    }
+
+    const Drive &drive = getDrive(driveDbId);
+    return drive.driveId();
 }
 
 void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
@@ -563,7 +575,10 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::Drive:
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
-            if (_driveDbId) loadUserInfoFromDriveDbId();
+            if (_driveDbId)
+                loadUserInfoFromDriveDbId();
+            else
+                loadUserInfoFromUserDbId();
             apiToken = retrieveApiTokenFromUserCache();
             break;
         }
