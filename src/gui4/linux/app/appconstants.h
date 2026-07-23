@@ -18,8 +18,17 @@
 
 #pragma once
 
+#include <QColor>
 #include <QString>
 #include <QUrl>
+
+namespace KDC::AppConstants::Drive {
+
+[[nodiscard]] inline QColor defaultColor() {
+    return QColor{QStringLiteral("#0098FF")};
+}
+
+} // namespace KDC::AppConstants::Drive
 
 namespace KDC::AppConstants::Login {
 
