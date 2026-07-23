@@ -59,6 +59,7 @@ class OnboardingSessionManager final : public QObject {
         void activeSessionChanged();
         void openOnboardingWindowRequested();
         void closeOnboardingWindowRequested();
+        void onboardingCompleted();
 
     private:
         enum class LifecycleState : uint8_t {
