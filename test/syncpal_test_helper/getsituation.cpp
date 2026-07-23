@@ -20,15 +20,107 @@
 
 #include "syncpal/syncpal.h"
 
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
+#include "test_utility/testhelpers.h"
 
-#include <Poco/JSON/Parser.h>
+#include <Poco/JSON/Array.h>
+#include <Poco/JSON/Object.h>
 
-#include <fstream>
 #include <sstream>
+#include <unordered_map>
 
 namespace KDC {
+
+namespace {
+
+//
+// ─────────────────────────────────────────────────
+// JSON Situation -> SituationCSV
+// ─────────────────────────────────────────────────
+//
+// Mirrors the walk InitialSituationSetter::addItem does for both supported formats (see initialsituationsetter.h),
+// except it only ever accumulates a path/type/size in `out` instead of touching the real filesystem or drive.
+
+void flatten(const Poco::JSON::Object::Ptr &obj, const SyncPath &parentPath, SituationCSV &out) {
+    std::vector<std::string> keys;
+    obj->getNames(keys);
+
+    for (const auto &key: keys) {
+        const bool isDir = obj->isObject(key);
+        const SyncPath path = parentPath / Str2SyncName(CommonUtility::toUpper(key));
+        out.add(path, {isDir ? NodeType::Directory : NodeType::File,
+                       isDir ? testhelpers::defaultDirSize : testhelpers::defaultFileSize});
+
+        if (isDir) flatten(obj->getObject(key), path, out);
+    }
+}
+
+void flatten(const Poco::JSON::Array::Ptr &arr, const SyncPath &parentPath, SituationCSV &out) {
+    for (size_t i = 0; i < arr->size(); ++i) {
+        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
+        if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
+
+        const std::string typeStr = itemObj->optValue<std::string>("type", "File");
+        const NodeType type = (typeStr == "Directory") ? NodeType::Directory : NodeType::File;
+        const std::string nameStr = itemObj->optValue<std::string>("name", "");
+        if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
+
+        const SyncPath path = parentPath / Str2SyncName(nameStr);
+        const int64_t size = itemObj->optValue<int64_t>(
+                "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
+        out.add(path, {type, size});
+
+        if (type == NodeType::Directory && itemObj->isArray("content")) {
+            flatten(itemObj->getArray("content"), path, out);
+        }
+    }
+}
+
+//
+// ─────────────────────────────────────────────────
+// CSV listing -> SituationCSV
+// ─────────────────────────────────────────────────
+//
+// A CSV listing (whether read from a file or fetched live) gives us, per item, only its own id/parentId/name/
+// type/size - not its full path. Since a child can appear before its parent in the listing, we can't resolve
+// paths on the fly while streaming: every item is buffered first, then paths are resolved from the complete
+// id -> item map.
+
+struct RawItem {
+        NodeId parentId;
+        std::string name;
+        NodeType type = NodeType::Unknown;
+        int64_t size = 0;
+};
+
+using RawItemMap = std::unordered_map<NodeId, RawItem>;
+
+SyncPath resolvePath(const NodeId &id, const RawItemMap &rawItems, std::unordered_map<NodeId, SyncPath> &pathCache) {
+    if (const auto it = pathCache.find(id); it != pathCache.end()) return it->second;
+
+    const RawItem &item = rawItems.at(id);
+    const bool isRoot = item.parentId.empty() || !rawItems.contains(item.parentId);
+    const SyncPath path = isRoot ? SyncPath(Str2SyncName(item.name))
+                                 : resolvePath(item.parentId, rawItems, pathCache) / Str2SyncName(item.name);
+    return pathCache[id] = path;
+}
+
+// The root item itself (the one with no parent in `rawItems`) has no counterpart in a JSON Situation description
+// (which only lists root's children), so it is used to resolve its children's paths but never added to the result.
+SituationCSV rawItemsToSituationCSV(const RawItemMap &rawItems) {
+    SituationCSV situationCSV;
+    std::unordered_map<NodeId, SyncPath> pathCache;
+    for (const auto &[id, item]: rawItems) {
+        if (item.parentId.empty()) continue; // root, skip
+        if (item.name.starts_with("tmpFile_")) continue; // trash, skip
+        situationCSV.add(resolvePath(id, rawItems, pathCache), {item.type, item.size});
+    }
+    return situationCSV;
+}
+
+} // namespace
 
 //
 // ─────────────────────────────────────────────────
@@ -37,42 +129,11 @@ namespace KDC {
 //
 
 void SituationCSV::log() const {
-    for (const auto &[id, name]: _items) {
-        LOG_INFO(Log::instance()->getLogger(), id << " -> " << name);
+    for (const auto &[path, info]: _items) {
+        LOG_INFO(Log::instance()->getLogger(), path.string()
+                                                       << " -> " << (info.type == NodeType::Directory ? "Directory" : "File")
+                                                       << " (" << info.size << ")");
     }
-}
-
-//
-// ─────────────────────────────────────────────────
-// Situation
-// ─────────────────────────────────────────────────
-//
-
-Situation::Situation(const StringType &jsonDescription) :
-    _jsonDescription(jsonDescription) {
-    try {
-        Poco::JSON::Parser parser;
-        (void) parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();
-    } catch (Poco::Exception &) {
-        throw SituationGeneratorException("Invalid Situation JSON");
-    }
-}
-
-Situation Situation::fromFile(const std::filesystem::path &filePath) {
-    const std::ifstream file(filePath, std::ios::binary);
-    if (!file) throw SituationGeneratorException("Situation::fromFile: unable to open file: " + filePath.string());
-
-    std::ostringstream buffer;
-    buffer << file.rdbuf();
-    return Situation(Str2SyncName(buffer.str()));
-}
-
-const Situation::StringType &Situation::json() const noexcept {
-    return _jsonDescription;
-}
-
-void Situation::log() const {
-    LOGW_INFO(Log::instance()->getLogger(), SyncName2WStr(_jsonDescription));
 }
 
 //
@@ -81,28 +142,31 @@ void Situation::log() const {
 // ─────────────────────────────────────────────────
 //
 
-GetSituation::GetSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation) :
-    _expectedLocalSituation(expectedLocalSituation),
-    _expectedRemoteSituation(expectedRemoteSituation) {}
+GetSituation::GetSituation(const std::shared_ptr<SyncPal> syncPal) {
+    setSyncpal(syncPal);
+}
 
 void GetSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
 }
 
-SituationCSV GetSituation::jsonToSituationCSV(const Situation & /*situation*/) {
-    // PLACEHOLDER: the JSON description (see SetInitialSituation-like formats) only carries lowercase ids/names,
-    // not the real int64_t node ids assigned by the server. We still need to decide how to turn this into a
-    // SituationCSV that can be meaningfully compared to the real (id -> name) map fetched from the server/disk
-    // (e.g. compare by name only, or resolve real ids via the id mapping built while generating the situation).
-    return {};
+SituationCSV GetSituation::jsonToSituationCSV(const Situation &situation) {
+    SituationCSV situationCSV;
+    const auto &obj = situation.jsonObject();
+    if (obj->isArray("content")) {
+        flatten(obj->getArray("content"), {}, situationCSV);
+    } else {
+        // No "content" array: legacy format, where the object's own keys are the items.
+        flatten(obj, {}, situationCSV);
+    }
+    return situationCSV;
 }
 
 SituationCSV GetSituation::csvToSituationCSV(const std::string &csv) {
-    SituationCSV situationCSV;
-
     SnapshotItemHandler handler(Log::instance()->getLogger());
     std::stringstream ss(csv);
 
+    RawItemMap rawItems;
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
@@ -112,30 +176,29 @@ SituationCSV GetSituation::csvToSituationCSV(const std::string &csv) {
             LOG_WARN(Log::instance()->getLogger(), "Error while parsing CSV listing.");
             break;
         }
-        if (ignore) continue;
-
-        try {
-            situationCSV.add(std::stoll(item.id()), SyncName2Str(item.name()));
-        } catch (const std::exception &) {
-            LOG_WARN(Log::instance()->getLogger(), "Unable to convert item id '" << item.id() << "' to int64_t.");
-        }
+        if (!ignore) rawItems[item.id()] = {item.parentId(), SyncName2Str(item.name()), item.type(), item.size()};
 
         if (eof) break;
     }
 
-    return situationCSV;
+    return rawItemsToSituationCSV(rawItems);
 }
 
 SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/) const {
     if (!_syncPal) return {};
 
-    CsvFullFileListWithCursorJob job(_syncPal->driveDbId(), remoteDirId);
+    // An empty remoteDirId isn't "the sync root" for CsvFullFileListWithCursorJob: it lists the whole drive from
+    // its actual root. Default to the SyncPal's own remote root node id so only the sync folder's content is
+    // listed and compared against the (relative-to-sync-root) expected situation.
+    const NodeId dirId = !remoteDirId.empty() ? remoteDirId : _syncPal->syncDb()->rootNode().nodeIdRemote().value_or(NodeId());
+
+    CsvFullFileListWithCursorJob job(_syncPal->driveDbId(), dirId);
     if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in CsvFullFileListWithCursorJob::runSynchronously: " << exitInfo);
         return {};
     }
 
-    SituationCSV situationCSV;
+    RawItemMap rawItems;
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
@@ -145,40 +208,31 @@ SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/
             LOG_WARN(Log::instance()->getLogger(), "Error while parsing CsvFullFileListWithCursorJob response.");
             break;
         }
-        if (ignore) continue;
-
-        try {
-            situationCSV.add(std::stoll(item.id()), SyncName2Str(item.name()));
-        } catch (const std::exception &) {
-            LOG_WARN(Log::instance()->getLogger(), "Unable to convert item id '" << item.id() << "' to int64_t.");
-        }
+        if (!ignore) rawItems[item.id()] = {item.parentId(), SyncName2Str(item.name()), item.type(), item.size()};
 
         if (eof) break;
     }
 
-    return situationCSV;
+    return rawItemsToSituationCSV(rawItems);
 }
 
 SituationCSV GetSituation::getLocalSituation() const {
     // PLACEHOLDER: needs to walk the local sync folder (_syncPal->localPath()) recursively and build a
-    // SituationCSV out of it. The id to use (local node id from the DB? filesystem id?) still needs to be decided.
+    // SituationCSV out of it (relative path -> {type, size}), mirroring rawItemsToSituationCSV above.
     return {};
 }
 
-bool GetSituation::compareRemote() const {
-    const SituationCSV expected = jsonToSituationCSV(_expectedRemoteSituation);
+bool GetSituation::compareRemote(const Situation &expectedRemoteSituation) const {
+    const SituationCSV expected = jsonToSituationCSV(expectedRemoteSituation);
     const SituationCSV actual = getRemoteSituation();
     return expected == actual;
 }
 
-bool GetSituation::compareLocal() const {
-    const SituationCSV expected = jsonToSituationCSV(_expectedLocalSituation);
-    const SituationCSV actual = getLocalSituation();
-    return expected == actual;
-}
-
-bool GetSituation::compare() const {
-    return compareLocal() && compareRemote();
+bool GetSituation::compareSituation([[maybe_unused]] const Situation &expectedLocalSituation,
+                                    const Situation &expectedRemoteSituation) const {
+    // PLACEHOLDER: local comparison isn't implemented yet (see getLocalSituation()), so only the remote side is
+    // checked for now. expectedLocalSituation will be compared against getLocalSituation() here once that lands.
+    return compareRemote(expectedRemoteSituation);
 }
 
 } // namespace KDC

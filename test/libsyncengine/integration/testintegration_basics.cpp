@@ -243,6 +243,71 @@ void TestIntegration::testSimpleUpload() {
     SyncpalTestHelper testHelper(_syncPal);
     testHelper.setUp();
 
+    const Situation startsituation{Str2SyncName(R"({
+        "content" : [
+            {"type" : "Directory", "name" : "A"}
+        ]
+    })")};
+
+    const Operations localoperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "File", "path": "A", "name": "B", "size" : 1234 }
+        ]
+    })")};
+
+    const Situation endsituation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "File", "name" : "B", "size" : 1234} ]
+            }
+        ]
+    })")};
+
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(startsituation, startsituation));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.getSituation(endsituation, endsituation));
+
+    testHelper.tearDown();
+    logStep("testSimpleUpload");
+}
+
+void TestIntegration::testSimpleComparison() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    const Situation situation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
+        ]
+    })")};
+
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.getSituation(situation, situation));
+
+    testHelper.tearDown();
+    logStep("testSimpleComparison");
+}
+
+void TestIntegration::testGlobalFramework() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Note: SyncTime is a real Unix epoch (seconds since 1970), not a "YYYYMMDDHHMMSS"-formatted number.
@@ -260,6 +325,8 @@ void TestIntegration::testSimpleUpload() {
     CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+    // Sanity-check the initial situation landed on the remote before touching anything.
+    CPPUNIT_ASSERT(testHelper.getSituation(situation, situation));
 
     const Operations localoperations{Str2SyncName(R"({
         "operations": [
@@ -273,13 +340,19 @@ void TestIntegration::testSimpleUpload() {
     // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
-    // Verify that the new file now exists on the remote replica...
-    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/BBB"));
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
-    // ...and that the deleted one is gone.
-    const auto remoteDeletedFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/AAA"));
-    CPPUNIT_ASSERT(!remoteDeletedFileInfo.isValid());
-
+    // AAA -> BBB under A/AA, same as `situation` otherwise.
+    const Situation situationAfterLocalOps{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "BBB"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
+        ]
+    })")};
+    // Replaces the two manual getRemoteFileInfoByPath lookups below: confirms BBB exists remotely and AAA is gone.
+    CPPUNIT_ASSERT(testHelper.getSituation(situationAfterLocalOps, situationAfterLocalOps));
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "C"));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "CC"));
@@ -297,8 +370,22 @@ void TestIntegration::testSimpleUpload() {
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "C"));
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "CC"));
 
+    // C -> CC, same as `situationAfterLocalOps` otherwise. New check: confirms the rename landed remotely too,
+    // not just that the local replica picked something up.
+    const Situation finalSituation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "BBB"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "CC", "size" : 1234}
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.getSituation(finalSituation, finalSituation));
+
     testHelper.tearDown();
-    logStep("testSimpleUpload");
+    logStep("testGlobalFramework");
 }
 
 void TestIntegration::testNestedRemoteOperations() {
@@ -325,8 +412,13 @@ void TestIntegration::testNestedRemoteOperations() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "A" / "AAA"));
 
-    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AAA"));
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+    // Replaces the manual getRemoteFileInfoByPath lookup: confirms A/AAA exists remotely too.
+    const Situation finalSituation{Str2SyncName(R"({
+        "content": [
+            { "type": "Directory", "name": "A", "content": [ {"type": "File", "name": "AAA"} ] }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.getSituation(finalSituation, finalSituation));
 
     testHelper.tearDown();
     logStep("testNestedRemoteOperations");

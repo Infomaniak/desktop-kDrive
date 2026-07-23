@@ -18,35 +18,40 @@
 
 #pragma once
 
+#include "initialsituationsetter.h" // Situation, SituationGeneratorException
 #include "utility/types.h"
 
 #include <cstdint>
-#include <filesystem>
 #include <map>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 namespace KDC {
 
 class SyncPal;
 
-class SituationGeneratorException final : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-};
-
 /**
- * @brief Very simple map wrapper: remote/local node id -> item name. Used to represent a flat listing of items
- * (either the expected situation parsed from a JSON description, or the actual situation read from a CSV listing).
+ * @brief Very simple map wrapper: item relative path (from the sync root) -> {type, size}. Used to represent a
+ * flat listing of items (either the expected situation parsed from a JSON `Situation` description, or the actual
+ * situation read from a CSV listing / walked from disk).
+ *
+ * Keyed by path rather than node id on purpose: the id in a JSON `Situation` description is just a local token
+ * `InitialSituationSetter` uses internally to wire up parent/child relationships while generating the situation
+ * (see initialsituationsetter.h) - it has no relationship to the real int64_t node id the server (or the local
+ * DB) later assigns. Path is the one thing both a JSON description and a real listing can express in common.
  */
 class SituationCSV {
     public:
-        using ItemMap = std::map<int64_t, std::string>; // node id -> item name
+        struct ItemInfo {
+                NodeType type = NodeType::Unknown;
+                int64_t size = 0; // Meaningful for files. Directories get testhelpers::defaultDirSize.
+                bool operator==(const ItemInfo &other) const noexcept = default;
+        };
+        using ItemMap = std::map<SyncPath, ItemInfo>; // item relative path -> {type, size}
 
         SituationCSV() = default;
 
-        void add(int64_t id, const std::string &name) { _items[id] = name; }
+        void add(const SyncPath &path, const ItemInfo &info) { _items[path] = info; }
 
         [[nodiscard]] const ItemMap &items() const noexcept { return _items; }
         [[nodiscard]] size_t size() const noexcept { return _items.size(); }
@@ -60,43 +65,23 @@ class SituationCSV {
 };
 
 /**
- * @brief Wraps a JSON description of a local or remote directory situation.
- */
-class Situation {
-    public:
-        using StringType = std::filesystem::path::string_type;
-
-        explicit Situation(const StringType &jsonDescription);
-
-        // Reads the JSON from a file instead of an inline string. Throws the same way the
-        // constructor does if the content isn't valid.
-        [[nodiscard]] static Situation fromFile(const std::filesystem::path &filePath);
-
-        const StringType &json() const noexcept;
-
-        bool operator==(const Situation &other) const noexcept = default;
-
-        void log() const;
-
-    private:
-        StringType _jsonDescription;
-};
-
-/**
- * @brief Compares an expected situation (described as JSON) against the real local and remote situations.
+ * @brief Compares an expected situation (described as JSON, see Situation in initialsituationsetter.h) against
+ * the real local and remote situations.
  *
- * Usage: construct with the expected local and remote `Situation` descriptions, then call `compareRemote` /
- * `compareLocal` (or `compare` for both) against a running `SyncPal` to fetch the real situations and diff them
- * with the expected ones.
+ * Usage: construct (optionally with a SyncPal, or set one via setSyncpal), then call `compareSituation` with the
+ * expected local and remote `Situation` descriptions to diff them against the real ones.
  */
 class GetSituation {
     public:
         GetSituation() = default;
-        GetSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation);
+        explicit GetSituation(std::shared_ptr<SyncPal> syncPal);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
-        // Converts a JSON `Situation` description into the flat `SituationCSV` representation used for comparison.
+        // Converts a JSON `Situation` description into the flat `SituationCSV` representation (relative path ->
+        // {type, size}) used for comparison. A size left unspecified in the JSON is defaulted the same way
+        // InitialSituationSetter does (testhelpers::defaultFileSize / defaultDirSize), so that comparing against
+        // a situation generated from the same description lines up.
         [[nodiscard]] static SituationCSV jsonToSituationCSV(const Situation &situation);
 
         // Parses a raw CSV listing (same format as returned by CsvFullFileListWithCursorJob) into a `SituationCSV`.
@@ -110,19 +95,17 @@ class GetSituation {
         // the exact strategy (which ids to use, how to walk the tree) still needs to be decided.
         [[nodiscard]] SituationCSV getLocalSituation() const;
 
-        // Compares the expected remote situation against the real one fetched from the server.
-        [[nodiscard]] bool compareRemote() const;
-
-        // PLACEHOLDER: compares the expected local situation against the real one on disk.
-        [[nodiscard]] bool compareLocal() const;
-
-        // Runs both comparisons.
-        [[nodiscard]] bool compare() const;
+        // Compares expectedLocalSituation / expectedRemoteSituation (same JSON format as InitialSituationSetter)
+        // against the real local / remote situations.
+        // PLACEHOLDER: expectedLocalSituation is currently unused - only the remote comparison is implemented so
+        // far (see getLocalSituation()).
+        [[nodiscard]] bool compareSituation(const Situation &expectedLocalSituation,
+                                            const Situation &expectedRemoteSituation) const;
 
     private:
+        [[nodiscard]] bool compareRemote(const Situation &expectedRemoteSituation) const;
+
         std::shared_ptr<SyncPal> _syncPal;
-        Situation _expectedLocalSituation{Str2SyncName("{}")};
-        Situation _expectedRemoteSituation{Str2SyncName("{}")};
 };
 
 } // namespace KDC

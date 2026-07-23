@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "getsituation.h"
 #include "initialsituationsetter.h"
 #include "operationsexecutor.h"
 
@@ -50,6 +51,10 @@ class SyncpalTestHelper {
         // via setSyncpal). localSituation and remoteSituation may differ.
         // returns false if invalid
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
+
+        // Compares localSituation/remoteSituation (same JSON format as setInitialSituation) against the real
+        // local/remote situations. See GetSituation::compareSituation: localSituation is currently unused, only
+        // the remote comparison is implemented so far.
         bool getSituation(const Situation &localSituation, const Situation &remoteSituation) const;
 
         bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
@@ -72,6 +77,7 @@ class SyncpalTestHelper {
 
         InitialSituationSetter _setInitialSituation;
         OperationsExecutor _executeOperations;
+        GetSituation _getSituation;
 };
 
 } // namespace KDC

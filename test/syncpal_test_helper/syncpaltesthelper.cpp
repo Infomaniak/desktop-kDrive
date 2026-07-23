@@ -29,10 +29,12 @@ namespace KDC {
 SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
     _syncPal(syncPal),
     _setInitialSituation(syncPal),
-    _executeOperations(syncPal) {}
+    _executeOperations(syncPal),
+    _getSituation(syncPal) {}
 
 void SyncpalTestHelper::setUp() {
     _syncPal->start();
+    executeSyncUntilEnd();
 }
 
 void SyncpalTestHelper::tearDown() {
@@ -45,6 +47,7 @@ void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
     _setInitialSituation.setSyncpal(syncPal);
     _executeOperations.setSyncpal(syncPal);
+    _getSituation.setSyncpal(syncPal);
 }
 
 bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
@@ -66,8 +69,10 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
     return executeSyncUntilEnd();
 }
 
-bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) const {
-    return false;
+bool SyncpalTestHelper::getSituation(const Situation &localSituation, const Situation &remoteSituation) const {
+    if (!_syncPal) return false;
+
+    return _getSituation.compareSituation(localSituation, remoteSituation);
 }
 
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {

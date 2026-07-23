@@ -40,7 +40,9 @@ typedef void (TestIntegration::*testFctPtr)();
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
         //CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testSimpleComparison);
         CPPUNIT_TEST(testSimpleUpload);
+        CPPUNIT_TEST(testGlobalFramework);
         CPPUNIT_TEST(testNestedRemoteOperations);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
@@ -62,8 +64,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testSimultaneousChanges();
         void testUploadBigFile();
         void testSimpleUpload();
+        void testSimpleComparison();
+        void testGlobalFramework();
         void testNestedRemoteOperations();
-        void testOperationsMetadata();
 
         void inconsistencyTests();
 
