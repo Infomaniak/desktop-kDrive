@@ -196,7 +196,6 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
-
     // Detect DELETE
     bool remoteItemUnsynced = false;
     bool movedIntoUnsyncedFolder = false;
@@ -314,6 +313,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     if (side == ReplicaSide::Local &&
         !checkAndFixLocalTimestamp(nodeId, dbNode.type(), snapshotCreatedAt, _syncPal->localPath() / snapshotPath,
                                    snapshot->isLink(nodeId), snapshotModificationTime)) {
+        // If we failed to fix the local timestamp, the operations on the file are ignored. Return `Ok` to continue processing
+        // other items.
         return ExitCode::Ok;
     }
 
@@ -569,6 +570,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
             if (side == ReplicaSide::Local &&
                 !checkAndFixLocalTimestamp(nodeId, type, createdAt, _syncPal->localPath() / snapshotPath,
                                            snapshot->isLink(nodeId), modificationTime)) {
+                // If we failed to fix the local timestamp, the operations on the file are ignored. Continue processing other
+                // items.
                 continue;
             }
 
