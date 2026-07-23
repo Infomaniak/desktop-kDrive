@@ -61,7 +61,7 @@ bool DigitalSignatureChecker_win::isSignatureValid() const {
     }
 
     if (!verifySignatureTrustChain()) {
-        LOG_WARN(Log::instance()->getLogger(), "DigitalSignatureChecker_win::verifySignatureTrustChain failed" << GetLastError());
+        LOG_WARN(Log::instance()->getLogger(), "DigitalSignatureChecker_win::isSignatureValid verifySignatureTrustChain failed");
         return false;
     }
     return true;
