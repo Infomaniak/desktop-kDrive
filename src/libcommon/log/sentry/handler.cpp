@@ -321,7 +321,7 @@ void Handler::init(AppType appType, int32_t breadCrumbsSize, const std::string &
     // programming error: log it and keep Sentry inert instead of aborting the whole application.
     if (const int32_t res = sentry_init(options); res != 0) {
         std::cerr << "sentry_init returned " << res << "; Sentry disabled" << std::endl;
-        _instance->_isSentryActivated = false;
+        _instance->setIsSentryActivated(false);
         return; // sentry_init takes ownership of `options`; do not free them here.
     }
     _instance->setDistributionChannel(DistributionChannel::Unknown);
@@ -335,7 +335,7 @@ void Handler::shutdown() {
     // and Handler::shutdown's scope owns the shared_ptr and decrements the refcount at the end of the method, so it is properly
     // destroyed once sentry_close() has returned, ensuring the Handler outlives any in-flight Sentry callbacks.
     const auto instance = std::move(_instance);
-    instance->_isSentryActivated = false;
+    instance->setIsSentryActivated(false);
     try {
         sentry_close();
     } catch (const std::exception &e) {
