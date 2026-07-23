@@ -360,8 +360,9 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             }
         }
     } else if (mimeType == mimeTypeHardlink) {
+        // For savety, cannot happen (Mime Type forbidden on the drive)
         LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-        return ExitCode::OperationCanceled;
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
