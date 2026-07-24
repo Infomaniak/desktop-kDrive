@@ -349,8 +349,7 @@ std::vector<DriveContext> AppCache::driveContexts() const {
 }
 
 std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDbId userDbId) const {
-    const auto userInfo = user(userDbId);
-    if (!userInfo) {
+    if (const auto userInfo = user(userDbId); !userInfo) {
         return {};
     }
 
