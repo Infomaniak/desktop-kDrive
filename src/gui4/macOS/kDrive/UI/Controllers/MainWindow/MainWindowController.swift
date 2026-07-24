@@ -176,17 +176,23 @@ final class MainWindowController: NSWindowController {
         }
 
         @InjectService var permissionHander: MacOSPermissionHandling
-        var permissionsToShow = [OnboardingStep]()
+        var missingPermissions = [MacOSPermission]()
         for requiredPermission in PermissionsViewModel.requiredPermissions {
             if await !permissionHander.isAuthorized(for: requiredPermission) {
-                permissionsToShow.append(.permissions(requiredPermission))
+                missingPermissions.append(requiredPermission)
             }
         }
 
-        guard !permissionsToShow.isEmpty else {
+        guard !missingPermissions.isEmpty else {
             return false
         }
-        windowRouter.navigate(to: .onboarding(nil, permissionsToShow, permissionsToShow.first))
+
+        let hasLoggedInUser = await coherentCache.getFirstAvailableUser() != nil
+        let steps = OnboardingFlowCoordinator.permissionsFirstSteps(
+            missingPermissions: missingPermissions,
+            hasLoggedInUser: hasLoggedInUser
+        )
+        windowRouter.navigate(to: .onboarding(nil, steps, steps.first))
 
         return true
         #endif
