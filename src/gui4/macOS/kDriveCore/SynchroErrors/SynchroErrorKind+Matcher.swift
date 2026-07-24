@@ -23,6 +23,8 @@ extension SynchroErrorKind {
         switch self {
         case .conflict:
             return .node(conflictTypes: [.CreateCreate])
+        case .caseError:
+            return .node(inconsistencyTypes: [.Case])
         case .createCancel:
             return .node(conflictTypes: [.CreateCreate])
         case .deleteCancel:

@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Aktivera felsökningsloggning";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "En annan %@ vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %@-mapparna från kDrive online så att du kan synkronisera den på din dator.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Motstridiga namn, skiftlägeskänsliga";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "Du har inte nödvändiga behörigheter för att lägga till en %@ på den här platsen.\nBegär åtkomst från ägaren eller administratören.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Visa källkod";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Starta om programmet om det krävs";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Håll koll på dina synkroniseringar på ett enklare sätt.";

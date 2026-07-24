@@ -65,6 +65,15 @@ struct ErrorCellFactory {
                     manager.handleConflicts([error])
                 }
             )
+        case .caseError:
+            return makeCell(
+                error: error,
+                title: KDriveLocalizable.errCaseTitle,
+                description: KDriveLocalizable.errCaseDescription(error.nodeLabel, error.nodeLabel),
+                action: .init(title: KDriveLocalizable.buttonRenameItem(error.nodeLabel)) {
+                    await manager.openItemRemotely(error)
+                }
+            )
         case .createCancel:
             return makeCell(
                 error: error,

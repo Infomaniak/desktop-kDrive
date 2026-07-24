@@ -478,6 +478,12 @@
 /* loco:698b361c54ac23ef050755a2 */
 "enableDebugLogsSetting" = "Abilita log di debug";
 
+/* loco:6a1992213e832a7f170d5664 */
+"errCaseDescription" = "In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall’applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.\n";
+
+/* loco:6a199211062947f2e8006085 */
+"errCaseTitle" = "Nomi contrastanti, sensibili alle maiuscole e alle minuscole";
+
 /* loco:699c5e30252e8a13e30ccaa6 */
 "errCreateCancelDescription" = "Non hai le autorizzazioni necessarie per aggiungere un %@ in questa posizione.\nRichiedi l’accesso al proprietario o all’amministratore.";
 
@@ -1518,3 +1524,9 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Visualizza codice sorgente";
+
+/* loco:69314d1a739c205c410aa087 */
+"instructionRestartIfNecessary" = "Riavviare l’applicazione, se necessario";
+
+/* loco:6a57949f03c629668b0ec6b3 */
+"onboardingV4Message" = "Gestisci le tue sincronizzazioni in modo più semplice.";

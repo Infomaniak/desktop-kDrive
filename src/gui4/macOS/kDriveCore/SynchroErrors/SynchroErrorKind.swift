@@ -21,6 +21,8 @@ import Foundation
 public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
     case conflict
 
+    case caseError
+
     case createCancel
     case deleteCancel
     case editCancel
