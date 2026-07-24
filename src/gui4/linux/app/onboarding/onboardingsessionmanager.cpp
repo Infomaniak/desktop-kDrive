@@ -41,9 +41,16 @@ OnboardingSessionManager::OnboardingSessionManager(CachePopulator &cachePopulato
     _appCache(appCache),
     _commService(commService),
     _userService(userService),
-    _serviceEventBus(serviceEventBus) {
-    (void) connect(&cachePopulator, &CachePopulator::bootstrapCompleted, this,
-                   &OnboardingSessionManager::handleBootstrapCompleted);
+    _serviceEventBus(serviceEventBus) {}
+
+void OnboardingSessionManager::completeBootstrap() {
+    if (_bootstrapCompleted) {
+        qCWarning(lcOnboardingSessionManager) << "Onboarding bootstrap completion ignored: already completed";
+        return;
+    }
+
+    _bootstrapCompleted = true;
+    ensureSession();
 }
 
 void OnboardingSessionManager::openOnboardingWindow() {
@@ -102,14 +109,6 @@ void OnboardingSessionManager::openWindowIfDisplayable() {
 
     qCInfo(lcOnboardingSessionManager) << "Onboarding window open skipped: onboarding is not required"
                                        << "| configuredDrives:" << _appCache.driveContexts().size();
-}
-
-void OnboardingSessionManager::handleBootstrapCompleted() {
-    _bootstrapCompleted = true;
-    ensureSession();
-    if (_activeSession != nullptr) {
-        emit openOnboardingWindowRequested();
-    }
 }
 
 void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint entryPoint,
