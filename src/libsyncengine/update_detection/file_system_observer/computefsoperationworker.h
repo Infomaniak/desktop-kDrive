@@ -105,6 +105,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
         // synchronization. So is the propagation of the creation of the descendants of those local items.
         void postponeOperationsOnReusedIds();
 
+        bool checkAndFixLocalTimestamp(const NodeType nodeType, const SyncTime creationTime, const SyncPath &absolutePath,
+                                       const bool isLink, SyncTime &modificationTime) const;
+
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;
 

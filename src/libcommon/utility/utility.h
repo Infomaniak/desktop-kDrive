@@ -366,6 +366,9 @@ struct COMMON_EXPORT CommonUtility {
 
         static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
 
+        static SyncTime getCurrentSyncTime();
+        static SyncTime getCurrentSyncTimeWithOffset(std::chrono::seconds offset);
+
         class InvalidEnumerationValue : public std::runtime_error {
             public:
                 InvalidEnumerationValue() :

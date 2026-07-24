@@ -554,6 +554,69 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 
+void TestComputeFSOperationWorker::testIsLocalTimestampValid() {
+    const NodeId fileNodeId = "dummyId";
+    const SyncName filename = Str("testFile");
+    const LocalTemporaryDirectory tmpDir;
+    const auto fullPath = tmpDir.path() / filename;
+    testhelpers::generateOrEditTestFile(fullPath);
+
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(found);
+
+    const SyncTime now = CommonUtility::getCurrentSyncTime();
+    const SyncTime justWithinOneYear =
+            CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1) - std::chrono::seconds(10));
+    const SyncTime justBeyondOneYear =
+            CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1) + std::chrono::seconds(10));
+    const bool isLink = false;
+
+    // Directories are always valid regardless of the timestamp value.
+    auto modificationTime = SyncTime{-1};
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::Directory, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(SyncTime{-1}, modificationTime);
+
+    modificationTime = justBeyondOneYear;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::Directory, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(justBeyondOneYear, modificationTime);
+
+    // A file with the current timestamp is valid.
+    modificationTime = now;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(now, modificationTime);
+
+    // A file with timestamp 0 (Unix epoch) is valid — it is not negative.
+    modificationTime = 0;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(SyncTime{0}, modificationTime);
+
+    // A file with a timestamp just within one year in the future is valid.
+    modificationTime = justWithinOneYear;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(justWithinOneYear, modificationTime);
+
+    // Invalid timestamps on files are corrected when possible.
+    modificationTime = -1;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT(filestat.modificationTime >= now);
+    CPPUNIT_ASSERT(modificationTime >= now);
+
+    modificationTime = justBeyondOneYear;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT(modificationTime >= now);
+}
+
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
                                                         const ReplicaSide side) const {
     _syncPal->copySnapshots();

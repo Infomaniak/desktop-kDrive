@@ -17,6 +17,7 @@
  */
 
 #include "computefsoperationworker.h"
+
 #include "requests/parameterscache.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
@@ -52,6 +53,32 @@ void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
     }
 
     _localReusedIds.clear();
+}
+
+bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeType nodeType, const SyncTime creationTime,
+                                                         const SyncPath &absolutePath, const bool isLink,
+                                                         SyncTime &modificationTime) const {
+    if (nodeType != NodeType::File) return true;
+
+    const auto currentTime = CommonUtility::getCurrentSyncTime();
+    if (const SyncTime currentTimePlusOneYear = CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1));
+        modificationTime > currentTimePlusOneYear || modificationTime < 0) {
+        LOGW_WARN(_logger, L"Modification time of item with "
+                                   << Utility::formatSyncPath(absolutePath)
+                                   << L" is either negative or more than 1 year into the future. Setting it with current time.");
+
+        // Try to fix local timestamp
+        if (const auto ioError = IoHelper::setFileDates(absolutePath, creationTime, currentTime, isLink);
+            ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(absolutePath));
+            return false;
+        }
+        modificationTime = currentTime;
+    }
+
+    LOGW_INFO(_logger, L"Modification time updated for item with " << Utility::formatSyncPath(absolutePath));
+
+    return true;
 }
 
 void ComputeFSOperationWorker::execute() {
@@ -280,19 +307,29 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     }
 
     // Detect EDIT
-    const SyncTime snapshotModificationTime = snapshot->lastModified(nodeId);
+    const auto snapshotCreatedAt = snapshot->createdAt(nodeId);
+    auto snapshotModificationTime = snapshot->lastModified(nodeId);
+
+    if (side == ReplicaSide::Local &&
+        !checkAndFixLocalTimestamp(dbNode.type(), snapshotCreatedAt, _syncPal->localPath() / snapshotPath,
+                                   snapshot->isLink(nodeId), snapshotModificationTime)) {
+        // If we failed to fix the local timestamp, the operations on the file are ignored. Return `Ok` to continue processing
+        // other items.
+        return ExitCode::Ok;
+    }
+
     // On FAT filesystems, the time resolution for modification time is 2 seconds. Therefor, we ignore EDIT operations if the
     // difference between modification time in DB and the one on the filesystem is less or equal to 1sec.
     const bool sameModifiedTime =
             CommonUtility::modificationTimesAreEqual(_syncPal->localPath(), snapshotModificationTime, dbModificationTime);
-    const SyncTime snapshotCreatedAt = snapshot->createdAt(nodeId);
+
     const SyncTime dbCreatedAt = dbNode.created().has_value() ? dbNode.created().value() : 0;
     const auto sameSize = snapshot->isLink(nodeId) || snapshot->size(nodeId) == dbNode.size();
     // Size can differ for links between remote and local replica, do not check it in that case
     if (dbNode.type() == NodeType::File &&
         (!sameModifiedTime || !sameSize || (snapshotCreatedAt != dbCreatedAt && side == ReplicaSide::Local))) {
         // Edit operation
-        const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
+        const auto fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshotCreatedAt,
                                                         snapshotModificationTime, snapshot->size(nodeId), snapshotPath);
         opSet->insertOp(fsOp);
         logOperationGeneration(snapshot->side(), fsOp);
@@ -303,7 +340,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         FSOpPtr fsOp = nullptr;
         if (isInUnsyncedListParentSearchInSnapshot(snapshot, nodeId, side)) {
             // Delete operation
-            fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
+            fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(), snapshotCreatedAt,
                                                  snapshotModificationTime, snapshot->size(nodeId), dbPath);
         } else {
             // Move operation
@@ -528,9 +565,18 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
                 continue;
             }
 
+            const auto createdAt = snapshot->createdAt(nodeId);
+            auto modificationTime = snapshot->lastModified(nodeId);
+            if (side == ReplicaSide::Local && !checkAndFixLocalTimestamp(type, createdAt, _syncPal->localPath() / snapshotPath,
+                                                                         snapshot->isLink(nodeId), modificationTime)) {
+                // If we failed to fix the local timestamp, the operations on the file are ignored. Continue processing other
+                // items.
+                continue;
+            }
+
             // Create operation
-            auto fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
-                                                      snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
+            const auto fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, createdAt, modificationTime,
+                                                            snapshotSize, snapshotPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }
