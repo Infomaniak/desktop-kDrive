@@ -1472,15 +1472,15 @@ void TestUtility::testGetSyncTime() {
     }
 
     {
-        const auto offset = std::chrono::seconds(2);
-        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::system_clock::duration>(offset).count();
+        const auto offset = std::chrono::seconds(1);
+        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::seconds>(offset).count();
 
         const SyncTime before = CommonUtility::getCurrentSyncTime();
         const SyncTime withPositiveOffset = CommonUtility::getCurrentSyncTimeWithOffset(offset);
 
         CPPUNIT_ASSERT(withPositiveOffset >= before + expectedOffset);
 
-        Utility::msleep(2001);
+        Utility::msleep(2000);
 
         const SyncTime after = CommonUtility::getCurrentSyncTime();
         CPPUNIT_ASSERT(withPositiveOffset < after);
@@ -1488,7 +1488,7 @@ void TestUtility::testGetSyncTime() {
 
     {
         const auto offset = std::chrono::seconds(60);
-        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::system_clock::duration>(offset).count();
+        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::seconds>(offset).count();
 
         const SyncTime before = CommonUtility::getCurrentSyncTime();
         const SyncTime withNegativeOffset = CommonUtility::getCurrentSyncTimeWithOffset(-offset);
