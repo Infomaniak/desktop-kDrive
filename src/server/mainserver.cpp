@@ -53,6 +53,9 @@
 #define APP_RLIMIT_STACK 0x4000000
 #endif
 
+#if defined(KD_WINDOWS)
+#include <openssl/applink.c>
+#endif
 void signalHandler(int signum) {
     KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
     std::cerr << "Server stopped with signal " << signalType << std::endl;

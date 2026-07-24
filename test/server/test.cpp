@@ -18,6 +18,10 @@
 
 #include "testincludes.h"
 
+#if defined(KD_WINDOWS)
+#include <openssl/applink.c>
+#endif
+
 #if defined(KD_MACOS)
 #include "vfs/mac/testlitesynccommclient.h"
 #include "vfs/mac/testvfsmac.h"
