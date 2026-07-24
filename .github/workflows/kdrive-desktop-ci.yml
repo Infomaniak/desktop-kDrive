@@ -29,7 +29,7 @@ jobs:
 
 # Build apps
   build-Windows:
-    runs-on: [ self-hosted, Windows, vs2026 ]
+    runs-on: [ self-hosted, Windows, vs2026, desktop, kdrive, build ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -72,7 +72,7 @@ jobs:
       fail-fast: false
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Windows, vs2026, desktop-kdrive  ]
+    runs-on: [ windows-latest ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "windows_ci_runner"
@@ -95,7 +95,7 @@ jobs:
       fail-fast: false
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, Linux, X64, linux-test ]
+    runs-on: [ ubuntu-latest ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "linux_ci_runner"
@@ -118,7 +118,7 @@ jobs:
       fail-fast: false
       matrix:
         test_name: ["kDrive_test_common", "kDrive_test_common_server", "kDrive_test_server", "kDrive_test_syncengine", "kDrive_test_parms"]
-    runs-on: [ self-hosted, macOS ]
+    runs-on: [ macos-latest ]
     env:
       KDRIVE_TEST_CI_LOCAL_PATH: "${{ github.workspace }}/test/test_ci"
       KDRIVE_SENTRY_ENVIRONMENT: "macos_ci_runner"
@@ -135,7 +135,7 @@ jobs:
             test_dependencies_version: ${{ vars.KDRIVE_TEST_DEPENDENCIES_VERSION }}
 
   Unit-Tests:
-    runs-on: [self-hosted, Windows]
+    runs-on: [ windows-latest ]
     needs: [Test-Windows, Test-Linux, Test-macOS]
     steps:
      - name: Check if all tests passed
