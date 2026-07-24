@@ -46,30 +46,28 @@ class SyncpalTestHelper {
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
-        // Builds localSituation and remoteSituation independently (see
-        // InitialSituationSetter::generateInitialSituation) against the SyncPal passed to the constructor (or set
-        // via setSyncpal). localSituation and remoteSituation may differ.
-        // returns false if invalid
+        // Builds localSituation and remoteSituation independently against the SyncPal; they may differ. Returns false if invalid.
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
 
-        // Compares localSituation/remoteSituation (same JSON format as setInitialSituation) against the real
-        // local/remote situations. See GetSituation::compareSituation: localSituation is currently unused, only
-        // the remote comparison is implemented so far.
+        // Compares localSituation/remoteSituation against the real local/remote situations (localSituation is currently unused).
         bool getSituation(const Situation &localSituation, const Situation &remoteSituation) const;
 
         bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         bool executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const;
 
-        // Waits (polling) up to `timeout` for a real change to be detected by the observers. Returns false if
-        // nothing showed up within `timeout`.
+        // Waits (polling) up to `timeout` for a real change to be detected by the observers. Returns false if nothing showed up.
         bool waitForDetectedUpdate(std::chrono::milliseconds timeout = std::chrono::milliseconds(10000)) const;
 
+        // Pauses the running SyncPal, waiting until it actually reaches the paused state. Returns false if no SyncPal or not running.
         bool pauseSync() const;
+
+        // Resumes a previously paused SyncPal. Returns false if no SyncPal or not running.
+        bool unpauseSync() const;
+
+        // Fully stops the SyncPal, keeping its Db. Returns false if no SyncPal.
         bool stopSync() const;
 
-        // Applies operations (see OperationsExecutor::execute) on the given side, against the
-        // SyncPal passed to the constructor (or set via setSyncpal).
-        // returns false if invalid
+        // Applies operations (see OperationsExecutor::execute) on the given side. Returns false if invalid.
         bool execute(ReplicaSide side, const Operations &operations);
 
     private:

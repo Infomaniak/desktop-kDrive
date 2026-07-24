@@ -125,7 +125,20 @@ bool SyncpalTestHelper::waitForDetectedUpdate(const std::chrono::milliseconds ti
 }
 
 bool SyncpalTestHelper::pauseSync() const {
-    return false;
+    if (!_syncPal || !_syncPal->isRunning()) return false;
+
+    _syncPal->pause();
+
+    // Wait until pause actually takes effect (only happens once the sync reaches Idle), to avoid races.
+    return TimeoutHelper::waitFor([this]() { return _syncPal->isPaused(); }, std::chrono::milliseconds(10000),
+                                  std::chrono::milliseconds(50));
+}
+
+bool SyncpalTestHelper::unpauseSync() const {
+    if (!_syncPal || !_syncPal->isRunning()) return false;
+
+    _syncPal->unpause();
+    return true;
 }
 
 bool SyncpalTestHelper::stopSync() const {

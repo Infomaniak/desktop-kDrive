@@ -24,6 +24,7 @@
 #include "libcommonserver/log/log.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "test_utility/testhelpers.h"
+#include "io/iohelper.h"
 
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
@@ -217,9 +218,68 @@ SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/
 }
 
 SituationCSV GetSituation::getLocalSituation() const {
-    // PLACEHOLDER: needs to walk the local sync folder (_syncPal->localPath()) recursively and build a
-    // SituationCSV out of it (relative path -> {type, size}), mirroring rawItemsToSituationCSV above.
-    return {};
+    SituationCSV situationCSV;
+
+    if (!_syncPal) return situationCSV;
+
+    const SyncPath rootPath = _syncPal->localPath();
+
+    IoHelper::DirectoryIterator dirIt;
+    IoError ioError = IoError::Success;
+
+    if (!IoHelper::getRecursiveDirectoryIterator(rootPath, ioError, dirIt)) {
+        LOG_WARN(Log::instance()->getLogger(), "Failed to create DirectoryIterator for local path: " << rootPath.string());
+        return situationCSV;
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    bool exceptionOccurred = false;
+
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        std::error_code ec;
+        const SyncPath relativePath = std::filesystem::relative(entry.path(), rootPath, ec);
+        if (ec || relativePath.empty()) {
+            exceptionOccurred = true;
+            continue;
+        }
+
+        // Skip trash-like temp files, same as the remote side.
+        if (relativePath.filename().string().starts_with("tmpFile_")) continue;
+        if (relativePath.filename().string().starts_with(".kDrive-cache")) continue;
+
+        SituationCSV::ItemInfo info;
+        if (entry.is_directory(ec)) {
+            info.type = NodeType::Directory;
+            info.size = testhelpers::defaultDirSize;
+        } else if (entry.is_regular_file(ec)) {
+            info.type = NodeType::File;
+            info.size = static_cast<int64_t>(entry.file_size(ec));
+        } else {
+            continue; // Skip symlinks / special files.
+        }
+
+        if (ec) {
+            exceptionOccurred = true;
+            continue;
+        }
+
+        situationCSV.add(relativePath, info);
+    }
+
+    const auto exitInfo = IoHelper::checkDirectoryIteratorInterruption(endOfDirectory, ioError, entry, exceptionOccurred);
+    if (!exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Directory iteration did not complete cleanly for local path: " << rootPath.string());
+    }
+
+    return situationCSV;
+}
+
+bool GetSituation::compareLocal(const Situation &expectedLocalSituation) const {
+    const SituationCSV expected = jsonToSituationCSV(expectedLocalSituation);
+    const SituationCSV actual = getLocalSituation();
+    return expected == actual;
 }
 
 bool GetSituation::compareRemote(const Situation &expectedRemoteSituation) const {
@@ -228,11 +288,8 @@ bool GetSituation::compareRemote(const Situation &expectedRemoteSituation) const
     return expected == actual;
 }
 
-bool GetSituation::compareSituation([[maybe_unused]] const Situation &expectedLocalSituation,
-                                    const Situation &expectedRemoteSituation) const {
-    // PLACEHOLDER: local comparison isn't implemented yet (see getLocalSituation()), so only the remote side is
-    // checked for now. expectedLocalSituation will be compared against getLocalSituation() here once that lands.
-    return compareRemote(expectedRemoteSituation);
+bool GetSituation::compareSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation) const {
+    return compareLocal(expectedLocalSituation) && compareRemote(expectedRemoteSituation);
 }
 
 } // namespace KDC

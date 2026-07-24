@@ -116,6 +116,9 @@ bool InitialSituationSetter::run(const SyncName &localJsonDescription, const Syn
 void InitialSituationSetter::generateInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
     if (!_syncPal) throw SituationGeneratorException("Invalid parameters!");
 
+    // Captured once and reused for every item on both sides (see _now's declaration for why).
+    _now = std::time(nullptr);
+
     generateSituation(localSituation, ReplicaSide::Local);
     generateSituation(remoteSituation, ReplicaSide::Remote);
 }
@@ -215,6 +218,7 @@ void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const SyncNam
     } else {
         testhelpers::generateTestFile(fullPath);
         if (desc.size > 0) testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
+        (void) IoHelper::setFileDates(fullPath, _now, _now, false);
     }
 }
 
@@ -263,10 +267,9 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
             _remoteNodeIds[desc.id] = job.nodeId();
         } else {
             const SyncPath localFilePath = localFilePathForUpload(desc);
-            // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
-            // the current time is used.
-            const auto now = static_cast<SyncTime>(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
-            UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, now, now);
+            // Use the same fixed timestamp as the local side (see _now) so both copies of the same logical
+            // item, as well as sibling items, share consistent creation/modification times.
+            UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, _now, _now);
             (void) job.runSynchronously();
             _remoteNodeIds[desc.id] = job.nodeId();
         }

@@ -91,18 +91,16 @@ class GetSituation {
         // (or the drive root if empty).
         [[nodiscard]] SituationCSV getRemoteSituation(const NodeId &remoteDirId = {}) const;
 
-        // PLACEHOLDER: fetches the real local situation by scanning the local sync folder. Not yet implemented,
-        // the exact strategy (which ids to use, how to walk the tree) still needs to be decided.
+        // fetches the real local situation by scanning the local sync folder.
         [[nodiscard]] SituationCSV getLocalSituation() const;
 
         // Compares expectedLocalSituation / expectedRemoteSituation (same JSON format as InitialSituationSetter)
         // against the real local / remote situations.
-        // PLACEHOLDER: expectedLocalSituation is currently unused - only the remote comparison is implemented so
-        // far (see getLocalSituation()).
         [[nodiscard]] bool compareSituation(const Situation &expectedLocalSituation,
                                             const Situation &expectedRemoteSituation) const;
 
     private:
+        [[nodiscard]] bool compareLocal(const Situation &expectedLocalSituation) const;
         [[nodiscard]] bool compareRemote(const Situation &expectedRemoteSituation) const;
 
         std::shared_ptr<SyncPal> _syncPal;

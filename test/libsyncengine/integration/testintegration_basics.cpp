@@ -239,6 +239,31 @@ void TestIntegration::testUploadBigFile() {
     logStep("testUploadBigFile");
 }
 
+void TestIntegration::testSimpleComparison() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    const Situation situation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
+        ]
+    })")};
+
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.getSituation(situation, situation));
+
+    testHelper.tearDown();
+    logStep("testSimpleComparison");
+}
+
 void TestIntegration::testSimpleUpload() {
     SyncpalTestHelper testHelper(_syncPal);
     testHelper.setUp();
@@ -277,31 +302,6 @@ void TestIntegration::testSimpleUpload() {
 
     testHelper.tearDown();
     logStep("testSimpleUpload");
-}
-
-void TestIntegration::testSimpleComparison() {
-    SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
-
-    const Situation situation{Str2SyncName(R"({
-        "content" : [
-            {
-                "type" : "Directory",
-                "name" : "A",
-                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
-            },
-            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
-        ]
-    })")};
-
-    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
-
-    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
-
-    CPPUNIT_ASSERT(testHelper.getSituation(situation, situation));
-
-    testHelper.tearDown();
-    logStep("testSimpleComparison");
 }
 
 void TestIntegration::testGlobalFramework() {
