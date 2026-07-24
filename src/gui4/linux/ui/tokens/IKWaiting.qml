@@ -24,5 +24,5 @@ QtObject {
     readonly property real logoSize: 80
     readonly property real spinnerSize: 32
     readonly property real spinnerStrokeWidth: 3
-    readonly property int spinnerRotationDuration: 900
+    readonly property int spinnerCycleDuration: 2400
 }

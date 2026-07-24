@@ -37,7 +37,7 @@ Item {
             width: IKWaiting.spinnerSize
             height: IKWaiting.spinnerSize
             strokeWidth: IKWaiting.spinnerStrokeWidth
-            rotationDuration: IKWaiting.spinnerRotationDuration
+            cycleDuration: IKWaiting.spinnerCycleDuration
         }
     }
 }
