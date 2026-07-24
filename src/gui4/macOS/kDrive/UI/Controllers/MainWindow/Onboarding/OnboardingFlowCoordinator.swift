@@ -49,6 +49,14 @@ final class OnboardingFlowCoordinator: ObservableObject {
         .appReady
     ]
 
+    static func permissionsFirstSteps(missingPermissions: [MacOSPermission], hasLoggedInUser: Bool) -> [OnboardingStep] {
+        var steps = missingPermissions.map { OnboardingStep.permissions($0) }
+        if !hasLoggedInUser {
+            steps.append(contentsOf: [.login, .drivesSelection, .synchronization, .appReady])
+        }
+        return steps
+    }
+
     init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?, onFinish: (@MainActor () -> Void)? = nil) {
         currentUser = user
         self.steps = steps ?? Self.defaultSteps
