@@ -57,8 +57,7 @@ class OnboardingLoginCoordinator : public QObject {
         void handleAuthorizationCodeReady(const QString &code, const QString &codeVerifier);
         void handleLoginStateChanged();
         void loadAvailableDrivesWhenUserIsCached(UserDbId userDbId);
-        void completeLoginWhenAvailableDrivesAreLoaded(UserDbId userDbId);
-        void handleAvailableDrivesLoadFailed(UserDbId userDbId);
+        void clearPendingAvailableDrivesLoad(UserDbId userDbId);
 
         OnboardingFlowController &_flowController;
         CommService &_commService;
