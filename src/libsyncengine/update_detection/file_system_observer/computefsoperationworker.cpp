@@ -55,17 +55,17 @@ void ComputeFSOperationWorker::postponeOperationsOnReusedIds() {
     _localReusedIds.clear();
 }
 
-bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeId &localNodeId, const NodeType nodeType,
-                                                         const SyncTime creationTime, const SyncPath &absolutePath,
-                                                         const bool isLink, SyncTime &modificationTime) const {
+bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeType nodeType, const SyncTime creationTime,
+                                                         const SyncPath &absolutePath, const bool isLink,
+                                                         SyncTime &modificationTime) const {
     if (nodeType != NodeType::File) return true;
 
     const auto currentTime = CommonUtility::getCurrentSyncTime();
     if (const SyncTime currentTimePlusOneYear = CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1));
         modificationTime > currentTimePlusOneYear || modificationTime < 0) {
-        LOGW_WARN(_logger, L"Modification time of item "
+        LOGW_WARN(_logger, L"Modification time of item with "
                                    << Utility::formatSyncPath(absolutePath)
-                                   << L" is more than 1 year into the future. Setting it with current time.");
+                                   << L" is either negative or more than 1 year into the future. Setting it with current time.");
 
         // Try to fix local timestamp
         if (const auto ioError = IoHelper::setFileDates(absolutePath, creationTime, currentTime, isLink);
@@ -76,7 +76,7 @@ bool ComputeFSOperationWorker::checkAndFixLocalTimestamp(const NodeId &localNode
         modificationTime = currentTime;
     }
 
-    LOGW_INFO(_logger, L"Modification time updated for item: " << Utility::formatSyncPath(absolutePath));
+    LOGW_INFO(_logger, L"Modification time updated for item with " << Utility::formatSyncPath(absolutePath));
 
     return true;
 }
@@ -311,7 +311,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     auto snapshotModificationTime = snapshot->lastModified(nodeId);
 
     if (side == ReplicaSide::Local &&
-        !checkAndFixLocalTimestamp(nodeId, dbNode.type(), snapshotCreatedAt, _syncPal->localPath() / snapshotPath,
+        !checkAndFixLocalTimestamp(dbNode.type(), snapshotCreatedAt, _syncPal->localPath() / snapshotPath,
                                    snapshot->isLink(nodeId), snapshotModificationTime)) {
         // If we failed to fix the local timestamp, the operations on the file are ignored. Return `Ok` to continue processing
         // other items.
@@ -567,9 +567,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
 
             const auto createdAt = snapshot->createdAt(nodeId);
             auto modificationTime = snapshot->lastModified(nodeId);
-            if (side == ReplicaSide::Local &&
-                !checkAndFixLocalTimestamp(nodeId, type, createdAt, _syncPal->localPath() / snapshotPath,
-                                           snapshot->isLink(nodeId), modificationTime)) {
+            if (side == ReplicaSide::Local && !checkAndFixLocalTimestamp(type, createdAt, _syncPal->localPath() / snapshotPath,
+                                                                         snapshot->isLink(nodeId), modificationTime)) {
                 // If we failed to fix the local timestamp, the operations on the file are ignored. Continue processing other
                 // items.
                 continue;
