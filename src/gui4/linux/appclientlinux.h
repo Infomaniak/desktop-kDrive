@@ -134,6 +134,8 @@ class AppClientLinux : public QApplication {
         QTranslator _baseTranslator{this};
         QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
+        bool _bootstrapCompleted{false};
+        bool _mainWindowActivationPending{false};
 };
 
 } // namespace KDC
