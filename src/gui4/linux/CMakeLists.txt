@@ -98,6 +98,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
+        ui/tokens/IKWaiting.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
@@ -117,6 +118,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowHeader.qml
         ui/components/IKBadge.qml
         ui/components/IKDriveIcon.qml
+        ui/components/IKLoadingSpinner.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
         ui/windows/main/ActivitiesPlaceholder.qml
@@ -140,6 +142,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/onboarding/OnboardingWindow.qml
         ui/windows/onboarding/ReadyView.qml
         ui/windows/onboarding/SynchronizationView.qml
+        ui/windows/waiting/WaitingView.qml
         ${GUI_QML_SINGLETON_FILES}
 )
 
