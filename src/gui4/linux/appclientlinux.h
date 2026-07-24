@@ -136,6 +136,7 @@ class AppClientLinux : public QApplication {
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
         bool _mainWindowActivationPending{false};
+        bool _mainWindowDismissedDuringBootstrap{false};
 };
 
 } // namespace KDC
