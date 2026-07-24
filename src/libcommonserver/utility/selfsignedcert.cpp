@@ -32,6 +32,29 @@
 
 namespace KDC {
 
+namespace {
+
+struct EvpPkeyDeleter {
+        void operator()(EVP_PKEY *p) const { EVP_PKEY_free(p); }
+};
+using UniqueEvpPkey = std::unique_ptr<EVP_PKEY, EvpPkeyDeleter>;
+
+struct X509Deleter {
+        void operator()(X509 *x) const { X509_free(x); }
+};
+using UniqueX509 = std::unique_ptr<X509, X509Deleter>;
+
+void restrictPermissions(const SyncPath &path) {
+    std::error_code ec;
+    std::filesystem::permissions(path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                                 std::filesystem::perm_options::replace, ec);
+    if (ec) {
+        LOG_WARN(Log::instance()->getLogger(), "Failed to restrict permissions for " << path.string() << ": " << ec.message());
+    }
+}
+
+} // namespace
+
 SyncPath SelfSignedCert::certPath() {
     return CommonUtility::getAppSupportDir() / certFileName;
 }
@@ -54,67 +77,45 @@ bool SelfSignedCert::generateIfNeeded() {
 bool SelfSignedCert::generate(const SyncPath &certPath, const SyncPath &keyPath) {
     LOG_INFO(Log::instance()->getLogger(), "Generating self-signed certificate/key pair for local TLS IPC");
 
-    // Generate 2048-bit RSA key
-    EVP_PKEY *pkey = EVP_RSA_gen(2048);
+    UniqueEvpPkey pkey(EVP_RSA_gen(2048));
     if (!pkey) {
         LOG_ERROR(Log::instance()->getLogger(), "EVP_RSA_gen failed");
         return false;
     }
 
-    // Create X509 certificate
-    X509 *x509 = X509_new();
+    UniqueX509 x509(X509_new());
     if (!x509) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_new failed");
-        EVP_PKEY_free(pkey);
         return false;
     }
 
-    // Set version to v3
-    if (!X509_set_version(x509, 2)) {
+    if (!X509_set_version(x509.get(), 2)) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_version failed");
-        X509_free(x509);
-        EVP_PKEY_free(pkey);
         return false;
     }
 
-    // Set serial number to 1
-    ASN1_INTEGER_set(X509_get_serialNumber(x509), 1);
+    ASN1_INTEGER_set(X509_get_serialNumber(x509.get()), 1);
 
-    // Set validity period (365 days)
-    if (!X509_gmtime_adj(X509_get_notBefore(x509), 0)) {
+    if (!X509_gmtime_adj(X509_get_notBefore(x509.get()), 0)) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_gmtime_adj (notBefore) failed");
-        X509_free(x509);
-        EVP_PKEY_free(pkey);
         return false;
     }
-    if (!X509_gmtime_adj(X509_get_notAfter(x509), 60L * 60L * 24L * 365)) {
+    if (!X509_gmtime_adj(X509_get_notAfter(x509.get()), 60L * 60L * 24L * 365)) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_gmtime_adj (notAfter) failed");
-        X509_free(x509);
-        EVP_PKEY_free(pkey);
         return false;
     }
 
-    // Set subject name
-    X509_NAME *name = X509_get_subject_name(x509);
-    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC,
-                                reinterpret_cast<const unsigned char *>("kDrive-localhost"), -1, -1, 0);
+    X509_NAME *name = X509_get_subject_name(x509.get());
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>("kDrive-localhost"), -1, -1, 0);
+    X509_set_issuer_name(x509.get(), name);
 
-    // Self-signed: issuer = subject
-    X509_set_issuer_name(x509, name);
-
-    // Set public key
-    if (!X509_set_pubkey(x509, pkey)) {
+    if (!X509_set_pubkey(x509.get(), pkey.get())) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_pubkey failed");
-        X509_free(x509);
-        EVP_PKEY_free(pkey);
         return false;
     }
 
-    // Self-sign with SHA-256
-    if (!X509_sign(x509, pkey, EVP_sha256())) {
+    if (!X509_sign(x509.get(), pkey.get(), EVP_sha256())) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_sign failed");
-        X509_free(x509);
-        EVP_PKEY_free(pkey);
         return false;
     }
 
@@ -123,12 +124,11 @@ bool SelfSignedCert::generate(const SyncPath &certPath, const SyncPath &keyPath)
         FILE *f = fopen(certPath.string().c_str(), "wb");
         if (!f) {
             LOG_ERROR(Log::instance()->getLogger(), "Failed to open cert file for writing: " << certPath.string());
-            X509_free(x509);
-            EVP_PKEY_free(pkey);
             return false;
         }
-        PEM_write_X509(f, x509);
+        PEM_write_X509(f, x509.get());
         fclose(f);
+        restrictPermissions(certPath);
     }
 
     // Write private key PEM (unencrypted)
@@ -136,18 +136,14 @@ bool SelfSignedCert::generate(const SyncPath &certPath, const SyncPath &keyPath)
         FILE *f = fopen(keyPath.string().c_str(), "wb");
         if (!f) {
             LOG_ERROR(Log::instance()->getLogger(), "Failed to open key file for writing: " << keyPath.string());
-            X509_free(x509);
-            EVP_PKEY_free(pkey);
             return false;
         }
-        PEM_write_PrivateKey(f, pkey, nullptr, nullptr, 0, nullptr, nullptr);
+        PEM_write_PrivateKey(f, pkey.get(), nullptr, nullptr, 0, nullptr, nullptr);
         fclose(f);
+        restrictPermissions(keyPath);
     }
 
     LOG_INFO(Log::instance()->getLogger(), "Self-signed certificate and key written to: " << certPath.string());
-
-    X509_free(x509);
-    EVP_PKEY_free(pkey);
     return true;
 }
 

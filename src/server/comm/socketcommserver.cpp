@@ -35,6 +35,11 @@ static Poco::Net::Context::Ptr getSecureContext() {
         ctx = new Poco::Net::Context(Poco::Net::Context::TLS_SERVER_USE, SelfSignedCert::keyPath().string(),
                                      SelfSignedCert::certPath().string(), "", Poco::Net::Context::VERIFY_NONE);
         ctx->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+        // Delete ephemeral key material from disk - the context holds it in memory.
+        std::error_code ec;
+        (void) std::filesystem::remove(SelfSignedCert::certPath(), ec);
+        (void) std::filesystem::remove(SelfSignedCert::keyPath(), ec);
     }
     return ctx;
 }
