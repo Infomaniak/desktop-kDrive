@@ -19,6 +19,7 @@
 #include "testincludes.h"
 #include "benchmark/benchmarkparalleljobs.h"
 #include "db/testsyncdb.h"
+#include "db/migration/testv3migration.h"
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"
 #include "syncpal/testoperationprocessor.h"
@@ -69,6 +70,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSearchJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestV3Migration);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractJob);

@@ -28,6 +28,7 @@
 #include "libcommon/data/sync.h"
 #include "libparms/db/parmsdb.h"
 
+
 #include <queue>
 
 #include <sqlite3.h>
@@ -242,6 +243,7 @@
 #define SELECT_ALL_NODES_REQUEST                                                                                \
     "SELECT nodeId, parentNodeId, nameLocal, nameDrive, nodeIdLocal, nodeIdDrive, created, lastModifiedLocal, " \
     "lastModifiedDrive, type, size, checksum, status, syncing FROM node;"
+
 
 //
 // sync_node

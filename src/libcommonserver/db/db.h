@@ -81,6 +81,8 @@ class COMMONSERVER_EXPORT Db {
 
         [[nodiscard]] bool versionUpdated() const { return _versionUpdated; }
 
+        log4cplus::Logger logger() const { return _logger; }
+
     protected:
         void startTransaction();
         void commitTransaction();
@@ -104,6 +106,8 @@ class COMMONSERVER_EXPORT Db {
         std::string _journalMode;
         std::string _fromVersion;
         bool _versionUpdated{false};
+
+        friend class V3Migration;
 
     private:
         bool insertVersion(const std::string &version);

@@ -83,8 +83,12 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testTryToFixDbNodeIdsAfterSyncDirChange();
 
     private:
-        SyncDbMock *_testObj;
-        // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote sides.
+        SyncDbMock *_testObj{nullptr};
+
+        void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath);
+
+        // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote
+        // sides.
         std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
 };
 } // namespace KDC

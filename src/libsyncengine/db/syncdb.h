@@ -61,7 +61,7 @@ class SyncDb : public Db {
         bool size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found);
         bool created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
         bool lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeId, bool &found);
         bool path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found);
         bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
         bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
@@ -116,6 +116,8 @@ class SyncDb : public Db {
         // will fail and the user should be prompted to create a new sync directory.
         bool tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath);
 
+        std::scoped_lock<std::recursive_mutex> lock() { return std::scoped_lock(_mutex); }
+
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 
@@ -153,6 +155,7 @@ class SyncDb : public Db {
         // Use the actual encoding of local file names in DB.
         bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
 
+        friend class V3Migration;
         friend class TestSyncDb;
 };
 

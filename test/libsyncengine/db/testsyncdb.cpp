@@ -19,13 +19,14 @@
 #include "testsyncdb.h"
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
+
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
+
 #include "mocks/libcommonserver/db/mockdb.h"
 
 #include <algorithm>
-#include <time.h>
 
 using namespace CppUnit;
 
@@ -81,6 +82,14 @@ class DbNodeTest : public DbNode {
         }
 };
 
+namespace {
+
+std::time_t now() {
+    return std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+}
+
+} // namespace
+
 void TestSyncDb::setUp() {
     TestBase::start();
 
@@ -99,8 +108,7 @@ void TestSyncDb::tearDown() {
     LogIfFailSettings::assertEnabled = true;
 }
 
-
-void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
+void TestSyncDb::createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = MockDb::makeDbName(alreadyExists);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
@@ -118,6 +126,7 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     sync.setDriveDbId(drive.dbId());
     sync.setLocalPath(localPath);
     sync.setDbPath(syncDbPath);
+
     (void) ParmsDb::instance()->insertSync(sync);
 }
 
@@ -188,8 +197,8 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
     _testObj->enablePrepare(true);
     _testObj->prepare();
 
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
     const auto rootId = _testObj->rootNode().nodeId();
 
     const auto nfc = testhelpers::makeNfcSyncName();
@@ -242,7 +251,7 @@ void TestSyncDb::testUpgradeTo3_6_5CheckNodeMap() {
     SyncDb::NamedNodeMap namedNodeMap;
     _testObj->selectNamesWithDistinctEncodings(namedNodeMap);
 
-    CPPUNIT_ASSERT_EQUAL(size_t(2), namedNodeMap.size());
+    CPPUNIT_ASSERT_EQUAL(size_t{2}, namedNodeMap.size());
     CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at(4).dbNodeId);
     CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at(6).dbNodeId);
 }
@@ -317,8 +326,8 @@ void TestSyncDb::testUpdateLocalName() {
     const auto nfd = testhelpers::makeNfdSyncName();
 
     // Insert node
-    const time_t tLoc = std::time(nullptr);
-    const time_t tDrive = std::time(nullptr);
+    const time_t tLoc = now();
+    const time_t tDrive = now();
 
     DbNodeTest nodeDir1(_testObj->rootNode().nodeId(), nfc, Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                         NodeType::Directory, 0, std::nullopt);
@@ -509,8 +518,8 @@ void TestSyncDb::testDbNode() {
 
 void TestSyncDb::testReloadIfNeeded() {
     // Insert node
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
+    time_t tLoc = now();
+    time_t tDrive = now();
 
     DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
                     tDrive, NodeType::Directory, 0, std::nullopt);
@@ -570,8 +579,8 @@ void TestSyncDb::testNodeWithCacheFailure() {
 template<typename T>
 void TestSyncDb::testNodesTemplate(SyncDb &db, T &testObj) {
     // Insert node
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
+    time_t tLoc = now();
+    time_t tDrive = now();
 
     DbNode nodeDir1(0, db.rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                     NodeType::Directory, 0, std::nullopt);
@@ -973,8 +982,8 @@ template<typename T>
 void TestSyncDb::testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj) {
     db.prepare();
 
-    time_t tLoc = std::time(nullptr);
-    time_t tDrive = std::time(nullptr);
+    time_t tLoc = now();
+    time_t tDrive = now();
     bool constraintError = false;
 
 
@@ -1022,4 +1031,5 @@ void TestSyncDb::testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj) {
     CPPUNIT_ASSERT(!testObj.correspondingNodeId(ReplicaSide::Unknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 }
+
 } // namespace KDC
