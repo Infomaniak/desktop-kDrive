@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-Poco::Net::SecureStreamSocket TestSocketComm::newSecureClient(Poco::UInt16 port) {
+Poco::Net::SecureStreamSocket TestSocketComm::newSecureClient(const Poco::UInt16 port) {
     Poco::Net::Context::Ptr clientContext =
             new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
     clientContext->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
@@ -30,10 +30,10 @@ Poco::Net::SecureStreamSocket TestSocketComm::newSecureClient(Poco::UInt16 port)
     Poco::Net::StreamSocket rawSocket;
     rawSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), port));
     Poco::Net::SecureStreamSocket secureSocket = Poco::Net::SecureStreamSocket::attach(rawSocket, clientContext);
-    secureSocket.completeHandshake();
+    CPPUNIT_ASSERT_EQUAL(1, secureSocket.completeHandshake());
+
     return secureSocket;
 }
-
 // Mock implementation of readMessage and sendMessage for testing purpose
 CommString SocketCommChannelTest::readMessage() {
     CommChar data[1024];
@@ -126,7 +126,7 @@ void TestSocketComm::testServerCallbacks() {
     // Force a read on the server side channel to detect the peer close and
     // trigger lostConnectionCbk() — required because available() can no longer
     // be used as a proxy for EOF with TLS sockets.
-    serverSidechannel->readMessage();
+    (void) serverSidechannel->readMessage();
 
     // Wait for the lost connection callback to be called
     remainWait = 400; // wait max 4 seconds
