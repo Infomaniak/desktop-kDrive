@@ -53,6 +53,15 @@ Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger `
 $adminSession = Get-Process -Name explorer -IncludeUserName -ErrorAction SilentlyContinue |
     Where-Object { $_.UserName -like "*$AdminAccount" }
 
+# --- Allow execution of .ps1 scripts (required by the runner to run job scripts) ---
+# The runner invokes temporary .ps1 files (e.g. from _work\_temp). Without a
+# permissive execution policy these fail with:
+#   "... cannot be loaded because running scripts is disabled on this system."
+# Set the policy for both the LocalMachine and CurrentUser scopes so the runner
+# (and any interactive session) can execute scripts.
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+
 if ($adminSession) {
     Start-ScheduledTask -TaskName $TaskName
 }
