@@ -35,22 +35,21 @@ namespace KDC {
 
 namespace {
 
-bool applyPem(SSL_CTX *sslCtx, const SelfSignedCert::Pem &pem) {
+bool applyPem(SSL_CTX *const sslCtx, const SelfSignedCert::Pem &pem) {
     std::istringstream certStream(pem.cert);
     std::istringstream keyStream(pem.key);
 
-    Poco::Crypto::X509Certificate cert(certStream);
-    Poco::Crypto::RSAKey key(nullptr, &keyStream, "");
+    const Poco::Crypto::X509Certificate cert(certStream);
+    const Poco::Crypto::RSAKey key(nullptr, &keyStream, "");
 
     return SSL_CTX_use_certificate(sslCtx, const_cast<X509 *>(cert.certificate())) == 1 &&
-           SSL_CTX_use_RSAPrivateKey(sslCtx, const_cast<RSA *>(key.impl()->getRSA())) == 1 &&
-           SSL_CTX_check_private_key(sslCtx) == 1;
+           SSL_CTX_use_RSAPrivateKey(sslCtx, (key.impl()->getRSA())) == 1 && SSL_CTX_check_private_key(sslCtx) == 1;
 }
 
 } // namespace
 
 Poco::Net::Context::Ptr SecureContextSingleton::instance() {
-    static Poco::Net::Context::Ptr ctx = createContext();
+    static const Poco::Net::Context::Ptr ctx = createContext();
     return ctx;
 }
 

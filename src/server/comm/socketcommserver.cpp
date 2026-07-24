@@ -139,7 +139,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        int avail = _socket.available();
+        int32_t avail = _socket.available();
         if (avail > 0) return static_cast<uint64_t>(avail);
         // For TLS sockets, available() may return 0 even when encrypted data is pending.
         // Fall back to poll() to detect readability.
@@ -305,7 +305,10 @@ void SocketCommServer::execute() {
         // is already decrypted when the callback thread polls for it later.
         Poco::Net::SecureStreamSocket secureSocket(socket);
         try {
-            secureSocket.completeHandshake();
+            if (secureSocket.completeHandshake() != 1) {
+                LOG_WARN(Log::instance()->getLogger(), "TLS handshake incomplete after accept");
+                // Let the channel handle the error through normal polling.
+            }
         } catch (Poco::Exception &ex) {
             LOG_WARN(Log::instance()->getLogger(), "TLS handshake failed after accept: " << ex.displayText());
             // Let the channel handle the error through normal polling.

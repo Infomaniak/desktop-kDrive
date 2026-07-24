@@ -52,7 +52,7 @@ class SocketCommChannel : public AbstractCommChannel {
         bool _isClosing = false;
         bool _pendingRead = false;
         std::unique_ptr<StdLoggingThread> _callbackThread{nullptr};
-        mutable Poco::Net::StreamSocket _socket;
+        Poco::Net::StreamSocket _socket;
 
         void callbackHandler();
 };
