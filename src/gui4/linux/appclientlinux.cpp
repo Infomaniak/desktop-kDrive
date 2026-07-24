@@ -104,8 +104,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     mainWindow->setIcon(appIcon);
     _systemTrayController.setMainWindow(mainWindow);
     (void) connect(mainWindow, &QWindow::visibleChanged, this, [this](const bool visible) {
-        if (!visible && !_bootstrapCompleted) {
+        if (!visible && !_bootstrapCompleted && _mainWindowActivationPending) {
             _mainWindowActivationPending = false;
+            _mainWindowDismissedDuringBootstrap = true;
+            qCInfo(lcAppClientLinux) << "Waiting screen dismissed before bootstrap completion";
         }
     });
 
@@ -173,9 +175,16 @@ void AppClientLinux::handleIpcDisconnection() {
 
 void AppClientLinux::handleBootstrapCompletion() {
     _bootstrapCompleted = true;
+    _onboardingSessionManager.completeBootstrap();
 
     if (_appCache.syncContexts().empty()) {
+        const bool shouldOpenOnboarding = !_systemTrayController.trayModeActive() || !_mainWindowDismissedDuringBootstrap;
         _mainWindowActivationPending = false;
+        if (shouldOpenOnboarding) {
+            _onboardingSessionManager.openOnboardingWindow();
+        } else {
+            qCInfo(lcAppClientLinux) << "Onboarding route ready but kept hidden because the waiting screen was dismissed";
+        }
         return;
     }
 
@@ -243,6 +252,7 @@ void AppClientLinux::setupTranslations() {
 
 void AppClientLinux::openMainWindow() {
     if (!_bootstrapCompleted) {
+        _mainWindowDismissedDuringBootstrap = false;
         _mainWindowActivationPending = true;
         _systemTrayController.showMainWindow();
         qCInfo(lcAppClientLinux) << "Showing waiting screen until IPC and cache bootstrap complete";
