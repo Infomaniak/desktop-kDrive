@@ -126,7 +126,7 @@ void ServiceActionTracker::endActions(const ServiceKey &serviceKey, const Action
     }
 
     if (_pendingCountByService.value(serviceKey, 0) == 0) {
-        _pendingCountByService.remove(serviceKey);
+        (void) _pendingCountByService.remove(serviceKey);
         emit servicePendingChanged(serviceKey, false);
     }
 }
