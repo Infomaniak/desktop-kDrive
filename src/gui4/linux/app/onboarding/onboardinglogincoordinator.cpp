@@ -58,9 +58,9 @@ OnboardingLoginCoordinator::OnboardingLoginCoordinator(OnboardingFlowController 
                    [this](const qint64 userDbId) { loadAvailableDrivesWhenUserIsCached(userDbId); });
     (void) connect(&_userService, &UserService::loginTokenFailed, &_flowController, &OnboardingFlowController::handleLoginFailed);
     (void) connect(&_userService, &UserService::availableDrivesLoaded, this,
-                   &OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreLoaded);
+                   &OnboardingLoginCoordinator::clearPendingAvailableDrivesLoad);
     (void) connect(&_userService, &UserService::availableDrivesLoadFailed, this,
-                   &OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed);
+                   &OnboardingLoginCoordinator::clearPendingAvailableDrivesLoad);
 
     (void) connect(&_appCache, &AppCache::usersChanged, this, [this] {
         if (!_pendingUserDbId.has_value()) {
@@ -113,15 +113,7 @@ void OnboardingLoginCoordinator::loadAvailableDrivesWhenUserIsCached(const UserD
     _userService.loadAvailableDrives(userDbId);
 }
 
-void OnboardingLoginCoordinator::completeLoginWhenAvailableDrivesAreLoaded(const UserDbId userDbId) {
-    if (_pendingAvailableDrivesUserDbId != userDbId) {
-        return;
-    }
-
-    _pendingAvailableDrivesUserDbId.reset();
-}
-
-void OnboardingLoginCoordinator::handleAvailableDrivesLoadFailed(const UserDbId userDbId) {
+void OnboardingLoginCoordinator::clearPendingAvailableDrivesLoad(const UserDbId userDbId) {
     if (_pendingAvailableDrivesUserDbId != userDbId) {
         return;
     }
