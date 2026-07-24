@@ -26,6 +26,7 @@
 #include "utility/utility_base.h"
 
 #include <QLocale>
+#include <chrono>
 #include <source_location>
 #include <iostream>
 #include <regex>
@@ -1457,6 +1458,44 @@ void TestUtility::testPathDepth() {
     for (int i = 1; i < 5; i++) {
         path /= "dir";
         CPPUNIT_ASSERT_EQUAL(i, CommonUtility::pathDepth(path));
+    }
+}
+
+void TestUtility::testGetSyncTime() {
+    {
+        const SyncTime before = CommonUtility::getCurrentSyncTime();
+        const SyncTime withZeroOffset = CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::seconds(0));
+        const SyncTime after = CommonUtility::getCurrentSyncTime();
+
+        CPPUNIT_ASSERT(withZeroOffset >= before);
+        CPPUNIT_ASSERT(withZeroOffset <= after);
+    }
+
+    {
+        const auto offset = std::chrono::seconds(1);
+        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::seconds>(offset).count();
+
+        const SyncTime before = CommonUtility::getCurrentSyncTime();
+        const SyncTime withPositiveOffset = CommonUtility::getCurrentSyncTimeWithOffset(offset);
+
+        CPPUNIT_ASSERT(withPositiveOffset >= before + expectedOffset);
+
+        Utility::msleep(2000);
+
+        const SyncTime after = CommonUtility::getCurrentSyncTime();
+        CPPUNIT_ASSERT(withPositiveOffset < after);
+    }
+
+    {
+        const auto offset = std::chrono::seconds(60);
+        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::seconds>(offset).count();
+
+        const SyncTime before = CommonUtility::getCurrentSyncTime();
+        const SyncTime withNegativeOffset = CommonUtility::getCurrentSyncTimeWithOffset(-offset);
+        const SyncTime after = CommonUtility::getCurrentSyncTime();
+
+        CPPUNIT_ASSERT(withNegativeOffset >= before - expectedOffset);
+        CPPUNIT_ASSERT(withNegativeOffset <= after - expectedOffset);
     }
 }
 

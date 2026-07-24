@@ -70,6 +70,45 @@ void LocalFileSystemObserverWorker::stop() {
     //    _checksumWorker->waitForExit();
 }
 
+ExitInfo LocalFileSystemObserverWorker::handleDeleteOp(const SyncPath &absolutePath, const SyncPath &relativePath,
+                                                       bool &itemRemovedFromLocalSnapshot) {
+    itemRemovedFromLocalSnapshot = false;
+
+    // Check if `absolutePath` indicates an existing item that was already added to the local snapshot with the same nodeId.
+    NodeId prevNodeId;
+
+    if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, prevNodeId); exitInfo) {
+        // An item has been found with the same path.
+        NodeId otherNodeId;
+        bool itemExistsWithSameNodeId = false;
+        if (auto checkError = IoError::Success;
+            IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, itemExistsWithSameNodeId, otherNodeId, checkError,
+                                                      IoHelper::PathCheckOption::Insensitive) &&
+            !itemExistsWithSameNodeId) {
+            if (!_liveSnapshot.removeItem(prevNodeId)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: "
+                                                   << Utility::formatSyncPath(absolutePath) << L" ("
+                                                   << CommonUtility::s2ws(prevNodeId) << L")");
+                return ExitCode::DataError;
+            }
+
+            itemRemovedFromLocalSnapshot = true;
+
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                                              << CommonUtility::s2ws(prevNodeId) << L")");
+            return ExitCode::Ok;
+        }
+    } else {
+        if (exitInfo.cause() == ExitCause::NotFound) return ExitCode::Ok;
+
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in Snapshot::getItemId: " << Utility::formatSyncPath(relativePath) << L" : " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) {
     const std::scoped_lock lock(_recursiveMutex);
 
@@ -117,36 +156,12 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
         if (opTypeFromOS == OperationType::Delete) {
-            // Check if exists with same nodeId
-            NodeId prevNodeId;
-            if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, prevNodeId); exitInfo) {
-                // An item has been found with the same path
-                bool existsWithSameId = false;
-                NodeId otherNodeId;
-                if (auto checkError = IoError::Success;
-                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, checkError,
-                                                              IoHelper::PathCheckOption::Insensitive) &&
-                    !existsWithSameId) {
-                    if (!_liveSnapshot.removeItem(prevNodeId)) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                              << CommonUtility::s2ws(prevNodeId) << L")");
-                        return ExitCode::DataError;
-                    }
+            bool itemRemovedFromLocalSnapshot = false;
+            if (const auto deleteOpExitInfo = handleDeleteOp(absolutePath, relativePath, itemRemovedFromLocalSnapshot);
+                !deleteOpExitInfo)
+                return deleteOpExitInfo;
 
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
-                                                                                      << L" (" << CommonUtility::s2ws(prevNodeId)
-                                                                                      << L")");
-                    continue;
-                }
-            } else {
-                if (exitInfo.cause() == ExitCause::NotFound) {
-                    // OK, just continue
-                } else {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in Snapshot::getItemId: " << Utility::formatSyncPath(relativePath)
-                                                                                 << L" : " << exitInfo);
-                    return exitInfo;
-                }
-            }
+            if (itemRemovedFromLocalSnapshot) continue;
         }
 
         // Get item FileStat

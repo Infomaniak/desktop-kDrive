@@ -301,6 +301,8 @@ std::string toString(const InconsistencyType e) {
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:
             return "ForbiddenCharEndWithSpace";
+        case InconsistencyType::InvalidTimestamp:
+            return "InvalidTimestamp";
         default:
             return noConversionStr;
     }

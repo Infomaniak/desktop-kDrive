@@ -141,7 +141,9 @@ target_link_libraries(${libcommonserver_NAME}
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}
-        Secur32)
+        Secur32
+        Wintrust
+        Crypt32)
 elseif(APPLE)
     # utility_mac.mm
     find_library(FOUNDATION_LIBRARY NAMES Foundation)

@@ -560,9 +560,11 @@ struct IoHelper {
                                   IoError &ioError)>
                 _checkIfPathExistsSensitive;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static std::function<bool(const SyncPath &path, NodeId &nodeId)> _getNodeId;
         static bool _checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool _getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept;
         static bool _unsuportedFSLogged;
 
     private:

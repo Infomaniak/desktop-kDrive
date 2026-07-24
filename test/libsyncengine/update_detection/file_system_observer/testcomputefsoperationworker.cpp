@@ -65,16 +65,16 @@ void TestComputeFSOperationWorker::setUp() {
     ParmsDb::instance(_localParmsTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
 
     /// Insert user, account, drive & sync
-    int userId = atoi(testVariables.userId.c_str());
+    UserId userId = atoi(testVariables.userId.c_str());
     User user(1, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(testVariables.accountId.c_str()));
+    AccountId accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    int driveDbId = 1;
-    int driveId = atoi(testVariables.driveId.c_str());
+    DriveDbId driveDbId = 1;
+    DriveId driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
@@ -554,6 +554,69 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 
+void TestComputeFSOperationWorker::testIsLocalTimestampValid() {
+    const NodeId fileNodeId = "dummyId";
+    const SyncName filename = Str("testFile");
+    const LocalTemporaryDirectory tmpDir;
+    const auto fullPath = tmpDir.path() / filename;
+    testhelpers::generateOrEditTestFile(fullPath);
+
+    FileStat filestat;
+    bool found = false;
+    IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(found);
+
+    const SyncTime now = CommonUtility::getCurrentSyncTime();
+    const SyncTime justWithinOneYear =
+            CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1) - std::chrono::seconds(10));
+    const SyncTime justBeyondOneYear =
+            CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::years(1) + std::chrono::seconds(10));
+    const bool isLink = false;
+
+    // Directories are always valid regardless of the timestamp value.
+    auto modificationTime = SyncTime{-1};
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::Directory, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(SyncTime{-1}, modificationTime);
+
+    modificationTime = justBeyondOneYear;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::Directory, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(justBeyondOneYear, modificationTime);
+
+    // A file with the current timestamp is valid.
+    modificationTime = now;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(now, modificationTime);
+
+    // A file with timestamp 0 (Unix epoch) is valid — it is not negative.
+    modificationTime = 0;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(SyncTime{0}, modificationTime);
+
+    // A file with a timestamp just within one year in the future is valid.
+    modificationTime = justWithinOneYear;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT_EQUAL(justWithinOneYear, modificationTime);
+
+    // Invalid timestamps on files are corrected when possible.
+    modificationTime = -1;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    IoHelper::getFileStat(fullPath, &filestat, found, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT(filestat.modificationTime >= now);
+    CPPUNIT_ASSERT(modificationTime >= now);
+
+    modificationTime = justBeyondOneYear;
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->checkAndFixLocalTimestamp(NodeType::File, filestat.creationTime,
+                                                                                    fullPath, isLink, modificationTime));
+    CPPUNIT_ASSERT(modificationTime >= now);
+}
+
 void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResult, const NodeId &nodeId,
                                                         const ReplicaSide side) const {
     _syncPal->copySnapshots();
@@ -562,7 +625,6 @@ void TestComputeFSOperationWorker::testIsInUnsyncedList(const bool expectedResul
                                                  _syncPal->snapshot(side), nodeId, side));
 }
 
-#if defined(KD_LINUX)
 void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
     // Simulate a Delete operation of the local folder named "A".
     (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_a");
@@ -594,6 +656,80 @@ void TestComputeFSOperationWorker::testPostponeCreateOperationsOnReusedIds() {
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("l_ab", OperationType::Delete, tmpOp));
     // Create operations have been removed.
 }
-#endif
+
+void TestComputeFSOperationWorker::testIsReusedNodeId() {
+    DbNode rootDbNode;
+    rootDbNode.setNodeIdLocal("1");
+    rootDbNode.setNodeIdRemote("1");
+
+    const NodeId localNodeId{"123"};
+    DbNode dbNode;
+    bool isReused = false;
+
+    // Remote node IDs are never reused.
+    auto liveSnapshot = std::make_shared<LiveSnapshot>(ReplicaSide::Remote, rootDbNode);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node ID that does not belong to the local snapshot cannot be reused.
+    liveSnapshot = std::make_shared<LiveSnapshot>(ReplicaSide::Local, rootDbNode);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with a different node type did reuse a node ID.
+    const SnapshotItem itemFileType(localNodeId, *rootDbNode.nodeIdLocal(), Str("item"), testhelpers::defaultTime,
+                                    testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    (void) liveSnapshot->updateItem(itemFileType);
+    dbNode.setType(NodeType::Directory);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type and the same creation date did not reuse a
+    // node ID.
+    dbNode.setType(NodeType::File);
+    dbNode.setCreated(testhelpers::defaultTime);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type and the same name did not reuse a
+    // node ID.
+    dbNode.setNameLocal(Str("item"));
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local directory whose node ID is the ID of a snapshot item with the same node type, a different name and a different
+    // creation date did reuse a node ID.
+    const SnapshotItem itemWithDirType(localNodeId, *rootDbNode.nodeIdLocal(), Str("directory_item"), testhelpers::defaultTime,
+                                       testhelpers::defaultTime, NodeType::Directory, testhelpers::defaultFileSize, false, true,
+                                       true);
+    (void) liveSnapshot->updateItem(itemWithDirType);
+    dbNode.setCreated(testhelpers::defaultTime + 1);
+    dbNode.setNameLocal(Str("another_item_name"));
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different
+    // creation date but the same last modified date did not reuse a node ID.
+    (void) liveSnapshot->updateItem(itemFileType);
+    dbNode.setType(NodeType::File);
+    dbNode.setCreated(testhelpers::defaultTime + 1);
+    dbNode.setNameLocal(Str("another_item_name"));
+    dbNode.setLastModifiedLocal(testhelpers::defaultTime);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different creation
+    // date, a different last modified date but the same size, did not reuse a node ID.
+    dbNode.setLastModifiedLocal(testhelpers::defaultTime + 1);
+    dbNode.setSize(testhelpers::defaultFileSize);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(!isReused);
+
+    // A local node whose node ID is the ID of a snapshot item with the same node type, a different name, a different
+    // creation date, a different last modified date and a different size, did reuse a node ID.
+    dbNode.setSize(testhelpers::defaultFileSize + 1);
+    _syncPal->computeFSOperationsWorker()->isReusedNodeId(localNodeId, dbNode, liveSnapshot, isReused);
+    CPPUNIT_ASSERT(isReused);
+}
 
 } // namespace KDC
