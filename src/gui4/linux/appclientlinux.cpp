@@ -103,6 +103,11 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     }
     mainWindow->setIcon(appIcon);
     _systemTrayController.setMainWindow(mainWindow);
+    (void) connect(mainWindow, &QWindow::visibleChanged, this, [this](const bool visible) {
+        if (!visible && !_bootstrapCompleted) {
+            _mainWindowActivationPending = false;
+        }
+    });
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
 }
@@ -167,11 +172,20 @@ void AppClientLinux::handleIpcDisconnection() {
 }
 
 void AppClientLinux::handleBootstrapCompletion() {
-    if (_systemTrayController.trayModeActive() || _appCache.syncContexts().empty()) {
+    _bootstrapCompleted = true;
+
+    if (_appCache.syncContexts().empty()) {
+        _mainWindowActivationPending = false;
         return;
     }
 
-    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap because tray fallback mode is active";
+    if (_systemTrayController.trayModeActive() && !_mainWindowActivationPending) {
+        return;
+    }
+
+    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap"
+                             << "| activation pending:" << _mainWindowActivationPending
+                             << "| tray fallback active:" << !_systemTrayController.trayModeActive();
     openMainWindow();
 }
 
@@ -228,6 +242,14 @@ void AppClientLinux::setupTranslations() {
 }
 
 void AppClientLinux::openMainWindow() {
+    if (!_bootstrapCompleted) {
+        _mainWindowActivationPending = true;
+        _systemTrayController.showMainWindow();
+        qCInfo(lcAppClientLinux) << "Showing waiting screen until IPC and cache bootstrap complete";
+        return;
+    }
+
+    _mainWindowActivationPending = false;
     if (_appCache.syncContexts().empty()) {
         _onboardingSessionManager.openOnboardingWindow();
         return;
