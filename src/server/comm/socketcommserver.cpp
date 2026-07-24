@@ -16,33 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "securecontextsingleton.h"
 #include "socketcommserver.h"
 
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/utility/selfsignedcert.h"
-
-#include <Poco/Net/Context.h>
 
 namespace KDC {
 
 constexpr char host[] = "127.0.0.1";
-
-static Poco::Net::Context::Ptr getSecureContext() {
-    static Poco::Net::Context::Ptr ctx = nullptr;
-    if (!ctx) {
-        SelfSignedCert::generateIfNeeded();
-        ctx = new Poco::Net::Context(Poco::Net::Context::TLS_SERVER_USE, SelfSignedCert::keyPath().string(),
-                                     SelfSignedCert::certPath().string(), "", Poco::Net::Context::VERIFY_NONE);
-        ctx->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
-
-        // Delete ephemeral key material from disk - the context holds it in memory.
-        std::error_code ec;
-        (void) std::filesystem::remove(SelfSignedCert::certPath(), ec);
-        (void) std::filesystem::remove(SelfSignedCert::keyPath(), ec);
-    }
-    return ctx;
-}
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
@@ -195,7 +177,7 @@ bool SocketCommChannel::joinCallbackThread() noexcept {
 
 SocketCommServer::SocketCommServer(const std::string &name) :
     AbstractCommServer(name),
-    _serverSocket(getSecureContext()) {}
+    _serverSocket(SecureContextSingleton::instance()) {}
 
 SocketCommServer::~SocketCommServer() {
     try {

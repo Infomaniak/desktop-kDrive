@@ -15,31 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
-#include "libcommonserver/commonserverlib.h"
-
-#include <string>
+#include <Poco/Net/Context.h>
 
 namespace KDC {
 
-class COMMONSERVER_EXPORT SelfSignedCert {
+class SecureContextSingleton {
     public:
-        struct Pem {
-                std::string cert;
-                std::string key;
-        };
+        static Poco::Net::Context::Ptr instance();
 
-        /// Read the certificate/key pair from the keychain, generating and storing
-        /// a new one if absent.
-        /// @return true on success, false otherwise.
-        static bool loadOrGenerate(Pem &pem);
+        SecureContextSingleton(const SecureContextSingleton &) = delete;
+        SecureContextSingleton &operator=(const SecureContextSingleton &) = delete;
 
     private:
-        static constexpr char certKeychainKey[] = "kdrive_ipc_tls_cert";
-        static constexpr char keyKeychainKey[] = "kdrive_ipc_tls_key";
+        SecureContextSingleton() = default;
 
-        static bool generate(Pem &pem);
+        static Poco::Net::Context::Ptr createContext();
 };
 
 } // namespace KDC
