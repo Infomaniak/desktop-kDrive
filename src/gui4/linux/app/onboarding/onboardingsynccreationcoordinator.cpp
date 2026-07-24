@@ -99,38 +99,43 @@ void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDr
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Requesting onboarding sync path | driveId:" << key.driveId << "/ basePath:" << basePath;
     const QPointer<OnboardingSyncCreationCoordinator> self(this);
-    _commService.requestFindGoodPathForNewSync(
-            QStr2Path(basePath), [self, key](const ExitInfo &exitInfo, const GoodPathResult &result) {
-                if (!self) {
-                    return;
-                }
+    _commService.requestFindGoodPathForNewSync(QStr2Path(basePath),
+                                               [self, key](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                                                   if (!self) {
+                                                       return;
+                                                   }
 
-                if (!exitInfo) {
-                    self->_serviceEventBus.notifyGenericError(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
-                    self->handleCreationFailure();
-                    return;
-                }
+                                                   self->handleGoodPathResult(key, exitInfo, result);
+                                               });
+}
 
-                if (!self->_onboardingState.isAvailableDriveSelected(key) || !self->_appCache.availableDrive(key).has_value()) {
-                    qCWarning(lcOnboardingSyncCreationCoordinator)
-                            << "Discarding prepared onboarding sync: drive is no longer selectable | userDbId:" << key.userDbId
-                            << "/ driveId:" << key.driveId;
-                    self->discardPendingSynchronization(key);
-                    return;
-                }
+void OnboardingSyncCreationCoordinator::handleGoodPathResult(const AvailableDriveKey &key, const ExitInfo &exitInfo,
+                                                             const GoodPathResult &result) {
+    if (!exitInfo) {
+        _serviceEventBus.notifyGenericError(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
+        handleCreationFailure();
+        return;
+    }
 
-                PendingSyncConfig config;
-                config.localPath = Path2QStr(result.goodPath);
-                if (config.localPath.isEmpty()) {
-                    qCWarning(lcOnboardingSyncCreationCoordinator)
-                            << "Server returned an empty onboarding sync path | driveId:" << key.driveId;
-                    self->handleCreationFailure();
-                    return;
-                }
+    if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value()) {
+        qCWarning(lcOnboardingSyncCreationCoordinator)
+                << "Discarding prepared onboarding sync: drive is no longer selectable | userDbId:" << key.userDbId
+                << "/ driveId:" << key.driveId;
+        discardPendingSynchronization(key);
+        return;
+    }
 
-                self->_onboardingState.setPendingSyncConfig(key, config);
-                self->createSynchronization(key, config);
-            });
+    PendingSyncConfig config;
+    config.localPath = Path2QStr(result.goodPath);
+    if (config.localPath.isEmpty()) {
+        qCWarning(lcOnboardingSyncCreationCoordinator)
+                << "Server returned an empty onboarding sync path | driveId:" << key.driveId;
+        handleCreationFailure();
+        return;
+    }
+
+    _onboardingState.setPendingSyncConfig(key, config);
+    createSynchronization(key, config);
 }
 
 void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config) {
