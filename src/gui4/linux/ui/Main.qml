@@ -22,6 +22,7 @@ import QtQuick
 import kDrive.UI
 import "windows/main"
 import "windows/onboarding"
+import "windows/waiting"
 
 IKShadowedWindow {
     id: mainWindow
@@ -32,6 +33,7 @@ IKShadowedWindow {
     required property var systemTrayController
 
     readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
+    readonly property bool waitingActive: !onboardingActive && !appRouter.mainWindowActive
 
     visible: false
     contentWidth: 900
@@ -39,7 +41,15 @@ IKShadowedWindow {
     minimumContentWidth: 720
     minimumContentHeight: 520
     title: onboardingActive ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
-    surfaceColor: onboardingActive ? IKColors.onboardingSurfacePrimary : IKColors.surfacePrimary
+    surfaceColor: {
+        if (waitingActive) {
+            return IKColors.surfaceSecondary;
+        }
+        if (onboardingActive) {
+            return IKColors.onboardingSurfacePrimary;
+        }
+        return IKColors.surfacePrimary;
+    }
     customShadowEnabled: true
     headerOverlaysContent: onboardingActive
     windowTitleVisible: false
@@ -136,6 +146,12 @@ IKShadowedWindow {
         sourceComponent: mainWindowComponent
     }
 
+    Loader {
+        anchors.fill: parent
+        active: mainWindow.waitingActive
+        sourceComponent: waitingComponent
+    }
+
     Component {
         id: onboardingComponent
 
@@ -151,5 +167,11 @@ IKShadowedWindow {
             appRouter: mainWindow.appRouter
             mainSidebarController: mainWindow.mainSidebarController
         }
+    }
+
+    Component {
+        id: waitingComponent
+
+        WaitingView {}
     }
 }
