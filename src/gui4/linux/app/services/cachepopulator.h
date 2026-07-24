@@ -91,6 +91,7 @@ class CachePopulator : public QObject {
         void loadDrives(PopulationMode mode);
         void loadSyncs(PopulationMode mode);
         void loadSyncErrors(PopulationMode mode);
+        void replaceErrorsByLevel(const std::vector<Error> &list);
         void markBranchCompleted(PopulationMode mode, PopulationBranch branch);
         void activateLiveInfoRefresh() const;
         [[nodiscard]] bool handlePopulationFailure(const char *stage, const ExitInfo &exitInfo, PopulationMode mode);
