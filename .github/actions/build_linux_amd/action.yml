@@ -99,6 +99,7 @@ runs:
           mkdir dependencies
           cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
           cp /usr/local/lib/libzip* ./dependencies/
+          cp /usr/lib/x86_64-linux-gnu/libOpenGL* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libgthread* ./dependencies/
