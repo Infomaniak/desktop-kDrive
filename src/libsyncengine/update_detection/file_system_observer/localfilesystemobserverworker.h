@@ -58,6 +58,9 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
+        // Removes the item from the local snapshot once detected as actually deleted from the local file system.
+        ExitInfo handleDeleteOp(const SyncPath &absolutePath, const SyncPath &relativePath, bool &itemRemovedFromLocalSnapshot);
+
         // Returns true if the execute() loop should break.
         bool checkStopCondition(ExitInfo &exitInfo);
         // Returns true if the execute() loop should break.

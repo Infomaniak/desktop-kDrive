@@ -267,14 +267,14 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
-            LOG_DEBUG(_logger, "Removed watch on" << itPath);
+            LOG_DEBUG(_logger, "Removed watch on " << itPath);
             continue;
         }
 
         ++it;
-        LOG_ERROR(_logger, "Error in inotify_rm_watch :" << errno);
+        LOG_ERROR(_logger, "Error in inotify_rm_watch: " << errno);
         sentry::Handler::captureMessage(sentry::Level::Error, "FolderWatcher_linux::removeFoldersBelow",
-                                        "Error in inotify_rm_watch :" + std::to_string(errno));
+                                        "Error in inotify_rm_watch: " + std::to_string(errno));
     }
 }
 

@@ -174,9 +174,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
     bool movedIntoUnsyncedFolder = false;
     const auto nodeExistsInSnapshot = snapshot->exists(nodeId);
     bool nodeIdReused = false;
-#if defined(KD_LINUX)
     isReusedNodeId(nodeId, dbNode, snapshot, nodeIdReused);
-#endif
 
     if (side == ReplicaSide::Remote) {
         // In case of a move inside an excluded folder, the item must be removed in this sync
@@ -726,7 +724,6 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-#if defined(KD_LINUX)
 void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode,
                                               const std::shared_ptr<const Snapshot> snapshot, bool &isReused) const {
     isReused = false;
@@ -748,12 +745,12 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
      * - the creation date,
      * - the modification date,
      * - the size,
-     * - the path (this is needed as some software might delete and recreate a file when saving it, wich will change all the
+     * - the path (this is needed as some software might delete and recreate a file when saving it, which will change all the
      *             previous properties, but the file is still the same)
      */
 
     // Check if the creation date has changed
-    if (snapshot->createdAt(localNodeId) == dbNode.created().value()) {
+    if (dbNode.created().has_value() && snapshot->createdAt(localNodeId) == dbNode.created()) {
         return;
     }
 
@@ -762,12 +759,14 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
         return;
     }
 
+    const auto dbNodeCreationDate = dbNode.created().has_value() ? std::to_wstring(*dbNode.created()) : L"(unknown)";
+
     // For a directory, the last modified date in db is not updated when a child is added or removed, but only when the directory
     // is renamed. Therefore, it does not make sense to check the last modified date for directories here.
     if (snapshot->type(localNodeId) == NodeType::Directory) {
         isReused = true;
         LOGW_SYNCPAL_DEBUG(_logger, L"Creation date (old: "
-                                            << dbNode.created().value() << L" / new: " << snapshot->createdAt(localNodeId)
+                                            << dbNodeCreationDate << L" / new: " << snapshot->createdAt(localNodeId)
                                             << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
                                             << Utility::formatSyncName(snapshot->name(localNodeId)) << L") changed for "
                                             << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
@@ -786,7 +785,7 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Size (old: "
                                         << dbNode.size() << L" / new: " << snapshot->size(localNodeId)
-                                        << L"), creation date and modification date (old: " << dbNode.created().value() << L" | "
+                                        << L"), creation date and modification date (old: " << dbNodeCreationDate << L" | "
                                         << dbNode.lastModified(ReplicaSide::Local) << L" / new: "
                                         << snapshot->createdAt(localNodeId) << L" | " << snapshot->lastModified(localNodeId)
                                         << L") and name (old: " << Utility::formatSyncName(dbNode.nameLocal()) << L" / new: "
@@ -794,7 +793,6 @@ void ComputeFSOperationWorker::isReusedNodeId(const NodeId &localNodeId, const D
                                         << CommonUtility::s2ws(localNodeId) << L". Node is reused.");
     isReused = true;
 }
-#endif
 
 ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
