@@ -31,6 +31,7 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Stringifier.h>
 
+#include <chrono>
 #include <fstream>
 #include <sstream>
 
@@ -222,25 +223,27 @@ SyncPath InitialSituationSetter::localFilePathForUpload(const ItemDesc &desc) {
     }
 
     // Remote-only item: no local counterpart was generated, create a scratch file to upload from.
-    if (!_uploadScratchDir.has_value()) {
-        _uploadScratchDir.emplace("InitialSituationSetterUpload");
-    }
-    const SyncPath scratchPath = _uploadScratchDir->path() / desc.name;
+    const LocalTemporaryDirectory &uploadScratchDir =
+            _uploadScratchDir ? *_uploadScratchDir : _uploadScratchDir.emplace("InitialSituationSetterUpload");
+    const SyncPath scratchPath = uploadScratchDir.path() / desc.name;
     testhelpers::generateTestFile(scratchPath);
     if (desc.size > 0) testhelpers::setTestFileSize(scratchPath, static_cast<uint64_t>(desc.size));
     return scratchPath;
+}
+
+NodeId InitialSituationSetter::remoteParentId(const NodeId &parentId) const {
+    try {
+        return _remoteNodeIds.at(parentId);
+    } catch (const std::out_of_range &) {
+        throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
+    }
 }
 
 void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
     if (_remoteNodeIds.at({}).empty()) return;
 
     try {
-        NodeId parentRemoteId;
-        try {
-            parentRemoteId = _remoteNodeIds.at(parentId);
-        } catch (const std::out_of_range &) {
-            throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
-        }
+        const NodeId parentRemoteId = remoteParentId(parentId);
         if (desc.type == NodeType::Directory) {
             CreateDirJob job(nullptr, _syncPal->driveDbId(), parentRemoteId, desc.name);
             (void) job.runSynchronously();
@@ -249,12 +252,13 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const NodeId
             const SyncPath localFilePath = localFilePathForUpload(desc);
             // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
             // the current time is used.
-            const auto now = std::time(nullptr);
+            const auto now = static_cast<SyncTime>(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
             UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, now, now);
             (void) job.runSynchronously();
             _remoteNodeIds[desc.id] = job.nodeId();
         }
-    } catch (const SituationGeneratorException &) {
+    } catch (const SituationGeneratorException &e) {
+        LOG_WARN(Log::instance()->getLogger(), "InitialSituationSetter::insertRemoteItem: " << e.what());
         throw;
     } catch (const std::exception &e) {
         throw SituationGeneratorException(std::string("Failed to insert remote item: ") + e.what());

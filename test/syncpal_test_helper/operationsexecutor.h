@@ -115,6 +115,12 @@ class OperationsExecutor {
 
         [[nodiscard]] static OperationDesc parseOperation(const Poco::JSON::Object::Ptr &obj);
 
+        // Per operation-type parsing helpers, one per branch of parseOperation.
+        [[nodiscard]] static OperationDesc parseCreateOperation(const Poco::JSON::Object::Ptr &obj);
+        [[nodiscard]] static OperationDesc parseEditOperation(const Poco::JSON::Object::Ptr &obj);
+        [[nodiscard]] static OperationDesc parseDeleteOperation(const Poco::JSON::Object::Ptr &obj);
+        [[nodiscard]] static OperationDesc parseMoveOperation(const Poco::JSON::Object::Ptr &obj);
+
         // Ensures `path` is a relative path that stays within the sync root once normalized (i.e. not absolute
         // and without any ".." component that could make it escape). Throws OperationsParserException
         // (with `fieldName` prefixed to the error message) otherwise.

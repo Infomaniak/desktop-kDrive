@@ -154,6 +154,9 @@ class InitialSituationSetter {
         void insertLocalItem(const ItemDesc &desc, const NodeId &parentId);
         void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId);
 
+        // Looks up the real remote NodeId for parentId, throwing SituationGeneratorException if unknown.
+        NodeId remoteParentId(const NodeId &parentId) const;
+
         // Returns the local path to upload from for a remote file item: the real generated local item if one
         // exists at the same id (both sides describe it), otherwise a scratch file generated on the fly in a
         // dedicated temporary directory (lazily created), for remote-only situations.

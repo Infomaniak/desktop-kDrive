@@ -45,6 +45,7 @@
 #include <Poco/JSON/Parser.h>
 #include <Poco/JSON/Stringifier.h>
 
+#include <chrono>
 #include <fstream>
 #include <sstream>
 
@@ -129,10 +130,8 @@ void OperationsExecutor::execute(const ReplicaSide side, const Operations &opera
 }
 
 const SyncPath &OperationsExecutor::remoteOperationsTemporaryDirPath() {
-    if (!_remoteOperationsTemporaryDir) {
-        _remoteOperationsTemporaryDir.emplace("executeRemoteOperations");
-    }
-    return _remoteOperationsTemporaryDir->path();
+    if (_remoteOperationsTemporaryDir) return _remoteOperationsTemporaryDir->path();
+    return _remoteOperationsTemporaryDir.emplace("executeRemoteOperations").path();
 }
 
 void OperationsExecutor::validateRelativePath(const SyncPath &path, const std::string &fieldName) {
@@ -146,65 +145,86 @@ void OperationsExecutor::validateRelativePath(const SyncPath &path, const std::s
     }
 }
 
+OperationsExecutor::OperationDesc OperationsExecutor::parseCreateOperation(const Poco::JSON::Object::Ptr &obj) {
+    OperationDesc desc;
+    desc.type = OperationType::Create;
+
+    const auto itemTypeStr = obj->optValue<std::string>("itemType", "File");
+    desc.itemType = (itemTypeStr == "Directory") ? NodeType::Directory : NodeType::File;
+
+    const auto nameStr = obj->optValue<std::string>("name", "");
+    if (nameStr.empty()) throw OperationsParserException("Create operation missing 'name'");
+    const auto name = Str2SyncName(nameStr);
+    if (name.find(Str2SyncName("/")) != SyncName::npos || name.find(Str2SyncName("\\")) != SyncName::npos) {
+        throw OperationsParserException("'name' must be a simple item name, not a path: '" + nameStr + "'");
+    }
+
+    const auto pathStr = obj->optValue<std::string>("path", "");
+    if (pathStr.empty()) {
+        desc.path = SyncPath(name);
+    } else {
+        const SyncPath parentPath = Str2Path(pathStr);
+        validateRelativePath(parentPath, "path");
+        desc.path = parentPath / name;
+    }
+    validateRelativePath(desc.path, "name");
+
+    desc.size = obj->optValue<int64_t>(
+            "size", desc.itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
+    return desc;
+}
+
+OperationsExecutor::OperationDesc OperationsExecutor::parseEditOperation(const Poco::JSON::Object::Ptr &obj) {
+    OperationDesc desc;
+    desc.type = OperationType::Edit;
+
+    const auto pathStr = obj->optValue<std::string>("path", "");
+    if (pathStr.empty()) throw OperationsParserException("Edit operation missing 'path'");
+    desc.path = Str2Path(pathStr);
+    validateRelativePath(desc.path, "path");
+
+    desc.size = obj->optValue<int64_t>("newSize", 0);
+    return desc;
+}
+
+OperationsExecutor::OperationDesc OperationsExecutor::parseDeleteOperation(const Poco::JSON::Object::Ptr &obj) {
+    OperationDesc desc;
+    desc.type = OperationType::Delete;
+
+    const auto pathStr = obj->optValue<std::string>("path", "");
+    if (pathStr.empty()) throw OperationsParserException("Delete operation missing 'path'");
+    desc.path = Str2Path(pathStr);
+    validateRelativePath(desc.path, "path");
+    return desc;
+}
+
+OperationsExecutor::OperationDesc OperationsExecutor::parseMoveOperation(const Poco::JSON::Object::Ptr &obj) {
+    OperationDesc desc;
+    desc.type = OperationType::Move;
+
+    const auto fromPathStr = obj->optValue<std::string>("fromPath", "");
+    const auto toPathStr = obj->optValue<std::string>("toPath", "");
+    if (fromPathStr.empty() || toPathStr.empty()) {
+        throw OperationsParserException("Move operation missing 'fromPath' or 'toPath'");
+    }
+    desc.fromPath = Str2Path(fromPathStr);
+    desc.toPath = Str2Path(toPathStr);
+    validateRelativePath(desc.fromPath, "fromPath");
+    validateRelativePath(desc.toPath, "toPath");
+    return desc;
+}
+
 OperationsExecutor::OperationDesc OperationsExecutor::parseOperation(const Poco::JSON::Object::Ptr &obj) {
     if (!obj) throw OperationsParserException("Each operation must be an object");
 
-    const std::string typeStr = obj->optValue<std::string>("type", "");
+    const auto typeStr = obj->optValue<std::string>("type", "");
 
-    OperationDesc desc;
-    if (typeStr == "Create") {
-        desc.type = OperationType::Create;
+    if (typeStr == "Create") return parseCreateOperation(obj);
+    if (typeStr == "Edit") return parseEditOperation(obj);
+    if (typeStr == "Delete") return parseDeleteOperation(obj);
+    if (typeStr == "Move") return parseMoveOperation(obj);
 
-        const std::string itemTypeStr = obj->optValue<std::string>("itemType", "File");
-        desc.itemType = (itemTypeStr == "Directory") ? NodeType::Directory : NodeType::File;
-
-        const std::string nameStr = obj->optValue<std::string>("name", "");
-        if (nameStr.empty()) throw OperationsParserException("Create operation missing 'name'");
-        const SyncName name = Str2SyncName(nameStr);
-        if (name.find(Str2SyncName("/")) != SyncName::npos || name.find(Str2SyncName("\\")) != SyncName::npos) {
-            throw OperationsParserException("'name' must be a simple item name, not a path: '" + nameStr + "'");
-        }
-
-        const std::string pathStr = obj->optValue<std::string>("path", "");
-        desc.path = pathStr.empty() ? SyncPath(name) : Str2Path(pathStr) / name;
-        if (!pathStr.empty()) validateRelativePath(Str2Path(pathStr), "path");
-        validateRelativePath(desc.path, "name");
-
-        desc.size = obj->optValue<int64_t>(
-                "size", desc.itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
-    } else if (typeStr == "Edit") {
-        desc.type = OperationType::Edit;
-
-        const std::string pathStr = obj->optValue<std::string>("path", "");
-        if (pathStr.empty()) throw OperationsParserException("Edit operation missing 'path'");
-        desc.path = Str2Path(pathStr);
-        validateRelativePath(desc.path, "path");
-
-        desc.size = obj->optValue<int64_t>("newSize", 0);
-    } else if (typeStr == "Delete") {
-        desc.type = OperationType::Delete;
-
-        const std::string pathStr = obj->optValue<std::string>("path", "");
-        if (pathStr.empty()) throw OperationsParserException("Delete operation missing 'path'");
-        desc.path = Str2Path(pathStr);
-        validateRelativePath(desc.path, "path");
-    } else if (typeStr == "Move") {
-        desc.type = OperationType::Move;
-
-        const std::string fromPathStr = obj->optValue<std::string>("fromPath", "");
-        const std::string toPathStr = obj->optValue<std::string>("toPath", "");
-        if (fromPathStr.empty() || toPathStr.empty()) {
-            throw OperationsParserException("Move operation missing 'fromPath' or 'toPath'");
-        }
-        desc.fromPath = Str2Path(fromPathStr);
-        desc.toPath = Str2Path(toPathStr);
-        validateRelativePath(desc.fromPath, "fromPath");
-        validateRelativePath(desc.toPath, "toPath");
-    } else {
-        throw OperationsParserException("Unknown operation type: " + typeStr);
-    }
-
-    return desc;
+    throw OperationsParserException("Unknown operation type: " + typeStr);
 }
 
 void OperationsExecutor::applyOperation(const ReplicaSide side, const OperationDesc &desc) {
@@ -323,7 +343,7 @@ void OperationsExecutor::applyRemoteCreate(const OperationDesc &desc) {
 
         // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
         // the current time is used.
-        const auto now = std::time(nullptr);
+        const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, now, now);
         checkExitInfo(job.runSynchronously(), "Create operation (file upload)");
         _batchRemoteIds[desc.path] = job.nodeId();
@@ -343,7 +363,8 @@ void OperationsExecutor::applyRemoteEdit(const OperationDesc &desc) {
 
     // UploadJob requires a modification time structurally; no date semantics are relevant here, so the current
     // time is used.
-    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId, std::time(nullptr));
+    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId,
+                  std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
     checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }
 

@@ -270,8 +270,8 @@ void TestIntegration::testSimpleUpload() {
     const auto testpath = _syncPal->localPath(); // this is for debug, to find where is the tmp dir
     const auto remotesyncdirname = _remoteSyncDir.name(); // this is for debug, to find where is the tmp kDrive dir
 
-    LOG_DEBUG(Log::instance()->getLogger(), "testSimpleUpload: localPath=" << testpath.string() << ", remoteSyncDir="
-                                                                            << SyncName2Str(remotesyncdirname));
+    LOG_DEBUG(Log::instance()->getLogger(),
+              "testSimpleUpload: localPath=" << testpath.string() << ", remoteSyncDir=" << SyncName2Str(remotesyncdirname));
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
 
     // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
