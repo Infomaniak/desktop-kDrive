@@ -28,6 +28,9 @@
 #include <Poco/Net/Socket.h>
 #include <Poco/Net/ServerSocket.h>
 
+#include <atomic>
+#include <mutex>
+
 namespace KDC {
 
 class SocketCommChannel : public AbstractCommChannel {
@@ -49,10 +52,11 @@ class SocketCommChannel : public AbstractCommChannel {
         uint64_t writeData(const CommChar *data, uint64_t len) override;
 
     private:
-        bool _isClosing = false;
-        bool _pendingRead = false;
+        std::atomic<bool> _isClosing{false};
+        std::atomic<bool> _pendingRead{false};
         std::unique_ptr<StdLoggingThread> _callbackThread{nullptr};
         Poco::Net::StreamSocket _socket;
+        mutable std::mutex _socketMutex;
 
         void callbackHandler();
 };
