@@ -159,11 +159,10 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseCreateOperation(const
         throw OperationsParserException("'name' must be a simple item name, not a path: '" + nameStr + "'");
     }
 
-    const auto pathStr = obj->optValue<std::string>("path", "");
-    if (pathStr.empty()) {
+    if (const auto pathStr = obj->optValue<std::string>("path", ""); pathStr.empty()) {
         desc.path = SyncPath(name);
     } else {
-        const SyncPath parentPath = Str2Path(pathStr);
+        const auto parentPath = Str2Path(pathStr);
         validateRelativePath(parentPath, "path");
         desc.path = parentPath / name;
     }
@@ -178,9 +177,11 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseEditOperation(const P
     OperationDesc desc;
     desc.type = OperationType::Edit;
 
-    const auto pathStr = obj->optValue<std::string>("path", "");
-    if (pathStr.empty()) throw OperationsParserException("Edit operation missing 'path'");
-    desc.path = Str2Path(pathStr);
+    if (const auto pathStr = obj->optValue<std::string>("path", ""); pathStr.empty()) {
+        throw OperationsParserException("Edit operation missing 'path'");
+    } else {
+        desc.path = Str2Path(pathStr);
+    }
     validateRelativePath(desc.path, "path");
 
     desc.size = obj->optValue<int64_t>("newSize", 0);
@@ -191,9 +192,11 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseDeleteOperation(const
     OperationDesc desc;
     desc.type = OperationType::Delete;
 
-    const auto pathStr = obj->optValue<std::string>("path", "");
-    if (pathStr.empty()) throw OperationsParserException("Delete operation missing 'path'");
-    desc.path = Str2Path(pathStr);
+    if (const auto pathStr = obj->optValue<std::string>("path", ""); pathStr.empty()) {
+        throw OperationsParserException("Delete operation missing 'path'");
+    } else {
+        desc.path = Str2Path(pathStr);
+    }
     validateRelativePath(desc.path, "path");
     return desc;
 }
@@ -202,13 +205,13 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseMoveOperation(const P
     OperationDesc desc;
     desc.type = OperationType::Move;
 
-    const auto fromPathStr = obj->optValue<std::string>("fromPath", "");
-    const auto toPathStr = obj->optValue<std::string>("toPath", "");
-    if (fromPathStr.empty() || toPathStr.empty()) {
+    if (const auto fromPathStr = obj->optValue<std::string>("fromPath", ""), toPathStr = obj->optValue<std::string>("toPath", "");
+        fromPathStr.empty() || toPathStr.empty()) {
         throw OperationsParserException("Move operation missing 'fromPath' or 'toPath'");
+    } else {
+        desc.fromPath = Str2Path(fromPathStr);
+        desc.toPath = Str2Path(toPathStr);
     }
-    desc.fromPath = Str2Path(fromPathStr);
-    desc.toPath = Str2Path(toPathStr);
     validateRelativePath(desc.fromPath, "fromPath");
     validateRelativePath(desc.toPath, "toPath");
     return desc;
