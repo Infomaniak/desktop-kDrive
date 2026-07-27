@@ -14,8 +14,15 @@
 @implementation FileProviderExtension
 
 - (nonnull instancetype)initWithDomain:(nonnull NSFileProviderDomain *)domain {
-    // TODO: The containing application must create a domain using `+[NSFileProviderManager addDomain:completionHandler:]`. The system will then launch the application extension process, call `-[FileProviderExtension initWithDomain:]` to instantiate the extension for that domain, and call methods on the instance.
     self = [super init];
+
+    // Connect to app
+    NSBundle *extBundle = [NSBundle bundleForClass:[self class]];
+    NSString *loginItemAgentMachName = [extBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
+    NSLog(@"loginItemAgentMachName = %@", loginItemAgentMachName);
+    _xpcClientProxy = [[XPCClientProxy alloc] initWithDelegate:self serviceName:loginItemAgentMachName];
+    [_xpcClientProxy start];
+    
     return self;
 }
 
@@ -51,13 +58,19 @@
         NSLog(@"File size = %lu", (unsigned long)size);
     }
         
-    // TODO: Call XPC create function
-
-    
+    // Call XPC create function
     NSProgress *progress = [NSProgress progressWithTotalUnitCount:size];
-    FileProviderItem *item = [[FileProviderItem alloc] initWithTemplate:itemTemplate identifier:itemTemplate.itemIdentifier version:@"1"];
-    completionHandler(item, 0, false, nil);
-    
+    // TODO: insert {itemTemplate.itemIdentifier, progress} in the progress map
+    [_xpcClientProxy createItem:itemTemplate.itemIdentifier parentId:itemTemplate.parentItemIdentifier fileName:itemTemplate.filename creationDate:itemTemplate.creationDate contentModificationDate:itemTemplate.contentModificationDate contentType:itemTemplate.contentType contents:url completionCallback:^(NSUInteger size, NSString *_Nonnull nodeId, NSString *_Nonnull version) {
+        NSLog(@"[KD] Upload progress: %lu", (unsigned long) size);
+        [progress setCompletedUnitCount:size];
+        if (nodeId.length > 0) {
+            NSLog(@"[KD] Item created with nodeId: %@ version:%@", nodeId, version);
+            FileProviderItem *item = [[FileProviderItem alloc] initWithTemplate:itemTemplate identifier:nodeId version:version];
+            completionHandler(item, 0, false, nil);
+        }
+    }];
+
     return progress;
 }
 
@@ -93,6 +106,11 @@
     NSError *error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:NSFeatureUnsupportedError userInfo:nil];
     completionHandler(nil, remainingFields, false, error);
     return [[NSProgress alloc] init];
+}
+
+// XPCClientProxyDelegate protocol implementation
+- (void)connectionEnded
+{
 }
 
 @end

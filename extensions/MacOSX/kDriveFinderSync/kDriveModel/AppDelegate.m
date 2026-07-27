@@ -265,6 +265,25 @@
     }
 }
 
+// XPCFileProExtRemoteProtocol protocol implementation
+- (void)createItem:(NSString *_Nonnull)itemId parentId:(NSString *_Nonnull)parentId fileName:(NSString *_Nonnull)name creationDate:(NSDate *_Nonnull)cDate contentModificationDate:(NSDate *_Nonnull)mDate contentType:(UTType *_Nonnull)type contents:(NSURL *_Nullable)url completionCallback:(void(^_Nullable)(NSUInteger size, NSString *_Nonnull nodeId, NSString *_Nonnull version))completionCbk
+{
+    NSLog(@"[KD] createItem called with id:%@, parentId:%@ name:%@, creation date:%@, modification date:%@", itemId, parentId, name, cDate, mDate);
+    // TODO: upload item
+    @try {
+        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:0];
+        sleep(1);
+        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:1000];
+        sleep(1);
+        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:2000];
+    } @catch(NSException* e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] Error sending message: %@", e.name);
+    }
+    
+    completionCbk(2500, @"1234", @"1.0");
+}
+
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {

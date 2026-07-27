@@ -148,12 +148,6 @@
     // Resume connection
     NSLog(@"[KD] Resume connection with app");
     [_appConnection resume];
-
-    // Start communication
-    NSLog(@"[KD] Start communication with app");
-    [[_appConnection remoteObjectProxy] initConnection:^(BOOL reply) {
-        NSLog(@"[KD] Connection with app: %@", reply ? @"OK" : @"KO");
-    }];
 }
 
 - (void)scheduleRetryToConnectToLoginAgent
@@ -165,11 +159,15 @@
 }
 
 // XPCFileProExtProtocol protocol implementation
+- (void)updateProgress:(NSString *_Nonnull)itemId size:(NSUInteger) size
+{
+    NSLog(@"[KD] updateProgress called for itemId:%@ size:%lu", itemId, (unsigned long) size);
+}
 
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] Process type asked: finderExt");
+    NSLog(@"[KD] Process type asked: fileProExt");
     callback(fileProExt);
 }
 
@@ -177,6 +175,10 @@
 {
     NSLog(@"[KD] Server is running");
     [self connectToServer:endpoint];
+}
+
+- (void)createItem:(NSString *_Nonnull)itemId parentId:(NSString *_Nonnull)parentId fileName:(NSString * _Nonnull)name creationDate:(NSDate * _Nonnull)cDate contentModificationDate:(NSDate * _Nonnull)mDate contentType:(UTType * _Nonnull)type contents:(NSURL * _Nullable)url completionCallback:(void(^_Nullable)(NSUInteger size, NSString *_Nonnull nodeId, NSString *_Nonnull version))completionCbk {
+    [[_appConnection remoteObjectProxy] createItem:itemId parentId:parentId fileName:name creationDate:cDate contentModificationDate:mDate contentType:type contents:url completionCallback:completionCbk];
 }
 
 @end

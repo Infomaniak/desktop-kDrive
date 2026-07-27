@@ -21,6 +21,20 @@
 @synthesize creationDate = _creationDate;
 @synthesize contentModificationDate = _contentModificationDate;
 
+- (instancetype)initWithItemIdentifier:(NSFileProviderItemIdentifier)identifier {
+    self = [super init];
+    if (self != nil) {
+        _filename = [identifier copy];
+        _itemIdentifier = [identifier copy];
+        _parentItemIdentifier = NSFileProviderRootContainerItemIdentifier;
+        _capabilities = NSFileProviderItemCapabilitiesAllowsReading | NSFileProviderItemCapabilitiesAllowsWriting | NSFileProviderItemCapabilitiesAllowsRenaming | NSFileProviderItemCapabilitiesAllowsReparenting | NSFileProviderItemCapabilitiesAllowsDeleting | NSFileProviderItemCapabilitiesAllowsTrashing;
+        _itemVersion = [[NSFileProviderItemVersion alloc] initWithContentVersion:[@"a content version" dataUsingEncoding:NSUTF8StringEncoding] metadataVersion:[@"a metadata version" dataUsingEncoding:NSUTF8StringEncoding]];
+        _contentType = ([identifier isEqualToString:NSFileProviderRootContainerItemIdentifier]) ? UTTypeFolder : UTTypePlainText;
+    }
+
+    return self;
+}
+    
 - (instancetype)initWithTemplate:(NSFileProviderItem)template identifier:(NSFileProviderItemIdentifier)identifier version:(NSString*)version{
     self = [super init];
     if (self != nil) {

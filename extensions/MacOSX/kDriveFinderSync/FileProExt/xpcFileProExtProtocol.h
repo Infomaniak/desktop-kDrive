@@ -22,13 +22,14 @@
 // Server protocol (Ext => Server)
 @protocol XPCFileProExtProtocol
 
+- (void)updateProgress:(NSString *_Nonnull)itemId size:(NSUInteger) size;
+
 @end
 
 // Client protocol (Server => Ext)
 @protocol XPCFileProExtRemoteProtocol
 
-- (void)initConnection:(void (^_Nonnull)(BOOL))callback;
-- (void)createItem:(NSString *_Nonnull)parentId fileName:(NSString *_Nonnull)name creationDate:(NSDate *_Nonnull)cDate contentModificationDate:(NSDate *_Nonnull)mDate contentType:(UTType *_Nonnull)type contents:(NSURL *_Nullable)url progressCallback:(void(^_Nullable)(NSUInteger size))progressCbk completionCallback:(void(^_Nullable)(NSString *_Nonnull nodeId, NSString *_Nonnull version))completionCbk;
+- (void)createItem:(NSString *_Nonnull)itemId parentId:(NSString *_Nonnull)parentId fileName:(NSString *_Nonnull)name creationDate:(NSDate *_Nonnull)cDate contentModificationDate:(NSDate *_Nonnull)mDate contentType:(UTType *_Nonnull)type contents:(NSURL *_Nullable)url completionCallback:(void(^_Nullable)(NSUInteger size, NSString *_Nonnull nodeId, NSString *_Nonnull version))completionCbk;
 
 @end
 
