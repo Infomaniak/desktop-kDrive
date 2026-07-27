@@ -12,7 +12,7 @@
 #include <Poco/Path.h>
 
 namespace KDC {
-bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(InstallStep, const QString &)> &progressCallback,
                         QString &outMessage) {
     // Create a unique download directory.
     SyncPath downloadDir;
@@ -35,7 +35,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
     const SyncPath filepath = downloadDir / installerName;
 
-    progressCallback(30, QObject::tr("Downloading installer..."));
+    progressCallback(InstallStep::Downloading, QObject::tr("Downloading installer..."));
 
     if (const auto result = HttpDownloader::downloadFile(versionInfo.downloadUrl, filepath); !result.success) {
         if (result.statusCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
@@ -54,13 +54,12 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    progressCallback(60, QObject::tr("Verifying file integrity..."));
+    progressCallback(InstallStep::Verifying, QObject::tr("Verifying file integrity..."));
     if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, filepath, outMessage)) {
         return false;
     }
 
-
-    progressCallback(90, QObject::tr("Starting installer..."));
+    progressCallback(InstallStep::Installing, QObject::tr("Starting installer..."));
     LOGW_INFO(Log::instance()->getLogger(), L"Starting installer " << Utility::formatSyncPath(filepath));
 
     if (const QString program = QString::fromStdWString(filepath.wstring());
@@ -71,7 +70,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     outMessage = QObject::tr("Installer launched successfully.");
-    progressCallback(100, QObject::tr("Done."));
+    progressCallback(InstallStep::Done, QObject::tr("Done."));
     return true;
 }
 

@@ -14,7 +14,7 @@
 
 namespace KDC {
 
-bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(InstallStep, const QString &)> &progressCallback,
                         QString &outMessage) {
     const auto &urlStr = versionInfo.downloadUrl;
     if (urlStr.empty()) {
@@ -42,7 +42,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
     const SyncPath destPath = destDir / filename;
 
-    progressCallback(30, QObject::tr("Downloading installer..."));
+    progressCallback(InstallStep::Downloading, QObject::tr("Downloading installer..."));
 
     if (const auto result = HttpDownloader::downloadFile(urlStr, destPath); !result.success) {
         if (result.statusCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
@@ -61,12 +61,12 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    progressCallback(55, QObject::tr("Verifying file integrity..."));
+    progressCallback(InstallStep::Verifying, QObject::tr("Verifying file integrity..."));
     if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, destPath, outMessage)) {
         return false;
     }
 
-    progressCallback(70, QObject::tr("Making AppImage executable..."));
+    progressCallback(InstallStep::Preparing, QObject::tr("Making AppImage executable..."));
     try {
         std::filesystem::permissions(
                 destPath,
@@ -78,15 +78,15 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    progressCallback(90, QObject::tr("Opening download folder..."));
+    progressCallback(InstallStep::Installing, QObject::tr("Opening download folder..."));
 
+    qunsetenv("LD_LIBRARY_PATH");
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(destDir.string())))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to open download folder.");
     }
     outMessage = QObject::tr("AppImage saved to %1.").arg(QString::fromStdString(destDir.string()));
 
-
-    progressCallback(100, QObject::tr("Done."));
+    progressCallback(InstallStep::Done, QObject::tr("Done."));
     return true;
 }
 

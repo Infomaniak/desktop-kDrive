@@ -3,7 +3,7 @@
 #include "updaterdata.h"
 
 #include "libcommon/utility/types.h"
-#include "log/log.h"
+#include "libcommonserver/log/log.h"
 
 #include <QMainWindow>
 #include <QLineEdit>
@@ -16,6 +16,9 @@
 #include <thread>
 
 namespace KDC {
+
+enum class InstallStep;
+
 class MainWindow : public QMainWindow {
         Q_OBJECT
 
@@ -27,7 +30,7 @@ class MainWindow : public QMainWindow {
         void onInstallClicked();
         void onVersionTextChanged(const QString &text) const;
         void onInstallFinished(bool success, const QString &message);
-        void onInstallProgress(int32_t percent, const QString &message) const;
+        void onInstallProgress(InstallStep step, const QString &message) const;
 
     private:
         void setupUi();

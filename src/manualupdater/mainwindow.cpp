@@ -179,7 +179,6 @@ void MainWindow::onInstallClicked() {
     }
 
     _statusLog->append(tr("Starting download of kDrive %1...").arg(QString::fromStdString(desiredVersion)));
-    _progressBar->setValue(10);
     _installButton->setEnabled(false);
     _installInProgress = true;
     if (_workerThread.joinable()) {
@@ -189,7 +188,8 @@ void MainWindow::onInstallClicked() {
     _workerThread = std::thread([this, desiredVersion, fetchedInfo] { runInstall(desiredVersion, fetchedInfo); });
 }
 
-void MainWindow::onInstallProgress(const int32_t percent, const QString &message) const {
+void MainWindow::onInstallProgress(InstallStep step, const QString &message) const {
+    const int32_t percent = (static_cast<int32_t>(step) + 1) * 100 / static_cast<int32_t>(InstallStep::EnumEnd);
     _progressBar->setValue(percent);
     if (!message.isEmpty()) {
         _statusLog->append(message);
@@ -266,11 +266,8 @@ void MainWindow::runInstall(const std::string &desiredVersion, VersionInfo fetch
         return;
     }
 
-    auto progressCallback = [self](const int32_t percent, const QString &msg) {
-        postToUi(self, [self, percent, msg] {
-            self->_progressBar->setValue(percent);
-            if (!msg.isEmpty()) self->_statusLog->append(msg);
-        });
+    auto progressCallback = [self](InstallStep step, const QString &msg) {
+        postToUi(self, [self, step, msg] { self->onInstallProgress(step, msg); });
     };
 
     QString message;

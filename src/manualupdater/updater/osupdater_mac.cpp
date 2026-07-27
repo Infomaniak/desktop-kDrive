@@ -33,7 +33,7 @@ static bool runOsascriptDelete(const QString &posixPath) {
     return true;
 }
 
-bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(InstallStep, const QString &)> &progressCallback,
                         QString &outMessage) {
     const auto &appcastUrl = versionInfo.downloadUrl;
     if (appcastUrl.empty()) {
@@ -48,7 +48,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    progressCallback(10, QObject::tr("Downloading appcast..."));
+    progressCallback(InstallStep::Downloading, QObject::tr("Downloading appcast..."));
 
     QString pkgUrl;
     if (!downloadAndParseAppcast(appcastUrl, downloadDir, pkgUrl, outMessage)) {
@@ -71,7 +71,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
 
     const QString pkgPath = QString::fromStdString(downloadDir.string()) + QStringLiteral("/") + pkgFilename;
 
-    progressCallback(40, QObject::tr("Downloading package..."));
+    progressCallback(InstallStep::Downloading, QObject::tr("Downloading package..."));
 
     const auto result = HttpDownloader::downloadFile(pkgUrl.toStdString(), SyncPath(pkgPath.toStdString()));
     if (!result.success) {
@@ -88,12 +88,12 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    progressCallback(55, QObject::tr("Verifying file integrity..."));
+    progressCallback(InstallStep::Verifying, QObject::tr("Verifying file integrity..."));
     if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, SyncPath(pkgPath.toStdString()), outMessage)) {
         return false;
     }
 
-    progressCallback(85, QObject::tr("Removing old application..."));
+    progressCallback(InstallStep::Preparing, QObject::tr("Removing old application..."));
     if (std::filesystem::exists("/Applications/kDrive/kDrive Uninstaller.app")) {
         (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive Uninstaller.app"));
     }
@@ -104,14 +104,14 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive"));
     }
 
-    progressCallback(95, QObject::tr("Opening installer..."));
+    progressCallback(InstallStep::Installing, QObject::tr("Opening installer..."));
     if (!QProcess::startDetached(QStringLiteral("open"), QStringList{pkgPath})) {
         outMessage = QObject::tr("Failed to open installer. Please install manually: %1").arg(pkgPath);
         return false;
     }
 
     outMessage = QObject::tr("Installer opened: %1").arg(pkgPath);
-    progressCallback(100, QObject::tr("Done."));
+    progressCallback(InstallStep::Done, QObject::tr("Done."));
     return true;
 }
 
