@@ -1,0 +1,104 @@
+name: Tear down Windows CI runners
+
+on:
+  workflow_dispatch:
+    inputs:
+      wait_timeout_minutes:
+        description: "Max minutes to wait for busy runners to finish"
+        required: false
+        default: "60"
+
+  schedule:
+    - cron: "30 19 * * *"
+      timezone: "Europe/Zurich"
+
+permissions:
+  contents: read
+
+env:
+  OS_CLOUD: infomaniak
+  REPO: ${{ github.repository }}
+
+jobs:
+  stop-instances:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install OpenStack CLI
+        run: pip install python-openstackclient --quiet
+
+      - name: Write clouds.yaml
+        run: |
+          mkdir -p ~/.config/openstack
+          cat > ~/.config/openstack/clouds.yaml <<EOF
+          clouds:
+            infomaniak:
+              auth:
+                auth_url: ${{ secrets.PUBLIC_CLOUD_OS_AUTH_URL }}
+                username: ${{ secrets.PUBLIC_CLOUD_OS_USERNAME }}
+                password: ${{ secrets.PUBLIC_CLOUD_OS_PASSWORD }}
+                project_id: ${{ secrets.PUBLIC_CLOUD_OS_PROJECT_ID }}
+                user_domain_name: ${{ secrets.PUBLIC_CLOUD_OS_USER_DOMAIN_NAME }}
+              region_name: ${{ secrets.PUBLIC_CLOUD_OS_REGION_NAME }}
+              interface: public
+              identity_api_version: 3
+          EOF
+
+      - name: Wait for all runners to be idle
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+        run: |
+          TIMEOUT_MIN="${{ github.event.inputs.wait_timeout_minutes || '60' }}"
+          DEADLINE=$(( $(date +%s) + TIMEOUT_MIN * 60 ))
+
+          while true; do
+            # Count self-hosted runners that are currently running a job
+            BUSY=$(gh api --paginate "/repos/${REPO}/actions/runners" \
+              --jq '[.runners[] | select(.busy == true)] | length')
+
+            if [ "$BUSY" -eq 0 ]; then
+              echo "All runners are idle."
+              break
+            fi
+
+            if [ "$(date +%s)" -ge "$DEADLINE" ]; then
+              echo "::warning::Timeout reached with $BUSY busy runner(s). Forcing teardown."
+              break
+            fi
+
+            echo "$BUSY runner(s) still busy. Waiting 30s ..."
+            sleep 30
+          done
+
+      - name: Remove runners from GitHub
+        env:
+          GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
+        run: |
+          # Delete every ci-runner-* self-hosted runner registered on the repo
+          IDS=$(gh api --paginate "/repos/${REPO}/actions/runners" \
+            --jq '.runners[] | select(.name | startswith("ci-runner-")) | .id')
+
+          if [ -z "$IDS" ]; then
+            echo "No matching runners registered."
+          else
+            for ID in $IDS; do
+              echo "Deleting runner id=$ID ..."
+              gh api -X DELETE "/repos/${REPO}/actions/runners/${ID}"
+            done
+          fi
+
+      - name: Delete public cloud instances
+        run: |
+          # Find every instance tagged with purpose=ci-runner
+          SERVERS=$(openstack server list \
+            --os-cloud "$OS_CLOUD" \
+            --property "purpose=ci-runner" \
+            -f value -c ID)
+
+          if [ -z "$SERVERS" ]; then
+            echo "No ci-runner instances found."
+          else
+            for ID in $SERVERS; do
+              echo "Deleting instance $ID ..."
+              openstack server delete --os-cloud "$OS_CLOUD" --wait "$ID"
+            done
+          fi
