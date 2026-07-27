@@ -26,7 +26,7 @@ class AbstractOsUpdater {
     protected:
         [[nodiscard]] static bool verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath,
                                                      QString &outMessage);
-        [[nodiscard]] static std::string computeFileChecksum(const SyncPath &filepath);
+        [[nodiscard]] static bool computeFileChecksum(const SyncPath &filepath, std::string &outChecksum);
 };
 
 std::unique_ptr<AbstractOsUpdater> createOsUpdater();

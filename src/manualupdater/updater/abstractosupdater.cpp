@@ -30,9 +30,12 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
     return true; // placeholder for a future PR
 }
 
-std::string AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath) {
+bool AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath, std::string &outChecksum) {
     std::ifstream file(filepath, std::ios::binary);
-    if (!file) return "";
+    if (!file) {
+        outChecksum.clear();
+        return false;
+    }
 
     Poco::SHA2Engine sha256(Poco::SHA2Engine::ALGORITHM::SHA_256);
     std::array<char, 8192> buffer{};
@@ -40,7 +43,8 @@ std::string AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath) {
         sha256.update(buffer.data(), static_cast<std::size_t>(file.gcount()));
     }
 
-    return Poco::DigestEngine::digestToHex(sha256.digest());
+    outChecksum = Poco::DigestEngine::digestToHex(sha256.digest());
+    return true;
 }
 
 } // namespace KDC
