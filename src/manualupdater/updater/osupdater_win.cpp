@@ -1,6 +1,5 @@
 #include "osupdater_win.h"
 
-#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/utility.h"
@@ -11,18 +10,23 @@
 namespace KDC {
 bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
                         QString &outMessage) {
-    SyncPath filepath;
-    if (!getInstallerPath(versionInfo, filepath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to get installer path.");
-        outMessage = QObject::tr("Failed to get installer path.");
+    // Create a unique download directory.
+    SyncPath downloadDir;
+    if (!createDownloadDirectory(downloadDir)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to create download directory.");
+        outMessage = QObject::tr("Failed to create download directory.");
         return false;
     }
 
-    auto ioError = IoError::Success;
-    (void) IoHelper::deleteItem(filepath, ioError);
-    if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to remove existing installer " << Utility::formatSyncPath(filepath));
+    // Derive installer name from URL.
+    const auto &url = versionInfo.downloadUrl;
+    const auto pos = url.find_last_of('/');
+    if (pos == std::string::npos) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid download URL.");
+        outMessage = QObject::tr("Invalid download URL.");
+        return false;
     }
+    const SyncPath filepath = downloadDir / url.substr(pos + 1);
 
     progressCallback(30, QObject::tr("Downloading installer..."));
 
@@ -61,23 +65,6 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
 
     outMessage = QObject::tr("Installer launched successfully.");
     progressCallback(100, QObject::tr("Done."));
-    return true;
-}
-
-bool OSUpdater::getInstallerPath(const VersionInfo &versionInfo, SyncPath &path) {
-    const auto &url = versionInfo.downloadUrl;
-    const auto pos = url.find_last_of('/');
-    if (pos == std::string::npos) {
-        return false;
-    }
-    const auto installerName = url.substr(pos + 1);
-
-    SyncPath tmpDirPath;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) {
-        return false;
-    }
-
-    path = tmpDirPath / installerName;
     return true;
 }
 

@@ -1,12 +1,10 @@
 #include "osupdater_linux.h"
 #include "httpdownloader.h"
 
-#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
 
 #include <QProcess>
-#include <cstdlib>
 #include <filesystem>
 
 namespace KDC {
@@ -20,15 +18,12 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    const char *homeDir = std::getenv("HOME");
-    if (!homeDir) {
-        LOG_ERROR(Log::instance()->getLogger(), "HOME environment variable not set.");
-        outMessage = QObject::tr("HOME environment variable not set.");
+    SyncPath destDir;
+    if (!createDownloadDirectory(destDir)) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to create download directory.");
+        outMessage = QObject::tr("Failed to create download directory.");
         return false;
     }
-
-    const SyncPath destDir = std::filesystem::path(homeDir) / "Applications";
-    (void) std::filesystem::create_directories(destDir);
 
     const auto pos = urlStr.find_last_of('/');
     if (pos == std::string::npos) {
@@ -39,10 +34,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     const auto filename = urlStr.substr(pos + 1);
     const SyncPath destPath = destDir / filename;
 
-    auto ioError = IoError::Success;
-    (void) IoHelper::deleteItem(destPath, ioError);
-
-    progressCallback(30, QObject::tr(""));
+    progressCallback(30, QObject::tr("Downloading installer..."));
 
     if (const auto result = HttpDownloader::downloadFile(urlStr, destPath); !result.success) {
         if (result.statusCode == 404) {
@@ -79,11 +71,9 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     progressCallback(90, QObject::tr("Opening download folder..."));
-    if (!QProcess::startDetached(QStringLiteral("xdg-open"), QStringList{QString::fromStdString(destDir.string())})) {
-        outMessage = QObject::tr("AppImage saved to %1. Please open it manually.").arg(QString::fromStdString(destDir.string()));
-    } else {
-        outMessage = QObject::tr("AppImage saved to %1.").arg(QString::fromStdString(destDir.string()));
-    }
+    (void) QProcess::startDetached(QStringLiteral("xdg-open"), QStringList{QString::fromStdString(destDir.string())});
+    outMessage = QObject::tr("AppImage saved to %1.").arg(QString::fromStdString(destDir.string()));
+
 
     progressCallback(100, QObject::tr("Done."));
     return true;

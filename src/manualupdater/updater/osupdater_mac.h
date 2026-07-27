@@ -10,7 +10,8 @@ class OSUpdater final : public AbstractOsUpdater {
                      QString &outMessage) override;
 
     private:
-        static bool downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage);
+        static bool downloadAndParseAppcast(const std::string &appcastUrl, const SyncPath &baseDir, QString &outPkgUrl,
+                                            QString &outMessage);
 };
 
 } // namespace KDC

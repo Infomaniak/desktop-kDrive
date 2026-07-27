@@ -1,6 +1,5 @@
 #include "osupdater_mac.h"
 
-#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
 #include "manualupdater/httpdownloader.h"
@@ -39,16 +38,17 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    progressCallback(10, QObject::tr("Downloading appcast..."));
-
-    QString pkgUrl;
-    if (!downloadAndParseAppcast(appcastUrl, pkgUrl, outMessage)) {
+    // Create a shared unique download directory for appcast + pkg.
+    SyncPath downloadDir;
+    if (!createDownloadDirectory(downloadDir)) {
+        outMessage = QObject::tr("Failed to create download directory.");
         return false;
     }
 
-    SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
-        outMessage = QObject::tr("Failed to get temp directory.");
+    progressCallback(10, QObject::tr("Downloading appcast..."));
+
+    QString pkgUrl;
+    if (!downloadAndParseAppcast(appcastUrl, downloadDir, pkgUrl, outMessage)) {
         return false;
     }
 
@@ -58,8 +58,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    const QString pkgPath = QString::fromStdString(tmpDir.string()) + QStringLiteral("/") + pkgFilename;
-    (void) std::filesystem::remove(SyncPath(pkgPath.toStdString()));
+    const QString pkgPath = QString::fromStdString(downloadDir.string()) + QStringLiteral("/") + pkgFilename;
 
     progressCallback(40, QObject::tr("Downloading package..."));
 
@@ -105,15 +104,9 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     return true;
 }
 
-bool OSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage) {
-    SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
-        outMessage = QObject::tr("Failed to get temp directory.");
-        return false;
-    }
-
-    const SyncPath appcastXmlPath = tmpDir / "appcast.xml";
-    (void) std::filesystem::remove(appcastXmlPath);
+bool OSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, const SyncPath &baseDir, QString &outPkgUrl,
+                                        QString &outMessage) {
+    const SyncPath appcastXmlPath = baseDir / "appcast.xml";
 
     if (const auto result = HttpDownloader::downloadFile(appcastUrl, appcastXmlPath); !result.success) {
         if (result.statusCode == 404) {
