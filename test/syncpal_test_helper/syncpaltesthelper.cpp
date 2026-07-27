@@ -50,7 +50,7 @@ void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
 bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
     if (!_syncPal) return false;
 
-    stopSync(); // Stop the Syncpal while the situation is beinh generated
+    assert(stopSync()); // Stop the Syncpal while the situation is beinh generated
 
     try {
         _setInitialSituation.generateInitialSituation(localSituation, remoteSituation); // Builds local/remote situations
