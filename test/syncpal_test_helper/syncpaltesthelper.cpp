@@ -119,7 +119,10 @@ bool SyncpalTestHelper::pauseSync() const {
 }
 
 bool SyncpalTestHelper::stopSync() const {
-    return false;
+    if (!_syncPal) return false;
+
+    _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Keep);
+    return true;
 }
 
 bool SyncpalTestHelper::execute(const ReplicaSide side, const Operations &operations) {
