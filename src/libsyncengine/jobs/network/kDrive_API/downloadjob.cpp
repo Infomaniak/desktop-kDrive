@@ -164,15 +164,6 @@ ExitInfo DownloadJob::runJob() noexcept {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        if (const ExitInfo exitInfo =
-                    _vfs->updateMetadata(_fileDownloadInfo.localpath, filestat.creationTime, filestat.modificationTime,
-                                         _fileDownloadInfo.expectedSize, std::to_string(filestat.inode));
-            !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return exitInfo;
-        }
-
         if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
             LOGW_WARN(_logger,
                       L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
