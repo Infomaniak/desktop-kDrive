@@ -47,14 +47,14 @@ bool fillCertificateFields(X509 *const x509) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_gmtime_adj (notBefore) failed: " << sslError());
         return false;
     }
-    if (X509_gmtime_adj(X509_getm_notAfter(x509), (certValiditySeconds)) == nullptr) {
+    if (X509_gmtime_adj(X509_getm_notAfter(x509), certValiditySeconds) == nullptr) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_gmtime_adj (notAfter) failed: " << sslError());
         return false;
     }
 
     X509_NAME *const name = X509_get_subject_name(x509);
-    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const uint8_t *>("kDrive-localhost"), -1, -1,
-                                   0) != 1) {
+    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const uint8_t *>("kDrive-localhost"), -1, -1, 0) !=
+        1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_NAME_add_entry_by_txt failed: " << sslError());
         return false;
     }
