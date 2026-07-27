@@ -50,16 +50,17 @@ void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
 bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
     if (!_syncPal) return false;
 
+    stopSync(); // Stop the Syncpal while the situation is beinh generated
+
     try {
-        // generateInitialSituation() creates the local and remote situations independently on the real local
-        // filesystem and the real remote drive, so localSituation and remoteSituation may differ (e.g. to set
-        // up conflicting or asymmetrical initial states). The SyncPal is then run so it discovers the
-        // generated items itself and populates its own Db/update-trees/snapshots with real ids.
-        _setInitialSituation.generateInitialSituation(localSituation, remoteSituation);
+        _setInitialSituation.generateInitialSituation(localSituation, remoteSituation); // Builds local/remote situations
     } catch (const SituationGeneratorException &e) {
         LOG_WARN(Log::instance()->getLogger(), "SyncpalTestHelper::setInitialSituation: " << e.what());
+        _syncPal->start();
         return false;
     }
+
+    _syncPal->start();
 
     return executeSyncUntilEnd();
 }
