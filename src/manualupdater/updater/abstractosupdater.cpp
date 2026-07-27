@@ -43,7 +43,17 @@ bool AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath, std::strin
         sha256.update(buffer.data(), static_cast<std::size_t>(file.gcount()));
     }
 
-    outChecksum = Poco::DigestEngine::digestToHex(sha256.digest());
+    if (file.bad()) {
+        outChecksum.clear();
+        return false;
+    }
+
+    try {
+        outChecksum = Poco::DigestEngine::digestToHex(sha256.digest());
+    } catch (...) {
+        outChecksum.clear();
+        return false;
+    }
     return true;
 }
 
