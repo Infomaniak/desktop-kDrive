@@ -6,6 +6,9 @@
 
 #include <QProcess>
 #include <filesystem>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/URI.h>
+#include <Poco/Path.h>
 
 namespace KDC {
 
@@ -25,19 +28,22 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    const auto pos = urlStr.find_last_of('/');
-    if (pos == std::string::npos) {
+    std::string filename;
+    try {
+        const Poco::URI uri(urlStr);
+        const Poco::Path path(uri.getPath());
+        filename = path.getFileName();
+    } catch (const Poco::Exception &e) {
         LOG_ERROR(Log::instance()->getLogger(), "Invalid download URL.");
         outMessage = QObject::tr("Invalid download URL.");
         return false;
     }
-    const auto filename = urlStr.substr(pos + 1);
     const SyncPath destPath = destDir / filename;
 
     progressCallback(30, QObject::tr("Downloading installer..."));
 
     if (const auto result = HttpDownloader::downloadFile(urlStr, destPath); !result.success) {
-        if (result.statusCode == 404) {
+        if (result.statusCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             LOGW_WARN(Log::instance()->getLogger(), L"Version not found (404).");
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
         } else {

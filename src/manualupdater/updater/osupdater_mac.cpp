@@ -8,6 +8,9 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <filesystem>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/URI.h>
+#include <Poco/Path.h>
 
 namespace KDC {
 
@@ -52,7 +55,15 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    const auto pkgFilename = pkgUrl.mid(pkgUrl.lastIndexOf('/') + 1);
+    QString pkgFilename;
+    try {
+        const Poco::URI uri(pkgUrl.toStdString());
+        const Poco::Path path(uri.getPath());
+        pkgFilename = QString::fromStdString(path.getFileName());
+    } catch (const Poco::Exception &e) {
+        outMessage = QObject::tr("Invalid package URL: %1").arg(QString::fromStdString(e.displayText()));
+        return false;
+    }
     if (pkgFilename.isEmpty()) {
         outMessage = QObject::tr("Could not determine package filename.");
         return false;
@@ -64,7 +75,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
 
     const auto result = HttpDownloader::downloadFile(pkgUrl.toStdString(), SyncPath(pkgPath.toStdString()));
     if (!result.success) {
-        if (result.statusCode == 404) {
+        if (result.statusCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
         } else {
             outMessage = QObject::tr("Failed to download package: %1").arg(QString::fromStdString(result.error));
@@ -109,7 +120,7 @@ bool OSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, const Syn
     const SyncPath appcastXmlPath = baseDir / "appcast.xml";
 
     if (const auto result = HttpDownloader::downloadFile(appcastUrl, appcastXmlPath); !result.success) {
-        if (result.statusCode == 404) {
+        if (result.statusCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
         } else {
             outMessage = QObject::tr("Failed to download appcast: %1").arg(QString::fromStdString(result.error));

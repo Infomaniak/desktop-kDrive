@@ -6,6 +6,10 @@
 #include "manualupdater/httpdownloader.h"
 
 #include <QProcess>
+#include <filesystem>
+#include <Poco/Net/HTTPResponse.h>
+#include <Poco/URI.h>
+#include <Poco/Path.h>
 
 namespace KDC {
 bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
@@ -19,19 +23,22 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     // Derive installer name from URL.
-    const auto &url = versionInfo.downloadUrl;
-    const auto pos = url.find_last_of('/');
-    if (pos == std::string::npos) {
+    std::string installerName;
+    try {
+        const Poco::URI uri(versionInfo.downloadUrl);
+        const Poco::Path path(uri.getPath());
+        installerName = path.getFileName();
+    } catch (const Poco::Exception &e) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid download URL.");
         outMessage = QObject::tr("Invalid download URL.");
         return false;
     }
-    const SyncPath filepath = downloadDir / url.substr(pos + 1);
+    const SyncPath filepath = downloadDir / installerName;
 
     progressCallback(30, QObject::tr("Downloading installer..."));
 
     if (const auto result = HttpDownloader::downloadFile(versionInfo.downloadUrl, filepath); !result.success) {
-        if (result.statusCode == 404) {
+        if (result.statusCode == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             LOGW_WARN(Log::instance()->getLogger(), L"Version not found (404).");
             outMessage = QObject::tr("The specified version does not exist or the download failed.");
         } else {
