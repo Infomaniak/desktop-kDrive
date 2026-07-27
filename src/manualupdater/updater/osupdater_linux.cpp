@@ -80,7 +80,6 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
 
     progressCallback(InstallStep::Installing, QObject::tr("Opening download folder..."));
 
-    qunsetenv("LD_LIBRARY_PATH");
     if (!QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(destDir.string())))) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to open download folder.");
     }
