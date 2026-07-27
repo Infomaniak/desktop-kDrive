@@ -351,24 +351,9 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             }
         }
     } else if (mimeType == mimeTypeHardlink) {
-        // Unreachable code
-        const auto targetPath = Str2Path(data);
-        if (targetPath == _fileDownloadInfo.localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {};
-        }
-
-        LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                        << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-
-        std::error_code ec;
-        std::filesystem::create_hard_link(targetPath, _fileDownloadInfo.localpath, ec);
-        if (ec) {
-            LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                                     << Utility::formatSyncPath(_fileDownloadInfo.localpath)
-                                                                     << L", " << Utility::formatStdError(ec));
-            return {};
-        }
+        // For safety, cannot happen (Mime Type forbidden on the drive)
+        LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));

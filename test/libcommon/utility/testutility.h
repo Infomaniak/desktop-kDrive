@@ -73,6 +73,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testTempDirectoryPath);
         CPPUNIT_TEST(testLogDirectoryPath);
         CPPUNIT_TEST(testPathDepth);
+        CPPUNIT_TEST(testGetSyncTime);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -127,6 +128,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testTempDirectoryPath();
         void testLogDirectoryPath();
         void testPathDepth();
+        void testGetSyncTime();
 
     private:
         /* Generate all the possible path for a set of items and separators
