@@ -167,7 +167,7 @@ final class StatusBarManager {
 
         switch event.type {
         case .leftMouseUp:
-            (NSApp.delegate as? AppDelegate)?.openMainWindow()
+            (NSApp.delegate as? AppDelegate)?.bringAllWindowsToFront()
         case .rightMouseUp:
             presentMenu()
         default:
