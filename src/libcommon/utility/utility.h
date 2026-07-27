@@ -172,6 +172,11 @@ struct COMMON_EXPORT CommonUtility {
         static const std::string liteSyncExtBundleId();
         static bool isLiteSyncExtEnabled();
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
+        /**
+         * @brief Check whether the calling process has been granted the Full Disk Access authorization.
+         * @return True if the process has Full Disk Access; otherwise, false.
+         */
+        static bool isFullDiskAccessAuthOk();
 #endif
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);

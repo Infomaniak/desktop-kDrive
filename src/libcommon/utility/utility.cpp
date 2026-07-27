@@ -1263,6 +1263,16 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
     return false;
 }
 
+bool CommonUtility::isFullDiskAccessAuthOk() {
+    // Listing this directory is only permitted to processes that have been granted the Full Disk Access authorization.
+    static const SyncPath tccDirPath = "/Library/Application Support/com.apple.TCC";
+
+    std::error_code ec;
+    (void) std::filesystem::directory_iterator(tccDirPath, ec);
+
+    return !ec;
+}
+
 #endif
 
 QString CommonUtility::truncateLongLogMessage(const QString &message) {
