@@ -62,7 +62,10 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
          */
 #pragma push_macro("max")
 #undef max
-        lenReceived = _socket.receiveBytes(data, maxSize);
+        {
+            std::lock_guard lock(_socketMutex);
+            lenReceived = _socket.receiveBytes(data, maxSize);
+        }
 #pragma pop_macro("max")
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::receiveBytes: " << ex.displayText());
@@ -99,9 +102,12 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
     const int commCharSize = sizeof(CommChar);
     int written = 0;
     try {
+        std::lock_guard lock(_socketMutex);
         written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::sendBytes: " << ex.displayText());
+        lostConnectionCbk();
+        close();
         _isClosing = true;
         return 0;
     }
@@ -120,7 +126,12 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
 void SocketCommChannel::callbackHandler() {
     while (!_isClosing) {
         try {
-            if (!_socket.poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR)) {
+            bool readable = false;
+            {
+                std::lock_guard lock(_socketMutex);
+                readable = _socket.poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR);
+            }
+            if (!readable) {
                 continue;
             }
         } catch (Poco::Exception &ex) {
@@ -139,12 +150,19 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        int32_t avail = _socket.available();
+        int32_t avail = 0;
+        {
+            std::lock_guard lock(_socketMutex);
+            avail = _socket.available();
+        }
         if (avail > 0) return static_cast<uint64_t>(avail);
         // For TLS sockets, available() may return 0 even when encrypted data is pending.
         // Fall back to poll() to detect readability.
-        if (_socket.poll(Poco::Timespan(0, 0), Poco::Net::Socket::SELECT_READ)) {
-            return 1; // Data is likely available to be read
+        {
+            std::lock_guard lock(_socketMutex);
+            if (_socket.poll(Poco::Timespan(0, 0), Poco::Net::Socket::SELECT_READ)) {
+                return 1; // Data is likely available to be read
+            }
         }
         return 0;
     } catch (Poco::Exception &ex) {
@@ -155,6 +173,7 @@ uint64_t SocketCommChannel::bytesAvailable() const {
 
 void SocketCommChannel::close() {
     try {
+        std::lock_guard lock(_socketMutex);
         _socket.shutdown();
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::shutdown: " << ex.displayText());
