@@ -192,6 +192,7 @@ Button {
 
             IKBadge {
                 dot: root.errorCount > 0
+                color: IKColors.statusMediumWarning
             }
 
             Image {
