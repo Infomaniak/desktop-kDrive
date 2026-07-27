@@ -17,6 +17,7 @@
  */
 
 import QtQuick
+import QtQuick.VectorImage
 import kDrive.UI
 
 Item {
@@ -24,12 +25,12 @@ Item {
         anchors.centerIn: parent
         spacing: IKWaiting.contentSpacing
 
-        Image {
+        VectorImage {
             width: IKWaiting.logoSize
             height: IKWaiting.logoSize
             source: "qrc:/assets/taskbar/logo_kdrive.svg"
-            sourceSize.width: width
-            sourceSize.height: height
+            fillMode: VectorImage.PreserveAspectFit
+            preferredRendererType: VectorImage.CurveRenderer
         }
 
         IKLoadingSpinner {
