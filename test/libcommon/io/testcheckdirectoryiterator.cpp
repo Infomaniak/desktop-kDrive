@@ -385,7 +385,7 @@ void TestIo::testCheckDirectoryIteratorSymlinkEntry() {
 
     // Symlink to file
     const SyncPath file1SymlinkPath = temporaryDirectory.path() / "file1Symlink";
-    std::filesystem::create_directory_symlink(file1Path, file1SymlinkPath, ec);
+    std::filesystem::create_symlink(file1Path, file1SymlinkPath, ec);
     CPPUNIT_ASSERT(!ec);
 
     IoError ioError = IoError::Success;
