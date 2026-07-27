@@ -205,8 +205,9 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseMoveOperation(const P
     OperationDesc desc;
     desc.type = OperationType::Move;
 
-    if (const auto fromPathStr = obj->optValue<std::string>("fromPath", ""), toPathStr = obj->optValue<std::string>("toPath", "");
-        fromPathStr.empty() || toPathStr.empty()) {
+    if (const auto fromPathStr = obj->optValue<std::string>("fromPath", ""); fromPathStr.empty()) {
+        throw OperationsParserException("Move operation missing 'fromPath' or 'toPath'");
+    } else if (const auto toPathStr = obj->optValue<std::string>("toPath", ""); toPathStr.empty()) {
         throw OperationsParserException("Move operation missing 'fromPath' or 'toPath'");
     } else {
         desc.fromPath = Str2Path(fromPathStr);
