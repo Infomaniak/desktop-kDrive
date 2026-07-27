@@ -32,6 +32,7 @@ class QWindow;
 namespace KDC {
 
 class AppCache;
+enum class UpdateState;
 
 enum class TrayIconState {
     Neutral,
@@ -58,6 +59,7 @@ class SystemTrayController final : public QObject {
         void observe(AppCache &appCache);
         void setMainWindow(QWindow *const window);
         void setProductStateInitialized(bool initialized);
+        void handleUpdateStateChanged(UpdateState state);
         void setNotificationActive(bool active);
         void setIconState(TrayIconState state);
         [[nodiscard]] bool trayModeActive() const { return _isTrayModeActive; }
