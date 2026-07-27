@@ -1769,8 +1769,11 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     // With refresh token
     {
         _apiToken.setRefreshToken("123");
+        GetInfoUserJobMock jobUpdateCache(_userDbId, _apiToken);
+        (void) jobUpdateCache.runSynchronously(); // Run once just to update the refresh token in cache.
+        CPPUNIT_ASSERT_EQUAL(0, jobUpdateCache.trials());
+
         GetInfoUserJobMock job(_userDbId, _apiToken);
-        (void) job.runSynchronously(); // Run once just to update the refresh token in cache.
         const auto exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(0, job.trials());
