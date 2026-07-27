@@ -29,9 +29,9 @@
 #include "app/services/commservice.h"
 #include "app/services/driveservice.h"
 #include "app/services/parametersservice.h"
+#include "app/services/sentryservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
-#include "app/services/sentryservice.h"
 #include "app/services/syncservice.h"
 #include "app/services/userservice.h"
 #include "app/systraycontroller.h"
@@ -40,6 +40,7 @@
 #include "ui/chrome/windowdecorationcontroller.h"
 
 #include <QApplication>
+#include <QIcon>
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
 #include <QTranslator>
@@ -92,7 +93,21 @@ class AppClientLinux : public QApplication {
 
     private:
         static void setupLogging();
+        static void configureLogger();
+        static void logApplicationInformation();
+        static void logSystemInformation();
+        static void logDisplayInformation();
+        static void logQtInformation();
+        static void logScreenInformation();
         void setupTranslations();
+        void setupSystemTray();
+        void setupSignalConnections();
+        void setupQmlEngine(const QIcon &appIcon);
+        void setupIpcConnection();
+        void handleIpcDisconnection();
+        void handleBootstrapCompletion();
+        void updateLoggerMinLevel() const;
+        void requestQuit() const;
         void openMainWindow();
 
         IpcClient _ipcClient{this};
