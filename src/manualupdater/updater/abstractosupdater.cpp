@@ -10,23 +10,17 @@
 #include <Poco/SHA2Engine.h>
 
 #if defined(KD_MACOS)
-#include "macosupdater.h"
+#include "osupdater_mac.h"
 #elif defined(KD_WINDOWS)
-#include "windowsupdater.h"
+#include "osupdater_win.h"
 #else
-#include "linuxupdater.h"
+#include "osupdater_linux.h"
 #endif
 
 namespace KDC {
 
 std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
-#if defined(KD_MACOS)
-    return std::make_unique<MacOSUpdater>();
-#elif defined(KD_WINDOWS)
-    return std::make_unique<WindowsUpdater>();
-#else
-    return std::make_unique<LinuxUpdater>();
-#endif
+    return std::make_unique<OSUpdater>();
 }
 
 bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath, QString &outMessage) {

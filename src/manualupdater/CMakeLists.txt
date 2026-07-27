@@ -14,11 +14,11 @@ set(SOURCES
 )
 
 if(WIN32)
-    list(APPEND SOURCES updater/windowsupdater.cpp)
+    list(APPEND SOURCES updater/osupdater_win.cpp)
 elseif(APPLE)
-    list(APPEND SOURCES updater/macosupdater.cpp)
+    list(APPEND SOURCES updater/osupdater_mac.cpp)
 else()
-    list(APPEND SOURCES updater/linuxupdater.cpp)
+    list(APPEND SOURCES updater/osupdater_linux.cpp)
 endif()
 
 set(HEADERS
@@ -30,11 +30,11 @@ set(HEADERS
 )
 
 if(WIN32)
-    list(APPEND HEADERS updater/windowsupdater.h)
+    list(APPEND HEADERS updater/osupdater_win.h)
 elseif(APPLE)
-    list(APPEND HEADERS updater/macosupdater.h)
+    list(APPEND HEADERS updater/osupdater_mac.h)
 else()
-    list(APPEND HEADERS updater/linuxupdater.h)
+    list(APPEND HEADERS updater/osupdater_linux.h)
 endif()
 
 add_executable(kDriveRecoveryUpdater ${SOURCES} ${HEADERS})

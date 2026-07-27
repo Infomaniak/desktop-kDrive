@@ -1,4 +1,4 @@
-#include "linuxupdater.h"
+#include "osupdater_linux.h"
 #include "httpdownloader.h"
 
 #include "libcommonserver/io/iohelper.h"
@@ -11,8 +11,8 @@
 
 namespace KDC {
 
-bool LinuxUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
-                           QString &outMessage) {
+bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+                        QString &outMessage) {
     const auto &urlStr = versionInfo.downloadUrl;
     if (urlStr.empty()) {
         LOG_ERROR(Log::instance()->getLogger(), "Download URL is empty.");

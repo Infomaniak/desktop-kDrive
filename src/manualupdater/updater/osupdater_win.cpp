@@ -1,4 +1,4 @@
-#include "windowsupdater.h"
+#include "osupdater_win.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
@@ -9,8 +9,8 @@
 #include <QProcess>
 
 namespace KDC {
-bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
-                             QString &outMessage) {
+bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+                        QString &outMessage) {
     SyncPath filepath;
     if (!getInstallerPath(versionInfo, filepath)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to get installer path.");
@@ -64,7 +64,7 @@ bool WindowsUpdater::install(const VersionInfo &versionInfo, const std::function
     return true;
 }
 
-bool WindowsUpdater::getInstallerPath(const VersionInfo &versionInfo, SyncPath &path) {
+bool OSUpdater::getInstallerPath(const VersionInfo &versionInfo, SyncPath &path) {
     const auto &url = versionInfo.downloadUrl;
     const auto pos = url.find_last_of('/');
     if (pos == std::string::npos) {

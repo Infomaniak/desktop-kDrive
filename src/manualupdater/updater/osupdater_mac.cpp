@@ -1,4 +1,4 @@
-#include "macosupdater.h"
+#include "osupdater_mac.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
@@ -31,8 +31,8 @@ static bool runOsascriptDelete(const QString &posixPath) {
     return true;
 }
 
-bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
-                           QString &outMessage) {
+bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void(int32_t, QString)> &progressCallback,
+                        QString &outMessage) {
     const auto &appcastUrl = versionInfo.downloadUrl;
     if (appcastUrl.empty()) {
         outMessage = QObject::tr("Download URL is empty.");
@@ -105,7 +105,7 @@ bool MacOSUpdater::install(const VersionInfo &versionInfo, const std::function<v
     return true;
 }
 
-bool MacOSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage) {
+bool OSUpdater::downloadAndParseAppcast(const std::string &appcastUrl, QString &outPkgUrl, QString &outMessage) {
     SyncPath tmpDir;
     if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
         outMessage = QObject::tr("Failed to get temp directory.");
