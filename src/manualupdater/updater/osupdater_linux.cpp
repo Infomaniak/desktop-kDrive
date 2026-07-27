@@ -4,7 +4,9 @@
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
 
+#include <QDesktopServices>
 #include <QProcess>
+#include <QUrl>
 #include <filesystem>
 #include <Poco/Net/HTTPResponse.h>
 #include <Poco/URI.h>
@@ -77,7 +79,10 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     progressCallback(90, QObject::tr("Opening download folder..."));
-    (void) QProcess::startDetached(QStringLiteral("xdg-open"), QStringList{QString::fromStdString(destDir.string())});
+
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(destDir.string())))) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to open download folder.");
+    }
     outMessage = QObject::tr("AppImage saved to %1.").arg(QString::fromStdString(destDir.string()));
 
 
