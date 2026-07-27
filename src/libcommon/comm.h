@@ -125,6 +125,7 @@ enum class RequestNum {
     UTILITY_SEND_APP_START_TRACE, // Sent by the Client process as soon the UI is visible for the user.
 #if defined(KD_MACOS)
     UTILITY_INSTALL_MAC_LITESYNC_EXT,
+    UTILITY_CHECK_MACOS_PERMISSIONS, // Ask the Server process for the state of the authorizations required by Lite Sync.
 #endif
     UPDATER_CHANGE_CHANNEL,
     UPDATER_VERSION_INFO,
@@ -277,6 +278,8 @@ inline std::string toString(RequestNum e) {
 #if defined(KD_MACOS)
         case RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT:
             return "UTILITY_INSTALL_MAC_LITESYNC_EXT";
+        case RequestNum::UTILITY_CHECK_MACOS_PERMISSIONS:
+            return "UTILITY_CHECK_MACOS_PERMISSIONS";
 #endif
         case RequestNum::UPDATER_VERSION_INFO:
             return "UPDATER_VERSION_INFO";
