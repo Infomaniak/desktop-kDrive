@@ -107,6 +107,7 @@ runs:
           cp /usr/lib/x86_64-linux-gnu/libdbus-1.so.3 ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libpcre* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libgio* ./dependencies/
+          cp /usr/lib/x86_64-linux-gnu/libgobject* ./dependencies/
         shell: bash
         if: steps.build.outcome == 'success'
 
