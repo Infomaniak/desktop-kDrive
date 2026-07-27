@@ -91,9 +91,9 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache`,
-  GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late tray availability, and
-  main QML window show/hide behavior.
+- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
+  updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
+  tray availability, and main QML window show/hide behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
