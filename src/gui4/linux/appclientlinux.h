@@ -106,6 +106,7 @@ class AppClientLinux : public QApplication {
         void setupIpcConnection();
         void handleIpcDisconnection();
         void handleBootstrapCompletion();
+        void refreshUpdaterState();
         void updateLoggerMinLevel() const;
         void requestQuit() const;
         void openMainWindow();
