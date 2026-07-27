@@ -82,6 +82,7 @@
 #include "utilitysendappstarttracejob.h"
 #if defined(KD_MACOS)
 #include "utilityinstallmaclitesyncextjob.h"
+#include "utilitycheckmacospermissionsjob.h"
 #endif
 
 #include "updaterversioninfojob.h"
@@ -156,6 +157,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::UTILITY_SEND_APP_START_TRACE, makeShared<UtilitySendAppStartTraceJob>},
 #if defined(KD_MACOS)
                 {RequestNum::UTILITY_INSTALL_MAC_LITESYNC_EXT, makeShared<UtilityInstallMacLiteSyncExtJob>},
+                {RequestNum::UTILITY_CHECK_MACOS_PERMISSIONS, makeShared<UtilityCheckMacOsPermissionsJob>},
 #endif
                 {RequestNum::UPDATER_VERSION_INFO, makeShared<UpdaterVersionInfoJob>},
                 {RequestNum::UPDATER_STATE, makeShared<UpdaterStateJob>},
