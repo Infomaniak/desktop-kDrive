@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Ota virheenkorjauksen kirjaus käyttöön";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Tässä kansiossa on jo toinen %@, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %@-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.\n";
+"errCaseDescription" = "Tässä kansiossa on jo toinen %@, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %@-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Ristiriitaiset nimet, isojen ja pienten kirjainten huomioiminen";

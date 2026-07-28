@@ -346,7 +346,7 @@ public enum KDriveLocalizable {
   public static let enableDebugLogsSetting = KDriveLocalizable.tr("Localizable", "enableDebugLogsSetting", fallback: "Enable debug logging")
   /// loco:6a1992213e832a7f170d5664
   public static func errCaseDescription(_ p1: Any, _ p2: Any) -> String {
-    return KDriveLocalizable.tr("Localizable", "errCaseDescription", String(describing: p1), String(describing: p2), fallback: "Another %@ with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %@ in kDrive online to synchronize it on your device.\n")
+    return KDriveLocalizable.tr("Localizable", "errCaseDescription", String(describing: p1), String(describing: p2), fallback: "Another %@ with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %@ in kDrive online to synchronize it on your device.")
   }
   /// loco:6a199211062947f2e8006085
   public static let errCaseTitle = KDriveLocalizable.tr("Localizable", "errCaseTitle", fallback: "Case-sensitive name conflict")

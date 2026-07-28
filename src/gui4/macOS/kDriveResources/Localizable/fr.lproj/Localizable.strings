@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Activer l’enregistrement des informations de débogage";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Un autre %@ dont le nom diffère uniquement par les majuscules/minuscules existe déjà dans ce dossier. Ce type de nom n’est pas pris en charge par l’application kDrive Windows. Renommez l’un des %@ depuis kDrive en ligne pour pouvoir le synchroniser sur votre PC.\n";
+"errCaseDescription" = "Un autre %@ dont le nom diffère uniquement par les majuscules/minuscules existe déjà dans ce dossier. Ce type de nom n’est pas pris en charge par l’application kDrive Windows. Renommez l’un des %@ depuis kDrive en ligne pour pouvoir le synchroniser sur votre PC.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Conflit de noms à la casse près";

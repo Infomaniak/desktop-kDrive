@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Abilita log di debug";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall’applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.\n";
+"errCaseDescription" = "In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall’applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Nomi contrastanti, sensibili alle maiuscole e alle minuscole";

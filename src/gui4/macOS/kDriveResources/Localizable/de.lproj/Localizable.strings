@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Debug-Protokollierung aktivieren";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Ein weiteres %@, dessen Name sich nur in der Gross-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.\n";
+"errCaseDescription" = "Ein weiteres %@, dessen Name sich nur in der Gross-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Namenskonflikte in Gross- und Kleinschreibung";
