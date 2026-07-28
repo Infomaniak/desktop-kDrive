@@ -999,7 +999,7 @@ ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplate
 }
 
 #ifdef Q_OS_MAC
-ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &appList) {
+ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionApp> &appList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << def;
@@ -1017,7 +1017,7 @@ ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &app
     return exitCode;
 }
 
-ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList) {
+ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionApp> &appList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << def;

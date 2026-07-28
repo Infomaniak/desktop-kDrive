@@ -65,8 +65,10 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
     ExitCode exitCode = ExitCode::Unknown;
     sentry::PTraceUPtr perfmonitor;
     if (side == ReplicaSide::Remote) {
+        std::string fallbackFSType = CommonUtility::fileSystemType(_syncPal->localPath());
+        // If fallbackFSType is undefined (empty), the allowed characters will be the default ones for the OS
         perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckLocalTree>(syncDbId());
-        exitCode = checkRemoteTree(node, parentPath);
+        exitCode = checkRemoteTree(fallbackFSType, node, parentPath);
     } else if (side == ReplicaSide::Local) {
         perfmonitor = std::make_unique<sentry::pTraces::scoped::CheckRemoteTree>(syncDbId());
         exitCode = checkLocalTree(node, parentPath);
@@ -82,14 +84,15 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(ReplicaSide side) {
     return exitCode;
 }
 
-ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath) {
+ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(const std::string &fsType, std::shared_ptr<Node> remoteNode,
+                                                             const SyncPath &parentPath) {
     if (remoteNode->hasChangeEvent(OperationType::Delete)) {
         return ExitCode::Ok;
     }
 
     if (pathChanged(remoteNode)) {
         bool pathAndNameAreValid = true;
-        const auto exitInfo = checkIfPathAndNameAreValid(remoteNode, pathAndNameAreValid);
+        const auto exitInfo = checkIfPathAndNameAreValid(fsType, remoteNode, pathAndNameAreValid);
 
         if (!exitInfo) return exitInfo;
 
@@ -110,7 +113,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkRemoteTree(std::shared_ptr<Nod
             checkAgainstSiblings = true;
         }
 
-        ExitCode exitCode = checkRemoteTree(currentChildNode, parentPath / remoteNode->name());
+        ExitCode exitCode = checkRemoteTree(fsType, currentChildNode, parentPath / remoteNode->name());
         if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
@@ -176,14 +179,14 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(std::shared_ptr<Node> nod
     _idsToBeRemoved.emplace_back(nodeIDs);
 }
 
-ExitInfo PlatformInconsistencyCheckerWorker::checkIfPathAndNameAreValid(std::shared_ptr<Node> remoteNode,
+ExitInfo PlatformInconsistencyCheckerWorker::checkIfPathAndNameAreValid(const std::string &fsType,
+                                                                        std::shared_ptr<Node> remoteNode,
                                                                         bool &pathAndNameAreValid) {
     pathAndNameAreValid = true;
 
-    const SyncPath relativePath = remoteNode->getPath();
     bool hasForbiddenCharacters = false;
-    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                remoteNode->name(), _syncPal->cacheDirectory(), hasForbiddenCharacters);
+    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(fsType, remoteNode->name(),
+                                                                                                hasForbiddenCharacters);
         !exitInfo) {
         pathAndNameAreValid = false;
         LOGW_SYNCPAL_INFO(_logger,

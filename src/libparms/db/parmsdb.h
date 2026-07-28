@@ -27,7 +27,7 @@
 #include "syncfolderrule.h"
 
 #if defined(KD_MACOS)
-#include "exclusionapp.h"
+#include "libcommon/data/exclusionapp.h"
 #endif
 #include "libcommon/data/error.h"
 #include "migrationselectivesync.h"

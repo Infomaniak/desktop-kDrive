@@ -19,9 +19,7 @@ set(parms_SRCS
     db/parmsdbappstate.cpp db/syncfolderrule.h db/syncfolderrule.cpp
 )
 
-if(APPLE)
-    list(APPEND parms_SRCS db/exclusionapp.h db/exclusionapp.cpp)
-endif()
+
 
 # Target
 add_library(${libparms_NAME} STATIC ${parms_SRCS})

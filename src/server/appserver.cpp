@@ -2095,7 +2095,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> def;
 
-            QList<ExclusionAppInfo> list;
+            QList<ExclusionApp> list;
             const auto exitCode = ServerRequests::getExclusionAppList(def, list);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getExclusionAppList: code=" << exitCode);
@@ -2108,7 +2108,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case RequestNum::EXCLAPP_SETLIST: {
             bool def = false;
-            QList<ExclusionAppInfo> list;
+            QList<ExclusionApp> list;
             QDataStream paramsStream(params);
             paramsStream >> def;
             paramsStream >> list;

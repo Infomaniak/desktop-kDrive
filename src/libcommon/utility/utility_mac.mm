@@ -126,14 +126,26 @@ std::string CommonUtility::osVersion() {
     return osVersion;
 }
 
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType.clear();
+    mountPoint.clear();
+
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(targetPath, ec);
+    if (ec) canonicalPath = std::filesystem::absolute(targetPath);
+
+    // FS type & mount point.
     struct statfs stat;
+    if (statfs(canonicalPath.native().c_str(), &stat) != 0) return false;
 
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
+    fsType = std::string(stat.f_fstypename);
+    if (fsType == "msdos") fsType = fsType::FAT;
 
-    return "UNIDENTIFIED";
+    mountPoint = SyncPath(stat.f_mntonname);
+    // if mountPoint is a firmlink, convert it to the display path.
+    if (mountPoint == "/System/Volumes/Data") mountPoint = "/";
+
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {

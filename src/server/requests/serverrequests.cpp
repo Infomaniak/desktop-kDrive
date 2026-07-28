@@ -43,8 +43,7 @@
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 #include "libparms/db/parmsdb.h"
-#include "libcommon/data/user.h"
-#include "libcommon/utility/utility.h" // fileSystemName(const QString&)
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libsyncengine/requests/parameterscache.h"
@@ -1560,45 +1559,32 @@ ExitCode ServerRequests::setUserExclusionTemplateList(const QList<ExclusionTempl
 }
 
 #if defined(KD_MACOS)
-ExitCode ServerRequests::getExclusionAppList(const bool def, std::vector<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, std::vector<ExclusionApp> &list) {
     list.clear();
-    std::vector<ExclusionApp> exclusionList;
 
-    if (!ParmsDb::instance()->selectAllExclusionApps(def, exclusionList)) {
+    if (!ParmsDb::instance()->selectAllExclusionApps(def, list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllExclusionApps");
         return ExitCode::DbError;
-    }
-
-    for (const ExclusionApp &exclusionApp: exclusionList) {
-        ExclusionAppInfo exclusionAppInfo;
-        ServerRequests::exclusionAppToExclusionAppInfo(exclusionApp, exclusionAppInfo);
-        list.emplace_back(std::move(exclusionAppInfo));
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionAppInfo> &list) {
+ExitCode ServerRequests::getExclusionAppList(const bool def, QList<ExclusionApp> &list) {
     list.clear();
-    std::vector<ExclusionAppInfo> stdVectorAppInfo;
+    std::vector<ExclusionApp> stdVectorApp;
 
-    const auto exitInfo = getExclusionAppList(def, stdVectorAppInfo);
+    const auto exitInfo = getExclusionAppList(def, stdVectorApp);
 
-    for (auto &appInfo: stdVectorAppInfo) {
+    for (auto &appInfo: stdVectorApp) {
         list.append(std::move(appInfo));
     }
 
     return exitInfo;
 }
 
-ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<ExclusionAppInfo> &list) {
-    std::vector<ExclusionApp> exclusionList;
-    for (const ExclusionAppInfo &exclusionAppInfo: list) {
-        ExclusionApp exclusionApp;
-        ServerRequests::exclusionAppInfoToExclusionApp(exclusionAppInfo, exclusionApp);
-        exclusionList.push_back(exclusionApp);
-    }
-    if (!ParmsDb::instance()->updateAllExclusionApps(def, exclusionList)) {
+ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<ExclusionApp> &list) {
+    if (!ParmsDb::instance()->updateAllExclusionApps(def, list)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAllExclusionApps");
         return ExitCode::DbError;
     }
@@ -1606,9 +1592,9 @@ ExitCode ServerRequests::setExclusionAppList(const bool def, const std::vector<E
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<ExclusionAppInfo> &list) {
-    std::vector<ExclusionAppInfo> stdVector;
-    for (const ExclusionAppInfo &exclusionAppInfo: list) stdVector.push_back(exclusionAppInfo);
+ExitCode ServerRequests::setExclusionAppList(const bool def, const QList<ExclusionApp> &list) {
+    std::vector<ExclusionApp> stdVector;
+    for (const ExclusionApp &exclusionApp: list) stdVector.push_back(exclusionApp);
 
     return setExclusionAppList(def, stdVector);
 }
@@ -2316,15 +2302,4 @@ void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTem
     exclusionTemplate.setDef(exclusionTemplateInfo.def());
 }
 
-void ServerRequests::exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo) {
-    exclusionAppInfo.setAppId(QString::fromStdString(exclusionApp.appId()));
-    exclusionAppInfo.setDescription(QString::fromStdString(exclusionApp.description()));
-    exclusionAppInfo.setDef(exclusionApp.def());
-}
-
-void ServerRequests::exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp) {
-    exclusionApp.setAppId(exclusionAppInfo.appId().toStdString());
-    exclusionApp.setDescription(exclusionAppInfo.description().toStdString());
-    exclusionApp.setDef(exclusionAppInfo.def());
-}
 } // namespace KDC

@@ -41,7 +41,7 @@ set(libcommon_SRCS
     info/parametersinfo.h info/parametersinfo.cpp
     info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
-    info/exclusionappinfo.h info/exclusionappinfo.cpp
+    data/exclusionapp.h data/exclusionapp.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
@@ -136,7 +136,8 @@ if(UNIX)
         utf8proc)
     if(NOT APPLE)
         target_link_libraries(${libcommon_NAME}
-                "uuid")   # For UUID generation
+                "uuid"  # For UUID generation
+                mount)
     endif()
 elseif(WIN32)
     target_link_libraries(${libcommon_NAME}

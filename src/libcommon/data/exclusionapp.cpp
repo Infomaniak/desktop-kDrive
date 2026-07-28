@@ -16,18 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "exclusionapp.h"
+#include "libcommon/data/exclusionapp.h"
+#include "libcommon/utility/utility.h"
+
+static const auto appIdKey = "appId";
+static const auto descriptionKey = "description";
+static const auto defKey = "def";
 
 namespace KDC {
-
-ExclusionApp::ExclusionApp() :
-    _appId(std::string()),
-    _description(std::string()),
-    _def(false) {}
 
 ExclusionApp::ExclusionApp(const std::string &appId, const std::string &description, bool def) :
     _appId(appId),
     _description(description),
     _def(def) {}
+
+void ExclusionApp::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+    CommonUtility::writeValueToStruct(dstruct, appIdKey, _appId);
+    CommonUtility::writeValueToStruct(dstruct, descriptionKey, _description);
+    CommonUtility::writeValueToStruct(dstruct, defKey, _def);
+}
+
+void ExclusionApp::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
+    CommonUtility::readValueFromStruct(dstruct, appIdKey, _appId);
+    CommonUtility::readValueFromStruct(dstruct, descriptionKey, _description);
+    CommonUtility::readValueFromStruct(dstruct, defKey, _def);
+}
 
 } // namespace KDC

@@ -164,15 +164,6 @@ ExitInfo DownloadJob::runJob() noexcept {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        if (const ExitInfo exitInfo =
-                    _vfs->updateMetadata(_fileDownloadInfo.localpath, filestat.creationTime, filestat.modificationTime,
-                                         _fileDownloadInfo.expectedSize, std::to_string(filestat.inode));
-            !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return exitInfo;
-        }
-
         if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
             LOGW_WARN(_logger,
                       L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
@@ -360,24 +351,9 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             }
         }
     } else if (mimeType == mimeTypeHardlink) {
-        // Unreachable code
-        const auto targetPath = Str2Path(data);
-        if (targetPath == _fileDownloadInfo.localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {};
-        }
-
-        LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                        << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-
-        std::error_code ec;
-        std::filesystem::create_hard_link(targetPath, _fileDownloadInfo.localpath, ec);
-        if (ec) {
-            LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                                     << Utility::formatSyncPath(_fileDownloadInfo.localpath)
-                                                                     << L", " << Utility::formatStdError(ec));
-            return {};
-        }
+        // For safety, cannot happen (Mime Type forbidden on the drive)
+        LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));

@@ -29,7 +29,7 @@
 #include "libcommon/data/error.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
-#include "libcommon/info/exclusionappinfo.h"
+#include "libcommon/data/exclusionapp.h"
 
 #include <QDataStream>
 #include <QIODevice>
@@ -63,8 +63,8 @@ struct GuiRequests {
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
         static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList);
 #ifdef Q_OS_MAC
-        static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &appList);
-        static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
+        static ExitCode getExclusionAppList(bool def, QList<ExclusionApp> &appList);
+        static ExitCode setExclusionAppList(bool def, const QList<ExclusionApp> &appList);
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
         static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
