@@ -61,12 +61,13 @@ class IpcClient : public QObject {
         void serverSignalReceived(SignalNum num, const Poco::DynamicStruct &params);
 
     private slots:
+        bool loadPinnedCertificate();
         void attemptInitialConnection();
         void onConnected();
         void onDisconnected();
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onReadyRead();
-        void onSslErrors(const QList<QSslError> &errors);
+        static void onSslErrors(const QList<QSslError> &errors);
 
     private:
         void handleResponseMessage(const Poco::DynamicStruct &ipcMessage, int32_t id);
@@ -81,6 +82,7 @@ class IpcClient : public QObject {
         bool _hasConnectedOnce{false};
         uint32_t _initialConnectionAttemptCount{0};
         quint16 _configuredPort{0};
+        QSslCertificate _pinnedCert;
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
