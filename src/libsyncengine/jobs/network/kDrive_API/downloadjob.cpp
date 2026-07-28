@@ -347,7 +347,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             } else if (ioError == IoError::InvalidArgument) {
-                LOGW_WARN(_logger, L"Invalid target: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                LOGW_WARN(_logger, L"Invalid target for symlink: " << Utility::formatSyncPath(_fileDownloadInfo.localpath)
+                                                                   << L" -> " << Utility::formatSyncPath(targetPath));
                 return {ExitCode::SystemError, ExitCause::OperationCanceled};
             } else {
                 return {ExitCode::SystemError, ExitCause::OperationCanceled};
