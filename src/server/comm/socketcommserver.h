@@ -56,7 +56,7 @@ class SocketCommChannel : public AbstractCommChannel {
         std::atomic<bool> _pendingRead{false};
         std::unique_ptr<StdLoggingThread> _callbackThread{nullptr};
         Poco::Net::StreamSocket _socket;
-        mutable std::recursive_mutex _socketMutex;
+        mutable std::mutex _socketMutex;
 
         void callbackHandler();
 };
