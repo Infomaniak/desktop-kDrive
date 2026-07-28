@@ -30,16 +30,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
-#include <optional>
 
 namespace KDC {
 
 /**
  * Restores the server-assigned order of asynchronous IPC signals before semantic dispatch.
  *
- * The first signal received establishes the sequence baseline because the server can consume signal ids before the GUI
- * connects. Once established, every subsequent id must be contiguous. Out-of-order signals are buffered until the missing
- * ids arrive; duplicates, stale ids, persistent gaps and buffer overflow are reported as protocol errors.
+ * The server allocates ids only while the single GUI connection is active, so the first expected id is always
+ * firstGuiSignalId. Out-of-order signals are buffered until the missing ids arrive; duplicates, stale ids, persistent gaps
+ * and buffer overflow are reported as protocol errors.
  */
 class ServerSignalSequencer : public QObject {
         Q_OBJECT
@@ -74,7 +73,7 @@ class ServerSignalSequencer : public QObject {
         std::chrono::milliseconds _missingSignalTimeout;
         size_t _maxPendingSignals;
         QTimer _missingSignalTimer;
-        std::optional<int32_t> _lastForwardedId;
+        int32_t _lastForwardedId{firstGuiSignalId - 1};
         std::map<int32_t, PendingSignal> _pendingSignals;
         bool _failed{false};
 };
