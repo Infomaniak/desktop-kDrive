@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "permissionsgiver.h"
 #include "utility/types.h"
 #include "utility/utility.h"
 

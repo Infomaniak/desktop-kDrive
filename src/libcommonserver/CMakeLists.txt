@@ -41,7 +41,6 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
-    io/permissionsgiver.h io/permissionsgiver.cpp
     io/cachedirectory.h io/cachedirectory.cpp
     # Log
     log/log.h log/log.cpp
