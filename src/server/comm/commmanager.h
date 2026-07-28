@@ -74,6 +74,9 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
 
         std::unique_ptr<GuiJobFactory> _guiJobFactory;
         std::recursive_mutex _mutex;
+        // Signal ids are sent as int32_t over IPC. The wider counter can represent INT32_MAX + 1
+        // so range exhaustion is detected without signed overflow.
+        int64_t _nextGuiSignalId{0};
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer
