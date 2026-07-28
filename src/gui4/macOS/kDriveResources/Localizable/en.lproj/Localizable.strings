@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Enable debug logging";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Another %@ with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %@ in kDrive online to synchronize it on your device.\n";
+"errCaseDescription" = "Another %@ with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %@ in kDrive online to synchronize it on your device.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Case-sensitive name conflict";

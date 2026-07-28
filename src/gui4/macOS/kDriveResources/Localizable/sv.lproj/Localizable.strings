@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Aktivera felsökningsloggning";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "En annan %@ vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %@-mapparna från kDrive online så att du kan synkronisera den på din dator.\n";
+"errCaseDescription" = "En annan %@ vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %@-mapparna från kDrive online så att du kan synkronisera den på din dator.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Motstridiga namn, skiftlägeskänsliga";

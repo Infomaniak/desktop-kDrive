@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Foutopsporingsregistratie inschakelen";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Er bestaat al een andere %@ waarvan de naam alleen verschilt in hoofdletters/kleine letters in deze map. Dit type naam wordt niet ondersteund door de kDrive Windows applicatie. Hernoem een van de %@ mappen van kDrive online zodat u deze op uw pc kunt synchroniseren.\n";
+"errCaseDescription" = "Er bestaat al een andere %@ waarvan de naam alleen verschilt in hoofdletters/kleine letters in deze map. Dit type naam wordt niet ondersteund door de kDrive Windows applicatie. Hernoem een van de %@ mappen van kDrive online zodat u deze op uw pc kunt synchroniseren.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Conflicterende namen, hoofdlettergevoelig";

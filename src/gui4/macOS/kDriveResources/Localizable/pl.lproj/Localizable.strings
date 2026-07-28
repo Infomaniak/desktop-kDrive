@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Włącz rejestrowanie debugowania";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "W tym folderze istnieje już inny %@, którego nazwa różni się tylko wielkimi/małymi literami. Ten typ nazwy nie jest obsługiwany przez aplikację kDrive Windows. Zmień nazwę jednego z folderów %@ z aplikacji kDrive online, aby móc go zsynchronizować na komputerze.\n";
+"errCaseDescription" = "W tym folderze istnieje już inny %@, którego nazwa różni się tylko wielkimi/małymi literami. Ten typ nazwy nie jest obsługiwany przez aplikację kDrive Windows. Zmień nazwę jednego z folderów %@ z aplikacji kDrive online, aby móc go zsynchronizować na komputerze.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Sprzeczne nazwy, wielkość liter ma znaczenie";

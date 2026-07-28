@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Aktiver feilsøkingslogging";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Det finnes allerede en annen %@ i denne mappen med et navn som bare skiller seg fra navnet med store og små bokstaver. Denne typen navn støttes ikke av kDrive Windows-applikasjonen. Gi nytt navn til en av %@-mappene fra kDrive online, slik at du kan synkronisere den på PC-en din.\n";
+"errCaseDescription" = "Det finnes allerede en annen %@ i denne mappen med et navn som bare skiller seg fra navnet med store og små bokstaver. Denne typen navn støttes ikke av kDrive Windows-applikasjonen. Gi nytt navn til en av %@-mappene fra kDrive online, slik at du kan synkronisere den på PC-en din.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Motstridende navn, små og store bokstaver";

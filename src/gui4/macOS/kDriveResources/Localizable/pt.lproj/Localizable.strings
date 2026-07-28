@@ -479,7 +479,7 @@
 "enableDebugLogsSetting" = "Ativar o registo de depuração";
 
 /* loco:6a1992213e832a7f170d5664 */
-"errCaseDescription" = "Outro %@ cujo nome difere apenas em maiúsculas/minúsculas já existe nesta pasta. Este tipo de nome não é suportado pela aplicação kDrive para Windows. Renomeie uma das pastas %@ do kDrive online para que possa sincronizá-la no seu PC.\n";
+"errCaseDescription" = "Outro %@ cujo nome difere apenas em maiúsculas/minúsculas já existe nesta pasta. Este tipo de nome não é suportado pela aplicação kDrive para Windows. Renomeie uma das pastas %@ do kDrive online para que possa sincronizá-la no seu PC.";
 
 /* loco:6a199211062947f2e8006085 */
 "errCaseTitle" = "Nomes contraditórios, sensíveis a maiúsculas e minúsculas";
