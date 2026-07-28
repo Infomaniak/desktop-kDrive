@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@
     <value>Εισαγάγετε τον κωδικό πρόσβασής σας</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Ένα άλλο %@ του οποίου το όνομα διαφέρει μόνο στα κεφαλαία/μικρά γράμματα υπάρχει ήδη σε αυτόν το φάκελο. Αυτός ο τύπος ονόματος δεν υποστηρίζεται από την εφαρμογή kDrive Windows. Μετονομάστε έναν από τους φακέλους %@ από το kDrive online, ώστε να μπορείτε να τον συγχρονίσετε στον υπολογιστή σας.
-</value> 
+    <value>Ένα άλλο %@ του οποίου το όνομα διαφέρει μόνο στα κεφαλαία/μικρά γράμματα υπάρχει ήδη σε αυτόν το φάκελο. Αυτός ο τύπος ονόματος δεν υποστηρίζεται από την εφαρμογή kDrive Windows. Μετονομάστε έναν από τους φακέλους %@ από το kDrive online, ώστε να μπορείτε να τον συγχρονίσετε στον υπολογιστή σας.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Συγκρουόμενα ονόματα, ευαίσθητα στην πεζότητα</value> 
