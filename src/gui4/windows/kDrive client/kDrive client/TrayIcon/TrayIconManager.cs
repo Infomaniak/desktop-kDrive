@@ -136,15 +136,15 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.Settings.UpdateManager.ShowNotification)
-            {
-                SetIconNotification();
-                return;
-            }
-
             if (_appModel.AllSyncs.All(sync => sync.SyncStatus == SyncStatus.Paused || sync.SyncStatus == SyncStatus.Stopped || sync.SyncStatus == SyncStatus.Offline))
             {
                 SetIconPause();
+                return;
+            }
+
+            if (_appModel.Settings.UpdateManager.ShowNotification)
+            {
+                SetIconNotification();
                 return;
             }
 
