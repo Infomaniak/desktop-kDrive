@@ -54,31 +54,25 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
     }
 
     const PendingSignal signal{num, params};
-    if (!_lastForwardedId.has_value()) {
-        qCInfo(lcServerSignalSequencer) << "Server signal sequence baseline established | id:" << signalId;
-        forwardSignal(signalId, signal);
-        return;
-    }
-
-    if (signalId <= *_lastForwardedId) {
+    if (signalId <= _lastForwardedId) {
         fail(QStringLiteral("Stale server signal id"),
-             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(*_lastForwardedId));
+             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
         return;
     }
 
     if (_pendingSignals.contains(signalId)) {
         fail(QStringLiteral("Duplicate buffered server signal id"),
-             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(*_lastForwardedId));
+             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
         return;
     }
 
-    if (*_lastForwardedId == std::numeric_limits<int32_t>::max()) {
+    if (_lastForwardedId == std::numeric_limits<int32_t>::max()) {
         fail(QStringLiteral("Server signal id overflow"),
-             QStringLiteral("last forwarded id: %1 | received id: %2").arg(*_lastForwardedId).arg(signalId));
+             QStringLiteral("last forwarded id: %1 | received id: %2").arg(_lastForwardedId).arg(signalId));
         return;
     }
 
-    const int32_t expectedId = *_lastForwardedId + 1;
+    const int32_t expectedId = _lastForwardedId + 1;
     if (signalId == expectedId) {
         forwardSignal(signalId, signal);
         drainContiguousSignals();
@@ -102,14 +96,14 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
 
 void ServerSignalSequencer::forwardSignal(const int32_t signalId, const PendingSignal &signal) {
     _lastForwardedId = signalId;
-    qCDebug(lcServerSignalSequencer) << "Server signal forwarded | SignalNum:" << static_cast<int32_t>(signal.num)
+    qCDebug(lcServerSignalSequencer) << "Server signal propagated in order | SignalNum:" << static_cast<int32_t>(signal.num)
                                      << "/ id:" << signalId;
     emit signalReady(signal.num, signal.params);
 }
 
 void ServerSignalSequencer::drainContiguousSignals() {
-    while (!_pendingSignals.empty() && *_lastForwardedId < std::numeric_limits<int32_t>::max()) {
-        const int32_t expectedId = *_lastForwardedId + 1;
+    while (!_pendingSignals.empty() && _lastForwardedId < std::numeric_limits<int32_t>::max()) {
+        const int32_t expectedId = _lastForwardedId + 1;
         const auto pendingSignalsIterator = _pendingSignals.find(expectedId);
         if (pendingSignalsIterator == _pendingSignals.end()) {
             break;
@@ -147,11 +141,11 @@ void ServerSignalSequencer::fail(const QString &message, const QString &details)
 }
 
 void ServerSignalSequencer::handleMissingSignalTimeout() {
-    if (_pendingSignals.empty() || !_lastForwardedId.has_value()) {
+    if (_pendingSignals.empty()) {
         return;
     }
 
-    const int32_t expectedId = *_lastForwardedId + 1;
+    const int32_t expectedId = _lastForwardedId + 1;
     fail(QStringLiteral("Timed out waiting for server signal"),
          QStringLiteral("expected id: %1 | first buffered id: %2 | last buffered id: %3 | buffered signals: %4")
                  .arg(expectedId)
