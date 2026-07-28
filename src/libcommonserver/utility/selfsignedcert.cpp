@@ -1,5 +1,6 @@
 #include "selfsignedcert.h"
 
+#include "comm.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 
