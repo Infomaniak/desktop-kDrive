@@ -24,8 +24,9 @@
 
 #include <cstdint>
 #include <QHash>
+#include <QSslError>
+#include <QSslSocket>
 #include <QString>
-#include <QTcpSocket>
 #include <QTimer>
 
 #include <Poco/Dynamic/Struct.h>
@@ -65,12 +66,13 @@ class IpcClient : public QObject {
         void onDisconnected();
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onReadyRead();
+        void onSslErrors(const QList<QSslError> &errors);
 
     private:
         void handleResponseMessage(const Poco::DynamicStruct &ipcMessage, int32_t id);
         void handleServerSignal(const Poco::DynamicStruct &ipcMessage, int32_t id);
 
-        QTcpSocket *_socket;
+        QSslSocket *_socket;
         QTimer _initialConnectionRetryTimer;
         ServerSignalSequencer _serverSignalSequencer;
         std::string _readBuffer;
