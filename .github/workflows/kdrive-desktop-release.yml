@@ -164,7 +164,7 @@ jobs:
   build-Windows:
     if: ${{ inputs.build_windows != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
-    runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
+    runs-on: [ self-hosted, Windows, vs2026 ]
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
     steps:
@@ -237,7 +237,7 @@ jobs:
   upload-to-kDrive-and-sentry-Windows:
     if: ${{ inputs.build_windows != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Windows]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [ windows-latest ]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
@@ -263,7 +263,6 @@ jobs:
         run: |
           $testFlag = if ("${{ inputs.use_ksp_cert }}" -eq "false") { "-test" } else { "" }
           powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win" $testFlag
-
 
       - name: Download sentry-cli and login
         run: |
