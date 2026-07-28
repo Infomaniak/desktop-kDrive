@@ -251,12 +251,12 @@ struct SyncedKDriveView: View {
 
     private func synchronizeDrive(from configuration: SynchroConfiguration) async throws {
         @InjectService var cache: CoherentCache
-        guard let drive = await cache.getAvailableDrive(driveDb: Int32(configuration.drive.id), userDbId: Int32(userDbId)) else {
-            return
+        guard let storedDrive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
+            throw ServerCoherentCache.CacheError.driveNotFound(Int32(drive.dbId))
         }
 
         let syncCandidate = NewSyncCandidate(
-            origin: .availableDrive(drive),
+            origin: .storedDrive(storedDrive),
             remoteFolder: .kDriveRoot,
             localFolder: configuration.localFolder.url,
             blackList: configuration.blackList,
