@@ -242,12 +242,14 @@ void SyncPalWorker::ensureMinimumPermission() {
         if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
             LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
         } else {
-            LOGW_DEBUG(_logger, L"Full access rights setted: " << Utility::formatSyncPath(path));
+            LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
         }
     };
 
-    trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
-    trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+    if (!_syncPal->isAdvancedSync()) {
+        trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
+        trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+    }
 }
 
 void SyncPalWorker::execute() {
