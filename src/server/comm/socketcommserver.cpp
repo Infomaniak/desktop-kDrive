@@ -201,29 +201,31 @@ void SocketCommServer::close() {
     if (_stopAsked) {
         LOG_DEBUG(Log::instance()->getLogger(), name() << " is already stoping");
         return;
-    } else if (_isListening) {
-        LOG_DEBUG(Log::instance()->getLogger(), name() << " is stopping");
-        _stopAsked = true;
-        if (!_serverSocket.isNull()) {
-            Poco::Net::StreamSocket socket;
-            try {
-                socket.connect(Poco::Net::SocketAddress(host, getPort())); // Connect to unblock accept
-            } catch (Poco::Exception &ex) {
-                LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::connect: " << ex.displayText());
-            }
-        }
-
-        if (_serverSocketThread && _serverSocketThread->joinable()) {
-            _serverSocketThread->join();
-        }
-
-        LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
-        _isListening = false;
-        _stopAsked = false;
-    } else {
-        LOG_DEBUG(Log::instance()->getLogger(), name() << " is not listening");
-        return;
     }
+
+    // Unblock a thread that may still be waiting in acceptConnection().
+    // Use the cached bound port: the server socket may already have been closed
+    // by execute() after accepting the single connection, so getPort() is not reliable here.
+    if (_boundPort != 0) {
+        try {
+            Poco::Net::StreamSocket socket;
+            socket.connect(Poco::Net::SocketAddress(host, _boundPort)); // Connect to unblock accept
+        } catch (Poco::Exception &ex) {
+            // Expected if the connection was already accepted / socket already closed.
+            LOG_DEBUG(Log::instance()->getLogger(), "Unblock connect failed (likely already accepted): " << ex.displayText());
+        }
+    }
+
+    // Always join the execute thread if it exists: execute() may have already cleared
+    // _isListening on its own after accepting a connection, so _isListening is not a
+    // reliable gate for whether the thread still needs joining.
+    if (_serverSocketThread && _serverSocketThread->joinable()) {
+        _serverSocketThread->join();
+    }
+
+    LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
+    _isListening = false;
+    _stopAsked = false;
 }
 
 bool SocketCommServer::listen() {
@@ -236,7 +238,7 @@ bool SocketCommServer::listen() {
     auto executeFunc = std::function<void()>([this]() { execute(); });
     _serverSocketThread = std::make_unique<StdLoggingThread>(executeFunc);
 
-    // Wait until the server socket is listening (or timeout after 20s)
+    // Wait until the server socket is listening (or timeout after 5s).
     int remainTries = 500;
     while (!_isListening && remainTries > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -284,13 +286,18 @@ void SocketCommServer::execute() {
         }
     } while (!bindSuccess); // Loop until bind is successful
 
-    LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << getPort());
-    saveCommPort(getPort());
-    while (!_stopAsked) {
+    // Cache the bound port while the socket is still valid, so close() can reach it
+    // even after we close the server socket below.
+    _boundPort = getPort();
+
+    LOG_DEBUG(Log::instance()->getLogger(), name() << " listening on port " << _boundPort);
+    saveCommPort(_boundPort);
+    if (!_stopAsked) {
         try {
             _serverSocket.listen();
         } catch (Poco::Exception &ex) {
             LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::listen: " << ex.displayText());
+            _isListening = false;
             return;
         }
 
@@ -298,20 +305,30 @@ void SocketCommServer::execute() {
         Poco::Net::StreamSocket socket;
         try {
             socket = _serverSocket.acceptConnection();
+            _serverSocket.close(); // Only one connection is accepted; stop listening at the TCP layer.
         } catch (Poco::Exception &ex) {
             LOG_ERROR(Log::instance()->getLogger(), "Exception in ServerSocket::acceptConnection: " << ex.displayText());
+            _isListening = false;
             return;
         }
 
-        if (_stopAsked) break;
+        if (_stopAsked) {
+            _isListening = false;
+            return;
+        }
 
         const auto channel = makeCommChannel(socket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
             std::function<void()> postponedLostConnectionCbk = [this, ch]() {
                 auto channelPtr = std::dynamic_pointer_cast<SocketCommChannel>(ch);
                 if (channelPtr && channelPtr->joinCallbackThread()) {
-                    const std::scoped_lock lock(_channelsMutex);
-                    (void) _channels.remove(ch);
+                    {
+                        const std::scoped_lock lock(_channelsMutex);
+                        (void) _channels.remove(ch);
+                    }
+                    // Notify the outside world LAST, once the server is done using its own
+                    // internals, so a consumer reacting to this callback can safely tear the
+                    // server down without racing our bookkeeping.
                     lostConnectionCbk(ch);
                 } else {
                     LOG_WARN(Log::instance()->getLogger(),
@@ -322,6 +339,7 @@ void SocketCommServer::execute() {
             // Postpone _channels.remove(ch), as it may destroy the channel and its
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
+            const std::scoped_lock lock(_postponedMutex);
             (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
         });
 
@@ -331,13 +349,18 @@ void SocketCommServer::execute() {
         }
         newConnectionCbk();
         channel->startCallbackThread();
-        break;
     }
     _isListening = false;
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
-    // Join and remove all postponed lost-connection callback threads
-    for (const auto &thread: _postponedLostConnectionCbks) {
+    // Swap the list out under the lock, then join outside the lock. Joining while holding
+    // _postponedMutex could deadlock against a thread that tries to emplace a new callback.
+    std::vector<std::shared_ptr<StdLoggingThread>> local;
+    {
+        const std::scoped_lock lock(_postponedMutex);
+        local.swap(_postponedLostConnectionCbks);
+    }
+    for (const auto &thread: local) {
         if (thread->joinable()) {
             thread->join();
         }

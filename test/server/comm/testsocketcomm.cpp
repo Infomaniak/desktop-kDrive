@@ -248,22 +248,22 @@ void TestSocketComm::testServerAcceptsSingleConnection() {
 
     // Try to connect client 2 - server should not accept a second connection
     Poco::Net::StreamSocket clientSocket2;
+    bool secondConnectionRejected = false;
     try {
-        clientSocket2.connect(
-                Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()),
-                Poco::Timespan(0, 500000)); // 500ms timeout
+        clientSocket2.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()),
+                              Poco::Timespan(0, 500000)); // 500ms timeout
     } catch (Poco::Exception &ex) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Second client connect failed as expected: " << ex.displayText());
+        secondConnectionRejected = true;
+        LOG_DEBUG(Log::instance()->getLogger(), "Second client connect failed as expected");
     }
+    CPPUNIT_ASSERT_MESSAGE("Server should reject a second connection", secondConnectionRejected);
 
     // Wait to see if a second connection is accepted (it should not)
     for (int32_t remainWait = 100; remainWait > 0 && _socketCommServerTest->connections().size() < 2; --remainWait) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(
-            "Server should not accept more than one connection",
-            static_cast<size_t>(1),
-            _socketCommServerTest->connections().size());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Server should not accept more than one connection", static_cast<size_t>(1),
+                                 _socketCommServerTest->connections().size());
 }
 } // namespace KDC

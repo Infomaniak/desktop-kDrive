@@ -74,6 +74,8 @@ class SocketCommServer : public AbstractCommServer {
         std::list<std::shared_ptr<AbstractCommChannel>> _channels;
         bool _isListening = false;
         bool _stopAsked = false;
+        std::mutex _postponedMutex;
+        Poco::UInt16 _boundPort;
         std::unique_ptr<StdLoggingThread> _serverSocketThread{nullptr};
         void execute();
         void joinAndClearPostponedLostConnectionCbks();
