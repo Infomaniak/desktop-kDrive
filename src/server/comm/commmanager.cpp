@@ -289,6 +289,9 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
 
     assert(signal->type() == GuiJobType::Signal);
 
+    const auto channels = _guiCommServer->connections();
+    if (channels.empty()) return;
+
     if (_nextGuiSignalId > std::numeric_limits<int32_t>::max()) {
         LOG_ERROR(Log::instance()->getLogger(), "Cannot send GUI signal: signal id range exhausted");
         return;
@@ -299,7 +302,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     LOG_DEBUG(Log::instance()->getLogger(), "Send gui signal: id=" << signal->id() << " num=" << signal->signalNum());
 
     signal->setCommManager(shared_from_this());
-    signal->setChannels(_guiCommServer->connections());
+    signal->setChannels(channels);
 
     // Add job to JobManager pool
     GuiJobManagerSingleton::instance()->queueAsyncJob(signal);
