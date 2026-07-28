@@ -46,15 +46,16 @@ namespace KDC {
 
 IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
-    _socket(new QTcpSocket(this)),
+    _socket(new QSslSocket(this)),
     _initialConnectionRetryTimer(this),
     _serverSignalSequencer(this) {
     _initialConnectionRetryTimer.setSingleShot(true);
     (void) connect(&_initialConnectionRetryTimer, &QTimer::timeout, this, &IpcClient::attemptInitialConnection);
-    (void) connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
-    (void) connect(_socket, &QTcpSocket::disconnected, this, &IpcClient::onDisconnected);
-    (void) connect(_socket, &QTcpSocket::errorOccurred, this, &IpcClient::onErrorOccurred);
-    (void) connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
+    (void) connect(_socket, &QSslSocket::encrypted, this, &IpcClient::onConnected);
+    (void) connect(_socket, &QSslSocket::disconnected, this, &IpcClient::onDisconnected);
+    (void) connect(_socket, &QSslSocket::errorOccurred, this, &IpcClient::onErrorOccurred);
+    (void) connect(_socket, &QSslSocket::readyRead, this, &IpcClient::onReadyRead);
+    (void) connect(_socket, &QSslSocket::sslErrors, this, &IpcClient::onSslErrors);
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::signalReady, this, &IpcClient::serverSignalReceived);
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::protocolError, this,
                    [](const QString &message, const QString &details) { SentryService::reportFatalAndExit(message, details); });
@@ -132,7 +133,7 @@ void IpcClient::attemptInitialConnection() {
     }
 
     _socket->abort();
-    _socket->connectToHost(QHostAddress::LocalHost, port);
+    _socket->connectToHostEncrypted(QStringLiteral("127.0.0.1"), port);
 }
 
 /**
@@ -240,6 +241,15 @@ void IpcClient::onReadyRead() {
     const QByteArray bytes = _socket->readAll();
     (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
     processBuffer();
+}
+
+/** Ignores all SSL errors. The connection is strictly loopback (127.0.0.1); this protects against
+ *  passive sniffing but does not authenticate the server. A MITM on localhost is considered extremely unlikely. */
+void IpcClient::onSslErrors(const QList<QSslError> &errors) {
+    for (const QSslError &error : errors) {
+        qCWarning(lcIpcClient) << "SSL/TLS error (ignored for localhost):" << error.errorString();
+    }
+    _socket->ignoreSslErrors();
 }
 
 /**
