@@ -52,8 +52,8 @@ jobs:
 
           while true; do
             # Count self-hosted runners that are currently running a job
-            BUSY=$(gh api --paginate "/repos/${REPO}/actions/runners" \
-              --jq '[.runners[] | select(.busy == true)] | length')
+            BUSY=$(gh api --paginate --slurp "/repos/${REPO}/actions/runners?per_page=100" \
+               --jq '[.[].runners[] | select(.busy == true and (.name | startswith("ci-runner-")))] | length')
 
             if [ "$BUSY" -eq 0 ]; then
               echo "All runners are idle."
@@ -87,6 +87,7 @@ jobs:
           fi
 
       - name: Delete public cloud instances
+        if: always() # Always delete instances, even if previous steps failed, instances are billed by the hour
         run: |
           # Find every instance tagged with purpose=ci-runner
           SERVERS=$(openstack server list \
