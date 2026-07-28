@@ -21,7 +21,6 @@
 #include <QLoggingCategory>
 
 #include <limits>
-#include <utility>
 
 
 namespace KDC {
@@ -53,15 +52,8 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
         return;
     }
 
-    const PendingSignal signal{num, params};
     if (signalId <= _lastForwardedId) {
         fail(QStringLiteral("Stale server signal id"),
-             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
-        return;
-    }
-
-    if (_pendingSignals.contains(signalId)) {
-        fail(QStringLiteral("Duplicate buffered server signal id"),
              QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
         return;
     }
@@ -74,12 +66,18 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
 
     const int32_t expectedId = _lastForwardedId + 1;
     if (signalId == expectedId) {
-        forwardSignal(signalId, signal);
+        forwardSignal(signalId, PendingSignal{num, params});
         drainContiguousSignals();
         return;
     }
 
     if (_pendingSignals.size() >= _maxPendingSignals) {
+        if (_pendingSignals.contains(signalId)) {
+            fail(QStringLiteral("Duplicate buffered server signal id"),
+                 QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
+            return;
+        }
+
         fail(QStringLiteral("Server signal reorder buffer overflow"),
              QStringLiteral("expected id: %1 | received id: %2 | buffered signals: %3")
                      .arg(expectedId)
@@ -88,7 +86,13 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
         return;
     }
 
-    _pendingSignals.emplace(signalId, signal);
+    const bool inserted = _pendingSignals.try_emplace(signalId, num, params).second;
+    if (!inserted) {
+        fail(QStringLiteral("Duplicate buffered server signal id"),
+             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
+        return;
+    }
+
     qCDebug(lcServerSignalSequencer) << "Server signal buffered | id:" << signalId << "/ expected id:" << expectedId
                                      << "/ buffered signals:" << _pendingSignals.size();
     updateMissingSignalTimer(false);
@@ -109,9 +113,8 @@ void ServerSignalSequencer::drainContiguousSignals() {
             break;
         }
 
-        auto signal = std::move(pendingSignalsIterator->second);
-        _pendingSignals.erase(pendingSignalsIterator);
-        forwardSignal(expectedId, signal);
+        const auto pendingSignalNode = _pendingSignals.extract(pendingSignalsIterator);
+        forwardSignal(expectedId, pendingSignalNode.mapped());
     }
 
     updateMissingSignalTimer(true);
