@@ -346,11 +346,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
-            } else if (ioError == IoError::InvalidArgument) {
-                LOGW_WARN(_logger, L"Invalid target: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                return {ExitCode::SystemError, ExitCause::OperationCanceled};
             } else {
-                return {ExitCode::SystemError, ExitCause::OperationCanceled};
+                return ExitCode::SystemError;
             }
         }
     } else if (mimeType == mimeTypeHardlink) {
@@ -378,7 +375,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             } else {
-                return {ExitCode::SystemError, ExitCause::OperationCanceled};
+                return ExitCode::SystemError;
             }
         }
 #endif
@@ -414,7 +411,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                                       L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                             return {ExitCode::SystemError, ExitCause::FileAccessError};
                         } else {
-                            return {ExitCode::SystemError, ExitCause::OperationCanceled};
+                            return ExitCode::SystemError;
                         }
                     }
 
@@ -430,7 +427,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                                       L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                             return {ExitCode::SystemError, ExitCause::FileAccessError};
                         } else {
-                            return {ExitCode::SystemError, ExitCause::OperationCanceled};
+                            return ExitCode::SystemError;
                         }
                     }
 
@@ -453,12 +450,12 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             }
 
-            return {ExitCode::SystemError, ExitCause::OperationCanceled};
+            return ExitCode::SystemError;
         }
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
-        return {ExitCode::SystemError, ExitCause::OperationCanceled};
+        return {};
     }
 
     return ExitCode::Ok;

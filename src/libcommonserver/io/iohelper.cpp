@@ -925,12 +925,6 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
         return false;
     }
 
-    if (targetPath.empty()) {
-        LOGW_DEBUG(logger(), L"Cannot create symlink on an empty target: " << Utility::formatSyncPath(path));
-        ioError = IoError::InvalidArgument;
-        return false;
-    }
-
     std::error_code ec;
     if (isFolder) {
         LOGW_DEBUG(logger(), L"Create directory symlink: target " << Utility::formatSyncPath(targetPath) << L", "
