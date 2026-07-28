@@ -31,6 +31,7 @@
 #include "comm/guijobs/utilitysendappstarttracejob.h"
 #if defined(KD_MACOS)
 #include "comm/guijobs/utilityinstallmaclitesyncextjob.h"
+#include "comm/guijobs/utilitycheckmacospermissionsjob.h"
 #endif
 
 #include "testguicommchannel.h"
@@ -255,6 +256,44 @@ void TestGuiCommChannel::testUtilityHasSystemLaunchOnStartupJob() {
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
+
+#if defined(KD_MACOS)
+void TestGuiCommChannel::testUtilityCheckMacOsPermissionsJob() {
+    const auto query = createSimpleQuery(RequestNum::UTILITY_CHECK_MACOS_PERMISSIONS);
+    const auto queryStr = stringifyQueryObj(query);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) paramsObj.set("fullDiskAccess", true);
+    (void) paramsObj.set("liteSyncExtEnabled", true);
+    (void) paramsObj.set("liteSyncExtFullDiskAccess", false);
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::UTILITY_CHECK_MACOS_PERMISSIONS));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
+
+    // Job expected answers
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto utilityCheckMacOsPermissionsJob = std::dynamic_pointer_cast<UtilityCheckMacOsPermissionsJob>(job);
+        CPPUNIT_ASSERT(utilityCheckMacOsPermissionsJob);
+
+        utilityCheckMacOsPermissionsJob->_fullDiskAccess = true;
+        utilityCheckMacOsPermissionsJob->_liteSyncExtEnabled = true;
+        utilityCheckMacOsPermissionsJob->_liteSyncExtFullDiskAccess = false;
+    };
+
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+}
+#endif
 
 void TestGuiCommChannel::testUtilitySetAppStateJob() {
     // Query
