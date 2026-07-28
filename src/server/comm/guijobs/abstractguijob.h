@@ -157,7 +157,7 @@ class AbstractGuiJob : public AbstractJob {
         }
 
     private:
-        void setSignalId(int32_t signalId) { _signalId = signalId; }
+        void setSignalId(const int32_t signalId) { _signalId = signalId; }
 
         // Deserialize _inputParmsStr into the input object used by the job
         virtual ExitInfo deserializeInputParms() = 0;
