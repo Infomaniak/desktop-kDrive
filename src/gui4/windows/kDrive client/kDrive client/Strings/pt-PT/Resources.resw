@@ -6,7 +6,7 @@
   Locale: pt, Portuguese
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Inicie sessão novamente com o endereço de e-mail correto %@</value>
     <value>Introduza a sua palavra-passe</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Outro %@ cujo nome difere apenas em maiúsculas/minúsculas já existe nesta pasta. Este tipo de nome não é suportado pela aplicação kDrive para Windows. Renomeie uma das pastas %@ do kDrive online para que possa sincronizá-la no seu PC.
-</value> 
+    <value>Outro %@ cujo nome difere apenas em maiúsculas/minúsculas já existe nesta pasta. Este tipo de nome não é suportado pela aplicação kDrive para Windows. Renomeie uma das pastas %@ do kDrive online para que possa sincronizá-la no seu PC.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Nomes contraditórios, sensíveis a maiúsculas e minúsculas</value> 
