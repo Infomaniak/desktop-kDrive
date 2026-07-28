@@ -188,7 +188,7 @@ void MainWindow::onInstallClicked() {
     _workerThread = std::thread([this, desiredVersion, fetchedInfo] { runInstall(desiredVersion, fetchedInfo); });
 }
 
-void MainWindow::onInstallProgress(InstallStep step, const QString &message) const {
+void MainWindow::onInstallProgress(const InstallStep step, const QString &message) const {
     const int32_t percent = (static_cast<int32_t>(step) + 1) * 100 / static_cast<int32_t>(InstallStep::EnumEnd);
     _progressBar->setValue(percent);
     if (!message.isEmpty()) {

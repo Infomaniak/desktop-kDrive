@@ -21,17 +21,18 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
+#include <Poco/JSON/Parser.h>
 #include <Poco/Net/Context.h>
 #include <Poco/Net/HTTPClientSession.h>
 #include <Poco/Net/HTTPRequest.h>
 #include <Poco/Net/HTTPResponse.h>
-#include <Poco/URI.h>
 #include <Poco/Net/HTTPSClientSession.h>
+#include <Poco/URI.h>
 
-#include <Poco/JSON/Parser.h>
+#include <QString>
+
 #include <fstream>
 #include <memory>
-#include <QString>
 #include <sstream>
 
 namespace KDC {
@@ -83,7 +84,10 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
         if (result.statusCode == Poco::Net::HTTPResponse::HTTP_OK) {
             result.success = true;
         } else {
-            result.error = QStringLiteral("HTTP %1 %2").arg(result.statusCode).arg(QString::fromStdString(response.getReason())).toStdString();
+            result.error = QStringLiteral("HTTP %1 %2")
+                                   .arg(result.statusCode)
+                                   .arg(QString::fromStdString(response.getReason()))
+                                   .toStdString();
         }
     } catch (const Poco::Exception &e) {
         result.error = e.displayText();
@@ -113,22 +117,34 @@ HttpDownloader::Result HttpDownloader::downloadFile(const std::string &url, cons
         result.statusCode = static_cast<uint16_t>(response.getStatus());
 
         if (result.statusCode != Poco::Net::HTTPResponse::HTTP_OK) {
-            result.error = QStringLiteral("HTTP %1 %2").arg(result.statusCode).arg(QString::fromStdString(response.getReason())).toStdString();
+            result.error = QStringLiteral("HTTP %1 %2")
+                                   .arg(result.statusCode)
+                                   .arg(QString::fromStdString(response.getReason()))
+                                   .toStdString();
             return result;
         }
 
         std::ofstream outFile(destPath, std::ios::binary);
         if (!outFile) {
-            result.error = QStringLiteral("Failed to open file for writing: %1").arg(QString::fromStdString(destPath.string())).toStdString();
+            result.error = QStringLiteral("Failed to open file for writing: %1")
+                                   .arg(QString::fromStdString(destPath.string()))
+                                   .toStdString();
             return result;
         }
 
         std::array<char, 8192> buffer{};
         while (respStream.read(buffer.data(), buffer.size()) || respStream.gcount() > 0) {
             if (!outFile.write(buffer.data(), respStream.gcount())) {
-                result.error = QStringLiteral("Failed to write to file: %1").arg(QString::fromStdString(destPath.string())).toStdString();
+                result.error = QStringLiteral("Failed to write to file: %1")
+                                       .arg(QString::fromStdString(destPath.string()))
+                                       .toStdString();
                 return result;
             }
+        }
+        if (respStream.bad()) {
+            result.error =
+                    QStringLiteral("Error while reading response stream for: %1").arg(QString::fromStdString(url)).toStdString();
+            return result;
         }
         outFile.close();
         result.success = true;
@@ -154,14 +170,14 @@ bool HttpDownloader::fetchAppVersion(DistributionChannel channel, const std::str
         uri.addQueryParameter("store", "kStore");
         uri.addQueryParameter("name", "com.infomaniak.drive");
 
-        auto result = get(uri.toString());
+        const auto result = get(uri.toString());
         if (!result.success) {
             outError = result.error;
             return false;
         }
 
-        Poco::JSON::Object::Ptr jsonObj = Poco::JSON::Parser{}.parse(result.body).extract<Poco::JSON::Object::Ptr>();
-        Poco::JSON::Object::Ptr dataObj = jsonObj->getObject("data");
+        const Poco::JSON::Object::Ptr jsonObj = Poco::JSON::Parser{}.parse(result.body).extract<Poco::JSON::Object::Ptr>();
+        const Poco::JSON::Object::Ptr dataObj = jsonObj->getObject("data");
         if (!dataObj) {
             outError = "missing 'data' key in response";
             LOG_WARN(Log::instance()->getLogger(), outError);

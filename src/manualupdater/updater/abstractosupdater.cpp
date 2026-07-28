@@ -65,7 +65,7 @@ bool AbstractOsUpdater::createDownloadDirectory(SyncPath &outDir) {
 
     try {
         const auto subDir = tmpDir / ("kDrive_" + CommonUtility::generateRandomStringAlphaNum(10));
-        std::filesystem::create_directories(subDir);
+        (void) std::filesystem::create_directories(subDir);
         outDir = subDir;
         return true;
     } catch (...) {
