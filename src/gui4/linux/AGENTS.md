@@ -91,9 +91,9 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache`,
-  GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late tray availability, and
-  main QML window show/hide behavior.
+- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
+  updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
+  tray availability, and main QML window show/hide behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
@@ -177,6 +177,8 @@
     - `ui/windows/main/`: main-window shell and temporary placeholders. The shell is loaded only when `AppRouter` marks
       the main window active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in
       cache-backed QML models.
+    - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
+      connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
       becomes reusable from another product window.
     - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
@@ -194,7 +196,6 @@
     - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
       Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
       QML compilation step.
-
 ### Regenerate Onboarding Lottie QML
 
 Run `lottietoqml` from the Qt/Conan package that provides `qtlottie`. The loader source JSON is supplied locally and is
