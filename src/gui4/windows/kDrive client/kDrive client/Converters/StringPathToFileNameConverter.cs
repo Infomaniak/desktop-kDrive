@@ -17,6 +17,7 @@
  */
 using Microsoft.UI.Xaml.Data;
 using System;
+using System.Linq;
 
 namespace Infomaniak.kDrive.Converters
 {
@@ -31,9 +32,9 @@ namespace Infomaniak.kDrive.Converters
                     path = System.IO.Path.GetDirectoryName(path) ?? "/";
 
                 if (path == "")
-                    return path + "/";
+                    return "/";
 
-                var res = System.IO.Path.GetFileName(path);
+                var res = path.Split('/', '\\').Last();
 
                 return string.IsNullOrEmpty(res) ? path : res;
             }
