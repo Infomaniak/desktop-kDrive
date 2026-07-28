@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Log opnieuw in met het juiste e-mailadres %@</value>
     <value>Voer uw wachtwoord in</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Er bestaat al een andere %@ waarvan de naam alleen verschilt in hoofdletters/kleine letters in deze map. Dit type naam wordt niet ondersteund door de kDrive Windows applicatie. Hernoem een van de %@ mappen van kDrive online zodat u deze op uw pc kunt synchroniseren.
-</value> 
+    <value>Er bestaat al een andere %@ waarvan de naam alleen verschilt in hoofdletters/kleine letters in deze map. Dit type naam wordt niet ondersteund door de kDrive Windows applicatie. Hernoem een van de %@ mappen van kDrive online zodat u deze op uw pc kunt synchroniseren.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Conflicterende namen, hoofdlettergevoelig</value> 
