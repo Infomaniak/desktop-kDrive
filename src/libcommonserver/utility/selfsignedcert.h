@@ -36,7 +36,6 @@ class COMMONSERVER_EXPORT SelfSignedCert {
         static bool loadOrGenerate(Pem &pem);
 
     private:
-        static constexpr char certKeychainKey[] = "kdrive_ipc_tls_cert";
         static constexpr char keyKeychainKey[] = "kdrive_ipc_tls_key";
 
         static bool generate(Pem &pem);
