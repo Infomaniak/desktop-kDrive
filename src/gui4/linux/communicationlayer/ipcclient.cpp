@@ -18,13 +18,16 @@
 
 #include "ipcclient.h"
 
+#include "certreader.h"
 #include "app/services/sentryservice.h"
 #include "libcommon/commjson.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 
 #include <QHostAddress>
 #include <QLoggingCategory>
+#include <QSslConfiguration>
 #include <QString>
 
 #include <Poco/Dynamic/Struct.h>
@@ -102,6 +105,15 @@ void IpcClient::connectToServer(const quint16 port) {
     attemptInitialConnection();
 }
 
+bool IpcClient::loadPinnedCertificate() {
+    if (!_pinnedCert.isNull()) {
+        return true;
+    }
+    bool found = false;
+    const CertReader reader{std::string(certKeychainKey)};
+    _pinnedCert = reader.readCertificate(found);
+    return found && !_pinnedCert.isNull();
+}
 /**
  * Attempts to connect to the server. Called on the first attempt and on each retry timer tick.
  * No-op if a connection has already been established (@c _hasConnectedOnce).
@@ -131,6 +143,16 @@ void IpcClient::attemptInitialConnection() {
         qCInfo(lcIpcClient) << "Attempting initial IPC connection on port" << port << "- attempt"
                             << _initialConnectionAttemptCount;
     }
+
+    if (!loadPinnedCertificate()) {
+        scheduleInitialConnectionRetry("Pinned certificate is not available yet");
+        return;
+    }
+
+    QSslConfiguration config = _socket->sslConfiguration();
+    config.setCaCertificates({_pinnedCert});
+    _socket->setSslConfiguration(config);
+    _socket->setPeerVerifyName(QStringLiteral("kDrive-localhost"));
 
     _socket->abort();
     _socket->connectToHostEncrypted(QStringLiteral("127.0.0.1"), port);
@@ -243,13 +265,16 @@ void IpcClient::onReadyRead() {
     processBuffer();
 }
 
-/** Ignores all SSL errors. The connection is strictly loopback (127.0.0.1); this protects against
- *  passive sniffing but does not authenticate the server. A MITM on localhost is considered extremely unlikely. */
+
+/**
+ * Logs SSL/TLS errors reported by the socket.
+ *
+ * @param errors The list of SSL/TLS errors to log.
+ */
 void IpcClient::onSslErrors(const QList<QSslError> &errors) {
-    for (const QSslError &error : errors) {
+    for (const QSslError &error: errors) {
         qCWarning(lcIpcClient) << "SSL/TLS error (ignored for localhost):" << error.errorString();
     }
-    _socket->ignoreSslErrors();
 }
 
 /**
