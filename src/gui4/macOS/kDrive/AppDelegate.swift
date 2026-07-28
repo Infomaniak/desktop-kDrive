@@ -117,7 +117,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         if let preferencesWindow, preferencesWindow.window?.isVisible == true {
-            preferencesWindow.window?.orderFrontRegardless()
+            preferencesWindow.window?.makeKeyAndOrderFront(nil)
         }
     }
 
