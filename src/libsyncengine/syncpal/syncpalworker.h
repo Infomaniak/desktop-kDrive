@@ -78,6 +78,8 @@ class SyncPalWorker : public ISyncWorker {
 
         ExitInfo ensureBlackListIsPropagated();
 
+        void ensureMinimumPermission();
+
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *

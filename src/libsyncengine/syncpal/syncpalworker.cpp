@@ -85,11 +85,12 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
 
     const auto networkIssue =
             (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto httpBlockingError =
-            (w1 && w1->exitCode() == ExitCode::BackError &&
-             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr || w1->exitCause() == ExitCause::MissingReplyData)) ||
-            (w2 && w2->exitCode() == ExitCode::BackError &&
-             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr || w2->exitCause() == ExitCause::MissingReplyData));
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+                                     w1->exitCause() == ExitCause::MissingReplyData)) ||
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+                                     w2->exitCause() == ExitCause::MissingReplyData));
 
     const auto syncDirNotAccessible =
             (w1 && w1->exitCode() == ExitCode::SystemError &&
@@ -236,6 +237,21 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
     return ExitCode::Ok;
 }
 
+void SyncPalWorker::ensureMinimumPermission() {
+    std::function<void(SyncPath)> trySetFullAcess = [this](SyncPath path) {
+        if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
+            LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
+        } else {
+            LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+        }
+    };
+
+    if (!_syncPal->isAdvancedSync()) {
+        trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
+        trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+    }
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
@@ -257,6 +273,8 @@ void SyncPalWorker::execute() {
         setDone(exitInfo.code());
         return;
     }
+
+    ensureMinimumPermission();
 
     // Wait before really starting
     bool awakenByStop = false;
