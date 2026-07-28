@@ -413,7 +413,7 @@
 "dialogSyncDeletionWarningTitle" = "Supprimer la synchronisation ?";
 
 /* loco:698c8c7d965fc74e3209cbc2 */
-"dialogSyncModeChangeWarningContent" = "Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.\n\nAvant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.\n\nNe fermez pas l’application pendant le processus.";
+"dialogSyncModeChangeWarningContent" = "Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du dossier pourra être nécessaire.\n\nAvant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.\n\nNe fermez pas l’application pendant le processus.";
 
 /* loco:698c8c9a965fc74e3209cbc4 */
 "dialogSyncModeChangeWarningTitle" = "Changer le mode de synchronisation ?";
