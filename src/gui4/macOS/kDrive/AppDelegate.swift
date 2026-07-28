@@ -102,6 +102,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         mainWindow.window?.makeFirstResponder(nil)
     }
 
+    @objc func bringAllWindowsToFront() {
+        openMainWindow()
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+
+        if mainWindow.window?.isVisible == true {
+            mainWindow.window?.orderFrontRegardless()
+            mainWindow.window?.makeKey()
+            mainWindow.window?.makeFirstResponder(nil)
+        }
+
+        if let preferencesWindow, preferencesWindow.window?.isVisible == true {
+            preferencesWindow.window?.makeKeyAndOrderFront(nil)
+        }
+    }
+
     @objc func openPreferencesWindow() {
         @InjectService var matomo: MatomoUtils
         matomo.track(eventWithCategory: .navBar, name: "openSettings")
