@@ -103,6 +103,13 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     }
     mainWindow->setIcon(appIcon);
     _systemTrayController.setMainWindow(mainWindow);
+    (void) connect(mainWindow, &QWindow::visibleChanged, this, [this](const bool visible) {
+        if (!visible && !_bootstrapCompleted && _mainWindowActivationPending) {
+            _mainWindowActivationPending = false;
+            _mainWindowDismissedDuringBootstrap = true;
+            qCInfo(lcAppClientLinux) << "Waiting screen dismissed before bootstrap completion";
+        }
+    });
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
 }
@@ -119,7 +126,10 @@ void AppClientLinux::setupSignalConnections() {
                    &SentryService::updateAuthenticatedUser);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
+    (void) connect(this, &AppClientLinux::ipcConnected, this, &AppClientLinux::refreshUpdaterState);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
+    (void) connect(&_serverCommService, &CommService::updateStateChanged, &_systemTrayController,
+                   &SystemTrayController::handleUpdateStateChanged);
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
@@ -166,12 +176,40 @@ void AppClientLinux::handleIpcDisconnection() {
     _parametersStore.clear();
 }
 
+void AppClientLinux::refreshUpdaterState() {
+    _serverCommService.requestUpdaterState([this](const ExitInfo &exitInfo, const UpdateState state) {
+        if (!exitInfo) {
+            qCWarning(lcAppClientLinux) << "Failed to refresh updater state | code:" << exitInfo.code()
+                                        << "| cause:" << exitInfo.cause();
+            return;
+        }
+
+        _systemTrayController.handleUpdateStateChanged(state);
+    });
+}
+
 void AppClientLinux::handleBootstrapCompletion() {
-    if (_systemTrayController.trayModeActive() || _appCache.syncContexts().empty()) {
+    _bootstrapCompleted = true;
+    _onboardingSessionManager.completeBootstrap();
+
+    if (_appCache.syncContexts().empty()) {
+        const bool shouldOpenOnboarding = !_systemTrayController.trayModeActive() || !_mainWindowDismissedDuringBootstrap;
+        _mainWindowActivationPending = false;
+        if (shouldOpenOnboarding) {
+            _onboardingSessionManager.openOnboardingWindow();
+        } else {
+            qCInfo(lcAppClientLinux) << "Onboarding route ready but kept hidden because the waiting screen was dismissed";
+        }
         return;
     }
 
-    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap because tray fallback mode is active";
+    if (_systemTrayController.trayModeActive() && !_mainWindowActivationPending) {
+        return;
+    }
+
+    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap"
+                             << "| activation pending:" << _mainWindowActivationPending
+                             << "| tray fallback active:" << !_systemTrayController.trayModeActive();
     openMainWindow();
 }
 
@@ -228,6 +266,15 @@ void AppClientLinux::setupTranslations() {
 }
 
 void AppClientLinux::openMainWindow() {
+    if (!_bootstrapCompleted) {
+        _mainWindowDismissedDuringBootstrap = false;
+        _mainWindowActivationPending = true;
+        _systemTrayController.showMainWindow();
+        qCInfo(lcAppClientLinux) << "Showing waiting screen until IPC and cache bootstrap complete";
+        return;
+    }
+
+    _mainWindowActivationPending = false;
     if (_appCache.syncContexts().empty()) {
         _onboardingSessionManager.openOnboardingWindow();
         return;
