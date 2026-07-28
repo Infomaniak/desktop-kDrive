@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Thu, 16 Jul 2026 09:11:33 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Logga in igen med rätt e-postadress %@</value>
     <value>Ange ditt lösenord</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>En annan %@ vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %@-mapparna från kDrive online så att du kan synkronisera den på din dator.
-</value> 
+    <value>En annan %@ vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %@-mapparna från kDrive online så att du kan synkronisera den på din dator.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Motstridiga namn, skiftlägeskänsliga</value> 
