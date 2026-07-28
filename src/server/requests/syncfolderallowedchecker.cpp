@@ -68,7 +68,7 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
         if (!candidateDir.startsWith(ruleDir, Qt::CaseSensitive)) continue;
         LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: rule matched");
 
-        if (const int32_t depth = Utility::pathDepth(expandedRulePath); depth > bestDepth) {
+        if (const int32_t depth = CommonUtility::pathDepth(expandedRulePath); depth > bestDepth) {
             bestDepth = depth;
             bestMatch = &rule;
             bestMatchExpandedPath = expandedRulePath;
