@@ -106,6 +106,7 @@ class AppClientLinux : public QApplication {
         void setupIpcConnection();
         void handleIpcDisconnection();
         void handleBootstrapCompletion();
+        void refreshUpdaterState();
         void updateLoggerMinLevel() const;
         void requestQuit() const;
         void openMainWindow();
@@ -134,6 +135,9 @@ class AppClientLinux : public QApplication {
         QTranslator _baseTranslator{this};
         QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
+        bool _bootstrapCompleted{false};
+        bool _mainWindowActivationPending{false};
+        bool _mainWindowDismissedDuringBootstrap{false};
 };
 
 } // namespace KDC
