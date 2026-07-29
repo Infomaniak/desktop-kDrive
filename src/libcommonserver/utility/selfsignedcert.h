@@ -33,11 +33,9 @@ class COMMONSERVER_EXPORT SelfSignedCert {
         /// Read the certificate/key pair from the keychain, generating and storing
         /// a new one if absent.
         /// @return true on success, false otherwise.
-        static bool loadOrGenerate(Pem &pem);
+        static bool generateAndPublish(Pem &pem);
 
     private:
-        static constexpr char keyKeychainKey[] = "kdrive_ipc_tls_key";
-
         static bool generate(Pem &pem);
 };
 

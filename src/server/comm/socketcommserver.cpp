@@ -67,6 +67,12 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
             lenReceived = _socket.receiveBytes(data, maxSize);
         }
 #pragma pop_macro("max")
+    } catch (const Poco::TimeoutException &) {
+        // No application data decodable yet: an incomplete TLS record or a TLS control message makes
+        // poll() report the descriptor readable while SSL_read() has nothing to hand back. Not a lost
+        // connection, the callback thread will poll again.
+        _pendingRead = false;
+        return 0;
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::receiveBytes: " << ex.displayText());
         _isClosing = true;
