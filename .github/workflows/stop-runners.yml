@@ -70,6 +70,7 @@ jobs:
           done
 
       - name: Remove runners from GitHub
+        if: always()
         env:
           GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
         run: |
