@@ -36,14 +36,19 @@ namespace KDC {
 namespace {
 
 bool applyPem(SSL_CTX *const sslCtx, const SelfSignedCert::Pem &pem) {
-    std::istringstream certStream(pem.cert);
-    std::istringstream keyStream(pem.key);
+    try {
+        std::istringstream certStream(pem.cert);
+        std::istringstream keyStream(pem.key);
 
-    const Poco::Crypto::X509Certificate cert(certStream);
-    const Poco::Crypto::RSAKey key(nullptr, &keyStream, "");
+        const Poco::Crypto::X509Certificate cert(certStream);
+        const Poco::Crypto::RSAKey key(nullptr, &keyStream, "");
 
-    return SSL_CTX_use_certificate(sslCtx, const_cast<X509 *>(cert.certificate())) == 1 &&
-           SSL_CTX_use_RSAPrivateKey(sslCtx, (key.impl()->getRSA())) == 1 && SSL_CTX_check_private_key(sslCtx) == 1;
+        return SSL_CTX_use_certificate(sslCtx, const_cast<X509 *>(cert.certificate())) == 1 &&
+               SSL_CTX_use_RSAPrivateKey(sslCtx, key.impl()->getRSA()) == 1 && SSL_CTX_check_private_key(sslCtx) == 1;
+    } catch (const Poco::Exception &e) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to apply TLS material: " << e.displayText());
+        return false;
+    }
 }
 
 } // namespace
