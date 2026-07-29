@@ -51,6 +51,13 @@ class OnboardingSessionManager final : public QObject {
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
 
         /**
+         * Publishes the onboarding route derived from the completed initial cache snapshot.
+         *
+         * Window activation remains owned by AppClientLinux so a waiting window dismissed during bootstrap stays hidden.
+         */
+        void completeBootstrap();
+
+        /**
          * Opens the onboarding window only when an onboarding session provides displayable content.
          */
         Q_INVOKABLE void openOnboardingWindow();
@@ -71,7 +78,6 @@ class OnboardingSessionManager final : public QObject {
 
         void ensureSession();
         void openWindowIfDisplayable();
-        void handleBootstrapCompleted();
         void startSession(OnboardingSession::EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId);
         void stopSession(bool closeWindow);
         void handleRetiringSessionDestroyed();
