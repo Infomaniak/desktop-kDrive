@@ -45,6 +45,10 @@
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
 - Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place
   the glyph on a colored tile.
+- Render advanced synchronizations with the outline `ui/assets/main/folder.svg` tinted by the owning drive color;
+  reserve the bare drive glyph for classic root synchronizations.
+- In the main-sidebar Figma variants, "no synchronization" means no advanced synchronization. The drive row is the
+  classic root synchronization and must retain its local-folder action; do not model it as a drive-only entry.
 - Use white source fills for monochrome SVGs tinted through `MultiEffect.colorization`; black source fills retain too
   little luminance and remain dark when the theme color changes.
 - Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
@@ -87,9 +91,9 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
-- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache`,
-  GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late tray availability, and
-  main QML window show/hide behavior.
+- `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
+  updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
+  tray availability, and main QML window show/hide behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
@@ -109,14 +113,15 @@
   `SyncRuntimeInfo`, `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
     - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
       `DriveInfo` type in Linux v4.
-- `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing.
-    - Emits `currentSyncContextChanged()` as a coarse invalidation signal when the current sync context stays selected
-      but the underlying cache graph changes.
+- `app/cache/mainselectionstore.*`: sync-first main-shell selection owner (`currentSyncDbId`) and selection healing. It
+  prefers a classic root synchronization, then any synchronization.
+    - Emits `currentContextChanged()` as a coarse invalidation signal when the selected ids stay unchanged but the
+      underlying cache graph changes.
     - Exposes selected-sync runtime through its dedicated accessor and signal so progress ticks do not rebuild the
       configured graph context.
-- `app/mainwindow/synclistmodel.*`: QML adapter for configured synchronizations. It projects only sidebar row data from
-  `AppCache::syncContexts()` and derives `isSelected` from `MainSelectionStore`; it does not own navigation or actions.
-- `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncListModel`,
+- `app/mainwindow/syncselectormodel.*`: QML adapter for the synchronization selector. It flattens each configured drive
+  into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
+- `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
   it must not read `AppCache`, call backend services, or decide whether onboarding is required.
@@ -172,6 +177,8 @@
     - `ui/windows/main/`: main-window shell and temporary placeholders. The shell is loaded only when `AppRouter` marks
       the main window active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in
       cache-backed QML models.
+    - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
+      connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
       becomes reusable from another product window.
     - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
@@ -189,7 +196,6 @@
     - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
       Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
       QML compilation step.
-
 ### Regenerate Onboarding Lottie QML
 
 Run `lottietoqml` from the Qt/Conan package that provides `qtlottie`. The loader source JSON is supplied locally and is
@@ -266,8 +272,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
-- Configured-sync QML rows belong in `SyncListModel`. Keep window state, tab navigation, desktop actions, and future
-  Home/Activities/Storage data out of that model.
+- Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and
+  future Home/Activities/Storage data out of that model.
 - Store available drives per user via `AppCache::replaceAvailableDrivesForUser(...)`; do not reintroduce a global
   available-drives snapshot.
 - `CachePipeline` owns the direct push-signal bridge from `CommService` to `AppCache`; service classes should not wire
