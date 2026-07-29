@@ -39,12 +39,19 @@ struct ActivitiesTable: View {
         Table(orderedNodes) {
             TableColumn(KDriveLocalizable.labelName) { context in
                 Label {
-                    Text(context.node.relevantPath, format: .node)
+                    VStack(alignment: .leading) {
+                        Text(context.node.relevantPath, format: .node)
+                            .foregroundStyle(ColorToken.Text.primary.asColor)
+                        if let instruction = context.node.instruction {
+                            Text(instruction.label)
+                                .font(.Tokens.callout)
+                                .foregroundStyle(ColorToken.Text.tertiary.asColor)
+                        }
+                    }
                 } icon: {
                     FileTypeView(fileTypeRepresentation: context.node.fileTypeRepresentation)
                         .frame(size: AppIconSize.iconSize16)
                 }
-                .foregroundStyle(ColorToken.Text.primary.asColor)
             }
 
             TableColumn(KDriveLocalizable.labelFolder) { context in
