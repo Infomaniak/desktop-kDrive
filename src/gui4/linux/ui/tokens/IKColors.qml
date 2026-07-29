@@ -109,8 +109,10 @@ QtObject {
     readonly property color onboardingUserBadgeSurface: darkMode ? _p.neutralBlue700 : _p.gray100
     readonly property color onboardingDriveCellSurface: darkMode ? _p.neutralBlue700 : _p.neutralBlue50
     readonly property color onboardingDriveDisabledText: _p.gray600
-    readonly property color onboardingTooltipSurface: darkMode ? _p.neutralBlue50 : _p.neutralBlue800
-    readonly property color onboardingTooltipText: darkMode ? _p.neutralBlue800 : _p.white
+    readonly property color tooltipSurface: darkMode ? _p.neutralBlue50 : _p.neutralBlue800
+    readonly property color tooltipText: darkMode ? _p.neutralBlue800 : _p.white
+    readonly property color onboardingTooltipSurface: tooltipSurface
+    readonly property color onboardingTooltipText: tooltipText
     readonly property color onboardingDriveIconBorder: Qt.rgba(0.10, 0.10, 0.10, 0.35)
     readonly property color onboardingDriveIconHighlightStart: Qt.rgba(1, 1, 1, 0.20)
     readonly property color onboardingDriveIconHighlightEnd: Qt.rgba(1, 1, 1, 0)
