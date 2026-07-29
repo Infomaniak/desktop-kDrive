@@ -28,6 +28,7 @@
 #include <QDir>
 #include <QLocale>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQmlError>
 #include <QScreen>
 #include <QStringList>
@@ -36,7 +37,6 @@
 #include <QTranslator>
 #include <QVariant>
 #include <QWindow>
-#include <QQmlEngine>
 
 #include <chrono>
 #include <thread>
@@ -55,71 +55,18 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     ApplicationIdentity::configureApplication(appIcon);
 
     qCInfo(lcAppClientLinux) << "Linux v4 GUI bootstrap started";
+    setupSystemTray();
+    setupSignalConnections();
+    setupQmlEngine(appIcon);
+    setupIpcConnection();
+}
+
+void AppClientLinux::setupSystemTray() {
     _systemTrayController.initialize();
     _systemTrayController.observe(_appCache);
+}
 
-    (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
-    (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
-    (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
-    (void) connect(this, &AppClientLinux::ipcDisconnected, &_appCache, [this] {
-        // Normal UTILITY_QUIT paths stop the application before the server closes the socket. This cleanup therefore runs only
-        // when an established IPC connection is lost unexpectedly.
-        _systemTrayController.setProductStateInitialized(false);
-        _appRouter.hideMainWindow();
-        _appCache.clearAll();
-        _parametersStore.clear();
-    });
-    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
-    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_systemTrayController,
-                   [this] { _systemTrayController.setProductStateInitialized(true); });
-    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
-                   &SentryService::updateAuthenticatedUser);
-    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, [this] {
-        if (_systemTrayController.trayModeActive() || _appCache.syncContexts().empty()) {
-            return;
-        }
-
-        qCInfo(lcAppClientLinux) << "Opening main window after bootstrap because tray fallback mode is active";
-        openMainWindow();
-    });
-    (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
-    (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
-    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
-    (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
-    (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
-    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::openOnboardingWindowRequested, &_systemTrayController,
-                   &SystemTrayController::showMainWindow);
-    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
-                   &SystemTrayController::hideMainWindow);
-    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this,
-                   [this] { QTimer::singleShot(0, this, &AppClientLinux::openMainWindow); });
-    (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
-    (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
-        const auto parametersInfo = _parametersStore.parametersInfo();
-        if (!parametersInfo.has_value()) {
-            return;
-        }
-
-        Logger::instance()->setMinLogLevel(toInt(parametersInfo->logLevel()));
-        qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
-                                 << QString::fromStdString(toString(parametersInfo->logLevel()));
-    });
-    (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, [this] {
-        qCInfo(lcAppClientLinux) << "Quit requested from system tray";
-        if (!_ipcClient.isConnected()) {
-            qCWarning(lcAppClientLinux) << "IPC is not connected, quitting application directly";
-            quit();
-            return;
-        }
-        _serverCommService.requestQuit([](const auto &exitInfo) {
-            if (!exitInfo) {
-                qCWarning(lcAppClientLinux) << "Server quit request failed";
-            }
-            quit();
-        });
-    });
-
+void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("appCache"), &_appCache);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("parametersStore"), &_parametersStore);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("userService"), &_userService);
@@ -129,6 +76,8 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
     (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
+    (void) qmlRegisterUncreatableType<SyncSelectorModel>("kDrive.UI", 1, 0, "SyncSelectorModel",
+                                                         "SyncSelectorModel is owned by MainSidebarController.");
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
@@ -154,9 +103,49 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     }
     mainWindow->setIcon(appIcon);
     _systemTrayController.setMainWindow(mainWindow);
+    (void) connect(mainWindow, &QWindow::visibleChanged, this, [this](const bool visible) {
+        if (!visible && !_bootstrapCompleted && _mainWindowActivationPending) {
+            _mainWindowActivationPending = false;
+            _mainWindowDismissedDuringBootstrap = true;
+            qCInfo(lcAppClientLinux) << "Waiting screen dismissed before bootstrap completion";
+        }
+    });
 
     qCDebug(lcAppClientLinux) << "IPC/cache/QML wiring initialized";
+}
 
+void AppClientLinux::setupSignalConnections() {
+    (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
+    (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
+    (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+    (void) connect(this, &AppClientLinux::ipcDisconnected, this, &AppClientLinux::handleIpcDisconnection);
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_systemTrayController,
+                   [this] { _systemTrayController.setProductStateInitialized(true); });
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_sentryService,
+                   &SentryService::updateAuthenticatedUser);
+    (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
+    (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
+    (void) connect(this, &AppClientLinux::ipcConnected, this, &AppClientLinux::refreshUpdaterState);
+    (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
+    (void) connect(&_serverCommService, &CommService::updateStateChanged, &_systemTrayController,
+                   &SystemTrayController::handleUpdateStateChanged);
+    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::openOnboardingWindowRequested, &_systemTrayController,
+                   &SystemTrayController::showMainWindow);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
+                   &SystemTrayController::hideMainWindow);
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this,
+                   [this] { QTimer::singleShot(0, this, &AppClientLinux::openMainWindow); });
+    (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
+    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerMinLevel);
+    (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, &AppClientLinux::requestQuit);
+}
+
+void AppClientLinux::setupIpcConnection() {
     if (const QStringList arguments = QCoreApplication::arguments(); arguments.size() > 1) {
         bool isValidPort = false;
         const quint16 port = arguments[1].toUShort(&isValidPort);
@@ -178,27 +167,114 @@ AppClientLinux::AppClientLinux(int &argc, char **argv) :
     }
 }
 
+void AppClientLinux::handleIpcDisconnection() {
+    // Normal UTILITY_QUIT paths stop the application before the server closes the socket. This cleanup therefore runs only
+    // when an established IPC connection is lost unexpectedly.
+    _systemTrayController.setProductStateInitialized(false);
+    _appRouter.hideMainWindow();
+    _appCache.clearAll();
+    _parametersStore.clear();
+}
+
+void AppClientLinux::refreshUpdaterState() {
+    _serverCommService.requestUpdaterState([this](const ExitInfo &exitInfo, const UpdateState state) {
+        if (!exitInfo) {
+            qCWarning(lcAppClientLinux) << "Failed to refresh updater state | code:" << exitInfo.code()
+                                        << "| cause:" << exitInfo.cause();
+            return;
+        }
+
+        _systemTrayController.handleUpdateStateChanged(state);
+    });
+}
+
+void AppClientLinux::handleBootstrapCompletion() {
+    _bootstrapCompleted = true;
+    _onboardingSessionManager.completeBootstrap();
+
+    if (_appCache.syncContexts().empty()) {
+        const bool shouldOpenOnboarding = !_systemTrayController.trayModeActive() || !_mainWindowDismissedDuringBootstrap;
+        _mainWindowActivationPending = false;
+        if (shouldOpenOnboarding) {
+            _onboardingSessionManager.openOnboardingWindow();
+        } else {
+            qCInfo(lcAppClientLinux) << "Onboarding route ready but kept hidden because the waiting screen was dismissed";
+        }
+        return;
+    }
+
+    if (_systemTrayController.trayModeActive() && !_mainWindowActivationPending) {
+        return;
+    }
+
+    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap"
+                             << "| activation pending:" << _mainWindowActivationPending
+                             << "| tray fallback active:" << !_systemTrayController.trayModeActive();
+    openMainWindow();
+}
+
+void AppClientLinux::updateLoggerMinLevel() const {
+    const auto parametersInfo = _parametersStore.parametersInfo();
+    if (!parametersInfo.has_value()) {
+        return;
+    }
+
+    Logger::instance()->setMinLogLevel(toInt(parametersInfo->logLevel()));
+    qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
+                             << QString::fromStdString(toString(parametersInfo->logLevel()));
+}
+
+void AppClientLinux::requestQuit() const {
+    qCInfo(lcAppClientLinux) << "Quit requested from system tray";
+    if (!_ipcClient.isConnected()) {
+        qCWarning(lcAppClientLinux) << "IPC is not connected, quitting application directly";
+        quit();
+        return;
+    }
+
+    _serverCommService.requestQuit([](const auto &exitInfo) {
+        if (!exitInfo) {
+            qCWarning(lcAppClientLinux) << "Server quit request failed";
+        }
+        quit();
+    });
+}
+
 void AppClientLinux::setupTranslations() {
     // Catalogs are id-based: qsTrId(id) returns the raw id when no translation is loaded. Install
     // client_en as a base so every id always resolves (keys not yet translated degrade to English),
     // then overlay the system locale on top. Qt queries translators last-installed-first, so the
     // locale wins where it has a translation and falls back to the English base otherwise.
     if (_baseTranslator.load(QStringLiteral("client_en"), QStringLiteral(":/i18n"))) {
-        (void) installTranslator(&_baseTranslator);
+        if (!installTranslator(&_baseTranslator)) {
+            qCWarning(lcAppClientLinux) << "Failed to install base English translation catalog";
+        }
     } else {
         qCWarning(lcAppClientLinux) << "base English translation catalog missing; UI may show source ids";
     }
 
     if (const QLocale locale = QLocale::system();
         _localizedTranslator.load(locale, QStringLiteral("client"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
-        (void) installTranslator(&_localizedTranslator);
-        qCInfo(lcAppClientLinux) << "translations loaded for locale" << locale.name();
+        if (!installTranslator(&_localizedTranslator)) {
+            qCWarning(lcAppClientLinux) << "Failed to install localized translation catalog for locale" << locale.name();
+        } else {
+            qCInfo(lcAppClientLinux) << "translations loaded for locale" << locale.name();
+        }
     } else {
         qCInfo(lcAppClientLinux) << "no catalog for locale" << locale.name() << "- using English base";
     }
 }
 
 void AppClientLinux::openMainWindow() {
+    if (!_bootstrapCompleted) {
+        _mainWindowDismissedDuringBootstrap = false;
+        _mainWindowActivationPending = true;
+        _systemTrayController.showMainWindow();
+        qCInfo(lcAppClientLinux) << "Showing waiting screen until IPC and cache bootstrap complete";
+        return;
+    }
+
+    _mainWindowActivationPending = false;
     if (_appCache.syncContexts().empty()) {
         _onboardingSessionManager.openOnboardingWindow();
         return;
@@ -214,28 +290,43 @@ void AppClientLinux::openMainWindow() {
         }
     });
     qCInfo(lcAppClientLinux) << "Main window opened"
-                             << "| configuredDrives:" << _appCache.driveContexts().size()
-                             << "| configuredSyncs:" << _appCache.syncContexts().size()
-                             << "| currentSyncDbId:" << _mainSelectionStore.currentSyncDbId();
+                             << "| size of configured drives:" << _appCache.driveContexts().size()
+                             << "| size of configured syncs:" << _appCache.syncContexts().size()
+                             << "| current sync DB ID:" << _mainSelectionStore.currentSyncDbId();
 }
 
 void AppClientLinux::setupLogging() {
+    configureLogger();
+    qCInfo(lcAppClientLinux) << "***** Application & System Informations *****";
+    logApplicationInformation();
+    logSystemInformation();
+    logDisplayInformation();
+    logQtInformation();
+    logScreenInformation();
+    qCInfo(lcAppClientLinux) << "********************";
+}
+
+void AppClientLinux::configureLogger() {
     auto *const logger = Logger::instance();
     logger->setIsClientLog(true);
     logger->setLogDebug(true);
     logger->setupLogDir();
     logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
     logger->enterNextLogFile();
+}
 
-    qCInfo(lcAppClientLinux) << "***** Application & System Informations *****";
+void AppClientLinux::logApplicationInformation() {
     qCInfo(lcAppClientLinux) << "app version:" << CommonUtility::currentVersion();
     qCInfo(lcAppClientLinux) << "version tag:" << CommonUtility::versionTag();
     qCInfo(lcAppClientLinux) << "version build:" << CommonUtility::versionBuild();
-    qCInfo(lcAppClientLinux) << "log directory:" << logger->logDirectoryPath();
+    qCInfo(lcAppClientLinux) << "log directory:" << Logger::instance()->logDirectoryPath();
     qCInfo(lcAppClientLinux) << "executable path:" << QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
     qCInfo(lcAppClientLinux) << "application dir:" << QDir::toNativeSeparators(QCoreApplication::applicationDirPath());
     qCInfo(lcAppClientLinux) << "working directory:" << QDir::toNativeSeparators(QDir::currentPath());
     qCInfo(lcAppClientLinux) << "client pid:" << QCoreApplication::applicationPid();
+}
+
+void AppClientLinux::logSystemInformation() {
     qCInfo(lcAppClientLinux) << "user:" << qEnvironmentVariable("USER") << "| logname:" << qEnvironmentVariable("LOGNAME");
     qCInfo(lcAppClientLinux) << "uid:" << getuid() << "| euid:" << geteuid();
     qCInfo(lcAppClientLinux) << "home directory:" << QDir::toNativeSeparators(QDir::homePath());
@@ -245,21 +336,30 @@ void AppClientLinux::setupLogging() {
     qCInfo(lcAppClientLinux) << "cpu architecture:" << QSysInfo::currentCpuArchitecture();
     qCInfo(lcAppClientLinux) << "# of logical CPU cores:" << std::thread::hardware_concurrency();
     qCInfo(lcAppClientLinux) << "locale:" << QLocale::system().name();
+}
 
+void AppClientLinux::logDisplayInformation() {
     qCInfo(lcAppClientLinux) << "display server:" << qEnvironmentVariable("XDG_SESSION_TYPE");
     qCInfo(lcAppClientLinux) << "display (X11):" << qEnvironmentVariable("DISPLAY");
     qCInfo(lcAppClientLinux) << "display (Wayland):" << qEnvironmentVariable("WAYLAND_DISPLAY");
     qCInfo(lcAppClientLinux) << "desktop environment:" << qEnvironmentVariable("XDG_CURRENT_DESKTOP");
+}
 
+void AppClientLinux::logQtInformation() {
     qCInfo(lcAppClientLinux) << "Qt version:" << qVersion();
-    qCInfo(lcAppClientLinux) << "Qt platform:" << platformName();
-    if (qEnvironmentVariableIsSet("QT_SCALE_FACTOR"))
+    qCInfo(lcAppClientLinux) << "Qt platform:" << QGuiApplication::platformName();
+    if (qEnvironmentVariableIsSet("QT_SCALE_FACTOR")) {
         qCInfo(lcAppClientLinux) << "Qt scale factor:" << qEnvironmentVariable("QT_SCALE_FACTOR");
-    if (qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR"))
+    }
+    if (qEnvironmentVariableIsSet("QT_AUTO_SCREEN_SCALE_FACTOR")) {
         qCInfo(lcAppClientLinux) << "Qt auto screen scale:" << qEnvironmentVariable("QT_AUTO_SCREEN_SCALE_FACTOR");
-    if (qEnvironmentVariableIsSet("QT_FONT_DPI"))
+    }
+    if (qEnvironmentVariableIsSet("QT_FONT_DPI")) {
         qCInfo(lcAppClientLinux) << "Qt font DPI:" << qEnvironmentVariable("QT_FONT_DPI");
+    }
+}
 
+void AppClientLinux::logScreenInformation() {
     const auto screens = QGuiApplication::screens();
     qCInfo(lcAppClientLinux) << "# of screens:" << screens.size();
     for (const auto *screen: screens) {
@@ -269,7 +369,6 @@ void AppClientLinux::setupLogging() {
         qCInfo(lcAppClientLinux) << "  - logical DPI:" << screen->logicalDotsPerInch();
         qCInfo(lcAppClientLinux) << "  - scale factor:" << screen->devicePixelRatio();
     }
-    qCInfo(lcAppClientLinux) << "********************";
 }
 
 } // namespace KDC
