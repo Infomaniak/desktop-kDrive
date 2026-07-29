@@ -37,8 +37,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
-        app/mainwindow/synclistmodel.cpp
-        app/mainwindow/synclistmodel.h
+        app/mainwindow/syncselectormodel.cpp
+        app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
         app/navigation/approuter.h
         app/onboarding/availabledrivesmodel.cpp
@@ -98,6 +98,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
+        ui/tokens/IKWaiting.qml
 )
 
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
@@ -117,8 +118,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowHeader.qml
         ui/components/IKBadge.qml
         ui/components/IKDriveIcon.qml
+        ui/components/IKLoadingSpinner.qml
         ui/components/IKSidebarItem.qml
-        ui/components/IKSyncSelectorItem.qml
+        ui/components/IKDriveSyncSelectorItem.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/HomePlaceholder.qml
@@ -140,6 +142,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/onboarding/OnboardingWindow.qml
         ui/windows/onboarding/ReadyView.qml
         ui/windows/onboarding/SynchronizationView.qml
+        ui/windows/waiting/WaitingView.qml
         ${GUI_QML_SINGLETON_FILES}
 )
 
@@ -153,6 +156,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
         ui/assets/main/storage.svg
+        ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
         ui/assets/tray/error.svg

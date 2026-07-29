@@ -18,6 +18,8 @@
 
 #include "mainselectionstore.h"
 
+#include <algorithm>
+
 Q_LOGGING_CATEGORY(lcMainSelectionStore, "gui.v4.mainselectionstore", QtInfoMsg)
 
 namespace KDC {
@@ -25,11 +27,11 @@ namespace KDC {
 MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
     QObject(parent),
     _cache(cache) {
-    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleSyncsChanged);
-    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleContextDataChanged);
-    (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &MainSelectionStore::handleContextDataChanged);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::usersChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::accountsChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::drivesChanged, this, &MainSelectionStore::handleCacheGraphChanged);
+    (void) connect(&_cache, &AppCache::syncErrorsChanged, this, &MainSelectionStore::handleCacheGraphChanged);
     (void) connect(&_cache, &AppCache::syncRuntimeInfoChanged, this, [this](const SyncDbId syncDbId) {
         if (syncDbId == _currentSyncDbId) {
             emit currentSyncRuntimeInfoChanged();
@@ -55,14 +57,10 @@ std::optional<SyncRuntimeInfo> MainSelectionStore::currentSyncRuntimeInfo() cons
     return _cache.syncRuntimeInfo(_currentSyncDbId);
 }
 
-std::vector<SyncContext> MainSelectionStore::syncContexts() const {
-    return _cache.syncContexts();
-}
-
 void MainSelectionStore::selectSync(const qint64 syncDbId) {
     const auto typedSyncDbId = static_cast<SyncDbId>(syncDbId);
     _lastRequestedSyncDbId = typedSyncDbId;
-    if (typedSyncDbId != 0 && !_cache.syncContext(typedSyncDbId)) {
+    if (const auto context = _cache.syncContext(typedSyncDbId); !context.has_value()) {
         qCWarning(lcMainSelectionStore) << "Requested sync not in context, falling back | syncDbId:" << typedSyncDbId;
         ensureValidSelection();
         return;
@@ -76,34 +74,31 @@ void MainSelectionStore::clearSelection() {
 }
 
 void MainSelectionStore::ensureValidSelection() {
-    if (_currentSyncDbId != 0 && _cache.syncContext(_currentSyncDbId)) {
+    if (_currentSyncDbId != 0 && _cache.syncContext(_currentSyncDbId).has_value()) {
         return;
     }
 
-    if (_lastRequestedSyncDbId != 0 && _cache.syncContext(_lastRequestedSyncDbId)) {
-        setCurrentSyncDbId(_lastRequestedSyncDbId);
-        return;
+    if (_lastRequestedSyncDbId != 0) {
+        const auto requestedSyncContext = _cache.syncContext(_lastRequestedSyncDbId);
+        if (requestedSyncContext.has_value()) {
+            setCurrentSyncDbId(_lastRequestedSyncDbId);
+            return;
+        }
     }
 
-    setCurrentSyncDbId(firstAvailableSyncDbId());
+    SyncDbId fallbackSyncDbId = firstClassicSyncDbId();
+    if (fallbackSyncDbId == 0) {
+        fallbackSyncDbId = firstAvailableSyncDbId();
+    }
+    setCurrentSyncDbId(fallbackSyncDbId);
 }
 
-void MainSelectionStore::handleSyncsChanged() {
-    const auto previousContext = currentSyncContext();
-    const auto previousCurrentSyncDbId = _currentSyncDbId;
+void MainSelectionStore::handleCacheGraphChanged() {
+    const auto previousSyncContext = currentSyncContext();
+    const auto previousSyncDbId = _currentSyncDbId;
     ensureValidSelection();
-    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId && previousContext != currentSyncContext()) {
-        emit currentSyncContextChanged();
-    }
-}
-
-void MainSelectionStore::handleContextDataChanged() {
-    const auto previousCurrentSyncDbId = _currentSyncDbId;
-    if (_currentSyncDbId != 0) {
-        ensureValidSelection();
-    }
-    if (_currentSyncDbId != 0 && _currentSyncDbId == previousCurrentSyncDbId) {
-        emit currentSyncContextChanged();
+    if (_currentSyncDbId == previousSyncDbId && previousSyncContext != currentSyncContext()) {
+        emit currentContextChanged();
     }
 }
 
@@ -111,11 +106,19 @@ void MainSelectionStore::setCurrentSyncDbId(const SyncDbId syncDbId) {
     if (_currentSyncDbId == syncDbId) {
         return;
     }
-    qCDebug(lcMainSelectionStore) << "Current sync changed | from:" << _currentSyncDbId << "/ to:" << syncDbId;
+
+    qCDebug(lcMainSelectionStore) << "Current synchronization changed | syncDbId:" << _currentSyncDbId << "=>" << syncDbId;
     _currentSyncDbId = syncDbId;
     emit currentSyncDbIdChanged();
-    emit currentSyncContextChanged();
     emit currentSyncRuntimeInfoChanged();
+    emit currentContextChanged();
+}
+
+SyncDbId MainSelectionStore::firstClassicSyncDbId() const {
+    const auto contexts = _cache.syncContexts();
+    const auto classicContext =
+            std::ranges::find_if(contexts, [](const SyncContext &context) { return context.syncInfo.targetNodeId().empty(); });
+    return classicContext == contexts.end() ? 0 : classicContext->syncInfo.dbId();
 }
 
 SyncDbId MainSelectionStore::firstAvailableSyncDbId() const {
