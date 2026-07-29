@@ -121,7 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void cleanup();
         static void reset();
         static void quitLater(int32_t delayMs = 0);
-        static bool shouldStopVfs([[maybe_unused]] const ExitInfo exitInfo, const std::shared_ptr<const Vfs> vfs) {
+        static bool shouldStopVfs([[maybe_unused]] const ExitInfo &exitInfo, const std::shared_ptr<const Vfs> vfs) {
 #if defined(KD_WINDOWS)
             return exitInfo && vfs;
 #endif

@@ -456,7 +456,7 @@ class VfsOff : public Vfs {
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        void stopImpl(const bool /*unregister*/) override { /*VfsOff*/
         }
 
         friend class TestWorkers;

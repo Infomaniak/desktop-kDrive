@@ -1157,7 +1157,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     sendUserRemoved(userDbId);
                 }
 
-                for (auto vfs: vfsVectorToStop)
+                for (const auto &vfs: vfsVectorToStop)
                     if (shouldStopVfs(deleteUserExitInfo, vfs)) vfs->stop(true);
             });
 
@@ -1407,7 +1407,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 const auto exitInfo = AppServer::deleteDrive(driveDbId);
 
-                for (auto vfs: vfsVectorToStop)
+                for (const auto &vfs: vfsVectorToStop)
                     if (shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
             });
 #if defined(KD_MACOS)
@@ -1667,14 +1667,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove, vfsToStop);
 
                     // Delete sync from DB
-                    if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
-                        LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << syncInfo.dbId() << " : " << exitInfo2);
+                    const ExitInfo deleteSyncExitInfo = ServerRequests::deleteSync(syncInfo.dbId());
+                    if (!deleteSyncExitInfo) {
+                        LOG_WARN(_logger,
+                                 "Error in Requests::deleteSync for syncDbId=" << syncInfo.dbId() << " : " << deleteSyncExitInfo);
                         addError(Error(ERR_ID, exitInfo));
-                    } else if (shouldStopVfs(exitInfo2, vfsToStop), vfsToStop) {
-                        vfsToStop->stop(true);
                     }
 
                     sendSyncRemoved(syncInfo.dbId());
+                    if (shouldStopVfs(deleteSyncExitInfo, vfsToStop)) vfsToStop->stop(true);
                 }
 #if defined(KD_MACOS)
                 Utility::restartFinderExtension();
