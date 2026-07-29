@@ -136,8 +136,8 @@ void TestAppServer::testInitAndStopSyncPal() {
 }
 
 void TestAppServer::testStartAndStopSync() {
-    const int userDbId = 1;
-    const int syncDbId = 1;
+    const UserDbId userDbId = 1;
+    const SyncDbId syncDbId = 1;
 
     User user;
     bool found = false;
@@ -154,6 +154,7 @@ void TestAppServer::testStartAndStopSync() {
     // Stop sync & clear maps
     std::shared_ptr<Vfs> vfsToStop;
     _appPtr->stopSyncTask(syncDbId, SyncPal::DbBehaviorAfterStop::Keep, vfsToStop);
+    vfsToStop->stop(true);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 

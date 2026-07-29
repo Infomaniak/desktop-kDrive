@@ -631,7 +631,7 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
     {
         const std::scoped_lock lock(vfsMapMutex);
         LOG_IF_FAIL(!vfsMap[syncDbId] ||
-                    vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+                    vfsMap[syncDbId].use_count() <= 2) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
 }
@@ -4404,11 +4404,11 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
         // Update SyncPal
         std::shared_ptr<Vfs> vfs;
         {
-            const std::scoped_lock lock3(vfsMapMutex);
             if (const auto exitInfo = getVfs(syncDbId, vfs); !exitInfo) {
                 LOG_WARN(_logger, "Error in getVfs for syncDbId=" << syncDbId << " : " << exitInfo);
                 return exitInfo;
             }
+
             syncPalMapIt->second->setVfs(vfs);
         }
 
