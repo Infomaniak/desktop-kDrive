@@ -93,13 +93,17 @@ ExitInfo AbstractSyncAddJob::process(const Sync &sync) {
     if (const auto exitInfo =
                 _commManager->appServer().initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
         !exitInfo) {
-        _commManager->appServer().stopSyncTask(sync.dbId());
+        std::shared_ptr<Vfs> vfsToStop;
+        _commManager->appServer().stopSyncTask(sync.dbId(), SyncPal::DbBehaviorAfterStop::Keep, vfsToStop);
 
         // Delete sync from DB
-        if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(sync.dbId()); !exitInfo2) {
-            LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << sync.dbId() << " : " << exitInfo2);
-            addError(Error(ERR_ID, exitInfo));
+        const ExitInfo deleteSyncExitInfo = ServerRequests::deleteSync(sync.dbId());
+        if (!deleteSyncExitInfo) {
+            LOG_WARN(_logger, "Error in Requests::deleteSync for syncDbId=" << sync.dbId() << " : " << deleteSyncExitInfo);
+            addError(Error(ERR_ID, deleteSyncExitInfo));
         }
+
+        if (AppServer::shouldStopVfs(deleteSyncExitInfo, vfsToStop)) vfsToStop->stop(true);
 
         return exitInfo;
     }

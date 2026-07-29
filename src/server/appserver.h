@@ -112,6 +112,8 @@ class AppServer : public SharedTools::QtSingleApplication {
                 SyncFileInstruction _status{SyncFileInstruction::None};
         };
 
+        using VfsVector = std::vector<std::shared_ptr<Vfs>>;
+
         explicit AppServer(int &argc, char **argv);
         ~AppServer();
 
@@ -119,6 +121,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void cleanup();
         static void reset();
         static void quitLater(int32_t delayMs = 0);
+        static bool shouldStopVfs([[maybe_unused]] const ExitInfo exitInfo, const std::shared_ptr<const Vfs> vfs) {
+#if defined(KD_WINDOWS)
+            return exitInfo && vfs;
+#endif
+            return vfs.get();
+        };
 
         inline bool helpAsked() { return _helpAsked; }
         inline bool versionAsked() { return _versionAsked; }
@@ -143,9 +151,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void stopAllSyncPals();
         void stopAllVfs();
-
-        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
-                              const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
+        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList, SyncPal::DbBehaviorAfterStop behavior,
+                              VfsVector &vfsToStop);
 
         void addError(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
@@ -159,8 +166,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const;
 
         void updateSentryUser();
-        void deleteDrive(DriveDbId driveDbId);
-        void deleteSync(SyncDbId syncDbId);
+        [[nodiscard]] ExitInfo deleteDrive(DriveDbId driveDbId);
+        [[nodiscard]] ExitInfo deleteSync(SyncDbId syncDbId);
         ExitCode clearErrors(SyncDbId syncDbId, bool autoResolved = false);
         // Check if the synchronization `sync` is registered in the sync database and
         // if the `sync` folder does not contain any other sync subfolder.
@@ -192,7 +199,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
-        void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
+        void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior, std::shared_ptr<Vfs> &vfsToStop);
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(DistributionChannel versionChannel);

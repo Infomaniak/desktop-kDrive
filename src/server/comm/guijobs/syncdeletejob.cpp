@@ -65,10 +65,12 @@ ExitInfo SyncDeleteJob::process() {
         return ExitCode::OperationCanceled;
     }
 
-    _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
+    std::shared_ptr<Vfs> vfsToStop;
+    _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove, vfsToStop);
 
     // Delete sync from DB
-    _commManager->appServer().deleteSync(_syncDbId);
+    if (const auto deleteSyncExitInfo = _commManager->appServer().deleteSync(_syncDbId); deleteSyncExitInfo && vfsToStop)
+        vfsToStop->stop(true);
 
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();

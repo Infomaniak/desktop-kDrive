@@ -63,16 +63,20 @@ ExitInfo UserDeleteJob::process() {
     }
 
     // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+    AppServer::VfsVector vfsToStop;
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove, vfsToStop);
 
     // Delete user from DB
-    const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId);
-    if (exitInfo) {
+    if (const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId); exitInfo) {
         auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_userDbId);
         _commManager->sendGuiSignal(signalUserRemovedJob);
+        for (auto vfs: vfsToStop) {
+            if (AppServer ::shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
+        }
     } else {
         LOG_WARN(_logger, "Error in ServerRequests::deleteUser:" << exitInfo);
         addError(Error(ERR_ID, exitInfo));
+
         return exitInfo;
     }
 

@@ -152,7 +152,8 @@ void TestAppServer::testStartAndStopSync() {
     const auto syncDbPath = _appPtr->syncPalMap[syncDbId]->syncDb()->dbPath();
 
     // Stop sync & clear maps
-    _appPtr->stopSyncTask(syncDbId);
+    std::shared_ptr<Vfs> vfsToStop;
+    _appPtr->stopSyncTask(syncDbId, SyncPal::DbBehaviorAfterStop::Keep, vfsToStop);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
@@ -166,7 +167,8 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(startedSyncDbIds.contains(syncDbId));
 
     // Stop syncs & clear maps for all users
-    _appPtr->stopAllSyncsTask({syncDbId});
+    AppServer::VfsVector vfsVectorToStop;
+    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Keep, vfsVectorToStop);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     auto exists = false;
@@ -210,7 +212,8 @@ void TestAppServer::testStartAndStopSync() {
 
     // Check that DB file is removed when sync is deleted
     CPPUNIT_ASSERT(_appPtr->startSyncs());
-    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
+    vfsVectorToStop.clear();
+    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove, vfsVectorToStop);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
