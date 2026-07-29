@@ -8,7 +8,6 @@ $RepoUrl    = "__REPO_URL__"
 $Token      = "__REG_TOKEN__"
 $Labels     = "__TAGS__"
 $RunnerName = "$env:COMPUTERNAME"
-$AdminPassword = "__REG_ADMIN_PASS__"
 
 # Local Administrator account (consistent with the AutoLogon set in the unattend file).
 $AdminAccount = "Administrateur"
