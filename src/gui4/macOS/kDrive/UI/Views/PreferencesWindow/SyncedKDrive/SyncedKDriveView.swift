@@ -56,7 +56,7 @@ struct SyncedKDriveView: View {
             Section { /* Empty on purpose */ } header: {
                 HStack {
                     BadgeView(
-                        image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                        image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
                         color: drive.color ?? ColorToken.Drive.defaultColor.asColor,
                         iconSize: 16,
                         squareSize: 26,

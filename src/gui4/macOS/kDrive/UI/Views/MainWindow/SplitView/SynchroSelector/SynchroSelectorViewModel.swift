@@ -51,7 +51,7 @@ struct SynchroSelectorItem: Identifiable {
 
         return SynchroSelectorItem(
             synchro: info.context.synchro,
-            icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+            icon: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
             iconColor: info.context.drive.color ?? ColorToken.Drive.defaultColor.asColor,
             title: title,
             subtitle: subtitle,
