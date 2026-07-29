@@ -86,27 +86,17 @@ bool fillCertificateFields(X509 *const x509) {
 
 } // namespace
 
-bool SelfSignedCert::loadOrGenerate(Pem &pem) {
+bool SelfSignedCert::generateAndPublish(Pem &pem) {
     const auto keychain = KeyChainManager::instance();
     if (!keychain) {
         LOG_ERROR(Log::instance()->getLogger(), "Keychain unavailable");
         return false;
     }
 
-    bool certFound = false;
-    bool keyFound = false;
-    const std::string certKey(certKeychainKey);
-    const std::string privKey(keyKeychainKey);
-
-    if (keychain->readDataFromKeystore(certKey, pem.cert, certFound) &&
-        keychain->readDataFromKeystore(privKey, pem.key, keyFound) && certFound && keyFound && !pem.cert.empty() &&
-        !pem.key.empty()) {
-        return true;
-    }
 
     if (!generate(pem)) return false;
 
-    if (!keychain->writeToken(certKey, pem.cert) || !keychain->writeToken(privKey, pem.key)) {
+    if (const std::string certKey(certKeychainKey); !keychain->writeToken(certKey, pem.cert)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to store TLS material in the keychain");
         return false;
     }
