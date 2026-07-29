@@ -687,14 +687,6 @@ void AppServer::deleteAccount(const AccountDbId accountDbId) {
 }
 
 ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
-    if (const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId); exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        sendDriveDeletionFailed(driveDbId);
-
-        return exitCode;
-    }
-
     // Get the drive in DB
     bool found = false;
     Drive drive;
@@ -710,6 +702,14 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
         addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
 
         return ExitCode::DataError;
+    }
+
+    if (const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId); exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitCode);
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        sendDriveDeletionFailed(driveDbId);
+
+        return exitCode;
     }
 
     // Delete the account if there is no remaining drive
@@ -732,14 +732,6 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
 }
 
 ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
-    if (const ExitCode exitCode = ServerRequests::deleteSync(syncDbId); exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        sendSyncDeletionFailed(syncDbId);
-
-        return exitCode;
-    }
-
     // Get the sync in DB
     bool found = false;
     Sync sync;
@@ -755,6 +747,14 @@ ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
         addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
 
         return ExitCode::DataError;
+    }
+
+    if (const ExitCode exitCode = ServerRequests::deleteSync(syncDbId); exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
+        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+        sendSyncDeletionFailed(syncDbId);
+
+        return exitCode;
     }
 
     // Delete the drive if there is no remaining sync
@@ -1149,15 +1149,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove, vfsVectorToStop);
 
                 // Delete user from DB
-                if (const ExitCode exitCode = ServerRequests::deleteUser(userDbId); exitCode == ExitCode::Ok) {
-                    sendUserRemoved(userDbId);
-                    for (auto vfs: vfsVectorToStop)
-                        if (shouldStopVfs(exitCode, vfs)) vfs->stop(true);
-
+                const ExitInfo deleteUserExitInfo = ServerRequests::deleteUser(userDbId);
+                if (!deleteUserExitInfo) {
+                    LOG_WARN(_logger, "Error in Requests::deleteUser: ExitInfo=" << deleteUserExitInfo);
+                    addError(Error(ERR_ID, deleteUserExitInfo));
                 } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteUser: code=" << exitCode);
-                    addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                    sendUserRemoved(userDbId);
                 }
+
+                for (auto vfs: vfsVectorToStop)
+                    if (shouldStopVfs(deleteUserExitInfo, vfs)) vfs->stop(true);
             });
 
             break;
@@ -1404,10 +1405,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 VfsVector vfsVectorToStop;
                 AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove, vfsVectorToStop);
 
-                if (const auto exitInfo = AppServer::deleteDrive(driveDbId); exitInfo) {
-                    for (auto vfs: vfsVectorToStop)
-                        if (vfs) vfs->stop(true);
-                }
+                const auto exitInfo = AppServer::deleteDrive(driveDbId);
+
+                for (auto vfs: vfsVectorToStop)
+                    if (shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
             });
 #if defined(KD_MACOS)
             Utility::restartFinderExtension();
@@ -1725,10 +1726,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                                         vfsToStop); // This task can be long, hence blocking, on Windows.
 
                 // Delete sync from DB
-                if (const auto exitCode = deleteSync(syncDbId); shouldStopVfs(exitCode, vfsToStop)) {
+                if (const auto exitInfo = deleteSync(syncDbId); shouldStopVfs(exitInfo, vfsToStop)) {
                     vfsToStop->stop(true);
                 }
-
 
 #if defined(KD_MACOS)
                 Utility::restartFinderExtension();
