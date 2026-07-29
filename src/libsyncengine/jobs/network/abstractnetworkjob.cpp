@@ -64,8 +64,8 @@ AbstractNetworkJob::AbstractNetworkJob() :
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
-                _context =
-                        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+                _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
+                                                  Poco::Net::Context::VERIFY_STRICT, 9, true);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
