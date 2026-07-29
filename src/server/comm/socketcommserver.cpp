@@ -126,16 +126,8 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
 void SocketCommChannel::callbackHandler() {
     while (!_isClosing) {
         try {
-            bool readable = false;
-            {
-                std::lock_guard lock(_socketMutex);
-                readable =
-                        _socket.poll(Poco::Timespan(0, 1000), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR);
-            }
-            if (!readable) {
-                // This is needed to let others threads get their hands on the locks
-                // the time can be reduce or increase but not deleted
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            if (bytesAvailable() == 0 &&
+                !_socket.poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR)) {
                 continue;
             }
         } catch (Poco::Exception &ex) {
