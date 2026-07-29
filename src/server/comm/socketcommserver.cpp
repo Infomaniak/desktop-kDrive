@@ -316,18 +316,36 @@ void SocketCommServer::execute() {
 
         if (_stopAsked) break;
 
+        // Bound the handshake: without a timeout, a local process that opens a TCP connection and
+        // never sends a ClientHello blocks this accept loop forever and no GUI can connect again.
+        const Poco::Timespan sndTimeout = socket.getSendTimeout();
+        socket.setReceiveTimeout(Poco::Timespan(5, 0));
+        socket.setSendTimeout(Poco::Timespan(5, 0));
+
         // Eagerly complete the TLS handshake so that encrypted data on the wire
         // is already decrypted when the callback thread polls for it later.
         Poco::Net::SecureStreamSocket secureSocket(socket);
+        bool handshakeDone = false;
         try {
-            if (secureSocket.completeHandshake() != 1) {
-                LOG_WARN(Log::instance()->getLogger(), "TLS handshake incomplete after accept");
-                // Let the channel handle the error through normal polling.
-            }
+            handshakeDone = secureSocket.completeHandshake() == 1;
+            if (!handshakeDone) LOG_WARN(Log::instance()->getLogger(), "TLS handshake incomplete after accept");
         } catch (Poco::Exception &ex) {
             LOG_WARN(Log::instance()->getLogger(), "TLS handshake failed after accept: " << ex.displayText());
-            // Let the channel handle the error through normal polling.
         }
+
+        if (!handshakeDone) {
+            try {
+                secureSocket.close();
+            } catch (Poco::Exception &ex) {
+                LOG_WARN(Log::instance()->getLogger(), "Exception in SecureStreamSocket::close: " << ex.displayText());
+            }
+            continue;
+        }
+
+        // Keep a bounded receive timeout for the channel's lifetime: SSL_read() must never park on
+        // _socketMutex forever (see the comment on readData).
+        secureSocket.setReceiveTimeout(Poco::Timespan(30, 0));
+        secureSocket.setSendTimeout(sndTimeout);
 
         const auto channel = makeCommChannel(secureSocket);
         channel->setLostConnectionCbk([this](std::shared_ptr<AbstractCommChannel> ch) {
