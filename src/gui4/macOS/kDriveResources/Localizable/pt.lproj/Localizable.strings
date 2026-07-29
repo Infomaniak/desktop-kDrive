@@ -53,7 +53,7 @@
 "activitiesTypeMyActivity" = "Apenas a minha atividade";
 
 /* loco:6a69c2a7fb376e733f092008 */
-"activityInstructionGetLabel" = "Importação bem-sucedida";
+"activityInstructionGetLabel" = "Importado";
 
 /* loco:6a69c75cb90e0a6f370caf93 */
 "activityInstructionIgnoreLabel" = "Ignorado";
@@ -62,16 +62,16 @@
 "activityInstructionMoveLabel" = "Movido";
 
 /* loco:6a69c4521e1081fcf9041b02 */
-"activityInstructionPutLabel" = "Ficheiro criado";
+"activityInstructionPutLabel" = "Adicionado";
 
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Movido para o lixo";
 
 /* loco:6a69c12889ab5f0cf60a7aa2 */
-"activityInstructionUpdateLabel" = "Conteúdo atualizado";
+"activityInstructionUpdateLabel" = "Modificado";
 
 /* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Informações atualizadas";
+"activityInstructionUpdateMetadataLabel" = "Renomeado";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Sincronizar uma pasta com o kDrive";

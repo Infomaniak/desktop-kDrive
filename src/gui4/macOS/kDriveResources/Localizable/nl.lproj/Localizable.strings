@@ -53,7 +53,7 @@
 "activitiesTypeMyActivity" = "Alleen mijn activiteit";
 
 /* loco:6a69c2a7fb376e733f092008 */
-"activityInstructionGetLabel" = "Importeren gelukt";
+"activityInstructionGetLabel" = "Geïmporteerd";
 
 /* loco:6a69c75cb90e0a6f370caf93 */
 "activityInstructionIgnoreLabel" = "Genegeerd";
@@ -62,16 +62,16 @@
 "activityInstructionMoveLabel" = "Verplaatst";
 
 /* loco:6a69c4521e1081fcf9041b02 */
-"activityInstructionPutLabel" = "Bestand aangemaakt";
+"activityInstructionPutLabel" = "Toegevoegd";
 
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Verplaatst naar prullenbak";
 
 /* loco:6a69c12889ab5f0cf60a7aa2 */
-"activityInstructionUpdateLabel" = "Inhoud bijgewerkt";
+"activityInstructionUpdateLabel" = "Gewijzigd";
 
 /* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Bijgewerkte informatie";
+"activityInstructionUpdateMetadataLabel" = "Hernoemd";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Een map synchroniseren met kDrive";

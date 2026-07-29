@@ -49,19 +49,19 @@ public enum KDriveLocalizable {
   /// loco:6981b68a1e51fbe933040213
   public static let activitiesTypeMyActivity = KDriveLocalizable.tr("Localizable", "activitiesTypeMyActivity", fallback: "My activity only")
   /// loco:6a69c2a7fb376e733f092008
-  public static let activityInstructionGetLabel = KDriveLocalizable.tr("Localizable", "activityInstructionGetLabel", fallback: "Import successful")
+  public static let activityInstructionGetLabel = KDriveLocalizable.tr("Localizable", "activityInstructionGetLabel", fallback: "Imported")
   /// loco:6a69c75cb90e0a6f370caf93
   public static let activityInstructionIgnoreLabel = KDriveLocalizable.tr("Localizable", "activityInstructionIgnoreLabel", fallback: "Ignored")
   /// loco:6a69bde8354a61b304035517
   public static let activityInstructionMoveLabel = KDriveLocalizable.tr("Localizable", "activityInstructionMoveLabel", fallback: "Moved")
   /// loco:6a69c4521e1081fcf9041b02
-  public static let activityInstructionPutLabel = KDriveLocalizable.tr("Localizable", "activityInstructionPutLabel", fallback: "File created")
+  public static let activityInstructionPutLabel = KDriveLocalizable.tr("Localizable", "activityInstructionPutLabel", fallback: "Added")
   /// loco:6a69b981afdcf4fa19044503
   public static let activityInstructionRemoveLabel = KDriveLocalizable.tr("Localizable", "activityInstructionRemoveLabel", fallback: "Moved to trash")
   /// loco:6a69c12889ab5f0cf60a7aa2
-  public static let activityInstructionUpdateLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateLabel", fallback: "Content updated")
+  public static let activityInstructionUpdateLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateLabel", fallback: "Modified")
   /// loco:6a69c6c526f8c2be820035a4
-  public static let activityInstructionUpdateMetadataLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateMetadataLabel", fallback: "Information updated")
+  public static let activityInstructionUpdateMetadataLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateMetadataLabel", fallback: "Renamed")
   /// loco:69b422369e32a806170ba3c2
   public static let addAdvancedSyncDialogTitle = KDriveLocalizable.tr("Localizable", "addAdvancedSyncDialogTitle", fallback: "Sync a folder with kDrive")
   /// loco:69b422a8be3506a1a305ba12

@@ -53,7 +53,7 @@
 "activitiesTypeMyActivity" = "Μόνο η δική μου δραστηριότητα";
 
 /* loco:6a69c2a7fb376e733f092008 */
-"activityInstructionGetLabel" = "Η εισαγωγή ολοκληρώθηκε με επιτυχία";
+"activityInstructionGetLabel" = "Εισήχθη";
 
 /* loco:6a69c75cb90e0a6f370caf93 */
 "activityInstructionIgnoreLabel" = "Αγνοημένος";
@@ -62,16 +62,16 @@
 "activityInstructionMoveLabel" = "Μετακινήθηκε";
 
 /* loco:6a69c4521e1081fcf9041b02 */
-"activityInstructionPutLabel" = "Αρχείο δημιουργήθηκε";
+"activityInstructionPutLabel" = "Προστέθηκε";
 
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Μετακινήθηκε στα απορρίμματα";
 
 /* loco:6a69c12889ab5f0cf60a7aa2 */
-"activityInstructionUpdateLabel" = "Το περιεχόμενο ενημερώθηκε";
+"activityInstructionUpdateLabel" = "Τροποποιημένο";
 
 /* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Ενημερωμένες πληροφορίες";
+"activityInstructionUpdateMetadataLabel" = "Μετονομάστηκε";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Συγχρονισμός φακέλου με το kDrive";
