@@ -54,8 +54,11 @@
 #endif
 
 #if defined(KD_WINDOWS)
+extern "C" {
 #include <openssl/applink.c>
+}
 #endif
+
 void signalHandler(int signum) {
     KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
     std::cerr << "Server stopped with signal " << signalType << std::endl;
