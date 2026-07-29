@@ -424,4 +424,40 @@ void TestIntegration::testNestedRemoteOperations() {
     logStep("testNestedRemoteOperations");
 }
 
+void TestIntegration::testExecuteSyncUpToStep() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    // Start from an empty situation.
+    const Situation situation{Str2SyncName(R"({"content": []})")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const std::vector<SyncStep> stepsToTest = {
+            SyncStep::UpdateDetection1, SyncStep::UpdateDetection2, SyncStep::Reconciliation1,
+            SyncStep::Reconciliation2,  SyncStep::Reconciliation4,  SyncStep::Propagation1,
+            SyncStep::Propagation2,     SyncStep::Done,
+    };
+
+    for (const auto step: stepsToTest) {
+        // Generate a real local change so the sync actually has work to progress through.
+        const SyncPath filePath =
+                _syncPal->localPath() / ("testExecuteSyncUpToStep_" + std::to_string(static_cast<int>(step)));
+        testhelpers::generateOrEditTestFile(filePath);
+
+        CPPUNIT_ASSERT(testHelper.executeSyncUpToStep(static_cast<int64_t>(step), 10000));
+
+        CPPUNIT_ASSERT_EQUAL(step, _syncPal->step());
+
+        // Wait a bit and make sure the sync stayed frozen at the requested step.
+        Utility::msleep(1000);
+        CPPUNIT_ASSERT_EQUAL(step, _syncPal->step());
+
+        CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+    }
+
+    testHelper.tearDown();
+    logStep("testExecuteSyncUpToStep");
+}
+
 } // namespace KDC

@@ -33,12 +33,13 @@ SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
     _getSituation(syncPal) {}
 
 void SyncpalTestHelper::setUp() {
-    _syncPal->start();
+    startSync();
     executeSyncUntilEnd();
 }
 
 void SyncpalTestHelper::tearDown() {
     if (_syncPal) {
+        _syncPal->setMaxStep(SyncStep::None); // Make sure no cap set by executeSyncUpToStep() survives past this test.
         _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     }
 }
@@ -78,6 +79,7 @@ bool SyncpalTestHelper::getSituation(const Situation &localSituation, const Situ
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
     if (!_syncPal) return false;
 
+    _syncPal->setMaxStep(SyncStep::None); // Remove any cap left by a previous executeSyncUpToStep() call.
     if (!_syncPal->isRunning()) _syncPal->start(); // Start the Syncpal if it is not already running
 
     // Give a pending change a chance to be detected before checking for idleness below.
@@ -107,9 +109,16 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     }
 }
 
-bool SyncpalTestHelper::executeSyncUpToStep([[maybe_unused]] const int64_t targetStep,
-                                            [[maybe_unused]] const int64_t timeout) const {
-    return false;
+bool SyncpalTestHelper::executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const {
+    if (!_syncPal) return false;
+
+    const auto step = static_cast<SyncStep>(targetStep);
+    _syncPal->setMaxStep(step);
+
+    // The cap is left in place on purpose: the sync stays frozen at `step` until the caller either checks it
+    // or calls executeSyncUntilEnd(), which lifts the cap before waiting for the sync to reach Idle.
+    return TimeoutHelper::waitFor([this, step]() { return _syncPal->step() == step; }, std::chrono::milliseconds(timeout),
+                                  std::chrono::milliseconds(50));
 }
 
 bool SyncpalTestHelper::waitForDetectedUpdate(const std::chrono::milliseconds timeout) const {
@@ -138,6 +147,13 @@ bool SyncpalTestHelper::unpauseSync() const {
     if (!_syncPal || !_syncPal->isRunning()) return false;
 
     _syncPal->unpause();
+    return true;
+}
+
+bool SyncpalTestHelper::startSync() const {
+    if (!_syncPal) return false;
+
+    _syncPal->start();
     return true;
 }
 

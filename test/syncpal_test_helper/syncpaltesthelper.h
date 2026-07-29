@@ -64,6 +64,9 @@ class SyncpalTestHelper {
         // Resumes a previously paused SyncPal. Returns false if no SyncPal or not running.
         bool unpauseSync() const;
 
+        // Starts the SyncPal. Returns false if no SyncPal.
+        bool startSync() const;
+
         // Fully stops the SyncPal, keeping its Db. Returns false if no SyncPal.
         bool stopSync() const;
 

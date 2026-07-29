@@ -254,6 +254,10 @@ SyncStep SyncPal::step() const {
     return (_syncPalWorker ? _syncPalWorker->step() : SyncStep::None);
 }
 
+void SyncPal::setMaxStep(SyncStep step) {
+    if (_syncPalWorker) _syncPalWorker->setMaxStep(step);
+}
+
 ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
     if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(path, side)) {
         if (path == Utility::sharedFolderName()) {

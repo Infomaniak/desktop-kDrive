@@ -619,6 +619,16 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 }
 
 SyncStep SyncPalWorker::nextStep() const {
+#ifndef NDEBUG
+    // If a max step was set (used by tests to stop the sync at a given step), freeze once it is reached.
+    if (_maxStep != SyncStep::None && static_cast<int>(_step) >= static_cast<int>(_maxStep)) {
+        return _step;
+    }
+#endif
+    return computeNextStep();
+}
+
+SyncStep SyncPalWorker::computeNextStep() const {
     switch (_step) {
         case SyncStep::Idle: {
             const bool areLiveSnapshotsValid =

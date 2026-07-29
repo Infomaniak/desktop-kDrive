@@ -258,6 +258,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncStatus status() const;
         SyncStep step() const;
 
+        // Test-only: stops the sync loop from advancing past `step` (SyncStep::None removes the cap).
+        void setMaxStep(SyncStep step);
+
         void addError(const Error &error);
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
