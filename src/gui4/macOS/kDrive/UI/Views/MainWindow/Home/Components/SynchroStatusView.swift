@@ -130,7 +130,6 @@ struct SynchroStatusView: View {
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
-            .frame(maxWidth: 300)
         }
         .redacted(reason: state.isRedacted ? .placeholder : [])
         .id(state)
