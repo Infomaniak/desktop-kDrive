@@ -609,27 +609,54 @@ void AppServer::quitLater(const int32_t delayMs) {
     QTimer::singleShot(delayMs, QCoreApplication::instance(), [] { AppServer::quit(); });
 }
 
+bool AppServer::shouldStopVfs([[maybe_unused]] const std::optional<SyncPath> syncDbPath, const std::shared_ptr<const Vfs> vfs) {
+    if (!vfs) return false;
+
+#if defined(KD_WINDOWS)
+    if (!syncDbPath) {
+        LOG_WARN(_logger, "SyncDb path is not available, VFS will not be stopped");
+        return false;
+    }
+
+    bool exists = false;
+    IoError ioError = IoError::Success;
+
+    if (!IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
+        return false;
+    }
+
+    return !exists
+#endif
+            return true;
+};
+
 // This task can be long and block the GUI
-// If no error of the type ExitCode::DataError occurs, the method removes the SyncDb file as a side effect.
+// The method removes the SyncDb file as a side effect if it is found in `syncPalMap`.
+// The method stops the VFS on Windows only if the corresponding SyncDb file has been removed, to avoid unwanted propagation of
+// local deletions.
 void AppServer::stopSyncTask(const SyncDbId syncDbId) {
     const std::scoped_lock lock(syncPalMapMutex, vfsMapMutex);
 
     // Stop sync and remove it from syncPalMap
-    //
-    const auto stopSyncPalExitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
-    if (!stopSyncPalExitInfo) {
-        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << stopSyncPalExitInfo);
+    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
+        !exitInfo) {
+        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
     }
 
-    LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 1)
+    std::optional<SyncPath> syncDbPath = std::nullopt;
+    if (syncPalMap.contains(syncDbId) && syncPalMap[syncDbId]) syncDbPath = syncPalMap[syncDbId]->syncDb()->dbPath();
+
+    LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 1);
     (void) syncPalMap.erase(syncDbId);
 
     // Stop Vfs
-    if (shouldStopVfs(stopSyncPalExitInfo, vfsMap[syncDbId])) {
-        // On Windows, the VFS is stopped only if `SyncPal` has been stopped successfully, which guarantees the deletion
-        // of the corresponding `SyncDb` file. It is important because stopping the VFS on Windows causes all dehydrated
-        // placeholders to be deleted and could lead to the unwanted propagation of local deletions if the `SyncDb` file still
-        // exists.
+    if (shouldStopVfs(syncDbPath, vfsMap[syncDbId])) {
+        // On Windows, the VFS is stopped only if the `SyncDb` file has been removed successfully. It is important because
+        // stopping the VFS on Windows causes all dehydrated placeholders to be deleted and could lead to the unwanted propagation
+        // of local deletions if the `SyncDb` file still exists.
         vfsMap[syncDbId]->stop(true); // This also removes dehydrated placeholders on Windows.
     }
 

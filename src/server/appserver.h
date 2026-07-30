@@ -332,13 +332,8 @@ class AppServer : public SharedTools::QtSingleApplication {
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(UserDbId userDbId, DriveId driveId, Sync &sync,
                                                                 QSet<QString> &blackList, bool &syncUpdated);
-        [[nodiscard]] static bool shouldStopVfs([[maybe_unused]] const ExitInfo &exitInfo, const std::shared_ptr<const Vfs> vfs) {
-#if defined(KD_WINDOWS)
-            return exitInfo && vfs;
-#endif
-            return vfs.get();
-        };
-
+        [[nodiscard]] static bool shouldStopVfs([[maybe_unused]] const std::optional<SyncPath> syncDbPath,
+                                                const std::shared_ptr<const Vfs> vfs);
         virtual void sendUserAdded(const User &userInfo) const;
         virtual void sendUserUpdated(const User &userInfo) const;
         virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, const QString &connexionError) const;
