@@ -614,14 +614,14 @@ bool AppServer::shouldStopVfs([[maybe_unused]] const std::optional<SyncPath> syn
 
 #if defined(KD_WINDOWS)
     if (!syncDbPath) {
-        LOG_WARN(_logger, "SyncDb path is not available, VFS will not be stopped");
+        LOG_WARN(_logger, "SyncDb path is not available, VFS will not be stopped.");
         return false;
     }
 
     bool exists = false;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
 
-    if (!IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+    if (!IoHelper::checkIfPathExists(*syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
