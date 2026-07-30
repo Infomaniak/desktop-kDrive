@@ -82,11 +82,7 @@ final class MainWindowController: NSWindowController {
     }
 
     private func observeLoginItemAgentConnectionState() {
-        // Re-check whether background activity is enabled whenever we lose (or fail to establish) the
-        // connection with the login item agent. The initial `.disconnected` value is also emitted on
-        // subscription, which drives the check at app startup.
         xpcConnectionProvider.loginItemAgentConnectionStatePublisher
-            .removeDuplicates()
             .receiveOnMain(store: &bindStore) { [weak self] _ in
                 self?.presentBackgroundActivityViewIfNecessary()
             }

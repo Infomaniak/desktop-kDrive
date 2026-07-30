@@ -121,7 +121,13 @@ import InfomaniakDI
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
 
-        try await fetchServerEndpointFromLoginItemAgentAndConnect()
+        do {
+            try await fetchServerEndpointFromLoginItemAgentAndConnect()
+        } catch {
+            notifyLoginItemAgentConnectionState(.disconnected)
+            throw error
+        }
+
         notifyLoginItemAgentConnectionState(.connected)
     }
 
