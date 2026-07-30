@@ -612,35 +612,30 @@ void AppServer::quitLater(const int32_t delayMs) {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+    const std::scoped_lock syncPalMapLock(syncPalMapMutex);
+    const std::scoped_lock vfsMapMutexLock(vfsMapMutex);
+
     // Stop sync and remove it from syncPalMap
     const auto stopSyncPalExitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior);
     if (!stopSyncPalExitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << stopSyncPalExitInfo);
     }
 
-    {
-        const std::scoped_lock lock(syncPalMapMutex);
-        LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 1)
-        (void) syncPalMap.erase(syncDbId);
-    }
-
-    std::shared_ptr<Vfs> vfsToStop;
-    {
-        const std::scoped_lock lock(vfsMapMutex);
-        LOG_IF_FAIL(!vfsMap[syncDbId] ||
-                    vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
-        vfsToStop = vfsMap[syncDbId];
-        (void) vfsMap.erase(syncDbId);
-    }
+    LOG_IF_FAIL(!syncPalMap[syncDbId] || syncPalMap[syncDbId].use_count() == 1)
+    (void) syncPalMap.erase(syncDbId);
 
     // Stop Vfs
-    if (shouldStopVfs(stopSyncPalExitInfo, vfsToStop)) {
+    if (shouldStopVfs(stopSyncPalExitInfo, vfsMap[syncDbId])) {
         // On Windows, the VFS is stopped only if `SyncPal` has been stopped successfully, which guarantees the deletion
         // of the corresponding `SyncDb` file. It is important because stopping the VFS on Windows causes all dehydrated
         // placeholders to be deleted and could lead to the unwanted propagation of local deletions if the `SyncDb` file still
         // exists.
-        vfsToStop->stop(true); // This also removes dehydrated placeholders on Windows.
+        vfsMap[syncDbId]->stop(true); // This also removes dehydrated placeholders on Windows.
     }
+
+    LOG_IF_FAIL(!vfsMap[syncDbId] ||
+                vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+    (void) vfsMap.erase(syncDbId);
 }
 
 ExitInfo AppServer::setSupportsVirtualFilesAsync(const SyncDbId syncDbId, bool value) {
