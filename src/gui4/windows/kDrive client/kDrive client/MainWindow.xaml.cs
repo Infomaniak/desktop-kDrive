@@ -18,6 +18,8 @@
 
 using H.NotifyIcon;
 using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -25,6 +27,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Infomaniak.kDrive
 {
@@ -76,9 +81,23 @@ namespace Infomaniak.kDrive
             }
         }
 
-        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             UpdateControlsVisibility();
+            await ProcessManyDeleteQueue();
+        }
+
+        public async Task ProcessManyDeleteQueue()
+        {
+            while (ViewModel.ManyDeletesQueue.Count > 0)
+            {
+                ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Dequeue();
+
+                if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit)
+                    await Showhardlimitmanydeletedialogue(manyDeletesInfo);
+                else if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.SoftLimit)
+                    await Showsoftlimitmanydeletedialogue(manyDeletesInfo);
+            }
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -126,6 +145,85 @@ namespace Infomaniak.kDrive
                 SplashScreen.Visibility = Visibility.Collapsed;
                 UpdateRequiredControl.Visibility = Visibility.Collapsed;
             }
+        }
+        public async Task Showhardlimitmanydeletedialogue(ManyDeletesInfo manyDeletesInfo)
+        {
+            ContentDialog dialog = new ContentDialog();
+
+            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+            dialog.XamlRoot = this.Content.XamlRoot;
+            dialog.Title = Localizer.Instance.GetString1i("manyDeleteDialogTitle", manyDeletesInfo.NbFiles);
+            dialog.PrimaryButtonText = Localizer.Instance.GetString("manyDeleteDialogHardLimitPrimary");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString("manyDeleteDialogHardLimitSecondary");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = Localizer.Instance.GetString("manyDeleteContent");
+
+            dialog.Closing += (s, e) =>
+            {
+                if (e.Result == ContentDialogResult.None)
+                {
+                    e.Cancel = true; // Prevent the dialog from closing
+                }
+            };
+
+            var result = await dialog.ShowAsync();
+
+            TooManyDeletesUserChoice userChoice = result switch
+            {
+                ContentDialogResult.Primary => TooManyDeletesUserChoice.Revert,
+                ContentDialogResult.Secondary => TooManyDeletesUserChoice.Continue,
+                _ => TooManyDeletesUserChoice.Revert
+            };
+
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().AcknowledgeManyDeletes(manyDeletesInfo.SyncDbId, userChoice, CancellationToken.None);
+        }
+
+        public async Task Showsoftlimitmanydeletedialogue(ManyDeletesInfo manyDeletesInfo)
+        {
+            ContentDialog dialog = new ContentDialog();
+
+            // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
+            dialog.XamlRoot = this.Content.XamlRoot;
+            dialog.Title = Localizer.Instance.GetString1i("manyDeleteDialogTitle", manyDeletesInfo.NbFiles);
+            dialog.PrimaryButtonText = Localizer.Instance.GetString("manyDeleteDialogSoftLimitPrimary");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString("manyDeleteDialogSoftLimitSecondary");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+
+            StackPanel contentPanel = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Spacing = (double)Application.Current.Resources["Infomaniak.Style.Spacing.M"]
+            };
+            contentPanel.Children.Add(new TextBlock
+            {
+                Text = Localizer.Instance.GetString("manyDeleteDialogSoftLimitContent"),
+                TextWrapping = TextWrapping.Wrap,
+            });
+            contentPanel.Children.Add(new CheckBox
+            {
+                Content = Localizer.Instance.GetString("manyDeleteDialogSoftLimitDoNotShowAgain"),
+            });
+            dialog.Content = contentPanel;
+
+            dialog.Closing += (s, e) =>
+            {
+                if (e.Result == ContentDialogResult.None)
+                {
+                    e.Cancel = true; // Prevent the dialog from closing
+                }
+            };
+
+            var result = await dialog.ShowAsync();
+
+            TooManyDeletesUserChoice userChoice = result switch
+            {
+                ContentDialogResult.Primary => TooManyDeletesUserChoice.Revert,
+                ContentDialogResult.Secondary => TooManyDeletesUserChoice.Continue,
+                _ => TooManyDeletesUserChoice.Revert
+            };
+
+            await App.ServiceProvider.GetRequiredService<IServerCommService>().AcknowledgeManyDeletes(manyDeletesInfo.SyncDbId, userChoice, CancellationToken.None);
         }
 
 
