@@ -31,9 +31,9 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
 }
 
 bool AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath, std::string &outChecksum) {
+    outChecksum.clear();
     std::ifstream file(filepath, std::ios::binary);
     if (!file) {
-        outChecksum.clear();
         return false;
     }
 
@@ -44,14 +44,13 @@ bool AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath, std::strin
     }
 
     if (file.bad()) {
-        outChecksum.clear();
         return false;
     }
 
     try {
         outChecksum = Poco::DigestEngine::digestToHex(sha256.digest());
     } catch (...) {
-        outChecksum.clear();
+        outChecksum.clear(); // Clear again: assignment may have thrown mid-write
         return false;
     }
     return true;
