@@ -92,12 +92,12 @@ bool SelfSignedCert::generateAndPublish(Pem &pem) {
         LOG_ERROR(Log::instance()->getLogger(), "Keychain unavailable");
         return false;
     }
-
-
     if (!generate(pem)) return false;
 
-    if (const std::string certKey(certKeychainKey); !keychain->writeToken(certKey, pem.cert)) {
-        LOG_ERROR(Log::instance()->getLogger(), "Failed to store TLS material in the keychain");
+    if (!keychain->writeToken(std::string(certKeychainKey), pem.cert)) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS certificate in the keychain");
+        return false;
+    }
         return false;
     }
     return true;
