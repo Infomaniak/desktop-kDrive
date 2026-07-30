@@ -133,7 +133,7 @@ struct SynchroStatusView: View {
         }
         .redacted(reason: state.isRedacted ? .placeholder : [])
         .id(state)
-        .padding(AppPadding.padding16)
+        .padding(AppPadding.padding8)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
             GeometryReader { proxy in
