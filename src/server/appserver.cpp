@@ -624,13 +624,13 @@ bool AppServer::shouldStopVfs([[maybe_unused]] const std::optional<SyncPath> syn
     if (!IoHelper::checkIfPathExists(*syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError));
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(*syncDbPath, ioError));
         return false;
     }
 
-    return !exists
+    return !exists;
 #endif
-            return true;
+    return true;
 };
 
 // This task can be long and block the GUI
