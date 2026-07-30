@@ -96,6 +96,10 @@
   tray availability, and main QML window show/hide behavior.
 - `communicationlayer/ipcclient.*`: raw TCP JSON transport, request/reply correlation, reconnect-before-first-connect
   logic.
+- `communicationlayer/serversignalsequencer.*`: internal `IpcClient` stage that restores the server-assigned order of
+  asynchronous push signals before exposing them to semantic dispatch; buffers bounded gaps and reports persistent
+  sequence violations as fatal IPC errors. It relies on the single GUI connection receiving a sequence starting at
+  `firstGuiSignalId`; the server does not allocate signal ids while no GUI channel is connected.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
 - `app/services/commservice.*`: typed request/signal facade above `IpcClient`.
 - `app/services/serviceactiontracker.*`: shared persistent state for in-flight service actions
