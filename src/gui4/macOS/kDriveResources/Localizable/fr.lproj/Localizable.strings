@@ -899,6 +899,9 @@ Ouvrez les Préférences macOS pour les activer.";
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Pour chaque fichier, sélectionnez la version à conserver.";
 
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Emplacement sur l’ordinateur";
+
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Quelle version souhaitez-vous garder ?";
 
@@ -1018,6 +1021,9 @@ Ouvrez les Préférences macOS pour les activer.";
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Le dossier a peut-être été déplacé vers un autre disque puis remis à son emplacement initial.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Emplacement sur kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Remettez-le à son emplacement d’origine.";

@@ -898,6 +898,9 @@
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "For hver fil skal du vælge den version, der skal beholdes.";
 
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Placering på computeren";
+
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Hvilken version vil du beholde?";
 
@@ -1017,6 +1020,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Mappen er muligvis blevet flyttet til en anden disk og derefter returneret til sin oprindelige placering.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Placering på kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Gendan den til sin oprindelige placering.";

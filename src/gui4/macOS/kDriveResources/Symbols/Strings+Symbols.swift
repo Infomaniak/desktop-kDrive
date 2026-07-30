@@ -676,6 +676,8 @@ public enum KDriveLocalizable {
   public static let labelChooseConflictVersion = KDriveLocalizable.tr("Localizable", "labelChooseConflictVersion", fallback: "Choose which version of your files you want to keep.")
   /// loco:69aae4641dd9b6d9260b1dd2
   public static let labelChooseConflictVersionIndividual = KDriveLocalizable.tr("Localizable", "labelChooseConflictVersionIndividual", fallback: "For each file, select the version to keep.")
+  /// loco:6a6b5bc4ab6ea93eee08e6ca
+  public static let labelComputerLocation = KDriveLocalizable.tr("Localizable", "labelComputerLocation", fallback: "Location on computer")
   /// loco:69a6a189b148a1a71e0ed432
   public static let labelConflictDialogQuestion = KDriveLocalizable.tr("Localizable", "labelConflictDialogQuestion", fallback: "Which version do you want to keep?")
   /// loco:69a6a149ab7804a872011ae3
@@ -768,6 +770,8 @@ public enum KDriveLocalizable {
   public static let labelRecommended = KDriveLocalizable.tr("Localizable", "labelRecommended", fallback: "Recommended")
   /// loco:69c117446ac92c1902088ab4
   public static let labelRemoteAccessRightsModifiedTip = KDriveLocalizable.tr("Localizable", "labelRemoteAccessRightsModifiedTip", fallback: "The folder may have been moved to another disk and then returned to its original location.")
+  /// loco:6a6b56f9a1b071169c0f64f2
+  public static let labelRemoteLocation = KDriveLocalizable.tr("Localizable", "labelRemoteLocation", fallback: "Location on kDrive")
   /// loco:69a0058cb6529d830904d094
   public static let labelRestoreToOriginalLocation = KDriveLocalizable.tr("Localizable", "labelRestoreToOriginalLocation", fallback: "Restore it to its original location.")
   /// loco:698b58377672899b9301a142
