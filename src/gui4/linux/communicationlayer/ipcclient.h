@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "communicationlayer/serversignalsequencer.h"
 #include "libcommon/comm.h"
 #include "libcommon/utility/types.h"
 
@@ -52,7 +53,7 @@ class IpcClient : public QObject {
         void connected();
         void disconnected();
         /**
-         * Emitted when a server-initiated signal (type:2) has been received and parsed.
+         * Emitted when a server-initiated signal (type:2) has been received, parsed and restored to server-assigned order.
          * @param num    Signal number identifying the event (see SignalNum in comm.h)
          * @param params Deserialized JSON parameters associated with the signal
          */
@@ -71,6 +72,7 @@ class IpcClient : public QObject {
 
         QTcpSocket *_socket;
         QTimer _initialConnectionRetryTimer;
+        ServerSignalSequencer _serverSignalSequencer;
         std::string _readBuffer;
         int32_t _nextId{0};
         QHash<int32_t, ResponseCallback> _pendingCallbacks;
