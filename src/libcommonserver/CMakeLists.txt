@@ -25,6 +25,7 @@ set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
     utility/selfsignedcert.h utility/selfsignedcert.cpp
+    utility/truststorehelper.h
     utility/stateholder.h
     utility/jsonparserutility.h
     # Db
@@ -58,11 +59,15 @@ if(APPLE)
 
     list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_mac.mm)
+    set_property(SOURCE utility/truststorehelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
     list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_win.cpp)
 else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_linux.cpp)
 endif()
 
 # Target
@@ -149,9 +154,11 @@ elseif(APPLE)
     find_library(FOUNDATION_LIBRARY NAMES Foundation)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(APPKIT_LIBRARY NAMES AppKit)
+    find_library(SECURITY_LIBRARY NAMES Security)
 
     target_link_libraries(${libcommonserver_NAME}
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
-        ${APPKIT_LIBRARY})
+        ${APPKIT_LIBRARY}
+        ${SECURITY_LIBRARY})
 endif()

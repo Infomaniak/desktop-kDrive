@@ -24,6 +24,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/truststorehelper.h"
 #include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -33,10 +34,8 @@
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/AutoPtr.h>
 #include <Poco/SharedPtr.h>
-#include <Poco/InflatingStream.h>
 #include <Poco/Error.h>
 
-#include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <atomic>
 #include <functional>
 #include <thread>
@@ -64,9 +63,18 @@ AbstractNetworkJob::AbstractNetworkJob() :
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
+                // VERIFY_STRICT enables peer certificate verification.
+                // loadDefaultCAs is false because the bundled OpenSSL build does not ship a CA
+                // bundle; instead we load the platform-native trust store below.
                 _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
-                                                  Poco::Net::Context::VERIFY_STRICT, 9, true);
+                                                  Poco::Net::Context::VERIFY_STRICT, 9, false);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+                // Load the platform-native trust store (macOS keychain / Windows cert store /
+                // Linux ca-certificates) into the underlying OpenSSL SSL_CTX.
+                if (!TrustStoreHelper::loadSystemCAs(_context->sslContext())) {
+                    LOG_WARN(_logger, "Failed to load system CAs — peer verification may fail");
+                }
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
