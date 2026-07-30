@@ -98,8 +98,7 @@ bool SelfSignedCert::generateAndPublish(Pem &pem) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS certificate in the keychain");
         return false;
     }
-        return false;
-    }
+
     return true;
 }
 
