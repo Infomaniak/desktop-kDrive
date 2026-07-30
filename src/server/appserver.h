@@ -144,8 +144,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllSyncPals();
         void stopAllVfs();
 
-        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
-                              const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
+        // Note: this function removes SyncDb files as a side effect.
+        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList);
 
         void addError(const Error &error) const;
         void manageError(const Error &error, std::vector<Error> &errorList, bool errorAlreadyExists) const;
@@ -187,12 +187,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
-        void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
+        void stopSyncTask(SyncDbId syncDbId); // This method removes the SyncDb file as a side effect.
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(DistributionChannel versionChannel);
-        VersionInfo getVersionInfo() const;
-        UpdateState getUpdateState() const;
+        [[nodiscard]] VersionInfo getVersionInfo() const;
+        [[nodiscard]] UpdateState getUpdateState() const;
         void refreshUpdateState();
         void startInstaller();
         [[nodiscard]] ExitInfo getNodePath(SyncDbId syncDbId, const NodeId &nodeId, CommString &path);

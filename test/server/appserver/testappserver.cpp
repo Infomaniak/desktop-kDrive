@@ -172,7 +172,7 @@ void TestAppServer::testStartAndStopSync() {
     auto exists = false;
     auto ioError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
-    CPPUNIT_ASSERT(exists);
+    CPPUNIT_ASSERT(!exists);
 
     // Start syncs for all users with an ignored syncDbId
     toIgnoreSyncDbIds = {syncDbId};
@@ -210,7 +210,7 @@ void TestAppServer::testStartAndStopSync() {
 
     // Check that DB file is removed when sync is deleted
     CPPUNIT_ASSERT(_appPtr->startSyncs());
-    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
+    _appPtr->stopAllSyncsTask({syncDbId});
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));

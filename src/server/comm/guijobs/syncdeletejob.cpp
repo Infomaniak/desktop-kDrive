@@ -65,7 +65,7 @@ ExitInfo SyncDeleteJob::process() {
         return ExitCode::OperationCanceled;
     }
 
-    _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
+    _commManager->appServer().stopSyncTask(_syncDbId);
 
     // Delete sync from DB
     _commManager->appServer().deleteSync(_syncDbId);
