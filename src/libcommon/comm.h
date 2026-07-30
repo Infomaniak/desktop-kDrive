@@ -19,8 +19,10 @@
 #pragma once
 #include <cstdint>
 #include <string>
-//keychain key for tls certificate
+// keychain key for tls certificate
 inline constexpr char certKeychainKey[] = "kdrive_ipc_tls_cert";
+inline constexpr char package[] = "com.infomaniak.drive";
+inline constexpr char service[] = "desktopclient";
 
 inline constexpr uint16_t commShortTimeout = 1000;
 inline constexpr uint16_t commAverageTimeout = 10000;
