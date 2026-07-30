@@ -55,6 +55,9 @@ class ServerSignalSequencer : public QObject {
         void signalReady(SignalNum num, const Poco::DynamicStruct &params);
         void protocolError(const QString &message, const QString &details);
 
+    private slots:
+        void handleMissingSignalTimeout();
+
     private:
         struct PendingSignal {
                 SignalNum num{SignalNum::Unknown};
@@ -68,7 +71,6 @@ class ServerSignalSequencer : public QObject {
         void drainContiguousSignals();
         void updateMissingSignalTimer(bool restart);
         void fail(const QString &message, const QString &details);
-        void handleMissingSignalTimeout();
 
         std::chrono::milliseconds _missingSignalTimeout;
         size_t _maxPendingSignals;
