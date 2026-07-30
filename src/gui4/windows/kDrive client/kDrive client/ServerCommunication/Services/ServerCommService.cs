@@ -1461,6 +1461,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.UserChoice] = (int)userChoice
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ACKNOWLEDGE_MANY_DELETES, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1493,6 +1504,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.SYNC_REMOVED:
                     await HandleSyncRemovedAsync(sender, args);
+                    break;
+                case SignalNum.SYNC_NOTIFY_MANY_DELETES:
+                    await HandleSyncNotifyManyDeletesAsync(sender, args);
                     break;
                 case SignalNum.UPDATER_SHOW_DIALOG:
                     await HandleUpdaterShowDialog(sender, args);
@@ -2061,6 +2075,37 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
             return Task.CompletedTask;
+        }
+
+        public async Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
+                return;
+            }
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.NotificationType))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.NotificationType} not found in parameters.");
+                return;
+            }
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.NbFiles))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.NbFiles} not found in parameters.");
+                return;
+            }
+
+            DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
+            TooManyDeletesNotificationType? notificationType = signalData[JsonKeys.NotificationType]?.Deserialize<TooManyDeletesNotificationType>();
+            int? nbFiles = signalData[JsonKeys.NbFiles]?.AsValue().GetValue<int>();
+
+
+
+            //TODO le reste
+
+
         }
 
         public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)
