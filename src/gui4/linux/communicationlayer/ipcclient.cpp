@@ -23,9 +23,7 @@
 #include "libcommon/commjson.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
-#include "libcommonserver/keychainmanager/keychainmanager.h"
 
-#include <QHostAddress>
 #include <QLoggingCategory>
 #include <QSslConfiguration>
 #include <QString>
@@ -105,15 +103,19 @@ void IpcClient::connectToServer(const quint16 port) {
     attemptInitialConnection();
 }
 
+/**
+ * Loads the pinned TLS certificate from the keychain.
+ * @return true if the certificate was successfully loaded, false otherwise.
+ */
 bool IpcClient::loadPinnedCertificate() {
     if (!_pinnedCert.isNull()) {
         return true;
     }
-    bool found = false;
     const CertReader reader{std::string(certKeychainKey)};
-    _pinnedCert = reader.readCertificate(found);
-    return found && !_pinnedCert.isNull();
+    return reader.readCertificate(_pinnedCert);
 }
+
+
 /**
  * Attempts to connect to the server. Called on the first attempt and on each retry timer tick.
  * No-op if a connection has already been established (@c _hasConnectedOnce).
@@ -273,7 +275,7 @@ void IpcClient::onReadyRead() {
  */
 void IpcClient::onSslErrors(const QList<QSslError> &errors) {
     for (const QSslError &error: errors) {
-        qCWarning(lcIpcClient) << "SSL/TLS error (ignored for localhost):" << error.errorString();
+        qCWarning(lcIpcClient) << "SSL/TLS error :" << error.errorString();
     }
 }
 
