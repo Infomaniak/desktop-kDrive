@@ -57,6 +57,7 @@ final class MainWindowController: NSWindowController {
 
         observeRouter()
         observeXPConnectionState()
+        observeLoginItemAgentConnectionState()
         observerServerError()
         observeUsersCache()
     }
@@ -77,6 +78,17 @@ final class MainWindowController: NSWindowController {
         xpcConnectionProvider.guiConnectionStatePublisher
             .receiveOnMain(store: &bindStore) { [weak self] state in
                 self?.navigateAfterPreloading(state: state)
+            }
+    }
+
+    private func observeLoginItemAgentConnectionState() {
+        // Re-check whether background activity is enabled whenever we lose (or fail to establish) the
+        // connection with the login item agent. The initial `.disconnected` value is also emitted on
+        // subscription, which drives the check at app startup.
+        xpcConnectionProvider.loginItemAgentConnectionStatePublisher
+            .removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] _ in
+                self?.presentBackgroundActivityViewIfNecessary()
             }
     }
 
@@ -200,14 +212,18 @@ final class MainWindowController: NSWindowController {
         #endif
     }
 
+    @discardableResult
     private func presentBackgroundActivityViewIfNecessary() -> Bool {
         @InjectService var permissionHander: MacOSPermissionHandling
         guard !permissionHander.isBackgroundActivityEnabled() else {
             if case .enableBackgroundActivity = router.currentRoute {
                 navigateAfterPreloading(state: xpcConnectionProvider.guiConnectionState)
-                return false
             }
             return false
+        }
+
+        guard router.currentRoute != .enableBackgroundActivity else {
+            return true
         }
 
         router.navigate(to: .enableBackgroundActivity)

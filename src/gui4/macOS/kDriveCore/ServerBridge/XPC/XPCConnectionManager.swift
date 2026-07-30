@@ -28,6 +28,9 @@ import InfomaniakDI
     @MainActor
     @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
 
+    @MainActor
+    @Published private(set) var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .disconnected
+
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
@@ -103,6 +106,7 @@ import InfomaniakDI
             IKLogger.xpc.error("[KD] Connection with login item agent interrupted (server crash)")
             guard let self else { return }
             loginItemAgentConnection = nil
+            notifyLoginItemAgentConnectionState(.disconnected)
             scheduleRetryToConnectToLoginAgent()
         }
 
@@ -110,6 +114,7 @@ import InfomaniakDI
             IKLogger.xpc.error("[KD] Connection with login item agent invalidated (no server running)")
             guard let self else { return }
             loginItemAgentConnection = nil
+            notifyLoginItemAgentConnectionState(.disconnected)
             scheduleRetryToConnectToLoginAgent()
         }
 
@@ -117,6 +122,13 @@ import InfomaniakDI
         connection.resume()
 
         try await fetchServerEndpointFromLoginItemAgentAndConnect()
+        notifyLoginItemAgentConnectionState(.connected)
+    }
+
+    private func notifyLoginItemAgentConnectionState(_ state: XPCLoginItemAgentConnectionState) {
+        Task { @MainActor [weak self] in
+            self?.loginItemAgentConnectionState = state
+        }
     }
 
     func fetchServerEndpointFromLoginItemAgentAndConnect() async throws {

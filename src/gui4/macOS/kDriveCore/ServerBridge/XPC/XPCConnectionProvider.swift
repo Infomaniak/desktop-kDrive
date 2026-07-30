@@ -26,11 +26,19 @@ public enum XPCConnectionState {
     case serverCrashed
 }
 
+public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
+    case connected
+    case disconnected
+}
+
 public protocol XPCConnectionProvider: Sendable {
     var guiConnection: XPCGuiProtocol { get async throws }
 
     var guiConnectionState: XPCConnectionState { get }
     var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
+
+    var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
 }
 
 extension XPCConnectionManager: XPCConnectionProvider {
@@ -57,5 +65,9 @@ extension XPCConnectionManager: XPCConnectionProvider {
 
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
         return $guiConnectionState.eraseToAnyPublisher()
+    }
+
+    public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> {
+        return $loginItemAgentConnectionState.eraseToAnyPublisher()
     }
 }
