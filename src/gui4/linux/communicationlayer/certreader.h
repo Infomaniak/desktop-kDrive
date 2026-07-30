@@ -18,7 +18,6 @@
 
 #pragma once
 
-
 #include <QSslCertificate>
 #include <string>
 
@@ -31,19 +30,26 @@ namespace KDC {
  */
 class CertReader {
     public:
+        /**
+         * @brief Constructs a CertReader with the specified keychain key.
+         * @param keychainKey The keychain key to access the certificate.
+         */
         explicit CertReader(std::string keychainKey);
 
         /**
-         * Reads the PEM string from the keychain.
-         * @param found set to false if the entry does not exist (not an error).
-         * @return the PEM string, or empty on absence/failure.
+         * Reads and parses the certificate from the keychain.
+         * @param certificate The output QSslCertificate to hold the parsed certificate.
+         * @return true if the certificate was successfully read and parsed, false otherwise.
          */
-        std::string readPem(bool &found) const;
-
-        /** Reads and parses into a QSslCertificate. Null cert on absence/failure. */
-        QSslCertificate readCertificate(bool &found) const;
+        bool readCertificate(QSslCertificate &certificate) const;
 
     private:
+        /**
+         * Reads the PEM string from the keychain.
+         * @param outPem The output string to hold the PEM data.
+         * @return true if the PEM string was successfully read, false otherwise.
+         */
+        bool readPem(std::string &outPem) const;
         std::string _keychainKey;
 };
 
