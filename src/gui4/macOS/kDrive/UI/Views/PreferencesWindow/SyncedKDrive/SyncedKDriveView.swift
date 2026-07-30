@@ -26,6 +26,7 @@ import Sentry
 import SwiftUI
 
 struct SyncedKDriveView: View {
+    @Environment(\.openURL) private var openURL
     @InjectService private var matomo: MatomoUtils
     @InjectService private var cacheObservable: CoherentCacheObservable
 
@@ -78,9 +79,12 @@ struct SyncedKDriveView: View {
                     }
 
                     IKLabeledContent(KDriveLocalizable.labelRemoteLocation) {
-                        Link(drive.name, destination: URLConstants.kDrive(for: drive.driveId))
-                            .buttonStyle(.plain)
-                            .foregroundStyle(ColorToken.Action.primary.asColor)
+                        Button(drive.name) {
+                            matomo.track(eventWithCategory: .driveManagementPage, name: "openRemoteSyncDir")
+                            openURL(URLConstants.kDrive(for: drive.driveId))
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(ColorToken.Action.primary.asColor)
                     }
 
                     IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
