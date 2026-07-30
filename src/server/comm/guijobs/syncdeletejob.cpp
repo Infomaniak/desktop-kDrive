@@ -69,7 +69,8 @@ ExitInfo SyncDeleteJob::process() {
     _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove, vfsToStop);
 
     // Delete sync from DB
-    if (const auto deleteSyncExitInfo = _commManager->appServer().deleteSync(_syncDbId); deleteSyncExitInfo && vfsToStop)
+    if (const auto deleteSyncExitInfo = _commManager->appServer().deleteSync(_syncDbId);
+        AppServer::shouldStopVfs(deleteSyncExitInfo, vfsToStop))
         vfsToStop->stop(true);
 
 #if defined(KD_MACOS)

@@ -717,8 +717,6 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
     if (!ParmsDb::instance()->selectAllDrives(drive.accountDbId(), driveList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
         addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
-
-        return ExitCode::DbError;
     }
 
     if (driveList.empty()) {

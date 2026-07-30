@@ -63,24 +63,24 @@ ExitInfo UserDeleteJob::process() {
     }
 
     // Stop syncs for this user and remove them from syncPalMap.
-    AppServer::VfsVector vfsToStop;
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove, vfsToStop);
+    AppServer::VfsVector vfsVectorToStop;
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove, vfsVectorToStop);
 
     // Delete user from DB
-    if (const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId); exitInfo) {
+    const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId);
+    if (exitInfo) {
         auto signalUserRemovedJob = std::make_shared<SignalUserRemovedJob>(_userDbId);
         _commManager->sendGuiSignal(signalUserRemovedJob);
-        for (auto vfs: vfsToStop) {
-            if (AppServer ::shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
-        }
     } else {
         LOG_WARN(_logger, "Error in ServerRequests::deleteUser:" << exitInfo);
         addError(Error(ERR_ID, exitInfo));
-
-        return exitInfo;
     }
 
-    return ExitCode::Ok;
+    for (const auto &vfs: vfsVectorToStop) {
+        if (AppServer::shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
+    }
+
+    return exitInfo;
 }
 
 } // namespace KDC

@@ -72,10 +72,10 @@ ExitInfo DriveDeleteJob::process() {
     // Stop syncs for this user and remove them from syncPalMap.
     AppServer::VfsVector vfsToStop;
     _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove, vfsToStop);
-    if (const auto exitInfo = _commManager->appServer().deleteDrive(_driveDbId); !exitInfo) {
-        for (auto vfs: vfsToStop)
-            if (AppServer::shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
-    }
+    const auto exitInfo = _commManager->appServer().deleteDrive(_driveDbId);
+    for (const auto &vfs: vfsToStop)
+        if (AppServer::shouldStopVfs(exitInfo, vfs)) vfs->stop(true);
+
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
 #endif
