@@ -2101,11 +2101,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             TooManyDeletesNotificationType? notificationType = signalData[JsonKeys.NotificationType]?.Deserialize<TooManyDeletesNotificationType>();
             int? nbFiles = signalData[JsonKeys.NbFiles]?.AsValue().GetValue<int>();
 
+            if (syncDbID is null || notificationType is null || nbFiles is null)
+            {
+                Logger.Log(Logger.Level.Error, $"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, nbFiles={nbFiles}");
+                return;
+            }
 
+            await Utility.RunOnUIThread(async () =>
+            {
+                _viewModel.ManyDeletesQueue.Enqueue(new ManyDeletesInfo(
+                    syncDbID.Value,
+                    notificationType.Value,
+                    nbFiles.Value
+                ));
 
-            //TODO le reste
+                var mainWindow = (App.Current as App)?.CurrentWindow as MainWindow;
 
-
+                if (mainWindow != null)
+                {
+                    await mainWindow.ProcessManyDeleteQueue();
+                }
+            });
         }
 
         public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)
