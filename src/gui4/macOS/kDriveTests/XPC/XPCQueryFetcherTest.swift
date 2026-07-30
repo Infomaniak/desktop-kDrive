@@ -63,6 +63,11 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
 
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
+    var loginItemAgentConnectionState: kDriveCore.XPCLoginItemAgentConnectionState = .connected
+
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<kDriveCore.XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
+
     let payloadFileName: String
 
     var guiConnection: XPCGuiProtocol {
@@ -76,6 +81,11 @@ struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
     var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
 
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
+    var loginItemAgentConnectionState: kDriveCore.XPCLoginItemAgentConnectionState = .connected
+
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<kDriveCore.XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
 
     let responseData: Data
 
