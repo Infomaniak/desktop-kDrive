@@ -30,8 +30,10 @@ class COMMONSERVER_EXPORT SelfSignedCert {
                 std::string key;
         };
 
-        /// Read the certificate/key pair from the keychain, generating and storing
-        /// a new one if absent.
+        /// Generate a fresh certificate/key pair and publish the certificate to the keychain,
+        /// so that the GUI can pin it. The private key never leaves this process.
+        /// Must run before the port is published, otherwise a GUI starting in between would pin
+        /// the previous certificate.
         /// @return true on success, false otherwise.
         static bool generateAndPublish(Pem &pem);
 
