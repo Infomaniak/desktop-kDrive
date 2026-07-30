@@ -637,9 +637,9 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
     if (shouldStopVfs(stopSyncPalExitInfo, vfsToStop)) {
         // On Windows, the VFS is stopped only if `SyncPal` has been stopped successfully, which guarantees the deletion
         // of the corresponding `SyncDb` file. It is important because stopping the VFS on Windows causes all dehydrated
-        // placeholders to be deleted and could lead to the unwanted propagation of local deletions if the SyncDb file still
+        // placeholders to be deleted and could lead to the unwanted propagation of local deletions if the `SyncDb` file still
         // exists.
-        vfsToStop->stop(true); // Remove dehydrated placeholders on Windows.
+        vfsToStop->stop(true); // This also removes dehydrated placeholders on Windows.
     }
 }
 
