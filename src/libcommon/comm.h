@@ -23,6 +23,7 @@
 inline constexpr uint16_t commShortTimeout = 1000;
 inline constexpr uint16_t commAverageTimeout = 10000;
 inline constexpr uint16_t commLongTimeout = 60000;
+inline constexpr int32_t firstGuiSignalId = 0;
 
 inline constexpr char msgType[] = "type";
 

@@ -47,13 +47,17 @@ namespace KDC {
 IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
     _socket(new QTcpSocket(this)),
-    _initialConnectionRetryTimer(this) {
+    _initialConnectionRetryTimer(this),
+    _serverSignalSequencer(this) {
     _initialConnectionRetryTimer.setSingleShot(true);
     (void) connect(&_initialConnectionRetryTimer, &QTimer::timeout, this, &IpcClient::attemptInitialConnection);
     (void) connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
     (void) connect(_socket, &QTcpSocket::disconnected, this, &IpcClient::onDisconnected);
     (void) connect(_socket, &QTcpSocket::errorOccurred, this, &IpcClient::onErrorOccurred);
     (void) connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
+    (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::signalReady, this, &IpcClient::serverSignalReceived);
+    (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::protocolError, this,
+                   [](const QString &message, const QString &details) { SentryService::reportFatalAndExit(message, details); });
 }
 
 
@@ -325,7 +329,7 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
  * Handles a server-initiated signal (`type:2`) after generic message parsing.
  *
  * Extracts the `SignalNum` from the shared message envelope and forwards the
- * payload to upper layers through `serverSignalReceived`.
+ * payload and server-assigned ordering id to the internal signal sequencer.
  *
  * @param ipcMessage Fully parsed IPC message envelope.
  * @param id         Signal identifier assigned by the server.
@@ -340,8 +344,8 @@ void IpcClient::handleServerSignal(const Poco::DynamicStruct &ipcMessage, const 
     }
     const Poco::DynamicStruct params = ipcMessage[msgRequestParams].extract<Poco::DynamicStruct>();
 
-    qCDebug(lcIpcClient) << "Signal received | SignalNum:" << num << "/ id:" << id;
-    emit serverSignalReceived(num, params);
+    qCDebug(lcIpcClient) << "Server signal received from IPC | SignalNum:" << num << "/ id:" << id;
+    _serverSignalSequencer.enqueue(id, num, params);
 }
 /**
  * Process the buffer to extract complete JSON messages and route each one.
