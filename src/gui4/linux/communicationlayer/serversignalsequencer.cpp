@@ -108,13 +108,13 @@ void ServerSignalSequencer::forwardSignal(const int32_t signalId, const PendingS
 void ServerSignalSequencer::drainContiguousSignals() {
     while (!_pendingSignals.empty() && _lastForwardedId < std::numeric_limits<int32_t>::max()) {
         const int32_t expectedId = _lastForwardedId + 1;
-        const auto pendingSignalsIterator = _pendingSignals.find(expectedId);
-        if (pendingSignalsIterator == _pendingSignals.end()) {
+        const auto pendingSignalsIterator = _pendingSignals.begin();
+        if (pendingSignalsIterator->first != expectedId) {
             break;
         }
 
         const auto pendingSignalNode = _pendingSignals.extract(pendingSignalsIterator);
-        forwardSignal(expectedId, pendingSignalNode.mapped());
+        forwardSignal(pendingSignalNode.key(), pendingSignalNode.mapped());
     }
 
     updateMissingSignalTimer(true);
