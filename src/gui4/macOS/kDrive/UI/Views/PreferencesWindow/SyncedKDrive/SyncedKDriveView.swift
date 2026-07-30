@@ -68,7 +68,7 @@ struct SyncedKDriveView: View {
 
             if let mainSynchro {
                 Section {
-                    IKLabeledContent(KDriveLocalizable.labelSyncLocation) {
+                    IKLabeledContent(KDriveLocalizable.labelComputerLocation) {
                         Button(mainSynchro.localPath.path) {
                             matomo.track(eventWithCategory: .driveManagementPage, name: "openSyncDir")
                             NSWorkspace.shared.open(mainSynchro.localPath)
