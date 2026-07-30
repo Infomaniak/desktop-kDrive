@@ -77,6 +77,12 @@ struct SyncedKDriveView: View {
                         .foregroundStyle(ColorToken.Action.primary.asColor)
                     }
 
+                    IKLabeledContent(KDriveLocalizable.labelRemoteLocation) {
+                        Link(drive.name, destination: URLConstants.kDrive(for: drive.driveId))
+                            .buttonStyle(.plain)
+                            .foregroundStyle(ColorToken.Action.primary.asColor)
+                    }
+
                     IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
                         HStack {
                             if let blacklistNodes, !blacklistNodes.isEmpty {
