@@ -18,6 +18,7 @@
 
 #include "certreader.h"
 
+#include "comm.h"
 #include "keychain/keychain.h"
 
 #include <QByteArray>
@@ -27,53 +28,45 @@
 
 Q_LOGGING_CATEGORY(lcCertReader, "gui.v4.certreader", QtInfoMsg)
 
-namespace {
-// Must match KeyChainStorage exactly, or getPassword returns NotFound.
-const std::string keychainPackage("com.infomaniak.drive");
-const std::string keychainService("desktopclient");
-} // namespace
-
 namespace KDC {
 
 CertReader::CertReader(std::string keychainKey) :
     _keychainKey(std::move(keychainKey)) {}
 
-std::string CertReader::readPem(bool &found) const {
-    found = false;
+bool CertReader::readPem(std::string &outPem) const {
+    outPem.clear();
     keychain::Error error{};
-    const std::string pem = keychain::getPassword(keychainPackage, keychainService, _keychainKey, error);
+    outPem = keychain::getPassword(std::string(package), std::string(service), _keychainKey, error);
 
     if (error.type == keychain::ErrorType::NotFound) {
         // Entry not present yet — not an error; caller may retry.
-        return {};
+        return false;
     }
     if (error) {
         qCWarning(lcCertReader) << "Keychain read failed:" << QString::fromStdString(error.message) << "(code:" << error.code
                                 << ")";
-        return {};
+        return false;
     }
-    if (pem.empty()) {
+    if (outPem.empty()) {
         qCWarning(lcCertReader) << "Keychain returned an empty certificate";
-        return {};
+        return false;
     }
-
-    found = true;
-    return pem;
+    return true;
 }
 
-QSslCertificate CertReader::readCertificate(bool &found) const {
-    const std::string pem = readPem(found);
-    if (!found || pem.empty()) {
-        return QSslCertificate();
+bool CertReader::readCertificate(QSslCertificate &certificate) const {
+    std::string pem;
+    if (!readPem(pem)) {
+        return false;
     }
 
-    const QSslCertificate cert(QByteArray::fromStdString(pem), QSsl::Pem);
-    if (cert.isNull()) {
+    certificate = QSslCertificate(QByteArray::fromStdString(pem), QSsl::Pem);
+    if (certificate.isNull()) {
         qCWarning(lcCertReader) << "Failed to parse certificate PEM from keychain";
-    } else {
-        qCInfo(lcCertReader) << "Certificate loaded from keychain";
+        return false;
     }
-    return cert;
+    qCInfo(lcCertReader) << "Certificate loaded from keychain";
+    return true;
 }
 
 } // namespace KDC

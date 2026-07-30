@@ -24,7 +24,6 @@
 
 #include <cstdint>
 #include <QHash>
-#include <QSslError>
 #include <QSslSocket>
 #include <QString>
 #include <QTimer>
@@ -61,17 +60,17 @@ class IpcClient : public QObject {
         void serverSignalReceived(SignalNum num, const Poco::DynamicStruct &params);
 
     private slots:
-        bool loadPinnedCertificate();
         void attemptInitialConnection();
         void onConnected();
         void onDisconnected();
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onReadyRead();
-        static void onSslErrors(const QList<QSslError> &errors);
 
     private:
         void handleResponseMessage(const Poco::DynamicStruct &ipcMessage, int32_t id);
         void handleServerSignal(const Poco::DynamicStruct &ipcMessage, int32_t id);
+        static void onSslErrors(const QList<QSslError> &errors);
+        bool loadPinnedCertificate();
 
         QSslSocket *_socket;
         QTimer _initialConnectionRetryTimer;
