@@ -37,8 +37,6 @@ static constexpr auto outRequestParams = msgRequestParams;
 
 namespace KDC {
 
-int AbstractGuiJob::_lastSignalId = 0;
-
 AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                                std::shared_ptr<AbstractCommChannel> channel) :
     _commManager(commManager),
@@ -50,7 +48,6 @@ AbstractGuiJob::AbstractGuiJob(std::shared_ptr<CommManager> commManager, int req
 
 AbstractGuiJob::AbstractGuiJob() {
     _type = GuiJobType::Signal;
-    _signalId = _lastSignalId++;
 }
 
 ExitInfo AbstractGuiJob::runJob() {
