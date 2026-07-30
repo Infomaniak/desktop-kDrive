@@ -613,13 +613,9 @@ void AppServer::quitLater(const int32_t delayMs) {
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     // Stop sync and remove it from syncPalMap
-    if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
-        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
-    }
-
-    // Stop Vfs
-    if (const auto exitInfo = stopVfs(syncDbId, true); !exitInfo) {
-        LOG_WARN(_logger, "Error in stopVfs for syncDbId=" << syncDbId << " : " << exitInfo);
+    const auto stopSyncPalExitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior);
+    if (!stopSyncPalExitInfo) {
+        LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << stopSyncPalExitInfo);
     }
 
     {
@@ -628,11 +624,22 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
         (void) syncPalMap.erase(syncDbId);
     }
 
+    std::shared_ptr<Vfs> vfsToStop;
     {
         const std::scoped_lock lock(vfsMapMutex);
         LOG_IF_FAIL(!vfsMap[syncDbId] ||
                     vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
+        vfsToStop = vfsMap[syncDbId];
         (void) vfsMap.erase(syncDbId);
+    }
+
+    // Stop Vfs
+    if (shouldStopVfs(stopSyncPalExitInfo, vfsToStop)) {
+        // On Windows, the VFS is stopped only if `SyncPal` has been stopped successfully, which guarantees the deletion
+        // of the corresponding `SyncDb` file. It is important because stopping the VFS on Windows causes all dehydrated
+        // placeholders to be deleted and could lead to the unwanted propagation of local deletions if the SyncDb file still
+        // exists.
+        vfsToStop->stop(true); // Remove dehydrated placeholders on Windows.
     }
 }
 
@@ -2894,11 +2901,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
