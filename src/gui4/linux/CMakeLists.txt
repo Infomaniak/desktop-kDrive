@@ -61,6 +61,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/onboarding/oauthloginservice.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
+        communicationlayer/serversignalsequencer.cpp
+        communicationlayer/serversignalsequencer.h
         communicationlayer/signaldispatcher.cpp
         communicationlayer/signaldispatcher.h
         app/services/commservice.cpp
