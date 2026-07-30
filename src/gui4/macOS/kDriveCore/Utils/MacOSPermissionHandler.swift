@@ -65,7 +65,12 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
             return true
         }
 
-        return SMAppService.mainApp.status == .enabled
+        guard let loginItemAgentIdentifier = Bundle.main
+            .object(forInfoDictionaryKey: "LoginItemAgentMachName") as? String else {
+            return false
+        }
+
+        return SMAppService.loginItem(identifier: loginItemAgentIdentifier).status == .enabled
         #endif
     }
 }
