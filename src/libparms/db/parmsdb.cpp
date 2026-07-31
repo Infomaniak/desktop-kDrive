@@ -2667,6 +2667,7 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
     sync.setListingCursor(strResult, int64Result);
 
     int32_t toDeleteResult{0};
+
     LOG_IF_FAIL(queryIntValue(requestId, 15, toDeleteResult));
     sync.setToDelete(static_cast<bool>(toDeleteResult));
 }
@@ -2820,6 +2821,7 @@ bool ParmsDb::selectAllSyncs(const DriveDbId driveDbId, std::vector<Sync> &syncL
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursor));
         int64_t listingCursorTimestamp;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
+
         int32_t toDelete = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 14, toDelete));
 
