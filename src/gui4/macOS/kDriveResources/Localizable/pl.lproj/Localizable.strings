@@ -1222,6 +1222,9 @@
 /* loco:6a57951024f1cb7e550ab932 */
 "onboardingV4Faq" = "Poznaj aplikację";
 
+/* loco:6a6c5f087684bf313b0aed22 */
+"onboardingV4Subtitle" = "Śledź swoje synchronizacje w prostszy sposób.";
+
 /* loco:6a5794493019354d4b087d62 */
 "onboardingV4Title" = "Nowa aplikacja kDrive jest już dostępna!";
 
@@ -1527,6 +1530,3 @@
 
 /* loco:69314d1a739c205c410aa087 */
 "instructionRestartIfNecessary" = "Uruchom ponownie aplikację, jeśli wymagane";
-
-/* loco:6a57949f03c629668b0ec6b3 */
-"onboardingV4Message" = "Śledź swoje synchronizacje w prostszy sposób.";
