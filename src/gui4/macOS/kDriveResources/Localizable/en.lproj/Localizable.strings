@@ -472,6 +472,12 @@
 /* loco:699c5de5e592726401053953 */
 "duplicateNamesErrorTitle" = "Duplicate names";
 
+/* loco:6a5f1fef9e6b79cec10e40d3 */
+"enableBackgroundActivityDescription" = "kDrive must remain active in your Mac’s settings to update your files.";
+
+/* loco:6a5f1fc352e21d55a0025802 */
+"enableBackgroundActivityTitle" = "Reactivate kDrive to continue";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Record diagnostic information on my computer.";
 
@@ -808,6 +814,12 @@
 /* loco:69c4e8b82884a264150d2583 */
 "informationBlockTmpDirAccessErrorTitle" = "Connection to kDrive interrupted";
 
+/* loco:6a5f21a860fed997a40cfc45 */
+"instructionEnableBackgroundActivity" = "In \"Background App Refresh\", enable kDrive";
+
+/* loco:6a5f21c0aa99ab499a097e82 */
+"instructionEnableBackgroundActivityArgument" = "Background App Refresh";
+
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activate kDrive.app";
 
@@ -822,6 +834,12 @@
 
 /* loco:69314c248389940c6c08d902 */
 "instructionFullDiskHint" = "You must activate authorizations before continuing";
+
+/* loco:6a5f2134015fb9713f080a45 */
+"instructionOpenLoginItems" = "Select Login Items & Extensions";
+
+/* loco:6a5f2172e2e3f0313908bcc5 */
+"instructionOpenLoginItemsLink" = "Login Items & Extensions";
 
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Go to Privacy & Security > Full disk access";

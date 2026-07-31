@@ -26,11 +26,25 @@ public enum XPCConnectionState {
     case serverCrashed
 }
 
+public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
+    /// A connection attempt is in progress and has not yet succeeded or failed.
+    case connecting
+    /// The login item agent is reachable.
+    case connected
+    /// The login item agent could not be reached (e.g. it was invalidated or is not enabled).
+    case disconnected
+}
+
 public protocol XPCConnectionProvider: Sendable {
     var guiConnection: XPCGuiProtocol { get async throws }
 
     var guiConnectionState: XPCConnectionState { get }
     var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
+
+    var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
+
+    func reconnectToLoginAgent() async
 }
 
 extension XPCConnectionManager: XPCConnectionProvider {
@@ -57,5 +71,9 @@ extension XPCConnectionManager: XPCConnectionProvider {
 
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {
         return $guiConnectionState.eraseToAnyPublisher()
+    }
+
+    public var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> {
+        return $loginItemAgentConnectionState.eraseToAnyPublisher()
     }
 }

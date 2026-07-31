@@ -63,6 +63,11 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
 
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
+    var loginItemAgentConnectionState: kDriveCore.XPCLoginItemAgentConnectionState = .connected
+
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<kDriveCore.XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
+
     let payloadFileName: String
 
     var guiConnection: XPCGuiProtocol {
@@ -70,12 +75,19 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
             MCKXPCGuiProtocol(payloadFileName: payloadFileName)
         }
     }
+
+    func reconnectToLoginAgent() async {}
 }
 
 struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
     var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
 
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
+    var loginItemAgentConnectionState: kDriveCore.XPCLoginItemAgentConnectionState = .connected
+
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<kDriveCore.XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
 
     let responseData: Data
 
@@ -84,6 +96,8 @@ struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
             MCKXPCGuiProtocolWithData(responseData: responseData)
         }
     }
+
+    func reconnectToLoginAgent() async {}
 }
 
 typealias SendableCodable = Codable & Sendable

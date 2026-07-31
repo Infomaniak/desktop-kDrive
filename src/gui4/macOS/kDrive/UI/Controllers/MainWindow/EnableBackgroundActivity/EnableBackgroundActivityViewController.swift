@@ -16,23 +16,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
-import Combine
-import kDriveCoreUI
+import AppKit
+import SwiftUI
 
-enum WindowRoute: Sendable, Equatable {
-    case preloading(isShowingError: Bool = false)
-    case onboarding(UIUser? = nil, [OnboardingStep]? = nil, OnboardingStep? = nil)
-    case mainWindow(MainViewTab? = nil)
-    case updateRequired
-    case enableBackgroundActivity
-}
+final class EnableBackgroundActivityViewController: NSHostingController<EnableBackgroundActivityView> {
+    init() {
+        super.init(rootView: EnableBackgroundActivityView())
+    }
 
-final class MainWindowRouter {
-    @Published private(set) var currentRoute: WindowRoute = .preloading()
-
-    @MainActor
-    func navigate(to route: WindowRoute) {
-        currentRoute = route
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }

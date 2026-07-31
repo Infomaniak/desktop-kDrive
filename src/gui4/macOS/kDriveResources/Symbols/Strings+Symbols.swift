@@ -340,6 +340,10 @@ public enum KDriveLocalizable {
   public static let driveWakingUpErrorTitle = KDriveLocalizable.tr("Localizable", "driveWakingUpErrorTitle", fallback: "kDrive is waking up")
   /// loco:699c5de5e592726401053953
   public static let duplicateNamesErrorTitle = KDriveLocalizable.tr("Localizable", "duplicateNamesErrorTitle", fallback: "Duplicate names")
+  /// loco:6a5f1fef9e6b79cec10e40d3
+  public static let enableBackgroundActivityDescription = KDriveLocalizable.tr("Localizable", "enableBackgroundActivityDescription", fallback: "kDrive must remain active in your Mac’s settings to update your files.")
+  /// loco:6a5f1fc352e21d55a0025802
+  public static let enableBackgroundActivityTitle = KDriveLocalizable.tr("Localizable", "enableBackgroundActivityTitle", fallback: "Reactivate kDrive to continue")
   /// loco:698b3654af04fbae590cbf82
   public static let enableDebugLogDescription = KDriveLocalizable.tr("Localizable", "enableDebugLogDescription", fallback: "Record diagnostic information on my computer.")
   /// loco:698b361c54ac23ef050755a2
@@ -616,6 +620,10 @@ public enum KDriveLocalizable {
   public static let informationBlockTmpDirAccessErrorSubtitle = KDriveLocalizable.tr("Localizable", "informationBlockTmpDirAccessErrorSubtitle", fallback: "We cannot access your files. Restart the application to resume sync. If the problem continues, contact support.")
   /// loco:69c4e8b82884a264150d2583
   public static let informationBlockTmpDirAccessErrorTitle = KDriveLocalizable.tr("Localizable", "informationBlockTmpDirAccessErrorTitle", fallback: "Connection to kDrive interrupted")
+  /// loco:6a5f21a860fed997a40cfc45
+  public static let instructionEnableBackgroundActivity = KDriveLocalizable.tr("Localizable", "instructionEnableBackgroundActivity", fallback: "In \"Background App Refresh\", enable kDrive")
+  /// loco:6a5f21c0aa99ab499a097e82
+  public static let instructionEnableBackgroundActivityArgument = KDriveLocalizable.tr("Localizable", "instructionEnableBackgroundActivityArgument", fallback: "Background App Refresh")
   /// loco:6930595e7664999c6a08c8a4
   public static let instructionEnableKDrive = KDriveLocalizable.tr("Localizable", "instructionEnableKDrive", fallback: "Activate kDrive.app")
   /// loco:693059768c31ab63990a0c82
@@ -626,6 +634,10 @@ public enum KDriveLocalizable {
   public static let instructionFullDisk = KDriveLocalizable.tr("Localizable", "instructionFullDisk", fallback: "Activate kDrive and kDrive LiteSync Extension")
   /// loco:69314c248389940c6c08d902
   public static let instructionFullDiskHint = KDriveLocalizable.tr("Localizable", "instructionFullDiskHint", fallback: "You must activate authorizations before continuing")
+  /// loco:6a5f2134015fb9713f080a45
+  public static let instructionOpenLoginItems = KDriveLocalizable.tr("Localizable", "instructionOpenLoginItems", fallback: "Select Login Items & Extensions")
+  /// loco:6a5f2172e2e3f0313908bcc5
+  public static let instructionOpenLoginItemsLink = KDriveLocalizable.tr("Localizable", "instructionOpenLoginItemsLink", fallback: "Login Items & Extensions")
   /// loco:69314c4aba85c2962d068dc2
   public static let instructionOpenPrivacySecurity = KDriveLocalizable.tr("Localizable", "instructionOpenPrivacySecurity", fallback: "Go to Privacy & Security > Full disk access")
   /// loco:69314c54606d30eb26081743
