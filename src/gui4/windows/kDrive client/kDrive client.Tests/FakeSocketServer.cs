@@ -20,6 +20,12 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
     public int Port { get; }
 
+    /// <summary>
+    /// PEM-encoded certificate the fake server presents. Tests feed this to the client's
+    /// keychain store so the client can pin/validate it, mirroring the real deployment.
+    /// </summary>
+    public string CertificatePem => _serverCertificate.ExportCertificatePem();
+
     public FakeSocketServer()
     {
         _serverCertificate = CreateSelfSignedCertificate();
@@ -29,6 +35,25 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         _acceptTask = _listener.AcceptSocketAsync(_acceptCts.Token).AsTask();
     }
 
+    public async Task WriteCommFileAsync(string commFilePath)
+    {
+        var dir = Path.GetDirectoryName(commFilePath);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+
+        // Publish the certificate alongside the port, emulating the server publishing it to the
+        // keychain. FakeKeychainStore reads it back so the client can pin/validate it.
+        await File.WriteAllTextAsync(CertificateFilePath(commFilePath), CertificatePem);
+        await File.WriteAllTextAsync(commFilePath, Port.ToString());
+    }
+
+    /// <summary>
+    /// Convention shared with <c>FakeKeychainStore</c> for the companion file holding the
+    /// server certificate associated with a given .comm file.
+    /// </summary>
+    public static string CertificateFilePath(string commFilePath) => commFilePath + ".cert";
 
     public async Task<Socket> WaitForClientAsync(TimeSpan? timeout = null)
     {

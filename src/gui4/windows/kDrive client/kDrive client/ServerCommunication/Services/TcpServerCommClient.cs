@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
@@ -24,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -36,6 +39,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     public class TcpServerCommClient : Interfaces.IServerCommClient
     {
+        // Must match the server-side keychain key used to publish the TLS certificate (see comm.h: certKeychainKey).
+        private const string _certKeychainKey = "kdrive_ipc_tls_cert";
+
+        private readonly IKeychainStore _keychainStore;
         private Socket? _socket;
         private SslStream? _stream;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -71,7 +78,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
-        public TcpServerCommClient() {}
+        public TcpServerCommClient(IKeychainStore keychainStore)
+        {
+            _keychainStore = keychainStore;
+        }
 
         ~TcpServerCommClient()
         {
@@ -130,6 +140,26 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
+        private X509Certificate2? LoadPinnedCertificate()
+        {
+            string? pem = _keychainStore.ReadSecret(_certKeychainKey);
+            if (string.IsNullOrEmpty(pem))
+            {
+                Logger.Log(Logger.Level.Warning, "TLS certificate not found in keychain yet.");
+                return null;
+            }
+
+            try
+            {
+                return X509Certificate2.CreateFromPem(pem);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse pinned TLS certificate from keychain: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
             if (_pollingTask is not null)
@@ -158,9 +188,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #endif
                     }
 
+                    X509Certificate2? pinnedCertificate = LoadPinnedCertificate();
+                    if (pinnedCertificate is null)
+                    {
+                        // The server may not have published its certificate yet; retry.
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
                     DisposeConnection();
-                    (_socket, _stream) = await SecureSocketConnection.ConnectAsync(_host, port.Value, cancellationToken).ConfigureAwait(false);
+                    using (pinnedCertificate)
+                    {
+                        (_socket, _stream) = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, cancellationToken).ConfigureAwait(false);
+                    }
                     Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
                     return true;

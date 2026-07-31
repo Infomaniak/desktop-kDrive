@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -28,19 +29,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     /// <summary>
     /// Establishes a TLS connection to the local kDrive server socket.
     /// The server exposes a <c>SecureServerSocket</c> secured with an auto-generated,
-    /// self-signed certificate over the loopback interface.
+    /// self-signed certificate over the loopback interface. The client pins that exact
+    /// certificate (retrieved from the OS keychain) and rejects any other one.
     /// </summary>
     internal static class SecureSocketConnection
     {
         /// <summary>
         /// Opens a TCP connection to <paramref name="host"/>:<paramref name="port"/> and performs
-        /// the TLS client handshake.
+        /// the TLS client handshake, validating the server against the <paramref name="pinnedCertificate"/>.
         /// </summary>
         /// <returns>
         /// The connected <see cref="Socket"/> (for polling/availability checks) and the
         /// authenticated <see cref="SslStream"/> used to read and write application data.
         /// </returns>
-        public static async Task<(Socket Socket, SslStream Stream)> ConnectAsync(string host, int port, CancellationToken cancellationToken)
+        public static async Task<(Socket Socket, SslStream Stream)> ConnectAsync(string host, int port, X509Certificate2 pinnedCertificate, CancellationToken cancellationToken)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
@@ -48,13 +50,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await socket.ConnectAsync(host, port, cancellationToken).ConfigureAwait(false);
 
                 var networkStream = new NetworkStream(socket, ownsSocket: true);
-                var sslStream = new SslStream(networkStream, leaveInnerStreamOpen: false, ValidateServerCertificate);
+                var sslStream = new SslStream(networkStream, leaveInnerStreamOpen: false);
 
                 var options = new SslClientAuthenticationOptions
                 {
                     TargetHost = host,
                     EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-                    RemoteCertificateValidationCallback = ValidateServerCertificate
+                    RemoteCertificateValidationCallback =
+                        (sender, certificate, chain, errors) => ValidateServerCertificate(certificate, pinnedCertificate)
                 };
 
                 await sslStream.AuthenticateAsClientAsync(options, cancellationToken).ConfigureAwait(false);
@@ -67,11 +70,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        private static bool ValidateServerCertificate(object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
+        /// <summary>
+        /// Validates the certificate presented by the server against the pinned certificate.
+        /// Since the certificate is self-signed there is no CA chain to trust; instead we require
+        /// the presented certificate to be byte-for-byte identical to the one the server published
+        /// in the keychain.
+        /// </summary>
+        private static bool ValidateServerCertificate(X509Certificate? presentedCertificate, X509Certificate2 pinnedCertificate)
         {
-            // Loopback-only IPC secured by an auto-generated self-signed certificate.
-            // There is no CA to validate against, so any presented certificate is accepted.
-            return true;
+            if (presentedCertificate is null)
+            {
+                Logger.Log(Logger.Level.Error, "TLS validation failed: server presented no certificate.");
+                return false;
+            }
+
+            using var presented = new X509Certificate2(presentedCertificate);
+            bool matches = presented.RawData.SequenceEqual(pinnedCertificate.RawData);
+            if (!matches)
+            {
+                Logger.Log(Logger.Level.Error, "TLS validation failed: server certificate does not match the pinned certificate.");
+            }
+            return matches;
         }
     }
 }

@@ -17,6 +17,7 @@
  */
 
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -38,7 +39,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         private DbId _nextErrorDbId = 200;
 
-        public MockTcpServerCommClientTestError() : base()
+        public MockTcpServerCommClientTestError(IKeychainStore keychainStore) : base(keychainStore)
         {
             Task.Run(async () =>
             {
