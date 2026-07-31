@@ -48,7 +48,7 @@ void TestIo::testCopyFileOrDirectory() {
 
     // Regular empty folder and target doesn't exist
     const auto sourceFolderPath = tempDir.path() / "folder";
-    testhelpers::generateTestFolder(sourceFolderPath);
+    CPPUNIT_ASSERT(testhelpers::generateTestFolder(sourceFolderPath));
     const auto destFolderPath = tempDir.path() / "folder_copy";
     ioError = IoError::Success;
     CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceFolderPath, destFolderPath, ioError));
@@ -82,6 +82,8 @@ void TestIo::testCopyFileOrDirectory() {
     CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceFolderPath, destFilePath, ioError));
 #if defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(IoError::Unknown, ioError); // std::errc::function_not_supported
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(IoError::CrossDeviceLink, ioError);
 #else
     CPPUNIT_ASSERT_EQUAL(IoError::IsADirectory, ioError);
 #endif
@@ -106,8 +108,7 @@ void TestIo::testCopyFileOrDirectory() {
     CPPUNIT_ASSERT(std::filesystem::is_symlink(destSymlinkPath, ec) && !ec.value());
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     // Check that the symlink has been replaced by a new one with a different inode number
-    // Note: on Linux, the inode number of a symlink is not unique and can be reused by another symlink, so we cannot check that
-    // the inode number has changed
+    // Note: on Linux, the inode number of a delete item can be reused by another one so this check does not work reliably
     NodeId symlinkNodeIdAfterCopy;
     CPPUNIT_ASSERT(IoHelper::getNodeId(destSymlinkPath, symlinkNodeIdAfterCopy));
     CPPUNIT_ASSERT(symlinkNodeIdBeforeCopy != symlinkNodeIdAfterCopy);
@@ -135,12 +136,20 @@ void TestIo::testCopyFileOrDirectory() {
     // Copy a symlink to a file target
     ioError = IoError::Success;
     CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceSymlinkPath, destFilePath, ioError));
+#if defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+#else
+    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+#endif
 
     // Copy a symlink to a folder target
     ioError = IoError::Success;
     CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceSymlinkPath, destFolderPath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError); // std::errc::function_not_supported
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+#else
+    CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+#endif
 }
 
 } // namespace KDC
