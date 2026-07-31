@@ -29,6 +29,10 @@ QtObject {
 
     component Primitives: QtObject {
         readonly property color white: "#FFFFFF"
+        readonly property color white20: Qt.rgba(1, 1, 1, 0.20)
+        readonly property color white25: Qt.rgba(1, 1, 1, 0.25)
+        readonly property color transparent: Qt.rgba(1, 1, 1, 0)
+        readonly property color neutralBlack35: Qt.rgba(0.10, 0.10, 0.10, 0.35)
 
         // Blue
         readonly property color blue100: "#E2EDFD"
@@ -36,6 +40,7 @@ QtObject {
         readonly property color blue500: "#6E88E6"
         readonly property color blue600: "#446FDD"
         readonly property color blue950: "#1F2547"
+        readonly property color bluePale: "#DEE7FD"
 
         // NeutralBlue
         readonly property color neutralBlue50: "#F6F8FC"
@@ -61,8 +66,11 @@ QtObject {
         readonly property color red600: "#C92F40"
 
         // Green
+        readonly property color green100: "#E0F8E2"
         readonly property color green400: "#5FC96B"
         readonly property color green500: "#3EBF4D"
+        readonly property color green600: "#2A8F36"
+        readonly property color green950: "#0B2810"
 
         // Orange
         readonly property color orange100: "#FFF5D3"
@@ -70,6 +78,8 @@ QtObject {
         readonly property color orange400: "#FFB632"
         readonly property color orange500: "#FF9D0A"
         readonly property color orange800: "#A14B0B"
+        readonly property color orangeDeep: "#FF8500"
+        readonly property color orangePale: "#FFE8D8"
 
         // Brown
         readonly property color brown950: "#461E04"
@@ -78,6 +88,8 @@ QtObject {
         readonly property color infomaniak: "#0098FF"
         readonly property color kDrive500: "#5C89F7"
         readonly property color kDrive600: "#446FDD"
+        readonly property color kDriveDark: "#0E3A5D"
+        readonly property color kDriveLight: "#84A9F9"
     }
 
     readonly property Primitives _p: Primitives {}
@@ -113,10 +125,10 @@ QtObject {
     readonly property color tooltipText: darkMode ? _p.neutralBlue800 : _p.white
     readonly property color onboardingTooltipSurface: tooltipSurface
     readonly property color onboardingTooltipText: tooltipText
-    readonly property color onboardingDriveIconBorder: Qt.rgba(0.10, 0.10, 0.10, 0.35)
-    readonly property color onboardingDriveIconHighlightStart: Qt.rgba(1, 1, 1, 0.20)
-    readonly property color onboardingDriveIconHighlightEnd: Qt.rgba(1, 1, 1, 0)
-    readonly property color onboardingDriveIconInnerBorder: Qt.rgba(1, 1, 1, 0.25)
+    readonly property color onboardingDriveIconBorder: _p.neutralBlack35
+    readonly property color onboardingDriveIconHighlightStart: _p.white20
+    readonly property color onboardingDriveIconHighlightEnd: _p.transparent
+    readonly property color onboardingDriveIconInnerBorder: _p.white25
 
     // Window chrome
     readonly property color windowControlHover: surfaceSecondary
@@ -125,6 +137,8 @@ QtObject {
     readonly property color windowControlClosePressed: _p.red600
     readonly property color windowControlIcon: textPrimary
     readonly property color windowControlIconOnClose: _p.white
+    readonly property color toolbarControlSurface: darkMode ? _p.neutralBlue700 : _p.gray50
+    readonly property color toolbarControlHover: surfaceSecondary
 
     // Status — Strong
     readonly property color statusStrongWarning: darkMode ? _p.orange300 : _p.orange800
@@ -145,4 +159,14 @@ QtObject {
     // -------------------------------------------------------------------------
 
     readonly property color driveDefaultColor: _p.infomaniak
+    readonly property color homeIdleBadgeForeground: darkMode ? _p.green400 : _p.green600
+    readonly property color homeIdleBadgeSurface: darkMode ? _p.green950 : _p.green100
+    readonly property color homeIdleIllustrationStroke: darkMode ? _p.kDriveLight : _p.blue600
+    readonly property color homeErrorBannerSurface: darkMode ? _p.blue950 : _p.blue100
+    readonly property color homeOfflineForeground: darkMode ? _p.kDriveLight : _p.blue600
+    readonly property color homeOfflineSurface: darkMode ? _p.kDriveDark : _p.bluePale
+    readonly property color homePausedForeground: darkMode ? _p.orange400 : _p.orangeDeep
+    readonly property color homePausedSurface: darkMode ? _p.brown950 : _p.orangePale
+    readonly property color homeSyncingForeground: darkMode ? _p.kDriveLight : _p.blue600
+    readonly property color homeSyncingSurface: darkMode ? _p.kDriveDark : _p.bluePale
 }
