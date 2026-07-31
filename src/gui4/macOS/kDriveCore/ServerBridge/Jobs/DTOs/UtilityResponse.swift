@@ -74,7 +74,7 @@ struct UtilitySendLogToSupportQuery: Codable, Sendable {
     let includeArchivedLogs: Bool
 }
 
-struct UtilityCheckMacOsPermissionsResponse: Codable, Sendable {
+public struct UtilityCheckMacOsPermissionsResponse: Codable, Sendable {
     let fullDiskAccess: Bool
     let liteSyncExtEnabled: Bool
     let liteSyncExtFullDiskAccess: Bool
