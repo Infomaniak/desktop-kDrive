@@ -397,9 +397,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 if (_socket.Available > 0)
                 {
-                    // Read decrypted application data from the TLS stream. A single socket read
-                    // may carry a TLS record that decrypts to more (or fewer) bytes than are
-                    // reported by Socket.Available.
                     int bytesRead = await _stream.ReadAsync(_receiveBuffer).ConfigureAwait(false);
                     if (bytesRead == 0)
                     {
