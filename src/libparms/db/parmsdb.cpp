@@ -301,6 +301,11 @@
     "UPDATE sync SET hasFullyCompleted=?1 "   \
     "WHERE dbId=?2;"
 
+#define UPDATE_SYNC_TODELETE_REQUEST_ID "update_sync_todelete"
+#define UPDATE_SYNC_TODELETE_REQUEST \
+    "UPDATE sync SET toDelete=?1 "   \
+    "WHERE dbId=?2;"
+
 #define DELETE_SYNC_REQUEST_ID "delete_sync"
 #define DELETE_SYNC_REQUEST \
     "DELETE FROM sync "     \
@@ -1049,6 +1054,7 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
     if (!createAndPrepareRequest(UPDATE_SYNC_PAUSED_REQUEST_ID, UPDATE_SYNC_PAUSED_REQUEST)) return false;
     if (!createAndPrepareRequest(UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID, UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_SYNC_TODELETE_REQUEST_ID, UPDATE_SYNC_TODELETE_REQUEST)) return false;
     if (!createAndPrepareRequest(DELETE_SYNC_REQUEST_ID, DELETE_SYNC_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_SYNC_BY_PATH_REQUEST_ID, SELECT_SYNC_BY_PATH_REQUEST)) return false;
@@ -2348,6 +2354,29 @@ bool ParmsDb::setSyncHasFullyCompleted(const SyncDbId dbId, bool value, bool &fo
         found = true;
     } else {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_HASFULLYCOMPLETED_REQUEST_ID << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::setSyncToDelete(const SyncDbId dbId, bool value, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_TODELETE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_TODELETE_REQUEST_ID, 1, value));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_TODELETE_REQUEST_ID, 2, dbId));
+    if (!queryExec(UPDATE_SYNC_TODELETE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_TODELETE_REQUEST_ID);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_TODELETE_REQUEST_ID << " - num rows affected != 1");
         found = false;
     }
 

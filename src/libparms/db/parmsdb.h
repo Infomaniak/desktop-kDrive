@@ -90,6 +90,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateSync(const Sync &sync, bool &found);
         bool setSyncPaused(SyncDbId dbId, bool value, bool &found);
         bool setSyncHasFullyCompleted(SyncDbId dbId, bool value, bool &found);
+        bool setSyncToDelete(SyncDbId dbId, bool value, bool &found);
         bool deleteSync(SyncDbId dbId, bool &found);
         bool selectSync(SyncDbId dbId, Sync &sync, bool &found);
         bool selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found);

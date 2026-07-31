@@ -589,6 +589,11 @@ void AppServer::reset() {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+    // Mark the sync for deletion in the parameters DB
+    if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found) || !found) {
+        LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
+    }
+
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
