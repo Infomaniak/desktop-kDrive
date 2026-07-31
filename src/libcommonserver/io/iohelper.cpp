@@ -894,11 +894,14 @@ bool IoHelper::deleteItem(const SyncPath &path) noexcept {
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    ioError = IoError::Unknown;
+
     // Get the destination type.
     ItemType destinationType;
     if (!getItemType(destinationPath, destinationType)) {
         LOGW_WARN(logger(),
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(destinationPath, destinationType.ioError));
+        ioError = destinationType.ioError;
         return false;
     }
 

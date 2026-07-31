@@ -138,6 +138,8 @@ void TestIo::testCopyFileOrDirectory() {
     CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceSymlinkPath, destFilePath, ioError));
 #if defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
 #else
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 #endif
@@ -147,6 +149,8 @@ void TestIo::testCopyFileOrDirectory() {
     CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceSymlinkPath, destFolderPath, ioError));
 #if defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
 #else
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 #endif
