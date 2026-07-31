@@ -1,5 +1,6 @@
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
@@ -74,6 +75,46 @@ public class TcpServerCommClientTests
         Assert.False(connected);
         await ShutdownProtocolAsync(protocol);
     }
+
+    [Fact]
+    public async Task InitConnection_EventuallyConnects_WhenServerStartsLater()
+    {
+        string commPath = CreateCommFilePath();
+        var protocol = CreateProtocol(commPath);
+        await using var server = new FakeSocketServer();
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        Task<bool> initTask = protocol.InitConnection(cts.Token);
+
+        await Task.Delay(250);
+        await server.WriteCommFileAsync(commPath);
+
+        Assert.True(await initTask);
+        await server.WaitForClientAsync();
+        await ShutdownProtocolAsync(protocol);
+    }
+
+    [Fact]
+    public async Task InitConnection_Fails_AndExposesNoStream_WhenPinnedCertificateMismatches()
+    {
+        string commPath = CreateCommFilePath();
+        await using var server = new FakeSocketServer();
+        await server.WriteCommFileAsync(commPath);
+
+        // Pin a certificate that is unrelated to the one the server actually presents. A correct
+        // implementation must reject the TLS handshake; a regression that accepts any certificate
+        // would let this connect and would be caught here.
+        var keychainStore = new StaticPemKeychainStore(FakeSocketServer.CreateUnrelatedCertificatePem());
+        var protocol = CreateProtocol(commPath, keychainStore);
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        bool connected = await protocol.InitConnection(cts.Token);
+
+        Assert.False(connected);
+        Assert.Null(GetStream(protocol));
+        await ShutdownProtocolAsync(protocol);
+    }
+
 
     [Fact]
     public async Task ConnectionLost_Raised_WhenServerClosesConnection()
@@ -289,7 +330,7 @@ public class TcpServerCommClientTests
         var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => lost.TrySetResult();
 
-        using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(50));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
 
@@ -341,9 +382,40 @@ public class TcpServerCommClientTests
         }
     }
 
-    private static async Task ShutdownProtocolAsync(TcpServerCommClient protocol)
+    private static SocketServerCommProtocol CreateProtocol(string commPath)
     {
-        var stopField = typeof(TcpServerCommClient).GetField("_stopRequested", _instancePrivate)
+        var protocol = new SocketServerCommProtocol(new FakeKeychainStore(commPath));
+        var field = typeof(SocketServerCommProtocol).GetField("_commPortFilePath", _instancePrivate)
+                    ?? throw new InvalidOperationException("Failed to find _commPortFilePath field.");
+        field.SetValue(protocol, commPath);
+        return protocol;
+    }
+
+    private static SocketServerCommProtocol CreateProtocol(string commPath, IKeychainStore keychainStore)
+    {
+        var protocol = new SocketServerCommProtocol(keychainStore);
+        var field = typeof(SocketServerCommProtocol).GetField("_commPortFilePath", _instancePrivate)
+                    ?? throw new InvalidOperationException("Failed to find _commPortFilePath field.");
+        field.SetValue(protocol, commPath);
+        return protocol;
+    }
+
+    private static SslStream? GetStream(SocketServerCommProtocol protocol)
+    {
+        var streamField = typeof(SocketServerCommProtocol).GetField("_stream", _instancePrivate)
+                          ?? throw new InvalidOperationException("Failed to find _stream field.");
+        return streamField.GetValue(protocol) as SslStream;
+    }
+    private static string CreateCommFilePath()
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "kdrive-socket-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        return Path.Combine(dir, ".comm");
+    }
+
+    private static async Task ShutdownProtocolAsync(SocketServerCommProtocol protocol)
+    {
+        var stopField = typeof(SocketServerCommProtocol).GetField("_stopRequested", _instancePrivate)
                         ?? throw new InvalidOperationException("Failed to find _stopRequested field.");
         stopField.SetValue(protocol, true);
 

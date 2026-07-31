@@ -196,6 +196,16 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
     }
 
+    /// <summary>
+    /// Creates a PEM-encoded certificate that is unrelated to the one this server presents,
+    /// allowing tests to simulate a mismatched pinned certificate.
+    /// </summary>
+    public static string CreateUnrelatedCertificatePem()
+    {
+        using var certificate = CreateSelfSignedCertificate();
+        return certificate.ExportCertificatePem();
+    }
+
     private static bool TryExtractFirstJson(string text, out JsonObject json)
     {
         json = new JsonObject();
