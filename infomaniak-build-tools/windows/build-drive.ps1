@@ -681,6 +681,120 @@ function Create-MSI-Package {
 	Write-Host "MSI package created."
 }
 
+function Package-RecoveryUpdater {
+    param (
+        [string] $buildPath,
+        [string] $contentPath,
+        [string] $thumbprint,
+        [bool]   $upload
+    )
+
+    $updaterExe = "$buildPath/bin/kDriveRecoveryUpdater.exe"
+    if (-not (Test-Path $updaterExe)) {
+        Write-Host "kDriveRecoveryUpdater.exe not found at '$updaterExe', skipping recovery updater packaging." -f Yellow
+        return
+    }
+
+    Write-Host "Packaging recovery updater ..." -f Cyan
+
+    $stagingDir = "$buildPath/updater-sfx"
+    if (Test-Path $stagingDir) { Remove-Item -Recurse -Force $stagingDir }
+    New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+
+    Copy-Item $updaterExe -Destination "$stagingDir/kDriveRecoveryUpdater.exe"
+
+    # Run windeployqt to bundle Qt dependencies
+    $windeployqt = "$env:QTDIR\bin\windeployqt.exe"
+    if (Test-Path $windeployqt) {
+        & $windeployqt "$stagingDir/kDriveRecoveryUpdater.exe"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "windeployqt failed for recovery updater." -f Red
+            exit $LASTEXITCODE
+        }
+    } else {
+        Write-Host "windeployqt not found at '$windeployqt', skipping Qt deployment." -f Yellow
+    }
+
+    # Copy Poco and other Conan dependencies
+    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+    $packages = @(
+        @{ Name = "xxhash";    Dlls = @("xxhash") },
+        @{ Name = "log4cplus"; Dlls = @("log4cplus") },
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
+        @{ Name = "sentry";    Dlls = @("sentry") },
+        @{ Name = "poco";      Dlls = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
+    )
+    foreach ($pkg in $packages) {
+        $depArgs = @{ Package = $pkg.Name; BuildDir = $buildPath }
+        $binFolder = & $find_dep_script @depArgs
+        foreach ($dll in $pkg.Dlls) {
+            if (Test-Path "$binFolder/$dll.dll") {
+                Copy-Item "$binFolder/$dll.dll" -Destination $stagingDir
+            }
+        }
+    }
+
+    # Sign the updater executable
+    Sign-File -FilePath "$stagingDir/kDriveRecoveryUpdater.exe" -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
+
+    # Create 7z archive
+    $archiveFile = "$buildPath/kDriveRecoveryUpdater.7z"
+    7za a -mx=9 $archiveFile "$stagingDir/*"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to create 7z archive for recovery updater." -f Red
+        exit $LASTEXITCODE
+    }
+
+    # Locate or download the 7z SFX module
+    $sfxModule = "${env:ProgramFiles}\7-Zip\7zSD.sfx"
+    if (-not (Test-Path $sfxModule)) {
+        Write-Host "7zSD.sfx not found in 7-Zip directory, downloading ..." -f Yellow
+        $sfxModule = "$buildPath/7zSD.sfx"
+        Invoke-WebRequest -Uri "https://www.7-zip.org/a/7zSD.sfx" -OutFile $sfxModule
+        if (-not (Test-Path $sfxModule)) {
+            Write-Host "Failed to download 7zSD.sfx. Falling back to unsigned zip." -f Red
+            $zipPath = "$contentPath/kDriveRecoveryUpdater-$(Get-Version -IncludeBuildVersion $true).zip"
+            Compress-Archive -Path "$stagingDir/*" -DestinationPath $zipPath
+            Sign-File -FilePath $zipPath -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
+            return
+        }
+    }
+
+    # Create SFX config file
+    $sfxConfig = "$buildPath/updater-sfx-config.txt"
+    @"
+;!@Install@!UTF-8!
+Title="kDrive Recovery Updater"
+BeginPrompt="Extract and run kDrive Recovery Updater?"
+RunProgram="kDriveRecoveryUpdater.exe"
+;!@InstallEnd@!
+"@ | Set-Content -Path $sfxConfig -Encoding UTF8
+
+    # Combine SFX module + config + archive into a single .exe
+    $version = Get-Version -IncludeBuildVersion $true
+    $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
+
+    $sfxBytes = [System.IO.File]::ReadAllBytes($sfxModule)
+    $configBytes = [System.IO.File]::ReadAllBytes($sfxConfig)
+    $archiveBytes = [System.IO.File]::ReadAllBytes($archiveFile)
+    $combinedBytes = New-Object byte[] ($sfxBytes.Length + $configBytes.Length + $archiveBytes.Length)
+    [System.Array]::Copy($sfxBytes, 0, $combinedBytes, 0, $sfxBytes.Length)
+    [System.Array]::Copy($configBytes, 0, $combinedBytes, $sfxBytes.Length, $configBytes.Length)
+    [System.Array]::Copy($archiveBytes, 0, $combinedBytes, $sfxBytes.Length + $configBytes.Length, $archiveBytes.Length)
+    [System.IO.File]::WriteAllBytes($sfxExe, $combinedBytes)
+
+    # Sign the final SFX executable
+    Sign-File -FilePath $sfxExe -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
+
+    # Clean up temporary files
+    Remove-Item -Recurse -Force $stagingDir -ErrorAction SilentlyContinue
+    Remove-Item -Force $archiveFile -ErrorAction SilentlyContinue
+    Remove-Item -Force $sfxConfig -ErrorAction SilentlyContinue
+    if (Test-Path "$buildPath/7zSD.sfx") { Remove-Item -Force "$buildPath/7zSD.sfx" -ErrorAction SilentlyContinue }
+
+    Write-Host "Recovery updater SFX created: $sfxExe" -f Green
+}
+
 #################################################################################################
 #                                                                                               #
 #                                           COMMANDS                                            #
@@ -891,6 +1005,21 @@ if ($msi) {
     Create-MSI-Package -RepositoryRootPath $repositoryRootPath -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+        exit $LASTEXITCODE
+    }
+}
+
+
+#################################################################################################
+#                                                                                               #
+#                                RECOVERY UPdater PACKAGING                                     #
+#                                                                                               #
+#################################################################################################
+
+if ($upload) {
+    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -Upload $upload
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
     }
 }
