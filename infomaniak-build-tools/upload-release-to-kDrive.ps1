@@ -202,6 +202,7 @@ if ($os -eq "win") {
         @("kDrive_client.pdb", $true),
         @("kDrive.src.zip", $true),
         @("kDrive_client.src.zip", $false)
+        @("kDriveRecoveryUpdater-$version.exe", $true)
     )
     Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
     Write-Host " - Windows Files - \n"
