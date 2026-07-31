@@ -17,6 +17,9 @@
  */
 
 import Cocoa
+import Combine
+import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 
@@ -31,19 +34,23 @@ class PreferencesSidebarViewController: NSViewController {
 
     weak var delegate: NavigableSidebarViewControllerDelegate?
 
+    @LazyInjectService private var router: PreferencesViewRouter
+
     private var scrollView: NSScrollView!
     private var outlineView: NSOutlineView!
 
     private let items: [SidebarItem] = [.general, .accounts, .advanced]
+    private var bindStore = Set<AnyCancellable>()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
+        bindViewModel()
     }
 
     override func viewWillAppear() {
         super.viewWillAppear()
-        outlineView.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+        updateSelectionIfNecessary(for: router.currentPath)
     }
 
     private func setupView() {
@@ -75,6 +82,22 @@ class PreferencesSidebarViewController: NSViewController {
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
+    }
+
+    private func bindViewModel() {
+        router.$currentPath
+            .receiveOnMain(store: &bindStore) { [weak self] path in
+                self?.updateSelectionIfNecessary(for: path)
+            }
+    }
+
+    private func updateSelectionIfNecessary(for path: PreferencesViewRouter.RouterPath) {
+        guard let tabIndex = items.firstIndex(where: { $0.preferencesViewTab == path.mainTab }) else {
+            return
+        }
+
+        guard outlineView.selectedRow != tabIndex else { return }
+        outlineView.selectRowIndexes(IndexSet(integer: tabIndex), byExtendingSelection: false)
     }
 }
 
