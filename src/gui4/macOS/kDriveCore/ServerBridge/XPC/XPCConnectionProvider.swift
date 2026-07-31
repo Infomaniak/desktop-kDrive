@@ -27,7 +27,11 @@ public enum XPCConnectionState {
 }
 
 public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
+    /// A connection attempt is in progress and has not yet succeeded or failed.
+    case connecting
+    /// The login item agent is reachable.
     case connected
+    /// The login item agent could not be reached (e.g. it was invalidated or is not enabled).
     case disconnected
 }
 
@@ -39,6 +43,8 @@ public protocol XPCConnectionProvider: Sendable {
 
     var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState { get }
     var loginItemAgentConnectionStatePublisher: AnyPublisher<XPCLoginItemAgentConnectionState, Never> { get }
+
+    func reconnectToLoginAgent() async
 }
 
 extension XPCConnectionManager: XPCConnectionProvider {

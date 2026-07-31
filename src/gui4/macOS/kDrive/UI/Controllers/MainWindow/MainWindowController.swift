@@ -83,9 +83,24 @@ final class MainWindowController: NSWindowController {
 
     private func observeLoginItemAgentConnectionState() {
         xpcConnectionProvider.loginItemAgentConnectionStatePublisher
-            .receiveOnMain(store: &bindStore) { [weak self] _ in
-                self?.presentBackgroundActivityViewIfNecessary()
+            .receiveOnMain(store: &bindStore) { [weak self] state in
+                self?.handleLoginItemAgentConnectionState(state)
             }
+    }
+
+    private func handleLoginItemAgentConnectionState(_ state: XPCLoginItemAgentConnectionState) {
+        switch state {
+        case .connecting:
+            break
+        case .connected:
+            if case .enableBackgroundActivity = router.currentRoute {
+                navigateAfterPreloading(state: xpcConnectionProvider.guiConnectionState)
+            }
+        case .disconnected:
+            guard xpcConnectionProvider.guiConnectionState != .connected else { return }
+            guard router.currentRoute != .enableBackgroundActivity else { return }
+            router.navigate(to: .enableBackgroundActivity)
+        }
     }
 
     private func observerServerError() {
@@ -208,24 +223,6 @@ final class MainWindowController: NSWindowController {
         #endif
     }
 
-    @discardableResult
-    private func presentBackgroundActivityViewIfNecessary() -> Bool {
-        @InjectService var permissionHander: MacOSPermissionHandling
-        guard !permissionHander.isBackgroundActivityEnabled() else {
-            if case .enableBackgroundActivity = router.currentRoute {
-                navigateAfterPreloading(state: xpcConnectionProvider.guiConnectionState)
-            }
-            return false
-        }
-
-        guard router.currentRoute != .enableBackgroundActivity else {
-            return true
-        }
-
-        router.navigate(to: .enableBackgroundActivity)
-        return true
-    }
-
     // MARK: - Search
 
     @objc func showSearchSheet() {
@@ -239,7 +236,8 @@ final class MainWindowController: NSWindowController {
 extension MainWindowController: NSWindowDelegate {
     func windowDidBecomeMain(_ notification: Notification) {
         Task {
-            guard !presentBackgroundActivityViewIfNecessary() else { return }
+            handleLoginItemAgentConnectionState(xpcConnectionProvider.loginItemAgentConnectionState)
+            guard router.currentRoute != .enableBackgroundActivity else { return }
             await presentPermissionsViewIfNecessary()
         }
     }

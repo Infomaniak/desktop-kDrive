@@ -58,9 +58,6 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
     }
 
     public func isBackgroundActivityEnabled() -> Bool {
-        #if DEBUG
-        return true
-        #else
         guard #available(macOS 13.0, *) else {
             return true
         }
@@ -71,7 +68,6 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
         }
 
         return SMAppService.loginItem(identifier: loginItemAgentIdentifier).status == .enabled
-        #endif
     }
 }
 

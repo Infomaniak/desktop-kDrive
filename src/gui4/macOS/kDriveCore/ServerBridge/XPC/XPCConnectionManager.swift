@@ -29,7 +29,7 @@ import InfomaniakDI
     @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
 
     @MainActor
-    @Published private(set) var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .disconnected
+    @Published private(set) var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .connecting
 
     let machServiceName: String
 
@@ -123,12 +123,32 @@ import InfomaniakDI
 
         do {
             try await fetchServerEndpointFromLoginItemAgentAndConnect()
-        } catch {
-            notifyLoginItemAgentConnectionState(.disconnected)
-            throw error
+        } catch XPCError.serverGUIEndpointWasNil {
+            notifyLoginItemAgentConnectionState(.connecting)
+            scheduleRetryToConnectToServer()
+            throw XPCError.serverGUIEndpointWasNil
         }
 
         notifyLoginItemAgentConnectionState(.connected)
+    }
+
+    public func reconnectToLoginAgent() async {
+        IKLogger.xpc.log("[KD] Reconnect to login item agent requested")
+        do {
+            if loginItemAgentConnection == nil {
+                try await connectToLoginAgent()
+            } else {
+                try await fetchServerEndpointFromLoginItemAgentAndConnect()
+                notifyLoginItemAgentConnectionState(.connected)
+            }
+        } catch XPCError.serverGUIEndpointWasNil {
+            IKLogger.xpc.log("[KD] reconnectToLoginAgent: agent reachable, server not ready yet")
+            notifyLoginItemAgentConnectionState(.connecting)
+            scheduleRetryToConnectToServer()
+        } catch {
+            IKLogger.xpc.error("[KD] reconnectToLoginAgent FAILED \(error)")
+            notifyLoginItemAgentConnectionState(.disconnected)
+        }
     }
 
     private func notifyLoginItemAgentConnectionState(_ state: XPCLoginItemAgentConnectionState) {

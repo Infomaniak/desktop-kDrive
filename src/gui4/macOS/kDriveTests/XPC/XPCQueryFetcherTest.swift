@@ -75,6 +75,8 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
             MCKXPCGuiProtocol(payloadFileName: payloadFileName)
         }
     }
+
+    func reconnectToLoginAgent() async {}
 }
 
 struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
@@ -94,6 +96,8 @@ struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
             MCKXPCGuiProtocolWithData(responseData: responseData)
         }
     }
+
+    func reconnectToLoginAgent() async {}
 }
 
 typealias SendableCodable = Codable & Sendable

@@ -58,6 +58,8 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
         self
     }
 
+    public func reconnectToLoginAgent() async {}
+
     public init() {}
 
     @objc public nonisolated func processQuery(_ query: Data, callback: @escaping (Data) -> Void) {

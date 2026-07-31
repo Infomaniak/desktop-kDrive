@@ -109,6 +109,11 @@ struct EnableBackgroundActivityView: View {
         @InjectService var permissionHandler: MacOSPermissionHandling
         guard permissionHandler.isBackgroundActivityEnabled() else { return }
 
+        @InjectService var xpcConnectionProvider: XPCConnectionProvider
+        Task {
+            await xpcConnectionProvider.reconnectToLoginAgent()
+        }
+
         @InjectService var router: MainWindowRouter
         router.navigate(to: .preloading())
     }
