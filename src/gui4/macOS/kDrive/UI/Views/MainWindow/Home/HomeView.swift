@@ -20,10 +20,12 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import OrderedCollections
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(\.openURL) private var openURL
     static let spacing = AppPadding.padding24
 
     @State private var avatar: Image?
@@ -62,6 +64,15 @@ struct HomeView: View {
             if synchroState.errorCount > 0 {
                 SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
             }
+
+            InformationBlockView(
+                icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                title: KDriveLocalizable.onboardingV4Title,
+                subtitle: KDriveLocalizable.onboardingV4Subtitle,
+                button: .init(title: KDriveLocalizable.onboardingV4Faq) {
+                    openURL(URLConstants.faq)
+                }
+            )
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
