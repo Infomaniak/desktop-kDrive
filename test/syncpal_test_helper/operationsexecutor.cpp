@@ -71,7 +71,7 @@ Operations::Operations(const StringType &jsonDescription) {
     _operationsArray = _jsonObject->getArray("operations");
 }
 
-Operations Operations::fromFile(const std::filesystem::path &filePath) {
+Operations Operations::fromFile(const SyncPath &filePath) {
     const std::ifstream file(filePath, std::ios::binary);
     if (!file) throw OperationsParserException("Operations::fromFile: unable to open file: " + filePath.string());
 

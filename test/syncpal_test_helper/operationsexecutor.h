@@ -62,7 +62,7 @@ class Operations {
 
         // Reads the JSON from a file instead of an inline string. Throws the same way the
         // constructor does if the content isn't valid.
-        [[nodiscard]] static Operations fromFile(const std::filesystem::path &filePath);
+        [[nodiscard]] static Operations fromFile(const SyncPath &filePath);
 
         // Operations are immutable once parsed and not meant to be duplicated: forbid copies (the parsed
         // JSON is only stored once, moves are still allowed).
