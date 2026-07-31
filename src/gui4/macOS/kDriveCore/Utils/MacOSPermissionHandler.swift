@@ -58,16 +58,25 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
     }
 
     public func isBackgroundActivityEnabled() -> Bool {
-        guard #available(macOS 13.0, *) else {
-            return true
+        let isEnabled: Bool
+        if #available(macOS 13.0, *) {
+            if let loginItemAgentIdentifier = Bundle.main
+                .object(forInfoDictionaryKey: "LoginItemAgentMachName") as? String {
+                isEnabled = SMAppService.loginItem(identifier: loginItemAgentIdentifier).status == .enabled
+            } else {
+                isEnabled = false
+            }
+        } else {
+            isEnabled = true
         }
 
-        guard let loginItemAgentIdentifier = Bundle.main
-            .object(forInfoDictionaryKey: "LoginItemAgentMachName") as? String else {
-            return false
+        if isEnabled {
+            IKLogger.general.log("[KD] isBackgroundActivityEnabled: \(isEnabled)")
+        } else {
+            IKLogger.general.error("[KD] isBackgroundActivityEnabled: \(isEnabled)")
         }
 
-        return SMAppService.loginItem(identifier: loginItemAgentIdentifier).status == .enabled
+        return isEnabled
     }
 }
 
