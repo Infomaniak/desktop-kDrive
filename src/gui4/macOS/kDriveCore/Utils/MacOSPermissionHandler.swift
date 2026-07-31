@@ -16,7 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Cocoa
 import Foundation
 
 public enum MacOSPermission: Sendable {
@@ -56,35 +55,46 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
     }
 }
 
+// MARK: - Server permissions provider
+
+/// Provides the state of the macOS authorizations required by Lite Sync, as reported by the Server process.
+///
+/// Those authorizations cannot be reliably checked from the client (GUI) process: reading the TCC database requires the reading
+/// process itself to have been granted the Full Disk Access authorization, which the GUI process does not need. Only the Server
+/// process can answer, hence the round-trip over XPC.
+protocol MacOSPermissionsProviding: Sendable {
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse?
+}
+
+struct ServerMacOSPermissionsProvider: MacOSPermissionsProviding {
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse? {
+        do {
+            return try await UtilityJobs().checkMacOsPermissions()
+        } catch {
+            IKLogger.general.error("Failed to check macOS permissions: \(error)")
+            return nil
+        }
+    }
+}
+
 // MARK: - Full Disk Access
 
+/// Full Disk Access is considered granted only when BOTH the Server process and the Lite Sync extension have been granted it.
+/// The GUI process itself is never required to have Full Disk Access.
 final class FullDiskChecker: AuthorizationChecker {
-    private static let testableFiles = [
-        "~/Library/Containers/com.apple.stocks",
-        "~/Library/Safari",
-        "/Library/Application Support/com.apple.TCC"
-    ]
-
     let systemPreferencesURL = SystemPreferencesURL.fullDiskAccess
 
-    func hasAccess() async -> Bool {
-        for testableFile in FullDiskChecker.testableFiles {
-            if canAccess(toFile: testableFile) {
-                return true
-            }
-        }
+    private let permissionsProvider: MacOSPermissionsProviding
 
-        return false
+    init(permissionsProvider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+        self.permissionsProvider = permissionsProvider
     }
 
-    private func canAccess(toFile file: String) -> Bool {
-        do {
-            let path = (file as NSString).expandingTildeInPath
-            _ = try FileManager.default.contentsOfDirectory(atPath: path)
-            return true
-        } catch {
+    func hasAccess() async -> Bool {
+        guard let permissions = await permissionsProvider.fetchPermissions() else {
             return false
         }
+        return permissions.fullDiskAccess && permissions.liteSyncExtFullDiskAccess
     }
 }
 
@@ -93,16 +103,16 @@ final class FullDiskChecker: AuthorizationChecker {
 final class EndpointSecurityExtensionChecker: AuthorizationChecker {
     let systemPreferencesURL = SystemPreferencesURL.endpointSecurityExtension
 
+    private let permissionsProvider: MacOSPermissionsProviding
+
+    init(permissionsProvider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+        self.permissionsProvider = permissionsProvider
+    }
+
     func hasAccess() async -> Bool {
-        let command = "systemextensionsctl list | grep \(Constants.lightSyncBundleID) | grep enabled | wc -l"
-        guard let result = try? ShellExecutor().execute(command: command) else {
+        guard let permissions = await permissionsProvider.fetchPermissions() else {
             return false
         }
-
-        guard let processCount = Int(result.trimmingCharacters(in: .whitespacesAndNewlines)), processCount > 0 else {
-            return false
-        }
-
-        return true
+        return permissions.liteSyncExtEnabled
     }
 }
