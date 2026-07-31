@@ -22,7 +22,9 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/parametersstore.h"
+#include "app/mainwindow/homecontroller.h"
 #include "app/mainwindow/mainsidebarcontroller.h"
+#include "app/mainwindow/networkstatusobserver.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
@@ -132,6 +134,9 @@ class AppClientLinux : public QApplication {
         SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
+        NetworkStatusObserver _networkStatusObserver{this};
+        HomeController _homeController{
+                _appCache, _mainSelectionStore, _syncService, _appRouter, _systemTrayController, _networkStatusObserver, this};
         QTranslator _baseTranslator{this};
         QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
