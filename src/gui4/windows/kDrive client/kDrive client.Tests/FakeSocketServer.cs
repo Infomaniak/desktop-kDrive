@@ -1,5 +1,9 @@
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json.Nodes;
 
@@ -10,12 +14,15 @@ internal sealed class FakeSocketServer : IAsyncDisposable
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _acceptCts = new();
     private readonly Task<Socket> _acceptTask;
+    private readonly X509Certificate2 _serverCertificate;
     private Socket? _client;
+    private SslStream? _clientStream;
 
     public int Port { get; }
 
     public FakeSocketServer()
     {
+        _serverCertificate = CreateSelfSignedCertificate();
         _listener = new TcpListener(IPAddress.Loopback, 0);
         _listener.Start();
         Port = ((IPEndPoint)_listener.LocalEndpoint).Port;
@@ -33,13 +40,24 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         }
 
         _client = await _acceptTask;
+
+        var networkStream = new NetworkStream(_client, ownsSocket: false);
+        _clientStream = new SslStream(networkStream, leaveInnerStreamOpen: false);
+        await _clientStream.AuthenticateAsServerAsync(new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _serverCertificate,
+            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+            ClientCertificateRequired = false
+        });
+
         return _client;
     }
 
     public async Task<JsonObject> ReceiveJsonAsync(TimeSpan? timeout = null)
     {
         timeout ??= TimeSpan.FromSeconds(5);
-        var socket = await EnsureClientAsync();
+        await EnsureClientAsync();
+        var stream = _clientStream!;
 
         using var cts = new CancellationTokenSource(timeout.Value);
         var decoder = Encoding.Unicode.GetDecoder();
@@ -49,7 +67,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
         while (!cts.IsCancellationRequested)
         {
-            var bytesRead = await socket.ReceiveAsync(buffer, SocketFlags.None, cts.Token);
+            var bytesRead = await stream.ReadAsync(buffer, cts.Token);
             if (bytesRead == 0)
             {
                 throw new IOException("Connection closed while waiting for message.");
@@ -75,11 +93,13 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
     public async Task SendRawAsync(byte[] data, IReadOnlyList<int>? chunkSizes = null)
     {
-        var socket = await EnsureClientAsync();
+        await EnsureClientAsync();
+        var stream = _clientStream!;
 
         if (chunkSizes is null || chunkSizes.Count == 0)
         {
-            await socket.SendAsync(data, SocketFlags.None);
+            await stream.WriteAsync(data);
+            await stream.FlushAsync();
             return;
         }
 
@@ -97,14 +117,16 @@ internal sealed class FakeSocketServer : IAsyncDisposable
                 continue;
             }
 
-            await socket.SendAsync(data.AsMemory(offset, len), SocketFlags.None);
+            await stream.WriteAsync(data.AsMemory(offset, len));
+            await stream.FlushAsync();
             offset += len;
             await Task.Delay(5);
         }
 
         if (offset < data.Length)
         {
-            await socket.SendAsync(data.AsMemory(offset), SocketFlags.None);
+            await stream.WriteAsync(data.AsMemory(offset));
+            await stream.FlushAsync();
         }
     }
 
@@ -113,6 +135,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         var socket = await EnsureClientAsync();
         try
         {
+            _clientStream?.Dispose();
             socket.Shutdown(SocketShutdown.Both);
         }
         catch
@@ -123,19 +146,29 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         {
             socket.Dispose();
             _client = null;
+            _clientStream = null;
         }
     }
 
     public async Task CrashClientConnectionAsync()
     {
         var socket = await EnsureClientAsync();
+        _clientStream?.Dispose();
         socket.Dispose();
         _client = null;
+        _clientStream = null;
     }
 
     private async Task<Socket> EnsureClientAsync()
     {
         return _client ?? await WaitForClientAsync();
+    }
+
+    private static X509Certificate2 CreateSelfSignedCertificate()
+    {
+        using var rsa = RSA.Create(2048);
+        var request = new CertificateRequest("CN=kDrive-test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+        return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
     }
 
     private static bool TryExtractFirstJson(string text, out JsonObject json)
@@ -180,6 +213,12 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         _acceptCts.Cancel();
         _listener.Stop();
 
+        if (_clientStream is not null)
+        {
+            _clientStream.Dispose();
+            _clientStream = null;
+        }
+
         if (_client is not null)
         {
             _client.Dispose();
@@ -196,5 +235,6 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         }
 
         _acceptCts.Dispose();
+        _serverCertificate.Dispose();
     }
 }

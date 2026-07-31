@@ -22,6 +22,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -36,6 +37,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     public class TcpServerCommClient : Interfaces.IServerCommClient
     {
         private Socket? _socket;
+        private SslStream? _stream;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
         private int _requestIdCounter = 0;
         private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
@@ -73,6 +75,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         ~TcpServerCommClient()
         {
+            _stream?.Dispose();
             _socket?.Dispose();
             _stopRequested = true;
         }
@@ -126,6 +129,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             errorMessage = string.Empty;
             return true;
         }
+
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
             if (_pollingTask is not null)
@@ -155,10 +159,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     }
 
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
-                    _socket?.Dispose();
-                    _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    await _socket.ConnectAsync(_host, port.Value, cancellationToken).ConfigureAwait(false);
-                    Logger.Log(Logger.Level.Info, "Connected to server.");
+                    DisposeConnection();
+                    (_socket, _stream) = await SecureSocketConnection.ConnectAsync(_host, port.Value, cancellationToken).ConfigureAwait(false);
+                    Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
                     return true;
                 }
@@ -167,11 +170,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Info, "Connection initialization was canceled.");
                     return false;
                 }
-                catch (SocketException ex)
+                catch (Exception ex) when (ex is SocketException or System.Security.Authentication.AuthenticationException or IOException)
                 {
                     Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 0.5 seconds...");
-                    _socket?.Dispose();
-                    _socket = null;
+                    DisposeConnection();
                     try
                     {
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
@@ -186,6 +188,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             return false;
         }
+
+        private void DisposeConnection()
+        {
+            _stream?.Dispose();
+            _stream = null;
+            _socket?.Dispose();
+            _socket = null;
+        }
+
         private async Task PollingLoop()
         {
             if (_socket is null)
@@ -201,8 +212,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 catch (SocketException ex)
                 {
                     Logger.Log(Logger.Level.Error, $"Socket poll error: {ex.Message}");
-                    _socket?.Dispose();
-                    _socket = null;
+                    DisposeConnection();
                     ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
                 }
@@ -210,8 +220,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (_socket.Available == 0)
                 {
                     Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
-                    _socket?.Dispose();
-                    _socket = null;
+                    DisposeConnection();
                     ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
                 }
@@ -236,7 +245,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Wait asynchronously until the client is connected
                 const int softWaitTimeMs = 30000; // Log every 30s
                 var lastLogTime = Stopwatch.StartNew();
-                while (_socket == null || !_socket.Connected)
+                while (_socket == null || !_socket.Connected || _stream == null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -266,7 +275,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await _sendLock.WaitAsync();
                 try
                 {
-                    await _socket.SendAsync(jsonBytes, SocketFlags.None);
+                    await _stream!.WriteAsync(jsonBytes, cancellationToken).ConfigureAwait(false);
+                    await _stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -335,7 +345,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             do
             {
-                if (_socket == null || !_socket.Connected)
+                if (_socket == null || !_socket.Connected || _stream == null)
                 {
                     Logger.Log(Logger.Level.Warning, "Unable to read: socket is not connected.");
                     return;
@@ -346,7 +356,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 if (_socket.Available > 0)
                 {
-                    int bytesRead = await _socket.ReceiveAsync(_receiveBuffer).ConfigureAwait(false);
+                    // Read decrypted application data from the TLS stream. A single socket read
+                    // may carry a TLS record that decrypts to more (or fewer) bytes than are
+                    // reported by Socket.Available.
+                    int bytesRead = await _stream.ReadAsync(_receiveBuffer).ConfigureAwait(false);
+                    if (bytesRead == 0)
+                    {
+                        Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
+                        DisposeConnection();
+                        ConnectionLost?.Invoke(this, EventArgs.Empty);
+                        return;
+                    }
                     int charCount = _decoder.GetCharCount(_receiveBuffer, 0, bytesRead, flush: false);
                     char[] chars = new char[charCount];
                     _decoder.GetChars(_receiveBuffer, 0, bytesRead, chars, 0, flush: false);
