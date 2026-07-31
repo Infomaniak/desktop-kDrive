@@ -116,6 +116,10 @@ podman machine stop build_kdrive
 version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/client/version.h" | awk '{print $3}')
 mv "$install_dir/kDrive-${architecture}.AppImage" "$install_dir/kDrive-$version-${architecture}.AppImage"
 
+if [ -f "$install_dir/kDriveRecoveryUpdater-${architecture}.AppImage" ]; then
+    mv "$install_dir/kDriveRecoveryUpdater-${architecture}.AppImage" "$install_dir/kDriveRecoveryUpdater-$version-${architecture}.AppImage"
+fi
+
 rm -Rf "$build_dir-${architecture}"
 mv "$build_dir" "$build_dir-${architecture}"
 
