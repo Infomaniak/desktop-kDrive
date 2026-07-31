@@ -43,8 +43,8 @@ void TestIo::testCopyFileOrDirectory() {
 
     // Regular file and target does exist
     ioError = IoError::Success;
-    CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceFilePath, destFilePath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+    CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceFilePath, destFilePath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Regular empty folder and target doesn't exist
     const auto sourceFolderPath = tempDir.path() / "folder";
@@ -69,18 +69,22 @@ void TestIo::testCopyFileOrDirectory() {
 
     // Regular non empty folder and target does exist and contains a file that exists in the source folder
     ioError = IoError::Success;
-    CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceFolderPath, destFolderPath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+    CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceFolderPath, destFolderPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Copy a file to a folder target
     ioError = IoError::Success;
-    CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceFilePath, destFolderPath, ioError));
-    CPPUNIT_ASSERT_EQUAL(IoError::FileExists, ioError);
+    CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceFilePath, destFolderPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     // Copy a folder to a file target
     ioError = IoError::Success;
     CPPUNIT_ASSERT(!IoHelper::copyFileOrDirectory(sourceFolderPath, destFilePath, ioError));
+#if defined(KD_MACOS)
     CPPUNIT_ASSERT_EQUAL(IoError::Unknown, ioError); // std::errc::function_not_supported
+#else
+    CPPUNIT_ASSERT_EQUAL(IoError::IsADirectory, ioError);
+#endif
 
     // Regular symlink and target doesn't exist
     const auto sourceSymlinkPath = tempDir.path() / "symlink.txt";

@@ -913,7 +913,9 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
 
     // Copy the source path to the destination path, recursively if it is a directory.
     std::filesystem::copy(sourcePath, destinationPath,
-                          std::filesystem::copy_options::recursive | std::filesystem::copy_options::copy_symlinks, ec);
+                          std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive |
+                                  std::filesystem::copy_options::copy_symlinks,
+                          ec);
     ioError = IoHelper::stdError2ioError(ec);
 
     return ioError == IoError::Success;

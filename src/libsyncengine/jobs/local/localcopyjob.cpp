@@ -90,7 +90,7 @@ ExitInfo LocalCopyJob::runJob() {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_source));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {
-            return {ExitCode::SystemError, ExitCause::OperationCanceled};
+            return ExitCode::SystemError;
         }
     }
 

@@ -186,12 +186,16 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     }
 
 #if defined(Q_OS_MAC) && defined(NDEBUG)
-    // Copy Uninstaller inside application folder
-    KDC::SyncPath uninstallerPath = "/Applications/kDrive/kDrive.app/Contents/Frameworks/kDrive Uninstaller.app";
-    KDC::SyncPath destPath = "/Applications/kDrive/kDrive Uninstaller.app";
-    IoError ioError = IoError::Success;
-    if (!IoHelper::copyFileOrDirectory(uninstallerPath, destPath, ioError)) {
-        LOGW_WARN(_logger, L"Failed to copy Uninstaller " << Utility::formatIoError(ioError));
+    try {
+        KDC::SyncPath uninstallerPath = "/Applications/kDrive/kDrive.app/Contents/Frameworks/kDrive Uninstaller.app";
+        KDC::SyncPath destPath = "/Applications/kDrive/kDrive Uninstaller.app";
+        std::filesystem::copy(uninstallerPath, destPath,
+                              std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive);
+        // LOGW_INFO(KDC::Log::instance()->getLogger(), L"Uninstaller copied to: " << Path2WStr(destPath));
+    } catch (std::filesystem::filesystem_error &fsError) {
+        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: " << fsError.what());
+    } catch (...) {
+        LOG_ERROR(KDC::Log::instance()->getLogger(), "Failed to copy uninstaller: nnknown error");
     }
 #endif
 
