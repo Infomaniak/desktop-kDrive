@@ -200,6 +200,43 @@ package_release() {
   mv kDrive*.AppImage "$app_dir/$app_name"
 }
 
+package_recovery_updater() {
+  updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
+  if [ ! -f "$updater_bin" ]; then
+    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
+    return 0
+  fi
+
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+  export PATH="$QTDIR/bin:$QTDIR/libexec:$PATH"
+  export LD_LIBRARY_PATH="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+  export PKG_CONFIG_PATH="$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+  updater_appdir="$build_dir/updater-app"
+  rm -rf "$updater_appdir"
+  mkdir -p "$updater_appdir/usr/bin"
+  mkdir -p "$updater_appdir/usr/lib"
+  mkdir -p "$updater_appdir/usr/plugins/platforms"
+
+  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
+
+  # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
+  cp -P "$conan_dependencies_folder/"* "$updater_appdir/usr/lib" 2>/dev/null || true
+
+  # Copy Qt plugins (platforms are required for a GUI app)
+  cp -P -r "$QTDIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
+
+  export NO_STRIP=1
+  linuxdeploy --appdir "$updater_appdir" -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" --plugin qt --output appimage -v0
+
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
+  updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
+  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+
+  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
+}
+
 echo "Building ..."
 build_release
 
@@ -207,6 +244,11 @@ echo
 
 echo "Packaging ..."
 package_release
+
+echo
+
+echo "Packaging recovery updater ..."
+package_recovery_updater
 
 echo
 

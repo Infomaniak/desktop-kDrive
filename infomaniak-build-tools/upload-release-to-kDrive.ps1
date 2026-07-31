@@ -158,7 +158,7 @@ function Upload-FilesToKDrive {
                 [System.IO.Compression.ZipFile]::CreateFromDirectory($item.FullName, $zipFilePath)
             
                 # Replace $file with the zipped file for upload
-                 $file = $zipFileName            
+                 $file = $zipFileName
                 Write-Host "Directory zipped: $zipFilePath" -f Green
             }
 
@@ -232,6 +232,7 @@ if ($os -eq "linux-amd") {
         @("kDrive_client.dbg", $true),
         @("kDrive.src.zip", $true),
         @("kDrive_client.src.zip", $true)
+        @("kDriveRecoveryUpdater-$version-amd64.AppImage", $true)
     )
     Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
     Write-Host " - Linux AMD64 Files - \n"
@@ -246,6 +247,7 @@ if ($os -eq "linux-arm") {
         @("kDrive_client.dbg", $true),
         @("kDrive.src.zip", $true),
         @("kDrive_client.src.zip", $true)
+        @("kDriveRecoveryUpdater-$version-arm64.AppImage", $true)
     )
     Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
     Write-Host " - Linux ARM64 Files - \n"
