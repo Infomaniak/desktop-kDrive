@@ -106,6 +106,10 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
 set_source_files_properties(${GUI_QML_SINGLETON_FILES} PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
 
 set(GUI_GENERATED_QML_FILES
+        ui/windows/main/home/animations/HomeIdleAnimation.qml
+        ui/windows/main/home/animations/HomeOfflineAnimation.qml
+        ui/windows/main/home/animations/HomePausedAnimation.qml
+        ui/windows/main/home/animations/HomeSyncingAnimation.qml
         ui/windows/onboarding/animations/LoaderStrokeAnimation.qml
         ui/windows/onboarding/animations/SyncFileDarkAnimation.qml
         ui/windows/onboarding/animations/SyncFileLightAnimation.qml
@@ -119,10 +123,12 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
         ui/components/IKBadge.qml
+        ui/components/IKAvatar.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLoadingSpinner.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
+        ui/components/IKTintedIcon.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/HomePlaceholder.qml
@@ -132,6 +138,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/SidebarView.qml
         ui/windows/main/SyncSelectorView.qml
         ui/windows/main/StoragePlaceholder.qml
+        ui/windows/main/home/shortcuts/HomeWebShortcutButton.qml
         ${GUI_GENERATED_QML_FILES}
         ui/windows/onboarding/DriveCellView.qml
         ui/windows/onboarding/DriveIconView.qml
@@ -157,6 +164,17 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/chevron-down.svg
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
+        ui/assets/main/home/cog.svg
+        ui/assets/main/home/external-link.svg
+        ui/assets/main/home/folder-share.svg
+        ui/assets/main/home/headphones.svg
+        ui/assets/main/home/kdrive-folders-stacked.svg
+        ui/assets/main/home/pause.svg
+        ui/assets/main/home/play.svg
+        ui/assets/main/home/search.svg
+        ui/assets/main/home/star.svg
+        ui/assets/main/home/status-setup-drawer.svg
+        ui/assets/main/home/trash.svg
         ui/assets/main/storage.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
