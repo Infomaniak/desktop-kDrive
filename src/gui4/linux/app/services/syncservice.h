@@ -67,6 +67,7 @@ class SyncService : public QObject {
 
     signals:
         void loadingChanged();
+        void syncActionPendingChanged(qint64 syncDbId);
         void syncStatusReceived(qint64 syncDbId, int32_t status);
         void suggestedPathReceived(const QString &goodPath, const QString &warningMessage);
         void pathValidationReceived(bool isValid);
