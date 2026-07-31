@@ -128,6 +128,6 @@ extension PreferencesSplitViewController: NavigableSidebarViewControllerDelegate
             return
         }
 
-        router.setCurrentTab(preferencesViewTab)
+        router.setCurrentTabIfNecessary(preferencesViewTab)
     }
 }
