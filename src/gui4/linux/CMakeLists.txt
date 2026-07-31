@@ -37,6 +37,12 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/parametersstore.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
+        app/mainwindow/homecontroller.cpp
+        app/mainwindow/homecontroller.h
+        app/mainwindow/homestateresolver.cpp
+        app/mainwindow/homestateresolver.h
+        app/mainwindow/networkstatusobserver.cpp
+        app/mainwindow/networkstatusobserver.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
