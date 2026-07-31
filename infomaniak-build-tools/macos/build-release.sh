@@ -151,6 +151,22 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$APP_DOMAIN" ] && [ -n "$SIGN_IDENTITY" ];
 	sign_files+=("$install_dir/$app_name.app")
 fi
 
+# Sign the recovery updater (if it was built and installed)
+updater_app="$install_dir/kDriveRecoveryUpdater.app"
+if [ -d "$updater_app" ]; then
+	echo "Deploying Qt dependencies for kDriveRecoveryUpdater..."
+	"$QTDIR/bin/macdeployqt" "$updater_app" -no-strip
+
+	if [ -n "$SIGN_IDENTITY" ]; then
+		echo "Signing kDriveRecoveryUpdater..."
+		codesign -s "$SIGN_IDENTITY" --force --verbose=4 --options=runtime \
+			--entitlements "$src_dir/admin/osx/kDriveRecoveryUpdater.entitlements" "$updater_app"
+		codesign -dv "$updater_app"
+		codesign --verify -v --strict "$updater_app"
+		sign_files+=("$updater_app")
+	fi
+fi
+
 if [ -n "$INSTALLER_SIGN_IDENTITY" ]; then
 	# xcrun stapler staple $package_file
 	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir" "$INSTALLER_SIGN_IDENTITY"
@@ -191,4 +207,19 @@ if [ -n "$sign_files" ]; then
 			"$install_dir/InfomaniakDrive.zip" \
 			--progress --wait
 	fi
+
+	# Staple the notarization ticket to the recovery updater app
+	if [ -d "$updater_app" ]; then
+		echo "Stapling notarization ticket to kDriveRecoveryUpdater..."
+		xcrun stapler staple "$updater_app" || true
+	fi
+fi
+
+# Create a distributable zip of the recovery updater
+if [ -d "$updater_app" ]; then
+	updater_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/version.h" | awk '{print $3}')
+	updater_zip="$install_dir/kDriveRecoveryUpdater-${updater_version}.zip"
+	echo "Creating distributable zip for kDriveRecoveryUpdater..."
+	/usr/bin/ditto -c -k --keepParent "$updater_app" "$updater_zip"
+	echo "Recovery updater zip created: $updater_zip"
 fi
