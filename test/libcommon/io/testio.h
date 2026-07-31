@@ -73,6 +73,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetDirectorySize);
         CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testIsPathOnMountedDisk);
+        CPPUNIT_TEST(testCopyFileOrDirectory);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -112,6 +113,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testLock();
         void testReadOnly();
         void testPermissionsGiver();
+        void testCopyFileOrDirectory();
 
     private:
         void testGetItemTypeSimpleCases();

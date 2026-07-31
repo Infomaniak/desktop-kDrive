@@ -345,6 +345,7 @@ struct IoHelper {
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
+        //! If the destination item is a link, remove it before copying.
         /*!
           \param sourcePath is the file system path of the item to copy.
           \param destinationPath is the file system path of the location to copy the item to.
@@ -352,7 +353,6 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise.
         */
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-
 
 #if defined(KD_MACOS)
         // From `man xattr`:

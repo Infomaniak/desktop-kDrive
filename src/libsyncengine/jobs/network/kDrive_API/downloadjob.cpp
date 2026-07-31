@@ -235,8 +235,8 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
                 // Replace file by tmp one
-                if (!moveTmpFile()) {
-                    LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
+                if (const auto exitInfo = moveTmpFile(); !exitInfo) {
+                    LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatExitInfo(_tmpPath, exitInfo));
                     writeError = true;
                 }
 
@@ -520,9 +520,6 @@ ExitInfo DownloadJob::moveTmpFile() {
         bool error = false;
         bool accessDeniedError = false;
         bool crossDeviceLinkError = false;
-#if defined(KD_WINDOWS)
-        bool sharingViolationError = false;
-#endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Make sure we are allowed to propagate the change
@@ -538,7 +535,6 @@ ExitInfo DownloadJob::moveTmpFile() {
                                                                       << L", err='" << Utility::formatIoError(ioError) << L"'");
                 error = true;
                 accessDeniedError = ioError == IoError::AccessDenied;
-                // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated as IoError::AccessDenied
             }
         }
 
@@ -547,23 +543,20 @@ ExitInfo DownloadJob::moveTmpFile() {
             PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
 
             // Copy file content (i.e. when the target exists, do not change its node id).
-            std::error_code ec;
-            std::filesystem::copy(_tmpPath, _fileDownloadInfo.localpath, std::filesystem::copy_options::overwrite_existing, ec);
-            if (ec) {
-                LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
-                                                                      << Utility::formatSyncPath(_fileDownloadInfo.localpath)
-                                                                      << L", err='" << Utility::formatStdError(ec) << L"'");
+            IoError ioError = IoError::Success;
+            if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localpath, ioError)) {
+                LOGW_WARN(_logger, L"Failed to copy downloaded file " << Path2WStr(_tmpPath) << L" to "
+                                                                      << Path2WStr(_fileDownloadInfo.localpath) << L", error="
+                                                                      << Utility::formatIoError(ioError));
                 error = true;
-                accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
-#if defined(KD_WINDOWS)
-                sharingViolationError = ec.value() == ERROR_SHARING_VIOLATION; // In this case, we will try again
-#endif
+                accessDeniedError = ioError == IoError::AccessDenied;
             }
         }
 
         if (error) {
+            if (accessDeniedError) {
 #if defined(KD_WINDOWS)
-            if (sharingViolationError) {
+                // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated into IoError::AccessDenied
                 if (counter) {
                     // Retry
                     retry = true;
@@ -575,11 +568,9 @@ ExitInfo DownloadJob::moveTmpFile() {
                 } else {
                     return {};
                 }
-            }
-#endif
-
-            if (accessDeniedError) {
+#else
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
+#endif
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
