@@ -13,7 +13,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 {
     private readonly TcpListener _listener;
     private readonly CancellationTokenSource _acceptCts = new();
-    private readonly Task<Socket> _acceptTask;
+    private readonly Task<(Socket Socket, SslStream Stream)> _acceptTask;
     private readonly X509Certificate2 _serverCertificate;
     private Socket? _client;
     private SslStream? _clientStream;
@@ -32,7 +32,30 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         _listener = new TcpListener(IPAddress.Loopback, 0);
         _listener.Start();
         Port = ((IPEndPoint)_listener.LocalEndpoint).Port;
-        _acceptTask = _listener.AcceptSocketAsync(_acceptCts.Token).AsTask();
+        _acceptTask = AcceptAndAuthenticateAsync(_acceptCts.Token);
+    }
+
+    /// <summary>
+    /// Accepts the incoming socket and immediately drives the server-side TLS handshake.
+    /// This must run concurrently with the client's handshake (started from
+    /// <c>InitConnection</c>); otherwise both sides block and the client handshake never
+    /// completes. Doing it here means the handshake progresses as soon as the client connects,
+    /// without the test needing to first await <see cref="WaitForClientAsync"/>.
+    /// </summary>
+    private async Task<(Socket Socket, SslStream Stream)> AcceptAndAuthenticateAsync(CancellationToken cancellationToken)
+    {
+        var socket = await _listener.AcceptSocketAsync(cancellationToken).ConfigureAwait(false);
+
+        var networkStream = new NetworkStream(socket, ownsSocket: false);
+        var stream = new SslStream(networkStream, leaveInnerStreamOpen: false);
+        await stream.AuthenticateAsServerAsync(new SslServerAuthenticationOptions
+        {
+            ServerCertificate = _serverCertificate,
+            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+            ClientCertificateRequired = false
+        }, cancellationToken).ConfigureAwait(false);
+
+        return (socket, stream);
     }
 
     public async Task WriteCommFileAsync(string commFilePath)
@@ -64,16 +87,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
             throw new TimeoutException("Timed out waiting for client connection.");
         }
 
-        _client = await _acceptTask;
-
-        var networkStream = new NetworkStream(_client, ownsSocket: false);
-        _clientStream = new SslStream(networkStream, leaveInnerStreamOpen: false);
-        await _clientStream.AuthenticateAsServerAsync(new SslServerAuthenticationOptions
-        {
-            ServerCertificate = _serverCertificate,
-            EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-            ClientCertificateRequired = false
-        });
+        (_client, _clientStream) = await _acceptTask;
 
         return _client;
     }
@@ -193,7 +207,13 @@ internal sealed class FakeSocketServer : IAsyncDisposable
     {
         using var rsa = RSA.Create(2048);
         var request = new CertificateRequest("CN=kDrive-test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-        return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
+        using var ephemeral = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
+
+        // On Windows, SChannel cannot use the ephemeral private key produced by CreateSelfSigned
+        // during the server-side TLS handshake, which makes AuthenticateAsServerAsync hang.
+        // Round-tripping through a PFX yields a certificate whose private key SChannel can access.
+        var pfx = ephemeral.Export(X509ContentType.Pfx);
+        return X509CertificateLoader.LoadPkcs12(pfx, null, X509KeyStorageFlags.Exportable);
     }
 
     /// <summary>
@@ -262,7 +282,9 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
         try
         {
-            await _acceptTask;
+            var (socket, stream) = await _acceptTask;
+            stream.Dispose();
+            socket.Dispose();
         }
         catch
         {
