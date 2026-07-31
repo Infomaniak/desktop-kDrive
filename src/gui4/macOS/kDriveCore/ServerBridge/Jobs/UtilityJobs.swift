@@ -213,4 +213,18 @@ public struct UtilityJobs: Sendable {
             responseType: CallbackMessage<EmptyResponse>.self
         )
     }
+
+    public func checkMacOsPermissions() async throws -> UtilityCheckMacOsPermissionsResponse {
+        let request = await RequestMessage<EmptyQuery>(
+            num: RequestNum.UTILITY_CHECK_MACOS_PERMISSIONS,
+            body: EmptyQuery()
+        )
+
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<UtilityCheckMacOsPermissionsResponse>.self
+        )
+
+        return decodedMessage.body
+    }
 }

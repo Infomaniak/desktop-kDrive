@@ -168,6 +168,8 @@ extension RequestNum: CustomStringConvertible {
             return "UTILITY_SEND_APP_START_TRACE"
         case .UTILITY_INSTALL_MAC_LITESYNC_EXT:
             return "UTILITY_INSTALL_MAC_LITESYNC_EXT"
+        case .UTILITY_CHECK_MACOS_PERMISSIONS:
+            return "UTILITY_CHECK_MACOS_PERMISSIONS"
         case .UPDATER_CHANGE_CHANNEL:
             return "UPDATER_CHANGE_CHANNEL"
         case .UPDATER_VERSION_INFO:

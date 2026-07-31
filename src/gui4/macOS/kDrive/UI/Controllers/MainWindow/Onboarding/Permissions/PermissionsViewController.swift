@@ -248,6 +248,8 @@ final class PermissionsViewController: OnboardingStepViewController {
             .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
                 self?.checkPermission()
             }
+
+        checkPermission()
     }
 
     private func bindValues() {

@@ -112,6 +112,7 @@ struct XPCQueryFetcherTests {
         CallbackMessage<UtilityIsPathValidForNewSyncResponse>.self,
         CallbackMessage<UtilityGoodPathNewSyncResponse>.self,
         CallbackMessage<UtilityBestVFSResponse>.self,
+        CallbackMessage<UtilityCheckMacOsPermissionsResponse>.self,
         // SyncJobs responses
         CallbackMessage<SyncInfoList>.self,
         CallbackMessage<SyncStatusResponse>.self,
