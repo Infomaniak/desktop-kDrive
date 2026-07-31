@@ -218,6 +218,7 @@ if ($os -eq "macos") {
         @("kDrive_client.dSYM", $true),
         @("kDrive.src.zip", $true),
         @("kDrive_client.src.zip", $true)
+        @("kDriveRecoveryUpdater-$version.zip", $true)
     )
     Upload-FilesToKDrive -directory build-macos -files $macos_files -targetSubDir "macos"
     Write-Host " - macOS Files - \n"
