@@ -125,7 +125,7 @@ public struct UtilityJobs: Sendable {
         )
     }
 
-    public func setAppState(key: Int32, value: Int32) async throws {
+    public func setAppState(key: Int32, value: String) async throws {
         let query = UtilitySetAppStateQuery(key: key, value: value)
         let request = await RequestMessage<UtilitySetAppStateQuery>(
             num: RequestNum.UTILITY_SET_APPSTATE,
@@ -138,7 +138,7 @@ public struct UtilityJobs: Sendable {
         )
     }
 
-    public func getAppState(key: Int32) async throws -> Int32 {
+    public func getAppState(key: Int32) async throws -> String {
         let query = UtilityGetAppStateQuery(key: key)
         let request = await RequestMessage<UtilityGetAppStateQuery>(
             num: RequestNum.UTILITY_GET_APPSTATE,

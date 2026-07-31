@@ -65,14 +65,16 @@ struct HomeView: View {
                 SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
             }
 
-            InformationBlockView(
-                icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
-                title: KDriveLocalizable.onboardingV4Title,
-                subtitle: KDriveLocalizable.onboardingV4Subtitle,
-                button: .init(title: KDriveLocalizable.onboardingV4Faq) {
-                    openURL(URLConstants.faq)
-                }
-            )
+            if mainViewModel.showOnboarding {
+                InformationBlockView(
+                    icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                    title: KDriveLocalizable.onboardingV4Title,
+                    subtitle: KDriveLocalizable.onboardingV4Subtitle,
+                    button: .init(title: KDriveLocalizable.onboardingV4Faq) {
+                        openURL(URLConstants.faq)
+                    }
+                )
+            }
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
@@ -87,6 +89,7 @@ struct HomeView: View {
         .padding(AppPadding.page)
         .task {
             try? await UtilityJobs().activateLoadInfo()
+            mainViewModel.loadShowOnboarding()
         }
         .onAppear {
             avatar = mainViewModel.currentUser?.avatar
