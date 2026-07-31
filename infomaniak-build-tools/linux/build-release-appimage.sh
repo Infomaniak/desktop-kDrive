@@ -335,9 +335,28 @@ function build_recovery_updater_image() {
   # Copy Qt platform plugins (required for GUI)
   cp -P -r "$QT_BASE_DIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
 
+  # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
+  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=kDrive Recovery Updater
+Exec=kDriveRecoveryUpdater
+Icon=kDriveRecoveryUpdater
+Categories=Utility;
+EOF
+
+  # Reuse the kDrive icon if available (placed in /app by move_dependencies)
+  if [ -f "/app/kdrive-win.png" ]; then
+    cp "/app/kdrive-win.png" "$updater_appdir/kDriveRecoveryUpdater.png"
+  fi
+
   export LD_LIBRARY_PATH="$updater_appdir/usr/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
   export NO_STRIP=1
-  linuxdeploy --appdir "$updater_appdir" -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" --plugin qt --output appimage -v0
+  linuxdeploy --appdir "$updater_appdir" \
+    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
+    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
+    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
+    --plugin qt --output appimage -v0
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
 
   echo "Recovery updater AppImage created: /install/kDriveRecoveryUpdater-$architecture.AppImage"
