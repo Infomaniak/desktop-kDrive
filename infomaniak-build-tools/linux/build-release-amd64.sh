@@ -231,7 +231,7 @@ package_recovery_updater() {
   cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=kDrive Recovery Updater
+Name=kDriveRecoveryUpdater
 Exec=kDriveRecoveryUpdater
 Icon=kDriveRecoveryUpdater
 Categories=Utility;
