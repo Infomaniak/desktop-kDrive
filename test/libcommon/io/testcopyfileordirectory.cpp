@@ -96,15 +96,22 @@ void TestIo::testCopyFileOrDirectory() {
     CPPUNIT_ASSERT(std::filesystem::is_symlink(destSymlinkPath, ec) && !ec.value());
 
     // Regular symlink and target does exist
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
     NodeId symlinkNodeIdBeforeCopy;
     CPPUNIT_ASSERT(IoHelper::getNodeId(destSymlinkPath, symlinkNodeIdBeforeCopy));
+#endif
     ioError = IoError::Success;
     CPPUNIT_ASSERT(IoHelper::copyFileOrDirectory(sourceSymlinkPath, destSymlinkPath, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(std::filesystem::is_symlink(destSymlinkPath, ec) && !ec.value());
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    // Check that the symlink has been replaced by a new one with a different inode number
+    // Note: on Linux, the inode number of a symlink is not unique and can be reused by another symlink, so we cannot check that
+    // the inode number has changed
     NodeId symlinkNodeIdAfterCopy;
     CPPUNIT_ASSERT(IoHelper::getNodeId(destSymlinkPath, symlinkNodeIdAfterCopy));
-    CPPUNIT_ASSERT(symlinkNodeIdBeforeCopy != symlinkNodeIdAfterCopy); // The symlink has been replaced by a new one
+    CPPUNIT_ASSERT(symlinkNodeIdBeforeCopy != symlinkNodeIdAfterCopy);
+#endif
 
     // Copy a file to a symlink target
     ioError = IoError::Success;
