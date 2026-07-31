@@ -43,6 +43,10 @@
   old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
+- Keep raw color values in T1 primitives. T3 contextual color tokens must reference T1 or T2 tokens instead of embedding
+  hexadecimal or RGBA values.
+- Do not run `qmlformat --normalize` on structured token files: it reorders QML members independently of the intended
+  T1/T2/T3 hierarchy and detaches section comments from their tokens.
 - Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place
   the glyph on a colored tile.
 - Render advanced synchronizations with the outline `ui/assets/main/folder.svg` tinted by the owning drive color;
@@ -76,8 +80,17 @@
   generating QML components.
 - `LoaderStrokeAnimation` is intentionally used for the login loader in both light and dark themes. Do not restore or
   generate separate light/dark loader variants unless the user explicitly requests them.
-- Version generated onboarding animation QML files in `ui/windows/onboarding/animations/`, but do not edit them manually.
-  Regenerate them from the source `.lottie` asset and keep the "Do not edit" header.
+- Version generated animation QML files in each window's `animations/` directory. Do not manually edit their geometry or
+  timing; regenerate those from the source `.lottie` asset and keep the generated-file header.
+- When Light and Dark use the same animation geometry, keep one generated component and deterministically replace its
+  generated palette with theme-aware `IKColors` bindings instead of versioning separate Light and Dark QML files.
+- Derive a Lottie state's theme palette only from the matching Light/Dark state assets; do not reuse colors from a
+  similarly named or visually related animation state.
+- Before generation, remove `h` only from animated shape-path keyframes when `lottietoqml` otherwise drops the
+  corresponding `PathInterpolated`; never restore missing paths by editing generated QML.
+- When a fill spans outer and inner contours, verify that `lottietoqml` preserves the holes. If it emits one filled
+  `ShapePath` per contour, combine each outer contour with its reversed inner contour in the normalized JSON before
+  regenerating.
 
 ## Scope
 
@@ -178,7 +191,8 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
-    - `ui/windows/main/`: main-window shell and temporary placeholders. The shell is loaded only when `AppRouter` marks
+    - `ui/windows/main/`: main-window shell and temporary placeholders. Generated Home animations live under
+      `ui/windows/main/home/animations/`. The shell is loaded only when `AppRouter` marks
       the main window active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in
       cache-backed QML models.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
