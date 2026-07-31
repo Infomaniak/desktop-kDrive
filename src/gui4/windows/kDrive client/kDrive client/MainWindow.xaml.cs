@@ -197,8 +197,8 @@ namespace Infomaniak.kDrive
             // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
             dialog.XamlRoot = this.Content.XamlRoot;
             dialog.Title = Localizer.Instance.GetString1i("manyDeleteDialogTitle", manyDeletesInfo.NbFiles);
-            dialog.PrimaryButtonText = Localizer.Instance.GetString("manyDeleteDialogSoftLimitPrimary");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString("manyDeleteDialogSoftLimitSecondary");
+            dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonClose");
+            dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonOpenTrash");
             dialog.DefaultButton = ContentDialogButton.Primary;
 
             StackPanel contentPanel = new StackPanel
