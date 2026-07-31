@@ -86,7 +86,7 @@ struct EnableBackgroundActivityView: View {
                         }
                     }
 
-                    Button(KDriveLocalizable.buttonKDriveIsActivated, action: navigateIfBackgroundActivityIsEnabled)
+                    Button(KDriveLocalizable.buttonKDriveIsActivated, action: reconnectToLoginAgentAndProceed)
                         .buttonStyle(.borderedProminent)
                 }
                 .padding(AppPadding.padding48)
@@ -105,10 +105,9 @@ struct EnableBackgroundActivityView: View {
         .frame(minWidth: 600, minHeight: 300)
     }
 
-    private func navigateIfBackgroundActivityIsEnabled() {
-        @InjectService var permissionHandler: MacOSPermissionHandling
-        guard permissionHandler.isBackgroundActivityEnabled() else { return }
-
+    private func reconnectToLoginAgentAndProceed() {
+        // Attempting to (re)connect to the login item agent is the real source of truth for whether
+        // background activity is enabled.
         @InjectService var xpcConnectionProvider: XPCConnectionProvider
         Task {
             await xpcConnectionProvider.reconnectToLoginAgent()

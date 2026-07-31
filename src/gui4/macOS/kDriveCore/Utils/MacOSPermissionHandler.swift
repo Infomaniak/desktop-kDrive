@@ -18,7 +18,6 @@
 
 import Cocoa
 import Foundation
-import ServiceManagement
 
 public enum MacOSPermission: Sendable {
     case endpointSecurityExtension
@@ -33,7 +32,6 @@ protocol AuthorizationChecker: Sendable {
 public protocol MacOSPermissionHandling: Sendable {
     func isAuthorized(for permission: MacOSPermission) async -> Bool
     func systemPreferencesURL(for permission: MacOSPermission) -> URL?
-    func isBackgroundActivityEnabled() -> Bool
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
@@ -55,28 +53,6 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
 
     public func systemPreferencesURL(for permission: MacOSPermission) -> URL? {
         return authorizationCheckers[permission]?.systemPreferencesURL
-    }
-
-    public func isBackgroundActivityEnabled() -> Bool {
-        let isEnabled: Bool
-        if #available(macOS 13.0, *) {
-            if let loginItemAgentIdentifier = Bundle.main
-                .object(forInfoDictionaryKey: "LoginItemAgentMachName") as? String {
-                isEnabled = SMAppService.loginItem(identifier: loginItemAgentIdentifier).status == .enabled
-            } else {
-                isEnabled = false
-            }
-        } else {
-            isEnabled = true
-        }
-
-        if isEnabled {
-            IKLogger.general.log("[KD] isBackgroundActivityEnabled: \(isEnabled)")
-        } else {
-            IKLogger.general.error("[KD] isBackgroundActivityEnabled: \(isEnabled)")
-        }
-
-        return isEnabled
     }
 }
 
