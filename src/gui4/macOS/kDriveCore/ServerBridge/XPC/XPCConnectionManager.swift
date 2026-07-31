@@ -199,7 +199,7 @@ import InfomaniakDI
         notifyLoginItemAgentConnectionState(.connected)
     }
 
-    public func reconnectToLoginAgent() async {
+    func reconnectToLoginAgent() async {
         IKLogger.xpc.log("[KD] Reconnect to login item agent requested")
         do {
             if loginItemAgentConnection == nil {
