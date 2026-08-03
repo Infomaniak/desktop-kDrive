@@ -168,7 +168,7 @@ namespace Infomaniak.kDrive
             dialog.PrimaryButtonText = Localizer.Instance.GetString("manyDeleteDialogHardLimitPrimary");
             dialog.SecondaryButtonText = Localizer.Instance.GetString("manyDeleteDialogHardLimitSecondary");
             dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = Localizer.Instance.GetString("manyDeleteContent");
+            dialog.Content = Localizer.Instance.GetString("manyDeleteDialogHardLimitContent");
 
             dialog.Closing += (s, e) =>
             {
