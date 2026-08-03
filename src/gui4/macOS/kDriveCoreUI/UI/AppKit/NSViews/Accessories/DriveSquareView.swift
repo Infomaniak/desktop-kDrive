@@ -25,7 +25,7 @@ public final class DriveSquareView: NSView {
     private let color: NSColor
 
     private let iconView: NSImageView = {
-        let imageView = NSImageView(image: KDriveResources.kdriveFoldersStacked.image)
+        let imageView = NSImageView(image: KDriveResources.kdriveFoldersStackedFilled.image)
         imageView.contentTintColor = .white
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView

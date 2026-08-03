@@ -68,7 +68,7 @@ struct ConfigurableSynchroView: View {
         HStack {
             HStack(alignment: .top) {
                 BadgeView(
-                    image: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                    image: KDriveResources.kdriveFoldersStackedFilled.swiftUIImage,
                     color: configuration.drive.color ?? ColorToken.Drive.defaultColor.asColor
                 )
 
