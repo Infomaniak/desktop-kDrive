@@ -33,4 +33,19 @@ QtObject {
     readonly property real errorBadgeSize: 8
     readonly property real notificationBadgeMinSize: 20
     readonly property real syncSelectorPopupMaxHeight: 260
+    readonly property real homeErrorBannerHeight: 72
+    readonly property real homeErrorActionButtonHeight: 24
+    readonly property real homeAvatarSize: 44
+    readonly property real homeDriveNameMaxWidth: 140
+    readonly property real homeDriveNameMaxHeight: 40
+    readonly property real homeShortcutHeight: 34
+    readonly property real homeShortcutExternalIconSpacing: IKSpacing.s16
+    readonly property real toolbarIconButtonSize: 36
+    readonly property real toolbarSearchIconSize: 16
+    readonly property real toolbarActionGroupButtonSize: 28
+    readonly property real toolbarActionGroupHeight: 36
+    readonly property real toolbarActionGroupPadding: 4
+    readonly property real toolbarActionGroupSpacing: 4
+    readonly property real toolbarActionGroupWidth: toolbarActionGroupButtonSize * 2 + toolbarActionGroupSpacing
+                                                     + toolbarActionGroupPadding * 2
 }
