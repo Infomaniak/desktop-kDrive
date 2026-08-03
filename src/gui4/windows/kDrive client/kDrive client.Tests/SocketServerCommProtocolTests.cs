@@ -330,7 +330,7 @@ public class TcpServerCommClientTests
         var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => lost.TrySetResult();
 
-        using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(50));
+        using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
 
