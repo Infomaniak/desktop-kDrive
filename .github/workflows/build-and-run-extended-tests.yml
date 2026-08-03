@@ -49,8 +49,10 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || (github.event_name == 'workflow_dispatch' && github.ref_name || 'develop') }}
           submodules: recursive
 
-      - name: Clean the log directory
-        run : rm -r -force ${{ env.USERPROFILE }}/AppData/Local/Temp/kDrive-logdir/*
+      - name: Clean log directory
+        run: Remove-Item -Recurse -Force "$env:USERPROFILE\AppData\Local\Temp\kDrive-logdir\*" -ErrorAction SilentlyContinue
+        shell: pwsh
+        if: always()
 
       - name: Import Windows certificate
         env:
