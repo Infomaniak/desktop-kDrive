@@ -18,7 +18,7 @@
 
 #include "keychainstorage.h"
 
-#include "comm.h"
+#include "libcommon/utility/utility.h"
 #include "keychain/keychain.h"
 #include "log/log.h"
 
@@ -29,7 +29,7 @@ namespace KDC {
 
 bool KeyChainStorage::writePassword(const std::string &keychainKey, const std::string &rawData) {
     keychain::Error error{};
-    keychain::setPassword(std::string(package), std::string(service), keychainKey, rawData, error);
+    keychain::setPassword(keychainConstant::package, keychainConstant::service, keychainKey, rawData, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to save authentication info to keychain: " << error.code << " - " << error.message);
@@ -43,7 +43,7 @@ bool KeyChainStorage::writePassword(const std::string &keychainKey, const std::s
 
 bool KeyChainStorage::readPassword(const std::string &keychainKey, std::string &data, bool &found) {
     keychain::Error error{};
-    data = keychain::getPassword(std::string(package), std::string(service), keychainKey, error);
+    data = keychain::getPassword(keychainConstant::package, keychainConstant::service, keychainKey, error);
     if (error.type == keychain::ErrorType::NotFound) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Could not find data in keychain for key " << keychainKey << ": " << error.code << " - " << error.message);
@@ -61,7 +61,7 @@ bool KeyChainStorage::readPassword(const std::string &keychainKey, std::string &
 
 bool KeyChainStorage::deletePassword(const std::string &keychainKey) {
     keychain::Error error{};
-    keychain::deletePassword(std::string(package), std::string(service), keychainKey, error);
+    keychain::deletePassword(keychainConstant::package, keychainConstant::service, keychainKey, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
                   "Failed to delete authentication info from keychain: " << error.code << " - " << error.message);
