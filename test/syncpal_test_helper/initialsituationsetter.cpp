@@ -257,9 +257,6 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const NodeId
             (void) job.runSynchronously();
             _remoteNodeIds[desc.id] = job.nodeId();
         }
-    } catch (const SituationGeneratorException &e) {
-        LOG_WARN(Log::instance()->getLogger(), "InitialSituationSetter::insertRemoteItem: " << e.what());
-        throw;
     } catch (const std::exception &e) {
         throw SituationGeneratorException(std::string("Failed to insert remote item: ") + e.what());
     }
