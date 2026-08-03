@@ -34,7 +34,6 @@ CertReader::CertReader(std::string keychainKey) :
     _keychainKey(std::move(keychainKey)) {}
 
 bool CertReader::readPem(std::string &outPem) const {
-    outPem.clear();
     keychain::Error error{};
     outPem = keychain::getPassword(std::string(package), std::string(service), _keychainKey, error);
 
