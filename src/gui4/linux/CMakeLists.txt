@@ -47,6 +47,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
         app/navigation/approuter.h
+        app/navigation/mainwindowactivationdecision.cpp
+        app/navigation/mainwindowactivationdecision.h
         app/onboarding/availabledrivesmodel.cpp
         app/onboarding/availabledrivesmodel.h
         app/onboarding/driveselectioncontroller.cpp
@@ -137,14 +139,26 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKTintedIcon.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
-        ui/windows/main/HomePlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
         ui/windows/main/SidebarHeaderView.qml
         ui/windows/main/SidebarView.qml
         ui/windows/main/SyncSelectorView.qml
         ui/windows/main/StoragePlaceholder.qml
+        ui/windows/main/home/HomeErrorBanner.qml
+        ui/windows/main/home/HomeGreeting.qml
+        ui/windows/main/home/HomeStatusPanel.qml
+        ui/windows/main/home/HomeView.qml
+        ui/windows/main/home/shortcuts/DriveWebShortcutsView.qml
         ui/windows/main/home/shortcuts/HomeWebShortcutButton.qml
+        ui/windows/main/home/states/HomeLoadingState.qml
+        ui/windows/main/home/states/HomeOfflineState.qml
+        ui/windows/main/home/states/HomePausedState.qml
+        ui/windows/main/home/states/HomeSetupRequiredState.qml
+        ui/windows/main/home/states/HomeStateContent.qml
+        ui/windows/main/home/states/HomeStatusVisual.qml
+        ui/windows/main/home/states/HomeSyncingState.qml
+        ui/windows/main/home/states/HomeUpToDateState.qml
         ${GUI_GENERATED_QML_FILES}
         ui/windows/onboarding/DriveCellView.qml
         ui/windows/onboarding/DriveIconView.qml
