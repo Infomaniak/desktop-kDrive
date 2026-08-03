@@ -71,6 +71,10 @@ bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) const
 }
 
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
+    if (!_syncPal) return false;
+
+    if (!_syncPal->isRunning()) _syncPal->start(); // Start the Syncpal if it is not already running
+
     // Give a pending change a chance to be detected before checking for idleness below.
     (void) waitForDetectedUpdate();
 
