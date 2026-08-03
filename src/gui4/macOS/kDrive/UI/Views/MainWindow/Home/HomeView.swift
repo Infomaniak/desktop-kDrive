@@ -73,7 +73,9 @@ struct HomeView: View {
                     button: .init(title: KDriveLocalizable.onboardingV4Faq) {
                         openURL(URLConstants.faq)
                     }
-                )
+                ) {
+                    mainViewModel.dismissOnboarding()
+                }
             }
 
             GeometryReader { proxy in
