@@ -222,10 +222,22 @@ SyncPath InitialSituationSetter::localFilePathForUpload(const ItemDesc &desc) {
         return _syncPal->localPath() / it->second;
     }
 
+    const SyncPath namePath(desc.name);
+    if (namePath.is_absolute() || namePath.filename() != namePath || namePath.empty()) {
+        throw SituationGeneratorException("Invalid item name: '" + SyncName2Str(desc.name) + "'");
+    }
+
     // Remote-only item: no local counterpart was generated, create a scratch file to upload from.
     const LocalTemporaryDirectory &uploadScratchDir =
             _uploadScratchDir ? *_uploadScratchDir : _uploadScratchDir.emplace("InitialSituationSetterUpload");
-    const SyncPath scratchPath = uploadScratchDir.path() / desc.name;
+    const SyncPath scratchRoot = uploadScratchDir.path().lexically_normal();
+    const SyncPath scratchPath = (scratchRoot / namePath).lexically_normal();
+
+    // Ensure the resulting path stays within the scratch directory (guards against traversal via "..").
+    if (!CommonUtility::isSubDir(scratchRoot, scratchPath)) {
+        throw SituationGeneratorException("Item path escapes the scratch directory: '" + scratchPath.string() + "'");
+    }
+
     testhelpers::generateTestFile(scratchPath);
     if (desc.size > 0) testhelpers::setTestFileSize(scratchPath, static_cast<uint64_t>(desc.size));
     return scratchPath;
@@ -257,6 +269,9 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const NodeId
             (void) job.runSynchronously();
             _remoteNodeIds[desc.id] = job.nodeId();
         }
+    } catch (const SituationGeneratorException &e) {
+        LOG_WARN(Log::instance()->getLogger(), "InitialSituationSetter::insertRemoteItem: " << e.what());
+        throw;
     } catch (const std::exception &e) {
         throw SituationGeneratorException(std::string("Failed to insert remote item: ") + e.what());
     }
