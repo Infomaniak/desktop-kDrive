@@ -43,7 +43,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private const string _certKeychainKey = "kdrive_ipc_tls_cert";
 
         private readonly IKeychainStore _keychainStore;
-        private Socket? _socket;
         private SslStream? _stream;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
         private int _requestIdCounter = 0;
@@ -86,7 +85,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         ~TcpServerCommClient()
         {
             _stream?.Dispose();
-            _socket?.Dispose();
             _stopRequested = true;
         }
 
@@ -170,7 +168,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             while (!_stopRequested && !cancellationToken.IsCancellationRequested)
             {
-                if (_socket is not null && _socket.Connected)
+                if (_stream is not null && _stream.IsAuthenticated)
                     return true;
 
                 int? port = GetServerPort();
@@ -200,7 +198,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     DisposeConnection();
                     using (pinnedCertificate)
                     {
-                        (_socket, _stream) = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, cancellationToken).ConfigureAwait(false);
+                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, cancellationToken).ConfigureAwait(false);
                     }
                     Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
@@ -234,19 +232,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             _stream?.Dispose();
             _stream = null;
-            _socket?.Dispose();
-            _socket = null;
         }
 
         private async Task PollingLoop()
         {
-            if (_socket == null || !_socket.Connected || _stream == null)
+            if (_stream is null)
             {
-                Logger.Log(Logger.Level.Warning, "Unable to read: socket is not connected.");
+                Logger.Log(Logger.Level.Warning, "Unable to read: stream is not connected.");
                 return;
             }
 
-            while (!_stopRequested && _socket?.Connected == true)
+            while (!_stopRequested && _stream.IsAuthenticated)
             {
                 try
                 {
@@ -290,7 +286,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Wait asynchronously until the client is connected
                 const int softWaitTimeMs = 30000; // Log every 30s
                 var lastLogTime = Stopwatch.StartNew();
-                while (_socket == null || !_socket.Connected || _stream == null)
+                while (_stream is null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 

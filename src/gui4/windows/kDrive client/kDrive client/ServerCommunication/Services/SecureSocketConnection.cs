@@ -39,10 +39,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         /// the TLS client handshake, validating the server against the <paramref name="pinnedCertificate"/>.
         /// </summary>
         /// <returns>
-        /// The connected <see cref="Socket"/> (for polling/availability checks) and the
-        /// authenticated <see cref="SslStream"/> used to read and write application data.
+        /// The authenticated <see cref="SslStream"/> used to read and write application data.
         /// </returns>
-        public static async Task<(Socket Socket, SslStream Stream)> ConnectAsync(string host, int port, X509Certificate2 pinnedCertificate, CancellationToken cancellationToken)
+        public static async Task<SslStream> ConnectAsync(string host, int port, X509Certificate2 pinnedCertificate, CancellationToken cancellationToken)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
@@ -61,7 +60,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 };
 
                 await sslStream.AuthenticateAsClientAsync(options, cancellationToken).ConfigureAwait(false);
-                return (socket, sslStream);
+                return sslStream;
             }
             catch
             {
