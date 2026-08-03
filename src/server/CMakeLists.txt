@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML Net NetSSL)
+find_package(Poco 1.13.3 REQUIRED XML Net NetSSL Crypto)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -347,6 +347,9 @@ target_link_libraries(updater
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Svg
+    Poco::Net
+    Poco::NetSSL
+    Poco::Crypto
     sentry::sentry
     updater)
 
