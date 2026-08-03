@@ -4,6 +4,8 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
 
+include(ECMAddAppIcon)
+
 set(SOURCES
         main.cpp
         mainwindow.cpp
@@ -36,6 +38,15 @@ elseif(APPLE)
 else()
     list(APPEND HEADERS updater/osupdater_linux.h)
 endif()
+
+# Application icon for macOS (.icns) and Windows (.ico + .rc)
+if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
+    set(theme_dir ${KDRIVE_THEME_DIR}/theme)
+else()
+    set(theme_dir ${CMAKE_SOURCE_DIR}/theme)
+endif()
+file(GLOB_RECURSE RECOVERY_UPDATER_ICONS "${theme_dir}/colored/*-kdrive-recovery-updater-icon*")
+ecm_add_app_icon(SOURCES ICONS "${RECOVERY_UPDATER_ICONS}" OUTFILE_BASENAME "kDriveRecoveryUpdater")
 
 add_executable(kDriveRecoveryUpdater ${SOURCES} ${HEADERS})
 

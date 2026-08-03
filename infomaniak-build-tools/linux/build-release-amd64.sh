@@ -237,9 +237,10 @@ Icon=kDriveRecoveryUpdater
 Categories=Utility;
 EOF
 
-  # Reuse the kDrive icon if available
-  if [ -f "$app_dir/kdrive-win.png" ]; then
-    cp "$app_dir/kdrive-win.png" "$updater_appdir/kDriveRecoveryUpdater.png"
+  # Use the recovery updater icon
+  updater_icon="$src_dir/infomaniak/theme/colored/1024-kdrive-recovery-updater-icon.png"
+  if [ -f "$updater_icon" ]; then
+    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
 
   export NO_STRIP=1

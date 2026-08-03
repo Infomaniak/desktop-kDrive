@@ -345,9 +345,10 @@ Icon=kDriveRecoveryUpdater
 Categories=Utility;
 EOF
 
-  # Reuse the kDrive icon if available (placed in /app by move_dependencies)
-  if [ -f "/app/kdrive-win.png" ]; then
-    cp "/app/kdrive-win.png" "$updater_appdir/kDriveRecoveryUpdater.png"
+  # Use the recovery updater icon
+  updater_icon="/src/infomaniak/theme/colored/1024-kdrive-recovery-updater-icon.png"
+  if [ -f "$updater_icon" ]; then
+    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
 
   export LD_LIBRARY_PATH="$updater_appdir/usr/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
