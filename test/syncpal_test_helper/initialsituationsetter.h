@@ -127,7 +127,7 @@ class InitialSituationSetter {
         // them) and builds the initial situation against the SyncPal passed to the constructor (or set via
         // setSyncpal). Either description may describe an empty situation if that side shouldn't be populated.
         // returns false if invalid
-        bool run(const std::string &localJsonDescription, const std::string &remoteJsonDescription);
+        bool run(const SyncName &localJsonDescription, const SyncName &remoteJsonDescription);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 

@@ -98,12 +98,12 @@ void InitialSituationSetter::setSyncpal(const std::shared_ptr<SyncPal> syncPal) 
     }
 }
 
-bool InitialSituationSetter::run(const std::string &localJsonDescription, const std::string &remoteJsonDescription) {
+bool InitialSituationSetter::run(const SyncName &localJsonDescription, const SyncName &remoteJsonDescription) {
     if (!_syncPal) return false;
 
     try {
-        const Situation localSituation{Str2SyncName(localJsonDescription)};
-        const Situation remoteSituation{Str2SyncName(remoteJsonDescription)};
+        const Situation localSituation{localJsonDescription};
+        const Situation remoteSituation{remoteJsonDescription};
         generateInitialSituation(localSituation, remoteSituation);
 
         return true;
