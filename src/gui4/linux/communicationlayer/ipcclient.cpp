@@ -274,6 +274,7 @@ void IpcClient::onReadyRead() {
  * @param errors The list of SSL/TLS errors to log.
  */
 void IpcClient::onSslErrors(const QList<QSslError> &errors) {
+    _pinnedCert.clear();
     for (const QSslError &error: errors) {
         qCWarning(lcIpcClient) << "SSL/TLS error :" << error.errorString();
     }
