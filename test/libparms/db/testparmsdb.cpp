@@ -586,13 +586,13 @@ void TestParmsDb::testAppState(void) {
 }
 
 bool TestParmsDb::deleteAppState(AppStateKey key) {
-    int errId = 0;
+    int32_t errId = 0;
     std::string error;
 
     auto db = ParmsDb::instance();
     const std::string requestId = "delete_app_state_test";
     if (!db->createAndPrepareRequest(requestId.c_str(), "DELETE FROM app_state WHERE key=?1;")) return false;
-    if (!db->queryBindValue(requestId, 1, static_cast<int>(key))) {
+    if (!db->queryBindValue(requestId, 1, static_cast<int32_t>(key))) {
         db->queryFree(requestId);
         return false;
     }

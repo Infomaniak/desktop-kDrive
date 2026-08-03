@@ -115,7 +115,7 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, const Us
 void AbstractTokenNetworkJob::clearCacheForUserDbId(const UserDbId userDbId) {
     const std::scoped_lock lock(_cacheMutex);
     if (const auto it = _userToApiKeyMap.find(userDbId); it != _userToApiKeyMap.end()) {
-        _userToApiKeyMap.erase(it);
+        (void) _userToApiKeyMap.erase(it);
     }
 }
 
@@ -393,7 +393,9 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
 
     const std::scoped_lock lock(_cacheMutex);
 
-    if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login != nullptr && _userToApiKeyMap[_userDbId].login->hasToken()) return;
+    if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login != nullptr &&
+        _userToApiKeyMap[_userDbId].login->hasToken())
+        return;
 
     // Get user
     User user;
