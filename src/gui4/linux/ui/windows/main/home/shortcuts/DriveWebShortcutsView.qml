@@ -120,7 +120,7 @@ Rectangle {
                 width: parent.width
                 text: qsTrId("folderFavorites")
                 glyphSource: "qrc:/assets/main/home/star.svg"
-                onClicked: root.controller.openDriveDestination(HomeController.Favorites)
+                onClicked: root.controller.openDriveDestination(WebDrive.Favorites)
             }
 
             HomeWebShortcutButton {
@@ -129,7 +129,7 @@ Rectangle {
                 width: parent.width
                 text: qsTrId("folderShares")
                 glyphSource: "qrc:/assets/main/home/folder-share.svg"
-                onClicked: root.controller.openDriveDestination(HomeController.Shared)
+                onClicked: root.controller.openDriveDestination(WebDrive.Shared)
             }
 
             HomeWebShortcutButton {
@@ -138,7 +138,7 @@ Rectangle {
                 width: parent.width
                 text: qsTrId("buttonKDriveOnline")
                 glyphSource: "qrc:/assets/main/home/kdrive-folders-stacked.svg"
-                onClicked: root.controller.openDriveDestination(HomeController.OnlineDrive)
+                onClicked: root.controller.openDriveDestination(WebDrive.OnlineDrive)
             }
         }
 
@@ -153,7 +153,7 @@ Rectangle {
             width: parent.width
             text: qsTrId("folderTrash")
             glyphSource: "qrc:/assets/main/home/trash.svg"
-            onClicked: root.controller.openDriveDestination(HomeController.Trash)
+            onClicked: root.controller.openDriveDestination(WebDrive.Trash)
         }
     }
 }
