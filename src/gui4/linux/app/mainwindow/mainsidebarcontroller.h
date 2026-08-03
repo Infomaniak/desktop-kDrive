@@ -47,6 +47,7 @@ class MainSidebarController final : public QObject {
         Q_PROPERTY(bool currentHasWarning READ currentHasWarning NOTIFY currentContextChanged)
         Q_PROPERTY(bool canOpenCurrentSyncFolder READ canOpenCurrentSyncFolder NOTIFY currentContextChanged)
         Q_PROPERTY(qint32 currentErrorCount READ currentErrorCount NOTIFY currentContextChanged)
+        Q_PROPERTY(qint32 unselectedErrorCount READ unselectedErrorCount NOTIFY unselectedErrorCountChanged)
 
     public:
         explicit MainSidebarController(const AppCache &cache, MainSelectionStore &selectionStore, QObject *parent = nullptr);
@@ -61,6 +62,7 @@ class MainSidebarController final : public QObject {
         [[nodiscard]] bool currentHasWarning() const;
         [[nodiscard]] bool canOpenCurrentSyncFolder() const;
         [[nodiscard]] qint32 currentErrorCount() const;
+        [[nodiscard]] qint32 unselectedErrorCount() const;
 
         Q_INVOKABLE void selectSync(qint64 syncDbId);
         Q_INVOKABLE bool openCurrentSyncFolder() const;
@@ -69,6 +71,7 @@ class MainSidebarController final : public QObject {
         void selectedRowChanged();
         void currentContextChanged();
         void entryCountChanged();
+        void unselectedErrorCountChanged();
 
     private:
         [[nodiscard]] QVariant selectedData(SyncSelectorModel::Role role) const;
