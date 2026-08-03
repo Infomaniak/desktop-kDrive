@@ -26,6 +26,7 @@ Rectangle {
     id: root
 
     required property var appRouter
+    required property var controller
 
     readonly property int currentTab: root.appRouter.currentMainTabIndex
     readonly property int tabActivities: AppRouter.Activities
@@ -66,75 +67,151 @@ Rectangle {
         spacing: IKSpacing.s8
 
         HeaderIconButton {
-            glyph: "?"
+            iconSource: "qrc:/assets/main/home/headphones.svg"
             text: qsTrId("infomaniakSupport")
-            onClicked: root.appRouter.openSupport()
+            onClicked: root.controller.openSupport()
+        }
+
+        Rectangle {
+            width: IKMainWindow.toolbarActionGroupWidth
+            height: IKMainWindow.toolbarActionGroupHeight
+            radius: height / 2
+            color: IKColors.toolbarControlSurface
+            border.width: 1
+            border.color: IKColors.surfaceTertiary
+
+            Row {
+                anchors.centerIn: parent
+                spacing: IKMainWindow.toolbarActionGroupSpacing
+
+                GroupedIconButton {
+                    enabled: root.controller.syncControlState === HomeController.Pause
+                             || root.controller.syncControlState === HomeController.Resume
+                    iconSource: root.controller.syncControlState === HomeController.Resume
+                                ? "qrc:/assets/main/home/play.svg" : "qrc:/assets/main/home/pause.svg"
+                    text: root.controller.syncControlState === HomeController.Resume
+                          ? qsTrId("buttonRestartSync") : qsTrId("buttonPause")
+                    onClicked: root.controller.toggleSync()
+                }
+
+                FutureGroupedIconButton {
+                    iconSource: "qrc:/assets/main/home/cog.svg"
+                    accessibleName: qsTrId("buttonSettings")
+                }
+            }
         }
 
         HeaderIconButton {
-            glyph: "||"
-            text: qsTrId("buttonPause")
-            onClicked: root.appRouter.requestPauseCurrentSync()
-        }
-
-        Button {
-            id: searchButton
-
-            width: 132
-            height: 36
-            leftPadding: IKSpacing.s12
-            rightPadding: IKSpacing.s12
-            focusPolicy: Qt.StrongFocus
-            hoverEnabled: true
+            iconSource: "qrc:/assets/main/home/search.svg"
+            iconSize: IKMainWindow.toolbarSearchIconSize
             text: qsTrId("buttonSearch")
-            onClicked: root.appRouter.requestSearch()
-
-            contentItem: Text {
-                text: searchButton.text
-                color: IKColors.textTertiary
-                font.pixelSize: IKFonts.bodySize
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-            }
-
-            background: Rectangle {
-                radius: height / 2
-                color: searchButton.hovered || searchButton.down ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
-                border.width: searchButton.visualFocus ? 2 : 1
-                border.color: searchButton.visualFocus ? IKColors.accentPrimary : IKColors.surfaceTertiary
-            }
+            tooltipText: qsTrId("comingSoon")
+            Accessible.description: qsTrId("comingSoon")
         }
     }
 
     component HeaderIconButton: ToolButton {
         id: buttonRoot
 
-        required property string glyph
+        required property url iconSource
+        property real iconSize: IKIconSizes.medium
+        property string tooltipText: text
 
-        width: 32
-        height: 32
+        width: IKMainWindow.toolbarIconButtonSize
+        height: IKMainWindow.toolbarIconButtonSize
         focusPolicy: Qt.StrongFocus
         hoverEnabled: true
         display: AbstractButton.IconOnly
 
-        contentItem: Text {
-            text: buttonRoot.glyph
-            color: IKColors.textSecondary
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.emphasized
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+        contentItem: Item {
+            IKTintedIcon {
+                anchors.centerIn: parent
+                width: buttonRoot.iconSize
+                height: buttonRoot.iconSize
+                source: buttonRoot.iconSource
+                color: buttonRoot.enabled ? IKColors.textSecondary : IKColors.actionDisabled
+            }
         }
 
         background: Rectangle {
             radius: width / 2
-            color: buttonRoot.hovered || buttonRoot.down ? IKColors.surfaceTertiary : IKColors.surfaceSecondary
+            color: buttonRoot.hovered || buttonRoot.down ? IKColors.toolbarControlHover : IKColors.toolbarControlSurface
             border.width: buttonRoot.visualFocus ? 2 : 1
             border.color: buttonRoot.visualFocus ? IKColors.accentPrimary : IKColors.surfaceTertiary
         }
 
         ToolTip.visible: buttonRoot.hovered || buttonRoot.activeFocus
-        ToolTip.text: buttonRoot.text
+        ToolTip.text: buttonRoot.tooltipText
         ToolTip.delay: 500
     }
+
+    component GroupedIconButton: ToolButton {
+        id: groupedButton
+
+        required property url iconSource
+
+        width: IKMainWindow.toolbarActionGroupButtonSize
+        height: IKMainWindow.toolbarActionGroupButtonSize
+        focusPolicy: Qt.StrongFocus
+        hoverEnabled: true
+        display: AbstractButton.IconOnly
+
+        contentItem: IKTintedIcon {
+            width: IKIconSizes.medium
+            height: IKIconSizes.medium
+            source: groupedButton.iconSource
+            color: groupedButton.enabled ? IKColors.textSecondary : IKColors.actionDisabled
+        }
+
+        background: Rectangle {
+            radius: width / 2
+            color: groupedButton.hovered || groupedButton.down ? IKColors.toolbarControlHover : "transparent"
+            border.width: groupedButton.visualFocus ? 2 : 0
+            border.color: IKColors.accentPrimary
+        }
+
+        ToolTip.visible: groupedButton.hovered || groupedButton.activeFocus
+        ToolTip.text: groupedButton.text
+        ToolTip.delay: 500
+    }
+
+    component FutureGroupedIconButton: Item {
+        id: futureGroupedButton
+
+        required property url iconSource
+        required property string accessibleName
+
+        width: IKMainWindow.toolbarActionGroupButtonSize
+        height: IKMainWindow.toolbarActionGroupButtonSize
+
+        ToolButton {
+            id: settingsButton
+
+            anchors.fill: parent
+            display: AbstractButton.IconOnly
+            focusPolicy: Qt.StrongFocus
+            hoverEnabled: true
+            Accessible.name: futureGroupedButton.accessibleName
+            Accessible.description: qsTrId("comingSoon")
+
+            contentItem: IKTintedIcon {
+                width: IKIconSizes.medium
+                height: IKIconSizes.medium
+                source: futureGroupedButton.iconSource
+                color: IKColors.textSecondary
+            }
+
+            background: Rectangle {
+                radius: width / 2
+                color: settingsButton.hovered || settingsButton.down ? IKColors.toolbarControlHover : "transparent"
+                border.width: settingsButton.visualFocus ? 2 : 0
+                border.color: IKColors.accentPrimary
+            }
+        }
+
+        ToolTip.visible: settingsButton.hovered || settingsButton.activeFocus
+        ToolTip.text: qsTrId("comingSoon")
+        ToolTip.delay: 500
+    }
+
 }
