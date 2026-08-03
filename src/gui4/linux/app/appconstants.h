@@ -21,6 +21,7 @@
 #include "libcommon/utility/types.h"
 
 #include <QColor>
+#include <QObject>
 #include <QString>
 #include <QUrl>
 
@@ -63,13 +64,16 @@ namespace KDC::AppConstants::Support {
 } // namespace KDC::AppConstants::Support
 
 namespace KDC::AppConstants::WebDrive {
+Q_NAMESPACE
 
+// Exposed to QML as `WebDrive` (registered in AppClientLinux::setupQmlEngine).
 enum class Destination : uint8_t {
     Favorites = 0,
     Shared,
     OnlineDrive,
     Trash,
 };
+Q_ENUM_NS(Destination)
 
 [[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
     QString customUrl = "infomaniak.com"; // ready for custom brand
