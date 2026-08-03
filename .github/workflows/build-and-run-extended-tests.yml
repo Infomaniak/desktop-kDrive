@@ -51,7 +51,7 @@ jobs:
 
       - name: Clean log directory
         run: Remove-Item -Recurse -Force "$env:USERPROFILE\AppData\Local\Temp\kDrive-logdir\*" -ErrorAction SilentlyContinue
-        shell: pwsh
+        shell: powershell
         if: always()
 
       - name: Import Windows certificate
