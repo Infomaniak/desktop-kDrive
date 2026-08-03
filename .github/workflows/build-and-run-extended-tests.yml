@@ -34,7 +34,7 @@ env:
 
 jobs:
   Windows-extended-tests:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, vs2026 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
       COVFILE: ${{ github.workspace }}\\src\\test.cov
@@ -50,7 +50,7 @@ jobs:
           submodules: recursive
 
       - name: Clean the log directory
-        run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
+        run : rm -r -force ${{ env.USERPROFILE }}/AppData/Local/Temp/kDrive-logdir/*
 
       - name: Import Windows certificate
         env:
@@ -109,7 +109,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-tests-logs
-          path: C:/Windows/Temp/kDrive-logdir/*
+          path: ${{ env.USERPROFILE }}/AppData/Local/Temp/kDrive-logdir/*
           retention-days: 3
           overwrite: true
         if: always()
