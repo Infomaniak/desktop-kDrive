@@ -20,7 +20,7 @@ $testers = Get-ChildItem build-windows -Recurse -Name -Filter 'kDrive_test_*.exe
 $errors = 0
 $failures = @()
 
-pushd build-windows\build\bin
+pushd build-windows\install\bin
 
 $env:PATH = "C:\Program Files (x86)\cppunit\lib;" + $env:PATH
 
