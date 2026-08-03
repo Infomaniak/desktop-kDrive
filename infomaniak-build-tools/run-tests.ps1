@@ -20,7 +20,7 @@ $testers = Get-ChildItem build-windows -Recurse -Name -Filter 'kDrive_test_*.exe
 $errors = 0
 $failures = @()
 
-pushd build-windows\install\bin
+pushd build-windows\build\bin
 
 foreach ($file in $testers)
 {
