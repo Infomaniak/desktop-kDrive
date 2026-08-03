@@ -18,6 +18,7 @@
 
 #include "appclientlinux.h"
 
+#include "app/appconstants.h"
 #include "app/applicationidentity.h"
 #include "app/navigation/mainwindowactivationdecision.h"
 #include "libcommon/utility/utility.h"
@@ -81,6 +82,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                          "SyncSelectorModel is owned by MainSidebarController.");
     (void) qmlRegisterUncreatableType<HomeController>("kDrive.UI", 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
+                                            QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
