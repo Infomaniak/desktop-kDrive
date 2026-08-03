@@ -6,7 +6,7 @@ endif()
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.53.0 REQUIRED)
-find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
+find_package(Poco 1.13.3 REQUIRED Foundation Net Crypto JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
 
@@ -136,7 +136,7 @@ endif()
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
     SQLite::SQLite3
-    Poco::Foundation Poco::Net Poco::JSON Poco::Util
+    Poco::Foundation Poco::Net Poco::Crypto Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
     xxHash::xxhash)
 
