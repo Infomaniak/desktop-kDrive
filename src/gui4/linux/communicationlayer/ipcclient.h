@@ -69,7 +69,7 @@ class IpcClient : public QObject {
     private:
         void handleResponseMessage(const Poco::DynamicStruct &ipcMessage, int32_t id);
         void handleServerSignal(const Poco::DynamicStruct &ipcMessage, int32_t id);
-        static void onSslErrors(const QList<QSslError> &errors);
+        void onSslErrors(const QList<QSslError> &errors);
         bool loadPinnedCertificate();
 
         QSslSocket *_socket;
