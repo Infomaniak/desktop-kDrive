@@ -651,10 +651,12 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
 
             return; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on Windows only) could
                     // delete dehydrated placeholders whereas the sync is still in the DB.
+
         } else if (!found) {
             LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
         }
     }
+
 
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
@@ -2639,6 +2641,10 @@ ExitInfo AppServer::checkIfSyncIsValid(const BaseSync &sync) {
                                                            << Utility::formatSyncPath(sync_.localPath()));
             return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
         }
+
+        if (sync_.toDelete()) {
+            return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
+        }
     }
 
     return ExitCode::Ok;
@@ -3239,6 +3245,12 @@ std::string liteSyncActivationLogMessage(const bool enabled, const SyncDbId sync
 
 // This function will pause the synchronization in case of errors.
 ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept {
+    if (sync.toDelete()) {
+        LOG_INFO(_logger,
+                 "Sync with dbId=" << sync.dbId() << " is marked for deletion, skipping VFS creation. The sync will be ignored.");
+        return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
+    }
+
     startPostponed = false;
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
