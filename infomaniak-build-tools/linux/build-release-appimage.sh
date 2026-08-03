@@ -357,7 +357,16 @@ EOF
     -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
     -i "$updater_appdir/kDriveRecoveryUpdater.png" \
     --plugin qt --output appimage -v0
+  if [ "$?" -ne 0 ]; then
+    echo "ERROR: linuxdeploy failed for recovery updater AppImage" >&2
+    return 1
+  fi
+
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
+  if [ "$?" -ne 0 ]; then
+    echo "ERROR: Failed to move recovery updater AppImage to /install/" >&2
+    return 1
+  fi
 
   echo "Recovery updater AppImage created: /install/kDriveRecoveryUpdater-$architecture.AppImage"
 }
