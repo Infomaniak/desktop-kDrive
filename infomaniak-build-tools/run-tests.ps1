@@ -22,6 +22,8 @@ $failures = @()
 
 pushd build-windows\build\bin
 
+$env:PATH = "C:\Program Files (x86)\cppunit\lib;" + $env:PATH
+
 foreach ($file in $testers)
 {
     Write-Host "---------- Running $file ----------" -f Yellow
