@@ -26,10 +26,9 @@ Rectangle {
 
     required property var appRouter
     required property var controller
-
     readonly property int currentTab: appRouter.currentMainTabIndex
-    readonly property int tabHome: AppRouter.Home
     readonly property int tabActivities: AppRouter.Activities
+    readonly property int tabHome: AppRouter.Home
     readonly property int tabStorage: AppRouter.Storage
 
     color: IKColors.surfaceSecondary
@@ -40,44 +39,45 @@ Rectangle {
         spacing: IKSpacing.s16
 
         SyncSelectorView {
-            width: parent.width
             controller: root.controller
-        }
-
-        Column {
             width: parent.width
+        }
+        Column {
             spacing: IKSpacing.s4
+            width: parent.width
 
             IKSidebarItem {
-                width: parent.width
                 iconSource: "qrc:/assets/main/house.svg"
                 label: qsTrId("tabTitleHome")
                 selected: root.currentTab === root.tabHome
+                width: parent.width
+
                 onTriggered: root.appRouter.navigateToMainTab(root.tabHome)
             }
-
             IKSidebarItem {
-                width: parent.width
                 iconSource: "qrc:/assets/main/activities.svg"
                 label: qsTrId("tabTitleActivities")
-                selected: root.currentTab === root.tabActivities
+                notificationColor: IKColors.statusMediumWarning
                 notificationDot: root.controller.currentErrorCount > 0
+                selected: root.currentTab === root.tabActivities
+                width: parent.width
+
                 onTriggered: root.appRouter.navigateToMainTab(root.tabActivities)
             }
-
             IKSidebarItem {
-                width: parent.width
                 iconSource: "qrc:/assets/main/storage.svg"
                 label: qsTrId("tabTitleStorage")
                 selected: root.currentTab === root.tabStorage
+                width: parent.width
+
                 onTriggered: root.appRouter.navigateToMainTab(root.tabStorage)
             }
-
             IKSidebarItem {
-                width: parent.width
                 enabled: root.controller.canOpenCurrentSyncFolder
                 iconSource: "qrc:/assets/main/folder.svg"
                 label: qsTrId("buttonOpenFolder")
+                width: parent.width
+
                 onTriggered: root.controller.openCurrentSyncFolder()
             }
         }

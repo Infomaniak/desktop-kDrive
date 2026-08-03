@@ -96,6 +96,7 @@ IKShadowedWindow {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             appRouter: mainWindow.appRouter
+            controller: mainWindow.homeController
         }
     }
 
