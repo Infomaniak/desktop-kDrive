@@ -35,6 +35,8 @@ final class MainViewModel: ObservableObject {
     @LazyInjectService private var synchroNodesObserver: UISynchroNodesObserving
     @LazyInjectService private var synchroErrorsObserver: SynchroErrorsObserving
 
+    @Published private(set) var showOnboarding = false
+
     @Published private(set) var currentSynchroContext: UISynchroContext? {
         didSet {
             guard let currentSynchroContext else {
@@ -92,6 +94,19 @@ final class MainViewModel: ObservableObject {
 
             currentSynchroContext = UISynchroContext(synchroContext: synchroContext)
             UserDefaults.standard.selectedSynchroDbId = synchro.dbId
+        }
+    }
+
+    func loadShowOnboarding() {
+        Task {
+            showOnboarding = (try? await UtilityJobs().getAppState(key: 9)) == "1"
+        }
+    }
+
+    func dismissOnboarding() {
+        Task {
+            try? await UtilityJobs().setAppState(key: 9, value: "0")
+            loadShowOnboarding()
         }
     }
 

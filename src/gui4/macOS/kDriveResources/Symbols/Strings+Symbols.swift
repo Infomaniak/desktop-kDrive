@@ -942,8 +942,8 @@ public enum KDriveLocalizable {
   public static let onboardingSynchronizationInProgressTitle = KDriveLocalizable.tr("Localizable", "onboardingSynchronizationInProgressTitle", fallback: "Sync in progress…")
   /// loco:6a57951024f1cb7e550ab932
   public static let onboardingV4Faq = KDriveLocalizable.tr("Localizable", "onboardingV4Faq", fallback: "Explore the app")
-  /// loco:6a57949f03c629668b0ec6b3
-  public static let onboardingV4Message = KDriveLocalizable.tr("Localizable", "onboardingV4Message", fallback: "Keep track of your syncs more easily.")
+  /// loco:6a6c5f087684bf313b0aed22
+  public static let onboardingV4Subtitle = KDriveLocalizable.tr("Localizable", "onboardingV4Subtitle", fallback: "Keep track of your syncs more easily.")
   /// loco:6a5794493019354d4b087d62
   public static let onboardingV4Title = KDriveLocalizable.tr("Localizable", "onboardingV4Title", fallback: "Your new kDrive app is here!")
   /// loco:698b0ee1587496f4f5035cd2

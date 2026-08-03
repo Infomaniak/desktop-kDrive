@@ -20,10 +20,12 @@ import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 import OrderedCollections
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(\.openURL) private var openURL
     static let spacing = AppPadding.padding24
 
     @State private var avatar: Image?
@@ -63,6 +65,19 @@ struct HomeView: View {
                 SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
             }
 
+            if mainViewModel.showOnboarding {
+                InformationBlockView(
+                    icon: KDriveResources.kdriveFoldersStacked.swiftUIImage,
+                    title: KDriveLocalizable.onboardingV4Title,
+                    subtitle: KDriveLocalizable.onboardingV4Subtitle,
+                    button: .init(title: KDriveLocalizable.onboardingV4Faq) {
+                        openURL(URLConstants.faq)
+                    }
+                ) {
+                    mainViewModel.dismissOnboarding()
+                }
+            }
+
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
                     SynchroStatusView(state: state, synchroDbId: mainViewModel.currentSynchro?.id)
@@ -76,6 +91,7 @@ struct HomeView: View {
         .padding(AppPadding.page)
         .task {
             try? await UtilityJobs().activateLoadInfo()
+            mainViewModel.loadShowOnboarding()
         }
         .onAppear {
             avatar = mainViewModel.currentUser?.avatar

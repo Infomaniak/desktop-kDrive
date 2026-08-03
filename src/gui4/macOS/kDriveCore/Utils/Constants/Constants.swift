@@ -40,4 +40,6 @@ public enum URLConstants {
     }
 
     public static let matomo = URL(string: "https://analytics.infomaniak.com/matomo.php")!
+
+    public static let faq = URL(string: "https://faq.infomaniak.com/2923")!
 }
