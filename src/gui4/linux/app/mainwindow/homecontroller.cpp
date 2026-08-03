@@ -29,6 +29,7 @@
 
 #include <QDesktopServices>
 #include <QLoggingCategory>
+#include <QMetaEnum>
 #include <QUrl>
 
 #include <algorithm>
@@ -38,20 +39,13 @@ namespace KDC {
 namespace {
 Q_LOGGING_CATEGORY(lcHomeController, "gui.v4.homecontroller", QtInfoMsg)
 
+// QML is dynamically typed, so any integer can reach openDriveDestination: reject values that are not enumerators.
 std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const int32_t destination) {
-    switch (destination) {
-        case static_cast<int32_t>(HomeController::DriveWebDestination::Favorites):
-            return AppConstants::WebDrive::Destination::Favorites;
-        case static_cast<int32_t>(HomeController::DriveWebDestination::Shared):
-            return AppConstants::WebDrive::Destination::Shared;
-        case static_cast<int32_t>(HomeController::DriveWebDestination::OnlineDrive):
-            return AppConstants::WebDrive::Destination::OnlineDrive;
-        case static_cast<int32_t>(HomeController::DriveWebDestination::Trash):
-            return AppConstants::WebDrive::Destination::Trash;
-        default:
-            return std::nullopt;
+    using AppConstants::WebDrive::Destination;
+    if (destination < 0 || QMetaEnum::fromType<Destination>().valueToKey(static_cast<quint64>(destination)) == nullptr) {
+        return std::nullopt;
     }
-    return std::nullopt;
+    return static_cast<Destination>(destination);
 }
 } // namespace
 
