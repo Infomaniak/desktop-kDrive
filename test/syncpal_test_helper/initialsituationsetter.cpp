@@ -136,7 +136,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object:
 
     for (const auto &key: keys) {
         const NodeType type = obj->isObject(key) ? NodeType::Directory : NodeType::File;
-        const SyncName keyName = Str2SyncName(key);
+        const auto keyName = Str2SyncName(key);
         ItemDesc desc;
         desc.type = type;
         desc.id = parentId.empty() ? keyName : parentId + Str("/") + keyName;
@@ -161,7 +161,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::
         const std::string nameStr = itemObj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
 
-        const SyncName lowerName = Str2SyncName(CommonUtility::toLower(nameStr));
+        const auto lowerName = Str2SyncName(CommonUtility::toLower(nameStr));
 
         ItemDesc desc;
         desc.type = type;
