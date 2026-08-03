@@ -38,7 +38,7 @@ bool CertReader::readPem(std::string &outPem) const {
     outPem = keychain::getPassword(std::string(package), std::string(service), _keychainKey, error);
 
     if (error.type == keychain::ErrorType::NotFound) {
-        // Entry not present yet — not an error; caller may retry.
+        // Entry not present yet, not an error; caller may retry.
         return false;
     }
     if (error) {
