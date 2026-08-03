@@ -70,13 +70,13 @@ Operations::Operations(const StringType &jsonDescription) {
     _operationsArray = _jsonObject->getArray("operations");
 }
 
-Operations Operations::fromFile(const SyncPath &filePath) {
+Operations::Operations(const SyncPath &filePath) {
     const std::ifstream file(filePath, std::ios::binary);
-    if (!file) throw OperationsParserException("Operations::fromFile: unable to open file: " + filePath.string());
+    if (!file) throw OperationsParserException("Operations::Operations: unable to open file: " + filePath.string());
 
     std::ostringstream buffer;
     buffer << file.rdbuf();
-    return Operations(Str2SyncName(buffer.str()));
+    *this = Operations(Str2SyncName(buffer.str()));
 }
 
 const Poco::JSON::Array::Ptr &Operations::operationsArray() const noexcept {
