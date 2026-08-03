@@ -1,0 +1,10 @@
+{
+  "cause": 0,
+  "code": 0,
+  "id": 1,
+  "params": {
+    "fullDiskAccess": true,
+    "liteSyncExtEnabled": true,
+    "liteSyncExtFullDiskAccess": false
+  }
+}

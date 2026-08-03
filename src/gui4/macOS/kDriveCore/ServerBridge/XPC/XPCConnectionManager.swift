@@ -28,6 +28,15 @@ import InfomaniakDI
     @MainActor
     @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
 
+    @MainActor
+    @Published private(set) var loginItemAgentConnectionState: XPCLoginItemAgentConnectionState = .connecting
+
+    private static let retryDelayNanoseconds: UInt64 = 10_000_000_000
+
+    // Single-flight handles: at most one retry loop of each kind runs at a time.
+    @MainActor private var loginAgentRetryTask: Task<Void, Never>?
+    @MainActor private var serverRetryTask: Task<Void, Never>?
+
     let machServiceName: String
 
     var loginItemAgentConnection: NSXPCConnection?
@@ -65,18 +74,79 @@ import InfomaniakDI
     }
 
     func scheduleRetryToConnectToLoginAgent() {
-        Task {
-            IKLogger.xpc.log("[KD] Set timer to retry to connect to login agent")
-            try? await Task.sleep(nanoseconds: 10_000_000_000)
-            try? await connectToLoginAgent()
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard loginAgentRetryTask == nil else {
+                IKLogger.xpc.log("[KD] Login item agent retry loop already running")
+                return
+            }
+            loginAgentRetryTask = Task.detached { [weak self] in
+                guard let self else { return }
+                await retryToConnectToLoginAgentLoop()
+            }
         }
     }
 
     func scheduleRetryToConnectToServer() {
-        Task {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard serverRetryTask == nil else {
+                IKLogger.xpc.log("[KD] Server retry loop already running")
+                return
+            }
+            serverRetryTask = Task.detached { [weak self] in
+                guard let self else { return }
+                await retryToConnectToServerLoop()
+            }
+        }
+    }
+
+    /// Keeps trying to reach the login item agent until the connection is (re)established.
+    private func retryToConnectToLoginAgentLoop() async {
+        while !Task.isCancelled {
+            IKLogger.xpc.log("[KD] Set timer to retry to connect to login agent")
+            try? await Task.sleep(nanoseconds: Self.retryDelayNanoseconds)
+            guard !Task.isCancelled else { break }
+
+            if loginItemAgentConnection != nil {
+                break
+            }
+
+            do {
+                try await connectToLoginAgent()
+                break
+            } catch XPCError.serverGUIEndpointWasNil {
+                // Agent reachable but server not registered yet; connectToLoginAgent started the server loop.
+                break
+            } catch {
+                IKLogger.xpc.log("[KD] Login item agent still unreachable, will retry: \(error)")
+            }
+        }
+
+        await MainActor.run { [weak self] in
+            self?.loginAgentRetryTask = nil
+        }
+    }
+
+    /// Polls the login item agent for the server endpoint until the server has registered it.
+    private func retryToConnectToServerLoop() async {
+        while !Task.isCancelled {
             IKLogger.xpc.log("[KD] Set timer to retry to connect to server")
-            try? await Task.sleep(nanoseconds: 10_000_000_000)
-            try? await fetchServerEndpointFromLoginItemAgentAndConnect()
+            try? await Task.sleep(nanoseconds: Self.retryDelayNanoseconds)
+            guard !Task.isCancelled else { break }
+
+            do {
+                try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+                IKLogger.xpc.log("[KD] Reconnected to server through the login item agent")
+                notifyLoginItemAgentConnectionState(.connected)
+                break
+            } catch {
+                IKLogger.xpc.log("[KD] Server still unreachable, will retry: \(error)")
+            }
+        }
+
+        await MainActor.run { [weak self] in
+            self?.serverRetryTask = nil
         }
     }
 
@@ -103,6 +173,7 @@ import InfomaniakDI
             IKLogger.xpc.error("[KD] Connection with login item agent interrupted (server crash)")
             guard let self else { return }
             loginItemAgentConnection = nil
+            notifyLoginItemAgentConnectionState(.disconnected)
             scheduleRetryToConnectToLoginAgent()
         }
 
@@ -110,18 +181,47 @@ import InfomaniakDI
             IKLogger.xpc.error("[KD] Connection with login item agent invalidated (no server running)")
             guard let self else { return }
             loginItemAgentConnection = nil
+            notifyLoginItemAgentConnectionState(.disconnected)
             scheduleRetryToConnectToLoginAgent()
         }
 
         IKLogger.xpc.log("[KD] Resume connection with login item agent")
         connection.resume()
 
-        try await fetchServerEndpointFromLoginItemAgentAndConnect()
+        do {
+            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+        } catch XPCError.serverGUIEndpointWasNil {
+            notifyLoginItemAgentConnectionState(.connecting)
+            scheduleRetryToConnectToServer()
+            throw XPCError.serverGUIEndpointWasNil
+        }
+
+        notifyLoginItemAgentConnectionState(.connected)
     }
 
-    func fetchServerEndpointFromLoginItemAgentAndConnect() async throws {
-        let endpoint = try await getServerEndpoint()
-        try connectToServer(endpoint: endpoint)
+    func reconnectToLoginAgent() async {
+        IKLogger.xpc.log("[KD] Reconnect to login item agent requested")
+        do {
+            if loginItemAgentConnection == nil {
+                try await connectToLoginAgent()
+            } else {
+                try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+                notifyLoginItemAgentConnectionState(.connected)
+            }
+        } catch XPCError.serverGUIEndpointWasNil {
+            IKLogger.xpc.log("[KD] reconnectToLoginAgent: agent reachable, server not ready yet")
+            notifyLoginItemAgentConnectionState(.connecting)
+            scheduleRetryToConnectToServer()
+        } catch {
+            IKLogger.xpc.error("[KD] reconnectToLoginAgent FAILED \(error)")
+            notifyLoginItemAgentConnectionState(.disconnected)
+        }
+    }
+
+    private func notifyLoginItemAgentConnectionState(_ state: XPCLoginItemAgentConnectionState) {
+        Task { @MainActor [weak self] in
+            self?.loginItemAgentConnectionState = state
+        }
     }
 
     func fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded() async throws {

@@ -62,13 +62,18 @@ extension MacOSPermission {
         }
     }
 
-    enum Instruction: Sendable {
+    enum Instruction: Sendable, Identifiable {
         case openSystemSettings
         case openSecurityExtensions
         case enableKDrive
 
         case openPrivacySecurity
         case enableFullDiskAccess
+
+        case openLoginItems
+        case enableBackgroundActivity
+
+        var id: String { value }
 
         var value: String {
             switch self {
@@ -86,6 +91,10 @@ extension MacOSPermission {
                 return KDriveLocalizable.instructionOpenPrivacySecurity
             case .enableFullDiskAccess:
                 return KDriveLocalizable.instructionFullDisk
+            case .openLoginItems:
+                return KDriveLocalizable.instructionOpenLoginItems
+            case .enableBackgroundActivity:
+                return KDriveLocalizable.instructionEnableBackgroundActivity
             }
         }
 
@@ -101,6 +110,8 @@ extension MacOSPermission {
                 return KDriveLocalizable.instructionEnableKDriveArgument
             case .openPrivacySecurity:
                 return KDriveLocalizable.instructionOpenPrivacySecurityArgument
+            case .enableBackgroundActivity:
+                return KDriveLocalizable.instructionEnableBackgroundActivityArgument
             default:
                 return nil
             }
@@ -118,17 +129,8 @@ extension MacOSPermission {
                 }
             case .openPrivacySecurity:
                 return KDriveLocalizable.instructionOpenPrivacySecurityLink
-            default:
-                return nil
-            }
-        }
-
-        var hint: String? {
-            switch self {
-            case .enableKDrive:
-                return KDriveLocalizable.instructionEnableKDriveHint
-            case .enableFullDiskAccess:
-                return KDriveLocalizable.instructionFullDiskHint
+            case .openLoginItems:
+                return KDriveLocalizable.instructionOpenLoginItemsLink
             default:
                 return nil
             }
@@ -144,6 +146,54 @@ extension MacOSPermission {
                 return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
             case .openPrivacySecurity:
                 return permissionHandler.systemPreferencesURL(for: .fullDiskAccess)
+            case .openLoginItems:
+                return permissionHandler.systemPreferencesURL(for: .endpointSecurityExtension)
+            default:
+                return nil
+            }
+        }
+
+        var attributedString: NSMutableAttributedString {
+            let attributedString = NSMutableAttributedString(string: value)
+
+            let paragraphStyle = NSMutableParagraphStyle()
+            paragraphStyle.setParagraphStyle(.default)
+            paragraphStyle.alignment = .left
+            paragraphStyle.lineBreakMode = .byWordWrapping
+
+            let basicAttributes: [NSAttributedString.Key: Any] = [
+                .font: NSFont.Tokens.body,
+                .foregroundColor: ColorToken.Text.secondary.asNSColor,
+                .paragraphStyle: paragraphStyle,
+                .cursor: NSCursor.arrow
+            ]
+            attributedString.addAttributes(basicAttributes, range: NSRange(location: 0, length: attributedString.length))
+
+            if let argument {
+                let range = (attributedString.string as NSString).range(of: argument)
+                attributedString.addAttribute(.font, value: NSFont.Tokens.bodyEmphasized, range: range)
+            }
+
+            if let link, let linkURL {
+                let range = (attributedString.string as NSString).range(of: link)
+                let attributes: [NSAttributedString.Key: Any] = [
+                    .font: NSFont.Tokens.bodyEmphasized,
+                    .foregroundColor: ColorToken.Action.primary.asNSColor,
+                    .link: linkURL,
+                    .cursor: NSCursor.pointingHand
+                ]
+                attributedString.addAttributes(attributes, range: range)
+            }
+
+            return attributedString
+        }
+
+        var hint: String? {
+            switch self {
+            case .enableKDrive:
+                return KDriveLocalizable.instructionEnableKDriveHint
+            case .enableFullDiskAccess:
+                return KDriveLocalizable.instructionFullDiskHint
             default:
                 return nil
             }
@@ -198,6 +248,8 @@ final class PermissionsViewController: OnboardingStepViewController {
             .addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
                 self?.checkPermission()
             }
+
+        checkPermission()
     }
 
     private func bindValues() {
@@ -259,48 +311,13 @@ final class PermissionsViewController: OnboardingStepViewController {
         }
 
         for (index, instruction) in permission.instructions.enumerated() {
-            let instructionCell = PermissionInstructionCell(step: index + 1, title: createAttributedString(for: instruction))
+            let instructionCell = PermissionInstructionCell(step: index + 1, title: instruction.attributedString)
             if let hint = instruction.hint {
                 instructionCell.hint = hint
                 instructionCell.hintLabel.textColor = ColorToken.Status.Strong.warning.asNSColor
             }
             instructionsStack.addArrangedSubview(instructionCell)
         }
-    }
-
-    private func createAttributedString(for instruction: MacOSPermission.Instruction) -> NSMutableAttributedString {
-        let attributedString = NSMutableAttributedString(string: instruction.value)
-
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.setParagraphStyle(.default)
-        paragraphStyle.alignment = .left
-        paragraphStyle.lineBreakMode = .byWordWrapping
-
-        let basicAttributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.Tokens.body,
-            .foregroundColor: ColorToken.Text.secondary.asNSColor,
-            .paragraphStyle: paragraphStyle,
-            .cursor: NSCursor.arrow
-        ]
-        attributedString.addAttributes(basicAttributes, range: NSRange(location: 0, length: attributedString.length))
-
-        if let argument = instruction.argument {
-            let range = (attributedString.string as NSString).range(of: argument)
-            attributedString.addAttribute(.font, value: NSFont.Tokens.bodyEmphasized, range: range)
-        }
-
-        if let link = instruction.link, let linkURL = instruction.linkURL {
-            let range = (attributedString.string as NSString).range(of: link)
-            let attributes: [NSAttributedString.Key: Any] = [
-                .font: NSFont.Tokens.bodyEmphasized,
-                .foregroundColor: ColorToken.Action.primary.asNSColor,
-                .link: linkURL,
-                .cursor: NSCursor.pointingHand
-            ]
-            attributedString.addAttributes(attributes, range: range)
-        }
-
-        return attributedString
     }
 
     private func setupButtons(for permission: MacOSPermission) {

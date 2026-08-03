@@ -52,6 +52,27 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Kun min aktivitet";
 
+/* loco:6a69c2a7fb376e733f092008 */
+"activityInstructionGetLabel" = "Importeret";
+
+/* loco:6a69c75cb90e0a6f370caf93 */
+"activityInstructionIgnoreLabel" = "Ignoreret";
+
+/* loco:6a69bde8354a61b304035517 */
+"activityInstructionMoveLabel" = "Flyttet";
+
+/* loco:6a69c4521e1081fcf9041b02 */
+"activityInstructionPutLabel" = "Tilføjet";
+
+/* loco:6a69b981afdcf4fa19044503 */
+"activityInstructionRemoveLabel" = "Flyttet til papirkurv";
+
+/* loco:6a69c12889ab5f0cf60a7aa2 */
+"activityInstructionUpdateLabel" = "Ændret";
+
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionUpdateMetadataLabel" = "Omdøbt";
+
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synkroniser en mappe med kDrive";
 
@@ -472,6 +493,12 @@
 /* loco:699c5de5e592726401053953 */
 "duplicateNamesErrorTitle" = "Dobbelte navne";
 
+/* loco:6a5f1fef9e6b79cec10e40d3 */
+"enableBackgroundActivityDescription" = "kDrive skal være aktiveret i din Macs indstillinger for at kunne opdatere dine filer.";
+
+/* loco:6a5f1fc352e21d55a0025802 */
+"enableBackgroundActivityTitle" = "Genaktiver kDrive for at fortsætte";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Optag diagnostiske oplysninger på min computer.";
 
@@ -808,6 +835,12 @@
 /* loco:69c4e8b82884a264150d2583 */
 "informationBlockTmpDirAccessErrorTitle" = "Forbindelsen til kDrive afbrudt";
 
+/* loco:6a5f21a860fed997a40cfc45 */
+"instructionEnableBackgroundActivity" = "Aktivér kDrive under »Opdatering af baggrundsapps«";
+
+/* loco:6a5f21c0aa99ab499a097e82 */
+"instructionEnableBackgroundActivityArgument" = "Opdatering af baggrundsapps";
+
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivér kDrive.app";
 
@@ -822,6 +855,12 @@
 
 /* loco:69314c248389940c6c08d902 */
 "instructionFullDiskHint" = "Du skal aktivere tilladelserne, inden du fortsætter";
+
+/* loco:6a5f2134015fb9713f080a45 */
+"instructionOpenLoginItems" = "Vælg logon-elementer og udvidelser";
+
+/* loco:6a5f2172e2e3f0313908bcc5 */
+"instructionOpenLoginItemsLink" = "Login-elementer og udvidelser";
 
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Gå til Privatliv og sikkerhed > Fuld diskadgang";
@@ -879,6 +918,9 @@
 
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "For hver fil skal du vælge den version, der skal beholdes.";
+
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Placering på computeren";
 
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Hvilken version vil du beholde?";
@@ -999,6 +1041,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Mappen er muligvis blevet flyttet til en anden disk og derefter returneret til sin oprindelige placering.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Placering på kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Gendan den til sin oprindelige placering.";

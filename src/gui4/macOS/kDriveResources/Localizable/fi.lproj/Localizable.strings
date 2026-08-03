@@ -52,6 +52,27 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Vain oma toimintani";
 
+/* loco:6a69c2a7fb376e733f092008 */
+"activityInstructionGetLabel" = "Tuotu";
+
+/* loco:6a69c75cb90e0a6f370caf93 */
+"activityInstructionIgnoreLabel" = "Ohitettu";
+
+/* loco:6a69bde8354a61b304035517 */
+"activityInstructionMoveLabel" = "Siirretty";
+
+/* loco:6a69c4521e1081fcf9041b02 */
+"activityInstructionPutLabel" = "Lisätty";
+
+/* loco:6a69b981afdcf4fa19044503 */
+"activityInstructionRemoveLabel" = "Siirretty roskakoriin";
+
+/* loco:6a69c12889ab5f0cf60a7aa2 */
+"activityInstructionUpdateLabel" = "Muokattu";
+
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionUpdateMetadataLabel" = "Nimetty uudelleen";
+
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synkronoi kansio kDriven kanssa";
 
@@ -472,6 +493,12 @@
 /* loco:699c5de5e592726401053953 */
 "duplicateNamesErrorTitle" = "Nimien kaksoiskappale";
 
+/* loco:6a5f1fef9e6b79cec10e40d3 */
+"enableBackgroundActivityDescription" = "kDrive:n on oltava käytössä Macin asetuksissa, jotta tiedostosi päivittyvät.";
+
+/* loco:6a5f1fc352e21d55a0025802 */
+"enableBackgroundActivityTitle" = "Käynnistä kDrive uudelleen jatkaaksesi";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Tallenna diagnostiikkatiedot tietokoneelleni.";
 
@@ -808,6 +835,12 @@
 /* loco:69c4e8b82884a264150d2583 */
 "informationBlockTmpDirAccessErrorTitle" = "Yhteys kDriveen keskeytyi";
 
+/* loco:6a5f21a860fed997a40cfc45 */
+"instructionEnableBackgroundActivity" = "Ota kDrive käyttöön kohdassa ”Taustasovellusten päivitys”";
+
+/* loco:6a5f21c0aa99ab499a097e82 */
+"instructionEnableBackgroundActivityArgument" = "Sovellusten taustapäivitys";
+
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Aktivoi kDrive.app";
 
@@ -822,6 +855,12 @@
 
 /* loco:69314c248389940c6c08d902 */
 "instructionFullDiskHint" = "Luvat on aktivoitava ennen jatkamista";
+
+/* loco:6a5f2134015fb9713f080a45 */
+"instructionOpenLoginItems" = "Valitse kirjautumiskohteet ja laajennukset";
+
+/* loco:6a5f2172e2e3f0313908bcc5 */
+"instructionOpenLoginItemsLink" = "Kirjautumiskohteet ja laajennukset";
 
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Siirry kohtaan Yksityisyys ja turvallisuus > Täysi levykäyttö";
@@ -879,6 +918,9 @@
 
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Valitse kullekin tiedostolle säilytettävä versio.";
+
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Sijainti tietokoneella";
 
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Minkä version haluat säilyttää?";
@@ -999,6 +1041,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Kansio on ehkä siirretty toiselle levylle ja palautettu sitten takaisin alkuperäiseen sijaintiinsa.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Sijainti kDrivessa";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Palauta se alkuperäiseen sijaintiinsa.";

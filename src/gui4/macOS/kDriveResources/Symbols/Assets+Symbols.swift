@@ -62,6 +62,7 @@ public enum KDriveResources {
   public static let hardDiskDrive = ImageAsset(name: "hard-disk-drive")
   public static let headphones = ImageAsset(name: "headphones")
   public static let house = ImageAsset(name: "house")
+  public static let kdriveFoldersStackedFilled = ImageAsset(name: "kdrive-folders-stacked-filled")
   public static let kdriveFoldersStacked = ImageAsset(name: "kdrive-folders-stacked")
   public static let magnifyingGlass = ImageAsset(name: "magnifying-glass")
   public static let moonSleep = ImageAsset(name: "moon-sleep")

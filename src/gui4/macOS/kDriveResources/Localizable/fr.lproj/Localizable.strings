@@ -52,6 +52,27 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Mon activité uniquement";
 
+/* loco:6a69c2a7fb376e733f092008 */
+"activityInstructionGetLabel" = "Importé";
+
+/* loco:6a69c75cb90e0a6f370caf93 */
+"activityInstructionIgnoreLabel" = "Ignoré";
+
+/* loco:6a69bde8354a61b304035517 */
+"activityInstructionMoveLabel" = "Déplacé";
+
+/* loco:6a69c4521e1081fcf9041b02 */
+"activityInstructionPutLabel" = "Ajouté";
+
+/* loco:6a69b981afdcf4fa19044503 */
+"activityInstructionRemoveLabel" = "Placé dans la corbeille";
+
+/* loco:6a69c12889ab5f0cf60a7aa2 */
+"activityInstructionUpdateLabel" = "Modifié";
+
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionUpdateMetadataLabel" = "Renommé";
+
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synchroniser un dossier avec kDrive";
 
@@ -472,6 +493,12 @@
 /* loco:699c5de5e592726401053953 */
 "duplicateNamesErrorTitle" = "Dédoublement de noms";
 
+/* loco:6a5f1fef9e6b79cec10e40d3 */
+"enableBackgroundActivityDescription" = "kDrive doit rester actif dans les réglages de votre Mac pour mettre à jour vos fichiers.";
+
+/* loco:6a5f1fc352e21d55a0025802 */
+"enableBackgroundActivityTitle" = "Réactivez kDrive pour continuer";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Enregistrer les informations de diagnostic sur mon ordinateur.";
 
@@ -809,6 +836,12 @@ Ouvrez les Préférences macOS pour les activer.";
 /* loco:69c4e8b82884a264150d2583 */
 "informationBlockTmpDirAccessErrorTitle" = "Connexion à kDrive interrompue";
 
+/* loco:6a5f21a860fed997a40cfc45 */
+"instructionEnableBackgroundActivity" = "Dans « Actualisation en arrière-plan », activez kDrive";
+
+/* loco:6a5f21c0aa99ab499a097e82 */
+"instructionEnableBackgroundActivityArgument" = "Actualisation en arrière-plan";
+
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activez kDrive.app";
 
@@ -824,6 +857,12 @@ Ouvrez les Préférences macOS pour les activer.";
 /* loco:69314c248389940c6c08d902 */
 "instructionFullDiskHint" = "Vous devez activer les autorisations avant de continuer";
 
+/* loco:6a5f2134015fb9713f080a45 */
+"instructionOpenLoginItems" = "Sélectionner Ouverture et extensions";
+
+/* loco:6a5f2172e2e3f0313908bcc5 */
+"instructionOpenLoginItemsLink" = "Ouverture et extensions";
+
 /* loco:69314c4aba85c2962d068dc2 */
 "instructionOpenPrivacySecurity" = "Allez dans Confidentialité et sécurité > Accès complet au disque";
 
@@ -834,10 +873,10 @@ Ouvrez les Préférences macOS pour les activer.";
 "instructionOpenPrivacySecurityLink" = "Confidentialité et sécurité";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Sélectionnez « Éléments de connexion et extensions » > « Extensions de sécurité des terminaux »";
+"instructionOpenSecurityExtensions" = "Sélectionnez « Ouverture et extensions » > « Extensions de sécurité de point de terminaison »";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
-"instructionOpenSecurityExtensionsArgument" = "Extensions de sécurité des terminaux";
+"instructionOpenSecurityExtensionsArgument" = "Extensions de sécurité de point de terminaison";
 
 /* loco:6930592bfd6c86f6690db6d5 */
 "instructionOpenSecurityExtensionsArgumentLegacy" = "Extensions de sécurité";
@@ -846,7 +885,7 @@ Ouvrez les Préférences macOS pour les activer.";
 "instructionOpenSecurityExtensionsLegacy" = "Sélectionnez Ouverture et extensions > Extensions de sécurité";
 
 /* loco:6a5dec91ef4352b17c064f32 */
-"instructionOpenSecurityExtensionsLink" = "Éléments de connexion et extensions";
+"instructionOpenSecurityExtensionsLink" = "Ouverture et extensions";
 
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Ouverture et extensions";
@@ -880,6 +919,9 @@ Ouvrez les Préférences macOS pour les activer.";
 
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Pour chaque fichier, sélectionnez la version à conserver.";
+
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Emplacement sur l’ordinateur";
 
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Quelle version souhaitez-vous garder ?";
@@ -1000,6 +1042,9 @@ Ouvrez les Préférences macOS pour les activer.";
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Le dossier a peut-être été déplacé vers un autre disque puis remis à son emplacement initial.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Emplacement sur kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Remettez-le à son emplacement d’origine.";

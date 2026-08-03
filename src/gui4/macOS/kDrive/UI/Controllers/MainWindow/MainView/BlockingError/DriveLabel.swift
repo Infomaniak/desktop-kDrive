@@ -56,7 +56,7 @@ struct DriveLabel: View {
                 .font(.Tokens.title3)
                 .foregroundStyle(ColorToken.Text.secondary.asColor)
         } icon: {
-            KDriveResources.kdriveFoldersStacked.swiftUIImage
+            KDriveResources.kdriveFoldersStackedFilled.swiftUIImage
                 .foregroundStyle(drive.color ?? .accentColor)
         }
         .padding(.horizontal, AppPadding.padding24)

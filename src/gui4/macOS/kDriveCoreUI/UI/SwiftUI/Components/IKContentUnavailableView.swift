@@ -31,12 +31,20 @@ public struct IKContentUnavailableView: View {
     }
 
     let image: Image
+    let imageMaxWidth: CGFloat
     let title: String
     let subtitle: String?
     let action: IKContentUnavailableView.Action?
 
-    public init(image: Image, title: String, subtitle: String? = nil, action: IKContentUnavailableView.Action? = nil) {
+    public init(
+        image: Image,
+        imageMaxWidth: CGFloat = 200,
+        title: String,
+        subtitle: String? = nil,
+        action: IKContentUnavailableView.Action? = nil
+    ) {
         self.image = image
+        self.imageMaxWidth = imageMaxWidth
         self.title = title
         self.subtitle = subtitle
         self.action = action
@@ -47,7 +55,7 @@ public struct IKContentUnavailableView: View {
             image
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: 200)
+                .frame(maxWidth: imageMaxWidth)
 
             VStack(spacing: AppPadding.padding8) {
                 Text(title)

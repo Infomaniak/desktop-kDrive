@@ -52,6 +52,27 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Solo mi actividad";
 
+/* loco:6a69c2a7fb376e733f092008 */
+"activityInstructionGetLabel" = "Importado";
+
+/* loco:6a69c75cb90e0a6f370caf93 */
+"activityInstructionIgnoreLabel" = "Ignorado";
+
+/* loco:6a69bde8354a61b304035517 */
+"activityInstructionMoveLabel" = "Movido";
+
+/* loco:6a69c4521e1081fcf9041b02 */
+"activityInstructionPutLabel" = "Añadido";
+
+/* loco:6a69b981afdcf4fa19044503 */
+"activityInstructionRemoveLabel" = "Movido a la papelera";
+
+/* loco:6a69c12889ab5f0cf60a7aa2 */
+"activityInstructionUpdateLabel" = "Modificado";
+
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionUpdateMetadataLabel" = "Cambiado de nombre";
+
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Sincronizar una carpeta con kDrive";
 
@@ -472,6 +493,12 @@
 /* loco:699c5de5e592726401053953 */
 "duplicateNamesErrorTitle" = "Nombres duplicados";
 
+/* loco:6a5f1fef9e6b79cec10e40d3 */
+"enableBackgroundActivityDescription" = "kDrive debe permanecer activo en los ajustes de tu Mac para que se actualicen tus archivos.";
+
+/* loco:6a5f1fc352e21d55a0025802 */
+"enableBackgroundActivityTitle" = "Reactiva kDrive para continuar";
+
 /* loco:698b3654af04fbae590cbf82 */
 "enableDebugLogDescription" = "Registrar información de diagnóstico en mi ordenador.";
 
@@ -808,6 +835,12 @@
 /* loco:69c4e8b82884a264150d2583 */
 "informationBlockTmpDirAccessErrorTitle" = "Conexión a kDrive interrumpida";
 
+/* loco:6a5f21a860fed997a40cfc45 */
+"instructionEnableBackgroundActivity" = "En «Actualización en segundo plano», activa kDrive";
+
+/* loco:6a5f21c0aa99ab499a097e82 */
+"instructionEnableBackgroundActivityArgument" = "Actualización en segundo plano";
+
 /* loco:6930595e7664999c6a08c8a4 */
 "instructionEnableKDrive" = "Activar kDrive.app";
 
@@ -823,20 +856,26 @@
 /* loco:69314c248389940c6c08d902 */
 "instructionFullDiskHint" = "Debe activar las autorizaciones antes de continuar";
 
+/* loco:6a5f2134015fb9713f080a45 */
+"instructionOpenLoginItems" = "Seleccionar Ítems de inicio y extensiones";
+
+/* loco:6a5f2172e2e3f0313908bcc5 */
+"instructionOpenLoginItemsLink" = "Ítems de inicio y extensiones";
+
 /* loco:69314c4aba85c2962d068dc2 */
-"instructionOpenPrivacySecurity" = "Vaya a Confidencialidad y seguridad > Acceso total al disco";
+"instructionOpenPrivacySecurity" = "Vaya a Privacidad y seguridad > Acceso total al disco";
 
 /* loco:69314c54606d30eb26081743 */
 "instructionOpenPrivacySecurityArgument" = "Acceso total al disco";
 
 /* loco:69314c62739c205c410aa082 */
-"instructionOpenPrivacySecurityLink" = "Confidencialidad y seguridad";
+"instructionOpenPrivacySecurityLink" = "Privacidad y seguridad";
 
 /* loco:6a5dec4eb30fba54030e8892 */
-"instructionOpenSecurityExtensions" = "Selecciona «Elementos de inicio de sesión y extensiones» > «Extensiones de seguridad para terminales»";
+"instructionOpenSecurityExtensions" = "Selecciona «Ítems de inicio y extensiones» > «Extensiones de seguridad de puntos finales»";
 
 /* loco:6a5decab3ca135b7a5027ba2 */
-"instructionOpenSecurityExtensionsArgument" = "Extensiones de seguridad para dispositivos finales";
+"instructionOpenSecurityExtensionsArgument" = "Extensiones de seguridad de puntos finales";
 
 /* loco:6930592bfd6c86f6690db6d5 */
 "instructionOpenSecurityExtensionsArgumentLegacy" = "Extensiones de seguridad";
@@ -845,7 +884,7 @@
 "instructionOpenSecurityExtensionsLegacy" = "Seleccione Abrir y Extensiones > Extensiones de seguridad";
 
 /* loco:6a5dec91ef4352b17c064f32 */
-"instructionOpenSecurityExtensionsLink" = "Iniciar sesión: Elementos y extensiones";
+"instructionOpenSecurityExtensionsLink" = "Ítems de inicio y extensiones";
 
 /* loco:693059483fc5023f6a0f86b3 */
 "instructionOpenSecurityExtensionsLinkLegacy" = "Abrir y Extensiones";
@@ -879,6 +918,9 @@
 
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Para cada archivo, seleccione la versión que desea conservar.";
+
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Ubicación en el ordenador";
 
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "¿Qué versión desea conservar?";
@@ -999,6 +1041,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Es posible que la carpeta haya sido movida a otro disco y luego devuelta a su ubicación original.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Ubicación en kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Restáurelo a su ubicación original.";
