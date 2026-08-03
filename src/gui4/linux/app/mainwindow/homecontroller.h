@@ -98,6 +98,7 @@ class HomeController final : public QObject {
 
         Q_INVOKABLE void triggerPrimaryAction();
         Q_INVOKABLE void toggleSync();
+        Q_INVOKABLE static void openSupport();
         Q_INVOKABLE void openDriveDestination(int32_t destination) const;
         Q_INVOKABLE void showActivities() const;
 
