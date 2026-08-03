@@ -238,7 +238,7 @@ Categories=Utility;
 EOF
 
   # Use the recovery updater icon
-  updater_icon="$src_dir/infomaniak/theme/colored/1024-kdrive-recovery-updater-icon.png"
+  updater_icon="$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
   if [ -f "$updater_icon" ]; then
     cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
