@@ -100,8 +100,6 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
 
 void ServerSignalSequencer::forwardSignal(const int32_t signalId, const PendingSignal &signal) {
     _lastForwardedId = signalId;
-    qCDebug(lcServerSignalSequencer) << "Server signal propagated in order | SignalNum:" << static_cast<int32_t>(signal.num)
-                                     << "/ id:" << signalId;
     emit signalReady(signal.num, signal.params);
 }
 
@@ -114,6 +112,9 @@ void ServerSignalSequencer::drainContiguousSignals() {
         }
 
         const auto pendingSignalNode = _pendingSignals.extract(pendingSignalsIterator);
+        qCDebug(lcServerSignalSequencer) << "Server signal propagated in order | SignalNum:"
+                                         << static_cast<int32_t>(pendingSignalNode.mapped().num)
+                                         << "/ id:" << pendingSignalNode.key();
         forwardSignal(pendingSignalNode.key(), pendingSignalNode.mapped());
     }
 
