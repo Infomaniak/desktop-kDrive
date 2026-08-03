@@ -18,7 +18,7 @@
 
 #include "certreader.h"
 
-#include "comm.h"
+#include "utility/utility.h"
 #include "keychain/keychain.h"
 
 #include <QByteArray>
@@ -35,7 +35,7 @@ CertReader::CertReader(std::string keychainKey) :
 
 bool CertReader::readPem(std::string &outPem) const {
     keychain::Error error{};
-    outPem = keychain::getPassword(std::string(package), std::string(service), _keychainKey, error);
+    outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, _keychainKey, error);
 
     if (error.type == keychain::ErrorType::NotFound) {
         // Entry not present yet, not an error; caller may retry.
