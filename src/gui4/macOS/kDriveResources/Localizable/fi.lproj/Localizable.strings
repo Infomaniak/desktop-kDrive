@@ -52,6 +52,27 @@
 /* loco:6981b68a1e51fbe933040213 */
 "activitiesTypeMyActivity" = "Vain oma toimintani";
 
+/* loco:6a69c2a7fb376e733f092008 */
+"activityInstructionGetLabel" = "Tuotu";
+
+/* loco:6a69c75cb90e0a6f370caf93 */
+"activityInstructionIgnoreLabel" = "Ohitettu";
+
+/* loco:6a69bde8354a61b304035517 */
+"activityInstructionMoveLabel" = "Siirretty";
+
+/* loco:6a69c4521e1081fcf9041b02 */
+"activityInstructionPutLabel" = "Lisätty";
+
+/* loco:6a69b981afdcf4fa19044503 */
+"activityInstructionRemoveLabel" = "Siirretty roskakoriin";
+
+/* loco:6a69c12889ab5f0cf60a7aa2 */
+"activityInstructionUpdateLabel" = "Muokattu";
+
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionUpdateMetadataLabel" = "Nimetty uudelleen";
+
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synkronoi kansio kDriven kanssa";
 

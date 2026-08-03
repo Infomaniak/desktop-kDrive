@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import kDriveResources
 import UniformTypeIdentifiers
 
 public enum UINodeType: Sendable {
@@ -44,6 +45,25 @@ public enum UISynchroFileInstruction: Sendable {
     case get
     case put
     case ignore
+
+    public var label: String {
+        switch self {
+        case .update:
+            return KDriveLocalizable.activityInstructionUpdateLabel
+        case .updateMetadata:
+            return KDriveLocalizable.activityInstructionUpdateMetadataLabel
+        case .remove:
+            return KDriveLocalizable.activityInstructionRemoveLabel
+        case .move:
+            return KDriveLocalizable.activityInstructionMoveLabel
+        case .get:
+            return KDriveLocalizable.activityInstructionGetLabel
+        case .put:
+            return KDriveLocalizable.activityInstructionPutLabel
+        case .ignore:
+            return KDriveLocalizable.activityInstructionIgnoreLabel
+        }
+    }
 }
 
 public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
