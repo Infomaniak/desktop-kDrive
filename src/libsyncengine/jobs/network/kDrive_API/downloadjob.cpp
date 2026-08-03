@@ -44,6 +44,10 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
+std::function<int64_t(const SyncPath &)> DownloadJob::_freeDiskSpaceFn = [](const SyncPath &path) {
+    return Utility::getFreeDiskSpace(path);
+};
+
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
                          const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, fileDownloadInfo.driveDbId, 0, false),
@@ -598,8 +602,8 @@ ExitInfo DownloadJob::moveTmpFile() {
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                  log4cplus::Logger logger) {
-    auto tmpDirSize = Utility::getFreeDiskSpace(tmpDirPath);
-    auto destDirSize = Utility::getFreeDiskSpace(destDirPath);
+    auto tmpDirSize = _freeDiskSpaceFn(tmpDirPath);
+    auto destDirSize = _freeDiskSpaceFn(destDirPath);
 
     if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
         const auto totalNeededSpace = neededPlace + Utility::freeDiskSpaceLimit();

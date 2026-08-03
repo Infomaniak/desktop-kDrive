@@ -23,6 +23,8 @@
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/io/cachedirectory.h"
 
+#include <functional>
+
 namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {
@@ -86,6 +88,9 @@ class DownloadJob : public AbstractTokenNetworkJob {
         ExitInfo createTmpFile(const std::string &data, bool &writeError);
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
+
+        // Function used to retrieve the free disk space (in bytes) for a given path. Injectable to ease testing.
+        static std::function<int64_t(const SyncPath &)> _freeDiskSpaceFn;
 
         const std::shared_ptr<Vfs> _vfs;
         std::shared_ptr<CacheDirectory> _cacheDirectory;
