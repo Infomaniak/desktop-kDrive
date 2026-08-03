@@ -62,10 +62,14 @@ class OnboardingSessionManager final : public QObject {
          */
         Q_INVOKABLE void openOnboardingWindow();
 
+        /** Cancels and unpublishes the active onboarding session, if any. */
+        Q_INVOKABLE void cancelActiveSession() const;
+
     signals:
         void activeSessionChanged();
         void openOnboardingWindowRequested();
         void closeOnboardingWindowRequested();
+        void onboardingCancelled();
         void onboardingCompleted();
 
     private:
