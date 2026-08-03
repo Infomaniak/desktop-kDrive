@@ -898,6 +898,9 @@
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Για κάθε αρχείο, επιλέξτε την έκδοση που θέλετε να διατηρήσετε.";
 
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Τοποθεσία στον υπολογιστή";
+
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Ποια έκδοση θέλετε να διατηρήσετε;";
 
@@ -1017,6 +1020,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Ο φάκελος μπορεί να έχει μεταφερθεί σε άλλον δίσκο και στη συνέχεια να επιστράφηκε στην αρχική του τοποθεσία.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Τοποθεσία στο kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Επαναφέρετε το στην αρχική του τοποθεσία.";

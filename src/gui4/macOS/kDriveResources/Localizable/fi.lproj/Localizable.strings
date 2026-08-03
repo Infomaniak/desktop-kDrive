@@ -898,6 +898,9 @@
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Valitse kullekin tiedostolle säilytettävä versio.";
 
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Sijainti tietokoneella";
+
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Minkä version haluat säilyttää?";
 
@@ -1017,6 +1020,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Kansio on ehkä siirretty toiselle levylle ja palautettu sitten takaisin alkuperäiseen sijaintiinsa.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Sijainti kDrivessa";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Palauta se alkuperäiseen sijaintiinsa.";

@@ -898,6 +898,9 @@
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Wählen Sie für jede Datei die zu behaltende Version aus.";
 
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Speicherort auf dem Computer";
+
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Welche Version möchten Sie behalten?";
 
@@ -1017,6 +1020,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "Der Ordner wurde möglicherweise auf ein anderes Laufwerk verschoben und dann an seinen ursprünglichen Speicherort zurückgebracht.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Speicherort auf kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "An den ursprünglichen Speicherort wiederherstellen.";

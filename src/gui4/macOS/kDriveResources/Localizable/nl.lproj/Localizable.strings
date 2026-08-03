@@ -898,6 +898,9 @@
 /* loco:69aae4641dd9b6d9260b1dd2 */
 "labelChooseConflictVersionIndividual" = "Selecteer voor elk bestand de te bewaren versie.";
 
+/* loco:6a6b5bc4ab6ea93eee08e6ca */
+"labelComputerLocation" = "Locatie op de computer";
+
 /* loco:69a6a189b148a1a71e0ed432 */
 "labelConflictDialogQuestion" = "Welke versie wilt u bewaren?";
 
@@ -1017,6 +1020,9 @@
 
 /* loco:69c117446ac92c1902088ab4 */
 "labelRemoteAccessRightsModifiedTip" = "De map is mogelijk verplaatst naar een andere schijf en daarna teruggezet naar de oorspronkelijke locatie.";
+
+/* loco:6a6b56f9a1b071169c0f64f2 */
+"labelRemoteLocation" = "Locatie op kDrive";
 
 /* loco:69a0058cb6529d830904d094 */
 "labelRestoreToOriginalLocation" = "Zet het terug naar de oorspronkelijke locatie.";
