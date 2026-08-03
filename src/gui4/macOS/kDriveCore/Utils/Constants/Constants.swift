@@ -41,6 +41,5 @@ public enum URLConstants {
 
     public static let matomo = URL(string: "https://analytics.infomaniak.com/matomo.php")!
 
-    public static let faq =
-        URL(string: "https://www.infomaniak.com/fr/support/faq/2923/decouvrir-la-nouvelle-version-de-lapp-kdrive-infomaniak")!
+    public static let faq = URL(string: "https://faq.infomaniak.com/2923")!
 }
