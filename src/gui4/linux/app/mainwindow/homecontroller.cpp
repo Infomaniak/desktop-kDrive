@@ -18,6 +18,7 @@
 
 #include "homecontroller.h"
 
+#include "app/appconstants.h"
 #include "app/cache/appcache.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/mainwindow/homestateresolver.h"
@@ -26,7 +27,9 @@
 #include "app/services/syncservice.h"
 #include "app/systraycontroller.h"
 
+#include <QDesktopServices>
 #include <QLoggingCategory>
+#include <QUrl>
 
 #include <algorithm>
 
@@ -34,6 +37,22 @@ namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcHomeController, "gui.v4.homecontroller", QtInfoMsg)
+
+std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const int32_t destination) {
+    switch (destination) {
+        case static_cast<int32_t>(HomeController::DriveWebDestination::Favorites):
+            return AppConstants::WebDrive::Destination::Favorites;
+        case static_cast<int32_t>(HomeController::DriveWebDestination::Shared):
+            return AppConstants::WebDrive::Destination::Shared;
+        case static_cast<int32_t>(HomeController::DriveWebDestination::OnlineDrive):
+            return AppConstants::WebDrive::Destination::OnlineDrive;
+        case static_cast<int32_t>(HomeController::DriveWebDestination::Trash):
+            return AppConstants::WebDrive::Destination::Trash;
+        default:
+            return std::nullopt;
+    }
+    return std::nullopt;
+}
 } // namespace
 
 HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
@@ -189,6 +208,29 @@ void HomeController::toggleSync() {
             qCDebug(lcHomeController) << "Sync control ignored in current presentation state | syncDbId:" << syncDbId;
             return;
     }
+}
+
+void HomeController::openDriveDestination(const int32_t destination) const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    if (!context.has_value() || context->drive.driveId() == 0) {
+        qCWarning(lcHomeController) << "Drive web destination ignored: no valid current drive";
+        return;
+    }
+    const auto webDestination = toWebDriveDestination(destination);
+    if (!webDestination.has_value()) {
+        qCWarning(lcHomeController) << "Drive web destination ignored: invalid destination" << destination;
+        return;
+    }
+
+    const auto url = AppConstants::WebDrive::destinationUri(context->drive.driveId(), *webDestination);
+    qCInfo(lcHomeController) << "Opening current drive web destination:" << url;
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcHomeController) << "Failed to open current drive web destination:" << url;
+    }
+}
+
+void HomeController::showActivities() const {
+    _appRouter.showActivities();
 }
 
 std::optional<SyncStatus> HomeController::currentRuntimeStatus() const {
