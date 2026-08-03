@@ -28,6 +28,7 @@ IKShadowedWindow {
     id: mainWindow
 
     required property var appRouter
+    required property var homeController
     required property var mainSidebarController
     required property var onboardingSessionManager
     required property var systemTrayController
@@ -38,7 +39,7 @@ IKShadowedWindow {
     visible: false
     contentWidth: 900
     contentHeight: 600
-    minimumContentWidth: 720
+    minimumContentWidth: 800
     minimumContentHeight: 520
     title: onboardingActive ? onboardingSessionManager.activeSession.flowController.title : "kDrive"
     surfaceColor: {
@@ -101,6 +102,9 @@ IKShadowedWindow {
     onClosing: close => {
         if (mainWindow.systemTrayController.trayModeActive) {
             close.accepted = false;
+            if (mainWindow.onboardingActive) {
+                mainWindow.onboardingSessionManager.cancelActiveSession();
+            }
             mainWindow.systemTrayController.hideMainWindow();
         } else {
             close.accepted = true;
@@ -165,6 +169,7 @@ IKShadowedWindow {
 
         MainWindowView {
             appRouter: mainWindow.appRouter
+            homeController: mainWindow.homeController
             mainSidebarController: mainWindow.mainSidebarController
         }
     }
