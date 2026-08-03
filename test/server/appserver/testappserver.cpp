@@ -22,6 +22,7 @@
 #include "utility/types.h"
 #include "requests/parameterscache.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommon/utility/utility.h"
 #include "libsyncengine/jobs/syncjobmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -50,7 +51,7 @@ void TestAppServer::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Insert user, account, drive & sync
@@ -63,7 +64,7 @@ void TestAppServer::setUp() {
     (void) ParmsDb::instance()->insertAccount(account);
 
     const int driveId = atoi(testVariables.driveId.c_str());
-    const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
+    const Drive drive(1, driveId, account.dbId());
     (void) ParmsDb::instance()->insertDrive(drive);
 
     const auto localPath = _localTempDir.path() / "local_sync_directory";
@@ -243,7 +244,7 @@ ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo mockLoadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
+ExitInfo mockLoadDriveInfo(const Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                            bool &quotaUpdated) {
     if (drive.dbId() == 11 && previousAccountId == accountIdA) {
         newAccountId = accountIdB;
@@ -291,6 +292,47 @@ void TestAppServer::testUpdateUserInfo() {
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT(drive.accountDbId() != 11);
     CPPUNIT_ASSERT_EQUAL(accountDbIdB, static_cast<uint64_t>(drive.accountDbId()));
+}
+
+void TestAppServer::testResolveErrorsForNode() {
+    const SyncDbId syncDbId = 1;
+    const NodeId localId = "resolve_local_1";
+    const NodeId remoteId = "resolve_remote_1";
+    const SyncPath path = "dir/file.txt";
+
+    // Resolvable: FileAccessError
+    Error errAccess(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                    CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errAccess));
+
+    // Resolvable: TmpBlacklisted
+    Error errTmp(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::None,
+                 CancelType::TmpBlacklisted);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errTmp));
+
+    // Resolvable: ForbiddenChar
+    Error errChar(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::None, InconsistencyType::ForbiddenChar);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errChar));
+
+    // Non-resolvable: EditEdit conflict — must survive
+    Error errConflict(syncDbId, localId, remoteId, NodeType::File, path, ConflictType::EditEdit, InconsistencyType::None);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertError(errConflict));
+
+    // Call the actual function under test
+    SyncFileItem item;
+    item.setLocalNodeId(localId);
+    item.setRemoteNodeId(remoteId);
+    item.setPath(path);
+    _appPtr->resolveItemErrors(syncDbId, item);
+
+    // Only the conflict error must remain
+    std::vector<Error> errorList;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(syncDbId, localId, remoteId, std::nullopt, std::nullopt, errorList,
+                                                              found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
+    CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, errorList[0].conflictType());
 }
 
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {

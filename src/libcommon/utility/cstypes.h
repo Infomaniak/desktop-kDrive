@@ -106,6 +106,7 @@ enum class ExitCode {
     UpdateRequired,
     LogUploadFailed,
     UpdateFailed,
+    TooManyDeleteOperations,
     EnumEnd
 };
 
@@ -165,6 +166,7 @@ enum class ExitCause {
     UpdateTreeIntegrityCheckFailed,
     MissingReplyData,
     BlackListPropagationError,
+    FileSystemNotSupported,
     EnumEnd
 };
 
@@ -178,6 +180,8 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
     ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    InvalidTimestamp = 0x200, // The creation or modification time is invalid (ex: in the future)
+    EnumEnd = 0x1000
 };
 
 enum class Language {
@@ -355,6 +359,20 @@ enum class AppStateKey {
     NoUpdate = 8,
     ShowV4Onboarding = 9,
     Unknown, // Only for initialization purpose, never use it in the database
+    EnumEnd
+};
+
+enum class TooManyDeletesNotificationType {
+    Unknown = 0,
+    SoftLimit,
+    HardLimit,
+    EnumEnd
+};
+
+enum class TooManyDeletesUserChoice {
+    None = 0,
+    Continue,
+    Revert,
     EnumEnd
 };
 

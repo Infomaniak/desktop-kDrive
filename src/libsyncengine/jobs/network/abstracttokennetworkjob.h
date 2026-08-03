@@ -22,8 +22,8 @@
 #include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
-#include "libparms/db/account.h"
-#include "libparms/db/drive.h"
+#include "libcommon/data/account.h"
+#include "libcommon/data/drive.h"
 
 #include <unordered_map>
 

@@ -21,11 +21,14 @@
 #include "jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetTokenJob::GetTokenJob(const std::string &authorizationCode, const std::string &codeVerifier) :
     _authorizationCode(authorizationCode),
     _codeVerifier(codeVerifier) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 #if defined(KD_MACOS)
     if (!Utility::preventSleeping(true)) {
         LOG_WARN(_logger, "Error in Utility::preventSleeping");

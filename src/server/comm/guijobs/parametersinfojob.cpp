@@ -22,7 +22,6 @@
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
-
 // Output parameters keys
 static const auto outParamsParametersInfo = "parametersInfo";
 
@@ -34,7 +33,6 @@ ParametersInfoJob::ParametersInfoJob(std::shared_ptr<CommManager> commManager, i
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::PARAMETERS_INFO;
 }
-
 
 ExitInfo ParametersInfoJob::serializeOutputParms() {
     writeParamValue(outParamsParametersInfo, _parametersInfo, info2DynamicVar<ParametersInfo>);

@@ -55,9 +55,9 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, const NodeTyp
                         exitInfo ? CancelType::TmpBlacklisted : CancelType::None, "", exitInfo.code(), exitInfo.cause());
         _syncPal->addError(err);
     } else {
-        TmpErrorInfo errorInfo;
-        errorInfo.path = relativePath;
-        (void) errors.try_emplace(nodeId, errorInfo);
+        TmpError error;
+        error.path = relativePath;
+        (void) errors.try_emplace(nodeId, error);
         logMessage(L"First time we try to blacklist this item, it is not blacklisted yet", nodeId, side, relativePath);
     }
 }
@@ -68,17 +68,17 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
         // Reset error timer
         errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
     } else {
-        TmpErrorInfo errorInfo;
-        errorInfo.path = relativePath;
-        (void) errors.try_emplace(nodeId, errorInfo);
+        TmpError error;
+        error.path = relativePath;
+        (void) errors.try_emplace(nodeId, error);
         logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 
     insertInBlacklist(nodeId, side);
 
     std::list<NodeId> toBeRemoved;
-    for (const auto &[id, errorInfo]: errors) {
-        if (CommonUtility::isDescendantOrEqual(errorInfo.path, relativePath) && id != nodeId) {
+    for (const auto &[id, error]: errors) {
+        if (CommonUtility::isDescendantOrEqual(error.path, relativePath) && id != nodeId) {
             toBeRemoved.push_back(id);
         }
     }
@@ -172,8 +172,8 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, const
 }
 
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, const ReplicaSide side) const {
-    for (auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors; const auto &errorInfo: errors) {
-        if (CommonUtility::isDescendantOrEqual(path, errorInfo.second.path)) return true;
+    for (auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors; const auto &error: errors) {
+        if (CommonUtility::isDescendantOrEqual(path, error.second.path)) return true;
     }
 
     return false;

@@ -68,6 +68,7 @@ public struct ColorToken {
 
     public enum Status {
         public enum Strong {
+            public static let success = ColorToken(light: KDriveColors.green800, dark: KDriveColors.green300)
             public static let warning = ColorToken(light: KDriveColors.orange800, dark: KDriveColors.orange300)
         }
 
@@ -79,6 +80,7 @@ public struct ColorToken {
         }
 
         public enum Light {
+            public static let success = ColorToken(light: KDriveColors.green100, dark: KDriveColors.green950)
             public static let warning = ColorToken(light: KDriveColors.orange100, dark: KDriveColors.brown950)
             public static let security = ColorToken(light: KDriveColors.blue100, dark: KDriveColors.blue950)
             public static let neutral = ColorToken(light: KDriveColors.neutralBlue100, dark: KDriveColors.gray950)

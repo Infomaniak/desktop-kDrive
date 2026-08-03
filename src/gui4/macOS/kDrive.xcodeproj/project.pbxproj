@@ -15,6 +15,7 @@
 		7A9074A52F59D1350089E4F1 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = 7A9074A42F59D1350089E4F1 /* InfomaniakDI */; };
 		7A97962C2F0EB51100E36DDE /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 7A97962B2F0EB51100E36DDE /* Collections */; };
 		7AFF54E22EC34B4100904C5C /* InfomaniakConcurrency in Frameworks */ = {isa = PBXBuildFile; productRef = 7AFF54E12EC34B4100904C5C /* InfomaniakConcurrency */; };
+		A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = A7776BC92FE519E400989B60 /* InfomaniakDI */; };
 		A7DC29A82F3C94BF00879B3D /* InfomaniakFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */; };
 		F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -95,6 +96,16 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A7776BCC2FE519E400989B60 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -117,6 +128,7 @@
 				Cache/CoherentCacheTests/CoherentCacheErrorTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheSynchroTests.swift,
 				Cache/CoherentCacheTests/CoherentCacheUserTests.swift,
+				Cache/LogUploadStatusCacheTests.swift,
 				Cache/DTOs/SynchroTests.swift,
 				Cache/DTOs/UserUpdateTests.swift,
 				Cache/Observation/helpers/ObservableData.swift,
@@ -198,13 +210,17 @@
 				Parsing/Jobs/UtilityIsValidPathNewSyncTest.swift,
 				Parsing/SignalMessageTests.swift,
 				Parsing/Signals/JSON/SYNC_COMPLETEDITEM.json,
+				Parsing/Signals/JSON/SYNC_VFS_CONVERSION_COMPLETED.json,
 				Parsing/Signals/JSON/USER_ADDED.json,
 				Parsing/Signals/JSON/UTILITY_ERROR_ADDED.json,
+				Parsing/Signals/JSON/UTILITY_LOG_UPLOAD_STATUS_UPDATED.json,
 				Parsing/Signals/JSON/UTILITY_SHOW_NOTIFICATION.json,
+				Parsing/Signals/LogUploadStatusUpdatedParsingTest.swift,
 				Parsing/Signals/SyncCompletedItemParsingTest.swift,
 				Parsing/Signals/UserAddedParsingTest.swift,
 				Parsing/Signals/UtilityErrorAddedTest.swift,
 				Parsing/Signals/UtilityShowNotificationTest.swift,
+				Parsing/Signals/VfsConversionCompletedParsingTest.swift,
 				Router/MainViewRouterTests.swift,
 				UI/UISynchroNodeTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
@@ -297,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9A927C92ECF6BF400B09ABA /* kDriveCore.framework in Frameworks */,
+				A7776BCA2FE519E400989B60 /* InfomaniakDI in Frameworks */,
 				F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -430,6 +447,7 @@
 				37A1C43B2E546A9600596DBB /* Sources */,
 				37A1C43C2E546A9600596DBB /* Frameworks */,
 				37A1C43D2E546A9600596DBB /* Resources */,
+				A7776BCC2FE519E400989B60 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -442,6 +460,7 @@
 			);
 			name = kDriveCoreUI;
 			packageProductDependencies = (
+				A7776BC92FE519E400989B60 /* InfomaniakDI */,
 			);
 			productName = kDriveCoreUI;
 			productReference = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */;
@@ -1353,6 +1372,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */;
 			productName = InfomaniakConcurrency;
+		};
+		A7776BC92FE519E400989B60 /* InfomaniakDI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */;
+			productName = InfomaniakDI;
 		};
 		A7DC29A72F3C94BF00879B3D /* InfomaniakFoundation */ = {
 			isa = XCSwiftPackageProductDependency;

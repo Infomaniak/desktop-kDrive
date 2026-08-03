@@ -65,9 +65,10 @@ void BackError::extractFromErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr)
 
     (void) JsonParserUtility::extractValue(jsonObjPtr, codeKey, _code, false);
     (void) JsonParserUtility::extractValue(jsonObjPtr, descriptionKey, _description, false);
-    const auto contextObjPtr = jsonObjPtr->getObject(contextKey);
-    (void) JsonParserUtility::extractValue(contextObjPtr, reasonKey, _contextReason, false);
-    (void) JsonParserUtility::extractValue(contextObjPtr, modelKey, _contextModel, false);
+    if (const auto contextObjPtr = jsonObjPtr->getObject(contextKey)) {
+        (void) JsonParserUtility::extractValue(contextObjPtr, reasonKey, _contextReason, false);
+        (void) JsonParserUtility::extractValue(contextObjPtr, modelKey, _contextModel, false);
+    }
 }
 
 } // namespace KDC

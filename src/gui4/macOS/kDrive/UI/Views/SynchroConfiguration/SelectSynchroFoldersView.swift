@@ -21,62 +21,26 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
-public struct UINodeInfo: Sendable {
-    public typealias ID = String
-
-    public let id: ID
-    public let name: String
-    public let accessDenied: Bool
-
-    public init(id: ID, name: String, accessDenied: Bool) {
-        self.id = id
-        self.name = name
-        self.accessDenied = accessDenied
-    }
-}
-
-public extension UINodeInfo {
-    static let root = UINodeInfo(id: "", name: "Root", accessDenied: false)
-
-    init(_ nodeInfo: NodeInfo) {
-        id = nodeInfo.nodeId
-        name = nodeInfo.name
-        accessDenied = nodeInfo.accessDenied
-    }
-}
-
-struct NodesTree: Sendable, Identifiable {
-    var id: UINodeInfo.ID {
-        return node.id
-    }
-
-    let node: UINodeInfo
-    // periphery:ignore - Will be used later
-    var children: [NodesTree]
-
-    var isLeaf = false
-}
-
 struct SelectSynchroFoldersView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
 
-    @State private var tree = [NodesTree]()
+    @State private var blackList = Set<String>()
 
     let userDbId: Int
     let configuration: SynchroConfiguration
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(KDriveLocalizable.onBoardingAdvancedSettingsDriveTitle)
-                .font(.Tokens.headline)
-                .foregroundStyle(ColorToken.Text.primary.asColor)
-
-            Text("Not Yet Implemented.")
-        }
+        FoldersToSynchroView(
+            blackList: $blackList,
+            initialBlackList: Set(configuration.blackList),
+            userDbId: userDbId,
+            driveDbId: configuration.drive.id
+        )
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonValidate) {
+                    viewModel.updateConfiguration(configuration.id, blackList: Array(blackList))
                     viewModel.navigate(to: .configureSynchro(configuration))
                 }
                 .keyboardShortcut(.defaultAction)
@@ -89,29 +53,8 @@ struct SelectSynchroFoldersView: View {
                 .keyboardShortcut(.cancelAction)
             }
         }
-        .task {
-            await fetchRoot()
-        }
-    }
-
-    private func fetchRoot() async {
-        let nodes = await fetchSubFolders(for: UINodeInfo.root)
-        tree = nodes
-    }
-
-    private func fetchSubFolders(for node: UINodeInfo) async -> [NodesTree] {
-        let userDbId = Int32(userDbId)
-        let driveId = Int32(configuration.drive.id)
-        let rootNodeId = node.id
-
-        do {
-            let nodes = try await NodeJobs().getNodeSubfolders(userDbId: userDbId, driveId: driveId, nodeId: rootNodeId)
-            return nodes.map {
-                let uiNode = UINodeInfo($0)
-                return NodesTree(node: uiNode, children: [])
-            }
-        } catch {
-            return []
+        .onAppear {
+            blackList = Set(configuration.blackList)
         }
     }
 }

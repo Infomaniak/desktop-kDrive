@@ -22,6 +22,7 @@
 #include "libcommon/utility/types.h"
 
 #include <ctime>
+#include <atomic>
 
 namespace backoffVariable {
 constexpr double multiplicativeFactor = 2; // binary exponential backoff
@@ -53,7 +54,14 @@ class SyncPalWorker : public ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
+
+        void stopResetVfsFilesStatusThread();
+        void resetVfsFilesStatus();
+
+        std::atomic_bool _stopResetVfsFilesStatusAsked{false};
 #if defined(KD_WINDOWS)
+        // On Windows, we have a dedicated thread to reset the VFS files status. On other platforms, this is done synchronously in
+        // the syncpalworker thread.
         std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
 #endif
 
@@ -74,7 +82,6 @@ class SyncPalWorker : public ISyncWorker {
          * (e.g., file not found, I/O error, etc.).
          */
         bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
-        void resetVfsFilesStatus();
 
         ExitInfo ensureBlackListIsPropagated();
 

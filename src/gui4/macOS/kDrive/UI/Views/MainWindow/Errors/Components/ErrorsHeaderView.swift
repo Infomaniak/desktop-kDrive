@@ -23,6 +23,7 @@ import SwiftUI
 
 struct ErrorsHeaderView: View {
     @State private var isLoading = false
+    @State private var isShowingGenericError = false
 
     let synchroDbId: UISynchro.ID?
     let errorsCount: Int
@@ -50,11 +51,18 @@ struct ErrorsHeaderView: View {
                 Text(KDriveLocalizable.buttonRefresh)
             }
         }
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func refreshList() async {
         guard let synchroDbId else { return }
-        _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))
+        do {
+            isLoading = true
+            _ = try await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))
+        } catch {
+            isShowingGenericError = true
+        }
+        isLoading = false
     }
 }
 

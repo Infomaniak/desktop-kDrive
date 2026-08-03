@@ -47,6 +47,10 @@ final class MainViewModel: ObservableObject {
         }
     }
 
+    var currentSynchroContextPublisher: AnyPublisher<UISynchroContext?, Never> {
+        return $currentSynchroContext.eraseToAnyPublisher()
+    }
+
     var currentUser: UIUser? {
         return currentSynchroContext?.user
     }

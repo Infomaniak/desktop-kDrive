@@ -161,6 +161,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _fixConflictedFilesCompleted = fixConflictedFilesCompleted;
         }
 
+        inline void setSendManyDeletesNotification(
+                const std::function<void(SyncDbId, TooManyDeletesNotificationType, uint64_t)> &sendManyDeletesNotification) {
+            _sendManyDeletesNotification = sendManyDeletesNotification;
+        }
+
         void setVfs(std::shared_ptr<Vfs> vfs);
         inline std::shared_ptr<Vfs> vfs() { return _vfs; }
 
@@ -257,6 +262,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         void resolveSyncErrorsByExitCause(ExitCause cause);
+        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -363,6 +369,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
         std::timed_mutex &userActionsMutex() { return _userActionsMutex; }
 
+        [[nodiscard]] TooManyDeletesUserChoice manyDeleteOpsUserChoice() const { return _manyDeleteOpsUserChoice; }
+        void setManyDeleteOpsUserChoice(const TooManyDeletesUserChoice manyDeleteOpsUserChoice) {
+            _manyDeleteOpsUserChoice = manyDeleteOpsUserChoice;
+        }
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
@@ -392,6 +403,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
         std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
+        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles)>
+                _sendManyDeletesNotification;
         std::shared_ptr<Vfs> _vfs;
 
         // DB
@@ -462,6 +475,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         int64_t _consecutiveBackErrors{0};
 
         std::shared_ptr<CacheDirectory> _cacheDirectory;
+
+        TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

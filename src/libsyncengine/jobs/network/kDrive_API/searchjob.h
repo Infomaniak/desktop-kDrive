@@ -28,7 +28,7 @@ class SearchJob : public AbstractTokenNetworkJob {
     public:
         SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, const std::string &searchString, const std::string &cursorInput = {});
 
-        // Using this constructor will lead to SearchInfo::isAvailableLocally always being false
+        // Using this constructor will lead to SearchInfo::isAvailableLocally and  SearchInfo::isHydrated always being false
         SearchJob(DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput = {});
 
         std::list<SearchInfo> searchResults() const { return _searchResults; }
@@ -42,9 +42,18 @@ class SearchJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo handleResponse(std::istream &is) override;
 
+        struct LocalProperties {
+                SyncPath path;
+                bool isAvailableLocally{false};
+                bool isHydrated{false};
+        };
+
+        ExitInfo getLocalProperties(const SyncPath &itemPath, LocalProperties &locaProperties) const;
+
         std::string _searchString;
         std::string _cursorInput;
         SyncPath _syncRootPath;
+        VirtualFileMode _syncVfsMode{VirtualFileMode::Off};
         std::list<SearchInfo> _searchResults;
         std::string _cursorOutput;
         bool _hasMore{false};

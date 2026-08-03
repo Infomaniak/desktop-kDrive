@@ -48,6 +48,7 @@
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
@@ -139,7 +140,7 @@ void TestNetworkJobs::setUp() {
     _apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -482,6 +483,26 @@ void TestNetworkJobs::testDownload() {
                             DownloadJob::DateTimePolicy::ApplyDateTime);
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
         }
+
+#if defined(KD_WINDOWS)
+        // Download again but local file is now hidden
+        IoHelper::setFileHidden(localDestFilePath, true);
+        {
+            modificationTimeIn += std::chrono::minutes(1);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+
+            // Check that the file is still hidden
+            bool isHidden = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(localDestFilePath, isHidden, ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+            CPPUNIT_ASSERT(isHidden);
+        }
+#endif
     }
 
     // Cross Device Link
@@ -790,7 +811,7 @@ void TestNetworkJobs::testDownload() {
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
     if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
 
-    // Only run on CI because it requires a small partition to be set up)
+    // Only run on CI because it requires a small partition to be set up
     const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
     if (smallPartitionPath.empty()) return;
 
@@ -1728,7 +1749,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);

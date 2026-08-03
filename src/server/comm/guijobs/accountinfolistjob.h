@@ -19,7 +19,7 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/account.h"
 
 namespace KDC {
 
@@ -30,7 +30,7 @@ class AccountInfoListJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        std::vector<AccountInfo> _accountInfoList;
+        std::vector<Account> _accountList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

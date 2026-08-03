@@ -47,6 +47,7 @@ set(libcommonserver_SRCS
     log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Keychain manager
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
+    keychainmanager/keychainstorage.h keychainmanager/keychainstorage.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
 )
 
@@ -139,7 +140,9 @@ target_link_libraries(${libcommonserver_NAME}
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}
-        Secur32)
+        Secur32
+        Wintrust
+        Crypt32)
 elseif(APPLE)
     # utility_mac.mm
     find_library(FOUNDATION_LIBRARY NAMES Foundation)

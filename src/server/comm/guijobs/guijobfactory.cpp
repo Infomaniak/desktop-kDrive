@@ -50,7 +50,7 @@
 #include "nodefoldersizejob.h"
 #include "nodecreatemissingfoldersjob.h"
 #include "nodeconflictinfojob.h"
-#include "errorinfolistjob.h"
+#include "errorlistjob.h"
 #include "errorresolveconflictsjob.h"
 #include "errorresolveconflictsquickjob.h"
 #include "errordeletejob.h"
@@ -65,6 +65,7 @@
 #include "excltemplsetlistjob.h"
 #include "parametersinfojob.h"
 #include "parametersupdatejob.h"
+#include "syncacknowledgemanydeletesjob.h"
 
 #include "utilityfindgoodpathfornewsyncjob.h"
 #include "utilitybestvfsavailablemodejob.h"
@@ -112,6 +113,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::SYNC_GETPRIVATELINKURL, makeShared<SyncGetPrivateLinkUrlJob>},
                 {RequestNum::SYNC_TRIGGER_PROGRESS_UPDATE, makeShared<SyncTriggerProgressUpdateJob>},
                 {RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, makeShared<SyncSetSupportsVirtualFilesJob>},
+                {RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES, makeShared<SyncAcknowledgeManyDeletesJob>},
                 {RequestNum::BLACKLISTED_NODE_LIST, makeShared<BlacklistedNodeListJob>},
                 {RequestNum::BLACKLISTED_NODE_SETLIST, makeShared<BlacklistedNodeSetListJob>},
                 {RequestNum::NODE_PATH, makeShared<NodePathJob>},
@@ -121,7 +123,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::NODE_FOLDER_SIZE, makeShared<NodeFolderSizeJob>},
                 {RequestNum::NODE_CREATEMISSINGFOLDERS, makeShared<NodeCreateMissingFoldersJob>},
                 {RequestNum::NODE_CONFLICT_INFO, makeShared<NodeConflictInfoJob>},
-                {RequestNum::ERROR_INFOLIST, makeShared<ErrorInfolistJob>},
+                {RequestNum::ERROR_INFOLIST, makeShared<ErrorListJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS, makeShared<ErrorResolveConflictsJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, makeShared<ErrorResolveConflictsQuickJob>},
                 {RequestNum::ERROR_DELETE, makeShared<ErrorDeleteJob>},
@@ -160,8 +162,7 @@ std::shared_ptr<AbstractGuiJob> GuiJobFactory::make(RequestNum requestNum, std::
                                                     std::shared_ptr<AbstractCommChannel> channel) {
     if (const auto makeElt = _makeMap.find(requestNum); makeElt != _makeMap.end())
         return makeElt->second(commManager, requestId, inParams, channel);
-    else 
-    {
+    else {
         LOG_WARN(Log::instance()->getLogger(), "Received unknown request " << requestNum << " with id " << requestId);
         return std::make_shared<UnknownRequestJob>(commManager, requestId, inParams, channel);
     }

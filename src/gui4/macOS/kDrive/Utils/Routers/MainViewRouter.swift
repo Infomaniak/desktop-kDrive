@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveCore
 import kDriveCoreUI
 
 typealias MainViewRouter = ViewRouter<MainViewTab>
@@ -62,4 +63,7 @@ enum MainViewDetail: RouterDetail {
     case blockingError
 
     case errors
+
+    case quickConflictsResolution([SynchroError])
+    case conflictsList
 }

@@ -20,7 +20,7 @@
 
 #include "customtreewidgetitem.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 #include "libcommon/info/nodeinfo.h"
 
 #include <QColor>
@@ -38,7 +38,7 @@ class FolderTreeItemWidget : public QTreeWidget {
         FolderTreeItemWidget(std::shared_ptr<ClientGui> gui, bool displayRoot, QWidget *parent = nullptr);
 
         void setSyncDbId(const SyncDbId syncDbId);
-        void setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailableInfo &driveInfo);
+        void setUserDbIdAndDriveInfo(const UserDbId userDbId, const DriveAvailable &driveInfo);
         void setDriveDbIdAndFolderNodeId(const DriveDbId driveDbId, const QString &serverFolderNodeId);
         void loadSubFolders();
         QSet<QString> createBlackSet();

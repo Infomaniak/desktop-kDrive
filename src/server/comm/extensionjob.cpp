@@ -788,7 +788,7 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 
 void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
-                                             const Sync &sync) {
+                                             const BaseSync &sync) {
     bool exists = false;
     auto ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive) || !exists) {

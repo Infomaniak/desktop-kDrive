@@ -38,18 +38,34 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QThread>
+#include <QImage>
 
 #include <Poco/Dynamic/Struct.h>
 
 #include <log4cplus/log4cplus.h>
 
 namespace KDC {
+
+namespace fsType {
+static const std::string NTFS = "NTFS";
+static const std::string APFS = "APFS";
+static const std::string HFS = "HFS";
+static const std::string FAT = "FAT32";
+static const std::string EXFAT = "EXFAT";
+static const std::string EXT234 = "EXT234";
+} // namespace fsType
+
 struct COMMON_EXPORT CommonUtility {
         enum IconType {
             MAIN_FOLDER_ICON,
             COMMON_DOCUMENT_ICON,
             DROP_BOX_ICON,
             NORMAL_FOLDER_ICON
+        };
+
+        enum UseCache {
+            Yes = 0,
+            No
         };
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
@@ -69,12 +85,32 @@ struct COMMON_EXPORT CommonUtility {
         static std::string generateUUID();
 
         // File system type
+        //! Returns the type of the file system (FS) containing the given path.
+        //! Optionally use a cache to optimize performances.
+        //! For unmanaged FS (see isManagedFS), try to determine the actual underlying storage format
+        /*!
+          \param targetPath is the path the FS type of which is queried.
+          \param fsType is the type of the FS.
+          \param useCache if true, use a cache to optimize performances.
+          \return the type of the FS or, if unmanaged, the type of the underlying FS.
+        */
+        static std::string fileSystemType(const SyncPath &targetPath, std::string &fsType,
+                                          const UseCache useCache = UseCache::Yes);
+        static std::string fileSystemType(const SyncPath &targetPath, const UseCache useCache = UseCache::Yes) {
+            std::string fsType;
+            return fileSystemType(targetPath, fsType, useCache);
+        }
+
+        static bool isManagedFS(const std::string &fsType);
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
+        static bool isHFS(const SyncPath &targetPath); // HFS+
         static bool isFAT(const SyncPath &targetPath);
+        static bool isEXFAT(const SyncPath &targetPath);
+        static bool isEXT234(const SyncPath &targetPath);
+
         static bool isSyncCompatible(const SyncPath &targetPath);
         static bool isLiteSyncCompatible(const SyncPath &targetPath);
-        static std::string fileSystemName(const SyncPath &targetPath);
 
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
@@ -82,8 +118,6 @@ struct COMMON_EXPORT CommonUtility {
         static std::string osVersion();
 #if defined(KD_LINUX)
         static std::string distributionName();
-        static bool isEXT234(const SyncPath &targetPath);
-        static std::string exFAT();
 #endif
         static Platform platform();
         static QString platformArch();
@@ -318,6 +352,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::wstring commString2WStr(const CommString &s) { return KDC::CommonUtility::s2ws(s); }
         static CommString qStr2CommString(const QString &s) { return s.toStdString(); }
         static QString commString2QStr(const CommString &s) { return QString::fromStdString(s); }
+
         //! Returns the length of a string
         /*!
           \param s is a null-terminated string.
@@ -326,7 +361,13 @@ struct COMMON_EXPORT CommonUtility {
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
 
+        static std::shared_ptr<CommBLOB> toCommBlob(const QImage &image);
+        static QImage toQImage(const std::shared_ptr<CommBLOB> blob);
+
         static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
+
+        static SyncTime getCurrentSyncTime();
+        static SyncTime getCurrentSyncTimeWithOffset(std::chrono::seconds offset);
 
         class InvalidEnumerationValue : public std::runtime_error {
             public:
@@ -519,6 +560,8 @@ struct COMMON_EXPORT CommonUtility {
         static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
         static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;
 
+        inline static int pathDepth(const SyncPath &path) { return static_cast<int>(std::distance(path.begin(), path.end())); }
+
     private:
         static std::mutex _generateRandomStringMutex;
 
@@ -550,7 +593,16 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
-        static std::string getRootFsType(const SyncPath &targetPath);
+        static std::string fallbackFileSystemType();
+
+        //! Try to determine the actual underlying storage format by creating temporary directories with invalid file names
+        /*!
+          \param targetPath is the path the FS type of which is queried.
+          \return the type of the FS.
+        */
+        static std::string underlyingFileSystemType(const SyncPath &targetPath);
+
+        static bool fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint);
 
         friend class TestUtility;
 };
@@ -637,6 +689,35 @@ static const std::function<C(const Poco::Dynamic::Var &)> dynamicVar2Struct = []
     C c;
     c.fromDynamicStruct(structValue);
     return c;
+};
+
+class CmpPath {
+    public:
+        enum SortByDepth {
+            Growing = 0,
+            Decreasing
+        };
+
+        explicit CmpPath(const SortByDepth sort) :
+            _sort(sort) {}
+
+        bool operator()(const SyncPath &path1, const SyncPath &path2) const {
+            const auto pathDepth1 = CommonUtility::pathDepth(path1);
+            const auto pathDepth2 = CommonUtility::pathDepth(path2);
+            if (pathDepth1 < pathDepth2)
+                return (_sort == Growing);
+            else if (pathDepth1 > pathDepth2)
+                return (_sort == Decreasing);
+            else if (path1 < path2)
+                return (_sort == Growing);
+            else if (path1 > path2)
+                return (_sort == Decreasing);
+            else
+                return false;
+        }
+
+    private:
+        SortByDepth _sort = Growing;
 };
 
 } // namespace KDC

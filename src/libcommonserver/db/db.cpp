@@ -285,31 +285,33 @@ bool Db::queryNext(const std::string &id, bool &hasData) {
     return ret;
 }
 
-bool Db::queryIntValue(const std::string &id, int index, int &value) const {
-    return _sqliteDb->queryIntValue(id, index, value);
+bool Db::queryIntValue(const std::string &id, const int index, int &value, const int defaultValue /*= 0*/) const {
+    return _sqliteDb->queryIntValue(id, index, value, defaultValue);
 }
 
-bool Db::queryInt64Value(const std::string &id, int index, int64_t &value) const {
-    return _sqliteDb->queryInt64Value(id, index, value);
+bool Db::queryInt64Value(const std::string &id, const int index, int64_t &value, const int64_t defaultValue /*= 0*/) const {
+    return _sqliteDb->queryInt64Value(id, index, value, defaultValue);
 }
 
-bool Db::queryDoubleValue(const std::string &id, int index, double &value) const {
-    return _sqliteDb->queryDoubleValue(id, index, value);
+bool Db::queryDoubleValue(const std::string &id, const int index, double &value, const double defaultValue /*= 0*/) const {
+    return _sqliteDb->queryDoubleValue(id, index, value, defaultValue);
 }
 
-bool Db::queryStringValue(const std::string &id, int index, std::string &value) const {
-    return _sqliteDb->queryStringValue(id, index, value);
+bool Db::queryStringValue(const std::string &id, const int index, std::string &value,
+                          const std::string &defaultValue /*= {}*/) const {
+    return _sqliteDb->queryStringValue(id, index, value, defaultValue);
 }
 
-bool Db::querySyncNameValue(const std::string &id, int index, SyncName &value) const {
-    return _sqliteDb->querySyncNameValue(id, index, value);
+bool Db::querySyncNameValue(const std::string &id, const int index, SyncName &value,
+                            const SyncName &defaultValue /*= {}*/) const {
+    return _sqliteDb->querySyncNameValue(id, index, value, defaultValue);
 }
 
-bool Db::queryBlobValue(const std::string &id, int index, std::shared_ptr<std::vector<char>> &value) const {
+bool Db::queryBlobValue(const std::string &id, const int index, std::shared_ptr<std::vector<char>> &value) const {
     return _sqliteDb->queryBlobValue(id, index, value);
 }
 
-bool Db::queryIsNullValue(const std::string &id, int index, bool &ok) {
+bool Db::queryIsNullValue(const std::string &id, const int index, bool &ok) {
     return _sqliteDb->queryIsNullValue(id, index, ok);
 }
 

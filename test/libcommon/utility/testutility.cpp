@@ -26,6 +26,7 @@
 #include "utility/utility_base.h"
 
 #include <QLocale>
+#include <chrono>
 #include <source_location>
 #include <iostream>
 #include <regex>
@@ -948,14 +949,149 @@ void TestUtility::testIsSameOrParentPath() {
     CPPUNIT_ASSERT(CommonUtility::isDescendantOrEqual("a/b/c", "a"));
 }
 
-void TestUtility::testFileSystemName() {
+void TestUtility::testFileSystemInfo() {
+    std::string fsType;
+    SyncPath mountPoint;
 #if defined(KD_MACOS)
-    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/") == "apfs");
-    CPPUNIT_ASSERT(CommonUtility::fileSystemName("/bin") == "apfs");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) && CommonUtility::toUpper(fsType) == fsType::APFS &&
+                   mountPoint == "/");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
+                   CommonUtility::toUpper(fsType) == fsType::APFS && mountPoint == "/");
+    // TODO: implement these tests on the CI.
+    // External disk.
+    /*
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/EXFAT PART", fsType, mountPoint) && fsType ==
+    "exfat" && mountPoint == "/Volumes/EXFAT PART");
+
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/FAT PART", fsType, mountPoint) && fsType ==
+    fsType::FAT && mountPoint == "/Volumes/FAT PART");
+    */
+    // AppleVirtIOFS (Parallels Desktop shared folder for instance).
+    /*
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/APFS PART", fsType, mountPoint) &&
+                   fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
+
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType, mountPoint) &&
+                   fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
+
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/Volumes/My Shared Files/Volumes/FAT PART", fsType, mountPoint) &&
+                   fsType == "AppleVirtIOFS" && mountPoint == "/Volumes/My Shared Files");
+    */
 #elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT(CommonUtility::fileSystemName(std::filesystem::temp_directory_path()) == "NTFS");
-    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\)") == "NTFS");
-    // CPPUNIT_ASSERT(CommonUtility::fileSystemName(R"(C:\windows)") == "NTFS");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::temp_directory_path(), fsType, mountPoint) &&
+                   fsType == fsType::NTFS && mountPoint == R"(C:\)");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\)", fsType, mountPoint) && fsType == fsType::NTFS &&
+                   mountPoint == R"(C:\)");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(R"(C:\windows)", fsType, mountPoint) && fsType == fsType::NTFS &&
+                   mountPoint == R"(C:\)");
+#else
+    // /!\ Docker containers use overlayfs
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) &&
+                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
+                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
+    // TODO: implement these tests on the CI.
+    // External disk.
+    /*
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/parallels/EXFAT PART/toto.txt", fsType, mountPoint) &&
+                   fsType == fsType::EXFAT && mountPoint == "/media/parallels/EXFAT PART");
+
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/parallels/FAT PART", fsType, mountPoint) &&
+                   fsType == fsType::FAT && mountPoint == "/media/parallels/FAT PART");
+    */
+    // Fuse (Parallels Desktop shared folder for instance).
+    /*
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/psf/EXFAT PART", fsType, mountPoint) &&
+                   fsType == "FUSE" && mountPoint == "/media/psf/EXFAT PART");
+
+    CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/media/psf/FAT PART", fsType, mountPoint) &&
+                   fsType == "FUSE" && mountPoint == "/media/psf/FAT PART");
+    */
+#endif
+}
+
+void TestUtility::testFileSystemType() {
+    std::string fsType;
+#if defined(KD_MACOS)
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, CommonUtility::fileSystemType("/", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, fsType);
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS, fsType);
+    // TODO: implement these tests on the CI.
+    // External disk.
+    /*
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
+                         CommonUtility::fileSystemType("/Volumes/EXFAT PART", CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT, CommonUtility::fileSystemType("/Volumes/EXFAT PART"));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT,
+                         CommonUtility::fileSystemType("/Volumes/FAT PART", CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/Volumes/FAT PART"));
+    */
+    // AppleVirtIOFS (Parallels Desktop shared folder for instance).
+    /*
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fsType,
+                                                       CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
+
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/APFS PART", fsType));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
+
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType,
+                                                       CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
+
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/EXFAT PART", fsType));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
+
+    CPPUNIT_ASSERT_EQUAL(fsType::APFS,
+                         CommonUtility::fileSystemType("/Volumes/My Shared Files/Volumes/FAT PART", fsType,
+                                                       CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("APPLEVIRTIOFS"), fsType);
+    */
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(fsType::NTFS, CommonUtility::fileSystemType("C:\\", fsType));
+    CPPUNIT_ASSERT_EQUAL(fsType::NTFS, fsType);
+#else
+    // /!\ Docker containers use overlayfs
+    CPPUNIT_ASSERT_EQUAL(fsType::EXT234, CommonUtility::fileSystemType("/", fsType));
+    CPPUNIT_ASSERT(fsType == fsType::EXT234 || fsType == "OVERLAYFS");
+    CPPUNIT_ASSERT_EQUAL(fsType::EXT234, CommonUtility::fileSystemType(std::filesystem::weakly_canonical("."), fsType));
+    CPPUNIT_ASSERT(fsType == fsType::EXT234 || fsType == "OVERLAYFS");
+    // TODO: implement these tests on the CI.
+    // External disk.
+    /*
+    CPPUNIT_ASSERT_EQUAL(
+            fsType::EXFAT,
+            CommonUtility::fileSystemType("/media/parallels/EXFAT PART", CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
+                         CommonUtility::fileSystemType("/media/parallels/EXFAT PART"));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT,
+                         CommonUtility::fileSystemType("/media/parallels/FAT PART", CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT, CommonUtility::fileSystemType("/media/parallels/FAT PART"));
+    */
+    // Fuse (Parallels Desktop shared folder for instance).
+    /*
+    CPPUNIT_ASSERT_EQUAL(fsType::EXFAT,
+                         CommonUtility::fileSystemType("/media/psf/EXFAT PART", CommonUtility::UseCache::No));
+
+    CPPUNIT_ASSERT_EQUAL(fsType::FAT,
+                         CommonUtility::fileSystemType("/media/psf/FAT PART", CommonUtility::UseCache::No));
+    */
 #endif
 }
 
@@ -1304,6 +1440,63 @@ void TestUtility::testLogDirectoryPath() {
     SyncPath logDirPath;
     CPPUNIT_ASSERT(CommonUtility::logDirectoryPath(logDirPath));
     CPPUNIT_ASSERT(!logDirPath.empty());
+}
+
+void TestUtility::testPathDepth() {
+    CPPUNIT_ASSERT_EQUAL(0, CommonUtility::pathDepth({}));
+    CPPUNIT_ASSERT_EQUAL(1, CommonUtility::pathDepth(SyncPath{"/"}));
+    CPPUNIT_ASSERT_EQUAL(1, CommonUtility::pathDepth(SyncPath{"A"}));
+    CPPUNIT_ASSERT_EQUAL(2, CommonUtility::pathDepth(SyncPath{"A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, CommonUtility::pathDepth(SyncPath{"/A"}));
+    CPPUNIT_ASSERT_EQUAL(3, CommonUtility::pathDepth(SyncPath{"/A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, CommonUtility::pathDepth(SyncPath{"A/B"}));
+    CPPUNIT_ASSERT_EQUAL(3, CommonUtility::pathDepth(SyncPath{"A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(4, CommonUtility::pathDepth(SyncPath{"/A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(5, CommonUtility::pathDepth(SyncPath{"/A/B/C/"}));
+
+    SyncPath path;
+    for (int i = 1; i < 5; i++) {
+        path /= "dir";
+        CPPUNIT_ASSERT_EQUAL(i, CommonUtility::pathDepth(path));
+    }
+}
+
+void TestUtility::testGetSyncTime() {
+    {
+        const SyncTime before = CommonUtility::getCurrentSyncTime();
+        const SyncTime withZeroOffset = CommonUtility::getCurrentSyncTimeWithOffset(std::chrono::seconds(0));
+        const SyncTime after = CommonUtility::getCurrentSyncTime();
+
+        CPPUNIT_ASSERT(withZeroOffset >= before);
+        CPPUNIT_ASSERT(withZeroOffset <= after);
+    }
+
+    {
+        const auto offset = std::chrono::seconds(1);
+        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::seconds>(offset).count();
+
+        const SyncTime before = CommonUtility::getCurrentSyncTime();
+        const SyncTime withPositiveOffset = CommonUtility::getCurrentSyncTimeWithOffset(offset);
+
+        CPPUNIT_ASSERT(withPositiveOffset >= before + expectedOffset);
+
+        Utility::msleep(2000);
+
+        const SyncTime after = CommonUtility::getCurrentSyncTime();
+        CPPUNIT_ASSERT(withPositiveOffset < after);
+    }
+
+    {
+        const auto offset = std::chrono::seconds(60);
+        const SyncTime expectedOffset = std::chrono::duration_cast<std::chrono::seconds>(offset).count();
+
+        const SyncTime before = CommonUtility::getCurrentSyncTime();
+        const SyncTime withNegativeOffset = CommonUtility::getCurrentSyncTimeWithOffset(-offset);
+        const SyncTime after = CommonUtility::getCurrentSyncTime();
+
+        CPPUNIT_ASSERT(withNegativeOffset >= before - expectedOffset);
+        CPPUNIT_ASSERT(withNegativeOffset <= after - expectedOffset);
+    }
 }
 
 } // namespace KDC

@@ -46,6 +46,7 @@ if [ ! -f "$tester" ]; then
     exit 1
 fi
 
+# Launch the tests
 chmod +x "$tester"
 export DYLD_LIBRARY_PATH="$PWD:/usr/local/lib:/usr/lib:$DYLD_LIBRARY_PATH"
 ls -lah /usr/local/lib /usr/lib $PWD 2>/dev/null || true

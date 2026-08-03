@@ -19,9 +19,10 @@
 #pragma once
 
 #include "libcommon.h"
+#include "keychainstorage.h"
 #include "apitoken.h"
 
-#include <unordered_map>
+#include <memory>
 
 #include <QObject>
 
@@ -31,7 +32,7 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         Q_OBJECT
 
     public:
-        static std::shared_ptr<KeyChainManager> instance(bool testing = false);
+        static std::shared_ptr<KeyChainManager> instance(std::shared_ptr<IKeyChainStorage> storage = nullptr);
 
         KeyChainManager(KeyChainManager const &) = delete;
         void operator=(KeyChainManager const &) = delete;
@@ -41,16 +42,19 @@ class COMMON_EXPORT KeyChainManager : public QObject {
 
         bool writeToken(const std::string &keychainKey, const std::string &rawData);
         bool readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
-        bool deleteToken(const std::string &keychainKey) const;
+        bool deleteToken(const std::string &keychainKey);
 
         bool readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found);
 
+        [[nodiscard]] bool isTesting() const { return _storage ? _storage->isTesting() : false; }
+
+
     private:
         static std::shared_ptr<KeyChainManager> _instance;
-        bool _testing;
-        std::unordered_map<std::string, std::string> _testingMap;
 
-        KeyChainManager(bool testing);
+        std::shared_ptr<IKeyChainStorage> _storage;
+
+        explicit KeyChainManager(std::shared_ptr<IKeyChainStorage> storage);
 };
 
 } // namespace KDC

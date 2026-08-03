@@ -26,7 +26,7 @@ namespace KDC {
 
 class AbstractLoginJob : public AbstractNetworkJob {
     public:
-        AbstractLoginJob();
+        AbstractLoginJob() = default;
 
         inline const ApiToken &apiToken() const { return _apiToken; }
 

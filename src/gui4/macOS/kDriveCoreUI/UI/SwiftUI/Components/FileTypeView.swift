@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import kDriveResources
 import SwiftUI
 
 public struct FileTypeView: View {
@@ -26,9 +27,9 @@ public struct FileTypeView: View {
     }
 
     public var body: some View {
-        fileTypeRepresentation.icon
+        fileTypeRepresentation.icon.swiftUIImage
             .resizable()
             .scaledToFit()
-            .foregroundStyle(fileTypeRepresentation.color)
+            .foregroundStyle(fileTypeRepresentation.color.swiftUIColor)
     }
 }

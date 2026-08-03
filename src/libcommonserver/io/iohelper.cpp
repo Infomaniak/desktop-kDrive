@@ -55,6 +55,9 @@ std::function<bool(const SyncPath &path, const std::filesystem::file_status &sta
         IoHelper::_checkIfPathExistsSensitive = IoHelper::_checkIfPathExistsSensitiveFn;
 #endif
 
+std::function<bool(const SyncPath &path, NodeId &nodeId)> IoHelper::_getNodeId = IoHelper::_getNodeIdFn;
+
+
 bool IoHelper::_unsuportedFSLogged = false;
 
 #if defined(KD_MACOS)
@@ -252,8 +255,12 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     return true;
 }
 
-#if defined(KD_MACOS) || defined(KD_LINUX)
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+    return _getNodeId(path, nodeId);
+}
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+bool IoHelper::_getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept {
     struct stat sb;
 
     if (lstat(path.string().c_str(), &sb) < 0) {

@@ -73,6 +73,7 @@ ClientGui::ClientGui(AppClient *parent) :
     connect(_app, &AppClient::syncUpdated, this, &ClientGui::onSyncUpdated);
     connect(_app, &AppClient::syncRemoved, this, &ClientGui::onSyncRemoved);
     connect(_app, &AppClient::syncDeletionFailed, this, &ClientGui::onSyncDeletionFailed);
+    (void) connect(_app, &AppClient::tooManyDeletesNotification, this, &ClientGui::onTooManyDeletesNotification);
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
@@ -142,7 +143,7 @@ bool ClientGui::isConnected() {
     return GuiRequests::isConnnected();
 }
 
-void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId syncDbId) {
+void ClientGui::onErrorAdded(const bool serverLevel, const ExitCode exitCode, const SyncDbId syncDbId) {
     if (exitCode == ExitCode::InvalidToken) {
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
@@ -150,7 +151,7 @@ void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, const SyncDbId
             if (_addDriveWizard) {
                 emit _addDriveWizard->exit();
             }
-            _app->askUserToLoginAgain(_currentUserDbId, userIt->second.email(), true);
+            _app->askUserToLoginAgain(_currentUserDbId, QString::fromStdString(userIt->second.email()), true);
         }
     }
 
@@ -188,7 +189,7 @@ void ClientGui::onFixConflictingFilesCompleted(const SyncDbId syncDbId, uint64_t
             KDC::CustomMessageBox msgBox(QMessageBox::Warning,
                                          tr("Failed to fix conflict(s) on %1 item(s) in sync folder: %2")
                                                  .arg(nbErrors)
-                                                 .arg(syncInfoMapIt->second.localPath()),
+                                                 .arg(Path2QStr(syncInfoMapIt->second.localPath())),
                                          QMessageBox::Ok);
             msgBox.exec();
         }
@@ -288,7 +289,7 @@ void ClientGui::computeOverallSyncStatus() {
             QString syncMessage = trayTooltipStatusString(
                     syncInfoMapIt.second.status(), syncInfoMapIt.second.unresolvedConflicts(), syncInfoMapIt.second.paused());
 
-            QString shortLocalPath = shortGuiLocalPath(syncInfoMapIt.second.localPath());
+            QString shortLocalPath = shortGuiLocalPath(Path2QStr(syncInfoMapIt.second.localPath()));
             allStatusStrings += tr("Folder %1: %2").arg(shortLocalPath, syncMessage);
         }
         trayMessage = allStatusStrings.join(QLatin1String("\n"));
@@ -337,14 +338,14 @@ Count ClientGui::driveErrorsCount(const DriveDbId driveDbId, bool unresolved) co
         return 0;
     }
 
-    return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoresolvedErrorsCount();
+    return unresolved ? driveInfoMapIt->second.unresolvedErrorsCount() : driveInfoMapIt->second.autoResolvedErrorsCount();
 }
 
 const QString ClientGui::folderPath(const SyncDbId syncDbId, const QString &filePath) const {
     QString fullFilePath;
     const auto syncInfoIt = _syncInfoMap.find(syncDbId);
     if (syncInfoIt != _syncInfoMap.end()) {
-        fullFilePath = syncInfoIt->second.localPath() + dirSeparator + filePath;
+        fullFilePath = Path2QStr(syncInfoIt->second.localPath()) + dirSeparator + filePath;
     }
 
     return fullFilePath;
@@ -898,9 +899,9 @@ void ClientGui::getWebviewDriveLink(const DriveDbId driveDbId, QString &driveLin
     }
 }
 
-void ClientGui::errorInfoList(const DriveDbId driveDbId, QList<ErrorInfo> &errorInfoList) {
-    if (_errorInfoMap.find(driveDbId) != _errorInfoMap.end()) {
-        errorInfoList = _errorInfoMap[driveDbId];
+void ClientGui::errorList(const DriveDbId driveDbId, QList<Error> &errorList) {
+    if (_errorMap.find(driveDbId) != _errorMap.end()) {
+        errorList = _errorMap[driveDbId];
     }
 }
 
@@ -928,9 +929,9 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 }
 
 ExitCode ClientGui::loadError(const DriveDbId driveDbId, const SyncDbId syncDbId, ErrorLevel level) {
-    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
+    const ExitCode exitCode = GuiRequests::getErrorList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorList for level=" << level;
     }
 
     return exitCode;
@@ -945,15 +946,15 @@ void ClientGui::onRefreshErrorList() {
     bool versionLocked = false;
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
-        _errorInfoMap[0].clear();
+        _errorMap[0].clear();
         if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevel::Server)) {
             return;
         }
 
-        _generalErrorsCounter = static_cast<Count>(_errorInfoMap[0].count());
+        _generalErrorsCounter = static_cast<Count>(_errorMap[0].count());
         emit errorAdded(0);
-        for (const auto &errorInfo: _errorInfoMap[0]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+        for (const auto &error: _errorMap[0]) {
+            versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
         }
 
         _driveWithNewErrorSet.remove(0);
@@ -962,7 +963,7 @@ void ClientGui::onRefreshErrorList() {
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
         const auto driveDbId = *it;
-        _errorInfoMap[driveDbId].clear();
+        _errorMap[driveDbId].clear();
 
         const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
         if (driveInfoMapIt == _driveInfoMap.end()) {
@@ -978,18 +979,18 @@ void ClientGui::onRefreshErrorList() {
         }
 
         Count unresolvedErrorsCount = 0;
-        Count autoresolvedErrorsCount = 0;
-        for (const auto &errorInfo: _errorInfoMap[driveDbId]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
+        Count autoResolvedErrorsCount = 0;
+        for (const auto &error: _errorMap[driveDbId]) {
+            versionLocked = versionLocked || error.exitCode() == ExitCode::UpdateRequired;
 
-            if (errorInfo.autoResolved()) {
-                ++autoresolvedErrorsCount;
+            if (error.isAutoResolved()) {
+                ++autoResolvedErrorsCount;
             } else {
                 ++unresolvedErrorsCount;
             }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
+        driveInfoMapIt->second.setAutoResolvedErrorsCount(autoResolvedErrorsCount);
         emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
@@ -1037,36 +1038,28 @@ void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #endif
 }
 
-void ClientGui::onUserAdded(const UserInfo &userInfo) {
-    _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
+void ClientGui::onUserAdded(const User &user) {
+    _userInfoMap.insert({user.dbId(), UserInfoClient(user)});
 
     if (!_currentUserDbId) {
-        _currentUserDbId = userInfo.dbId();
+        _currentUserDbId = user.dbId();
     }
 
     emit userListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onRemoveUser(const UserDbId userDbId) {
-    ExitCode exitCode = GuiRequests::deleteUser(userDbId);
-    if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::deleteUser for userDbId=" << userDbId;
-        return;
-    }
-}
-
-void ClientGui::onUserUpdated(const UserInfo &userInfo) {
-    const auto userInfoMapIt = _userInfoMap.find(userInfo.dbId());
+void ClientGui::onUserUpdated(const User &user) {
+    const auto userInfoMapIt = _userInfoMap.find(user.dbId());
     if (userInfoMapIt != _userInfoMap.end()) {
-        userInfoMapIt->second.setName(userInfo.name());
-        userInfoMapIt->second.setEmail(userInfo.email());
-        userInfoMapIt->second.setAvatar(userInfo.avatar());
-        userInfoMapIt->second.setConnected(userInfo.connected());
-        if (userInfo.connected()) {
+        userInfoMapIt->second.setName(user.name());
+        userInfoMapIt->second.setEmail(user.email());
+        userInfoMapIt->second.setAvatar(user.avatar());
+        userInfoMapIt->second.setConnected(user.connected());
+        if (user.connected()) {
             userInfoMapIt->second.setCredentialsAsked(false);
         }
-        userInfoMapIt->second.setIsStaff(userInfo.isStaff());
+        userInfoMapIt->second.setIsStaff(user.isStaff());
         emit userListRefreshed();
     }
 }
@@ -1149,21 +1142,21 @@ void ClientGui::onUserRemoved(const UserDbId userDbId) {
     }
 }
 
-void ClientGui::onAccountAdded(const AccountInfo &accountInfo) {
-    _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
+void ClientGui::onAccountAdded(const Account &account) {
+    _accountInfoMap.insert({account.dbId(), account});
 
     if (!_currentAccountDbId) {
-        _currentAccountDbId = accountInfo.dbId();
+        _currentAccountDbId = account.dbId();
     }
 
     emit accountListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onAccountUpdated(const AccountInfo &accountInfo) {
-    const auto &accountInfoMapIt = _accountInfoMap.find(accountInfo.dbId());
+void ClientGui::onAccountUpdated(const Account &account) {
+    const auto &accountInfoMapIt = _accountInfoMap.find(account.dbId());
     if (accountInfoMapIt != _accountInfoMap.end()) {
-        accountInfoMapIt->second.setUserDbId(accountInfo.userDbId());
+        accountInfoMapIt->second.setUserDbId(account.userDbId());
 
         emit accountListRefreshed();
     }
@@ -1215,23 +1208,23 @@ void ClientGui::onAccountRemoved(const AccountDbId accountDbId) {
     }
 }
 
-void ClientGui::onDriveAdded(const DriveInfo &driveInfo) {
-    _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
+void ClientGui::onDriveAdded(const Drive &drive) {
+    _driveInfoMap.insert({drive.dbId(), DriveInfoClient(drive)});
 
     if (!_currentDriveDbId) {
-        _currentDriveDbId = driveInfo.dbId();
+        _currentDriveDbId = drive.dbId();
     }
 
     emit driveListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onDriveUpdated(const DriveInfo &driveInfo) {
-    const auto &driveInfoMapIt = _driveInfoMap.find(driveInfo.dbId());
+void ClientGui::onDriveUpdated(const Drive &drive) {
+    const auto &driveInfoMapIt = _driveInfoMap.find(drive.dbId());
     if (driveInfoMapIt != _driveInfoMap.end()) {
-        driveInfoMapIt->second.setAccountDbId(driveInfo.accountDbId());
-        driveInfoMapIt->second.setName(driveInfo.name());
-        driveInfoMapIt->second.setColor(driveInfo.color());
+        driveInfoMapIt->second.setAccountDbId(drive.accountDbId());
+        driveInfoMapIt->second.setName(drive.name());
+        driveInfoMapIt->second.setColor(drive.color());
 
         emit driveListRefreshed();
     }
@@ -1256,7 +1249,7 @@ void ClientGui::onRemoveDrive(const DriveDbId driveDbId) {
     CustomMessageBox msgBox(QMessageBox::Question,
                             tr("Do you really want to remove the synchronizations of the account <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
-                                    .arg(driveInfoMapIt->second.name()),
+                                    .arg(QString::fromStdString(driveInfoMapIt->second.name())),
                             QMessageBox::NoButton);
     msgBox.addButton(tr("REMOVE ALL SYNCHRONIZATIONS"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
@@ -1318,14 +1311,14 @@ void ClientGui::onDriveRemoved(const DriveDbId driveDbId) {
     }
 }
 
-void ClientGui::onSyncAdded(const SyncInfo &syncInfo) {
+void ClientGui::onSyncAdded(const BaseSync &syncInfo) {
     _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
+void ClientGui::onSyncUpdated(const BaseSync &syncInfo) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncInfo.dbId());
     if (syncInfoMapIt != _syncInfoMap.end()) {
         syncInfoMapIt->second.setDriveDbId(syncInfo.driveDbId());
@@ -1342,7 +1335,7 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 void ClientGui::onRemoveSync(const SyncDbId syncDbId) {
     const auto &syncInfoMapIt = _syncInfoMap.find(syncDbId);
     if (syncInfoMapIt != _syncInfoMap.end()) {
-        CommonGuiUtility::removeDirIcon(syncInfoMapIt->second.localPath());
+        CommonGuiUtility::removeDirIcon(Path2QStr(syncInfoMapIt->second.localPath()));
     }
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCode::Ok) {
@@ -1358,6 +1351,99 @@ void ClientGui::onSyncDeletionFailed(const SyncDbId syncDbId) {
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();
+}
+
+void cleanUpMsgBox(const SyncDbId syncDbId, QMap<SyncDbId, CustomMessageBox *> &map) {
+    if (map.contains(syncDbId)) {
+        auto msgBox = map[syncDbId];
+        if (msgBox) {
+            msgBox->accept();
+            msgBox->deleteLater();
+        }
+        msgBox = nullptr;
+        (void) map.remove(syncDbId);
+    }
+}
+
+void ClientGui::onTooManyDeletesNotificationHardLimit(const SyncDbId syncDbId, const uint64_t nbFiles) {
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+
+    const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt == _syncInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
+        return;
+    }
+    const auto localPath = syncInfoMapIt->second.localPath();
+
+    int res = 0;
+    while (res == 0) { // Force the user to give an explicit answer, not just close the windows and restart the sync
+        const auto msgBox = new CustomMessageBox(
+                QMessageBox::Warning,
+                tr(R"(%1 items have been deleted from your from your local sync folder <a style="%2" href="file:///%3">%3</a>. To avoid unintended deletions the synchronization have been paused.<br>Do you want to propagate those deletion to your kDrive?)")
+                        .arg(nbFiles)
+                        .arg(CommonUtility::linkStyle, Path2QStr(localPath)),
+                QMessageBox::Yes | QMessageBox::No);
+        _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+        msgBox->showExitButton(false);
+        res = msgBox->exec();
+    }
+
+    if (const auto exitInfo = GuiRequests::acknowledgeManyDelete(
+                syncDbId, res == QMessageBox::Yes ? TooManyDeletesUserChoice::Continue : TooManyDeletesUserChoice::Revert);
+        !exitInfo) {
+        qCWarning(lcClientGui()) << "Error in Requests::acknowledgeManyDelete for syncDbId=" << syncDbId << ", " << exitInfo;
+        syncInfoMapIt->second.setStatus(SyncStatus::Paused);
+        emit updateProgress(syncDbId);
+    }
+
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+}
+
+void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+
+    const auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    if (syncInfoMapIt == _syncInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Sync not found in sync map for syncDbId=" << syncDbId;
+        return;
+    }
+    const auto &driveInfoMapIt = _driveInfoMap.find(syncInfoMapIt->second.driveDbId());
+    if (driveInfoMapIt == _driveInfoMap.end()) {
+        qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
+        return;
+    }
+
+    const auto localPath = syncInfoMapIt->second.localPath();
+    QString trashUrl = QString(APPLICATION_TRASH_URL_QSTRING).arg(driveInfoMapIt->second.driveId());
+    const auto msgBox = new CustomMessageBox(
+            QMessageBox::Information,
+            tr(R"(Several files have been deleted from your local sync folder <a style="%1" href="file:///%2">%2</a>. Deleted files can be found in kDrive's <a style="%1" href="%3">trash</a>.)")
+                    .arg(CommonUtility::linkStyle, Path2QStr(localPath), trashUrl),
+            QMessageBox::Ok);
+    _tooManyDeletesNotificationPopupMap[syncDbId] = msgBox;
+    msgBox->setCheckboxVisible(true);
+    msgBox->showExitButton(false);
+    msgBox->setCheckBoxText(tr("Don't show again"));
+    (void) msgBox->exec();
+
+    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
+    (void) ParametersCache::instance()->saveParametersInfo();
+
+    cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
+}
+
+void ClientGui::onTooManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
+                                             const uint64_t nbFiles) {
+    switch (notificationType) {
+        case TooManyDeletesNotificationType::SoftLimit:
+            onTooManyDeletesNotificationSoftLimit(syncDbId);
+            break;
+        case TooManyDeletesNotificationType::HardLimit:
+            onTooManyDeletesNotificationHardLimit(syncDbId, nbFiles);
+            break;
+        default:
+            break;
+    }
 }
 
 void ClientGui::onSyncRemoved(const SyncDbId syncDbId) {
@@ -1503,53 +1589,53 @@ bool ClientGui::loadInfoMaps() {
 
     // Load user list
     ExitCode exitCode;
-    QList<UserInfo> userInfoList;
-    exitCode = GuiRequests::getUserInfoList(userInfoList);
+    QList<User> userInfoList;
+    exitCode = GuiRequests::getUserList(userInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getUserInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getUserList";
         return false;
     }
 
-    for (const UserInfo &userInfo: userInfoList) {
+    for (const User &userInfo: userInfoList) {
         _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
     }
 
     // Load account list
-    QList<AccountInfo> accountInfoList;
-    exitCode = GuiRequests::getAccountInfoList(accountInfoList);
+    QList<Account> accountInfoList;
+    exitCode = GuiRequests::getAccountList(accountInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getAccountInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getAccountList";
         return false;
     }
 
-    for (const AccountInfo &accountInfo: accountInfoList) {
+    for (const Account &accountInfo: accountInfoList) {
         _accountInfoMap.insert({accountInfo.dbId(), accountInfo});
     }
 
     // Load drive list
-    QList<DriveInfo> driveInfoList;
-    exitCode = GuiRequests::getDriveInfoList(driveInfoList);
+    QList<Drive> driveList;
+    exitCode = GuiRequests::getDriveInfoList(driveList);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getDriveInfoList";
         return false;
     }
 
-    for (const DriveInfo &driveInfo: driveInfoList) {
-        _driveInfoMap.insert({driveInfo.dbId(), DriveInfoClient(driveInfo)});
+    for (const Drive &drive: driveList) {
+        _driveInfoMap.insert({drive.dbId(), DriveInfoClient(drive)});
         if (!_currentDriveDbId) {
-            setCurrentDriveDbId(driveInfo.dbId());
+            setCurrentDriveDbId(drive.dbId());
         }
     }
 
     // Load sync list
-    QList<SyncInfo> syncInfoList;
-    exitCode = GuiRequests::getSyncInfoList(syncInfoList);
+    QList<BaseSync> syncInfoList;
+    exitCode = GuiRequests::getSyncList(syncInfoList);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getSyncInfoList";
+        qCWarning(lcClientGui()) << "Error in Requests::getSyncList";
         return false;
     }
 
-    for (const SyncInfo &syncInfo: syncInfoList) {
+    for (const BaseSync &syncInfo: syncInfoList) {
         _syncInfoMap.insert({syncInfo.dbId(), SyncInfoClient(syncInfo)});
     }
 

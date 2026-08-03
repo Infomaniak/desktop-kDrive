@@ -17,12 +17,18 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
 final class ErrorsViewController: TitledViewController<ErrorsView> {
     init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: KDriveLocalizable.errorPageTitle, contentView: ErrorsView(mainViewModel: mainViewModel))
+        @InjectService var router: MainViewRouter
+        super.init(
+            toolbarTitle: KDriveLocalizable.errorPageTitle,
+            navigableRouter: router,
+            contentView: ErrorsView(mainViewModel: mainViewModel)
+        )
     }
 }

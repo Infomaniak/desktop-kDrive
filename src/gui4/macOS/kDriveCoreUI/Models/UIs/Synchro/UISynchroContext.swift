@@ -44,6 +44,10 @@ public extension UISynchroContext {
         drive = .init(drive: synchroContext.drive)
         synchro = .init(synchro: synchroContext.synchro)
         user = .init(user: synchroContext.user)
-        blockingError = .init(drive: synchroContext.drive, error: synchroContext.synchro.latestError)
+        blockingError = .init(
+            drive: synchroContext.drive,
+            synchro: synchroContext.synchro,
+            error: synchroContext.synchro.latestError
+        )
     }
 }

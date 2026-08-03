@@ -52,6 +52,24 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
+            Factory(type: LogUploadStatusCaching.self) { _, _ in
+                LogUploadStatusCache()
+            },
+            Factory(type: LogUploadStatusCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: LogUploadStatusCaching.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
+            Factory(type: VFSConversionStoring.self) { _, _ in
+                VFSConversionStore()
+            },
+            Factory(type: VFSConversionStoreObservable.self) { _, resolver in
+                try resolver.resolve(type: VFSConversionStoring.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: XPCConnectionProvider.self) { _, _ in
                 if testing {
                     return XPCServerMock()

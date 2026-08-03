@@ -74,8 +74,10 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
             (w1 && w1->exitCode() == ExitCode::InvalidToken) || (w2 && w2->exitCode() == ExitCode::InvalidToken);
     const auto driveNotFound = (w1 && w1->exitCode() == ExitCode::BackError && w1->exitCause() == ExitCause::DriveAccessError) ||
                                (w2 && w2->exitCode() == ExitCode::BackError && w2->exitCause() == ExitCause::DriveAccessError);
+    const auto tooManyDeletes = (w1 && w1->exitCode() == ExitCode::TooManyDeleteOperations) ||
+                                (w2 && w2->exitCode() == ExitCode::TooManyDeleteOperations);
 
-    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound;
+    return dbError || systemError || updateRequired || invalidSyncError || invalidToken || driveNotFound || tooManyDeletes;
 }
 
 } // namespace
@@ -111,7 +113,7 @@ bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const 
         return true;
     }
 
-    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+    return networkIssue || syncDirNotAccessible || invalidOperation;
 }
 
 bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
@@ -271,6 +273,7 @@ void SyncPalWorker::execute() {
     // Ensure blacklist is propagated
     if (ExitInfo exitInfo = ensureBlackListIsPropagated(); !exitInfo) {
         LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
+        stopResetVfsFilesStatusThread();
         setExitCause(exitInfo.cause());
         setDone(exitInfo.code());
         return;
@@ -284,6 +287,7 @@ void SyncPalWorker::execute() {
     if (awakenByStop) {
         // Exit
         exitCode = ExitCode::Ok;
+        stopResetVfsFilesStatusThread();
         setDone(exitCode);
         return;
     }
@@ -407,18 +411,22 @@ void SyncPalWorker::execute() {
 
                 // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-                if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
-                     (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::TmpDirAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError ||
-                      stepWorkers[0]->exitCause() == ExitCause::SyncDirDiskMissing)) ||
-                    (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
-                     (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::TmpDirAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError ||
-                      stepWorkers[1]->exitCause() == ExitCause::SyncDirDiskMissing))) {
+                const bool isIgnoredSystemError = (stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
+                                                   (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
+                                                    stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                                                    stepWorkers[0]->exitCause() == ExitCause::TmpDirAccessError ||
+                                                    stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError ||
+                                                    stepWorkers[0]->exitCause() == ExitCause::SyncDirDiskMissing)) ||
+                                                  (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
+                                                   (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
+                                                    stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                                                    stepWorkers[1]->exitCause() == ExitCause::TmpDirAccessError ||
+                                                    stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError ||
+                                                    stepWorkers[1]->exitCause() == ExitCause::SyncDirDiskMissing));
+                const bool hasTooManyDeletes =
+                        (stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::TooManyDeleteOperations) ||
+                        (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::TooManyDeleteOperations);
+                if (isIgnoredSystemError || hasTooManyDeletes) {
                     // Exit without error
                     exitCode = ExitCode::Ok;
                 } else if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::UpdateRequired) ||
@@ -450,7 +458,7 @@ void SyncPalWorker::execute() {
 
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
     }
-
+    stopResetVfsFilesStatusThread();
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
     setDone(exitCode);
 }
@@ -459,10 +467,20 @@ void SyncPalWorker::stop() {
     _pauseAsked = false;
     _unpauseAsked = true;
     ISyncWorker::stop();
+}
+
+
+void SyncPalWorker::stopResetVfsFilesStatusThread() {
 #if defined(KD_WINDOWS)
     if (_resetVfsFilesStatusThread && _resetVfsFilesStatusThread->joinable()) {
+        LOG_SYNCPAL_DEBUG(_logger, "Stopping resetVfsFilesStatusThread");
+        _stopResetVfsFilesStatusAsked.store(true);
         _resetVfsFilesStatusThread->join();
+        _stopResetVfsFilesStatusAsked.store(false);
+        LOG_SYNCPAL_DEBUG(_logger, "resetVfsFilesStatusThread stopped");
     }
+#else
+    // There is no thread _resetVfsFilesStatusThread on non-Windows platforms, so nothing to do here.
 #endif
 }
 
@@ -585,6 +603,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
+            _syncPal->setManyDeleteOpsUserChoice(TooManyDeletesUserChoice::None);
             if (!_syncPal->restart()) {
                 _syncPal->resetSnapshotInvalidationCounters();
                 _syncPal->setSyncHasFullyCompletedInParams(true);
@@ -845,6 +864,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
     IoHelper::DirectoryIterator dirIt;
     bool endOfDir = false;
     DirectoryEntry entry;
+
     try {
         if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
             LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator.");
@@ -852,7 +872,12 @@ void SyncPalWorker::resetVfsFilesStatus() {
         }
 
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (stopAsked()) {
+            bool stopAsked_ = stopAsked();
+#ifdef KD_WINDOWS
+            stopAsked_ |= _stopResetVfsFilesStatusAsked.load();
+#endif
+
+            if (stopAsked_) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Stop asked in resetVfsFilesStatus");
                 return;
             }

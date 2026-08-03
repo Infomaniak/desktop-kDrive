@@ -64,7 +64,11 @@ struct StorageView: View {
 
     @ObservedObject var mainViewModel: MainViewModel
 
-    private var macStorageData: StorageSectionView.StorageData {
+    private var storagePublisher: AnyPublisher<IndexedStorageData, Never> {
+        storageDataProviding.storageDataPublisher.removeDuplicates().eraseToAnyPublisher()
+    }
+
+    private var volumeStorageData: StorageSectionView.StorageData {
         guard let usedByKDrive = volumeStorageItems[.usedByKDrive]?.usedBytes,
               let usedByComputer = volumeStorageItems[.usedSpace]?.usedBytes,
               let freeSpace = volumeStorageItems[.freeSpace]?.usedBytes else {
@@ -90,7 +94,7 @@ struct StorageView: View {
                 )
             } else {
                 Form {
-                    StorageSectionView(title: volumeName, storageData: macStorageData, items: Array(volumeStorageItems.values))
+                    StorageSectionView(title: volumeName, storageData: volumeStorageData, items: Array(volumeStorageItems.values))
 
                     Section {
                         InformationBlockContentView(
@@ -103,10 +107,7 @@ struct StorageView: View {
                 .groupedFormatStyle()
             }
         }
-        .onReceive(
-            storageDataProviding.storageDataPublisher.removeDuplicates(),
-            perform: handleUpdatedStorageData
-        )
+        .onReceive(storagePublisher.receive(on: RunLoop.main), perform: handleUpdatedStorageData)
         .onAppear {
             getCachedStorageData()
         }
@@ -120,6 +121,9 @@ struct StorageView: View {
 
         @InjectService var router: PreferencesViewRouter
         router.setCurrentTab(.accounts)
+        if let currentDrive = mainViewModel.currentDrive {
+            router.append(.syncedKDrive(currentDrive))
+        }
     }
 
     private func fetchStorageData() async {
@@ -131,16 +135,16 @@ struct StorageView: View {
     }
 
     private func getCachedStorageData() {
-        updateMacStorage(from: storageDataProviding.storageData)
+        updateVolumeStorage(from: storageDataProviding.storageData)
     }
 
     private func handleUpdatedStorageData(_ indexedStorageData: IndexedStorageData) {
         withAnimation {
-            updateMacStorage(from: indexedStorageData)
+            updateVolumeStorage(from: indexedStorageData)
         }
     }
 
-    private func updateMacStorage(from indexedStorageData: IndexedStorageData) {
+    private func updateVolumeStorage(from indexedStorageData: IndexedStorageData) {
         guard let synchroDbId = mainViewModel.currentSynchro?.dbId,
               let storageDataResult = indexedStorageData[Int32(synchroDbId)] else {
             return

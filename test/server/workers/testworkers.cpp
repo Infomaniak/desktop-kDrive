@@ -20,6 +20,7 @@
 #include "propagation/executor/executorworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 
 #include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
@@ -63,7 +64,7 @@ void TestWorkers::setUp() {
 
     // Insert api token into keystore
     std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb

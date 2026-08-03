@@ -86,10 +86,10 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isInUnsyncedListParentSearchInSnapshot(std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId,
                                                     ReplicaSide side) const; // Search parent in snapshot
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
-#if defined(KD_LINUX)
+
         void isReusedNodeId(const NodeId &localNodeId, const DbNode &dbNode, const std::shared_ptr<const Snapshot> snapshot,
                             bool &isReused) const;
-#endif
+
         ExitInfo checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
         void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
@@ -104,6 +104,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
         // The remote propagation of the creation of local items that reuse identifiers of deleted items is postponed to the next
         // synchronization. So is the propagation of the creation of the descendants of those local items.
         void postponeOperationsOnReusedIds();
+
+        bool checkAndFixLocalTimestamp(const NodeType nodeType, const SyncTime creationTime, const SyncPath &absolutePath,
+                                       const bool isLink, SyncTime &modificationTime) const;
 
         SyncDbReadOnlyCache &_syncDbReadOnlyCache;
         Sync _sync;

@@ -73,7 +73,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, in
         node->setStatus(NodeStatus::ToDelete);
     } else {
         // Remove node from tree
-        node->parentNode()->deleteChildren(node);
+        (void) node->parentNode()->deleteChild(node);
         _validNodes.erase(*node->id());
     }
 
@@ -196,11 +196,11 @@ bool UpdateTree::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
         return false;
     }
 
-    node->parentNode()->deleteChildren(node);
+    (void) node->parentNode()->deleteChild(node);
     node->setId(newId);
 
-    if (!node->parentNode()->insertChildren(node)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChildren: node "
+    if (!node->parentNode()->insertChild(node)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Node::insertChild: node "
                                                         << Utility::formatSyncName(node->name()) << L" parent node "
                                                         << Utility::formatSyncName(node->parentNode()->name()));
         return false;

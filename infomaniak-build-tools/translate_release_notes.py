@@ -29,12 +29,6 @@ import shutil
 import subprocess
 import sys
 
-def prettify_html(html_filepath):
-    with open(html_filepath, "r") as f:
-        soup = BeautifulSoup(f.read(), "html.parser")
-    with open(html_filepath, "w") as f:
-        f.write(soup.prettify())
-
 def version_regex(arg_value, pattern=re.compile(r'^(\d+\.)?(\d+\.)?(\*|\d+)')):
     if not pattern.match(arg_value):
         raise argparse.ArgumentTypeError("invalid version")
@@ -53,8 +47,8 @@ To add more languages in the future, edit the script to append the new language 
     Language list : https://developers.deepl.com/docs/api-reference/languages
 
 To add more systems, edit the script to append the new system to the list.
-    System specific Release Notes entries must start with the system name.
-    eg: "Windows - Added new feature" for Windows specific feature.
+    System specific Release Notes entries must use the data-os HTML attribute matching the system name (win, linux, macos).
+    eg: <li data-os="win">Windows specific fix.</li>
     """,
     formatter_class=argparse.RawTextHelpFormatter)
 
@@ -89,33 +83,25 @@ os_list = [
     'linux',
     'macos'
 ]
-os_keys = [
-    '$windows',
-    '$linux',
-    '$macos'
-]
+
+# OS-specific entries in the template must use the data-os attribute with one of the values above.
+# eg: <li data-os="win">Windows specific fix.</li>
 
 def split_os(lang, fullName):
     lang_ext = lang.lower()
 
-    count = 0;
     for os_name in os_list:
         os_ext = os_name.lower()
-        os_key = os_keys[count]
-        count += 1
         shutil.copyfile(f"{fullName}-{lang_ext}.html", f"{fullName}-{os_ext}-{lang_ext}.html")
         with open(f"{fullName}-{os_ext}-{lang_ext}.html", "r") as f:
-            lines = f.readlines()
+            soup = BeautifulSoup(f.read(), "html.parser")
+        for tag in soup.find_all(attrs={"data-os": True}):
+            if tag["data-os"] != os_ext:
+                tag.decompose()
+            else:
+                del tag["data-os"]
         with open(f"{fullName}-{os_ext}-{lang_ext}.html", "w") as f:
-            for line in lines:
-                lowered = line.lower()
-                if any(key in lowered for key in os_keys):
-                    if os_key in lowered:
-                        f.write(f"\t\t<li>{line[line.find(os_key) + len(os_key):]}")
-                else:
-                    f.write(line)
-
-        prettify_html(f"{fullName}-{os_ext}-{lang_ext}.html")
+            f.write(soup.prettify())
         
 
 print(f"Generating Release Notes for kDrive-{args.version}")

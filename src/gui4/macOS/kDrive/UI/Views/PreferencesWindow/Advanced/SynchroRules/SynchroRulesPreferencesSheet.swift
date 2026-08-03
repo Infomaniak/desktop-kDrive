@@ -93,12 +93,14 @@ struct SynchroRulesPreferencesSheet: View {
 
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isCreatingExclusion) {
+                    isCreatingExclusion = true
                     switch item {
                     case .files:
                         await saveTemplate()
                     case .apps:
                         await saveApp()
                     }
+                    isCreatingExclusion = false
                 } label: {
                     Text(KDriveLocalizable.buttonAddFileExclusionRule)
                 }

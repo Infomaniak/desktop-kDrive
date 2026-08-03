@@ -89,17 +89,17 @@ void TestUpdateTree::testClear() {
     _myTree->init();
     auto node1 = std::make_shared<Node>(_myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0,
                                         12345, _myTree->rootNode());
-    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node1));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChild(node1));
     _myTree->insertNode(node1);
 
     auto node11 = std::make_shared<Node>(_myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "l11", 0, 0,
                                          12345, node1);
-    CPPUNIT_ASSERT(node1->insertChildren(node11));
+    CPPUNIT_ASSERT(node1->insertChild(node11));
     _myTree->insertNode(node11);
 
     auto node111 = std::make_shared<Node>(_myTree->side(), Str("File 1.1.1"), NodeType::File, OperationType::None, "l111", 0, 0,
                                           12345, node11);
-    CPPUNIT_ASSERT(node11->insertChildren(node111));
+    CPPUNIT_ASSERT(node11->insertChild(node111));
     _myTree->insertNode(node111);
 
     CPPUNIT_ASSERT(node1.use_count() == 4); // Referenced by node1, root, node11, _myTree->_nodes
@@ -161,17 +161,17 @@ void TestUpdateTree::testAll() {
     auto node4111 = std::make_shared<Node>(_myTree->side(), Str("File 4.1.1.1"), NodeType::File, OperationType::None, "l4111", 0,
                                            0, 12345, node411);
 
-    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node1));
-    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node2));
-    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node3));
-    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node4));
-    CPPUNIT_ASSERT(node1->insertChildren(node11));
-    CPPUNIT_ASSERT(node11->insertChildren(node111));
-    CPPUNIT_ASSERT(node111->insertChildren(node1111));
-    CPPUNIT_ASSERT(node3->insertChildren(node31));
-    CPPUNIT_ASSERT(node4->insertChildren(node41));
-    CPPUNIT_ASSERT(node41->insertChildren(node411));
-    CPPUNIT_ASSERT(node411->insertChildren(node4111));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChild(node1));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChild(node2));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChild(node3));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChild(node4));
+    CPPUNIT_ASSERT(node1->insertChild(node11));
+    CPPUNIT_ASSERT(node11->insertChild(node111));
+    CPPUNIT_ASSERT(node111->insertChild(node1111));
+    CPPUNIT_ASSERT(node3->insertChild(node31));
+    CPPUNIT_ASSERT(node4->insertChild(node41));
+    CPPUNIT_ASSERT(node41->insertChild(node411));
+    CPPUNIT_ASSERT(node411->insertChild(node4111));
 
     _myTree->insertNode(node1111);
     _myTree->insertNode(node111);

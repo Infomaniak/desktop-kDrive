@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -52,7 +53,10 @@ struct ErrorsView: View {
         }
     }
 
-    private func navigateBackToActivities() {}
+    private func navigateBackToActivities() {
+        @InjectService var router: MainViewRouter
+        router.removeLast()
+    }
 }
 
 #Preview {

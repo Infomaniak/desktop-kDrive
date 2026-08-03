@@ -23,6 +23,28 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
+import SwiftUI
+
+typealias UIIndexedSynchroInfo = OrderedDictionary<UISynchro.ID, UISynchroInfo>
+
+extension UIIndexedSynchroInfo {
+    init(indexedSynchro: [SynchroContext]) {
+        self.init(
+            uniqueKeysWithValues: indexedSynchro.map {
+                let info = UISynchroInfo(
+                    context: UISynchroContext(synchroContext: $0),
+                    state: UISynchroState(fromSynchro: $0.synchro)
+                )
+                return (UISynchro.ID($0.synchro.dbId), info)
+            }
+        )
+    }
+}
+
+struct UISynchroInfo: Equatable {
+    let context: UISynchroContext
+    let state: UISynchroState
+}
 
 extension SidebarItem {
     static let home = SidebarItem(
@@ -61,6 +83,10 @@ final class MainSidebarViewController: NSViewController {
 
     private var hasBlockingError = false
 
+    private var synchroInfos = UIIndexedSynchroInfo()
+    private var currentSynchroId: UISynchro.ID?
+    private var activitiesHasError = false
+
     private lazy var sidebarNotificationView: SidebarNotificationView = {
         let view = SidebarNotificationView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -91,13 +117,13 @@ final class MainSidebarViewController: NSViewController {
         return outlineView
     }()
 
-    private lazy var popUpButton: ColoredPopUpButton = {
-        let popUpButton = ColoredPopUpButton()
-        popUpButton.translatesAutoresizingMaskIntoConstraints = false
-        popUpButton.target = self
-        popUpButton.action = #selector(didSelectSynchro)
+    private let synchroSelectorViewModel = SynchroSelectorViewModel()
 
-        return popUpButton
+    private lazy var synchroSelectorView: NSHostingView<SynchroSelectorView> = {
+        let hostingView = NSHostingView(rootView: SynchroSelectorView(viewModel: synchroSelectorViewModel))
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        hostingView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        return hostingView
     }()
 
     init(mainViewModel: MainViewModel) {
@@ -131,7 +157,15 @@ final class MainSidebarViewController: NSViewController {
 
     private func bindViewModel() {
         observableCache.usersPublisher.allSynchrosPublisher()
-            .map { UIIndexedSynchroContext(indexedSynchro: $0) }
+            .map { synchroContext in
+                let sortedSynchroContext = synchroContext.sorted { lhs, rhs in
+                    if lhs.drive.name.localizedCaseInsensitiveCompare(rhs.drive.name) == .orderedAscending {
+                        return true
+                    }
+                    return lhs.synchro.targetNodeId.isEmpty && !rhs.synchro.targetNodeId.isEmpty
+                }
+                return UIIndexedSynchroInfo(indexedSynchro: sortedSynchroContext)
+            }
             .removeDuplicates()
             .eraseToAnyPublisher()
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
@@ -151,14 +185,21 @@ final class MainSidebarViewController: NSViewController {
             .receiveOnMain(store: &bindStore) { [weak self] path in
                 self?.updateSelectedItemIfNecessary(path)
             }
+
+        mainViewModel.currentSynchroContextPublisher
+            .receiveOnMain(store: &bindStore) { [weak self] synchroContext in
+                self?.synchroSelectorViewModel.selectedSynchroId = synchroContext?.synchro.id
+                self?.currentSynchroId = synchroContext?.synchro.id
+                self?.updateActivitiesBadge()
+            }
     }
 
     private func fetchInitialSynchros() {
         Task {
             let synchroContexts = await coherentCache.getSynchroContexts()
-            let uiSynchroContexts = UIIndexedSynchroContext(indexedSynchro: synchroContexts)
+            let uiSynchroInfo = UIIndexedSynchroInfo(indexedSynchro: synchroContexts)
 
-            updateSynchrosList(uiSynchroContexts)
+            updateSynchrosList(uiSynchroInfo)
         }
     }
 
@@ -167,7 +208,10 @@ final class MainSidebarViewController: NSViewController {
         headerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(headerView)
 
-        view.addSubview(popUpButton)
+        synchroSelectorViewModel.onSelect = { [weak self] synchro in
+            self?.mainViewModel.setCurrentSynchro(synchro)
+        }
+        view.addSubview(synchroSelectorView)
         setupScrollAndOutlineView()
         view.addSubview(sidebarNotificationView)
 
@@ -179,14 +223,17 @@ final class MainSidebarViewController: NSViewController {
                 constant: -AppPadding.padding16
             ),
 
-            popUpButton.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding16),
-            popUpButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: AppPadding.padding16),
-            popUpButton.trailingAnchor.constraint(
+            synchroSelectorView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: AppPadding.padding16),
+            synchroSelectorView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: AppPadding.padding12
+            ),
+            synchroSelectorView.trailingAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.trailingAnchor,
-                constant: -AppPadding.padding16
+                constant: -AppPadding.padding12
             ),
 
-            scrollView.topAnchor.constraint(equalTo: popUpButton.bottomAnchor, constant: AppPadding.padding16),
+            scrollView.topAnchor.constraint(equalTo: synchroSelectorView.bottomAnchor, constant: AppPadding.padding16),
             scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
 
@@ -223,34 +270,38 @@ final class MainSidebarViewController: NSViewController {
         scrollView.verticalScrollElasticity = isDocumentViewSmallerThanScrollView ? .none : .automatic
     }
 
-    @objc func didSelectSynchro() {
-        guard let selectedItem = popUpButton.selectedItem,
-              let synchro = selectedItem.representedObject as? UISynchro else {
-            return
-        }
-
-        mainViewModel.setCurrentSynchro(synchro)
-    }
-
     private func openSyncInFolder() {
         guard let currentSynchro = mainViewModel.currentSynchro else { return }
         NSWorkspace.shared.open(currentSynchro.localPath)
     }
 
-    private func updateSynchrosList(_ synchroContexts: UIIndexedSynchroContext) {
-        var synchrosCountPerDrive: [Int: Int] = [:]
-        for synchroContext in synchroContexts.values {
-            let driveDbId = synchroContext.drive.dbId
-            synchrosCountPerDrive[driveDbId, default: 0] += 1
+    private func updateSynchrosList(_ synchroInfo: UIIndexedSynchroInfo) {
+        synchroInfos = synchroInfo
+        synchroSelectorViewModel.update(with: Array(synchroInfo.values))
+        updateActivitiesBadge()
+    }
+
+    private func updateActivitiesBadge() {
+        let hasError: Bool
+        if let currentSynchroId, let info = synchroInfos[currentSynchroId] {
+            hasError = info.state.errorCount > 0
+        } else {
+            hasError = false
         }
 
-        popUpButton.removeAllItems()
-        for synchroContext in synchroContexts.values {
-            let driveDbId = synchroContext.drive.dbId
-            let synchrosCountForDrive = synchrosCountPerDrive[driveDbId] ?? 0
-            let shouldDisplaySynchroPath = synchrosCountForDrive > 1
-            addPopUpItem(forSynchroContext: synchroContext, withSynchroPath: shouldDisplaySynchroPath)
+        guard activitiesHasError != hasError else { return }
+        activitiesHasError = hasError
+
+        guard let activitiesIndex = items.firstIndex(of: .activities),
+              let cell = outlineView.view(
+                  atColumn: 0,
+                  row: activitiesIndex,
+                  makeIfNecessary: false
+              ) as? SidebarTableCellView else {
+            return
         }
+
+        cell.showsBadge = hasError
     }
 
     private func updateSidebarIfNecessary() {
@@ -278,22 +329,6 @@ final class MainSidebarViewController: NSViewController {
         }
 
         outlineView.selectRowIndexes(IndexSet(integer: tabIndex), byExtendingSelection: false)
-    }
-
-    private func addPopUpItem(forSynchroContext synchroContext: UISynchroContext, withSynchroPath: Bool) {
-        var title: String
-        if withSynchroPath {
-            title = "\(synchroContext.drive.name) › \(synchroContext.synchro.localPath.lastPathComponent)"
-        } else {
-            title = "\(synchroContext.drive.name)"
-        }
-
-        popUpButton.addItem(
-            withTitle: title,
-            image: KDriveResources.kdriveFoldersStacked.image,
-            color: synchroContext.drive.nsColor,
-            representedObject: synchroContext.synchro
-        )
     }
 }
 
@@ -333,6 +368,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
 
         let enabled = !item.canBeSelected || mainViewModel.currentBlockingError == nil
         cell?.setupForItem(item, enabled: enabled)
+        cell?.showsBadge = item == .activities && activitiesHasError
         return cell
     }
 

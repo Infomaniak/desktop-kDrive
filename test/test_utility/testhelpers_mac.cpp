@@ -50,4 +50,8 @@ bool setDehydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioE
     return IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "O", ioError);
 }
 
+bool setHydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioError) noexcept {
+    return IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "F", ioError);
+}
+
 } // namespace KDC::testhelpers

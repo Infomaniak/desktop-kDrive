@@ -148,7 +148,6 @@ void TestLocalFileSystemObserverWorker::testSyncDirChange() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::SyncDirChanged), exitInfo);
 }
 
-
 void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
     NodeSet ids;
     _syncPal->copySnapshots();
@@ -680,6 +679,73 @@ void TestLocalFileSystemObserverWorker::testInvalidateCounter() {
     CPPUNIT_ASSERT_EQUAL(true, _syncPal->liveSnapshot(ReplicaSide::Local).isValid()); // Snapshot is not invalidated yet.
     _syncPal->_localFSObserverWorker->tryToInvalidateSnapshot();
     CPPUNIT_ASSERT_EQUAL(false, _syncPal->liveSnapshot(ReplicaSide::Local).isValid()); // Snapshot has been invalidated.
+}
+
+void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
+    if (!testhelpers::isExtendedTest()) return;
+
+    constexpr int64_t watcherReadyPollMs = 100;
+    constexpr int64_t maxWatcherReadyPolls = 20;
+    constexpr auto loopPollInterval = std::chrono::milliseconds(10);
+    constexpr auto changeDetectionTimeout = std::chrono::seconds(5);
+    constexpr auto normalUpdateDelayMin = std::chrono::milliseconds(500);
+    constexpr auto normalUpdateDelayMax = std::chrono::milliseconds(2000);
+    constexpr auto extendedUpdateDelayMin = std::chrono::milliseconds(4500);
+    constexpr auto extendedUpdateDelayMax = std::chrono::seconds(6);
+
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
+    // Wait for folder watcher to be ready
+    int64_t count = 0;
+    while (!_syncPal->liveSnapshot(ReplicaSide::Local).isValid() || !localFSO->_folderWatcher->isReady()) {
+        Utility::msleep(watcherReadyPollMs);
+        CPPUNIT_ASSERT(count++ < maxWatcherReadyPolls);
+    }
+
+    // --- Normal extension (.txt): delay must be < 2s ---
+    {
+        LOGW_DEBUG(_logger, L"***** test normal extension delay (.txt) *****");
+        const SyncPath filePath = _rootFolderPath / Str("test_delay.txt");
+        testhelpers::generateOrEditTestFile(filePath);
+
+        // Wait until _updating becomes true (change detected)
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout,
+                                              loopPollInterval));
+        CPPUNIT_ASSERT(!localFSO->_useExtendedDelay);
+
+        // Measure how long until _updating goes back to false (sync allowed)
+        bool result = false;
+        CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
+                [&]() {
+                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, normalUpdateDelayMax,
+                                                  loopPollInterval);
+                },
+                result, normalUpdateDelayMin, normalUpdateDelayMax));
+        CPPUNIT_ASSERT(result);
+    }
+
+    // --- Slow-writing extension (.blend): delay must be >= 5s ---
+    {
+        LOGW_DEBUG(_logger, L"***** test slow-writing extension delay (.blend) *****");
+        const SyncPath filePath = _rootFolderPath / Str("test_delay.blend");
+        testhelpers::generateOrEditTestFile(filePath);
+
+        // Wait until _updating becomes true (change detected)
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout,
+                                              loopPollInterval));
+        CPPUNIT_ASSERT(localFSO->_useExtendedDelay);
+
+        // Measure how long until _updating goes back to false (sync allowed)
+        bool result = false;
+        CPPUNIT_ASSERT(TimeoutHelper::checkExecutionTime<bool>(
+                [&]() {
+                    return TimeoutHelper::waitFor([&]() { return !localFSO->updating(); }, extendedUpdateDelayMax,
+                                                  loopPollInterval);
+                },
+                result, extendedUpdateDelayMin, extendedUpdateDelayMax));
+        CPPUNIT_ASSERT(result);
+    }
 }
 
 void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision,

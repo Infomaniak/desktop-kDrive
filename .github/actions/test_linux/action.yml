@@ -13,12 +13,12 @@ runs:
     using: "composite"
     steps:
       - name: Clean up log directory
-        run : rm -rf /tmp/kDrive-logdir/* || true
+        run : rm -rf $HOME/.local/state/kDrive/logs/* || true
         shell: bash
 
       - name: Load cached dependencies
         id: cache
-        uses: herve-er/local-cache@v2
+        uses: herve-er/local-cache@v3
         with:
           path: build-linux/cache
           base: ${{ github.workspace }}/../local-cache
@@ -64,7 +64,7 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-logs-${{ inputs.test_name }}
-          path: /tmp/kDrive-logdir/*
+          path: ~/.local/state/kDrive/logs/*
           retention-days: 1
         if: always()
 

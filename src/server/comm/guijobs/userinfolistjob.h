@@ -19,18 +19,18 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/userinfo.h"
+#include "libcommon/data/user.h"
 
 namespace KDC {
 
 class UserInfoListJob : public AbstractGuiJob {
     public:
         UserInfoListJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                        std::shared_ptr<AbstractCommChannel> channel);
+                         std::shared_ptr<AbstractCommChannel> channel);
 
     private:
         // Output parameters
-        std::vector<UserInfo> _userInfoList;
+        std::vector<User> _userInfoList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

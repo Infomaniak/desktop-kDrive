@@ -23,6 +23,10 @@
 
 namespace KDC {
 
+namespace {
+constexpr int32_t quitDelayMs = 1000;
+}
+
 UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                                std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
@@ -30,7 +34,8 @@ UtilityQuitJob::UtilityQuitJob(std::shared_ptr<CommManager> commManager, int req
 }
 
 ExitInfo UtilityQuitJob::process() {
-    AppServer::quit();
+    // Let this worker serialize and send its response before AppServer cleanup clears the GUI job manager.
+    AppServer::quitLater(quitDelayMs);
 
     return ExitCode::Ok;
 }

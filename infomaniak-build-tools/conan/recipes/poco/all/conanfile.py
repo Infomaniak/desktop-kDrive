@@ -5,7 +5,7 @@ from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy, rm, rmdir, replace_in_file
+from conan.tools.files import copy, load, rm, rmdir, replace_in_file
 from conan.tools.microsoft import is_msvc, is_msvc_static_runtime, msvc_runtime_flag
 from conan.tools.scm import Git
 
@@ -97,7 +97,7 @@ class PocoConan(ConanFile):
             del self.options.enable_netssl_win
         if self.settings.build_type != "Debug":
             del self.options.sharedlibrary_debug_suffix
-        
+
         # Enable debug logging when building in Debug mode
         if self.settings.build_type == "Debug":
             self.options.log_debug = True
@@ -181,6 +181,8 @@ class PocoConan(ConanFile):
         # Disable SharedLibrary::suffix() including "d" as part of the platform-specific filename suffix
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             tc.preprocessor_definitions["POCO_NO_SHARED_LIBRARY_DEBUG_SUFFIX"] = "1"
+        # Backport Conan Center's pcre2 library type marker for Poco's unbundled build.
+        tc.cache_variables["_PCRE2TYPE"] = "SHARED_LIBRARY" if self.dependencies["pcre2"].options.shared else "STATIC_LIBRARY"
         tc.generate()
 
         deps = CMakeDeps(self)
@@ -191,6 +193,31 @@ class PocoConan(ConanFile):
         deps.generate()
 
     def build(self):
+        foundation_cmake = os.path.join(self.source_folder, "Foundation", "CMakeLists.txt")
+        foundation_cmake_content = load(self, foundation_cmake)
+        line_ending = "\r\n" if "\r\n" in foundation_cmake_content else "\n"
+        search = """\t#HACK: Unicode.cpp requires functions from these files. The can't be taken from the library
+\tPOCO_SOURCES(SRCS RegExp
+\t\tsrc/pcre2_ucd.c
+\t\tsrc/pcre2_tables.c
+\t)
+"""
+        replacement = """\t# Unicode.cpp requires functions from these files.
+\t# They can be used directly from PCRE2 only when linking the static library.
+\tif("${_PCRE2TYPE}" STREQUAL "SHARED_LIBRARY")
+\t\tPOCO_SOURCES(SRCS RegExp
+\t\t\tsrc/pcre2_ucd.c
+\t\t\tsrc/pcre2_tables.c
+\t\t)
+\tendif()
+"""
+        replace_in_file(
+            self,
+            foundation_cmake,
+            search.replace("\n", line_ending),
+            replacement.replace("\n", line_ending),
+        )
+
         # Remove debug suffix from library names when sharedlibrary_debug_suffix is False
         if not self.options.get_safe("sharedlibrary_debug_suffix", True):
             platform_specific_cmake = os.path.join(self.source_folder, "cmake", "DefinePlatformSpecifc.cmake")

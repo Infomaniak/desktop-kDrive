@@ -109,6 +109,7 @@ class AbstractNetworkJob : public SyncJob {
         };
 
         ExitInfo receiveResponse(const Poco::URI &uri);
+        bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode, bool &shouldRetry);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
         virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }

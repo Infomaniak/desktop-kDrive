@@ -78,9 +78,9 @@ void ErrorsMenuBarWidget::setDrive(const DriveDbId driveDbId) {
         }
 
         _driveDbId = driveDbId;
-        _driveIconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfoIt->second.color())
-                        .pixmap(QSize(driveLogoIconSize, driveLogoIconSize)));
+        _driveIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg",
+                                                                     QColor(QString::fromStdString(driveInfoIt->second.color())))
+                                           .pixmap(QSize(driveLogoIconSize, driveLogoIconSize)));
         _titleLabel->setText(tr("Synchronization conflicts or errors"));
     } else {
         _titleLabel->setText(tr("Errors"));

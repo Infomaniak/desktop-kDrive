@@ -185,4 +185,37 @@ struct ObservedUpdaterTests {
             #expect(observedState == expectedState, "The observed state should match at index \(index)")
         }
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func requestShowUpdateDialogPublishesVersionInfo() async {
+        // GIVEN
+        let cache = UpdaterStateCache()
+        let expectedVersionInfo = VersionInfo(
+            channel: .Internal,
+            tag: "4.0.0",
+            buildVersion: 10,
+            buildMinOsVersion: "12.0",
+            downloadUrl: "https://example.com/update.xml",
+            checksum: "abc123"
+        )
+
+        var receivedVersionInfo: VersionInfo?
+        let expectation = AsyncStream<VersionInfo> { continuation in
+            let cancellable = cache.showUpdateDialogPublisher
+                .sink { versionInfo in
+                    continuation.yield(versionInfo)
+                }
+            continuation.onTermination = { _ in cancellable.cancel() }
+        }
+
+        // WHEN
+        await cache.requestShowUpdateDialog(versionInfo: expectedVersionInfo)
+
+        // THEN
+        receivedVersionInfo = await expectation.first(where: { _ in true })
+
+        #expect(receivedVersionInfo?.tag == expectedVersionInfo.tag)
+        #expect(receivedVersionInfo?.buildVersion == expectedVersionInfo.buildVersion)
+        #expect(receivedVersionInfo?.channel == expectedVersionInfo.channel)
+    }
 }

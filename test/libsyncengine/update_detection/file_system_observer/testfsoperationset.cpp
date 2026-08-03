@@ -60,7 +60,7 @@ void TestFsOperationSet::testGetOpsByType() {
 
     for (OperationType type: _operationTypes) {
         for (int i = 0; i < 3; i++) {
-            std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(type);
+            const auto ops = fsOperationSet.getOpsByType(type);
             CPPUNIT_ASSERT_EQUAL(size_t(i), ops.size());
 
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
@@ -155,15 +155,48 @@ void TestFsOperationSet::testInsertOp() {
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
             fsOperationSet.insertOp(op);
             nodeIdSuffix++;
-            std::unordered_map<UniqueId, FSOpPtr> opsAll = fsOperationSet.getAllOps();
+            OpMap opsAll = fsOperationSet.getAllOps();
             CPPUNIT_ASSERT(opsAll.contains(op->id()));
             CPPUNIT_ASSERT_EQUAL(uint64_t(i + 1), fsOperationSet.nbOpsByType(type));
-            std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByNodeId(op->nodeId());
+            const auto ops = fsOperationSet.getOpsByNodeId(op->nodeId());
             CPPUNIT_ASSERT(ops.contains(op->id()));
-            ops = fsOperationSet.getOpsByType(type);
-            CPPUNIT_ASSERT(ops.contains(op->id()));
+            const auto ops2 = fsOperationSet.getOpsByType(type);
+            CPPUNIT_ASSERT(ops2.contains(op->id()));
         }
     }
+
+    // Test that operations are sorted by path depth and then by uniqueId
+    fsOperationSet.clear();
+    auto op11b = std::make_shared<FSOperation>(OperationType::Create, "op11b", NodeType::Directory, 0, 0, 0, "/dir1/dir11");
+    fsOperationSet.insertOp(op11b);
+    auto op112 =
+            std::make_shared<FSOperation>(OperationType::Create, "op112", NodeType::Directory, 0, 0, 0, "/dir1/dir11/dir112");
+    fsOperationSet.insertOp(op112);
+    auto op1111 = std::make_shared<FSOperation>(OperationType::Create, "op1111", NodeType::Directory, 0, 0, 0,
+                                                "/dir1/dir11/dir111/dir1111");
+    fsOperationSet.insertOp(op1111);
+    auto op111 =
+            std::make_shared<FSOperation>(OperationType::Create, "op111", NodeType::Directory, 0, 0, 0, "/dir1/dir11/dir111");
+    fsOperationSet.insertOp(op111);
+    auto op1 = std::make_shared<FSOperation>(OperationType::Create, "op1", NodeType::Directory, 0, 0, 0, "/dir1");
+    fsOperationSet.insertOp(op1);
+    auto op11a = std::make_shared<FSOperation>(OperationType::Create, "op11a", NodeType::Directory, 0, 0, 0, "/dir1/dir11");
+    fsOperationSet.insertOp(op11a);
+
+    const auto ops = fsOperationSet.getOpsByType(OperationType::Create);
+    CPPUNIT_ASSERT_EQUAL(size_t(6), ops.size());
+    auto fsoperationIt = ops.begin();
+    CPPUNIT_ASSERT(*fsoperationIt == op1->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op11b->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op11a->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op112->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op111->id());
+    fsoperationIt++;
+    CPPUNIT_ASSERT(*fsoperationIt == op1111->id());
 }
 
 void TestFsOperationSet::testRemoveOp() {
@@ -174,25 +207,25 @@ void TestFsOperationSet::testRemoveOp() {
     auto op2 = std::make_shared<FSOperation>(OperationType::Move, nodeId);
     fsOperationSet.insertOp(op2);
 
-    std::unordered_map<UniqueId, FSOpPtr> allOps;
+    OpMap allOps;
 
     // Test removeOp with an existing operation (uniqueId)
     CPPUNIT_ASSERT(fsOperationSet.removeOp(op1->id()));
     allOps = fsOperationSet.getAllOps();
     CPPUNIT_ASSERT(!allOps.contains(op1->id()));
-    std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(OperationType::Create);
+    const auto ops = fsOperationSet.getOpsByType(OperationType::Create);
     CPPUNIT_ASSERT(!ops.contains(op1->id()));
-    ops = fsOperationSet.getOpsByNodeId(nodeId);
-    CPPUNIT_ASSERT(!ops.contains(op1->id()));
+    const auto ops2 = fsOperationSet.getOpsByNodeId(nodeId);
+    CPPUNIT_ASSERT(!ops2.contains(op1->id()));
 
     // Test removeOp with an existing operation (Node id + type)
     CPPUNIT_ASSERT(fsOperationSet.removeOp(nodeId, OperationType::Move));
     allOps = fsOperationSet.getAllOps();
     CPPUNIT_ASSERT(!allOps.contains(op2->id()));
-    ops = fsOperationSet.getOpsByType(OperationType::Move);
-    CPPUNIT_ASSERT(!ops.contains(op2->id()));
-    ops = fsOperationSet.getOpsByNodeId(nodeId);
-    CPPUNIT_ASSERT(!ops.contains(op2->id()));
+    const auto ops3 = fsOperationSet.getOpsByType(OperationType::Move);
+    CPPUNIT_ASSERT(!ops3.contains(op2->id()));
+    const auto ops4 = fsOperationSet.getOpsByNodeId(nodeId);
+    CPPUNIT_ASSERT(!ops4.contains(op2->id()));
 
     // Test removeOp with a not existing operation
     CPPUNIT_ASSERT(!fsOperationSet.removeOp(1));
@@ -239,8 +272,8 @@ void TestFsOperationSet::testOperatorEqual() {
 
     /// ops()
     CPPUNIT_ASSERT_EQUAL(fsOperationSet2.nbOps(), fsOperationSet1.nbOps());
-    std::unordered_map<UniqueId, FSOpPtr> ops1;
-    std::unordered_map<UniqueId, FSOpPtr> ops2;
+    OpMap ops1;
+    OpMap ops2;
     ops1 = fsOperationSet1.getAllOps();
     ops2 = fsOperationSet2.getAllOps();
     for (const auto &[key, value]: ops2) {
@@ -250,10 +283,8 @@ void TestFsOperationSet::testOperatorEqual() {
     /// getOpsByType() and getOpsByNodeId()
     nodeIdSuffix = '0';
     for (OperationType type: _operationTypes) {
-        std::unordered_set<UniqueId> opsByType1;
-        std::unordered_set<UniqueId> opsByType2;
-        opsByType1 = fsOperationSet1.getOpsByType(type);
-        opsByType2 = fsOperationSet2.getOpsByType(type);
+        const auto opsByType1 = fsOperationSet1.getOpsByType(type);
+        const auto opsByType2 = fsOperationSet2.getOpsByType(type);
         CPPUNIT_ASSERT_EQUAL(opsByType2.size(), opsByType1.size());
         for (const auto &id: opsByType2) {
             CPPUNIT_ASSERT(opsByType1.contains(id));
@@ -291,8 +322,8 @@ void TestFsOperationSet::testCopyConstructor() {
 
     FSOperationSet fsOperationSetCopy(fsOperationSet);
     /// ops()
-    std::unordered_map<UniqueId, FSOpPtr> ops;
-    std::unordered_map<UniqueId, FSOpPtr> opsCopy;
+    OpMap ops;
+    OpMap opsCopy;
     ops = fsOperationSetCopy.getAllOps();
     opsCopy = fsOperationSetCopy.getAllOps();
     CPPUNIT_ASSERT_EQUAL(ops.size(), opsCopy.size());
@@ -302,8 +333,8 @@ void TestFsOperationSet::testCopyConstructor() {
     /// getOpsByType() and getOpsByNodeId()
     nodeIdSuffix = '0';
     for (OperationType type: _operationTypes) {
-        std::unordered_set<UniqueId> opsByType1 = fsOperationSet.getOpsByType(type);
-        std::unordered_set<UniqueId> opsByType2 = fsOperationSetCopy.getOpsByType(type);
+        const auto opsByType1 = fsOperationSet.getOpsByType(type);
+        const auto opsByType2 = fsOperationSetCopy.getOpsByType(type);
         CPPUNIT_ASSERT_EQUAL(opsByType2.size(), opsByType1.size());
         for (const auto &id: opsByType2) {
             CPPUNIT_ASSERT(opsByType1.contains(id));

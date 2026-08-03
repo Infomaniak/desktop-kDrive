@@ -1576,14 +1576,23 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
         case ConflictType::MoveMoveDest: // Name clash conflict pattern
         case ConflictType::MoveMoveSource: // Name clash conflict pattern
         {
-            if (syncOp->conflict().type() != ConflictType::MoveMoveSource &&
-                syncOp->conflict().type() != ConflictType::CreateCreate) {
+            bool removeFromDB = true;
+            if (syncOp->conflict().type() == ConflictType::CreateCreate) {
+                // A new node is not in DB yet, so we don't need to remove it
+                removeFromDB = false;
+            } else if (syncOp->conflict().type() == ConflictType::MoveMoveSource) {
+                // If the item is a dehydrated file, the local placeholder has been deleted, so we should remove the node from DB
+                // In other cases, the local Move has been canceled, so we should not remove the node from DB
+                removeFromDB = syncOp->isDehydratedPlaceholder();
+            }
+
+            if (removeFromDB) {
                 if (const ExitInfo exitInfo = deleteFromDb(syncOp->conflict().localNode()); !exitInfo) {
                     if (exitInfo.code() == ExitCode::DataError && exitInfo.cause() == ExitCause::DbEntryNotFound) {
-                        // The node was not found in DB, this ok since we wanted to remove it anyway
+                        // The node was not found in DB, this is ok since we wanted to remove it anyway
                         LOGW_SYNCPAL_INFO(_logger,
                                           L"Node `" << Utility::formatSyncName(syncOp->conflict().localNode()->name())
-                                                    << L" not found in DB. This is ok since we wanted to remove to anyway.");
+                                                    << L" not found in DB. This is ok since we wanted to remove it anyway.");
                     } else {
                         // Remove local node from DB failed!
                         LOGW_SYNCPAL_WARN(_logger, L"deleteFromDb failed for "
@@ -1593,6 +1602,7 @@ ExitInfo ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &pr
                     }
                 }
             }
+
             // Remove node from update tree
             if (!_syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode())) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
@@ -1821,8 +1831,8 @@ ExitInfo ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const Node
         std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
         updateTree->insertNode(node);
 
-        if (!newCorrespondingParentNode->insertChildren(node)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
+        if (!newCorrespondingParentNode->insertChild(node)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node "
                                                << Utility::formatSyncName(node->name()) << L" parent node "
                                                << Utility::formatSyncName(newCorrespondingParentNode->name()));
             return ExitCode::DataError;
@@ -2000,14 +2010,14 @@ ExitInfo ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     // information in this structure.
     if (!syncOp->omit()) {
         auto prevParent = correspondingNode->parentNode();
-        prevParent->deleteChildren(correspondingNode);
+        (void) prevParent->deleteChild(correspondingNode);
 
         correspondingNode->setName(syncOp->newName());
 
-        if (!parentNode->insertChildren(correspondingNode)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node "
-                                               << Utility::formatSyncName(correspondingNode->name()) << L" parent node "
-                                               << Utility::formatSyncName(parentNode->name()));
+        if (!parentNode->insertChild(correspondingNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChild: node " << Utility::formatSyncName(correspondingNode->name())
+                                                                            << L" parent node "
+                                                                            << Utility::formatSyncName(parentNode->name()));
             return ExitCode::DataError;
         }
     }
@@ -2240,8 +2250,9 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
 
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)): {
-            return handleOpsRemoteFileLocked(syncOp, opsExitInfo);
+        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)): {
+            return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
@@ -2297,7 +2308,7 @@ ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_u
     return removeDependentOps(syncOp);
 }
 
-ExitInfo ExecutorWorker::handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsBlacklistRemoteFile(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     // Add error
     NodeId localNodeId;
     NodeId remoteNodeId;

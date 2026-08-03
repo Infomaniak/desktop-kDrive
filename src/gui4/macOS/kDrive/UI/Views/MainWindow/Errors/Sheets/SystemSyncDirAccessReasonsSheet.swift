@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -23,6 +24,8 @@ import SwiftUI
 
 struct SystemSyncDirAccessReasonsSheet: View {
     @Environment(\.dismiss) private var dismiss
+
+    @State private var copyablePath: String?
 
     let synchroErrorManager: SynchroErrorManager
     let error: SynchroError
@@ -71,17 +74,22 @@ struct SystemSyncDirAccessReasonsSheet: View {
                     return .handled
                 })
 
-                VStack(alignment: .leading, spacing: AppPadding.padding12) {
-                    Text(KDriveLocalizable.labelOriginalLocation)
-                        .foregroundStyle(ColorToken.Text.primary.asColor)
-                        .font(.Tokens.bodyEmphasized)
+                if let copyablePath {
+                    VStack(alignment: .leading, spacing: AppPadding.padding12) {
+                        Text(KDriveLocalizable.labelOriginalLocation)
+                            .foregroundStyle(ColorToken.Text.primary.asColor)
+                            .font(.Tokens.bodyEmphasized)
 
-                    CopyablePathView(path: error.metadata.path)
+                        CopyablePathView(path: copyablePath)
+                    }
+                    .padding([.bottom, .horizontal], AppPadding.padding16)
                 }
-                .padding([.bottom, .horizontal], AppPadding.padding16)
             }
         }
         .scrollBounceBehaviorBasedOnSize()
+        .task {
+            await computeCopyablePath()
+        }
     }
 
     private func openParentFolder() {
@@ -91,6 +99,18 @@ struct SystemSyncDirAccessReasonsSheet: View {
 
     private func navigateToSyncCreation() {
         synchroErrorManager.navigateToSynchroCreation()
+    }
+
+    private func computeCopyablePath() async {
+        @InjectService var cache: CoherentCache
+        guard let synchro = await cache.getSynchro(synchroDbId: Int32(error.metadata.synchroDbId)) else {
+            return
+        }
+
+        @InjectService var nodeURLGenerator: NodeURLGenerator
+        let url = nodeURLGenerator.localURL(for: error.metadata.path, synchroPath: URL(fileURLWithPath: synchro.localPath))
+
+        copyablePath = url.path
     }
 }
 

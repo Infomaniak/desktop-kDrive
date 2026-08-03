@@ -297,7 +297,7 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
         <translation>kDrive-klienten kjører allerede!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="713"/>
+        <location filename="../src/gui/appclient.cpp" line="724"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Brukeren %1 er ikke pålogget. Vennligst logg inn på nytt.</translation>
     </message>
@@ -305,12 +305,12 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1690"/>
+        <location filename="../src/server/appserver.cpp" line="1691"/>
         <source>Share link copied to clipboard</source>
         <translation>Del-lenken er kopiert til utklippstavlen</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3835"/>
+        <location filename="../src/server/appserver.cpp" line="3848"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 og %n annen fil har blitt fjernet.</numerusform>
@@ -318,13 +318,13 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3837"/>
+        <location filename="../src/server/appserver.cpp" line="3850"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er fjernet.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3855"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 og %n annen fil har blitt lagt til.</numerusform>
@@ -332,13 +332,13 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3844"/>
+        <location filename="../src/server/appserver.cpp" line="3857"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er lagt til.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3849"/>
+        <location filename="../src/server/appserver.cpp" line="3862"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 og %n annen fil har blitt oppdatert.</numerusform>
@@ -346,13 +346,13 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3851"/>
+        <location filename="../src/server/appserver.cpp" line="3864"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 er oppdatert.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3856"/>
+        <location filename="../src/server/appserver.cpp" line="3869"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 har blitt flyttet til %2, og %n annen fil har blitt flyttet.</numerusform>
@@ -360,12 +360,12 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3859"/>
+        <location filename="../src/server/appserver.cpp" line="3872"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 er flyttet til %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3867"/>
+        <location filename="../src/server/appserver.cpp" line="3880"/>
         <source>Sync Activity</source>
         <translation>Synkroniseringsaktivitet</translation>
     </message>
@@ -454,113 +454,128 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
 <context>
     <name>KDC::ClientGui</name>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="189"/>
+        <location filename="../src/gui/clientgui.cpp" line="190"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
         <translation>Det lyktes ikke å løse konflikter på %1 element(er) i synkroniseringsmappen: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="242"/>
+        <location filename="../src/gui/clientgui.cpp" line="243"/>
         <source>Please sign in</source>
         <translation>Vennligst logg inn</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="292"/>
+        <location filename="../src/gui/clientgui.cpp" line="293"/>
         <source>Folder %1: %2</source>
         <translation>Mappe %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="298"/>
+        <location filename="../src/gui/clientgui.cpp" line="299"/>
         <source>There are no sync folders configured.</source>
         <translation>Det er ikke konfigurert noen synkroniseringsmapper.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1422"/>
+        <location filename="../src/gui/clientgui.cpp" line="1508"/>
         <source>Synthesis</source>
         <translation>Sammendrag</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1423"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Preferences</source>
         <translatorcomment>Préférences</translatorcomment>
         <translation>Innstillinger</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1424"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Quit</source>
         <translation>Avslutt</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="673"/>
+        <location filename="../src/gui/clientgui.cpp" line="674"/>
         <source>Undefined State.</source>
         <translation>Udefinert tilstand.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="676"/>
+        <location filename="../src/gui/clientgui.cpp" line="677"/>
         <source>Waiting to start syncing.</source>
         <translation>Venter på å starte synkroniseringen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="679"/>
+        <location filename="../src/gui/clientgui.cpp" line="680"/>
         <source>Sync is running.</source>
         <translation>Synkroniseringen pågår.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="683"/>
+        <location filename="../src/gui/clientgui.cpp" line="684"/>
         <source>Sync was successful, unresolved conflicts.</source>
         <translation>Synkroniseringen ble fullført, men det er noen uløste konflikter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="685"/>
+        <location filename="../src/gui/clientgui.cpp" line="686"/>
         <source>Last Sync was successful.</source>
         <translation>Den siste synkroniseringen ble gjennomført.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="692"/>
+        <location filename="../src/gui/clientgui.cpp" line="693"/>
         <source>User Abort.</source>
         <translation>Brukeravbrudd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="696"/>
+        <location filename="../src/gui/clientgui.cpp" line="697"/>
         <source>Sync is paused.</source>
         <translation>Synkroniseringen er satt på pause.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="705"/>
+        <location filename="../src/gui/clientgui.cpp" line="706"/>
         <source>%1 (Sync is paused)</source>
         <translation>%1 (Synkroniseringen er satt på pause)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1257"/>
+        <location filename="../src/gui/clientgui.cpp" line="1250"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Vil du virkelig fjerne synkroniseringene for kontoen &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Merk:&lt;/b&gt; Dette vil &lt;b&gt;ikke&lt;/b&gt; slette noen filer.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1261"/>
+        <location filename="../src/gui/clientgui.cpp" line="1254"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>FJERN ALLE SYNKRONISERINGER</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1262"/>
+        <location filename="../src/gui/clientgui.cpp" line="1255"/>
         <source>CANCEL</source>
         <translation>AVBRYT</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1590"/>
+        <location filename="../src/gui/clientgui.cpp" line="1382"/>
+        <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
+        <translation>%1 elementer har blitt slettet fra din lokale synkroniseringsmappe &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. For å unngå utilsiktede slettinger er synkroniseringen satt på pause.&lt;br&gt;Vil du spre disse slettingene til kDrive?</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1420"/>
+        <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
+        <translation>Flere filer har blitt slettet fra din lokale synkroniseringsmappe &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Slettede filer finnes i kDrives &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;papirkurv&lt;/a&gt;.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
+        <source>Don&apos;t show again</source>
+        <translation>Ikke vis igjen</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1676"/>
         <source>Failed to start synchronizations!</source>
         <translation>Det gikk ikke å starte synkroniseringen!</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="849"/>
+        <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan ikke apne mappestien %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="116"/>
+        <location filename="../src/gui/clientgui.cpp" line="117"/>
         <source>Unable to initialize kDrive client</source>
         <translation>Kan ikke starte kDrive-klienten</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="255"/>
+        <location filename="../src/gui/clientgui.cpp" line="256"/>
         <source>Synchronization is paused</source>
         <translation>Synkroniseringen er satt på pause</translation>
     </message>
@@ -697,22 +712,22 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="100"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="105"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="110"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="115"/>
         <source>CANCEL</source>
         <translation>AVBRYT</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="120"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="125"/>
         <source>YES</source>
         <translation>JA</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="130"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="135"/>
         <source>NO</source>
         <translation>NEI</translation>
     </message>
@@ -1564,22 +1579,22 @@ Velg en annen mappe. Hvis du fortsetter, vil Lite Sync bli deaktivert.&lt;br&gt;
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1085"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan ikke apne mappestien %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1099"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Overføringen er fullført!&lt;br&gt;Vennligst oppgi identifikatoren &lt;b&gt;%1&lt;/b&gt; i feilmeldinger.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1121"/>
         <source>No kDrive configured!</source>
         <translation>kDrive er ikke konfigurert!</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1100"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Overføringen mislyktes!
@@ -1777,6 +1792,11 @@ Bruk følgende lenke for å sende loggfilene til kundestøtte: &lt;a style=&quot
         <translation>Det er ikke nok ledig plass på datamaskinen din.&lt;br&gt;Nedlastingen er avbrutt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Det er umulig å opprette filen «%1», siden den ikke støttes i filsystemet ditt.&lt;br&gt;Den er ekskludert fra synkroniseringen.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="609"/>
         <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Dette elementet er flyttet til et annet sted.&lt;br&gt;Den lokale operasjonen er avbrutt.</translation>
@@ -1928,7 +1948,7 @@ Bruk følgende lenke for å sende loggfilene til kundestøtte: &lt;a style=&quot
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Synchronization error.</source>
         <translation>Synkroniseringsfeil.</translation>
     </message>
@@ -1938,17 +1958,17 @@ Bruk følgende lenke for å sende loggfilene til kundestøtte: &lt;a style=&quot
         <translation>Kan ikke få tilgang til elementet.&lt;br&gt;Vennligst korriger lese- og skrivetillatelsene.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
         <source>System error.</source>
         <translation>Systemfeil.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Elementet finnes allerede på den andre siden.&lt;br&gt;Det er midlertidig satt på svartelisten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="843"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Det har oppstått en teknisk feil. Tøm&lt;br&gt;historikken, og ta kontakt med kundestøtten vår hvis feilen vedvarer.</translation>
     </message>
@@ -2750,47 +2770,47 @@ Bruk følgende lenke for å sende loggfilene til kundestøtte: &lt;a style=&quot
         <translation>Kan ikke lagre parametrene!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="490"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Overordnet mappe er en synkroniseringsmappe eller ligger i en slik</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="524"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Finner ikke en gyldig sti</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>No valid folder selected!</source>
         <translation>Det er ikke valgt noen gyldig mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2144"/>
         <source>The selected path does not exist!</source>
         <translation>Den valgte banen finnes ikke!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2149"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valgte banen er ikke en mappe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2154"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har ikke tilgang til å skrive til den valgte mappen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2184"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappen %1 inneholder en mappe som allerede er synkronisert. Vennligst velg en annen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2192"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokale mappen %1 ligger i en mappe som allerede er synkronisert. Vennligst velg en annen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2200"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokale mappen %1 er allerede synkronisert. Velg en annen!</translation>
     </message>
@@ -2863,7 +2883,7 @@ Bruk følgende lenke for å sende loggfilene til kundestøtte: &lt;a style=&quot
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="133"/>
+        <location filename="../src/server/appserver.cpp" line="134"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-programmet vil lukkes på grunn av en alvorlig feil.</translation>
     </message>

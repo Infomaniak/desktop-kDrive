@@ -21,6 +21,7 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
+import Sentry
 import SwiftUI
 
 struct SyncedKDriveView: View {
@@ -28,10 +29,12 @@ struct SyncedKDriveView: View {
 
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
-    @State private var advancedSynchros = [UISynchro]()
+    @State private var committedMainSynchroMode = UISynchroMode.storeOnline
 
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
+
+    @State private var blacklistNodes: Set<String>?
 
     var body: some View {
         Form {
@@ -59,35 +62,30 @@ struct SyncedKDriveView: View {
                     }
 
                     IKLabeledContent(KDriveLocalizable.labelSynchronisation) {
-                        Button(KDriveLocalizable.buttonManage) {
-                            // TODO: Navigate to synchro management
+                        HStack {
+                            if let blacklistNodes, !blacklistNodes.isEmpty {
+                                Text(KDriveLocalizable.onboardingExclusionSummarySome)
+                                    .font(.Tokens.body)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Button(KDriveLocalizable.buttonManage, action: navigateToManageSynchro)
+                                .disabled(blacklistNodes == nil)
                         }
-                        .disabled(true)
                     }
                 }
 
                 Section {
-                    VStack(alignment: .leading, spacing: AppPadding.padding16) {
-                        VStack(alignment: .leading, spacing: AppPadding.padding2) {
-                            Text(KDriveLocalizable.fileSyncMode)
-                            Text(KDriveLocalizable.fileSyncModeDescription)
-                                .foregroundStyle(.secondary)
-                                .font(.callout)
-                        }
-
-                        Picker(KDriveLocalizable.accessibilitySelectSynchroMode, selection: $mainSynchroMode) {
-                            ForEach(UISynchroMode.allCases) { mode in
-                                UISynchroModeCell(mode: mode)
-                                    .tag(mode)
-                            }
-                        }
-                        .pickerStyle(.radioGroup)
-                        .labelsHidden()
+                    SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
                         .disabled(!mainSynchro.supportsVirtualFileSystem)
                         .onChange(of: mainSynchroMode) { newValue in
+                            guard newValue != committedMainSynchroMode else { return }
                             switchSynchroMode(mainSynchro, mode: newValue)
                         }
-                    }
+                }
+
+                Section {
+                    FormNavigationCell(title: KDriveLocalizable.advancedSyncTitle, navigate: navigateToAdvancedSynchro)
                 }
 
                 Section {
@@ -102,27 +100,11 @@ struct SyncedKDriveView: View {
                     .buttonStyle(.plain)
                 }
             }
-
-            if !advancedSynchros.isEmpty {
-                Section {
-                    Button(action: navigateToAdvancedSynchro) {
-                        HStack {
-                            Text(KDriveLocalizable.advancedSyncTitle)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .foregroundStyle(.primary)
-
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(.secondary)
-                        }
-                        .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
         }
         .groupedFormatStyle()
         .task {
             await fetchSynchros()
+            await fetchBlacklistedNodes()
         }
         .sheet(item: $synchroToDelete) { synchro in
             RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
@@ -136,24 +118,40 @@ struct SyncedKDriveView: View {
             return
         }
 
-        var freshMainSynchro: UISynchro?
-        var freshAdvancedSynchros = [UISynchro]()
+        let freshMainSynchro = driveSynchros
+            .map { UISynchro(synchro: $0) }
+            .first { $0.targetNodeId == nil }
 
-        for synchro in driveSynchros {
-            let uiSynchro = UISynchro(synchro: synchro)
-
-            if uiSynchro.targetNodeId == nil, freshMainSynchro == nil {
-                freshMainSynchro = uiSynchro
-            } else {
-                freshAdvancedSynchros.append(uiSynchro)
-            }
-        }
-
+        let fetchedMode: UISynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
         withAnimation {
             mainSynchro = freshMainSynchro
-            mainSynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
+            mainSynchroMode = fetchedMode
+        }
+        committedMainSynchroMode = fetchedMode
+    }
 
-            advancedSynchros = freshAdvancedSynchros
+    private func fetchBlacklistedNodes() async {
+        guard let mainSynchroId = mainSynchro?.dbId else {
+            return
+        }
+
+        do {
+            let blacklistedNodes = try await BlacklistJobs().getBlacklistedNodeList(syncDbId: Int32(mainSynchroId))
+            blacklistNodes = Set(blacklistedNodes)
+        } catch {
+            SentrySDK.capture(error: error)
+        }
+    }
+
+    private func navigateToManageSynchro() {
+        Task {
+            @InjectService var cache: CoherentCache
+            guard let mainSynchro, let drive = await cache.getDrive(driveDbId: Int32(drive.dbId)) else {
+                return
+            }
+
+            @InjectService var router: PreferencesViewRouter
+            router.append(.blacklist(Int(drive.userDbId), Int(drive.driveId), Int(mainSynchro.dbId), rootNodeId: nil))
         }
     }
 
@@ -161,14 +159,17 @@ struct SyncedKDriveView: View {
         Task {
             do {
                 try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
+                committedMainSynchroMode = mode
             } catch {
+                mainSynchroMode = committedMainSynchroMode
                 isShowingGenericError = true
             }
         }
     }
 
     private func navigateToAdvancedSynchro() {
-        // TODO: Navigate to advanced synchros
+        @InjectService var router: PreferencesViewRouter
+        router.append(.advancedSynchros(drive))
     }
 
     private func handleSynchroIsDeleted(_ error: Error?) {

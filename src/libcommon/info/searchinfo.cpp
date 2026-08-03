@@ -26,17 +26,19 @@ static const auto searchInfoPath = "path";
 static const auto searchInfoModifiedTime = "modifiedTime";
 static const auto searchInfoSize = "size";
 static const auto searchInfoIsAvailableLocally = "isAvailableLocally";
+static const auto searchInfoIsHydrated = "isHydrated";
 
 namespace KDC {
 
-SearchInfo::SearchInfo(const NodeId &id, const SyncName &name, const NodeType type, const SyncPath &path,
-                       const SyncTime modifiedTime, const size_t size, const bool isAvailableLocally) :
-    _id(id),
-    _name(name),
-    _path(path),
+SearchInfo::SearchInfo(RemoteNodeId id, SyncName name, const NodeType type, SyncPath path, const SyncTime modifiedTime,
+                       const size_t size, const bool isAvailableLocally, const bool isHydrated) :
+    _id(std::move(id)),
+    _name(std::move(name)),
+    _path(std::move(path)),
     _modifiedTime(modifiedTime),
     _size(static_cast<int64_t>(size)),
     _isAvailableLocally(isAvailableLocally),
+    _isHydrated(isHydrated),
     _type(type) {}
 
 void SearchInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
@@ -47,6 +49,7 @@ void SearchInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, searchInfoModifiedTime, _modifiedTime);
     CommonUtility::writeValueToStruct(dstruct, searchInfoSize, _size);
     CommonUtility::writeValueToStruct(dstruct, searchInfoIsAvailableLocally, _isAvailableLocally);
+    CommonUtility::writeValueToStruct(dstruct, searchInfoIsHydrated, _isHydrated);
 }
 
 void SearchInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -59,6 +62,7 @@ void SearchInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, searchInfoModifiedTime, _modifiedTime);
     CommonUtility::readValueFromStruct(dstruct, searchInfoSize, _size);
     CommonUtility::readValueFromStruct(dstruct, searchInfoIsAvailableLocally, _isAvailableLocally);
+    CommonUtility::readValueFromStruct(dstruct, searchInfoIsHydrated, _isHydrated);
 }
 
 QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
@@ -69,8 +73,9 @@ QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     qint64 tmpModifiedTime = 0;
     qint64 tmpSize = 0;
     bool tmpIsAvailableLocally = false;
+    bool tmpIsHydrated = false;
 
-    in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> tmpIsAvailableLocally;
+    in >> tmpId >> tmpName >> tmpType >> tmpPath >> tmpModifiedTime >> tmpSize >> tmpIsAvailableLocally >> tmpIsHydrated;
     info._id = QStr2Str(tmpId);
     info._name = QStr2SyncName(tmpName);
     info._type = static_cast<NodeType>(tmpType);
@@ -78,6 +83,7 @@ QDataStream &operator>>(QDataStream &in, SearchInfo &info) {
     info._modifiedTime = static_cast<SyncTime>(tmpModifiedTime);
     info._size = static_cast<int64_t>(tmpSize);
     info._isAvailableLocally = tmpIsAvailableLocally;
+    info._isHydrated = tmpIsHydrated;
     return in;
 }
 
@@ -93,7 +99,9 @@ QDataStream &operator<<(QDataStream &out, const QList<SearchInfo> &list) {
 
 QDataStream &operator<<(QDataStream &out, const SearchInfo &info) {
     out << QString::fromStdString(info._id) << SyncName2QStr(info._name) << static_cast<int>(info._type) << Path2QStr(info._path)
-        << static_cast<qint64>(info._modifiedTime) << static_cast<qint64>(info._size) << info._isAvailableLocally;
+        << static_cast<qint64>(info._modifiedTime) << static_cast<qint64>(info._size) << info._isAvailableLocally
+        << info._isHydrated;
+
     return out;
 }
 

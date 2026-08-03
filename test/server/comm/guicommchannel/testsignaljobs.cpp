@@ -42,27 +42,29 @@ void TestGuiCommChannel::checkSignalCommonMethods(AbstractGuiJob &guiJob, const 
 }
 
 void TestGuiCommChannel::testSignalAccountUpdatedJob() {
-    AccountInfo accountInfo(1, 666);
-    accountInfo.setId(1001);
+    Account accountInfo(1, 666);
+    accountInfo.setAccountId(1001);
     SignalAccountUpdatedJob job(accountInfo);
     checkSignalCommonMethods(job, SignalNum::ACCOUNT_UPDATED);
-    CPPUNIT_ASSERT(accountInfo == job._accountInfo);
+    CPPUNIT_ASSERT(accountInfo == job._account);
 }
 
 void TestGuiCommChannel::testSignalDriveUpdatedJob() {
-    DriveInfo driveInfo;
-    driveInfo.setDbId(1);
-    driveInfo.setId(2);
-    driveInfo.setAccountDbId(3);
-    driveInfo.setAdmin(true);
-    driveInfo.setAccessDenied(true);
-    driveInfo.setMaintenance(true);
-    driveInfo.setSize(1000000000);
-    driveInfo.setUsedSize(50000000);
-    SignalDriveUpdatedJob job(driveInfo);
+    Drive drive;
+    drive.setDbId(1);
+    drive.setDriveId(2);
+    drive.setAccountDbId(3);
+    drive.setAdmin(true);
+    drive.setAccessDenied(true);
+    MaintenanceInfo maintenanceInfo;
+    maintenanceInfo.setInMaintenance(true);
+    drive.setMaintenanceInfo(maintenanceInfo);
+    drive.setSize(1000000000);
+    drive.setUsedSize(50000000);
+    SignalDriveUpdatedJob job(drive);
 
     checkSignalCommonMethods(job, SignalNum::DRIVE_UPDATED);
-    CPPUNIT_ASSERT(driveInfo == job._driveInfo);
+    CPPUNIT_ASSERT(drive == job._drive);
 }
 
 void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {
@@ -89,18 +91,17 @@ void TestGuiCommChannel::testSignalUpdaterStateChangedJob() {
 }
 
 void TestGuiCommChannel::testSignalUserUpdatedJob() {
-    UserInfo userInfo;
-    userInfo.setDbId(1);
-    userInfo.setUserId(2);
-    userInfo.setAvatar(QImage{});
-    userInfo.setConnected(true);
-    userInfo.setCredentialsAsked(true);
-    userInfo.setIsStaff(true);
+    User user;
+    user.setDbId(1);
+    user.setUserId(2);
+    user.setConnected(true);
+    user.setCredentialsAsked(true);
+    user.setIsStaff(true);
 
-    SignalUserUpdatedJob job(userInfo);
+    SignalUserUpdatedJob job(user);
 
     checkSignalCommonMethods(job, SignalNum::USER_UPDATED);
-    CPPUNIT_ASSERT(userInfo == job._userInfo);
+    CPPUNIT_ASSERT(user == job._user);
 }
 
 void TestGuiCommChannel::testSignalUtilityShowNotificationJob() {

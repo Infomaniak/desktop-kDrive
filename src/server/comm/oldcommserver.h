@@ -53,6 +53,9 @@ class OldCommServer : public QObject {
         bool hasQuittedProperly() const { return _hasQuittedProperly; }
 
         void start();
+        // Stop and join the request worker thread. Must be called at shutdown, otherwise the thread stays blocked in
+        // Worker::onStart and outlives the app, racing with static destruction (intermittent SIGSEGV at exit).
+        void stop();
         inline bool isListening() { return _tcpServer.isListening(); }
         bool hasActiveConnexion() const {
             return _tcpSocket != nullptr && _tcpSocket->state() == QAbstractSocket::ConnectedState && _tcpSocket->isValid();
@@ -64,13 +67,14 @@ class OldCommServer : public QObject {
 
     private:
         static std::shared_ptr<OldCommServer> _instance;
-        QtLoggingThread *_requestWorkerThread;
+        QtLoggingThread *_requestWorkerThread = new QtLoggingThread();
         Worker *_requestWorker;
         QTcpServer _tcpServer;
-        QTcpSocket *_tcpSocket;
-        QByteArray _buffer;
+        QTcpSocket *_tcpSocket = nullptr;
+        QByteArray _buffer = QByteArray();
 
-        bool _hasQuittedProperly;
+        bool _hasQuittedProperly = false;
+        bool _stopping = false;
 
         explicit OldCommServer(QObject *parent = nullptr);
 

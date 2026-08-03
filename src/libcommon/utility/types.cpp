@@ -22,6 +22,7 @@
 #include "utility/utility.h"
 #include "utility.h"
 
+#include <charconv>
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
@@ -121,6 +122,8 @@ std::string toString(const ExitCode e) {
             return "LogUploadFailed";
         case ExitCode::UpdateFailed:
             return "UpdateFailed";
+        case ExitCode::TooManyDeleteOperations:
+            return "TooManyDeleteOperations";
         default:
             return noConversionStr;
     }
@@ -238,6 +241,8 @@ std::string toString(const ExitCause e) {
             return "MissingReplyData";
         case ExitCause::BlackListPropagationError:
             return "BlackListPropagationError";
+        case ExitCause::FileSystemNotSupported:
+            return "FileSystemNotSupported";
         default:
             return noConversionStr;
     }
@@ -296,6 +301,8 @@ std::string toString(const InconsistencyType e) {
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:
             return "ForbiddenCharEndWithSpace";
+        case InconsistencyType::InvalidTimestamp:
+            return "InvalidTimestamp";
         default:
             return noConversionStr;
     }
@@ -948,10 +955,49 @@ std::string toString(const TranslationMode e) {
     }
 }
 
-std::string toString(const std::source_location &e) {
-    return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
+std::string toString(const std::source_location &loc) {
+    std::string_view file = loc.file_name();
+
+    if (const auto pos = file.find_last_of("/\\"); pos != std::string_view::npos) {
+        file.remove_prefix(pos + 1);
+    }
+
+    std::string_view func = loc.function_name();
+
+    if (const auto pos = func.find('('); pos != std::string_view::npos) {
+        func = func.substr(0, pos);
+    }
+
+    // Remove the return type / calling convention prefix (if any) without breaking
+    // names that contain spaces (e.g. "operator bool").
+    if (const auto nsPos = func.rfind("::"); nsPos != std::string_view::npos) {
+        func = func.substr(nsPos + 2);
+    } else if (const auto pos = func.find_last_of(' '); pos != std::string_view::npos) {
+        func.remove_prefix(pos + 1);
+    }
+
+    char lineBuffer[16] = {};
+    const auto [ptr, ec] = std::to_chars(lineBuffer, lineBuffer + sizeof(lineBuffer), loc.line());
+
+    // ptr points to the first character after the last written character
+    const auto lineLength = static_cast<size_t>(ptr - lineBuffer);
+
+    std::string result;
+    result.reserve(file.size() + 1 + // :
+                   lineLength + 2 + // []
+                   func.size());
+
+    // Format: file:line[func]
+    (void) result.append(file);
+    result.push_back(':');
+    (void) result.append(lineBuffer, lineLength);
+    result.push_back('[');
+    (void) result.append(func);
+    result.push_back(']');
+
+    return result;
 }
-  
+
 std::string toString(const Scope e) {
     switch (e) {
         case Scope::None:
@@ -962,6 +1008,34 @@ std::string toString(const Scope e) {
             return "LiteSync";
         case Scope::UserInitiated:
             return "UserInitiated";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const TooManyDeletesNotificationType e) {
+    using enum TooManyDeletesNotificationType;
+    switch (e) {
+        case Unknown:
+            return "Unknown";
+        case SoftLimit:
+            return "SoftLimit";
+        case HardLimit:
+            return "HardLimit";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const TooManyDeletesUserChoice e) {
+    using enum TooManyDeletesUserChoice;
+    switch (e) {
+        case None:
+            return "None";
+        case Continue:
+            return "Continue";
+        case Revert:
+            return "Revert";
         default:
             return noConversionStr;
     }

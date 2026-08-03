@@ -26,10 +26,7 @@
 #include "adddriveextensionsetupwidget.h"
 #include "adddriveconfirmationwidget.h"
 #include "adddrivelistwidget.h"
-#include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
-#include "libcommon/info/driveinfo.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 #include <QStackedWidget>
 
@@ -77,7 +74,7 @@ class AddDriveWizard : public CustomDialog {
         QSet<QString> _whiteList;
         QString _localFolderPath;
         UserDbId _userDbId{0};
-        DriveAvailableInfo _driveInfo;
+        DriveAvailable _driveInfo;
         SyncDbId _syncDbId{0};
         KDC::GuiUtility::WizardAction _action;
 

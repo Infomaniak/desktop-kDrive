@@ -42,6 +42,7 @@
 #include "libcommon/utility/utility.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -80,7 +81,7 @@ void TestIntegration::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -313,7 +314,8 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(dirpath));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif
@@ -329,7 +331,8 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(_syncPal->localPath() / filename));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -490,8 +493,8 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() ||
-                   testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -935,7 +938,8 @@ void TestIntegration::testCreateMoveDeleteRename() {
 }
 
 void TestIntegration::waitForSyncToBeIdle(
-        const std::source_location &srcLoc, const std::chrono::milliseconds minWaitTime /*= std::chrono::milliseconds(3000)*/) const {
+        const std::source_location &srcLoc,
+        const std::chrono::milliseconds minWaitTime /*= std::chrono::milliseconds(3000)*/) const {
     const auto timeOutDuration = minutes(2);
     const TimerUtility timeoutTimer;
 

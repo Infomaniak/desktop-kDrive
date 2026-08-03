@@ -36,6 +36,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let targetNodeId: String
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
+    public var isUpdatingVfsMode = false
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
@@ -79,6 +80,18 @@ public struct SynchroProgressInfo: Hashable, Sendable {
     public let syncStatus: KDC.SyncStatus
     public let syncStep: KDC.SyncStep
     public let syncProgress: SyncProgress
+
+    public func withSyncStatus(_ newStatus: KDC.SyncStatus) -> SynchroProgressInfo {
+        SynchroProgressInfo(syncStatus: newStatus, syncStep: syncStep, syncProgress: syncProgress)
+    }
+
+    public static func placeholder(status: KDC.SyncStatus) -> SynchroProgressInfo {
+        SynchroProgressInfo(
+            syncStatus: status,
+            syncStep: .None,
+            syncProgress: SyncProgress(currentFile: 0, totalFiles: 0, completedSize: 0, totalSize: 0, estimatedRemainingTime: 0)
+        )
+    }
 }
 
 public struct SyncProgress: Hashable, Sendable {
@@ -88,12 +101,22 @@ public struct SyncProgress: Hashable, Sendable {
     public let totalSize: Int64
     public let estimatedRemainingTime: Int64
 
+    public init(currentFile: Int64, totalFiles: Int64, completedSize: Int64, totalSize: Int64, estimatedRemainingTime: Int64) {
+        self.currentFile = currentFile
+        self.totalFiles = totalFiles
+        self.completedSize = completedSize
+        self.totalSize = totalSize
+        self.estimatedRemainingTime = estimatedRemainingTime
+    }
+
     init(syncProgress: SyncProgressSignal) {
-        currentFile = syncProgress.currentFile
-        totalFiles = syncProgress.totalFiles
-        completedSize = syncProgress.completedSize
-        totalSize = syncProgress.totalSize
-        estimatedRemainingTime = syncProgress.estimatedRemainingTime
+        self.init(
+            currentFile: syncProgress.currentFile,
+            totalFiles: syncProgress.totalFiles,
+            completedSize: syncProgress.completedSize,
+            totalSize: syncProgress.totalSize,
+            estimatedRemainingTime: syncProgress.estimatedRemainingTime
+        )
     }
 }
 

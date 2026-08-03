@@ -192,7 +192,7 @@ AppClient::AppClient(int &argc, char **argv) :
         // Ask user to log in if needed
         for (auto const &[userDbId, userInfoClient]: _gui->userInfoMap()) {
             if (!userInfoClient.connected() && _gui->isUserUsed(userDbId)) {
-                askUserToLoginAgain(userInfoClient.dbId(), userInfoClient.email(), false);
+                askUserToLoginAgain(userInfoClient.dbId(), QString::fromStdString(userInfoClient.email()), false);
             }
         }
     }
@@ -217,22 +217,22 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
 
     switch (num) {
         case SignalNum::USER_ADDED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userAdded(userInfo);
+            emit userAdded(user);
             break;
         }
         case SignalNum::USER_UPDATED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+            User user;
+            paramsStream >> user;
 
-            emit userUpdated(userInfo);
+            emit userUpdated(user);
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
             qint64 userDbId = 0;
-            bool connected;
+            bool connected = false;
             QString connexionError;
             paramsStream >> userDbId;
             paramsStream >> connected;
@@ -249,17 +249,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountAdded(accountInfo);
+            emit accountAdded(account);
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+            Account account;
+            paramsStream >> account;
 
-            emit accountUpdated(accountInfo);
+            emit accountUpdated(account);
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
@@ -270,17 +270,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::DRIVE_ADDED: {
-            DriveInfo driveInfo;
-            paramsStream >> driveInfo;
+            Drive drive;
+            paramsStream >> drive;
 
-            emit driveAdded(driveInfo);
+            emit driveAdded(drive);
             break;
         }
         case SignalNum::DRIVE_UPDATED: {
-            DriveInfo driveInfo;
-            paramsStream >> driveInfo;
+            Drive drive;
+            paramsStream >> drive;
 
-            emit driveUpdated(driveInfo);
+            emit driveUpdated(drive);
             break;
         }
         case SignalNum::DRIVE_QUOTAUPDATED_LEGACY: {
@@ -309,14 +309,14 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::SYNC_ADDED: {
-            SyncInfo syncInfo;
+            BaseSync syncInfo;
             paramsStream >> syncInfo;
 
             emit syncAdded(syncInfo);
             break;
         }
         case SignalNum::SYNC_UPDATED: {
-            SyncInfo syncInfo;
+            BaseSync syncInfo;
             paramsStream >> syncInfo;
 
             emit syncUpdated(syncInfo);
@@ -372,6 +372,17 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> syncDbId;
 
             emit syncDeletionFailed(syncDbId);
+            break;
+        }
+        case SignalNum::SYNC_NOTIFY_MANY_DELETES: {
+            qint64 syncDbId = 0;
+            TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::Unknown;
+            quint64 nbFiles = 0;
+            paramsStream >> syncDbId;
+            paramsStream >> notificationType;
+            paramsStream >> nbFiles;
+
+            emit tooManyDeletesNotification(static_cast<SyncDbId>(syncDbId), notificationType, static_cast<uint64_t>(nbFiles));
             break;
         }
         case SignalNum::NODE_FOLDER_SIZE_COMPLETED: {
@@ -670,8 +681,7 @@ void AppClient::updateSentryUser() const {
         return;
     }
 
-    SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
-                    std::to_string(userInfo->second.userId()));
+    SentryUser user(userInfo->second.email(), userInfo->second.name(), std::to_string(userInfo->second.userId()));
     sentry::Handler::instance()->setAuthenticatedUser(user);
 }
 

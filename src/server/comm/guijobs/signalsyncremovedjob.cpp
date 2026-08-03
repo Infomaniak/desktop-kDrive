@@ -25,7 +25,7 @@ static const auto outParamsSyncDbId = "syncDbId";
 
 namespace KDC {
 
-SignalSyncRemovedJob::SignalSyncRemovedJob(int syncDbId) :
+SignalSyncRemovedJob::SignalSyncRemovedJob(const SyncDbId syncDbId) :
     _syncDbId(syncDbId) {
     _signalNum = SignalNum::SYNC_REMOVED;
 }

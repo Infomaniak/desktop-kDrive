@@ -18,18 +18,18 @@
 
 #pragma once
 
+#include "data/drive.h"
 #include "info/searchinfo.h"
 #include "libcommon/utility/types.h"
-#include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
+#include "libcommon/data/user.h"
+#include "libcommon/data/account.h"
 #include "libcommon/info/nodeinfo.h"
-#include "libcommon/info/driveinfo.h"
-#include "libcommon/info/driveavailableinfo.h"
-#include "libcommon/info/syncinfo.h"
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/driveavailable.h"
+#include "libcommon/data/sync.h"
+#include "libcommon/data/error.h"
 #include "libcommon/info/parametersinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
-#include "libcommon/info/exclusionappinfo.h"
+#include "libcommon/data/exclusionapp.h"
 
 #include <QDataStream>
 #include <QIODevice>
@@ -45,11 +45,11 @@ struct GuiRequests {
         // C/S requests (access to DB)
         // Use COMM_SHORT_TIMEOUT
         static ExitCode getUserDbIdList(QList<UserDbId> &list);
-        static ExitCode getUserInfoList(QList<UserInfo> &list);
-        static ExitCode getAccountInfoList(QList<AccountInfo> &list);
-        static ExitCode getDriveInfoList(QList<DriveInfo> &list);
-        static ExitCode updateDrive(const DriveInfo &driveInfo);
-        static ExitCode getSyncInfoList(QList<SyncInfo> &list);
+        static ExitCode getUserList(QList<User> &list);
+        static ExitCode getAccountList(QList<Account> &list);
+        static ExitCode getDriveInfoList(QList<Drive> &list);
+        static ExitCode updateDrive(const Drive &drive);
+        static ExitCode getSyncList(QList<BaseSync> &list);
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
         static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);
@@ -62,24 +62,25 @@ struct GuiRequests {
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
         static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList);
 #ifdef Q_OS_MAC
-        static ExitCode getExclusionAppList(bool def, QList<ExclusionAppInfo> &appList);
-        static ExitCode setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList);
+        static ExitCode getExclusionAppList(bool def, QList<ExclusionApp> &appList);
+        static ExitCode setExclusionAppList(bool def, const QList<ExclusionApp> &appList);
         static ExitCode getFetchingAppList(QHash<QString, QString> &appTable);
 #endif
-        static ExitCode getErrorInfoList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<ErrorInfo> &list);
-        static ExitCode getConflictList(DriveDbId driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list);
+        static ExitCode getErrorList(ErrorLevel level, SyncDbId syncDbId, int limit, QList<Error> &list);
+        static ExitCode getConflictList(DriveDbId driveDbId, const QList<ConflictType> &filter, QList<Error> &list);
         static ExitCode deleteErrorsServer();
         static ExitCode deleteErrorsForSync(SyncDbId syncDbId, bool autoResolved);
         static ExitCode deleteInvalidTokenErrors();
         static ExitCode resolveConflictErrors(DriveDbId driveDbId, bool keepLocalVersion);
         static ExitCode resolveUnsupportedCharErrors(DriveDbId driveDbId);
         static ExitCode setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
+        static ExitInfo acknowledgeManyDelete(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice);
 
         // C/S requests (access to network)
         // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode requestToken(const QString &code, const QString &codeVerifier, UserDbId &userDbId, QString &error,
                                      QString &errorDescr);
-        static ExitCode getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailableInfo> &list);
+        static ExitCode getUserAvailableDrives(UserDbId userDbId, QList<DriveAvailable> &list);
         static ExitCode addSync(UserDbId userDbId, AccountId accountId, DriveId driveId, const QString &localFolderPath,
                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 const QSet<QString> &blackList, const QSet<QString> &whiteList, SyncDbId &syncDbId);
@@ -103,7 +104,6 @@ struct GuiRequests {
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
         static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteUser(UserDbId userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode searchItemInDrive(DriveDbId driveDbId, const QString &searchString, QList<SearchInfo> &list,
                                           bool &hasMore,

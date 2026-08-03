@@ -128,14 +128,10 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError);
-    if (!result) {
+    if (const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError); !result)
         return false;
-    }
 
-    if (!value.empty()) {
-        isDehydrated = (value != litesync_attrs::statusOffline);
-    }
+    if (!value.empty()) isDehydrated = (value != litesync_attrs::statusOffline);
 
     return true;
 }

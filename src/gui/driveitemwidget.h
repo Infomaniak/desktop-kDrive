@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 
 #include <QBoxLayout>
 #include <QLabel>
@@ -32,13 +32,13 @@ static const int itemHeight = 44;
 
 class DriveItemWidget : public QListWidgetItem {
     public:
-        explicit DriveItemWidget(const DriveAvailableInfo &driveInfo, QListWidget *parent = nullptr);
+        explicit DriveItemWidget(const DriveAvailable &driveInfo, QListWidget *parent = nullptr);
 
-        inline const DriveAvailableInfo &driveInfo() const { return _driveInfo; }
+        inline const DriveAvailable &driveInfo() const { return _driveInfo; }
         static int height() { return itemHeight; }
 
     private:
-        DriveAvailableInfo _driveInfo;
+        DriveAvailable _driveInfo;
 };
 
 } // namespace KDC

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "foldertreeitemwidget.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 
 #include <QColor>
 #include <QIcon>
@@ -44,7 +44,7 @@ class AddDriveServerFoldersWidget : public QWidget {
     public:
         explicit AddDriveServerFoldersWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void init(UserDbId userDbId, const DriveAvailableInfo &driveInfo);
+        void init(UserDbId userDbId, const DriveAvailable &driveInfo);
         qint64 selectionSize() const;
         QSet<QString> createBlackList() const;
         QSet<QString> createWhiteList() const;
@@ -66,7 +66,7 @@ class AddDriveServerFoldersWidget : public QWidget {
         QColor _logoColor;
         bool _needToSave;
 
-        DriveAvailableInfo _driveInfo;
+        DriveAvailable _driveInfo;
 
         inline QColor infoIconColor() const { return _infoIconColor; }
         inline void setInfoIconColor(QColor color) {

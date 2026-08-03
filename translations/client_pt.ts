@@ -297,7 +297,7 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         <translation>O cliente kDrive já está em execução!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="713"/>
+        <location filename="../src/gui/appclient.cpp" line="724"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>O utilizador %1 não está conectado. Por favor, inicie sessão novamente.</translation>
     </message>
@@ -305,12 +305,12 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1690"/>
+        <location filename="../src/server/appserver.cpp" line="1691"/>
         <source>Share link copied to clipboard</source>
         <translation>O link para partilhar foi copiado para a área de transferência</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3835"/>
+        <location filename="../src/server/appserver.cpp" line="3848"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 e mais %n ficheiro foram removidos.</numerusform>
@@ -318,13 +318,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3837"/>
+        <location filename="../src/server/appserver.cpp" line="3850"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>O %1 foi removido.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3855"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 e mais %n ficheiro foram adicionados.</numerusform>
@@ -332,13 +332,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3844"/>
+        <location filename="../src/server/appserver.cpp" line="3857"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>O %1 foi adicionado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3849"/>
+        <location filename="../src/server/appserver.cpp" line="3862"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 e mais %n ficheiro foram atualizados.</numerusform>
@@ -346,13 +346,13 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3851"/>
+        <location filename="../src/server/appserver.cpp" line="3864"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>O %1 foi atualizado.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3856"/>
+        <location filename="../src/server/appserver.cpp" line="3869"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 foi movido para %2 e mais %n ficheiro foi movido.</numerusform>
@@ -360,12 +360,12 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3859"/>
+        <location filename="../src/server/appserver.cpp" line="3872"/>
         <source>%1 has been moved to %2.</source>
         <translation>O %1 foi transferido para o %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3867"/>
+        <location filename="../src/server/appserver.cpp" line="3880"/>
         <source>Sync Activity</source>
         <translation>Atividade de sincronização</translation>
     </message>
@@ -454,113 +454,128 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
 <context>
     <name>KDC::ClientGui</name>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="189"/>
+        <location filename="../src/gui/clientgui.cpp" line="190"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
         <translation>Não foi possível resolver o(s) conflito(s) em %1 item(ns) na pasta de sincronização: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="242"/>
+        <location filename="../src/gui/clientgui.cpp" line="243"/>
         <source>Please sign in</source>
         <translation>Por favor, inicie sessão</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="292"/>
+        <location filename="../src/gui/clientgui.cpp" line="293"/>
         <source>Folder %1: %2</source>
         <translation>Pasta %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="298"/>
+        <location filename="../src/gui/clientgui.cpp" line="299"/>
         <source>There are no sync folders configured.</source>
         <translation>Não há pastas de sincronização configuradas.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1422"/>
+        <location filename="../src/gui/clientgui.cpp" line="1508"/>
         <source>Synthesis</source>
         <translation>Síntese</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1423"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Preferences</source>
         <translatorcomment>Préférences</translatorcomment>
         <translation>Preferências</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1424"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Quit</source>
         <translation>Sair</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="673"/>
+        <location filename="../src/gui/clientgui.cpp" line="674"/>
         <source>Undefined State.</source>
         <translation>Estado indefinido.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="676"/>
+        <location filename="../src/gui/clientgui.cpp" line="677"/>
         <source>Waiting to start syncing.</source>
         <translation>A aguardar o início da sincronização.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="679"/>
+        <location filename="../src/gui/clientgui.cpp" line="680"/>
         <source>Sync is running.</source>
         <translation>A sincronização está em curso.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="683"/>
+        <location filename="../src/gui/clientgui.cpp" line="684"/>
         <source>Sync was successful, unresolved conflicts.</source>
         <translation>A sincronização foi bem-sucedida, mas existem conflitos por resolver.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="685"/>
+        <location filename="../src/gui/clientgui.cpp" line="686"/>
         <source>Last Sync was successful.</source>
         <translation>A última sincronização foi bem-sucedida.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="692"/>
+        <location filename="../src/gui/clientgui.cpp" line="693"/>
         <source>User Abort.</source>
         <translation>Interrupção pelo utilizador.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="696"/>
+        <location filename="../src/gui/clientgui.cpp" line="697"/>
         <source>Sync is paused.</source>
         <translation>A sincronização está em pausa.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="705"/>
+        <location filename="../src/gui/clientgui.cpp" line="706"/>
         <source>%1 (Sync is paused)</source>
         <translation>%1 (A sincronização está em pausa)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1257"/>
+        <location filename="../src/gui/clientgui.cpp" line="1250"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Quer mesmo remover as sincronizações da conta &lt;i&gt;%1&lt;/i&gt;?&lt;br&gt;&lt;b&gt;Nota:&lt;/b&gt; Isto &lt;b&gt;não&lt;/b&gt; irá eliminar quaisquer ficheiros.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1261"/>
+        <location filename="../src/gui/clientgui.cpp" line="1254"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>REMOVER TODAS AS SINCRONIZAÇÕES</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1262"/>
+        <location filename="../src/gui/clientgui.cpp" line="1255"/>
         <source>CANCEL</source>
         <translation>CANCELAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1590"/>
+        <location filename="../src/gui/clientgui.cpp" line="1382"/>
+        <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
+        <translation>%1 itens foram eliminados da sua pasta de sincronização local &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Para evitar eliminações não pretendidas, a sincronização foi pausada.&lt;br&gt;Deseja propagar essas eliminações para o seu kDrive?</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1420"/>
+        <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
+        <translation>Vários ficheiros foram eliminados da sua pasta de sincronização local &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Os ficheiros eliminados podem ser encontrados no &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;lixo&lt;/a&gt; do kDrive.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
+        <source>Don&apos;t show again</source>
+        <translation>Não mostrar novamente</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1676"/>
         <source>Failed to start synchronizations!</source>
         <translation>Não foi possível iniciar as sincronizações!</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="849"/>
+        <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
         <translation>Não foi possível abrir o caminho da pasta %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="116"/>
+        <location filename="../src/gui/clientgui.cpp" line="117"/>
         <source>Unable to initialize kDrive client</source>
         <translation>Não foi possível inicializar o cliente kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="255"/>
+        <location filename="../src/gui/clientgui.cpp" line="256"/>
         <source>Synchronization is paused</source>
         <translation>A sincronização está em pausa</translation>
     </message>
@@ -697,22 +712,22 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="100"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="105"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="110"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="115"/>
         <source>CANCEL</source>
         <translation>CANCELAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="120"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="125"/>
         <source>YES</source>
         <translation>SIM</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="130"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="135"/>
         <source>NO</source>
         <translation>NAO</translation>
     </message>
@@ -1564,22 +1579,22 @@ Selecione outra pasta. Se continuar, o Lite Sync será desativado.&lt;br&gt;
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1085"/>
         <source>Unable to open folder path %1.</source>
         <translation>Não foi possível abrir o caminho da pasta %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1099"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Envio concluído!&lt;br&gt;Por favor, indique o identificador &lt;b&gt;%1&lt;/b&gt; nos relatórios de erros.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1121"/>
         <source>No kDrive configured!</source>
         <translation>O kDrive não está configurado!</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1100"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Falha na transmissão!
@@ -1777,6 +1792,11 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>Não há espaço suficiente no seu computador.&lt;br&gt;O download foi cancelado.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Não é possível criar o ficheiro «%1», uma vez que não é suportado no seu sistema de ficheiros.&lt;br&gt;Foi excluído da sincronização.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="609"/>
         <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Este elemento foi movido para outro local.&lt;br&gt;A operação local foi cancelada.</translation>
@@ -1928,7 +1948,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Synchronization error.</source>
         <translation>Erro de sincronização.</translation>
     </message>
@@ -1938,17 +1958,17 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>Não é possível aceder ao item.&lt;br&gt;Por favor, corrija as permissões de leitura e escrita.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
         <source>System error.</source>
         <translation>Erro do sistema.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>O item já existe no outro lado.&lt;br&gt;Foi temporariamente colocado na lista negra.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="843"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Ocorreu um erro técnico.&lt;br&gt;Limpe o histórico e, se o erro persistir, contacte a nossa equipa de apoio.</translation>
     </message>
@@ -2750,47 +2770,47 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
         <translation>Não é possível guardar os parâmetros!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="490"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>A pasta principal é uma pasta de sincronização ou está incluída numa</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="524"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Não é possível encontrar um caminho válido</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>No valid folder selected!</source>
         <translation>Não foi selecionada nenhuma pasta válida!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2144"/>
         <source>The selected path does not exist!</source>
         <translation>O caminho selecionado não existe!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2149"/>
         <source>The selected path is not a folder!</source>
         <translation>O caminho selecionado não é uma pasta!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2154"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Não tem permissão para gravar na pasta selecionada!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2184"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>A pasta local %1 contém uma pasta que já está sincronizada. Por favor, escolha outra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2192"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>A pasta local %1 está incluída numa pasta já sincronizada. Por favor, escolha outra!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2200"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>A pasta local %1 já está sincronizada. Escolha outra!</translation>
     </message>
@@ -2863,7 +2883,7 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="133"/>
+        <location filename="../src/server/appserver.cpp" line="134"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>A aplicação kDrive irá fechar devido a um erro grave.</translation>
     </message>

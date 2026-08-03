@@ -30,21 +30,22 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
-    info/userinfo.h info/userinfo.cpp
-    info/accountinfo.h info/accountinfo.cpp
-    info/driveinfo.h info/driveinfo.cpp
-    info/driveavailableinfo.h info/driveavailableinfo.cpp
-    info/syncinfo.h info/syncinfo.cpp
+    data/account.h data/account.cpp
+    data/drive.h data/drive.cpp
+    data/driveavailable.h data/driveavailable.cpp
+    data/user.h data/user.cpp
+    data/sync.h data/sync.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
-    info/errorinfo.h info/errorinfo.cpp
+    data/error.h data/error.cpp
     info/parametersinfo.h info/parametersinfo.cpp
     info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
-    info/exclusionappinfo.h info/exclusionappinfo.cpp
+    data/exclusionapp.h data/exclusionapp.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
+    info/maintenanceinfo.h info/maintenanceinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
     log/sentry/abstractptrace.h 
     log/sentry/abstractcounterscopedptrace.h
@@ -135,7 +136,8 @@ if(UNIX)
         utf8proc)
     if(NOT APPLE)
         target_link_libraries(${libcommon_NAME}
-                "uuid")   # For UUID generation
+                "uuid"  # For UUID generation
+                mount)
     endif()
 elseif(WIN32)
     target_link_libraries(${libcommon_NAME}

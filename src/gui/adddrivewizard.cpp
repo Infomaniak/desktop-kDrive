@@ -183,7 +183,7 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == RemoteFolders) {
         _addDriveServerFoldersWidget->init(_userDbId, _driveInfo);
     } else if (_currentStep == LocalFolder) {
-        _addDriveLocalFolderWidget->setDrive(_driveInfo.name());
+        _addDriveLocalFolderWidget->setDrive(QString::fromStdString(_driveInfo.name()));
         _addDriveLocalFolderWidget->setLiteSync(_liteSync);
         QString localFolderPath = QString::fromStdString(Theme::instance()->appName());
         if (!QDir(localFolderPath).isAbsolute()) {
@@ -259,16 +259,16 @@ void AddDriveWizard::onStepTerminated(const bool next) {
         if (next) {
             for (auto &sync: _gui->syncInfoMap()) {
                 const auto &driveInfoMapIt = _gui->driveInfoMap().find(sync.second.driveDbId());
-                if (driveInfoMapIt != _gui->driveInfoMap().end() && _driveInfo.driveId() == driveInfoMapIt->second.id()) {
+                if (driveInfoMapIt != _gui->driveInfoMap().end() && _driveInfo.driveId() == driveInfoMapIt->second.driveId()) {
                     found = true;
                     break;
                 }
             }
             if (found) {
-                CustomMessageBox msgBox(
-                        QMessageBox::Warning,
-                        tr("The kDrive %1 is already synchronized on this computer. Continue anyway?").arg(_driveInfo.name()),
-                        QMessageBox::Yes | QMessageBox::No, this);
+                CustomMessageBox msgBox(QMessageBox::Warning,
+                                        tr("The kDrive %1 is already synchronized on this computer. Continue anyway?")
+                                                .arg(QString::fromStdString(_driveInfo.name())),
+                                        QMessageBox::Yes | QMessageBox::No, this);
                 if (msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this)) != QMessageBox::Yes) {
                     stayCurrentStep = true;
                 }

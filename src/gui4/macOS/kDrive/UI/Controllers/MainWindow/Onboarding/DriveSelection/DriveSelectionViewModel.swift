@@ -36,9 +36,12 @@ final class DriveSelectionViewModel: ObservableObject {
     private var bindStore = Set<AnyCancellable>()
 
     @Published private(set) var isLoading = false
+    @Published var isShowingError = false
     @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
+    @Published private(set) var synchronizedDrives = [UIDrive]()
+
     var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
 
     var selectedSynchroConfigurations: [SynchroConfiguration] {
@@ -55,6 +58,7 @@ final class DriveSelectionViewModel: ObservableObject {
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
         observeAvailableDrives()
+        observeSynchronizedDrives()
     }
 
     private func observeAvailableDrives() {
@@ -68,6 +72,15 @@ final class DriveSelectionViewModel: ObservableObject {
             }
     }
 
+    private func observeSynchronizedDrives() {
+        coherentCacheObservable.usersPublisher.allDrivesPublisher()
+            .map { $0.map { UIDrive(drive: $0.drive) } }
+            .removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
+                self?.synchronizedDrives = synchronizedDrives
+            }
+    }
+
     func loadAvailableDrives() async throws {
         guard let user = flowCoordinator.currentUser else {
             flowCoordinator.navigate(to: .login)
@@ -75,6 +88,7 @@ final class DriveSelectionViewModel: ObservableObject {
         }
 
         _ = try await DriveJobs().availableDrives(userDbId: Int32(user.dbId))
+        _ = try await SyncJobs().availableSync()
     }
 
     func toggleDriveSelection(_ drive: UIAvailableDrive) {
@@ -86,7 +100,7 @@ final class DriveSelectionViewModel: ObservableObject {
     }
 
     func startSynchronization() {
-        guard !selectedDrives.isEmpty else { return }
+        guard !selectedDrives.isEmpty || !synchronizedDrives.isEmpty else { return }
 
         Task {
             isLoading = true
@@ -118,8 +132,8 @@ final class DriveSelectionViewModel: ObservableObject {
                 flowCoordinator.synchronizations = syncCandidates
                 await flowCoordinator.navigateToNextStepOrFinish()
             } catch {
-                // TODO: Handle error
                 isLoading = false
+                isShowingError = true
             }
         }
     }

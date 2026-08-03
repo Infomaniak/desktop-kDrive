@@ -74,6 +74,7 @@ jobs:
   periphery:
     name: Periphery
     runs-on: [ self-hosted, iOS ]
+    if: contains(github.event.pull_request.labels.*.name, 'macOS UI') || contains(github.event.pull_request.labels.*.name, 'XPC')
 
     steps:
       - name: Checkout

@@ -27,7 +27,7 @@
 static const auto inParamsUserDbId = "userDbId";
 
 // Output parameters keys
-static const auto outParamsDriveAvailableInfoList = "driveAvailableInfoList";
+static const auto outParamsDriveAvailableList = "driveAvailableInfoList";
 
 namespace KDC {
 
@@ -50,13 +50,13 @@ ExitInfo UserAvailableDrivesJob::deserializeInputParms() {
 }
 
 ExitInfo UserAvailableDrivesJob::serializeOutputParms() {
-    writeParamValues(outParamsDriveAvailableInfoList, _driveAvailableInfoList, info2DynamicVar<DriveAvailableInfo>);
+    writeParamValues(outParamsDriveAvailableList, _driveAvailableList, info2DynamicVar<DriveAvailable>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo UserAvailableDrivesJob::process() {
-    ExitCode exitCode = ServerRequests::getUserAvailableDrives(_userDbId, _driveAvailableInfoList);
+    ExitCode exitCode = ServerRequests::getUserAvailableDrives(_userDbId, _driveAvailableList);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getUserAvailableDrives");
         addError(Error(ERR_ID, exitCode, ExitCause::Unknown));

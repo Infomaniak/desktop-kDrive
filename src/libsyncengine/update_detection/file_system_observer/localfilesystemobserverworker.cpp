@@ -32,11 +32,16 @@
 
 #include <log4cplus/loggingmacros.h>
 
+#include <array>
 #include <filesystem>
 
 namespace KDC {
 
-static const int waitForUpdateDelay = 1000; // 1sec
+static const int64_t waitForUpdateDelay = 1000; // 1sec
+static const int64_t waitForUpdateDelayExtended = waitForUpdateDelay * 5; // 5sec, for slow-writing extensions
+
+static constexpr std::array<std::string_view, 11> slowWritingExtensions = {".psd", ".psb", ".ai",  ".indd",   ".blend", ".dwg",
+                                                                           ".dxf", ".pln", ".pla", ".prproj", ".aep"};
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName) :
@@ -63,6 +68,45 @@ void LocalFileSystemObserverWorker::stop() {
 
     //    _checksumWorker->stop();
     //    _checksumWorker->waitForExit();
+}
+
+ExitInfo LocalFileSystemObserverWorker::handleDeleteOp(const SyncPath &absolutePath, const SyncPath &relativePath,
+                                                       bool &itemRemovedFromLocalSnapshot) {
+    itemRemovedFromLocalSnapshot = false;
+
+    // Check if `absolutePath` indicates an existing item that was already added to the local snapshot with the same nodeId.
+    NodeId prevNodeId;
+
+    if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, prevNodeId); exitInfo) {
+        // An item has been found with the same path.
+        NodeId otherNodeId;
+        bool itemExistsWithSameNodeId = false;
+        if (auto checkError = IoError::Success;
+            IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, itemExistsWithSameNodeId, otherNodeId, checkError,
+                                                      IoHelper::PathCheckOption::Insensitive) &&
+            !itemExistsWithSameNodeId) {
+            if (!_liveSnapshot.removeItem(prevNodeId)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item from local snapshot: "
+                                                   << Utility::formatSyncPath(absolutePath) << L" ("
+                                                   << CommonUtility::s2ws(prevNodeId) << L")");
+                return ExitCode::DataError;
+            }
+
+            itemRemovedFromLocalSnapshot = true;
+
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath) << L" ("
+                                                                              << CommonUtility::s2ws(prevNodeId) << L")");
+            return ExitCode::Ok;
+        }
+    } else {
+        if (exitInfo.cause() == ExitCause::NotFound) return ExitCode::Ok;
+
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in Snapshot::getItemId: " << Utility::formatSyncPath(relativePath) << L" : " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
 }
 
 ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) {
@@ -104,39 +148,20 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         _updating = true;
         _needUpdateTimerStart = std::chrono::steady_clock::now();
 
+        const std::string ext = CommonUtility::toLower(absolutePath.extension().string());
+        if (std::find(slowWritingExtensions.begin(), slowWritingExtensions.end(), ext) != slowWritingExtensions.end()) {
+            _useExtendedDelay = true;
+        }
+
         _syncPal->removeItemFromTmpBlacklist(relativePath);
 
         if (opTypeFromOS == OperationType::Delete) {
-            // Check if exists with same nodeId
-            NodeId prevNodeId;
-            if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, prevNodeId); exitInfo) {
-                // An item has been found with the same path
-                bool existsWithSameId = false;
-                NodeId otherNodeId;
-                if (auto checkError = IoError::Success;
-                    IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, checkError,
-                                                              IoHelper::PathCheckOption::Insensitive) &&
-                    !existsWithSameId) {
-                    if (!_liveSnapshot.removeItem(prevNodeId)) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath) << L" ("
-                                                                              << CommonUtility::s2ws(prevNodeId) << L")");
-                        return ExitCode::DataError;
-                    }
+            bool itemRemovedFromLocalSnapshot = false;
+            if (const auto deleteOpExitInfo = handleDeleteOp(absolutePath, relativePath, itemRemovedFromLocalSnapshot);
+                !deleteOpExitInfo)
+                return deleteOpExitInfo;
 
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath)
-                                                                                      << L" (" << CommonUtility::s2ws(prevNodeId)
-                                                                                      << L")");
-                    continue;
-                }
-            } else {
-                if (exitInfo.cause() == ExitCause::NotFound) {
-                    // OK, just continue
-                } else {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in Snapshot::getItemId: " << Utility::formatSyncPath(relativePath)
-                                                                                 << L" : " << exitInfo);
-                    return exitInfo;
-                }
-            }
+            if (itemRemovedFromLocalSnapshot) continue;
         }
 
         // Get item FileStat
@@ -447,25 +472,8 @@ void LocalFileSystemObserverWorker::execute() {
 
     // Sync loop
     for (;;) {
-        if (stopAsked()) {
-            exitInfo = ExitCode::Ok;
-            invalidateSnapshot();
-            break;
-        }
+        if (checkStopCondition(exitInfo)) break;
 
-        exitInfo = _syncPal->isRootFolderValid();
-        if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-            invalidateSnapshot();
-            break;
-        }
-
-        exitInfo = _folderWatcher->exitInfo();
-        if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
-            invalidateSnapshot();
-            break;
-        }
         // We never pause this thread
         if (!_liveSnapshot.isValid()) {
             exitInfo = generateInitialSnapshot();
@@ -475,23 +483,7 @@ void LocalFileSystemObserverWorker::execute() {
             }
         }
 
-        // Wait 1 sec after the last update
-        if (_updating) {
-            const auto diff_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() -
-                                                                                       _needUpdateTimerStart);
-            if (diff_ms.count() > waitForUpdateDelay) {
-                // Check if root folder is still valid
-                exitInfo = _syncPal->isRootFolderValid();
-                if (!exitInfo) {
-                    LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
-                    invalidateSnapshot();
-                    break;
-                }
-
-                const std::scoped_lock lock(_recursiveMutex);
-                _updating = false;
-            }
-        }
+        if (checkAndClearUpdateDelay(exitInfo)) break;
 
         if (_initializing) _initializing = false;
         Utility::msleep(LOOP_EXEC_SLEEP_PERIOD);
@@ -499,6 +491,65 @@ void LocalFileSystemObserverWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name());
     setExitCause(exitInfo.cause());
     setDone(exitInfo.code());
+}
+
+bool LocalFileSystemObserverWorker::checkStopCondition(ExitInfo &exitInfo) {
+    if (stopAsked()) {
+        exitInfo = ExitCode::Ok;
+        invalidateSnapshot();
+        return true;
+    }
+
+    exitInfo = _syncPal->isRootFolderValid();
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+        invalidateSnapshot();
+        return true;
+    }
+
+    exitInfo = _folderWatcher->exitInfo();
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in FolderWatcher: " << _folderWatcher->exitInfo());
+        invalidateSnapshot();
+        return true;
+    }
+
+    return false;
+}
+
+bool LocalFileSystemObserverWorker::checkAndClearUpdateDelay(ExitInfo &exitInfo) {
+    std::chrono::steady_clock::time_point needUpdateTimerStart;
+    bool updating = false;
+    bool useExtendedDelay = false;
+
+    {
+        const std::scoped_lock lock(_recursiveMutex);
+        updating = _updating;
+        useExtendedDelay = _useExtendedDelay;
+        needUpdateTimerStart = _needUpdateTimerStart;
+    }
+
+    if (!updating) return false;
+
+    // Wait 1 sec after the last update or 5 if the file has a slow-writing extension, before starting the sync
+    const auto diff_ms =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - needUpdateTimerStart);
+    const auto activeDelay = useExtendedDelay ? waitForUpdateDelayExtended : waitForUpdateDelay;
+    if (diff_ms.count() <= activeDelay) return false;
+
+    exitInfo = _syncPal->isRootFolderValid();
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in isRootFolderValid: " << exitInfo);
+        invalidateSnapshot();
+        return true;
+    }
+
+    {
+        const std::scoped_lock lock(_recursiveMutex);
+        _updating = false;
+        _useExtendedDelay = false;
+    }
+    return false;
 }
 
 ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {

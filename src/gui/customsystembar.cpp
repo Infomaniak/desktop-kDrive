@@ -54,13 +54,13 @@ CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
         setMaximumHeight(popupBarHeight);
         hBox->setContentsMargins(popupBoxHMargin, popupBoxVTMargin, popupBoxHMargin, popupBoxVBMargin);
 
-        CustomToolButton *exitButton = new CustomToolButton(this);
-        exitButton->setObjectName("exitBigButton");
-        exitButton->setIconPath(":/client/resources/icons/actions/close.svg");
+        _exitButton = new CustomToolButton(this);
+        _exitButton->setObjectName("exitBigButton");
+        _exitButton->setIconPath(":/client/resources/icons/actions/close.svg");
         hBox->addStretch();
-        hBox->addWidget(exitButton);
+        hBox->addWidget(_exitButton);
 
-        connect(exitButton, &CustomToolButton::clicked, this, &CustomSystemBar::onExit);
+        connect(_exitButton, &CustomToolButton::clicked, this, &CustomSystemBar::onExit);
     } else {
         if (CommonUtility::isMac()) {
             setMinimumHeight(macDialogBarHeight);
@@ -110,6 +110,13 @@ CustomSystemBar::CustomSystemBar(bool popup, QWidget *parent) :
             connect(closeButton, &CustomToolButton::clicked, this, &CustomSystemBar::onExit);
         }
     }
+}
+
+void CustomSystemBar::showExitButton(const bool show) {
+    if (!_exitButton) {
+        return;
+    }
+    _exitButton->setVisible(show);
 }
 
 void CustomSystemBar::mousePressEvent(QMouseEvent *event) {

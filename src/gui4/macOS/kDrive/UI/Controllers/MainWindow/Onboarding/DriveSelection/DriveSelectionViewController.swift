@@ -77,7 +77,7 @@ final class DriveSelectionViewController: OnboardingStepViewController {
             do {
                 try await viewModel.loadAvailableDrives()
             } catch {
-                print("Error loading available drives: \(error)")
+                viewModel.isShowingError = true
             }
         }
     }
@@ -115,6 +115,11 @@ final class DriveSelectionViewController: OnboardingStepViewController {
                 self?.handleUpdatedDrivesList(availableDrives)
             }
 
+        viewModel.$synchronizedDrives
+            .receiveOnMain(store: &bindStore) { [weak self] synchronizedDrives in
+                self?.handleSynchronizedDrivesChanged(synchronizedDrives)
+            }
+
         viewModel.$selectedDrives
             .receiveOnMain(store: &bindStore) { [weak self] selectedDrives in
                 self?.handleSelectedDrivesChanged(selectedDrives)
@@ -124,6 +129,22 @@ final class DriveSelectionViewController: OnboardingStepViewController {
             .receiveOnMain(store: &bindStore) { [weak self] isLoading in
                 self?.handleLoadingState(isLoading)
             }
+
+        viewModel.$isShowingError
+            .receiveOnMain(store: &bindStore) { [weak self] isShowingError in
+                guard isShowingError else { return }
+                self?.showGenericErrorAlert()
+            }
+    }
+
+    private func showGenericErrorAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = KDriveLocalizable.unexpectedErrorTeachingTipTitle
+        alert.informativeText = KDriveLocalizable.unexpectedErrorTeachingTipContent
+        alert.runModal()
+
+        viewModel.isShowingError = false
     }
 
     private func handleUpdatedDrivesList(_ drives: [UIAvailableDrive]) {
@@ -146,10 +167,20 @@ extension DriveSelectionViewController {
 
         drivesListView.drives = drives
 
+        for syncedDrive in viewModel.synchronizedDrives {
+            if let cell = drivesListView.cells[syncedDrive.driveId] {
+                cell.isEnabled = false
+                cell.state = .on
+            }
+        }
+
         if drives.count == 1, let singleDrive = drives.first {
-            drivesListView.cells[singleDrive.id]?.state = .on
-            drivesListView.cells[singleDrive.id]?.isEnabled = false
-            viewModel.toggleDriveSelection(singleDrive)
+            let isSynchronized = viewModel.synchronizedDrives.contains { $0.driveId == singleDrive.id }
+            if !isSynchronized {
+                drivesListView.cells[singleDrive.id]?.state = .on
+                drivesListView.cells[singleDrive.id]?.isEnabled = false
+                viewModel.toggleDriveSelection(singleDrive)
+            }
         }
 
         primaryButton.title = KDriveLocalizable.buttonContinue
@@ -175,12 +206,26 @@ extension DriveSelectionViewController {
     }
 
     private func handleSelectedDrivesChanged(_ selectedDrives: Set<UIAvailableDrive>) {
-        let shouldEnableButtons = !selectedDrives.isEmpty
-
-        primaryButton.isEnabled = shouldEnableButtons
-        secondaryButton.isEnabled = shouldEnableButtons
-
+        updateButtonsEnabledState()
         drivesListView.selectedDrives = selectedDrives
+    }
+
+    private func handleSynchronizedDrivesChanged(_ synchronizedDrives: [UIDrive]) {
+        for syncedDrive in synchronizedDrives {
+            if let cell = drivesListView.cells[syncedDrive.driveId] {
+                cell.isEnabled = false
+                cell.state = .on
+            }
+        }
+        updateButtonsEnabledState()
+    }
+
+    private func updateButtonsEnabledState() {
+        let hasSynchronizedDrives = !viewModel.synchronizedDrives.isEmpty
+        let hasSelectedDrives = !viewModel.selectedDrives.isEmpty
+
+        primaryButton.isEnabled = hasSynchronizedDrives || hasSelectedDrives
+        secondaryButton.isEnabled = hasSelectedDrives
     }
 
     private func handleLoadingState(_ isLoading: Bool) {
@@ -193,8 +238,12 @@ extension DriveSelectionViewController {
     }
 
     private func toggleCellsEnabledState(_ isEnabled: Bool) {
-        for cell in drivesListView.cells.values {
-            cell.isEnabled = isEnabled
+        for (driveId, cell) in drivesListView.cells {
+            // Don't enable cells for synchronized drives
+            let isSynchronized = viewModel.synchronizedDrives.contains { $0.driveId == driveId }
+            if !isSynchronized {
+                cell.isEnabled = isEnabled
+            }
         }
     }
 

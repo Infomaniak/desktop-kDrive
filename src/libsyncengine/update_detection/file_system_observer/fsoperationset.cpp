@@ -34,17 +34,18 @@ bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) const {
     return false;
 }
 
-std::unordered_map<UniqueId, FSOpPtr> FSOperationSet::getAllOps() const {
+OpMap FSOperationSet::getAllOps() const {
     const std::scoped_lock lock(_mutex);
     return _ops;
 }
 
-std::unordered_set<UniqueId> FSOperationSet::getOpsByType(const OperationType type) const {
+OpSet FSOperationSet::getOpsByType(const OperationType type) const {
     const std::scoped_lock lock(_mutex);
+    OpSet ret((CmpOp(_ops)));
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
-        return it->second;
+        ret.insert(it->second.begin(), it->second.end());
     }
-    return std::unordered_set<UniqueId>();
+    return ret;
 }
 
 std::unordered_set<UniqueId> FSOperationSet::getOpsByNodeId(const NodeId &nodeId) const {

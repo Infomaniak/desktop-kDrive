@@ -149,4 +149,8 @@ bool setDehydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioE
     return IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError);
 }
 
+bool setHydratedPlaceholderStatus(const KDC::SyncPath &path, KDC::IoError &ioError) noexcept {
+    return IoHelper::setXAttrValue(path, FILE_ATTRIBUTE_NORMAL, ioError);
+}
+
 } // namespace KDC::testhelpers

@@ -35,6 +35,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"
 
+#include <memory>
 #include <qbytearray.h>
 
 namespace KDC {
@@ -320,13 +321,12 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64StdStr, avatarBLOB);
-        QByteArray avatarQBA;
-        (void) std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
-        QImage avatar;
-        (void) avatar.loadFromData(avatarQBA);
+        auto avatar = std::make_shared<std::vector<char>>(avatarBLOB.begin(), avatarBLOB.end());
 
-        const UserInfo ui1(1, 1001, "aaaaa", "a1a1a1", "aaaaa@xxx.com", avatar, true);
-        const UserInfo ui2(2, 1002, "bbbbb", "b1b1b1", "bbbbb@xxx.com", avatar, false);
+        User ui1(1, 1001, "", "aaaaa", "a1a1a1", "aaaaa@xxx.com", "", avatar, false);
+        ui1.setConnected(true);
+        User ui2(2, 1002, "", "bbbbb", "b1b1b1", "bbbbb@xxx.com", "", avatar, false);
+        ui2.setConnected(false);
 
         userInfoListJob->_userInfoList = {ui1, ui2};
     };
@@ -435,12 +435,12 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
     auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
         const auto userAvailableDrivesJob = std::dynamic_pointer_cast<UserAvailableDrivesJob>(job);
 
-        DriveAvailableInfo dai1(1111, 111, 11, "account1", "drive1111", "#aabbcc");
+        DriveAvailable dai1(1111, 111, 11, "account1", "drive1111", "#aabbcc");
         dai1.setUserDbId(1);
-        DriveAvailableInfo dai2(2222, 222, 22, "account2", "drive2222", "#ddeeff");
+        DriveAvailable dai2(2222, 222, 22, "account2", "drive2222", "#ddeeff");
         dai2.setUserDbId(2);
 
-        userAvailableDrivesJob->_driveAvailableInfoList = {dai1, dai2};
+        userAvailableDrivesJob->_driveAvailableList = {dai1, dai2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -497,14 +497,14 @@ void TestGuiCommChannel::testAccountInfoListJob() {
     auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
         const auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
 
-        AccountInfo ai1(1, 1);
-        ai1.setId(1111);
+        Account ai1(1, 1);
+        ai1.setAccountId(1111);
         ai1.setName("account1");
-        AccountInfo ai2(2, 1);
-        ai2.setId(2222);
+        Account ai2(2, 1);
+        ai2.setAccountId(2222);
         ai2.setName("account2");
 
-        accountInfoListJob->_accountInfoList = {ai1, ai2};
+        accountInfoListJob->_accountList = {ai1, ai2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -516,38 +516,42 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 }
 
 namespace {
-std::vector<DriveInfo> createDriveInfoList() {
-    DriveInfo di1;
-    di1.setDbId(1);
-    di1.setId(1111);
-    di1.setAccountDbId(1);
-    di1.setName("drive1111");
-    di1.setColor("#aabbcc");
-    di1.setNotifications(true);
-    di1.setAdmin(true);
-    di1.setMaintenance(false);
-    di1.setLocked(false);
-    di1.setAccessDenied(false);
-    di1.setSize(1000000000);
-    di1.setUsedSize(50000000);
-    di1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
+std::vector<Drive> createDriveInfoList() {
+    Drive d1;
+    d1.setDbId(1);
+    d1.setDriveId(1111);
+    d1.setAccountDbId(1);
+    d1.setName("drive1111");
+    d1.setColor("#aabbcc");
+    d1.setNotifications(true);
+    d1.setAdmin(true);
+    MaintenanceInfo maintenanceInfo;
+    maintenanceInfo.setInMaintenance(false);
+    d1.setMaintenanceInfo(maintenanceInfo);
+    d1.setLocked(false);
+    d1.setAccessDenied(false);
+    d1.setSize(1000000000);
+    d1.setUsedSize(50000000);
+    d1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
 
-    DriveInfo di2;
-    di2.setDbId(2);
-    di2.setId(2222);
-    di2.setAccountDbId(1);
-    di2.setName("drive2222");
-    di2.setColor("#ddeeff");
-    di2.setNotifications(false);
-    di2.setAdmin(false);
-    di2.setMaintenance(true);
-    di2.setLocked(true);
-    di2.setAccessDenied(true);
-    di2.setSize(2000000000);
-    di2.setUsedSize(60000000);
-    di2.setPackInfo(PackInfo(2, "pack_pro", "PackPro", false));
+    Drive d2;
+    d2.setDbId(2);
+    d2.setDriveId(2222);
+    d2.setAccountDbId(1);
+    d2.setName("drive2222");
+    d2.setColor("#ddeeff");
+    d2.setNotifications(false);
+    d2.setAdmin(false);
+    MaintenanceInfo maintenanceInfo2;
+    maintenanceInfo2.setInMaintenance(true);
+    d2.setMaintenanceInfo(maintenanceInfo2);
+    d2.setLocked(true);
+    d2.setAccessDenied(true);
+    d2.setSize(2000000000);
+    d2.setUsedSize(60000000);
+    d2.setPackInfo(PackInfo(2, "pack_pro", "PackPro", false));
 
-    return {di1, di2};
+    return {d1, d2};
 }
 
 Poco::JSON::Array createDriveInfoObjList() {
@@ -636,7 +640,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
         auto driveInfoListJob = std::dynamic_pointer_cast<DriveInfoListJob>(job);
         CPPUNIT_ASSERT(driveInfoListJob);
 
-        driveInfoListJob->_driveInfoList = createDriveInfoList();
+        driveInfoListJob->_driveList = createDriveInfoList();
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -682,7 +686,7 @@ void TestGuiCommChannel::testDriveUpdateJob() {
         const auto driveInfoListJob = std::dynamic_pointer_cast<DriveUpdateJob>(job);
         CPPUNIT_ASSERT(driveInfoListJob);
 
-        CPPUNIT_ASSERT(createDriveInfoList().at(0) == driveInfoListJob->_driveInfo);
+        CPPUNIT_ASSERT(createDriveInfoList().at(0) == driveInfoListJob->_drive);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -766,6 +770,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
     Poco::JSON::Object searchInfoObj1;
     (void) searchInfoObj1.set("id", "MTAwMA==");
     (void) searchInfoObj1.set("isAvailableLocally", true);
+    (void) searchInfoObj1.set("isHydrated", true);
     (void) searchInfoObj1.set("modifiedTime", 10);
     (void) searchInfoObj1.set("name", "dG90bw==");
     (void) searchInfoObj1.set("path", "dG90bw==");
@@ -774,6 +779,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
     Poco::JSON::Object searchInfoObj2;
     (void) searchInfoObj2.set("id", "MjAwMA==");
     (void) searchInfoObj2.set("isAvailableLocally", false);
+    (void) searchInfoObj2.set("isHydrated", false);
     (void) searchInfoObj2.set("modifiedTime", 100);
     (void) searchInfoObj2.set("name", "dGl0aQ==");
     (void) searchInfoObj2.set("path", "dGl0aQ==");
@@ -797,8 +803,8 @@ void TestGuiCommChannel::testDriveSearchJob() {
         CPPUNIT_ASSERT(driveSearchJob);
 
 
-        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true);
-        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false);
+        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true, true);
+        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false, false);
 
         driveSearchJob->_searchInfoList = {si1, si2};
         driveSearchJob->_hasMore = false;

@@ -26,6 +26,7 @@
 #include <string>
 #include <stdio.h>
 #include <rpcdce.h>
+#include <iostream>
 
 #include <QLibrary>
 #include <QFile>
@@ -163,28 +164,30 @@ std::string CommonUtility::osVersion() {
     return osVersion;
 }
 
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
-    TCHAR szFileSystemName[MAX_PATH + 1];
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType.clear();
+    mountPoint.clear();
+
+    // FS type & mount point
+    TCHAR szFileSystemName[MAX_PATH + 1] = {0};
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
 
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
+    if (GetVolumeInformation(targetPath.root_path().native().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, ARRAYSIZE(szFileSystemName)) == 0) {
+        // This usually happens when the path is invalid (external drive/network not connected).
         DWORD dwError = GetLastError();
         std::wstringstream message;
-        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
+        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_path()) << L" ("
                 << utility_base::getErrorMessage(dwError) << L")";
         sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
+        return false;
     }
 
+    fsType = ws2s(szFileSystemName);
+    mountPoint = targetPath.root_path();
 
-    return "UNIDENTIFIED";
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {

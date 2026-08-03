@@ -13,20 +13,13 @@ add_definitions(-D_UNICODE)
 set(parms_SRCS
     db/parmsdb.h db/parmsdb.cpp
     db/parameters.h db/parameters.cpp
-    db/user.h db/user.cpp
-    db/account.h db/account.cpp
-    db/drive.h db/drive.cpp
-    db/sync.h db/sync.cpp
     db/exclusiontemplate.h db/exclusiontemplate.cpp
-    db/error.h db/error.cpp
     db/migrationselectivesync.h db/migrationselectivesync.cpp
     db/uploadsessiontoken.h db/uploadsessiontoken.cpp
     db/parmsdbappstate.cpp
 )
 
-if(APPLE)
-    list(APPEND parms_SRCS db/exclusionapp.h db/exclusionapp.cpp)
-endif()
+
 
 # Target
 add_library(${libparms_NAME} STATIC ${parms_SRCS})

@@ -27,6 +27,7 @@ kDrive Rescue Folder
 .sync.ffs_db
 .synkron.*
 *.crdownload
+.com.google.Chrome.*
 *.kate-swp
 System Volume Information
 Thumbs.db

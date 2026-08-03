@@ -136,6 +136,7 @@ bool isInTrash(const SyncPath &path);
 
 #if defined(KD_LINUX)
 bool hasTrashInfo();
+void createTrashInfo();
 void showTrashInfo();
 #endif
 
@@ -159,6 +160,17 @@ void setupLogging();
  \return true if no unexpected error occurred, false otherwise.
  */
 bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
+
+//! Sets the extended attribute corresponding to a hydrated placeholder (LiteSync).
+//! Note: Hydrated placeholders are characterized by a status different from `O` (online) status attribute on Mac and
+//! an attribute different from `FILE_ATTRIBUTE_OFFLINE` on Windows.
+//! Note: should be used for testing only.
+/*!
+ \param path is the file system path of the item.
+ \param ioError holds the error returned when an underlying OS API call fails.
+ \return true if no unexpected error occurred, false otherwise.
+ */
+bool setHydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
 #endif
 
 SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);

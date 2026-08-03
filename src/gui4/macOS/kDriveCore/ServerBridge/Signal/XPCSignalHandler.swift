@@ -39,11 +39,13 @@ enum SignalError: Error {
     case unableToGetSyncDbIdFromSignal
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
+    case unableToGetVfsConversionCompletedFromSignal
     case unableToGetNotificationFromSignal
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
     case unableToGetVersionInfoFromSignal
     case unableToGetUpdateStateFromSignal
+    case unableToGetLogUploadStatusFromSignal
     case unsupported(_ num: SignalNum)
 }
 
@@ -121,6 +123,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .SYNC_COMPLETEDITEM:
             try await synchroHandler.handleSyncCompleted(signal)
 
+        case .SYNC_VFS_CONVERSION_COMPLETED:
+            try await synchroHandler.handleVfsConversionCompleted(signal)
+
         case .UTILITY_SHOW_NOTIFICATION:
             try await utilitySignalHandler.handleShowNotification(signal)
 
@@ -132,6 +137,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .UTILITY_ERRORS_CLEARED: // Soon legacy Signal
             try await utilitySignalHandler.handleErrorCleared()
+
+        case .UTILITY_LOG_UPLOAD_STATUS_UPDATED:
+            try await utilitySignalHandler.handleLogUploadStatusUpdated(signal)
 
         case .UPDATER_SHOW_DIALOG:
             try await updaterSignalHandler.handleShowDialog(signal)

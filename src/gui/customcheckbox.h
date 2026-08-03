@@ -35,8 +35,8 @@ class CustomCheckBox : public QCheckBox {
 
     private:
         QString _toolTipText;
-        int _toolTipDuration;
-        CustomToolTip *_customToolTip;
+        int _toolTipDuration{0};
+        CustomToolTip *_customToolTip{nullptr};
 
         bool event(QEvent *event) override;
         void leaveEvent(QEvent *event) override;

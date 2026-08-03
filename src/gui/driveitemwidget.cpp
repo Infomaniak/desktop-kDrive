@@ -28,9 +28,10 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcDriveItemWidget, "gui.driveitemwidget", QtInfoMsg)
 
-DriveItemWidget::DriveItemWidget(const DriveAvailableInfo &driveInfo, QListWidget *parent) :
-    QListWidgetItem(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfo.color()),
-                    driveInfo.name(), parent, Type),
+DriveItemWidget::DriveItemWidget(const DriveAvailable &driveInfo, QListWidget *parent) :
+    QListWidgetItem(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg",
+                                                      QColor(QString::fromStdString(driveInfo.color()))),
+                    QString::fromStdString(driveInfo.name()), parent, Type),
     _driveInfo(driveInfo) {
     setSizeHint(QSize(parent->maximumWidth(), itemHeight));
 }

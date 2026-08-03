@@ -23,6 +23,10 @@ struct SyncRemoveSignal: Codable, Sendable {
     let syncDbId: Int32
 }
 
+struct SyncVfsConversionCompletedSignal: Codable, Sendable {
+    let syncDbId: Int32
+}
+
 struct SyncInfoSignal: Codable, Sendable {
     let syncInfo: SyncInfoSignalMetadata
 }

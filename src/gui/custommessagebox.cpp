@@ -39,12 +39,7 @@ Q_LOGGING_CATEGORY(lcCustomMessageBox, "gui.custommessagebox", QtInfoMsg)
 CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, const QString &warningText, bool warning,
                                    QMessageBox::StandardButtons buttons, QWidget *parent) :
     CustomDialog(true, parent),
-    _icon(icon),
-    _warningLabel(nullptr),
-    _textLabel(nullptr),
-    _iconLabel(nullptr),
-    _buttonsHBox(nullptr),
-    _buttonCount(0) {
+    _icon(icon) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Warning text
@@ -86,6 +81,16 @@ CustomMessageBox::CustomMessageBox(QMessageBox::Icon icon, const QString &text, 
     messageHBox->setStretchFactor(_textLabel, 1);
 
     mainLayout->addStretch();
+
+    // Add checkbox (hidden by default)
+    QHBoxLayout *checkBoxLayout = new QHBoxLayout();
+    checkBoxLayout->setContentsMargins(2 * boxHMargin, 0, boxHMargin, messageVBMargin);
+    checkBoxLayout->setSpacing(boxHSpacing);
+    _checkBox = new CustomCheckBox(this);
+    _checkBox->setText(_checkBoxText);
+    _checkBox->setVisible(false);
+    checkBoxLayout->addWidget(_checkBox);
+    mainLayout->addLayout(checkBoxLayout);
 
     // Add dialog buttons
     _buttonsHBox = new QHBoxLayout();
@@ -201,7 +206,7 @@ QSize CustomMessageBox::sizeHint() const {
 
     const auto heightHint = contentsMargins().top() + contentsMargins().bottom() + messageVTMargin + 2 * messageVBMargin +
                             (_warningLabel ? _warningLabel->height() : 0) + (_textLabel ? _textLabel->height() : 0) +
-                            QPushButton().height();
+                            (_checkBox ? _checkBox->height() : 0) + QPushButton().height();
 
     return QSize(widthHint, heightHint);
 }

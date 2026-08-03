@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "mountains_trees_sun_light.svg",
+      "filename" : "mountains-trees-sun-light.svg",
       "idiom" : "universal"
     },
     {
@@ -11,7 +11,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "mountains_trees_sun_dark.svg",
+      "filename" : "mountains-trees-sun-dark.svg",
       "idiom" : "universal"
     }
   ],

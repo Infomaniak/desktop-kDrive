@@ -74,6 +74,7 @@ namespace Infomaniak.kDrive.Types
         SYNC_GETPRIVATELINKURL,
         SYNC_TRIGGER_PROGRESS_UPDATE,
         SYNC_SETSUPPORTSVIRTUALFILES,
+        SYNC_ACKNOWLEDGE_MANY_DELETES,
         BLACKLISTED_NODE_LIST,
         BLACKLISTED_NODE_SETLIST,
         NODE_PATH,
@@ -151,6 +152,7 @@ namespace Infomaniak.kDrive.Types
         SYNC_COMPLETEDITEM,
         SYNC_VFS_CONVERSION_COMPLETED,
         SYNC_DELETE_FAILED,
+        SYNC_NOTIFY_MANY_DELETES,
         // Node
         NODE_FOLDER_SIZE_COMPLETED,
         NODE_FIX_CONFLICTED_FILES_COMPLETED,
@@ -254,7 +256,8 @@ namespace Infomaniak.kDrive.Types
         OperationCanceled,
         UpdateRequired,
         LogUploadFailed,
-        UpdateFailed
+        UpdateFailed,
+        TooManyDeleteOperations
     };
 
     public enum ExitCause

@@ -26,6 +26,8 @@ import kDriveCore
 final class SynchronizationViewModel: ObservableObject {
     @LazyInjectService private var syncCreator: SyncCreator
 
+    @Published var isShowingError = false
+
     private let flowCoordinator: OnboardingFlowCoordinator
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
@@ -35,8 +37,12 @@ final class SynchronizationViewModel: ObservableObject {
     func createSynchronizations() {
         Task {
             let syncCandidates = flowCoordinator.synchronizations
-            try? await syncCandidates.asyncForEach { syncCandidate in
-                try await self.syncCreator.create(from: syncCandidate)
+            do {
+                try await syncCandidates.asyncForEach { syncCandidate in
+                    try await self.syncCreator.create(from: syncCandidate)
+                }
+            } catch {
+                isShowingError = true
             }
 
             await flowCoordinator.navigateToNextStepOrFinish()

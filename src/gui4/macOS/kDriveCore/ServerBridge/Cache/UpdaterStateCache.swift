@@ -21,23 +21,33 @@ import CppInterop
 import Foundation
 
 public typealias UpdateStatePublisher = AnyPublisher<KDC.UpdateState, Never>
+public typealias ShowUpdateDialogPublisher = AnyPublisher<VersionInfo, Never>
 
 public protocol UpdaterCacheObservable: Sendable {
     var updateStatePublisher: UpdateStatePublisher { get }
+    var showUpdateDialogPublisher: ShowUpdateDialogPublisher { get }
 }
 
 public protocol UpdaterCache {
     func setUpdateState(_ state: KDC.UpdateState) async
     func getUpdateState() async -> KDC.UpdateState?
+    func requestShowUpdateDialog(versionInfo: VersionInfo) async
 }
 
 public actor UpdaterStateCache: UpdaterCache, UpdaterCacheObservable {
     private var updateState: KDC.UpdateState?
 
     private nonisolated let updateStateSubject = PassthroughSubject<KDC.UpdateState, Never>()
+    private nonisolated let showUpdateDialogSubject = PassthroughSubject<VersionInfo, Never>()
 
     public nonisolated var updateStatePublisher: UpdateStatePublisher {
         updateStateSubject
+            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+            .eraseToAnyPublisher()
+    }
+
+    public nonisolated var showUpdateDialogPublisher: ShowUpdateDialogPublisher {
+        showUpdateDialogSubject
             .subscribe(on: DispatchQueue.global(qos: .userInitiated))
             .eraseToAnyPublisher()
     }
@@ -51,6 +61,10 @@ public actor UpdaterStateCache: UpdaterCache, UpdaterCacheObservable {
 
     public func getUpdateState() -> KDC.UpdateState? {
         updateState
+    }
+
+    public func requestShowUpdateDialog(versionInfo: VersionInfo) {
+        showUpdateDialogSubject.send(versionInfo)
     }
 
     private func notifyUpdateStateChange(_ state: KDC.UpdateState) {

@@ -18,10 +18,13 @@
 
 import Cocoa
 import Combine
+import kDriveCore
 import kDriveResources
 
 final class SynchronizationViewController: OnboardingStepViewController {
     private let viewModel: SynchronizationViewModel
+
+    private var bindStore = Set<AnyCancellable>()
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         viewModel = SynchronizationViewModel(flowCoordinator: flowCoordinator)
@@ -36,6 +39,7 @@ final class SynchronizationViewController: OnboardingStepViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        bindViewModel()
     }
 
     override func viewWillAppear() {
@@ -49,5 +53,23 @@ final class SynchronizationViewController: OnboardingStepViewController {
 
         primaryButton.isHidden = true
         secondaryButton.isHidden = true
+    }
+
+    private func bindViewModel() {
+        viewModel.$isShowingError
+            .receiveOnMain(store: &bindStore) { [weak self] isShowingError in
+                guard isShowingError else { return }
+                self?.showGenericErrorAlert()
+            }
+    }
+
+    private func showGenericErrorAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .critical
+        alert.messageText = KDriveLocalizable.unexpectedErrorTeachingTipTitle
+        alert.informativeText = KDriveLocalizable.unexpectedErrorTeachingTipContent
+        alert.runModal()
+
+        viewModel.isShowingError = false
     }
 }

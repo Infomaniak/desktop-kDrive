@@ -25,6 +25,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <iostream>
@@ -250,7 +251,7 @@ void TestLogUploadJob::insertUserInDb() {
 
     // Insert user, account & drive
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     const int userId(atoi(testVariables.userId.c_str()));

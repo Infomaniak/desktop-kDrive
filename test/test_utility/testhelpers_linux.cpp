@@ -102,6 +102,24 @@ SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
     return {};
 }
 
+void createTrashInfo() {
+    for (const auto trashSubDir: {TrashSubDirectory::Info, TrashSubDirectory::Files}) {
+        const auto trashSubDirPath = getTrashSubDir(trashSubDir);
+        std::error_code ec;
+        if (!std::filesystem::exists(trashSubDirPath, ec) || ec) {
+            (void) std::filesystem::create_directories(trashSubDirPath, ec);
+            if (ec) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in std::filesystem::create_directories: " << Utility::formatStdError(ec));
+            }
+        }
+    }
+
+    const auto overwrite = 0; // Do not overwrite if the variable already exists.
+    const auto homeData = CommonUtility::envVarValue("HOME") + "/.local/share";
+    (void) CommonUtility::setenv("XDG_DATA_HOME", homeData.c_str(), overwrite);
+}
+
 bool hasTrashInfo() {
     std::error_code ec;
     const auto trashInfoPath = getTrashSubDir(TrashSubDirectory::Info);

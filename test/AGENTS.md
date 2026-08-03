@@ -150,7 +150,7 @@ cmake --build build-linux --parallel
 | `test/libparms/` | Tests for `src/libparms/` — parameters database CRUD |
 | `test/libsyncengine/` | Tests for `src/libsyncengine/` — full sync pipeline; **has its own [AGENTS.md](libsyncengine/AGENTS.md)** |
 | `test/server/` | Tests for `src/server/` — app server, comm channel (socket/pipe), GUI jobs, updater, VFS (macOS/Windows) |
-| `test/mocks/` | Reusable mock classes (header-only). No own CMakeLists; consumed by other test targets |
+| `test/mocks/` | Reusable mock classes. No own CMakeLists; consumed by other test targets |
 | `test/test_classes/` | Shared test helpers requiring heavy setup: `SyncPalTest` and `TestSituationGenerator` |
 | `test/test_utility/` | Lightweight shared utilities: `TestBase`, `testhelpers`, temp directories, data extractor |
 | `test/test_ci/` | Static fixture data used by tests: sample files, directories, symlinks |

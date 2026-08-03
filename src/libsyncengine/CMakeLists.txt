@@ -36,6 +36,7 @@ set(syncengine_SRCS
     jobs/network/login/gettokenjob.h jobs/network/login/gettokenjob.cpp
     jobs/network/login/refreshtokenjob.h jobs/network/login/refreshtokenjob.cpp
     jobs/network/login/gettokenfromapppasswordjob.h jobs/network/login/gettokenfromapppasswordjob.cpp
+    jobs/network/login/deletetokenjob.h jobs/network/login/deletetokenjob.cpp
     jobs/network/infomaniak_API/getappversionjob.h jobs/network/infomaniak_API/getappversionjob.cpp
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp

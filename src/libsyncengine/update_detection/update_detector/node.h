@@ -124,11 +124,20 @@ class Node : public std::enable_shared_from_this<Node> {
         inline void setStatus(const NodeStatus &status) { _status = status; }
 
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
-        std::shared_ptr<Node> findChildren(const SyncName &name, const NodeId &nodeId = "");
-        std::shared_ptr<Node> findChildrenById(const NodeId &nodeId);
-        [[nodiscard]] bool insertChildren(std::shared_ptr<Node> child);
-        size_t deleteChildren(std::shared_ptr<Node> child);
-        size_t deleteChildren(const NodeId &childId);
+
+        /**
+         * @brief Retrieve a child node based on its name and optionally its id.
+         * @param name The name of the child to find.
+         * @param nodeId Optionally the id of the child to find.
+         * @return A pointer to the node if found, `nullptr` otherwise.
+         */
+        std::shared_ptr<Node> findChild(const SyncName &name, const NodeId &nodeId = "");
+
+        std::shared_ptr<Node> findChildById(const NodeId &nodeId);
+        [[nodiscard]] bool insertChild(std::shared_ptr<Node> child);
+        size_t deleteChild(std::shared_ptr<Node> child);
+        size_t deleteChild(const NodeId &childId);
+
         /**
          * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change
          * events of type `except`.

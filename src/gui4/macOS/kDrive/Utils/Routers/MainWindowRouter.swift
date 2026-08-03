@@ -20,10 +20,11 @@ import Cocoa
 import Combine
 import kDriveCoreUI
 
-enum WindowRoute {
+enum WindowRoute: Sendable, Equatable {
     case preloading(isShowingError: Bool = false)
     case onboarding(UIUser? = nil, [OnboardingStep]? = nil, OnboardingStep? = nil)
     case mainWindow(MainViewTab? = nil)
+    case updateRequired
 }
 
 final class MainWindowRouter {
