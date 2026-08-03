@@ -66,8 +66,8 @@ rg -n "vfs|Vfs|VFS" src/server/ -g "*.h" -l
 
 ## Common Gotchas
 
-- macOS uses **XPC** exclusively for GUI IPC; Windows/Linux use TCP sockets. They are separate implementations — changes
-  to IPC logic may need to be applied to both `xpccommserver_mac.mm` and `socketcommserver.cpp`.
+- macOS uses **XPC** exclusively for GUI IPC; Windows/Linux use TLS over TCP sockets. They are separate implementations —
+  changes to IPC logic may need to be applied to both `xpccommserver_mac.mm` and `socketcommserver.cpp`.
 - The server process starts before the GUI; never assume GUI is alive when handling server-side events.
 - VFS mode (LiteSync) changes the file representation on disk; IO operations in VFS mode must go through the VFS plugin
   API, not direct `std::filesystem` calls.
