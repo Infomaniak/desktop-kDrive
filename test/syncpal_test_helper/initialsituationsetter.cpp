@@ -130,15 +130,16 @@ void InitialSituationSetter::generateSituation(const Situation &situation, const
     }
 }
 
-void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object::Ptr obj, const NodeId &parentId /*= {}*/) {
+void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object::Ptr obj, const SyncName &parentId /*= {}*/) {
     std::vector<std::string> keys;
     obj->getNames(keys);
 
     for (const auto &key: keys) {
         const NodeType type = obj->isObject(key) ? NodeType::Directory : NodeType::File;
+        const SyncName keyName = Str2SyncName(key);
         ItemDesc desc;
         desc.type = type;
-        desc.id = parentId.empty() ? key : parentId + "/" + key;
+        desc.id = parentId.empty() ? keyName : parentId + Str("/") + keyName;
         desc.name = Str2SyncName(CommonUtility::toUpper(key));
         desc.size = type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         addItem(side, desc, parentId);
@@ -150,7 +151,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object:
     }
 }
 
-void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr arr, const NodeId &parentId) {
+void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr arr, const SyncName &parentId) {
     for (size_t i = 0; i < arr->size(); ++i) {
         const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
@@ -160,11 +161,11 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::
         const std::string nameStr = itemObj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
 
-        const std::string lowerName = CommonUtility::toLower(nameStr);
+        const SyncName lowerName = Str2SyncName(CommonUtility::toLower(nameStr));
 
         ItemDesc desc;
         desc.type = type;
-        desc.id = parentId.empty() ? lowerName : parentId + "/" + lowerName;
+        desc.id = parentId.empty() ? lowerName : parentId + Str("/") + lowerName;
         desc.name = Str2SyncName(nameStr);
         desc.size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
@@ -176,7 +177,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::
     }
 }
 
-void InitialSituationSetter::addItem(const ReplicaSide side, const ItemDesc &desc, const NodeId &parentId) {
+void InitialSituationSetter::addItem(const ReplicaSide side, const ItemDesc &desc, const SyncName &parentId) {
     if (side == ReplicaSide::Local) {
         insertLocalItem(desc, parentId);
     } else {
@@ -184,7 +185,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, const ItemDesc &des
     }
 }
 
-void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const NodeId &parentId) {
+void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const SyncName &parentId) {
     const SyncPath namePath(desc.name);
     if (namePath.is_absolute() || namePath.filename() != namePath || namePath.empty()) {
         throw SituationGeneratorException("Invalid item name: '" + SyncName2Str(desc.name) + "'");
@@ -195,7 +196,7 @@ void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const NodeId 
         try {
             parentRelPath = _localItemPaths.at(parentId);
         } catch (const std::out_of_range &) {
-            throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
+            throw SituationGeneratorException("Unknown parent item id: '" + SyncName2Str(parentId) + "'");
         }
     }
     const SyncPath relPath = parentRelPath / namePath;
@@ -243,15 +244,15 @@ SyncPath InitialSituationSetter::localFilePathForUpload(const ItemDesc &desc) {
     return scratchPath;
 }
 
-NodeId InitialSituationSetter::remoteParentId(const NodeId &parentId) const {
+NodeId InitialSituationSetter::remoteParentId(const SyncName &parentId) const {
     try {
         return _remoteNodeIds.at(parentId);
     } catch (const std::out_of_range &) {
-        throw SituationGeneratorException("Unknown parent item id: '" + parentId + "'");
+        throw SituationGeneratorException("Unknown parent item id: '" + SyncName2Str(parentId) + "'");
     }
 }
 
-void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const NodeId &parentId) {
+void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncName &parentId) {
     if (_remoteNodeIds.at({}).empty()) return;
 
     try {

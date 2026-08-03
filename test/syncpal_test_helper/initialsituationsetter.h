@@ -139,7 +139,7 @@ class InitialSituationSetter {
     private:
         struct ItemDesc {
                 NodeType type = NodeType::File;
-                NodeId id; // lowercase, used to derive the relative path and as a map key
+                SyncName id; // lowercase, used to derive the relative path and as a map key
                 SyncName name; // display name
                 int64_t size = 0;
         };
@@ -147,15 +147,15 @@ class InitialSituationSetter {
         // side: Local -> creates real filesystem items only. Remote -> creates real remote API items only.
         void generateSituation(const Situation &situation, ReplicaSide side);
 
-        void addItem(ReplicaSide side, Poco::JSON::Object::Ptr obj, const std::string &parentId = {});
-        void addItem(ReplicaSide side, Poco::JSON::Array::Ptr arr, const std::string &parentId);
-        void addItem(ReplicaSide side, const ItemDesc &desc, const std::string &parentId);
+        void addItem(ReplicaSide side, Poco::JSON::Object::Ptr obj, const SyncName &parentId = {});
+        void addItem(ReplicaSide side, Poco::JSON::Array::Ptr arr, const SyncName &parentId);
+        void addItem(ReplicaSide side, const ItemDesc &desc, const SyncName &parentId);
 
-        void insertLocalItem(const ItemDesc &desc, const NodeId &parentId);
-        void insertRemoteItem(const ItemDesc &desc, const NodeId &parentId);
+        void insertLocalItem(const ItemDesc &desc, const SyncName &parentId);
+        void insertRemoteItem(const ItemDesc &desc, const SyncName &parentId);
 
         // Looks up the real remote NodeId for parentId, throwing SituationGeneratorException if unknown.
-        NodeId remoteParentId(const NodeId &parentId) const;
+        NodeId remoteParentId(const SyncName &parentId) const;
 
         // Returns the local path to upload from for a remote file item: the real generated local item if one
         // exists at the same id (both sides describe it), otherwise a scratch file generated on the fly in a
@@ -164,9 +164,9 @@ class InitialSituationSetter {
 
         std::shared_ptr<SyncPal> _syncPal;
 
-        std::unordered_map<NodeId, SyncPath, StringHashFunction, std::equal_to<>>
+        std::unordered_map<SyncName, SyncPath, SyncNameHashFunction, std::equal_to<>>
                 _localItemPaths; // item id (lowercase) -> local relative path
-        std::unordered_map<NodeId, NodeId, StringHashFunction, std::equal_to<>>
+        std::unordered_map<SyncName, NodeId, SyncNameHashFunction, std::equal_to<>>
                 _remoteNodeIds; // item id (lowercase) -> real remote NodeId
         std::optional<LocalTemporaryDirectory> _uploadScratchDir; // used only for remote-only file items
 };
