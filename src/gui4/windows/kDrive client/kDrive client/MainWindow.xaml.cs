@@ -87,16 +87,28 @@ namespace Infomaniak.kDrive
             await ProcessManyDeleteQueue();
         }
 
+        private readonly SemaphoreSlim _manyDeletesQueueSemaphore = new(1, 1);
+
         public async Task ProcessManyDeleteQueue()
         {
-            while (ViewModel.ManyDeletesQueue.Count > 0)
-            {
-                ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Dequeue();
+            if (!await _manyDeletesQueueSemaphore.WaitAsync(0))
+                return; // Another call is already draining the queue
 
-                if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit)
-                    await Showhardlimitmanydeletedialogue(manyDeletesInfo);
-                else if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.SoftLimit)
-                    await Showsoftlimitmanydeletedialogue(manyDeletesInfo);
+            try
+            {
+                while (ViewModel.ManyDeletesQueue.Count > 0)
+                {
+                    ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Dequeue();
+
+                    if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit)
+                        await Showhardlimitmanydeletedialogue(manyDeletesInfo);
+                    else if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.SoftLimit)
+                        await Showsoftlimitmanydeletedialogue(manyDeletesInfo);
+                }
+            }
+            finally
+            {
+                _manyDeletesQueueSemaphore.Release();
             }
         }
 
