@@ -269,7 +269,7 @@ void TestIntegration::testSimpleUpload() {
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
 
-    // The local Create operation above wrote the file directly to disk, bypassing the sync engine, so we
+    // The local Create operation above wrote the file directly to disk, simulating a user action, so we
     // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
