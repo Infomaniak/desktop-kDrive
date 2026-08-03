@@ -9,20 +9,37 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma Singleton
 import QtQuick
+import QtQuick.Effects
 
-QtObject {
-    readonly property real r4: 4
-    readonly property real r6: 6
-    readonly property real r8: 8
-    readonly property real r12: 12
-    readonly property real r16: 16
+Item {
+    id: root
+
+    property url source
+    property color color: "white"
+
+    Image {
+        id: iconSource
+
+        anchors.fill: parent
+        source: root.source
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        mipmap: true
+        visible: false
+    }
+
+    MultiEffect {
+        anchors.fill: iconSource
+        source: iconSource
+        colorization: 1
+        colorizationColor: root.color
+    }
 }
