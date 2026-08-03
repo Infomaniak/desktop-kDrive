@@ -84,6 +84,7 @@ struct StorageView: View {
             if isShowingVolumeNotFound {
                 IKContentUnavailableView(
                     image: KDriveResources.volumeStrokeDots.swiftUIImage,
+                    imageMaxWidth: 100,
                     title: KDriveLocalizable.storageMissingDiskMacOSTitle,
                     subtitle: KDriveLocalizable.storageMissingDiskMacOSDescription,
                     action: .init(title: KDriveLocalizable.buttonRetry) {
