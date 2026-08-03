@@ -52,13 +52,13 @@ Situation::Situation(const SyncName &jsonDescription) {
     }
 }
 
-Situation Situation::fromFile(const std::filesystem::path &filePath) {
+Situation::Situation(const SyncPath &filePath) {
     const std::ifstream file(filePath, std::ios::binary);
-    if (!file) throw SituationGeneratorException("Situation::fromFile: unable to open file: " + filePath.string());
+    if (!file) throw SituationGeneratorException("Situation::Situation: unable to open file: " + filePath.string());
 
     std::ostringstream buffer;
     buffer << file.rdbuf();
-    return Situation(Str2SyncName(buffer.str()));
+    *this = Situation(Str2SyncName(buffer.str()));
 }
 
 const Poco::JSON::Object::Ptr &Situation::jsonObject() const noexcept {
