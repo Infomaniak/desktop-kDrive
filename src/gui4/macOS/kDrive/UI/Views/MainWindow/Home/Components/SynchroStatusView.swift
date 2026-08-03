@@ -130,11 +130,10 @@ struct SynchroStatusView: View {
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
-            .frame(maxWidth: 300)
         }
         .redacted(reason: state.isRedacted ? .placeholder : [])
         .id(state)
-        .padding(AppPadding.padding16)
+        .padding(AppPadding.padding8)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
             GeometryReader { proxy in
