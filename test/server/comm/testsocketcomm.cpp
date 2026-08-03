@@ -124,7 +124,7 @@ void TestSocketComm::testServerCallbacks() {
     clientSideChannel->close();
 
     // Force a read on the server side channel to detect the peer close and
-    // trigger lostConnectionCbk() — required because available() can no longer
+    // trigger lostConnectionCbk(), required because available() can no longer
     // be used as a proxy for EOF with TLS sockets.
     (void) serverSidechannel->readMessage();
 
