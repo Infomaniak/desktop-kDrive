@@ -71,9 +71,13 @@ jobs:
         env:
           WINDOWS_DEBUG_CERT_THUMBPRINT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
-          powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT_THUMBPRINT -ci -unitTests
-        shell: cmd
+            & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 `
+            -HostArch amd64 `
+            -SkipAutomaticLocation      
+            
+            ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT_THUMBPRINT -ci -unitTests
+        shell: powershell
 
       - name: Execute tests
         run: |
