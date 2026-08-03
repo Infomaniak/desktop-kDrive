@@ -321,7 +321,7 @@ function build_recovery_updater_image() {
 
   echo "Building recovery updater AppImage for ${architecture}..."
 
-  updater_appdir="/build/updater-app"
+  updater_appdir="/tmp/updater-app"
   rm -rf "$updater_appdir"
   mkdir -p "$updater_appdir/usr/bin"
   mkdir -p "$updater_appdir/usr/lib"
