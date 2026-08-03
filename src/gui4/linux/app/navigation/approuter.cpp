@@ -88,14 +88,6 @@ void AppRouter::openSupport() {
     }
 }
 
-void AppRouter::requestPauseCurrentSync() {
-    qCInfo(lcAppRouter) << "Pause current sync requested from main toolbar | not wired yet";
-}
-
-void AppRouter::requestSearch() {
-    qCInfo(lcAppRouter) << "Search requested from main toolbar | not wired yet";
-}
-
 void AppRouter::setMainWindowActive(const bool active) {
     if (_mainWindowActive == active) {
         return;
