@@ -240,15 +240,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private async Task PollingLoop()
         {
-            if (_socket is null)
+            if (_socket == null || !_socket.Connected || _stream == null)
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to read: socket is not connected.");
                 return;
+            }
 
             while (!_stopRequested && _socket?.Connected == true)
             {
                 try
                 {
-                    if (!_socket.Poll(TimeSpan.FromSeconds(5), SelectMode.SelectRead))
-                        continue;
+                    int bytesRead = await _stream.ReadAsync(_receiveBuffer).ConfigureAwait(false);
+                    if (bytesRead == 0)
+                    {
+                        Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
+                        DisposeConnection();
+                        ConnectionLost?.Invoke(this, EventArgs.Empty);
+                        return;
+                    }
+
+                    int charCount = _decoder.GetCharCount(_receiveBuffer, 0, bytesRead, flush: false);
+                    char[] chars = new char[charCount];
+                    _decoder.GetChars(_receiveBuffer, 0, bytesRead, chars, 0, flush: false);
+                    _inBuffer.Append(chars, 0, charCount);
+
+                    await OnDataReceived().ConfigureAwait(false);
+
                 }
                 catch (SocketException ex)
                 {
@@ -256,19 +273,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     DisposeConnection();
                     ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
-                }
-
-                if (_socket.Available == 0)
-                {
-                    Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
-                    DisposeConnection();
-                    ConnectionLost?.Invoke(this, EventArgs.Empty);
-                    return;
-                }
-
-                try
-                {
-                    await OnReadyReadAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -382,40 +386,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private async Task OnReadyReadAsync()
+        private async Task OnDataReceived()
         {
-            do
+            int jsonEndIndex = -1;
+
+            while (_inBuffer.Length > 0)
             {
-                if (_socket == null || !_socket.Connected || _stream == null)
-                {
-                    Logger.Log(Logger.Level.Warning, "Unable to read: socket is not connected.");
-                    return;
-                }
-
-                // Read the JSON message
-                int jsonEndIndex = -1;
-
-                if (_socket.Available > 0)
-                {
-                    int bytesRead = await _stream.ReadAsync(_receiveBuffer).ConfigureAwait(false);
-                    if (bytesRead == 0)
-                    {
-                        Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
-                        DisposeConnection();
-                        ConnectionLost?.Invoke(this, EventArgs.Empty);
-                        return;
-                    }
-                    int charCount = _decoder.GetCharCount(_receiveBuffer, 0, bytesRead, flush: false);
-                    char[] chars = new char[charCount];
-                    _decoder.GetChars(_receiveBuffer, 0, bytesRead, chars, 0, flush: false);
-                    _inBuffer.Append(chars, 0, charCount);
-                }
-
                 if (!CheckBufferConsistency())
                 {
                     ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
                 }
+
+                // Read the JSON message
 
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex);
 
@@ -446,7 +429,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 HandleServerMessageAsync(messageObj);
-            } while (_socket.Available > 0 || _inBuffer.Length > 0);
+            }
         }
 
         private static void UpdateJsonBalance(StringBuilder sb, ref int seenIndex, ref int balance, ref int jsonEndIndex)
