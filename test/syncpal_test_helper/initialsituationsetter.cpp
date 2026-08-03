@@ -140,7 +140,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object:
         ItemDesc desc;
         desc.type = type;
         desc.id = parentId.empty() ? keyName : parentId + Str("/") + keyName;
-        desc.name = Str2SyncName(CommonUtility::toUpper(key));
+        desc.name = keyName;
         desc.size = type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize;
         addItem(side, desc, parentId);
 
