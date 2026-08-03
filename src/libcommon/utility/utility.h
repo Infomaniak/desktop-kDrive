@@ -46,6 +46,12 @@
 
 namespace KDC {
 
+namespace keychainConstant {
+// this define constant used for the key chain in the gui and server
+static const std::string package("com.infomaniak.drive");
+static const std::string service("desktopclient");
+} // namespace keychainConstant
+
 namespace fsType {
 static const std::string NTFS = "NTFS";
 static const std::string APFS = "APFS";
