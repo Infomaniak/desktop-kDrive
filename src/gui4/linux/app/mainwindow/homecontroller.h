@@ -82,14 +82,6 @@ class HomeController final : public QObject {
         };
         Q_ENUM(SyncControlState)
 
-        enum class DriveWebDestination : uint8_t {
-            Favorites = 0,
-            Shared,
-            OnlineDrive,
-            Trash,
-        };
-        Q_ENUM(DriveWebDestination)
-
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
                                 AppRouter &appRouter, SystemTrayController &systemTrayController,
                                 NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
