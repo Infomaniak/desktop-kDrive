@@ -35,11 +35,12 @@ ResolvedHomeStatus resolveHomeStatus(const bool hasSync, const bool offline, con
         case SyncStatus::StopAsked:
             return ResolvedHomeStatus::Syncing;
         case SyncStatus::Idle:
-            return ResolvedHomeStatus::UpToDate;
+            return offline ? ResolvedHomeStatus::Offline : ResolvedHomeStatus::UpToDate;
         case SyncStatus::Paused:
+            return offline ? ResolvedHomeStatus::Offline : ResolvedHomeStatus::Paused;
         case SyncStatus::Stopped:
         case SyncStatus::Error:
-            return offline ? ResolvedHomeStatus::Offline : ResolvedHomeStatus::Paused;
+            return ResolvedHomeStatus::Paused;
         case SyncStatus::Undefined:
         case SyncStatus::EnumEnd:
             return ResolvedHomeStatus::Loading;
