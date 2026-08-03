@@ -4067,6 +4067,13 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
 ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool start, const std::chrono::seconds &startDelay,
                                 bool resumedByUser, bool firstInit) {
+    if (sync.toDelete()) {
+        LOG_WARN(_logger, "Synchronization with syncDbId="
+                                  << sync.dbId()
+                                  << " should have been deleted, but is still present in the database. It will be ignored.");
+        return ExitCode::SystemError;
+    }
+
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(sync.dbId());
     if (syncPalMapIt == syncPalMap.end()) {
