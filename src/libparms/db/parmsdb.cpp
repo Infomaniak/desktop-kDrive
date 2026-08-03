@@ -2363,20 +2363,22 @@ bool ParmsDb::setSyncHasFullyCompleted(const SyncDbId dbId, bool value, bool &fo
 bool ParmsDb::setSyncToDelete(const SyncDbId dbId, bool value, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = -1;
     std::string error;
 
-    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_TODELETE_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_TODELETE_REQUEST_ID, 1, value));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_TODELETE_REQUEST_ID, 2, dbId));
-    if (!queryExec(UPDATE_SYNC_TODELETE_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_TODELETE_REQUEST_ID);
+    const auto requestId = UPDATE_SYNC_TODELETE_REQUEST_ID;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, value));
+    LOG_IF_FAIL(queryBindValue(requestId, 2, dbId));
+    if (!queryExec(requestId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId);
         return false;
     }
     if (numRowsAffected() == 1) {
         found = true;
     } else {
-        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_TODELETE_REQUEST_ID << " - num rows affected != 1");
+        LOG_WARN(_logger, "Error running query: " << requestId << " - num rows affected != 1");
         found = false;
     }
 

@@ -590,7 +590,7 @@ void AppServer::reset() {
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     if (behavior == SyncPal::DbBehaviorAfterStop::Remove) {
-        // Mark the sync for deletion in the parameters DB
+        // Mark the sync for deletion in the parameters DB.
         if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found)) {
             LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
         } else if (!found) {
