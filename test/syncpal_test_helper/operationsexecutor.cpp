@@ -23,7 +23,6 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 
-#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
 
@@ -284,16 +283,10 @@ void OperationsExecutor::checkExitInfo(const ExitInfo &exitInfo, const std::stri
 
 void OperationsExecutor::applyLocalCreate(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
-    IoError ioError = IoError::Success;
     if (desc.itemType == NodeType::Directory) {
         auto job = std::make_shared<LocalCreateDirJob>(fullPath);
         checkExitInfo(job->runSynchronously(), "Create operation (directory)");
         return;
-    }
-    (void) IoHelper::createDirectory(fullPath.parent_path(), true, ioError);
-    if (ioError != IoError::Success && ioError != IoError::DirectoryExists) {
-        throw OperationsParserException("Create operation (file): unable to create parent directory for '" +
-                                        fullPath.string() + "'");
     }
     testhelpers::generateTestFile(fullPath, static_cast<uint64_t>(desc.size));
 }
