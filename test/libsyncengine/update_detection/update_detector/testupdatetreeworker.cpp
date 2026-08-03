@@ -1331,7 +1331,7 @@ void TestUpdateTreeWorker::testResetNodesRecursiveDelete() {
     CPPUNIT_ASSERT(children->second->setParentNode(parent->second));
 
     parent->second->setStatus(NodeStatus::ToDelete);
-    CPPUNIT_ASSERT(parent->second->insertChildren(children->second));
+    CPPUNIT_ASSERT(parent->second->insertChild(children->second));
 
     auto parentId = *parent->second->id();
     auto childrenId = *children->second->id();
