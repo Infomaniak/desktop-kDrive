@@ -589,6 +589,15 @@ void AppServer::reset() {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+    if (behavior == SyncPal::DbBehaviorAfterStop::Remove) {
+        // Mark the sync for deletion in the parameters DB.
+        if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found)) {
+            LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
+        } else if (!found) {
+            LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
+        }
+    }
+
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
@@ -3972,6 +3981,13 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
 ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool start, const std::chrono::seconds &startDelay,
                                 bool resumedByUser, bool firstInit) {
+    if (sync.toDelete()) {
+        LOG_WARN(_logger, "Synchronization with syncDbId="
+                                  << sync.dbId()
+                                  << " should have been deleted, but is still present in the database. It will be ignored.");
+        return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
+    }
+
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(sync.dbId());
     if (syncPalMapIt == syncPalMap.end()) {
