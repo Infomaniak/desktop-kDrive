@@ -31,17 +31,11 @@ namespace KDC {
 class CertReader {
     public:
         /**
-         * @brief Constructs a CertReader with the specified keychain key.
-         * @param keychainKey The keychain key to access the certificate.
-         */
-        explicit CertReader(std::string keychainKey);
-
-        /**
          * Reads and parses the certificate from the keychain.
          * @param certificate The output QSslCertificate to hold the parsed certificate.
          * @return true if the certificate was successfully read and parsed, false otherwise.
          */
-        bool readCertificate(QSslCertificate &certificate) const;
+        static bool readCertificate(QSslCertificate &certificate);
 
     private:
         /**
@@ -49,8 +43,7 @@ class CertReader {
          * @param outPem The output string to hold the PEM data.
          * @return true if the PEM string was successfully read, false otherwise.
          */
-        bool readPem(std::string &outPem) const;
-        std::string _keychainKey;
+        static bool readPem(std::string &outPem);
 };
 
 } // namespace KDC
