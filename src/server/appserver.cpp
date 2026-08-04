@@ -593,19 +593,20 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
         // Mark the sync for deletion in the parameters DB.
         if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found)) {
             LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
-#if defined(KD_WINDOWS)
-            LOG_FATAL(_logger, "Quitting to avoid risks of unwanted deletion.");
-            AppServer::quit();
-#endif
+            addError(Error(syncDbId, ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+
+            return; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on Windows only) could
+                    // delete dehydrated placeholders whereas the sync is still in the DB.
         } else if (!found) {
             LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
         }
     }
 
-
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
+
+        return;
     }
 
     // Stop Vfs
@@ -744,6 +745,19 @@ void AppServer::deleteSync(const SyncDbId syncDbId) {
                                    // May even cause a crash if both sendDriveRemoved and sendSyncRemoved are processed
                                    // concurrently on the GUI side.
     }
+}
+
+void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
+    QTimer::singleShot(100, [this, syncDbId]() {
+        AppServer::stopSyncTask(syncDbId,
+                                SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
+
+        // Delete sync from DB
+        deleteSync(syncDbId);
+#if defined(KD_MACOS)
+        Utility::restartFinderExtension();
+#endif
+    });
 }
 
 void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled) noexcept {
@@ -1670,16 +1684,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ArgsWriter(params).write(tmpSyncDbId);
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
-            QTimer::singleShot(100, [this, syncDbId]() {
-                AppServer::stopSyncTask(
-                        syncDbId, SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
-
-                // Delete sync from DB
-                deleteSync(syncDbId);
-#if defined(KD_MACOS)
-                Utility::restartFinderExtension();
-#endif
-            });
+            deleteSyncAsBackgroundTask(syncDbId);
 
             break;
         }
@@ -3297,6 +3302,9 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                 if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
+
+                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSync(sync.dbId());
+
                     continue;
                 }
 
