@@ -1904,6 +1904,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
         if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
             user.setConnected(false);
+            updated = true;
         }
         return exitInfo;
     }

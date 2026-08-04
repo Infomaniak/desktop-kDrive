@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Bitte melden Sie sich erneut mit der korrekten E-Mail-Adresse %@ an</value>
     <value>Geben Sie Ihr Passwort ein</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Ein weiteres %@, dessen Name sich nur in der Gross-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.
-</value> 
+    <value>Ein weiteres %@, dessen Name sich nur in der Gross-/Kleinschreibung unterscheidet, existiert bereits in diesem Ordner. Dieser Namenstyp wird von der kDrive Windows-Anwendung nicht unterstützt. Benennen Sie eines der %@ aus kDrive online um, damit Sie es auf Ihrem PC synchronisieren können.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Namenskonflikte in Gross- und Kleinschreibung</value> 
@@ -701,7 +700,6 @@ Wenden Sie sich an Ihren Administrator, um das Dateigrössenlimit zu erhöhen.</
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Zugriff verboten</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Der Name dieses %@ enthält ein oder mehrere Zeichen, die von der kDrive Windows-Anwendung nicht unterstützt werden. Benennen Sie %@ über kDrive online um.</value> 
@@ -1218,7 +1216,6 @@ Um den Upload zu beschleunigen, empfehlen wir, nur die letzte kDrive-Sitzung zu 
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Erweitert</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Fatal</value> 
@@ -1389,6 +1386,12 @@ Bitte warten Sie einen Moment.</value>
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synchronisierung läuft…</value> 
   </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Entdecken Sie die App</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Ihre neue kDrive-App ist da!</value> 
+  </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>kDrive beim Computerstart öffnen</value> 
   </data> 
@@ -1551,7 +1554,7 @@ Für den Zugriff ist eine Internetverbindung erforderlich.</value>
     <value>Ihre Dateien werden synchronisiert</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>Synchronisierung ist pausiert</value> 
+    <value>die Synchronisierung ist angehalten</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Ihre aktuellen Dateien werden aktualisiert.</value> 
@@ -1560,8 +1563,8 @@ Für den Zugriff ist eine Internetverbindung erforderlich.</value>
     <value>Synchronisierung läuft</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Deine lokalen Dateien bleiben zugänglich.
-Die Synchronisierung wird automatisch fortgesetzt, sobald du wieder verbunden bist.</value> 
+    <value>Ihre heruntergeladenen Dateien bleiben weiterhin verfügbar.
+Die Synchronisierung wird automatisch fortgesetzt, sobald Sie wieder verbunden sind.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
@@ -1570,7 +1573,7 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald du wieder verbunden bi
     <value>Die Synchronisierung wurde vorübergehend gestoppt.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Pausiert</value> 
+    <value>Synchronisierung während der Pause</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Ihre Dateien sind zugänglich und synchronisiert.</value> 

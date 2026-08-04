@@ -41,7 +41,7 @@ class MockUpdateTreeWorker : public UpdateTreeWorker {
 };
 
 class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
+        CPPUNIT_TEST_SUITE(TestUpdateTreeWorker); 
         CPPUNIT_TEST(testUtilsFunctions);
         CPPUNIT_TEST(testUpdateTmpFileNode);
         CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
@@ -76,6 +76,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetNodeFromDeletedPath);
         CPPUNIT_TEST(testIntegrityCheck);
         CPPUNIT_TEST(testResetNodes);
+        CPPUNIT_TEST(testResetNodesRecursiveDelete);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -133,6 +134,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture, public TestBase {
         void testGetNodeFromDeletedPath();
         void testIntegrityCheck();
         void testResetNodes();
+        void testResetNodesRecursiveDelete();
 
     private:
         std::shared_ptr<MockUpdateTreeWorker> _localUpdateTreeWorker;

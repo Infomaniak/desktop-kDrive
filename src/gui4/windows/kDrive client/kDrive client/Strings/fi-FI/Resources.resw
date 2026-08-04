@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Kirjaudu uudelleen sisään oikealla sähköpostiosoitteella %@</value>
     <value>Syötä salasanasi</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Tässä kansiossa on jo toinen %@, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %@-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.
-</value> 
+    <value>Tässä kansiossa on jo toinen %@, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %@-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Ristiriitaiset nimet, isojen ja pienten kirjainten huomioiminen</value> 
@@ -701,7 +700,6 @@ Ota yhteyttä järjestelmänvalvojaasi tiedostokokorajan kasvattamiseksi.</value
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Pääsy kielletty</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.</value> 
@@ -1218,7 +1216,6 @@ Lähetyksen nopeuttamiseksi suosittelemme lähettämään vain viimeisen kDrive-
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Laajennettu</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Kriittinen</value> 
@@ -1389,6 +1386,12 @@ Odota hetki.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synkronointi käynnissä…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Tutustu sovellukseen</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Uusi kDrive-sovelluksesi on nyt saatavilla!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Avaa kDrive tietokoneen käynnistyessä</value> 
@@ -1561,8 +1564,8 @@ Internet-yhteys vaaditaan niiden käyttämiseen.</value>
     <value>Synkronointi käynnissä</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Paikalliset tiedostosi ovat edelleen käytettävissä.
-Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value> 
+    <value>Lataamasi tiedostot ovat edelleen käytettävissä.
+Synkronointi jatkuu automaattisesti, kun olet jälleen yhteydessä verkkoon.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline-tila</value> 
@@ -1571,7 +1574,7 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
     <value>Synkronointi on tilapäisesti pysäytetty.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Tauko aktivoitu</value> 
+    <value>Synkronointi tauon aikana</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Tiedostosi ovat käytettävissä ja synkronoitu.</value> 

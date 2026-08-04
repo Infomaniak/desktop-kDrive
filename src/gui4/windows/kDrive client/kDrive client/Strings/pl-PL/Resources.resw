@@ -6,7 +6,7 @@
   Locale: pl, Polish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Zaloguj się ponownie przy użyciu właściwego adresu e-mail %@</value>
     <value>Wprowadź hasło</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>W tym folderze istnieje już inny %@, którego nazwa różni się tylko wielkimi/małymi literami. Ten typ nazwy nie jest obsługiwany przez aplikację kDrive Windows. Zmień nazwę jednego z folderów %@ z aplikacji kDrive online, aby móc go zsynchronizować na komputerze.
-</value> 
+    <value>W tym folderze istnieje już inny %@, którego nazwa różni się tylko wielkimi/małymi literami. Ten typ nazwy nie jest obsługiwany przez aplikację kDrive Windows. Zmień nazwę jednego z folderów %@ z aplikacji kDrive online, aby móc go zsynchronizować na komputerze.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Sprzeczne nazwy, wielkość liter ma znaczenie</value> 
@@ -701,7 +700,6 @@ Skontaktuj się z administratorem, aby zwiększyć limit rozmiaru pliku.</value>
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Dostęp zabroniony</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Nazwa tego %@ zawiera jeden lub więcej znaków nieobsługiwanych przez aplikację kDrive dla systemu Windows. Zmień nazwę %@ w kDrive online.</value> 
@@ -1218,7 +1216,6 @@ Aby przyspieszyć przesyłanie, zalecamy wysłanie tylko ostatniej sesji kDrive.
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Rozszerzony</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Krytyczny</value> 
@@ -1389,6 +1386,12 @@ Prosimy o chwilę cierpliwości.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synchronizacja w toku…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Poznaj aplikację</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Nowa aplikacja kDrive jest już dostępna!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Otwórz kDrive przy uruchomieniu komputera</value> 
@@ -1561,8 +1564,8 @@ Do ich dostępu wymagane jest połączenie z Internetem.</value>
     <value>Synchronizacja w toku</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Twoje pliki lokalne pozostają dostępne.
-Synchronizacja zostanie automatycznie wznowiona po ponownym połączeniu.</value> 
+    <value>Pobrane pliki pozostają dostępne.
+Synchronizacja wznowi się automatycznie, gdy tylko ponownie nawiążesz połączenie.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
@@ -1571,7 +1574,7 @@ Synchronizacja zostanie automatycznie wznowiona po ponownym połączeniu.</value
     <value>Synchronizacja została tymczasowo zatrzymana.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Wstrzymano</value> 
+    <value>Synchronizacja podczas pauzy</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Twoje pliki są dostępne i zsynchronizowane.</value> 

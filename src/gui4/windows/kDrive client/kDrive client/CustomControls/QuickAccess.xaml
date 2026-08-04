@@ -38,100 +38,111 @@
             Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}">
         <Grid>
             <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.L}">
-                <Canvas HorizontalAlignment="Center"
-                        Width="46"
-                        Height="46">
-                    <!-- Person Picture Button -->
-                    <Border CornerRadius="100"
-                            Canvas.ZIndex="0"
-                            Canvas.Left="0"
-                            Canvas.Top="0"
-                            BorderBrush="{ThemeResource SystemFillColorAttentionBrush}"
-                            BorderThickness="1.2">
+                <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                    <Canvas HorizontalAlignment="Center"
+                            Width="46"
+                            Height="46">
+                        <!-- Person Picture Button -->
+                        <Border CornerRadius="100"
+                                Canvas.ZIndex="0"
+                                Canvas.Left="0"
+                                Canvas.Top="0"
+                                BorderBrush="{ThemeResource SystemFillColorAttentionBrush}"
+                                BorderThickness="1.2">
 
-                        <Button x:Name="PersonPictureButton"
-                            Padding="0"
-                            Margin="0"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Click="ProfilePictureBorder_Click"
-                            AutomationProperties.Name="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}"
-                            PointerEntered="PersonPictureButton_PointerEntered"
-                            PointerExited="PersonPictureButton_PointerExited">
-                            <PersonPicture ProfilePicture="{x:Bind ViewModel.SelectedSync.Drive.Account.User.GetAvatarImageSource(44), Mode=OneWay}"
-                                       Height="44"
-                                       Width="44" />
+                            <Button x:Name="PersonPictureButton"
+                                    Padding="0"
+                                    Margin="0"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="ProfilePictureBorder_Click"
+                                    AutomationProperties.Name="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}"
+                                    PointerEntered="PersonPictureButton_PointerEntered"
+                                    PointerExited="PersonPictureButton_PointerExited">
+                                <PersonPicture ProfilePicture="{x:Bind ViewModel.SelectedSync.Drive.Account.User.GetAvatarImageSource(44), Mode=OneWay}"
+                                               Height="44"
+                                               Width="44" />
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}"
+                                             Placement="Right" />
+                                </ToolTipService.ToolTip>
+                            </Button>
+
+                        </Border>
+                        <!-- Person Picture Button overlay -->
+                        <Border x:Name="PersonPictureButtonOverlay"
+                                Canvas.ZIndex="1"
+                                Canvas.Left="0.8"
+                                Canvas.Top="0.8"
+                                Height="45"
+                                Width="45"
+                                Background="{ThemeResource SystemFillColorAttentionBrush}"
+                                Opacity="0"
+                                CornerRadius="100"
+                                IsHitTestVisible="False">
+                            <FontIcon x:Name="PersonPictureButtonOverlayIcon"
+                                      Glyph="&#xE713;"
+                                      Foreground="{ThemeResource TextFillColorInverseBrush}"
+                                      Opacity="0"
+                                      FontSize="16"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IsHitTestVisible="False" />
+                        </Border>
+
+                        <!-- Sync button -->
+                        <Button Canvas.ZIndex="3"
+                                Canvas.Left="30"
+                                Canvas.Top="30"
+                                Height="20"
+                                Width="20"
+                                Padding="0"
+                                Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
+                                Click="SyncIconButton_Click"
+                                PointerEntered="SyncIconButton_PointerEntered"
+                                PointerExited="SyncIconButton_PointerExited">
+                            <controls:SyncIcon Sync="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
+                                               Height="12"
+                                               Width="12" />
                             <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Account.User.Name, Mode=OneWay}"
-                                     Placement="Right" />
+                                <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"
+                                         Placement="Right" />
                             </ToolTipService.ToolTip>
                         </Button>
+                        <!-- Sync button overlay -->
+                        <Border x:Name="SyncIconButtonOverlay"
+                                Canvas.ZIndex="4"
+                                Canvas.Left="30"
+                                Canvas.Top="30"
+                                Height="20"
+                                Width="20"
+                                Background="{ThemeResource SystemFillColorAttentionBrush}"
+                                Opacity="0"
+                                CornerRadius="100"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                            <FontIcon x:Name="SyncIconButtonOverlayIcon"
+                                      Glyph="&#xE713;"
+                                      Foreground="{ThemeResource TextFillColorInverseBrush}"
+                                      Opacity="0"
+                                      FontSize="8"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IsHitTestVisible="False" />
+                        </Border>
+                    </Canvas>
 
-                    </Border>
-                    <!-- Person Picture Button overlay -->
-                    <Border x:Name="PersonPictureButtonOverlay"
-                            Canvas.ZIndex="1"
-                            Canvas.Left="0.8"
-                            Canvas.Top="0.8"
-                            Height="45"
-                            Width="45"
-                            Background="{ThemeResource SystemFillColorAttentionBrush}"
-                            Opacity="0"
-                            CornerRadius="100"
-                            IsHitTestVisible="False">
-                        <FontIcon x:Name="PersonPictureButtonOverlayIcon"
-                                  Glyph="&#xE713;"
-                                  Foreground="{ThemeResource TextFillColorInverseBrush}"
-                                  Opacity="0"
-                                  FontSize="16"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center" 
-                                  IsHitTestVisible="False"/>
-                    </Border>
-
-                    <!-- Sync button -->
-                    <Button Canvas.ZIndex="3"
-                            Canvas.Left="30"
-                            Canvas.Top="30"
-                            Height="20"
-                            Width="20"
-                            Padding="0"
-                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
-                            CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Circle}"
-                            Click="SyncIconButton_Click"
-                            PointerEntered="SyncIconButton_PointerEntered"
-                            PointerExited="SyncIconButton_PointerExited">
-                        <controls:SyncIcon Sync="{x:Bind ViewModel.SelectedSync, Mode=OneWay}"
-                                           Height="12"
-                                           Width="12" />
-                        <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"
-                                     Placement="Right" />
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <!-- Sync button overlay -->
-                    <Border x:Name="SyncIconButtonOverlay"
-                            Canvas.ZIndex="4"
-                            Canvas.Left="30"
-                            Canvas.Top="30"
-                            Height="20"
-                            Width="20"
-                            Background="{ThemeResource SystemFillColorAttentionBrush}"
-                            Opacity="0"
-                            CornerRadius="100"
-                            IsHitTestVisible="False"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" >
-                        <FontIcon x:Name="SyncIconButtonOverlayIcon"
-                                  Glyph="&#xE713;"
-                                  Foreground="{ThemeResource TextFillColorInverseBrush}"
-                                  Opacity="0"
-                                  FontSize="8"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center" 
-                                  IsHitTestVisible="False"/>
-                    </Border>
-                </Canvas>
+                    <TextBlock Text="{x:Bind ViewModel.SelectedSync.Drive.Name, Mode=OneWay}"
+                               Style="{StaticResource BodyStrongTextBlockStyle}"
+                               HorizontalAlignment="Center"
+                               HorizontalTextAlignment="Center"
+                               TextWrapping="WrapWholeWords"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="140"
+                               MaxHeight="40" />
+                </StackPanel>
                 <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
                     <Button HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
@@ -229,8 +240,8 @@
                     Click="TrashButton_Click">
                 <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.XS}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0"
                                 Orientation="Horizontal"
