@@ -132,7 +132,7 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
 void SocketCommChannel::callbackHandler() {
     while (!_isClosing) {
         try {
-            if (bytesAvailable() == 0 &&
+            if (!isReadable() &&
                 !_socket.poll(Poco::Timespan(1, 0), Poco::Net::Socket::SELECT_READ | Poco::Net::Socket::SELECT_ERROR)) {
                 continue;
             }
@@ -157,19 +157,26 @@ uint64_t SocketCommChannel::bytesAvailable() const {
             std::lock_guard lock(_socketMutex);
             avail = _socket.available();
         }
-        if (avail > 0) return static_cast<uint64_t>(avail);
-        // For TLS sockets, available() may return 0 even when encrypted data is pending.
-        // Fall back to poll() to detect readability.
-        {
-            std::lock_guard lock(_socketMutex);
-            if (_socket.poll(Poco::Timespan(0, 0), Poco::Net::Socket::SELECT_READ)) {
-                return 1; // Data is likely available to be read
-            }
-        }
-        return 0;
+        if (avail < 0) return 0;
+        return static_cast<uint64_t>(avail);
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::available: " << ex.displayText());
-        return static_cast<uint64_t>(0);
+        return 0;
+    }
+}
+
+bool SocketCommChannel::isReadable() const {
+    if (bytesAvailable() > 0) return true;
+    // For TLS sockets, available() may return 0 even when encrypted data is pending.
+    // Fall back to poll() to detect readability: an incomplete TLS record or a TLS control
+    // message makes poll() report the descriptor readable while SSL_read() has nothing to
+    // hand back yet. bytesAvailable() must stay exact (it is also used as a read size),
+    // so readability is reported separately here.
+    try {
+        return _socket.poll(Poco::Timespan(0, 0), Poco::Net::Socket::SELECT_READ);
+    } catch (Poco::Exception &ex) {
+        LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::poll: " << ex.displayText());
+        return false;
     }
 }
 
