@@ -25,6 +25,11 @@
 namespace KDC {
 
 constexpr char host[] = "127.0.0.1";
+// Bound the TLS handshake after accept so a peer that connects but never sends a
+// ClientHello can't block the accept loop forever.
+constexpr int handshakeTimeoutSec = 5;
+// Channel-lifetime receive timeout: SSL_read() must never park on _socketMutex forever.
+constexpr int channelReceiveTimeoutSec = 30;
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),
@@ -334,8 +339,8 @@ void SocketCommServer::execute() {
         // Bound the handshake: without a timeout, a local process that opens a TCP connection and
         // never sends a ClientHello blocks this accept loop forever and no GUI can connect again.
         const Poco::Timespan sndTimeout = socket.getSendTimeout();
-        socket.setReceiveTimeout(Poco::Timespan(5, 0));
-        socket.setSendTimeout(Poco::Timespan(5, 0));
+        socket.setReceiveTimeout(Poco::Timespan(handshakeTimeoutSec, 0));
+        socket.setSendTimeout(Poco::Timespan(handshakeTimeoutSec, 0));
 
         // Eagerly complete the TLS handshake so that encrypted data on the wire
         // is already decrypted when the callback thread polls for it later.
@@ -359,7 +364,7 @@ void SocketCommServer::execute() {
 
         // Keep a bounded receive timeout for the channel's lifetime: SSL_read() must never park on
         // _socketMutex forever (see the comment on readData).
-        secureSocket.setReceiveTimeout(Poco::Timespan(30, 0));
+        secureSocket.setReceiveTimeout(Poco::Timespan(channelReceiveTimeoutSec, 0));
         secureSocket.setSendTimeout(sndTimeout);
 
         const auto channel = makeCommChannel(secureSocket);
