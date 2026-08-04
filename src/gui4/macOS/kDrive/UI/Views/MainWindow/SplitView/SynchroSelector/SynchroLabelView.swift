@@ -34,10 +34,6 @@ struct SynchroLabelView: View {
     var shouldShowNotification = false
     var isSelected = false
 
-    private var iconColor: Color {
-        isSelected ? .white : item.iconColor
-    }
-
     private var titleColor: Color {
         isSelected ? .white : ColorToken.Text.primary.asColor
     }
@@ -52,9 +48,7 @@ struct SynchroLabelView: View {
 
     var body: some View {
         HStack(alignment: .iconTitleCenter, spacing: AppPadding.padding8) {
-            item.icon
-                .resizable(at: AppIconSize.iconSize16)
-                .foregroundStyle(iconColor)
+            BadgeView(image: item.icon, color: item.iconColor)
                 .alignmentGuide(.iconTitleCenter) {
                     $0[VerticalAlignment.center]
                 }
