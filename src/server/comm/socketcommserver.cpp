@@ -112,17 +112,19 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
         written = _socket.sendBytes(data, static_cast<int>(len) * commCharSize);
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::sendBytes: " << ex.displayText());
-        _isClosing = true;
-        lostConnectionCbk();
-        close();
+        if (!_isClosing.exchange(true)) {
+            lostConnectionCbk();
+            close();
+        }
         return 0;
     }
 
     if (written < 0) {
         LOG_ERROR(Log::instance()->getLogger(), "Socket connection error on sendBytes");
-        _isClosing = true;
-        lostConnectionCbk();
-        close();
+        if (!_isClosing.exchange(true)) {
+            lostConnectionCbk();
+            close();
+        }
         return 0;
     }
 
