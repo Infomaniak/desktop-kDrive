@@ -70,6 +70,10 @@ Window {
     height: contentHeight + reservedHeaderHeight + 2 * reservedShadowMargin
     minimumWidth: minimumContentWidth + 2 * reservedShadowMargin
     minimumHeight: minimumContentHeight + reservedHeaderHeight + 2 * reservedShadowMargin
+    // Keep native Wayland surface allocations within the virtual desktop. Mesa can otherwise receive a null image
+    // after an excessively large interactive resize and crash while swapping the window's EGL buffers.
+    maximumWidth: Math.max(minimumWidth, Screen.desktopAvailableWidth)
+    maximumHeight: Math.max(minimumHeight, Screen.desktopAvailableHeight)
 
     onWidthChanged: updateWindowDecoration()
     onHeightChanged: updateWindowDecoration()
