@@ -33,6 +33,11 @@ Q_LOGGING_CATEGORY(lcCertReader, "gui.v4.certreader", QtInfoMsg)
 namespace KDC {
 
 
+/**
+ * Reads the PEM string from the keychain.
+ * @param outPem The output string to hold the PEM data.
+ * @return true if the PEM string was successfully read, false otherwise.
+ */
 bool CertReader::readPem(std::string &outPem) {
     keychain::Error error{};
     outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, certKeychainKey, error);
