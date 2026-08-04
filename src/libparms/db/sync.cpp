@@ -34,7 +34,7 @@ Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &loca
            const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
            VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
            bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           int64_t listingCursorTimestamp) :
+           const int64_t listingCursorTimestamp, const bool toDelete) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
@@ -49,6 +49,7 @@ Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &loca
     _hasFullyCompleted(hasFullyCompleted),
     _navigationPaneClsid(navigationPaneClsid),
     _listingCursor(listingCursor),
-    _listingCursorTimestamp(listingCursorTimestamp) {}
+    _listingCursorTimestamp(listingCursorTimestamp),
+    _toDelete(toDelete) {}
 
 } // namespace KDC
