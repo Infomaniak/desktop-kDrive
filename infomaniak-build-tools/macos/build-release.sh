@@ -154,10 +154,6 @@ fi
 # Sign the recovery updater (if it was built and installed)
 updater_app="$install_dir/kDriveRecoveryUpdater.app"
 if [ -d "$updater_app" ]; then
-	echo "Deploying Qt dependencies for kDriveRecoveryUpdater..."
-	"$QTDIR/bin/macdeployqt" "$updater_app" -no-strip \
-		-executable="$updater_app/Contents/MacOS/kDriveRecoveryUpdater"
-
 	if [ -n "$SIGN_IDENTITY" ]; then
 		echo "Signing kDriveRecoveryUpdater..."
 		codesign -s "$SIGN_IDENTITY" --force --verbose=4 --deep --options=runtime "$updater_app"
