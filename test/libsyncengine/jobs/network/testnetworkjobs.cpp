@@ -810,7 +810,7 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
 
     // Simulate a disk with only 8Mo of free space for the small partition path.
     const SyncPath smallPartitionPath = temporaryDirectory.path() / "small";
-    const auto simulatedFreeSpace = [&smallPartitionPath](const SyncPath &path) -> int64_t {
+    const auto simulatedFreeSpace = [&smallPartitionPath](const SyncPath &path) {
         return path == smallPartitionPath ? 8 * 1000000 : Utility::getFreeDiskSpace(path);
     };
     DownloadJob::_freeDiskSpaceFn = simulatedFreeSpace;
