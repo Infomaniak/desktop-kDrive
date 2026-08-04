@@ -18,24 +18,24 @@
 
 #include "certreader.h"
 
+#include "comm.h"
 #include "utility/utility.h"
 #include "keychain/keychain.h"
 
 #include <QByteArray>
 #include <QLoggingCategory>
 
-#include <utility>
 
+namespace {
 Q_LOGGING_CATEGORY(lcCertReader, "gui.v4.certreader", QtInfoMsg)
+}
 
 namespace KDC {
 
-CertReader::CertReader(std::string keychainKey) :
-    _keychainKey(std::move(keychainKey)) {}
 
-bool CertReader::readPem(std::string &outPem) const {
+bool CertReader::readPem(std::string &outPem) {
     keychain::Error error{};
-    outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, _keychainKey, error);
+    outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, certKeychainKey, error);
 
     if (error.type == keychain::ErrorType::NotFound) {
         // Entry not present yet, not an error; caller may retry.
@@ -53,7 +53,7 @@ bool CertReader::readPem(std::string &outPem) const {
     return true;
 }
 
-bool CertReader::readCertificate(QSslCertificate &certificate) const {
+bool CertReader::readCertificate(QSslCertificate &certificate) {
     std::string pem;
     if (!readPem(pem)) {
         return false;
