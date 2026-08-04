@@ -41,6 +41,7 @@ extension KDC.UpdateState: Codable {}
 extension KDC.ReplicaSide: Codable {}
 extension KDC.SyncConfiguration: Codable {}
 extension KDC.ConflictResolutionStrategy: Codable {}
+extension KDC.AppStateKey: Codable {}
 extension MsgType: @retroactive Codable {}
 extension SignalNum: @retroactive Codable {}
 extension RequestNum: @retroactive Codable {}

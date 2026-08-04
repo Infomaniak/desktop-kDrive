@@ -58,12 +58,12 @@ struct UtilitySetLaunchOnStartupQuery: Codable, Sendable {
 }
 
 struct UtilitySetAppStateQuery: Codable, Sendable {
-    let key: Int32
+    let key: KDC.AppStateKey
     @Base64CodedString var value: String
 }
 
 struct UtilityGetAppStateQuery: Codable, Sendable {
-    let key: Int32
+    let key: KDC.AppStateKey
 }
 
 struct UtilityGetAppStateResponse: Codable, Sendable {
