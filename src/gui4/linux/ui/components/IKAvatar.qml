@@ -17,6 +17,7 @@
  */
 
 import QtQuick
+import QtQuick.Shapes
 import QtQuick.Window
 import kDrive.UI
 
@@ -29,8 +30,6 @@ Item {
     property color borderColor: IKColors.accentPrimary
     property real borderWidth: 1
     readonly property real sourceScale: Math.max(2, Screen.devicePixelRatio)
-
-    onMaskColorChanged: avatarClipOverlay.requestPaint()
 
     Rectangle {
         anchors.fill: parent
@@ -53,25 +52,66 @@ Item {
         sourceSize.height: Math.round(height * root.sourceScale)
     }
 
-    Canvas {
+    /*
+     * Keep the Image rectangular so Qt can preserve DPR-aware downscaling, smoothing, and mipmapping. This vector
+     * overlay hides its corners instead: the PathMove/PathLine elements draw the outer rectangle, the two PathArc
+     * elements draw the circular opening, and OddEvenFill turns that inner contour into a transparent hole.
+     */
+    Shape {
         id: avatarClipOverlay
 
-        anchors.fill: avatarImage
+        anchors.fill: parent
         visible: root.source.length > 0
+        preferredRendererType: Shape.CurveRenderer
         antialiasing: true
-        onPaint: {
-            const context = getContext("2d")
-            context.clearRect(0, 0, width, height)
-            context.fillStyle = root.maskColor
-            context.fillRect(0, 0, width, height)
-            context.globalCompositeOperation = "destination-out"
-            context.beginPath()
-            context.arc(width / 2, height / 2, width / 2, 0, 2 * Math.PI)
-            context.fill()
-            context.globalCompositeOperation = "source-over"
+
+        ShapePath {
+            id: avatarClipPath
+
+            readonly property real clipRadius: Math.max(0, avatarImage.width / 2)
+
+            strokeColor: "transparent"
+            fillColor: root.maskColor
+            fillRule: ShapePath.OddEvenFill
+
+            PathMove {
+                x: 0
+                y: 0
+            }
+            PathLine {
+                x: avatarClipOverlay.width
+                y: 0
+            }
+            PathLine {
+                x: avatarClipOverlay.width
+                y: avatarClipOverlay.height
+            }
+            PathLine {
+                x: 0
+                y: avatarClipOverlay.height
+            }
+            PathLine {
+                x: 0
+                y: 0
+            }
+
+            PathMove {
+                x: avatarClipOverlay.width / 2
+                y: avatarClipOverlay.height / 2 - avatarClipPath.clipRadius
+            }
+            PathArc {
+                x: avatarClipOverlay.width / 2
+                y: avatarClipOverlay.height / 2 + avatarClipPath.clipRadius
+                radiusX: avatarClipPath.clipRadius
+                radiusY: avatarClipPath.clipRadius
+            }
+            PathArc {
+                x: avatarClipOverlay.width / 2
+                y: avatarClipOverlay.height / 2 - avatarClipPath.clipRadius
+                radiusX: avatarClipPath.clipRadius
+                radiusY: avatarClipPath.clipRadius
+            }
         }
-        onWidthChanged: requestPaint()
-        onHeightChanged: requestPaint()
     }
 
     Rectangle {
