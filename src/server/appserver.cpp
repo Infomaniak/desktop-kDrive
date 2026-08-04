@@ -475,17 +475,21 @@ void AppServer::init() {
                        &AppServer::onClientDisconnectedReceived);
     }
 
-    // Update users,accounts and drives info.
-    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
-        exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later.
-    } else if (!exitInfo) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
-        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
-    }
-
     // Set sentry user
     updateSentryUser();
+    QTimer::singleShot(0, this, [this]() {
+        // Update users,accounts and drives info.
+        if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
+            exitInfo.code() == ExitCode::InvalidToken) {
+            // The user will be asked to enter its credentials later.
+        } else if (!exitInfo) {
+            LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+            addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        }
+
+        // refresh sentry user
+        updateSentryUser();
+    });
 
     // Read Updater activation flag
     AppStateValue noUpdateAppStateValue = 0;
@@ -562,7 +566,7 @@ void AppServer::init() {
 
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
-    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    QTimer::singleShot(0, this, [this]() { startSyncsAndRetryOnError(); });
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {
@@ -2544,7 +2548,7 @@ void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &to
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             startedSyncDbIds.insert(toIgnoreSyncDbIds.begin(), toIgnoreSyncDbIds.end());
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this,
-                               [&startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
+                               [startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
         }
     }
 }
@@ -3026,17 +3030,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
 ExitInfo AppServer::updateUser(User &user) {
     bool updated = false;
-    if (const auto exitInfo = _loadUserInfo(user, updated); !exitInfo) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
-        if (exitInfo.code() == ExitCode::InvalidToken) {
-            // Notify client app that the user is disconnected
-            user.setKeychainKey(""); // Invalid keychain key
-            user.setConnected(false);
-            sendUserUpdated(user);
-        }
-
-        return exitInfo;
-    }
+    const auto exitInfo = _loadUserInfo(user, updated);
 
     if (updated) {
         bool found = false;
@@ -3051,6 +3045,12 @@ ExitInfo AppServer::updateUser(User &user) {
 
         sendUserUpdated(user);
     }
+
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
+        return exitInfo;
+    }
+
     return ExitCode::Ok;
 }
 
@@ -4009,34 +4009,51 @@ bool AppServer::startClient() {
     startClient = true;
 #endif
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-
+    bool useClientV4 = false;
     if (startClient) {
         // Start the client
         QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
-
+        useClientV4 = true;
         IoError ioError = IoError::Success;
         bool exists = false;
         if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
             pathToExecutable.clear();
+            useClientV4 = false;
         }
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #endif
 
         QStringList arguments;
-        if (useOldCommServer()) {
-            arguments << QString::number(OldCommServer::instance()->commPort());
+        if (useClientV4 && useCommManager(true)) {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+            const auto port = _commManager->tryGetGUICommPort();
+            if (port <= 0) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
+                return false;
+            }
+            arguments << QString::number(port);
 
-            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                                 << arguments[0].toStdWString());
+#else
+            // On macOS the client communicates with the server through XPC and doesn't need the port number as argument.
+#endif
+        } else if (!useClientV4 && useOldCommServer()) {
+            arguments << QString::number(OldCommServer::instance()->commPort());
+        } else {
+            LOG_FATAL(_logger, "Failed to start kDrive client (no communication method available)");
+            return false;
         }
+
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
+                                                             << (arguments.size() >= 1 ? arguments[0].toStdWString() : L""));
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);
@@ -4079,6 +4096,7 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
         if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
             LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
+            if (exitInfo.code() == ExitCode::InvalidToken) continue;
             return exitInfo;
         }
     }

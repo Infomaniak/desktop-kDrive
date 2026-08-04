@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.Converters
             };
             if (iconResourceKey == "")
             {
-                Logger.Log(Logger.Level.Warning, $"FilePathToIconResourceKeyConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
+                Logger.Log(Logger.Level.Info, $"FilePathToIconResourceKeyConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
                 iconResourceKey = "Infomaniak.DS.Icons.Documents.file";
                 // This is not an error, just a warning for tracking purposes.
                 // The above warning will lead to a Sentry allowing us to add more extensions in the future.

@@ -111,35 +111,56 @@ function Upload-FilesToKDrive {
     )
 
     Push-Location $directory
-    foreach ($file in $files) {
+    foreach ($fileEntry in $files) {
+        $file = $fileEntry
+        $isMandatory = $true
+
+        if ($fileEntry -is [array]) {
+            $file = [string]$fileEntry[0]
+            if ($fileEntry.Count -ge 2) {
+                $isMandatory = [bool]$fileEntry[1]
+            }
+        }
+
         try {
+            if (-not (Test-Path $file)) {
+                $message = if ($isMandatory) { "❌ File $file does not exist, aborting upload." } else { "⚠ Optional file $file does not exist, skipping upload." }
+                $color = if ($isMandatory) { 'Red' } else { 'Yellow' }
+                Write-Host $message -f $color
+                if ($isMandatory) {
+                    Pop-Location
+                    exit 1
+                }
+                continue
+            }
+
             $item = Get-Item $file
 
             # Check if it is a directory (zip it if needed)
             if ($item.PSIsContainer) {
               Write-Host "Zipping directory: $file" -f Yellow
 
-             # Define the ZIP file path: same parent location, same name + .zip
-             $parentDir = Split-Path $item.FullName -Parent
-             $zipFileName = "$($item.Name).zip"
-             $zipFilePath = Join-Path $parentDir $zipFileName
+              # Define the ZIP file path: same parent location, same name + .zip
+              $parentDir = Split-Path $item.FullName -Parent
+              $zipFileName = "$($item.Name).zip"
+              $zipFilePath = Join-Path $parentDir $zipFileName
 
-             # Remove existing zip if present
-             if (Test-Path $zipFilePath) {
-                    Remove-Item $zipFilePath -Force
-                 Write-Host "Existing zip removed: $zipFilePath" -f Cyan
-              }
+              # Remove existing zip if present
+              if (Test-Path $zipFilePath) {
+                     Remove-Item $zipFilePath -Force
+                  Write-Host "Existing zip removed: $zipFilePath" -f Cyan
+               }
 
-              # Load .NET Compression assembly
-               Add-Type -AssemblyName System.IO.Compression.FileSystem
+               # Load .NET Compression assembly
+                Add-Type -AssemblyName System.IO.Compression.FileSystem
             
-               # Create ZIP archive beside the folder
-               [System.IO.Compression.ZipFile]::CreateFromDirectory($item.FullName, $zipFilePath)
+                # Create ZIP archive beside the folder
+                [System.IO.Compression.ZipFile]::CreateFromDirectory($item.FullName, $zipFilePath)
             
-               # Replace $file with the zipped file for upload
-                $file = $zipFileName            
-               Write-Host "Directory zipped: $zipFilePath" -f Green
-            }    
+                # Replace $file with the zipped file for upload
+                 $file = $zipFileName            
+                Write-Host "Directory zipped: $zipFilePath" -f Green
+            }
 
             $size = (Get-Item $file).length
             if ($size -eq 0) {
@@ -158,9 +179,13 @@ function Upload-FilesToKDrive {
             Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
             Write-Host "\t\t => ✅" -f Green
         } catch {
-            Write-Host "Failed to upload $file to kDrive -> $_" -f Red
-            Pop-Location
-            exit 1
+            if ($isMandatory) {
+                Write-Host "Failed to upload $file to kDrive -> $_" -f Red
+                Pop-Location
+                exit 1
+            }
+
+            Write-Host "Warning: failed to upload optional file $file to kDrive -> $_" -f Yellow
         }
         Sleep(5)
     }
@@ -170,13 +195,13 @@ function Upload-FilesToKDrive {
 if ($os -eq "win") {
     Write-Host " - Windows Files - " # Windows
     $win_files = @(
-        "$app.exe",
-        "$app.exe.sha256",
-        "$app.msi",
-        "kDrive.pdb",
-        "kDrive_client.pdb",
-        "kDrive.src.zip",
-        "kDrive_client.src.zip"
+        @("$app.exe", $true),
+        @("$app.exe.sha256", $true),
+        @("$app.msi", $false),
+        @("kDrive.pdb", $true),
+        @("kDrive_client.pdb", $true),
+        @("kDrive.src.zip", $true),
+        @("kDrive_client.src.zip", $false)
     )
     Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
     Write-Host " - Windows Files - \n"
@@ -185,14 +210,14 @@ if ($os -eq "win") {
 if ($os -eq "macos") {
     Write-Host " - macOS Files - " # macOS
     $macos_files = @(
-        "$app.pkg",
-        "$app.pkg.sha256",
-        "$app.zip", # Sparkle zip
-        "update-macos-$version.xml", # Sparkle update xml
-        "kDrive.dSYM",
-        "kDrive_client.dSYM",
-        "kDrive.src.zip",
-        "kDrive_client.src.zip"
+        @("$app.pkg", $true),
+        @("$app.pkg.sha256", $true),
+        @("$app.zip", $true), # Sparkle zip
+        @("update-macos-$version.xml", $true), # Sparkle update xml
+        @("kDrive.dSYM", $true),
+        @("kDrive_client.dSYM", $true),
+        @("kDrive.src.zip", $true),
+        @("kDrive_client.src.zip", $true)
     )
     Upload-FilesToKDrive -directory build-macos -files $macos_files -targetSubDir "macos"
     Write-Host " - macOS Files - \n"
@@ -201,12 +226,12 @@ if ($os -eq "macos") {
 if ($os -eq "linux-amd") {
     Write-Host " - Linux AMD64 Files - " # Linux AMD
     $linux_amd_files = @(
-        "$app-amd64.AppImage",
-        "$app-amd64.AppImage.sha256",
-        "kDrive.dbg",
-        "kDrive_client.dbg",
-        "kDrive.src.zip",
-        "kDrive_client.src.zip"
+        @("$app-amd64.AppImage", $true),
+        @("$app-amd64.AppImage.sha256", $true),
+        @("kDrive.dbg", $true),
+        @("kDrive_client.dbg", $true),
+        @("kDrive.src.zip", $true),
+        @("kDrive_client.src.zip", $true)
     )
     Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
     Write-Host " - Linux AMD64 Files - \n"
@@ -215,12 +240,12 @@ if ($os -eq "linux-amd") {
 if ($os -eq "linux-arm") {
     Write-Host " - Linux ARM64 Files - " # Linux ARM
     $linux_arm_files = @(
-        "$app-arm64.AppImage",
-        "$app-arm64.AppImage.sha256",
-        "kDrive.dbg",
-        "kDrive_client.dbg",
-        "kDrive.src.zip",
-        "kDrive_client.src.zip"
+        @("$app-arm64.AppImage", $true),
+        @("$app-arm64.AppImage.sha256", $true),
+        @("kDrive.dbg", $true),
+        @("kDrive_client.dbg", $true),
+        @("kDrive.src.zip", $true),
+        @("kDrive_client.src.zip", $true)
     )
     Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
     Write-Host " - Linux ARM64 Files - \n"

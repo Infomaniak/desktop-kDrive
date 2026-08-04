@@ -251,7 +251,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Recursively accumulate excluded node IDs.
         private List<NodeId> GetExcludedDescendantNodeIds(TreeItem parent)
         {
-            if (parent.Node.AccessDenied)
+            if (parent.Node is null || parent.Node.AccessDenied)
                 return [];
 
             if (parent.IsSelected is not null) // If the parent is explicitly included or excluded (ie. not indeterminate)
@@ -479,7 +479,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private static void SelectAllDescendants(TreeItem parent, bool selectParent = false)
         {
-            if (parent.Node.AccessDenied)
+            if (parent.Node is not null && parent.Node.AccessDenied)
                 return;
 
             foreach (var child in parent.Children)
@@ -493,7 +493,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private static void DeselectAllDescendants(TreeItem parent, bool deselectParent = false)
         {
-            if (parent.Node.AccessDenied)
+            if (parent.Node is not null && parent.Node.AccessDenied)
                 return;
 
             foreach (var child in parent.Children)
@@ -584,7 +584,7 @@ namespace Infomaniak.kDrive.CustomControls
         // Recompute tri-state based on exclusion map
         public void RecomputeSelectionFromExclusionMap()
         {
-            if (Node.AccessDenied)
+            if (Node is null || Node.AccessDenied)
                 return;
 
             if (ParentItem is not null && ParentItem.IsSelected is not null)
@@ -643,13 +643,9 @@ namespace Infomaniak.kDrive.CustomControls
         // Refresh directory tri-state based on children states
         private void UpdateDirectoryTriStateFromChildren()
         {
-            if (Children.All(c => c.IsSelected == true || c.Node.AccessDenied))
+            if (Children.All(c => c.IsSelected == true || (c.Node is not null && c.Node.AccessDenied)))
             {
                 IsSelected = true;
-            }
-            else if (Children.All(c => c.IsSelected == false || c.Node.AccessDenied))
-            {
-                IsSelected = null;
             }
             else
             {

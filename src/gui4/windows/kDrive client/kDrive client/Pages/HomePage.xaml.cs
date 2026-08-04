@@ -26,6 +26,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
@@ -33,6 +34,7 @@ namespace Infomaniak.kDrive.Pages
     {
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private readonly AppStateModel _appStateModel = App.ServiceProvider.GetRequiredService<AppStateModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
@@ -65,6 +67,12 @@ namespace Infomaniak.kDrive.Pages
             if (ViewModel.SelectedSync is null)
                 return false;
 
+            if (!ViewModel.SelectedSync.Drive.Account.User.IsConnected)
+            {
+                AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(LogginErrorPage)));
+                return true;
+            }
+
             switch (ViewModel.SelectedSync.SyncErrorState)
             {
                 case SyncErrorStates.Undefined:
@@ -92,12 +100,27 @@ namespace Infomaniak.kDrive.Pages
             return true;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
             if (!RedirectToErrorPageIfNeeded())
+            {
                 _analyticsService.TrackPageView(Analytics.Keys.Category.HomePage);
+                await UpdateV4OnboardingInfoBar();
+                return;
+            }
+        }
+
+        private async Task UpdateV4OnboardingInfoBar()
+        {
+            bool? showV4Onboarding = await _appStateModel.GetShowV4Onboarding();
+            AppModel.UIThreadDispatcher.TryEnqueue(() => V4OnboardingInfoBar.IsOpen = showV4Onboarding == true);
+        }
+
+        private async void V4OnboardingInfoBar_CloseButtonClick(InfoBar sender, object args)
+        {
+            await _appStateModel.SetShowV4Onboarding(false);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -169,7 +192,7 @@ namespace Infomaniak.kDrive.Pages
                 SyncStatus.Paused => Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.StopAsked => transitionStr,
                 SyncStatus.Stopped => Localizer.Instance.GetString("synchroPaused"),
-                SyncStatus.Error => transitionStr,
+                SyncStatus.Error => Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused"),
                 _ => Localizer.Instance.GetString("labelWelcomeToKDrive")
             };
@@ -185,7 +208,7 @@ namespace Infomaniak.kDrive.Pages
 
         private async void SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            if(sender is AnimatedVisualPlayer player)
+            if (sender is AnimatedVisualPlayer player)
                 await player.PlayAsync(0.0, 1.0, false);
         }
     }
