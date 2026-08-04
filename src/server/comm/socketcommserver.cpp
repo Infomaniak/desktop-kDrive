@@ -159,7 +159,7 @@ void SocketCommChannel::callbackHandler() {
 
 uint64_t SocketCommChannel::bytesAvailable() const {
     try {
-        int32_t avail = 0;
+        int avail = 0;
         {
             std::lock_guard lock(_socketMutex);
             avail = _socket.available();
