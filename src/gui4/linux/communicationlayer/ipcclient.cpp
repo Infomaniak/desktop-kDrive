@@ -154,10 +154,9 @@ void IpcClient::attemptInitialConnection() {
     QSslConfiguration config = _socket->sslConfiguration();
     config.setCaCertificates({_pinnedCert});
     _socket->setSslConfiguration(config);
-    _socket->setPeerVerifyName(QStringLiteral("kDrive-localhost"));
 
     _socket->abort();
-    _socket->connectToHostEncrypted(QStringLiteral("127.0.0.1"), port);
+    _socket->connectToHostEncrypted(QStringLiteral("127.0.0.1"), port, QString::fromLatin1(localHostName));
 }
 
 /**
