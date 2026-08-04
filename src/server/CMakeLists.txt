@@ -200,6 +200,7 @@ elseif(WIN32)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS runningprocessinfo_linux.h runningprocessinfo_linux.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 

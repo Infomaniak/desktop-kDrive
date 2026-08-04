@@ -19,6 +19,7 @@
 #include "appserver.h"
 #if defined(KD_LINUX)
 #include "qtlocalpeer.h"
+#include "runningprocessinfo_linux.h"
 #endif
 #include "version.h"
 #include "migration/migrationparams.h"
@@ -85,13 +86,9 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <algorithm>
-#include <cctype>
 #include <cstdint>
-#include <optional>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
-#include <unistd.h>
 #endif
 
 #if defined(KD_WINDOWS)
@@ -131,36 +128,6 @@ static const char optionsC[] =
         "  --settings           : show the Settings window (if the application is running).\n"
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
 
-#if defined(KD_LINUX)
-std::optional<qint64> runningProcessPid(const std::string &processName) {
-    const auto currentPid = static_cast<qint64>(getpid());
-    try {
-        for (const auto &entry: std::filesystem::directory_iterator("/proc")) {
-            if (!entry.is_directory()) continue;
-
-            const std::string pidStr = entry.path().filename().string();
-            if (!std::all_of(pidStr.begin(), pidStr.end(),
-                             [](const unsigned char character) { return std::isdigit(character) != 0; })) {
-                continue;
-            }
-
-            const auto pid = static_cast<qint64>(std::stoll(pidStr));
-            if (pid == currentPid) continue;
-
-            std::ifstream commFile(entry.path() / "comm");
-            std::string currentProcessName;
-            if (commFile >> currentProcessName && currentProcessName == processName) {
-                return pid;
-            }
-        }
-    } catch (const std::exception &e) {
-        if (Log::isSet()) {
-            LOG_WARN(Log::instance()->getLogger(), "Error while looking for running kDrive process: " << e.what());
-        }
-    }
-    return std::nullopt;
-}
-#endif
 } // namespace
 
 static const QString showSynthesisMsg("showSynthesis");
