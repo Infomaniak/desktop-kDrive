@@ -101,9 +101,9 @@ namespace Infomaniak.kDrive
                     ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Dequeue();
 
                     if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit)
-                        await Showhardlimitmanydeletedialogue(manyDeletesInfo);
+                        await ShowHardLimitManyDeleteDialogue(manyDeletesInfo);
                     else if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.SoftLimit)
-                        await Showsoftlimitmanydeletedialogue(manyDeletesInfo);
+                        await ShowSoftLimitManyDeleteDialogue(manyDeletesInfo);
                 }
             }
             finally
@@ -158,7 +158,7 @@ namespace Infomaniak.kDrive
                 UpdateRequiredControl.Visibility = Visibility.Collapsed;
             }
         }
-        public async Task Showhardlimitmanydeletedialogue(ManyDeletesInfo manyDeletesInfo)
+        public async Task ShowHardLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -190,7 +190,7 @@ namespace Infomaniak.kDrive
             await App.ServiceProvider.GetRequiredService<IServerCommService>().AcknowledgeManyDeletes(manyDeletesInfo.SyncDbId, userChoice, CancellationToken.None);
         }
 
-        public async Task Showsoftlimitmanydeletedialogue(ManyDeletesInfo manyDeletesInfo)
+        public async Task ShowSoftLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
         {
             ContentDialog dialog = new ContentDialog();
 
