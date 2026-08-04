@@ -201,7 +201,7 @@ if ($os -eq "win") {
         @("kDrive.pdb", $true),
         @("kDrive_client.pdb", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $false)
+        @("kDrive_client.src.zip", $false),
         @("kDriveRecoveryUpdater-$version.exe", $true)
     )
     Upload-FilesToKDrive -directory build-windows -files $win_files -targetSubDir "windows"
@@ -218,7 +218,7 @@ if ($os -eq "macos") {
         @("kDrive.dSYM", $true),
         @("kDrive_client.dSYM", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true)
+        @("kDrive_client.src.zip", $true),
         @("kDriveRecoveryUpdater-$version.zip", $true)
     )
     Upload-FilesToKDrive -directory build-macos -files $macos_files -targetSubDir "macos"
@@ -233,7 +233,7 @@ if ($os -eq "linux-amd") {
         @("kDrive.dbg", $true),
         @("kDrive_client.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true)
+        @("kDrive_client.src.zip", $true),
         @("kDriveRecoveryUpdater-$version-amd64.AppImage", $true)
     )
     Upload-FilesToKDrive -directory build-linux-amd64 -files $linux_amd_files -targetSubDir "linux-amd"
@@ -248,7 +248,7 @@ if ($os -eq "linux-arm") {
         @("kDrive.dbg", $true),
         @("kDrive_client.dbg", $true),
         @("kDrive.src.zip", $true),
-        @("kDrive_client.src.zip", $true)
+        @("kDrive_client.src.zip", $true),
         @("kDriveRecoveryUpdater-$version-arm64.AppImage", $true)
     )
     Upload-FilesToKDrive -directory build-linux-arm64 -files $linux_arm_files -targetSubDir "linux-arm"
