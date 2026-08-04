@@ -38,11 +38,6 @@ class CertReader {
         static bool readCertificate(QSslCertificate &certificate);
 
     private:
-        /**
-         * Reads the PEM string from the keychain.
-         * @param outPem The output string to hold the PEM data.
-         * @return true if the PEM string was successfully read, false otherwise.
-         */
         static bool readPem(std::string &outPem);
 };
 
