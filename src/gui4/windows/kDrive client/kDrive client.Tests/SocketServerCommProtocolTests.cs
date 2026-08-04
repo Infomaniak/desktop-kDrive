@@ -1,3 +1,4 @@
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.Services;
 using Infomaniak.kDrive.Types;
 using System.Net.Security;
@@ -12,7 +13,7 @@ namespace Infomaniak.kDrive.Tests;
 public class MockTcpServerCommClient : TcpServerCommClient
 {
     private int _port;
-    public MockTcpServerCommClient(int port)
+    public MockTcpServerCommClient(int port) : base(new FakeKeychainStore(string.Empty))
     {
         _port = port;
     }
@@ -382,27 +383,27 @@ public class TcpServerCommClientTests
         }
     }
 
-    private static SocketServerCommProtocol CreateProtocol(string commPath)
+    private static TcpServerCommClient CreateProtocol(string commPath)
     {
-        var protocol = new SocketServerCommProtocol(new FakeKeychainStore(commPath));
-        var field = typeof(SocketServerCommProtocol).GetField("_commPortFilePath", _instancePrivate)
+        var protocol = new TcpServerCommClient(new FakeKeychainStore(commPath));
+        var field = typeof(TcpServerCommClient).GetField("_commPortFilePath", _instancePrivate)
                     ?? throw new InvalidOperationException("Failed to find _commPortFilePath field.");
         field.SetValue(protocol, commPath);
         return protocol;
     }
 
-    private static SocketServerCommProtocol CreateProtocol(string commPath, IKeychainStore keychainStore)
+    private static TcpServerCommClient CreateProtocol(string commPath, IKeychainStore keychainStore)
     {
-        var protocol = new SocketServerCommProtocol(keychainStore);
-        var field = typeof(SocketServerCommProtocol).GetField("_commPortFilePath", _instancePrivate)
+        var protocol = new TcpServerCommClient(keychainStore);
+        var field = typeof(TcpServerCommClient).GetField("_commPortFilePath", _instancePrivate)
                     ?? throw new InvalidOperationException("Failed to find _commPortFilePath field.");
         field.SetValue(protocol, commPath);
         return protocol;
     }
 
-    private static SslStream? GetStream(SocketServerCommProtocol protocol)
+    private static SslStream? GetStream(TcpServerCommClient protocol)
     {
-        var streamField = typeof(SocketServerCommProtocol).GetField("_stream", _instancePrivate)
+        var streamField = typeof(TcpServerCommClient).GetField("_stream", _instancePrivate)
                           ?? throw new InvalidOperationException("Failed to find _stream field.");
         return streamField.GetValue(protocol) as SslStream;
     }
@@ -413,9 +414,9 @@ public class TcpServerCommClientTests
         return Path.Combine(dir, ".comm");
     }
 
-    private static async Task ShutdownProtocolAsync(SocketServerCommProtocol protocol)
+    private static async Task ShutdownProtocolAsync(TcpServerCommClient protocol)
     {
-        var stopField = typeof(SocketServerCommProtocol).GetField("_stopRequested", _instancePrivate)
+        var stopField = typeof(TcpServerCommClient).GetField("_stopRequested", _instancePrivate)
                         ?? throw new InvalidOperationException("Failed to find _stopRequested field.");
         stopField.SetValue(protocol, true);
 
