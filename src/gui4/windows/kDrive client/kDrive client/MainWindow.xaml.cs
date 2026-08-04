@@ -178,6 +178,7 @@ namespace Infomaniak.kDrive
                 }
             };
 
+            Utility.BringCurrentWindowToFront();
             var result = await dialog.ShowAsync();
 
             TooManyDeletesUserChoice userChoice = result switch
@@ -226,6 +227,7 @@ namespace Infomaniak.kDrive
                 }
             };
 
+            Utility.BringCurrentWindowToFront();
             var result = await dialog.ShowAsync();
 
             TooManyDeletesUserChoice userChoice = result switch
