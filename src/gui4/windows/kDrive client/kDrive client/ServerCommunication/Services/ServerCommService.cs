@@ -18,6 +18,7 @@
 using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -2115,7 +2116,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     nbFiles.Value
                 ));
 
-                var mainWindow = (App.Current as App)?.CurrentWindow as MainWindow;
+                if (App.Current is not App app)
+                    return;
+
+                if (app.CurrentWindow is OnBoardingWindow)
+                    return;
+
+                if (app.CurrentWindow is not MainWindow mainWindow)
+                {
+                    app.CreateWindow(App.CreateWindowOptions.Foreground);
+                    mainWindow = app.CurrentWindow as MainWindow;
+                }
 
                 if (mainWindow != null)
                 {
