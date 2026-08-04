@@ -123,7 +123,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
-        public bool NotifyBeforeDelete
+        public bool AskBeforeDelete
         {
             get => _notifyBeforeDelete;
             set => SetPropertyInUIThread(ref _notifyBeforeDelete, value);
@@ -206,13 +206,13 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task<bool> ChangeNotifyBeforeDelete(bool enabled)
         {
-            if (NotifyBeforeDelete == enabled)
+            if (AskBeforeDelete == enabled)
                 return true;
 
-            NotifyBeforeDelete = enabled;
+            AskBeforeDelete = enabled;
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
-                NotifyBeforeDelete = !enabled;
+                AskBeforeDelete = !enabled;
                 return false;
             }
             return true;
