@@ -2571,6 +2571,7 @@ ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
     // Check for nested syncs
     for (const auto &sync_: syncList) {
         if (sync_.dbId() == sync.dbId()) {
+            if (sync_.toDelete()) return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
             continue;
         }
         if (CommonUtility::isSubDir(sync.localPath(), sync_.localPath()) ||
@@ -2579,10 +2580,6 @@ ExitInfo AppServer::checkIfSyncIsValid(const Sync &sync) {
                                                            << L"; (2) dbId=" << sync_.dbId() << L", "
                                                            << Utility::formatSyncPath(sync_.localPath()));
             return {ExitCode::InvalidSync, ExitCause::SyncDirNestingError};
-        }
-
-        if (sync_.toDelete()) {
-            return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
         }
     }
 
@@ -3198,12 +3195,6 @@ std::string liteSyncActivationLogMessage(const bool enabled, const SyncDbId sync
 
 // This function will pause the synchronization in case of errors.
 ExitInfo AppServer::tryCreateAndStartVfs(const Sync &sync, bool &startPostponed) noexcept {
-    if (sync.toDelete()) {
-        LOG_INFO(_logger,
-                 "Sync with dbId=" << sync.dbId() << " is marked for deletion, skipping VFS creation. The sync will be ignored.");
-        return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
-    }
-
     startPostponed = false;
     const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg);
@@ -3996,13 +3987,6 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
 ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool start, const std::chrono::seconds &startDelay,
                                 bool resumedByUser, bool firstInit) {
-    if (sync.toDelete()) {
-        LOG_WARN(_logger, "Synchronization with syncDbId="
-                                  << sync.dbId()
-                                  << " should have been deleted, but is still present in the database. It will be ignored.");
-        return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
-    }
-
     const std::scoped_lock lock(syncPalMapMutex);
     auto syncPalMapIt = syncPalMap.find(sync.dbId());
     if (syncPalMapIt == syncPalMap.end()) {
