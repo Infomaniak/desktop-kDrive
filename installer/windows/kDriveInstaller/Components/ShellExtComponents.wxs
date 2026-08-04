@@ -66,9 +66,6 @@
             <Component Guid="{F681640C-E6E5-435C-820E-447AFE8BC674}" Directory="APPXDEPENDENCIESx86FOLDER">
                 <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(version)_Test/Dependencies/x86/Microsoft.VCLibs.x86.14.00.Desktop.appx" />
             </Component>
-            <Component Guid="{780822D6-B47D-47E3-ACEB-E3ED196B74DB}" Directory="APPXDEPENDENCIESARMFOLDER">
-                <File Source="$(desktop-kDriveDir)/extensions/windows/cfapi/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_$(version)_Test/Dependencies/ARM/Microsoft.VCLibs.ARM.14.00.Desktop.appx" />
-            </Component>
         </ComponentGroup>
     </Fragment>
 </Wix>

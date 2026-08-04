@@ -1,10 +1,19 @@
 name: Get the kDrive version of the current commit
-description: 'Get the kDrive version of the current commit'
+description: 'Get the per OS kDrive versions of the current commit'
 
 outputs:
   kDrive_version:
-    description: 'The kDrive version of the current commit'
+    description: 'The kDrive version matching the OS of the runner'
     value: ${{ steps.get-version-step.outputs.kDrive_version }}
+  kDrive_version_linux:
+    description: 'The kDrive Linux version of the current commit'
+    value: ${{ steps.get-version-step.outputs.kDrive_version_linux }}
+  kDrive_version_macos:
+    description: 'The kDrive macOS version of the current commit'
+    value: ${{ steps.get-version-step.outputs.kDrive_version_macos }}
+  kDrive_version_windows:
+    description: 'The kDrive Windows version of the current commit'
+    value: ${{ steps.get-version-step.outputs.kDrive_version_windows }}
 
 runs:
   using: "composite"
@@ -14,7 +23,19 @@ runs:
       shell: bash
       run: |
         source "${{ github.workspace }}/infomaniak-build-tools/version-helpers.sh"
-        VERSION=$(GetVersionFromJson "${{ github.workspace }}" true)
 
-        echo "Detected version: $VERSION"
-        echo "kDrive_version=$VERSION" >> "$GITHUB_OUTPUT"
+        LINUX_VERSION=$(GetVersionFromJson "${{ github.workspace }}" true "Linux")
+        MACOS_VERSION=$(GetVersionFromJson "${{ github.workspace }}" true "macOS")
+        WINDOWS_VERSION=$(GetVersionFromJson "${{ github.workspace }}" true "Windows")
+
+        # RUNNER_OS ("Linux", "macOS", "Windows") matches the version.json platform keys.
+        CURRENT_VERSION=$(GetVersionFromJson "${{ github.workspace }}" true "$RUNNER_OS")
+
+        echo "Detected versions -> Linux: $LINUX_VERSION, macOS: $MACOS_VERSION, Windows: $WINDOWS_VERSION (current OS '$RUNNER_OS': $CURRENT_VERSION)"
+
+        {
+          echo "kDrive_version=$CURRENT_VERSION"
+          echo "kDrive_version_linux=$LINUX_VERSION"
+          echo "kDrive_version_macos=$MACOS_VERSION"
+          echo "kDrive_version_windows=$WINDOWS_VERSION"
+        } >> "$GITHUB_OUTPUT"

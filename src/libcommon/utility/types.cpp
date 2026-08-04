@@ -743,6 +743,8 @@ std::string toString(const AppStateKey e) {
             return "AppUid";
         case AppStateKey::NoUpdate:
             return "NoUpdate";
+        case AppStateKey::ShowV4Onboarding:
+            return "ShowV4Onboarding";
         case AppStateKey::Unknown:
             return "Unknown";
         default:

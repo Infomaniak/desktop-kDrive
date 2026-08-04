@@ -9,7 +9,7 @@
 //           LottieGen -GenerateColorBindings -GenerateDependencyObject -Language CSharp -Public -WinUIVersion 3.0 -InputFile kDrive-Sync.json
 //       
 //       Input file:
-//           kDrive-Sync.json (18732 bytes created 9:11+02:00 Jun 4 2026)
+//           kDrive-Sync.json (19145 bytes created 15:59+02:00 Jun 12 2026)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,25 +21,25 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |    57 |
+// | All CompositionObjects   |    47 |
 // |--------------------------+-------|
-// | Expression animators     |     6 |
-// | KeyFrame animators       |    10 |
-// | Reference parameters     |     6 |
-// | Expression operations    |     4 |
+// | Expression animators     |     3 |
+// | KeyFrame animators       |     3 |
+// | Reference parameters     |     3 |
+// | Expression operations    |     8 |
 // |--------------------------+-------|
-// | Animated brushes         |     1 |
+// | Animated brushes         |     2 |
 // | Animated gradient stops  |     - |
-// | ExpressionAnimations     |     6 |
+// | ExpressionAnimations     |     3 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
 // | ContainerVisuals         |     1 |
 // | ShapeVisuals             |     1 |
 // |--------------------------+-------|
-// | ContainerShapes          |     3 |
-// | CompositionSpriteShapes  |     3 |
+// | ContainerShapes          |     2 |
+// | CompositionSpriteShapes  |     4 |
 // |--------------------------+-------|
-// | Brushes                  |     1 |
+// | Brushes                  |     2 |
 // | Gradient stops           |     - |
 // | CompositionVisualSurface |     - |
 // ------------------------------------
@@ -66,30 +66,51 @@ namespace AnimatedVisuals
         // Animation duration: 10.020 seconds.
         internal const long c_durationTicks = 100196666;
 
-        // Theme property: Color_446EDD.
-        internal static readonly Color c_themeColor_446EDD = Color.FromArgb(0xFF, 0x44, 0x6E, 0xDD);
+        // Theme property: Color_446FDD.
+        internal static readonly Color c_themeColor_446FDD = Color.FromArgb(0xFF, 0x44, 0x6F, 0xDD);
+
+        // Theme property: Color_DEE7FD.
+        internal static readonly Color c_themeColor_DEE7FD = Color.FromArgb(0xFF, 0xDE, 0xE7, 0xFD);
 
         CompositionPropertySet _themeProperties;
 
         /// <summary>
-        /// Dependency property for Color_446EDD.
+        /// Dependency property for Color_446FDD.
         /// </summary>
-        public static readonly DependencyProperty Color_446EDDProperty =
-            DependencyProperty.Register("Color_446EDD", typeof(Color), typeof(KDrive_Sync),
-                new PropertyMetadata(Color.FromArgb(0xFF, 0x44, 0x6E, 0xDD), OnColor_446EDDChanged));
+        public static readonly DependencyProperty Color_446FDDProperty =
+            DependencyProperty.Register("Color_446FDD", typeof(Color), typeof(KDrive_Sync),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0x44, 0x6F, 0xDD), OnColor_446FDDChanged));
+
+        /// <summary>
+        /// Dependency property for Color_DEE7FD.
+        /// </summary>
+        public static readonly DependencyProperty Color_DEE7FDProperty =
+            DependencyProperty.Register("Color_DEE7FD", typeof(Color), typeof(KDrive_Sync),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0xDE, 0xE7, 0xFD), OnColor_DEE7FDChanged));
 
         // Theme properties.
-        public Color Color_446EDD
+        public Color Color_446FDD
         {
-            get => (Color)GetValue(Color_446EDDProperty);
-            set => SetValue(Color_446EDDProperty, value);
+            get => (Color)GetValue(Color_446FDDProperty);
+            set => SetValue(Color_446FDDProperty, value);
+        }
+
+        public Color Color_DEE7FD
+        {
+            get => (Color)GetValue(Color_DEE7FDProperty);
+            set => SetValue(Color_DEE7FDProperty, value);
         }
 
         static Vector4 ColorAsVector4(Color color) => new Vector4(color.R, color.G, color.B, color.A);
 
-        static void OnColor_446EDDChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        static void OnColor_446FDDChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
         {
-            ((KDrive_Sync)d)._themeProperties?.InsertVector4("Color_446EDD", ColorAsVector4((Color)(Color)args.NewValue));
+            ((KDrive_Sync)d)._themeProperties?.InsertVector4("Color_446FDD", ColorAsVector4((Color)(Color)args.NewValue));
+        }
+
+        static void OnColor_DEE7FDChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        {
+            ((KDrive_Sync)d)._themeProperties?.InsertVector4("Color_DEE7FD", ColorAsVector4((Color)(Color)args.NewValue));
         }
 
         CompositionPropertySet EnsureThemeProperties(Compositor compositor)
@@ -97,7 +118,8 @@ namespace AnimatedVisuals
             if (_themeProperties == null)
             {
                 _themeProperties = compositor.CreatePropertySet();
-                _themeProperties.InsertVector4("Color_446EDD", ColorAsVector4((Color)Color_446EDD));
+                _themeProperties.InsertVector4("Color_446FDD", ColorAsVector4((Color)Color_446FDD));
+                _themeProperties.InsertVector4("Color_DEE7FD", ColorAsVector4((Color)Color_DEE7FD));
             }
             return _themeProperties;
         }
@@ -160,9 +182,13 @@ namespace AnimatedVisuals
         /// </summary>
         public void SetColorProperty(string propertyName, Color value)
         {
-            if (propertyName == "Color_446EDD")
+            if (propertyName == "Color_446FDD")
             {
-                Color_446EDD = value;
+                Color_446FDD = value;
+            }
+            else if (propertyName == "Color_DEE7FD")
+            {
+                Color_DEE7FD = value;
             }
             else
             {
@@ -192,18 +218,14 @@ namespace AnimatedVisuals
             readonly ExpressionAnimation _reusableExpressionAnimation;
             readonly CompositionPropertySet _themeProperties;
             AnimationController _animationController_0;
-            CompositionColorBrush _themeColor_Color_446EDD;
+            CompositionColorBrush _themeColor_Color_446FDD;
+            CompositionColorBrush _themeColor_Color_DEE7FD;
             CompositionContainerShape _containerShape_0;
             CompositionContainerShape _containerShape_1;
-            CompositionContainerShape _containerShape_2;
             CompositionSpriteShape _spriteShape_0;
-            CompositionSpriteShape _spriteShape_1;
             ContainerVisual _root;
             CubicBezierEasingFunction _cubicBezierEasingFunction_0;
-            ScalarKeyFrameAnimation _rotationAngleInDegreesScalarAnimation_0_to_m360;
             StepEasingFunction _holdThenStepEasingFunction;
-            Vector2KeyFrameAnimation _anchorVector2Animation;
-            Vector2KeyFrameAnimation _positionVector2Animation;
 
             void BindProperty(
                 CompositionObject target,
@@ -1083,39 +1105,68 @@ namespace AnimatedVisuals
                 return result;
             }
 
+            // - - - - Layer aggregator
             // - - Transforms: fond
             CanvasGeometry Geometry_36()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
                 {
-                    builder.BeginFigure(new Vector2(70.75F, 35.375F));
-                    builder.AddCubicBezier(new Vector2(70.75F, 54.9099998F), new Vector2(54.9099998F, 70.75F), new Vector2(35.375F, 70.75F));
-                    builder.AddCubicBezier(new Vector2(15.8400002F, 70.75F), new Vector2(0F, 54.9099998F), new Vector2(0F, 35.375F));
-                    builder.AddCubicBezier(new Vector2(0F, 15.8400002F), new Vector2(15.8400002F, 0F), new Vector2(35.375F, 0F));
-                    builder.AddCubicBezier(new Vector2(54.9099998F, 0F), new Vector2(70.75F, 15.8400002F), new Vector2(70.75F, 35.375F));
+                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
+                    builder.BeginFigure(new Vector2(72F, 36F));
+                    builder.AddCubicBezier(new Vector2(72F, 55.8800011F), new Vector2(55.8800011F, 72F), new Vector2(36F, 72F));
+                    builder.AddCubicBezier(new Vector2(16.1200008F, 72F), new Vector2(0F, 55.8800011F), new Vector2(0F, 36F));
+                    builder.AddCubicBezier(new Vector2(0F, 16.1200008F), new Vector2(16.1200008F, 0F), new Vector2(36F, 0F));
+                    builder.AddCubicBezier(new Vector2(55.8800011F, 0F), new Vector2(72F, 16.1200008F), new Vector2(72F, 36F));
                     builder.EndFigure(CanvasFigureLoop.Closed);
                     result = CanvasGeometry.CreatePath(builder);
                 }
                 return result;
             }
 
+            // - - - - Layer aggregator
+            // - - Transforms: fond (Stroke)
+            CanvasGeometry Geometry_37()
+            {
+                CanvasGeometry result;
+                using (var builder = new CanvasPathBuilder(null))
+                {
+                    builder.SetFilledRegionDetermination(CanvasFilledRegionDetermination.Winding);
+                    builder.BeginFigure(new Vector2(70.75F, 36F));
+                    builder.AddCubicBezier(new Vector2(70.75F, 16.8099995F), new Vector2(55.1899986F, 1.25F), new Vector2(36F, 1.25F));
+                    builder.AddCubicBezier(new Vector2(16.8099995F, 1.25F), new Vector2(1.25F, 16.8099995F), new Vector2(1.25F, 36F));
+                    builder.AddCubicBezier(new Vector2(1.25F, 55.1899986F), new Vector2(16.8099995F, 70.75F), new Vector2(36F, 70.75F));
+                    builder.AddLine(new Vector2(36F, 72F));
+                    builder.AddCubicBezier(new Vector2(16.1200008F, 72F), new Vector2(0F, 55.8800011F), new Vector2(0F, 36F));
+                    builder.AddCubicBezier(new Vector2(0F, 16.1200008F), new Vector2(16.1200008F, 0F), new Vector2(36F, 0F));
+                    builder.AddCubicBezier(new Vector2(55.8800011F, 0F), new Vector2(72F, 16.1200008F), new Vector2(72F, 36F));
+                    builder.AddCubicBezier(new Vector2(72F, 55.8800011F), new Vector2(55.8800011F, 72F), new Vector2(36F, 72F));
+                    builder.AddLine(new Vector2(36F, 70.75F));
+                    builder.AddCubicBezier(new Vector2(55.1899986F, 70.75F), new Vector2(70.75F, 55.1899986F), new Vector2(70.75F, 36F));
+                    builder.EndFigure(CanvasFigureLoop.Closed);
+                    result = CanvasGeometry.CreatePath(builder);
+                }
+                return result;
+            }
+
+            // - - - - - Layer aggregator
             // - - - Transforms: Icons/Arrows/arrows-loop
             // - - Transforms: icon Offset:<0, 5>
             // - +.PathGeometry
-            CanvasGeometry Geometry_37()
+            CanvasGeometry Geometry_38()
             {
                 var result = CanvasGeometry.CreateGroup(
                     null,
-                    new CanvasGeometry[] { Geometry_38(), Geometry_39() },
+                    new CanvasGeometry[] { Geometry_39(), Geometry_40() },
                     CanvasFilledRegionDetermination.Alternate);
                 return result;
             }
 
+            // - - - - - - Layer aggregator
             // - - - - Transforms: Icons/Arrows/arrows-loop
             // - - - Transforms: icon Offset:<0, 5>
             // - - +.PathGeometry
-            CanvasGeometry Geometry_38()
+            CanvasGeometry Geometry_39()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1146,10 +1197,11 @@ namespace AnimatedVisuals
                 return result;
             }
 
+            // - - - - - - Layer aggregator
             // - - - - Transforms: Icons/Arrows/arrows-loop
             // - - - Transforms: icon Offset:<0, 5>
             // - - +.PathGeometry
-            CanvasGeometry Geometry_39()
+            CanvasGeometry Geometry_40()
             {
                 CanvasGeometry result;
                 using (var builder = new CanvasPathBuilder(null))
@@ -1183,50 +1235,51 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            // Color bound to theme property value: Color_446EDD
-            CompositionColorBrush ThemeColor_Color_446EDD()
+            // Color bound to theme property value: Color_446FDD
+            CompositionColorBrush ThemeColor_Color_446FDD()
             {
-                if (_themeColor_Color_446EDD != null) { return _themeColor_Color_446EDD; }
-                var result = _themeColor_Color_446EDD = _c.CreateColorBrush();
-                BindProperty(_themeColor_Color_446EDD, "Color", "ColorRGB(_theme.Color_446EDD.W,_theme.Color_446EDD.X,_theme.Color_446EDD.Y,_theme.Color_446EDD.Z)", "_theme", _themeProperties);
+                if (_themeColor_Color_446FDD != null) { return _themeColor_Color_446FDD; }
+                var result = _themeColor_Color_446FDD = _c.CreateColorBrush();
+                BindProperty(_themeColor_Color_446FDD, "Color", "ColorRGB(_theme.Color_446FDD.W,_theme.Color_446FDD.X,_theme.Color_446FDD.Y,_theme.Color_446FDD.Z)", "_theme", _themeProperties);
                 return result;
             }
 
+            // - - Layer aggregator
+            // Transforms: fond
+            // Color bound to theme property value: Color_DEE7FD
+            CompositionColorBrush ThemeColor_Color_DEE7FD()
+            {
+                if (_themeColor_Color_DEE7FD != null) { return _themeColor_Color_DEE7FD; }
+                var result = _themeColor_Color_DEE7FD = _c.CreateColorBrush();
+                BindProperty(_themeColor_Color_DEE7FD, "Color", "ColorRGB(_theme.Color_DEE7FD.W,_theme.Color_DEE7FD.X,_theme.Color_DEE7FD.Y,_theme.Color_DEE7FD.Z)", "_theme", _themeProperties);
+                return result;
+            }
+
+            // Layer aggregator
             CompositionContainerShape ContainerShape_0()
             {
                 if (_containerShape_0 != null) { return _containerShape_0; }
                 var result = _containerShape_0 = _c.CreateContainerShape();
-                var propertySet = result.Properties;
-                propertySet.InsertVector2("Anchor", new Vector2(36F, 36F));
-                propertySet.InsertVector2("Position", new Vector2(89.0400009F, 87F));
+                var shapes = result.Shapes;
                 // Transforms: fond
-                result.Shapes.Add(SpriteShape_1());
-                BindProperty(_containerShape_0, "CenterPoint", "my.Anchor", "my", _containerShape_0);
-                BindProperty(_containerShape_0, "Offset", "my.Position-my.Anchor", "my", _containerShape_0);
+                shapes.Add(SpriteShape_1());
+                // Transforms: fond (Stroke)
+                shapes.Add(SpriteShape_2());
+                // Transforms: Icons/Arrows/arrows-loop
+                shapes.Add(ContainerShape_1());
                 return result;
             }
 
+            // - Layer aggregator
+            // Transforms for Icons/Arrows/arrows-loop
             CompositionContainerShape ContainerShape_1()
             {
                 if (_containerShape_1 != null) { return _containerShape_1; }
                 var result = _containerShape_1 = _c.CreateContainerShape();
-                var propertySet = result.Properties;
-                propertySet.InsertVector2("Anchor", new Vector2(36F, 36F));
-                propertySet.InsertVector2("Position", new Vector2(89.0400009F, 87F));
-                // Transforms: Icons/Arrows/arrows-loop
-                result.Shapes.Add(ContainerShape_2());
-                BindProperty(_containerShape_1, "CenterPoint", "my.Anchor", "my", _containerShape_1);
-                BindProperty(_containerShape_1, "Offset", "my.Position-my.Anchor", "my", _containerShape_1);
-                return result;
-            }
-
-            // Transforms for Icons/Arrows/arrows-loop
-            CompositionContainerShape ContainerShape_2()
-            {
-                if (_containerShape_2 != null) { return _containerShape_2; }
-                var result = _containerShape_2 = _c.CreateContainerShape();
+                result.CenterPoint = new Vector2(20F, 20F);
+                result.Offset = new Vector2(16F, 16F);
                 // Transforms: icon Offset:<0, 5>
-                result.Shapes.Add(SpriteShape_2());
+                result.Shapes.Add(SpriteShape_3());
                 return result;
             }
 
@@ -1238,18 +1291,27 @@ namespace AnimatedVisuals
                 return _c.CreatePathGeometry(new CompositionPath(Geometry_00()));
             }
 
+            // - - Layer aggregator
             // Transforms: fond
             CompositionPathGeometry PathGeometry_1()
             {
                 return _c.CreatePathGeometry(new CompositionPath(Geometry_36()));
             }
 
-            // - Transforms: Icons/Arrows/arrows-loop
-            // Transforms: icon Offset:<0, 5>
-            // +.PathGeometry
+            // - - Layer aggregator
+            // Transforms: fond (Stroke)
             CompositionPathGeometry PathGeometry_2()
             {
                 return _c.CreatePathGeometry(new CompositionPath(Geometry_37()));
+            }
+
+            // - - - Layer aggregator
+            // - Transforms: Icons/Arrows/arrows-loop
+            // Transforms: icon Offset:<0, 5>
+            // +.PathGeometry
+            CompositionPathGeometry PathGeometry_3()
+            {
+                return _c.CreatePathGeometry(new CompositionPath(Geometry_38()));
             }
 
             // Layer aggregator
@@ -1258,29 +1320,36 @@ namespace AnimatedVisuals
             {
                 if (_spriteShape_0 != null) { return _spriteShape_0; }
                 var result = _spriteShape_0 = _c.CreateSpriteShape(PathGeometry_0());
-                result.FillBrush = ThemeColor_Color_446EDD();
+                result.FillBrush = ThemeColor_Color_446FDD();
                 return result;
             }
 
+            // - Layer aggregator
             // Transforms for fond
             CompositionSpriteShape SpriteShape_1()
             {
-                if (_spriteShape_1 != null) { return _spriteShape_1; }
-                var result = _spriteShape_1 = _c.CreateSpriteShape(PathGeometry_1());
-                result.CenterPoint = new Vector2(36F, 36F);
-                result.StrokeBrush = ThemeColor_Color_446EDD();
-                result.StrokeMiterLimit = 2F;
-                result.StrokeThickness = 1.25F;
+                var result = _c.CreateSpriteShape(PathGeometry_1());
+                result.FillBrush = ThemeColor_Color_DEE7FD();
                 return result;
             }
 
-            // Transforms: Icons/Arrows/arrows-loop
-            // +
+            // - Layer aggregator
+            // Transforms for fond (Stroke)
             CompositionSpriteShape SpriteShape_2()
             {
+                var result = _c.CreateSpriteShape(PathGeometry_2());
+                result.FillBrush = ThemeColor_Color_446FDD();
+                return result;
+            }
+
+            // - - Layer aggregator
+            // Transforms: Icons/Arrows/arrows-loop
+            // +
+            CompositionSpriteShape SpriteShape_3()
+            {
                 // Offset:<0, 5>
-                var geometry = PathGeometry_2();
-                var result = CreateSpriteShape(geometry, new Matrix3x2(1F, 0F, 0F, 1F, 0F, 5F), ThemeColor_Color_446EDD());;
+                var geometry = PathGeometry_3();
+                var result = CreateSpriteShape(geometry, new Matrix3x2(1F, 0F, 0F, 1F, 0F, 5F), ThemeColor_Color_446FDD());;
                 return result;
             }
 
@@ -1303,27 +1372,13 @@ namespace AnimatedVisuals
                     : _cubicBezierEasingFunction_0;
             }
 
-            // Transforms: fond
-            // Rotation
-            ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_0()
-            {
-                // Frame 0.
-                var result = CreateScalarKeyFrameAnimation(0F, 0F, HoldThenStepEasingFunction());
-                // Frame 300.
-                result.InsertKeyFrame(0.49901861F, -180F, CubicBezierEasingFunction_0());
-                // Frame 600.
-                result.InsertKeyFrame(0.998037219F, -1F, CubicBezierEasingFunction_0());
-                // Frame 601.
-                result.InsertKeyFrame(0.999700606F, 0F, HoldThenStepEasingFunction());
-                return result;
-            }
-
+            // - - Layer aggregator
+            // Transforms: Icons/Arrows/arrows-loop
             // Rotation
             ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_m360()
             {
                 // Frame 0.
-                if (_rotationAngleInDegreesScalarAnimation_0_to_m360 != null) { return _rotationAngleInDegreesScalarAnimation_0_to_m360; }
-                var result = _rotationAngleInDegreesScalarAnimation_0_to_m360 = CreateScalarKeyFrameAnimation(0F, 0F, HoldThenStepEasingFunction());
+                var result = CreateScalarKeyFrameAnimation(0F, 0F, HoldThenStepEasingFunction());
                 // Frame 300.
                 result.InsertKeyFrame(0.49901861F, -180F, CubicBezierEasingFunction_0());
                 // Frame 600.
@@ -1342,7 +1397,6 @@ namespace AnimatedVisuals
                 // ++++++++++++++++++++++++++++++++++
                 shapes.Add(SpriteShape_0());
                 shapes.Add(ContainerShape_0());
-                shapes.Add(ContainerShape_1());
                 return result;
             }
 
@@ -1351,21 +1405,6 @@ namespace AnimatedVisuals
                 if (_holdThenStepEasingFunction != null) { return _holdThenStepEasingFunction; }
                 var result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
                 result.IsFinalStepSingleFrame = true;
-                return result;
-            }
-
-            // Anchor
-            Vector2KeyFrameAnimation AnchorVector2Animation()
-            {
-                // Frame 0.
-                if (_anchorVector2Animation != null) { return _anchorVector2Animation; }
-                var result = _anchorVector2Animation = CreateVector2KeyFrameAnimation(0F, new Vector2(36F, 36F), HoldThenStepEasingFunction());
-                // Frame 300.
-                result.InsertKeyFrame(0.49901861F, new Vector2(36F, 36F), CubicBezierEasingFunction_0());
-                // Frame 600.
-                result.InsertKeyFrame(0.998037219F, new Vector2(36.6199989F, 36.6199989F), CubicBezierEasingFunction_0());
-                // Frame 601.
-                result.InsertKeyFrame(0.999700606F, new Vector2(36F, 36F), HoldThenStepEasingFunction());
                 return result;
             }
 
@@ -1383,48 +1422,18 @@ namespace AnimatedVisuals
                 return result;
             }
 
-            // Transforms: fond
+            // - Layer aggregator
             // Offset
             Vector2KeyFrameAnimation OffsetVector2Animation_1()
             {
                 // Frame 0.
-                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(0.629999995F, 0.629999995F), HoldThenStepEasingFunction());
+                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(53.0400009F, 51F), HoldThenStepEasingFunction());
                 // Frame 300.
-                result.InsertKeyFrame(0.49901861F, new Vector2(-0.620000005F, -0.620000005F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.49901861F, new Vector2(53.1300011F, 51F), CubicBezierEasingFunction_0());
                 // Frame 600.
-                result.InsertKeyFrame(0.998037219F, new Vector2(1.25999999F, 1.24000001F), CubicBezierEasingFunction_0());
+                result.InsertKeyFrame(0.998037219F, new Vector2(53F, 51F), CubicBezierEasingFunction_0());
                 // Frame 601.
-                result.InsertKeyFrame(0.999700606F, new Vector2(0.629999995F, 0.629999995F), HoldThenStepEasingFunction());
-                return result;
-            }
-
-            // Transforms: Icons/Arrows/arrows-loop
-            // Offset
-            Vector2KeyFrameAnimation OffsetVector2Animation_2()
-            {
-                // Frame 0.
-                var result = CreateVector2KeyFrameAnimation(0F, new Vector2(16F, 16F), HoldThenStepEasingFunction());
-                // Frame 300.
-                result.InsertKeyFrame(0.49901861F, new Vector2(16F, 16F), CubicBezierEasingFunction_0());
-                // Frame 600.
-                result.InsertKeyFrame(0.998037219F, new Vector2(17.2600002F, 17.2299995F), CubicBezierEasingFunction_0());
-                // Frame 601.
-                result.InsertKeyFrame(0.999700606F, new Vector2(16F, 16F), HoldThenStepEasingFunction());
-                return result;
-            }
-
-            // Position
-            Vector2KeyFrameAnimation PositionVector2Animation()
-            {
-                // Frame 0.
-                if (_positionVector2Animation != null) { return _positionVector2Animation; }
-                var result = _positionVector2Animation = CreateVector2KeyFrameAnimation(0F, new Vector2(89.0400009F, 87F), HoldThenStepEasingFunction());
-                // Frame 300.
-                result.InsertKeyFrame(0.49901861F, new Vector2(89.1299973F, 87F), CubicBezierEasingFunction_0());
-                // Frame 600.
-                result.InsertKeyFrame(0.998037219F, new Vector2(88.3799973F, 86.3799973F), CubicBezierEasingFunction_0());
-                // Frame 601.
-                result.InsertKeyFrame(0.999700606F, new Vector2(89.0400009F, 87F), HoldThenStepEasingFunction());
+                result.InsertKeyFrame(0.999700606F, new Vector2(53.0400009F, 51F), HoldThenStepEasingFunction());
                 return result;
             }
 
@@ -1446,30 +1455,16 @@ namespace AnimatedVisuals
 
             public void CreateAnimations()
             {
-                _containerShape_0.StartAnimation("RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_m360(), AnimationController_0());
-                _containerShape_0.Properties.StartAnimation("Anchor", AnchorVector2Animation(), AnimationController_0());
-                _containerShape_0.Properties.StartAnimation("Position", PositionVector2Animation(), AnimationController_0());
+                _containerShape_0.StartAnimation("Offset", OffsetVector2Animation_1(), AnimationController_0());
                 _containerShape_1.StartAnimation("RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_m360(), AnimationController_0());
-                _containerShape_1.Properties.StartAnimation("Anchor", AnchorVector2Animation(), AnimationController_0());
-                _containerShape_1.Properties.StartAnimation("Position", PositionVector2Animation(), AnimationController_0());
-                _containerShape_2.StartAnimation("Offset", OffsetVector2Animation_2(), AnimationController_0());
                 _spriteShape_0.StartAnimation("Offset", OffsetVector2Animation_0(), AnimationController_0());
-                _spriteShape_1.StartAnimation("RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_0(), AnimationController_0());
-                _spriteShape_1.StartAnimation("Offset", OffsetVector2Animation_1(), AnimationController_0());
             }
 
             public void DestroyAnimations()
             {
-                _containerShape_0.StopAnimation("RotationAngleInDegrees");
-                _containerShape_0.Properties.StopAnimation("Anchor");
-                _containerShape_0.Properties.StopAnimation("Position");
+                _containerShape_0.StopAnimation("Offset");
                 _containerShape_1.StopAnimation("RotationAngleInDegrees");
-                _containerShape_1.Properties.StopAnimation("Anchor");
-                _containerShape_1.Properties.StopAnimation("Position");
-                _containerShape_2.StopAnimation("Offset");
                 _spriteShape_0.StopAnimation("Offset");
-                _spriteShape_1.StopAnimation("RotationAngleInDegrees");
-                _spriteShape_1.StopAnimation("Offset");
             }
 
         }

@@ -21,7 +21,6 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/permissionsgiver.h"
 
 #include "libcommon/utility/utility.h"
 
@@ -525,9 +524,6 @@ ExitInfo DownloadJob::moveTmpFile() {
 #endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
-            // Make sure we are allowed to propagate the change
-            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
-
             // Move file
             IoError ioError = IoError::Success;
             (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
@@ -543,9 +539,6 @@ ExitInfo DownloadJob::moveTmpFile() {
         }
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
-            // Make sure we are allowed to propagate the change
-            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
-
             // Copy file content (i.e. when the target exists, do not change its node id).
             std::error_code ec;
             std::filesystem::copy(_tmpPath, _fileDownloadInfo.localpath, std::filesystem::copy_options::overwrite_existing, ec);

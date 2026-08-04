@@ -22,16 +22,6 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         _acceptTask = _listener.AcceptSocketAsync(_acceptCts.Token).AsTask();
     }
 
-    public async Task WriteCommFileAsync(string commFilePath)
-    {
-        var dir = Path.GetDirectoryName(commFilePath);
-        if (!string.IsNullOrEmpty(dir))
-        {
-            Directory.CreateDirectory(dir);
-        }
-
-        await File.WriteAllTextAsync(commFilePath, Port.ToString());
-    }
 
     public async Task<Socket> WaitForClientAsync(TimeSpan? timeout = null)
     {
