@@ -44,7 +44,7 @@ namespace KDC {
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
 
-std::function<int64_t(const SyncPath &)> DownloadJob::_freeDiskSpaceFn = [](const SyncPath &path) {
+std::function<int64_t(const SyncPath &)> DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) {
     return Utility::getFreeDiskSpace(path);
 };
 
@@ -602,8 +602,8 @@ ExitInfo DownloadJob::moveTmpFile() {
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                  log4cplus::Logger logger) {
-    auto tmpDirSize = _freeDiskSpaceFn(tmpDirPath);
-    auto destDirSize = _freeDiskSpaceFn(destDirPath);
+    auto tmpDirSize = _getFreeDiskSpaceFn(tmpDirPath);
+    auto destDirSize = _getFreeDiskSpaceFn(destDirPath);
 
     if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
         const auto totalNeededSpace = neededPlace + Utility::freeDiskSpaceLimit();

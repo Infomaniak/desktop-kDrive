@@ -191,6 +191,8 @@ void TestNetworkJobs::tearDown() {
     SyncJobManagerSingleton::clear();
     IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
+
+    DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
 }
 
 
@@ -584,7 +586,7 @@ void TestNetworkJobs::testDownload() {
         const auto cacheDirectory = std::make_shared<CacheDirectory>(destDirectory.path());
 
         // Simulate a disk with only 8Mo of free space, whatever the path.
-        DownloadJob::_freeDiskSpaceFn = [](const SyncPath &) -> int64_t { return 8 * 1000000; };
+        DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &) -> int64_t { return 8 * 1000000; };
 
         // Not Enough disk space (destination dir)
         {
@@ -602,7 +604,7 @@ void TestNetworkJobs::testDownload() {
         }
 
         // Restore the default free disk space function.
-        DownloadJob::_freeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
+        DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
     }
 
     // Empty file
@@ -806,14 +808,14 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
     const auto &logger = Log::instance()->getLogger();
 
     // Save the default free disk space function to restore it at the end.
-    const auto defaultFreeDiskSpaceFn = DownloadJob::_freeDiskSpaceFn;
+    const auto defaultFreeDiskSpaceFn = DownloadJob::_getFreeDiskSpaceFn;
 
     // Simulate a disk with only 8Mo of free space for the small partition path.
     const SyncPath smallPartitionPath = temporaryDirectory.path() / "small";
     const auto simulatedFreeSpace = [&smallPartitionPath](const SyncPath &path) {
         return path == smallPartitionPath ? 8 * 1000000 : Utility::getFreeDiskSpace(path);
     };
-    DownloadJob::_freeDiskSpaceFn = simulatedFreeSpace;
+    DownloadJob::_getFreeDiskSpaceFn = simulatedFreeSpace;
 
     // Enough disk space on both paths
     CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000, logger));
@@ -828,7 +830,7 @@ void TestNetworkJobs::testDownloadHasEnoughSpace() {
     CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, logger));
 
     // Restore the default free disk space function.
-    DownloadJob::_freeDiskSpaceFn = defaultFreeDiskSpaceFn;
+    DownloadJob::_getFreeDiskSpaceFn = defaultFreeDiskSpaceFn;
 }
 
 void TestNetworkJobs::testSearch() {

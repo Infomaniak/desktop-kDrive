@@ -81,7 +81,7 @@ jobs:
 
       - name: Execute tests
         run: |
-          # Converage is deactivated for now. 
+          # Coverage is deactivated for now.
           # & "cov01.exe" "-1" # coverage on
           # & "cov01.exe" "-s" # show status
 
@@ -116,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: windows-tests-logs
-          path: ${{ env.USERPROFILE }}/AppData/Local/Temp/kDrive-logdir/*
+          path: ~/AppData/Local/Temp/kDrive-logdir/*
           retention-days: 3
           overwrite: true
         if: always()

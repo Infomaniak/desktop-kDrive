@@ -90,7 +90,7 @@ class DownloadJob : public AbstractTokenNetworkJob {
                                    log4cplus::Logger logger);
 
         // Function used to retrieve the free disk space (in bytes) for a given path. Injectable to ease testing.
-        static std::function<int64_t(const SyncPath &)> _freeDiskSpaceFn;
+        static std::function<int64_t(const SyncPath &)> _getFreeDiskSpaceFn;
 
         const std::shared_ptr<Vfs> _vfs;
         std::shared_ptr<CacheDirectory> _cacheDirectory;
