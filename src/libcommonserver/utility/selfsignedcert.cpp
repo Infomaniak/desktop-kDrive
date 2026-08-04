@@ -54,7 +54,7 @@ const char *sslError() {
     return err ? ERR_error_string(err, nullptr) : "no OpenSSL error";
 }
 
-bool addExtension(X509 *const x509, const int nid, const char *const value) {
+bool addExtension(X509 *const x509, const int32_t nid, const char *const value) {
     X509V3_CTX ctx;
     X509V3_set_ctx_nodb(&ctx);
     X509V3_set_ctx(&ctx, x509, x509, nullptr, nullptr, 0); // issuer == subject (self-signed)
@@ -64,7 +64,7 @@ bool addExtension(X509 *const x509, const int nid, const char *const value) {
         LOG_ERROR(Log::instance()->getLogger(), "X509V3_EXT_conf_nid failed for nid " << nid << ": " << sslError());
         return false;
     }
-    const int rc = X509_add_ext(x509, ext, -1);
+    const int32_t rc = X509_add_ext(x509, ext, -1);
     X509_EXTENSION_free(ext);
     if (rc != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_add_ext failed for nid " << nid << ": " << sslError());

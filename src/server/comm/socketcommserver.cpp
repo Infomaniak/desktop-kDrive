@@ -27,9 +27,9 @@ namespace KDC {
 constexpr char host[] = "127.0.0.1";
 // Bound the TLS handshake after accept so a peer that connects but never sends a
 // ClientHello can't block the accept loop forever.
-constexpr int handshakeTimeoutSec = 5;
+constexpr int32_t handshakeTimeoutSec = 5;
 // Channel-lifetime receive timeout: SSL_read() must never park on _socketMutex forever.
-constexpr int channelReceiveTimeoutSec = 30;
+constexpr int32_t channelReceiveTimeoutSec = 30;
 
 SocketCommChannel::SocketCommChannel(const Poco::Net::StreamSocket &socket) :
     AbstractCommChannel(),

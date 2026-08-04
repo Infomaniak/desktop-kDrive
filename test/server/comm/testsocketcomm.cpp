@@ -79,7 +79,8 @@ void TestSocketComm::testServerListen() {
 
     // Wait for the server to receive the message
     remainWait = 100; // wait max 1 second
-    while (!serverSidechannel->isReadable() && remainWait-- > 0) {
+    while (!serverSidechannel->isReadable() && remainWait > 0) {
+        --remainWait;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->isReadable());
@@ -205,7 +206,8 @@ void TestSocketComm::testChannelReadAndWriteData() {
         clientSideChannel->sendMessage(msg);
         // Wait for the server to receive the message
         int remainWait = 100; // wait max 1 second
-        while (!serverSidechannel->isReadable() && remainWait-- > 0) {
+        while (!serverSidechannel->isReadable() && remainWait > 0) {
+            --remainWait;
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
         CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->isReadable());
@@ -225,7 +227,8 @@ void TestSocketComm::testChannelReadAndWriteData() {
 
     // Wait for the server to receive the message
     remainWait = 100; // wait max 1 second
-    while (!serverSidechannel->isReadable() && remainWait-- > 0) {
+    while (!serverSidechannel->isReadable() && remainWait > 0) {
+        --remainWait;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->isReadable());
