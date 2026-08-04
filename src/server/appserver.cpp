@@ -3303,7 +3303,7 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                     LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
 
-                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSync(sync.dbId());
+                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSyncAsBackgroundTask(sync.dbId());
 
                     continue;
                 }
