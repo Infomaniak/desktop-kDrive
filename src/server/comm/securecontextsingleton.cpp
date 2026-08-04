@@ -19,6 +19,7 @@
 #include "securecontextsingleton.h"
 
 #include "libcommonserver/utility/selfsignedcert.h"
+#include "libcommonserver/log/log.h"
 
 #include <Poco/Net/Context.h>
 #include <Poco/Crypto/X509Certificate.h>
@@ -27,7 +28,6 @@
 
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
-#include <openssl/rsa.h>
 
 #include <sstream>
 
