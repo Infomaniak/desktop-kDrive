@@ -19,7 +19,9 @@
 #include "testincludes.h"
 
 #if defined(KD_WINDOWS)
+extern "C" {
 #include <openssl/applink.c>
+}
 #endif
 
 #if defined(KD_MACOS)
