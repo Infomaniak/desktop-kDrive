@@ -737,62 +737,34 @@ function Package-RecoveryUpdater {
     # Sign the updater executable
     Sign-File -FilePath "$stagingDir/kDriveRecoveryUpdater.exe" -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
 
-    # Create 7z archive
-    $archiveFile = "$buildPath/kDriveRecoveryUpdater.7z"
-    7za a -mx=9 $archiveFile "$stagingDir/*"
+    # Create NSIS installer
+    $version = Get-Version -IncludeBuildVersion $true
+    $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
+    $nsiTemplate = "$path/infomaniak-build-tools/windows/recovery-updater.nsi"
+    $nsiFile = "$buildPath/recovery-updater.nsi"
+    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $false
+
+    $nsiContent = Get-Content $nsiTemplate -Raw
+    $nsiContent = $nsiContent -replace '@{output}', ($sfxExe -replace '/', '\')
+    $nsiContent = $nsiContent -replace '@{staging}', ($stagingDir -replace '/', '\')
+    $nsiContent = $nsiContent -replace '@{icon}', ($iconPath -replace '/', '\')
+    $nsiContent = $nsiContent -replace '@{version}', $version
+    Set-Content -Path $nsiFile -Value $nsiContent -Encoding UTF8
+
+    & makensis $nsiFile
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to create 7z archive for recovery updater." -f Red
+        Write-Host "Failed to build recovery updater NSIS installer." -f Red
         exit $LASTEXITCODE
     }
 
-    # Locate or download the 7z SFX module
-    $sfxModule = "${env:ProgramFiles}\7-Zip\7zSD.sfx"
-    if (-not (Test-Path $sfxModule)) {
-        Write-Host "7zSD.sfx not found in 7-Zip directory, downloading ..." -f Yellow
-        $sfxModule = "$buildPath/7zSD.sfx"
-        Invoke-WebRequest -Uri "https://www.7-zip.org/a/7zSD.sfx" -OutFile $sfxModule
-        if (-not (Test-Path $sfxModule)) {
-            Write-Host "Failed to download 7zSD.sfx. Falling back to unsigned zip." -f Red
-            $zipPath = "$contentPath/kDriveRecoveryUpdater-$(Get-Version -IncludeBuildVersion $true).zip"
-            Compress-Archive -Path "$stagingDir/*" -DestinationPath $zipPath
-            Sign-File -FilePath $zipPath -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
-            return
-        }
-    }
-
-    # Create SFX config file
-    $sfxConfig = "$buildPath/updater-sfx-config.txt"
-    @"
-;!@Install@!UTF-8!
-Title="kDrive Recovery Updater"
-BeginPrompt="Extract and run kDrive Recovery Updater?"
-RunProgram="kDriveRecoveryUpdater.exe"
-;!@InstallEnd@!
-"@ | Set-Content -Path $sfxConfig -Encoding UTF8
-
-    # Combine SFX module + config + archive into a single .exe
-    $version = Get-Version -IncludeBuildVersion $true
-    $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
-
-    $sfxBytes = [System.IO.File]::ReadAllBytes($sfxModule)
-    $configBytes = [System.IO.File]::ReadAllBytes($sfxConfig)
-    $archiveBytes = [System.IO.File]::ReadAllBytes($archiveFile)
-    $combinedBytes = New-Object byte[] ($sfxBytes.Length + $configBytes.Length + $archiveBytes.Length)
-    [System.Array]::Copy($sfxBytes, 0, $combinedBytes, 0, $sfxBytes.Length)
-    [System.Array]::Copy($configBytes, 0, $combinedBytes, $sfxBytes.Length, $configBytes.Length)
-    [System.Array]::Copy($archiveBytes, 0, $combinedBytes, $sfxBytes.Length + $configBytes.Length, $archiveBytes.Length)
-    [System.IO.File]::WriteAllBytes($sfxExe, $combinedBytes)
-
-    # Sign the final SFX executable
+    # Sign the final executable
     Sign-File -FilePath $sfxExe -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
 
     # Clean up temporary files
     Remove-Item -Recurse -Force $stagingDir -ErrorAction SilentlyContinue
-    Remove-Item -Force $archiveFile -ErrorAction SilentlyContinue
-    Remove-Item -Force $sfxConfig -ErrorAction SilentlyContinue
-    if (Test-Path "$buildPath/7zSD.sfx") { Remove-Item -Force "$buildPath/7zSD.sfx" -ErrorAction SilentlyContinue }
+    Remove-Item -Force $nsiFile -ErrorAction SilentlyContinue
 
-    Write-Host "Recovery updater SFX created: $sfxExe" -f Green
+    Write-Host "Recovery updater installer created: $sfxExe" -f Green
 }
 
 #################################################################################################
