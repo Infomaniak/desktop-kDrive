@@ -651,12 +651,10 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
 
             return; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on Windows only) could
                     // delete dehydrated placeholders whereas the sync is still in the DB.
-
         } else if (!found) {
             LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
         }
     }
-
 
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
@@ -3344,7 +3342,11 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                     LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
 
+<<<<<<< HEAD
                     if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSyncAsBackgroundTask(sync.dbId());
+=======
+                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSync(sync.dbId());
+>>>>>>> 86a353f5d (refactor(app-server): Adds several early exits in case of data base errors and a clean-up call for spurious syncs at init time (Christophe's review comments))
 
                     continue;
                 }
