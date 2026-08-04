@@ -42,6 +42,15 @@ class AbstractCommChannel : public std::enable_shared_from_this<AbstractCommChan
         virtual CommString readMessage() = 0;
         virtual uint64_t bytesAvailable() const = 0;
 
+        //! Returns true if the channel has data ready to be read.
+        /*!
+          For most channels this is equivalent to \c bytesAvailable() > 0. TLS-based channels override
+          it because poll() can report the descriptor readable while SSL_read() has no decrypted
+          application data to hand back yet (incomplete TLS record or TLS control message).
+          \return true if a subsequent readData() call may return data.
+        */
+        virtual bool isReadable() const { return bytesAvailable() > 0; }
+
         //! Gets an unique identifier for the object.
         /*!
           \return the object ptr casted to string.

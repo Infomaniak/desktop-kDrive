@@ -79,10 +79,10 @@ void TestSocketComm::testServerListen() {
 
     // Wait for the server to receive the message
     remainWait = 100; // wait max 1 second
-    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+    while (!serverSidechannel->isReadable() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
+    CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->isReadable());
 
     // Read the message on the server side
     auto message = serverSidechannel->readMessage();
@@ -205,10 +205,10 @@ void TestSocketComm::testChannelReadAndWriteData() {
         clientSideChannel->sendMessage(msg);
         // Wait for the server to receive the message
         int remainWait = 100; // wait max 1 second
-        while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+        while (!serverSidechannel->isReadable() && remainWait-- > 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
+        CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->isReadable());
         // Read the message on the server side
         auto message = serverSidechannel->readMessage();
         CPPUNIT_ASSERT(message.starts_with(msg)); // The mock readMessage always return a 1024 CommChar string.
@@ -225,10 +225,10 @@ void TestSocketComm::testChannelReadAndWriteData() {
 
     // Wait for the server to receive the message
     remainWait = 100; // wait max 1 second
-    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+    while (!serverSidechannel->isReadable() && remainWait-- > 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->bytesAvailable() > 0);
+    CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->isReadable());
 
     // Read the message on the server side
     CommChar data[101];

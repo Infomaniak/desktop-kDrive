@@ -40,6 +40,7 @@ class SocketCommChannel : public AbstractCommChannel {
         void startCallbackThread();
 
         uint64_t bytesAvailable() const override;
+        bool isReadable() const override;
         void close() override;
 
         bool joinCallbackThread() noexcept;
