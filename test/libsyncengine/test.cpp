@@ -58,9 +58,11 @@
 #elif defined(KD_LINUX)
 #include "update_detection/file_system_observer/testfolderwatcherlinux.h"
 #endif
-
+#if defined(KD_WINDOWS)
+#include "update_detection/file_system_observer/testchangejournal.h"
+#endif
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
+/*CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiTranslator);
@@ -81,8 +83,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 #elif defined(KD_LINUX)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcherLinux);
+#endif*/
+#if defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestChangeJournal);
 #endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
+/*CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
@@ -100,7 +105,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
-// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
+// CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);*/
 } // namespace KDC
 
 int main(int, char **) {

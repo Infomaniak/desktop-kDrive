@@ -165,6 +165,7 @@ set(syncengine_SRCS
 if(WIN32)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/localfilesystemobserverworker_win.h update_detection/file_system_observer/localfilesystemobserverworker_win.cpp)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_win.h update_detection/file_system_observer/folderwatcher_win.cpp)
+    list(APPEND syncengine_SRCS update_detection/file_system_observer/changeJournal/changeJournal_win.h update_detection/file_system_observer/changeJournal/changeJournal_win.cpp)
 elseif(UNIX)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/localfilesystemobserverworker_unix.h update_detection/file_system_observer/localfilesystemobserverworker_unix.cpp)
     if(APPLE)
