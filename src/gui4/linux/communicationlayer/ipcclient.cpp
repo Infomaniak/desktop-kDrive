@@ -111,8 +111,7 @@ bool IpcClient::loadPinnedCertificate() {
     if (!_pinnedCert.isNull()) {
         return true;
     }
-    const CertReader reader{std::string(certKeychainKey)};
-    return reader.readCertificate(_pinnedCert);
+    return CertReader::readCertificate(_pinnedCert);
 }
 
 
