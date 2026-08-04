@@ -3342,11 +3342,7 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                     LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
 
-<<<<<<< HEAD
                     if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSyncAsBackgroundTask(sync.dbId());
-=======
-                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSync(sync.dbId());
->>>>>>> 86a353f5d (refactor(app-server): Adds several early exits in case of data base errors and a clean-up call for spurious syncs at init time (Christophe's review comments))
 
                     continue;
                 }
