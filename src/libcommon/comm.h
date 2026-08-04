@@ -21,6 +21,8 @@
 #include <string>
 // keychain key for tls certificate
 inline constexpr char certKeychainKey[] = "kdrive_ipc_tls_cert";
+// Name for tls certification
+inline constexpr char localHostName[] = "kDrive-localhost";
 
 inline constexpr uint16_t commShortTimeout = 1000;
 inline constexpr uint16_t commAverageTimeout = 10000;

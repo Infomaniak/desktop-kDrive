@@ -27,6 +27,7 @@
 #include <Poco/Crypto/X509Certificate.h>
 
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
@@ -53,6 +54,25 @@ const char *sslError() {
     return err ? ERR_error_string(err, nullptr) : "no OpenSSL error";
 }
 
+bool addExtension(X509 *const x509, const int nid, const char *const value) {
+    X509V3_CTX ctx;
+    X509V3_set_ctx_nodb(&ctx);
+    X509V3_set_ctx(&ctx, x509, x509, nullptr, nullptr, 0); // issuer == subject (self-signed)
+
+    X509_EXTENSION *const ext = X509V3_EXT_conf_nid(nullptr, &ctx, nid, value);
+    if (!ext) {
+        LOG_ERROR(Log::instance()->getLogger(), "X509V3_EXT_conf_nid failed for nid " << nid << ": " << sslError());
+        return false;
+    }
+    const int rc = X509_add_ext(x509, ext, -1);
+    X509_EXTENSION_free(ext);
+    if (rc != 1) {
+        LOG_ERROR(Log::instance()->getLogger(), "X509_add_ext failed for nid " << nid << ": " << sslError());
+        return false;
+    }
+    return true;
+}
+
 bool fillCertificateFields(X509 *const x509) {
     if (X509_set_version(x509, 2) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_version failed: " << sslError());
@@ -72,7 +92,7 @@ bool fillCertificateFields(X509 *const x509) {
     }
 
     X509_NAME *const name = X509_get_subject_name(x509);
-    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const uint8_t *>("kDrive-localhost"), -1, -1, 0) !=
+    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(localHostName), -1, -1, 0) !=
         1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_NAME_add_entry_by_txt failed: " << sslError());
         return false;
@@ -81,6 +101,17 @@ bool fillCertificateFields(X509 *const x509) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_issuer_name failed: " << sslError());
         return false;
     }
+
+    // v3 extensions. Must be added after the subject/issuer name is set (the SAN and
+    // basicConstraints config draw on the X509V3 context) and before X509_sign, since
+    // signing freezes the certificate and anything added afterwards is not covered by
+    // the signature.
+    if (!addExtension(x509, NID_basic_constraints, "critical,CA:FALSE")) return false;
+    if (!addExtension(x509, NID_key_usage, "critical,digitalSignature,keyEncipherment")) return false;
+    if (!addExtension(x509, NID_ext_key_usage, "serverAuth")) return false;
+    const std::string san = std::string("IP:127.0.0.1,IP:0:0:0:0:0:0:0:1,DNS:") + localHostName;
+    if (!addExtension(x509, NID_subject_alt_name, san.c_str())) return false;
+
     return true;
 }
 
