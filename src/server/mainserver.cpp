@@ -155,7 +155,6 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     }
 
 #if defined(Q_OS_MAC) && defined(NDEBUG)
-    // Copy Uninstaller inside application folder
     try {
         KDC::SyncPath uninstallerPath = "/Applications/kDrive/kDrive.app/Contents/Frameworks/kDrive Uninstaller.app";
         KDC::SyncPath destPath = "/Applications/kDrive/kDrive Uninstaller.app";
