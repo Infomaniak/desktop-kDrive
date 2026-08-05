@@ -50,20 +50,20 @@ std::optional<int64_t> runningProcessPid(const std::string &processName, const s
                                          const uint32_t effectiveUserId, const int64_t currentPid) {
     std::error_code errorCode;
     std::filesystem::directory_iterator processEntry(procRoot, errorCode);
-    const std::filesystem::directory_iterator end;
-    while (!errorCode && processEntry != end) {
-        const auto entry = *processEntry;
-        processEntry.increment(errorCode);
-        if (errorCode) {
-            errorCode.clear();
-        }
+    if (errorCode) {
+        return std::nullopt;
+    }
 
-        if (std::error_code entryErrorCode; !entry.is_directory(entryErrorCode) || entryErrorCode) {
+    // errors on directory_iterator#increment can occur only if there is a problem on /proc itself (unmounted procfs, ...)
+    std::error_code ignoredErrorCode;
+    for (const std::filesystem::directory_iterator end; processEntry != end; processEntry.increment(ignoredErrorCode)) {
+        // the entry should be a directory
+        if (std::error_code entryErrorCode; !processEntry->is_directory(entryErrorCode) || entryErrorCode) {
             continue;
         }
 
         // parse the directory name as an int64
-        const std::string pidString = entry.path().filename().string();
+        const auto pidString = processEntry->path().filename().string();
         int64_t pid = 0;
         if (const auto [endPtr, parseError] = std::from_chars(pidString.data(), pidString.data() + pidString.size(), pid);
             parseError != std::errc{} || endPtr != pidString.data() + pidString.size() || pid == currentPid) {
@@ -71,13 +71,19 @@ std::optional<int64_t> runningProcessPid(const std::string &processName, const s
         }
 
         // the owner of the process should be the same as us
-        if (const auto ownerId = processOwnerId(entry.path()); !ownerId.has_value() || *ownerId != effectiveUserId) {
+        if (const auto ownerId = processOwnerId(processEntry->path()); !ownerId.has_value() || *ownerId != effectiveUserId) {
+            continue;
+        }
+
+        // read the name of the process
+        std::ifstream commFile(processEntry->path() / "comm");
+        std::string currentProcessName;
+        if (!commFile.is_open() || !(commFile >> currentProcessName) || commFile.bad()) {
             continue;
         }
 
         // the name of the process should be the same as us
-        std::ifstream commFile(entry.path() / "comm");
-        if (std::string currentProcessName; !(commFile >> currentProcessName) || currentProcessName != processName) {
+        if (currentProcessName != processName) {
             continue;
         }
 
