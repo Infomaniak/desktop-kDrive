@@ -165,13 +165,7 @@ namespace Infomaniak.kDrive
 
         public void CreateWindow(CreateWindowOptions options)
         {
-            // Guard against reentrant calls: this method can be invoked from multiple independent
-            // code paths (e.g. the tray icon "show window" command and the SYNC_NOTIFY_MANY_DELETES
-            // signal handler) that can both be dispatched to the UI thread in close succession.
-            // Since CurrentWindow is only assigned once the MainWindow constructor fully returns,
-            // a second call arriving while the first MainWindow is still being constructed would
-            // otherwise start a reentrant "new MainWindow()" on the same thread, corrupting the
-            // x:Name-connected fields wired up by InitializeComponent (e.g. NavView).
+            // Prevent reentrant "new MainWindow()" calls (CurrentWindow is only set once the constructor returns).
             if (_isCreatingWindow)
             {
                 Logger.Log(Logger.Level.Info, "CreateWindow called while a window creation is already in progress, skipping to avoid reentrancy.");
