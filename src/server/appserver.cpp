@@ -17,6 +17,10 @@
  */
 
 #include "appserver.h"
+#if defined(KD_LINUX)
+#include "qtlocalpeer.h"
+#include "runningprocessinfo_linux.h"
+#endif
 #include "version.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
@@ -82,6 +86,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <cstdint>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
 #endif
@@ -122,13 +127,15 @@ static const char optionsC[] =
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
-}
+
+} // namespace
 
 static const QString showSynthesisMsg("showSynthesis");
 static const QString showSettingsMsg("showSettings");
 static const QString restartClientMsg("restartClient");
 static const QString authorizationCodeMsg("redirectLogin");
 static const QString separatorMsg("$$$");
+static constexpr std::int32_t singleApplicationMessageTimeoutMs = 5000;
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -179,12 +186,25 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
+    // OAuth deeplinks start a short-lived helper process. It must not initialize logging because doing so would archive the
+    // running server's active log file.
+    parseOptions(_arguments);
+    if (!_authorizationCodeStr.isEmpty()) {
+        if (!isRunning()) {
+#if defined(KD_LINUX)
+            if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
+                _runningServerPid = *processPid;
+            }
+#endif
+        }
+        return;
+    }
+
     // Setup logging with default parameters
     if (!initLogging()) {
         throw std::runtime_error("Unable to init logging.");
     }
 
-    parseOptions(_arguments);
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked) {
         LOG_INFO(_logger, "Command line options processed");
         return;
@@ -194,12 +214,40 @@ void AppServer::init() {
         LOG_INFO(_logger, "AppServer already running");
         return;
     }
-
+#if defined(KD_LINUX)
+    if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
+        _runningServerPid = *processPid;
+        LOG_INFO(_logger, "AppServer already running with PID " << _runningServerPid);
+        return;
+    }
+#endif
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+
+#if defined(KD_LINUX)
+    // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
+    // planned removal of QtSingleApplication will de facto remove this small Qt addition along with it.
+    // The removal of QtSingleApplication will be done before Qt is fully removed from the server.
+    _fallbackLocalPeer = std::make_unique<SharedTools::QtLocalPeer>(
+            this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
+    (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
+                   &AppServer::onMessageReceivedFromAnotherProcess);
+    // isClient() starts the fallback server when possible; true means this process is only a client.
+    if (_fallbackLocalPeer->isClient()) {
+        _fallbackLocalPeer.reset();
+    } else {
+        LOG_INFO(_logger, "Started Linux fallback single-application peer");
+    }
+#endif
+
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -500,12 +548,6 @@ void AppServer::init() {
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
-
-    if (!Utility::registerLoginRedirection()) {
-        std::string errorMsg = "Failed to register login redirection";
-        LOG_ERROR(_logger, errorMsg);
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
-    }
 
     // Start client
     if (!startClient()) {
@@ -3731,20 +3773,33 @@ void AppServer::clearSyncNodes() {
     }
 }
 
-void AppServer::sendShowSettingsMsg() {
-    sendMessage(showSettingsMsg);
+void AppServer::sendShowSettingsMsg(qint64 pid) {
+    if (!sendMessage(showSettingsMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward show-settings request to the running server");
+    }
 }
 
-void AppServer::sendShowSynthesisMsg() {
-    sendMessage(showSynthesisMsg);
+void AppServer::sendShowSynthesisMsg(qint64 pid) {
+    if (!sendMessage(showSynthesisMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward show-synthesis request to the running server");
+    }
 }
 
-void AppServer::sendRestartClientMsg() {
-    sendMessage(restartClientMsg);
+void AppServer::sendRestartClientMsg(qint64 pid) {
+    if (!sendMessage(restartClientMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward restart-client request to the running server");
+    }
 }
 
-void AppServer::sendAuthorizationCode() {
-    sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr);
+void AppServer::sendAuthorizationCode(qint64 pid) {
+    if (Log::isSet()) {
+        LOG_INFO(Log::instance()->getLogger(), "Forwarding login authorization callback to the running server");
+    }
+    if (!sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr, singleApplicationMessageTimeoutMs, pid)) {
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to forward login authorization callback to the running server");
+        }
+    }
 }
 
 void AppServer::showSettings() {
