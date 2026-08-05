@@ -81,4 +81,16 @@ struct UtilitySignalHandler {
 
         await logUploadStatusCache.setLogUploadStatus(status)
     }
+
+    func handleShowSynthesis() async throws {
+        await MainActor.run {
+            NotificationCenter.default.post(name: .bringAllWindowsToFront, object: nil)
+        }
+    }
+
+    func handleShowSettings() async throws {
+        await MainActor.run {
+            NotificationCenter.default.post(name: .bringSettingsToFront, object: nil)
+        }
+    }
 }

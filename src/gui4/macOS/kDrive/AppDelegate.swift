@@ -60,6 +60,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         dockIconManager = DockIconManager()
         updateModalPresenter = UpdateModalPresenter()
 
+        observeAppPresentation()
         openMainWindow()
     }
 
@@ -170,5 +171,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
+    }
+
+    private func observeAppPresentation() {
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(bringAllWindowsToFront),
+            name: .bringAllWindowsToFront, object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(openPreferencesWindow),
+            name: .bringSettingsToFront, object: nil
+        )
     }
 }
