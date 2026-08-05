@@ -334,7 +334,7 @@ void TestSyncJobManagerSingleton::testJobPriority2() {
 
 void TestSyncJobManagerSingleton::testCanRunjob() {
     if (SyncJobManagerSingleton::instance()->availableThreadsInPool() < 4) {
-        // This test require at least 4 threads in the pool to run properly
+        // This test requires at least 4 threads in the pool to run properly
         SyncJobManagerSingleton::instance()->setPoolCapacity(4);
     }
 
