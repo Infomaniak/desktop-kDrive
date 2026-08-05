@@ -34,23 +34,25 @@ int main(int argc, char *argv[]) {
 
         switch (updaterData.initError()) {
             case KDC::InitError::DbNotFound:
-                QMessageBox::information(
+                (void) QMessageBox::information(
                         nullptr, QStringLiteral("No kDrive installation found"),
                         QStringLiteral("No kDrive installation was found. Please use the regular kDrive installer instead."));
                 break;
             case KDC::InitError::DbOpenFailed:
-                QMessageBox::critical(nullptr, QStringLiteral("Cannot open database"),
-                                      QStringLiteral("Cannot open the kDrive database. kDrive might still be running — try force "
-                                                     "quitting it, then relaunch this tool."));
+                (void) QMessageBox::critical(
+                        nullptr, QStringLiteral("Cannot open database"),
+                        QStringLiteral("Cannot open the kDrive database. kDrive might still be running — try force "
+                                       "quitting it, then relaunch this tool."));
                 break;
             case KDC::InitError::VersionReadFailed:
-                QMessageBox::critical(
+                (void) QMessageBox::critical(
                         nullptr, QStringLiteral("Database read error"),
                         QStringLiteral("Error reading from the kDrive database (could not retrieve the installed version)."));
                 break;
             case KDC::InitError::AppUidReadFailed:
-                QMessageBox::critical(nullptr, QStringLiteral("Database read error"),
-                                      QStringLiteral("Error reading from the kDrive database (could not retrieve the app UID)."));
+                (void) QMessageBox::critical(
+                        nullptr, QStringLiteral("Database read error"),
+                        QStringLiteral("Error reading from the kDrive database (could not retrieve the app UID)."));
                 break;
             default:
                 break;
