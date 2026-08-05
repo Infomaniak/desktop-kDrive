@@ -220,7 +220,6 @@ HRESULT ExplorerCommandHandlerEnumerator::createCommandFromCommandItem(const Men
     HRESULT hr = pCommand ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr)) {
         hr = pCommand->QueryInterface(IID_PPV_ARGS(ppExplorerCommand));
-        (void) pCommand->Release();
     }
     return hr;
 }
