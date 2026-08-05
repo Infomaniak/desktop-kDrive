@@ -27,6 +27,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -213,10 +214,12 @@ namespace Infomaniak.kDrive
                 Text = Localizer.Instance.GetString("manyDeleteDialogSoftLimitContent"),
                 TextWrapping = TextWrapping.Wrap,
             });
-            contentPanel.Children.Add(new CheckBox
+            CheckBox doNotShowAgainCheckBox = new CheckBox
             {
                 Content = Localizer.Instance.GetString("manyDeleteDialogSoftLimitDoNotShowAgain"),
-            });
+                IsChecked = !ViewModel.Settings.AskBeforeDelete
+            };
+            contentPanel.Children.Add(doNotShowAgainCheckBox);
             dialog.Content = contentPanel;
 
             dialog.Closing += (s, e) =>
@@ -230,14 +233,23 @@ namespace Infomaniak.kDrive
             Utility.BringCurrentWindowToFront();
             var result = await dialog.ShowAsync();
 
-            TooManyDeletesUserChoice userChoice = result switch
-            {
-                ContentDialogResult.Primary => TooManyDeletesUserChoice.Revert,
-                ContentDialogResult.Secondary => TooManyDeletesUserChoice.Continue,
-                _ => TooManyDeletesUserChoice.Revert
-            };
+            bool doNotShowAgain = doNotShowAgainCheckBox.IsChecked ?? false;
+            await ViewModel.Settings.ChangeNotifyBeforeDelete(!doNotShowAgain);
 
-            await App.ServiceProvider.GetRequiredService<IServerCommService>().AcknowledgeManyDeletes(manyDeletesInfo.SyncDbId, userChoice, CancellationToken.None);
+            if (result == ContentDialogResult.Secondary)
+            {
+                Sync? sync = ViewModel.AllSyncs.FirstOrDefault(s => s.DbId == manyDeletesInfo.SyncDbId);
+                Uri? trashUrl = sync?.Drive.GetWebTrashUri();
+                if (trashUrl != null)
+                {
+                    Logger.Log(Logger.Level.Debug, $"ShowSoftLimitManyDeleteDialogue: Launching trash URL: {trashUrl}");
+                    await Windows.System.Launcher.LaunchUriAsync(trashUrl);
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"ShowSoftLimitManyDeleteDialogue: Unable to get trash URL for sync with DbId {manyDeletesInfo.SyncDbId}.");
+                }
+            }
         }
 
 
