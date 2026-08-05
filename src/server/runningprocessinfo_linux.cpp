@@ -56,7 +56,7 @@ std::optional<int64_t> runningProcessPid(const std::string &processName, const s
 
     // errors on directory_iterator#increment can occur only if there is a problem on /proc itself (unmounted procfs, ...)
     std::error_code ignoredErrorCode;
-    for (const std::filesystem::directory_iterator end; processEntry != end; processEntry.increment(ignoredErrorCode)) {
+    for (const std::filesystem::directory_iterator end; processEntry != end; (void) processEntry.increment(ignoredErrorCode)) {
         // the entry should be a directory
         if (std::error_code entryErrorCode; !processEntry->is_directory(entryErrorCode) || entryErrorCode) {
             continue;
