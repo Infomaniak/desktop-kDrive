@@ -191,6 +191,8 @@ void TestNetworkJobs::tearDown() {
     SyncJobManagerSingleton::clear();
     IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
+
+    DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
 }
 
 
@@ -565,12 +567,8 @@ void TestNetworkJobs::testDownload() {
         IoHelperTestUtilities::resetFunctions();
     }
 
-    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
-        // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
-        const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
-        if (smallPartitionPath.empty()) return;
-
-        // Not Enough disk space
+    // Not Enough disk space (simulated by injecting a tiny free disk space)
+    {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -584,21 +582,17 @@ void TestNetworkJobs::testDownload() {
         (void) uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitInfo().code());
 
-        CPPUNIT_ASSERT(!smallPartitionPath.empty());
-        IoError ioError = IoError::Unknown;
-        bool exist = false;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError,
-                                                                              IoHelper::PathCheckOption::Insensitive));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
+        const LocalTemporaryDirectory destDirectory("dest");
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(destDirectory.path());
 
-        const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
+        // Simulate a disk with only 8Mo of free space, whatever the path.
+        DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &) -> int64_t { return 8 * 1000000; };
 
         // Not Enough disk space (destination dir)
         {
-            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
+            // Trying to download a file with size 9Mo on a disk with only 8Mo free should fail with SystemError,
             // NotEnoughDiskSpace.
-            const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
+            const SyncPath localDestFilePath = destDirectory.path() / "9Mo.txt";
             DownloadJob downloadJob(
                     nullptr, cacheDirectory,
                     DownloadJob::FileDownloadInfo{_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false},
@@ -606,10 +600,11 @@ void TestNetworkJobs::testDownload() {
 
             (void) downloadJob.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
-            CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-                                                     std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
+            CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
         }
+
+        // Restore the default free disk space function.
+        DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
     }
 
     // Empty file
@@ -809,27 +804,33 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
-    if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
+    const LocalTemporaryDirectory temporaryDirectory("tmp");
+    const auto &logger = Log::instance()->getLogger();
 
-    // Only run on CI because it requires a small partition to be set up
-    const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
-    if (smallPartitionPath.empty()) return;
+    // Save the default free disk space function to restore it at the end.
+    const auto defaultFreeDiskSpaceFn = DownloadJob::_getFreeDiskSpaceFn;
+
+    // Simulate a disk with only 8Mo of free space for the small partition path.
+    const SyncPath smallPartitionPath = temporaryDirectory.path() / "small";
+    const auto simulatedFreeSpace = [&smallPartitionPath](const SyncPath &path) {
+        return path == smallPartitionPath ? 8 * 1000000 : Utility::getFreeDiskSpace(path);
+    };
+    DownloadJob::_getFreeDiskSpaceFn = simulatedFreeSpace;
 
     // Enough disk space on both paths
-    const LocalTemporaryDirectory temporaryDirectory("tmp");
-    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000,
-                                               Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000, logger));
 
     // Enough disk space on destination path, but not on tmp path
-    CPPUNIT_ASSERT(
-            !DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, logger));
 
     // Enough disk space on tmp path, but not on destination path
-    CPPUNIT_ASSERT(
-            !DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, logger));
 
     // Not enough disk space on both paths
-    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, logger));
+
+    // Restore the default free disk space function.
+    DownloadJob::_getFreeDiskSpaceFn = defaultFreeDiskSpaceFn;
 }
 
 void TestNetworkJobs::testSearch() {
@@ -1774,6 +1775,10 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     // With refresh token
     {
         _apiToken.setRefreshToken("123");
+        GetInfoUserJobMock jobUpdateCache(_userDbId, _apiToken);
+        (void) jobUpdateCache.runSynchronously(); // Run once just to update the refresh token in cache.
+        CPPUNIT_ASSERT_EQUAL(0, jobUpdateCache.trials());
+
         GetInfoUserJobMock job(_userDbId, _apiToken);
         const auto exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());

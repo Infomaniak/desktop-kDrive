@@ -213,3 +213,4 @@ enc_temp_folder
 
 # QT Creator
 .qtcreator
+/src/libcommonserver/vfs/win
