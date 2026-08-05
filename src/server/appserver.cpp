@@ -201,6 +201,12 @@ void AppServer::init() {
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+#if defined(KD_MACOS)
+    // Qt emits ApplicationActive when macOS asks an already running application to reopen.
+    connect(this, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+        if (state == Qt::ApplicationActive) showSynthesis();
+    });
+#endif
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
