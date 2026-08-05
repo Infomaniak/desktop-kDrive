@@ -162,6 +162,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void updateSentryUser();
         void deleteDrive(DriveDbId driveDbId);
         void deleteSync(SyncDbId syncDbId);
+        void deleteSyncAsBackgroundTask(SyncDbId syncDbId);
         ExitCode clearErrors(SyncDbId syncDbId, bool autoResolved = false);
         // Check if the synchronization `sync` is registered in the sync database and
         // if the `sync` folder does not contain any other sync subfolder.

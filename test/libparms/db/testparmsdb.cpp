@@ -290,6 +290,7 @@ void TestParmsDb::testSync() {
         sync2.setLocalPath("/Users/xxxxxx/Movies");
         sync2.setPaused(true);
         sync2.setNotificationsDisabled(true);
+        sync2.setToDelete(true);
         bool syncIsFound = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
     }
@@ -302,6 +303,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
     }
     // Find sync by DB path
     {
@@ -311,6 +313,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
     }
     // Select all syncs
     {
@@ -321,6 +324,8 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
         CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
         CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+        CPPUNIT_ASSERT(syncList[0].toDelete() == sync1.toDelete());
+        CPPUNIT_ASSERT(syncList[1].toDelete() == sync2.toDelete());
     }
     // Delete sync
     {
@@ -687,8 +692,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3"), std::nullopt,
-                                                                  selectedErrors, found));
+                                                                  SyncPath("/dir1/file3"), std::nullopt, selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(2), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
@@ -701,8 +705,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3_dest"),
-                                                                  selectedErrors, found));
+                                                                  SyncPath("/dir1/file3_dest"), selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
