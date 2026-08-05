@@ -41,6 +41,7 @@
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QPointer>
+#include <memory>
 #include <QProcess>
 #include <QQueue>
 #include <QTimer>
@@ -127,14 +128,15 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool synthesisAsked() { return _synthesisAsked; }
         inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
+        inline qint64 runningServerPid() const { return _runningServerPid; }
 
         void showHelp();
         void showVersion();
         void clearSyncNodes();
-        void sendShowSettingsMsg();
-        void sendShowSynthesisMsg();
-        void sendRestartClientMsg();
-        void sendAuthorizationCode();
+        void sendShowSettingsMsg(qint64 pid = -1);
+        void sendShowSynthesisMsg(qint64 pid = -1);
+        void sendRestartClientMsg(qint64 pid = -1);
+        void sendAuthorizationCode(qint64 pid = -1);
         void handleClientDisconnection() { onClientDisconnectedReceived(); }
 
         void clearKeychainKeys();
@@ -270,6 +272,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _settingsAsked{false};
         bool _synthesisAsked{false};
         QString _authorizationCodeStr;
+        qint64 _runningServerPid{-1};
         bool _clearKeychainKeysAsked{false};
         bool _vfsInstallationDone{false};
         bool _vfsActivationDone{false};
@@ -278,6 +281,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _noUpdate{false};
         bool _appStartPTraceStopped{false};
         bool _clientManuallyRestarted{false};
+#if defined(KD_LINUX)
+        std::unique_ptr<SharedTools::QtLocalPeer> _fallbackLocalPeer;
+#endif
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
