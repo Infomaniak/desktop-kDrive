@@ -32,6 +32,7 @@ bool UpdaterData::initialize() {
     if (dbPath.empty() || !alreadyExist) {
         LOGW_WARN(Log::instance()->getLogger(), L"kDrive database not found at: " << Path2WStr(dbPath));
         _isInstalled = false;
+        _initError = InitError::DbNotFound;
         return false;
     }
 
@@ -39,6 +40,7 @@ bool UpdaterData::initialize() {
     if (!_db) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to open kDrive database at: " << Path2WStr(dbPath));
         _isInstalled = false;
+        _initError = InitError::DbOpenFailed;
         return false;
     }
 
@@ -48,6 +50,7 @@ bool UpdaterData::initialize() {
     if (!_db->selectVersion(_installedVersion, found) || !found) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to retrieve kDrive version from database at: " << Path2WStr(dbPath));
         _isInstalled = false;
+        _initError = InitError::VersionReadFailed;
         return false;
     }
 
@@ -55,6 +58,7 @@ bool UpdaterData::initialize() {
     if (!_db->selectAppUid(_appId, found) || !found) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to retrieve app UID from database");
         _isInstalled = false;
+        _initError = InitError::AppUidReadFailed;
         return false;
     }
 

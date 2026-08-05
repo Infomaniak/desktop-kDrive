@@ -4,6 +4,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include <QApplication>
+#include <QMessageBox>
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -30,6 +31,31 @@ int main(int argc, char *argv[]) {
             using namespace KDC; // same as above
             LOG_ERROR(Log::instance()->getLogger(), "Failed to initialize updater data");
         }
+
+        switch (updaterData.initError()) {
+            case KDC::InitError::DbNotFound:
+                QMessageBox::information(
+                        nullptr, QStringLiteral("No kDrive installation found"),
+                        QStringLiteral("No kDrive installation was found. Please use the regular kDrive installer instead."));
+                break;
+            case KDC::InitError::DbOpenFailed:
+                QMessageBox::critical(nullptr, QStringLiteral("Cannot open database"),
+                                      QStringLiteral("Cannot open the kDrive database. kDrive might still be running — try force "
+                                                     "quitting it, then relaunch this tool."));
+                break;
+            case KDC::InitError::VersionReadFailed:
+                QMessageBox::critical(
+                        nullptr, QStringLiteral("Database read error"),
+                        QStringLiteral("Error reading from the kDrive database (could not retrieve the installed version)."));
+                break;
+            case KDC::InitError::AppUidReadFailed:
+                QMessageBox::critical(nullptr, QStringLiteral("Database read error"),
+                                      QStringLiteral("Error reading from the kDrive database (could not retrieve the app UID)."));
+                break;
+            default:
+                break;
+        }
+
         return 1;
     }
 
