@@ -20,4 +20,5 @@ import Foundation
 
 public extension Notification.Name {
     static let bringAllWindowsToFront = Notification.Name("bringAllWindowsToFront")
+    static let bringSettingsToFront = Notification.Name("bringSettingsToFront")
 }

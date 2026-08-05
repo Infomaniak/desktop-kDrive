@@ -151,6 +151,9 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .UTILITY_SHOW_SYNTHESIS:
             try await utilitySignalHandler.handleShowSynthesis()
 
+        case .UTILITY_SHOW_SETTINGS:
+            try await utilitySignalHandler.handleShowSettings()
+
         default:
             throw SignalError.unsupported(signalNum)
         }

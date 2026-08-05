@@ -178,5 +178,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self, selector: #selector(bringAllWindowsToFront),
             name: .bringAllWindowsToFront, object: nil
         )
+
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(openPreferencesWindow),
+            name: .bringSettingsToFront, object: nil
+        )
     }
 }
