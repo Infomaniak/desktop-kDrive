@@ -110,7 +110,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    outMessage = QObject::tr("Installer opened: %1").arg(pkgPath);
+    outMessage = QObject::tr("Installer opened and started");
     progressCallback(InstallStep::Done, QObject::tr("Done."));
     return true;
 }
