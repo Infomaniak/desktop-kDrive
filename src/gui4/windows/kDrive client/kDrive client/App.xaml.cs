@@ -161,29 +161,53 @@ namespace Infomaniak.kDrive
             CancelOnboarding = 2,
             OpenSettings = 4
         }
+        private bool _isCreatingWindow = false;
+
         public void CreateWindow(CreateWindowOptions options)
         {
-            if (CurrentWindow is OnBoardingWindow && options.HasFlag(CreateWindowOptions.CancelOnboarding))
+            // Guard against reentrant calls: this method can be invoked from multiple independent
+            // code paths (e.g. the tray icon "show window" command and the SYNC_NOTIFY_MANY_DELETES
+            // signal handler) that can both be dispatched to the UI thread in close succession.
+            // Since CurrentWindow is only assigned once the MainWindow constructor fully returns,
+            // a second call arriving while the first MainWindow is still being constructed would
+            // otherwise start a reentrant "new MainWindow()" on the same thread, corrupting the
+            // x:Name-connected fields wired up by InitializeComponent (e.g. NavView).
+            if (_isCreatingWindow)
             {
-                CurrentWindow.Close();
-                CurrentWindow = null;
+                Logger.Log(Logger.Level.Info, "CreateWindow called while a window creation is already in progress, skipping to avoid reentrancy.");
+                return;
             }
 
-            if (CurrentWindow is null)
+            try
             {
-                var appModel = ServiceProvider.GetRequiredService<AppModel>();
-                if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
+                _isCreatingWindow = true;
+
+                if (CurrentWindow is OnBoardingWindow && options.HasFlag(CreateWindowOptions.CancelOnboarding))
                 {
-                    CurrentWindow = new MainWindow(options.HasFlag(CreateWindowOptions.OpenSettings) ? typeof(Pages.Settings.SettingsPage) : null);
+                    CurrentWindow.Close();
+                    CurrentWindow = null;
                 }
-                else
+
+                if (CurrentWindow is null)
                 {
-                    options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
+                    var appModel = ServiceProvider.GetRequiredService<AppModel>();
+                    if (options.HasFlag(CreateWindowOptions.CancelOnboarding) || !StartOnboardingIfNeeded())
+                    {
+                        CurrentWindow = new MainWindow(options.HasFlag(CreateWindowOptions.OpenSettings) ? typeof(Pages.Settings.SettingsPage) : null);
+                    }
+                    else
+                    {
+                        options &= ~CreateWindowOptions.Foreground; // StartOnboarding will handle bringing the window to the front, so we can skip it here to avoid unnecessary calls.
+                    }
+                }
+                else if (CurrentWindow is MainWindow mainWindow && options.HasFlag(CreateWindowOptions.OpenSettings))
+                {
+                    mainWindow?.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
                 }
             }
-            else if (CurrentWindow is MainWindow mainWindow && options.HasFlag(CreateWindowOptions.OpenSettings))
+            finally
             {
-                mainWindow?.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
+                _isCreatingWindow = false;
             }
 
             if (options.HasFlag(CreateWindowOptions.Foreground))
