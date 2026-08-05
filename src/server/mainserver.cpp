@@ -39,7 +39,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
-#include <algorithm>
 #endif
 
 #include <log4cplus/loggingmacros.h>
@@ -134,36 +133,6 @@ void increaseFileSystemCapacity() {
 }
 #endif
 
-#if defined(KD_LINUX)
-bool isProcessRunning(const std::string &processName) {
-    pid_t currentPid = getpid();
-    try {
-        for (const auto &entry: std::filesystem::directory_iterator("/proc")) {
-            if (!entry.is_directory()) continue;
-
-            std::string pidStr = entry.path().filename().string();
-            // Check that the folder is a numeric value
-            if (!std::all_of(pidStr.begin(), pidStr.end(), ::isdigit)) continue;
-
-            // Ignore current process
-            pid_t pid = std::stoi(pidStr);
-            if (pid == currentPid) continue;
-
-            // Read process name in /proc/[PID]/comm
-            std::ifstream commFile(entry.path() / "comm");
-            std::string currentProcessName;
-            if (commFile >> currentProcessName && currentProcessName == processName) {
-                std::cout << "Process " << processName << " is already running!" << std::endl;
-                return true;
-            }
-        }
-    } catch (const std::exception &e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-    return false;
-}
-#endif
-
 std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
     if (appPtr->helpAsked()) {
         appPtr->showHelp();
@@ -205,13 +174,7 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 #endif
 
     // If the application is already running, notify it.
-    if (appPtr->isRunning()
-#if defined(KD_LINUX)
-        // On Linux, we might fail to detect an already running kDrive process using only QSingleApplication. Therefor, check also
-        // with a Linux dedicated method.
-        || isProcessRunning(APPLICATION_EXECUTABLE)
-#endif
-    ) {
+    if (const qint64 runningServerPid = appPtr->runningServerPid(); appPtr->isRunning() || runningServerPid != -1) {
         std::cout << "Server already running" << std::endl;
 
         if (appPtr->isSessionRestored()) {
@@ -221,22 +184,27 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
         }
 
         if (appPtr->settingsAsked()) {
-            appPtr->sendShowSettingsMsg();
+            appPtr->sendShowSettingsMsg(runningServerPid);
             return 0;
         }
 
         if (appPtr->synthesisAsked()) {
-            appPtr->sendShowSynthesisMsg();
+            appPtr->sendShowSynthesisMsg(runningServerPid);
             return 0;
         }
 
         if (appPtr->authorizationCodeReceived()) {
-            appPtr->sendAuthorizationCode();
+            appPtr->sendAuthorizationCode(runningServerPid);
             return 0;
         }
 
         std::cout << "Asking the running server to start a newClient." << std::endl;
-        appPtr->sendRestartClientMsg();
+        appPtr->sendRestartClientMsg(runningServerPid);
+        return 0;
+    }
+
+    if (appPtr->authorizationCodeReceived()) {
+        std::cout << "No running server found for authorization callback" << std::endl;
         return 0;
     }
 
