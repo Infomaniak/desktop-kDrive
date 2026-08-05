@@ -4,6 +4,7 @@ set(CMAKE_AUTOUIC ON)
 
 set(UPDATER_NAME "kDriveRecoveryUpdater")
 set(UPDATER_BUNDLE "${UPDATER_NAME}.app")
+set(UPDATER_BUNDLE_IDENTIFIER "com.infomaniak.drive.recoveryupdater")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
 
@@ -80,6 +81,7 @@ if(WIN32)
 elseif(APPLE)
     set_target_properties(${UPDATER_NAME} PROPERTIES
         MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/cmake/modules/RecoveryUpdaterBundleInfo.plist.in"
         INSTALL_RPATH "@executable_path/../Frameworks"
     )
 endif()
