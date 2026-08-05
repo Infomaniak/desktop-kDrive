@@ -20,7 +20,7 @@
 #include "..\Common\pipeclient.h"
 
 #include <guiddef.h>
-#include <winrt\Windows.Storage.Provider.h>
+#include <winrt/Windows.Storage.Provider.h>
 
 namespace winrt {
 using namespace winrt::Windows::Storage;
@@ -215,12 +215,11 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
 }
 
 HRESULT ExplorerCommandHandlerEnumerator::createCommandFromCommandItem(const MenuItem *menuItem,
-                                                                       IExplorerCommand **ppExplorerCommand) {
-    ExplorerCommandHandler *pCommand = new (std::nothrow) ExplorerCommandHandler(menuItem);
+                                                                       IExplorerCommand **ppExplorerCommand) const {
+    const auto pCommand = winrt::make_self<ExplorerCommandHandler>(menuItem);
     HRESULT hr = pCommand ? S_OK : E_OUTOFMEMORY;
     if (SUCCEEDED(hr)) {
         hr = pCommand->QueryInterface(IID_PPV_ARGS(ppExplorerCommand));
-        pCommand->Release();
     }
     return hr;
 }

@@ -14,20 +14,19 @@ on:
       flavor:
         description: "Infomaniak flavor"
         required: false
-        default: "a12-ram24-disk80-perf1"
-      keep_hours:
-        description: "Auto-teardown after N hours (0 = never, handled by a separate workflow)"
-        required: false
-        default: "6"
+        default: "a16-ram32-disk80-perf1"
 
-  #schedule:
-    # Every weekday at 06:00 UTC — adjust to your needs
-   # - cron: "0 6 * * 1-5"
+  schedule:
+    - cron: "0 6 * * 1-5"
+      timezone: "Europe/Zurich"
+
+permissions:
+  contents: read
 
 env:
   OS_CLOUD: infomaniak
-  IMAGE_NAME: "windows kDrive build runner"
-  NETWORK_NAME: "ext-net1"          # adjust to your project's network
+  IMAGE_NAME: "win_kdrive_runner_build_env"
+  NETWORK_NAME: "ext-net1"
   REPO: ${{ github.repository }}
 
 jobs:
@@ -64,14 +63,14 @@ jobs:
           echo "::add-mask::$TOKEN"
           echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
         env:
-          GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}   # PAT (or GH App token) with admin:org / repo runner scope
+          GH_TOKEN: ${{ secrets.RUNNER_ADMIN_PAT }}
 
       - name: Determine run parameters
         id: params
         run: |
           COUNT="${{ github.event.inputs.count || '1' }}"
           LABELS="${{ github.event.inputs.labels || 'self-hosted' }}"
-          FLAVOR="${{ github.event.inputs.flavor || 'a12-ram24-disk80-perf1' }}"
+          FLAVOR="${{ github.event.inputs.flavor || 'a16-ram32-disk80-perf1' }}"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
           echo "flavor=$FLAVOR" >> "$GITHUB_OUTPUT"
@@ -100,7 +99,6 @@ jobs:
               --network "$NETWORK_NAME" \
               --user-data userdata-final.ps1 \
               --property "purpose=ci-runner" \
-              --property "expires_hours=${{ github.event.inputs.keep_hours || '6' }}" \
               --wait \
               "$NAME"
           done
