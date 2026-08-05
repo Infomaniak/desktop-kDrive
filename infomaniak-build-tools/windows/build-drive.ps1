@@ -739,7 +739,7 @@ Parameters :
 
     Write-Host ("It is mandatory that all dependencies are already built and installed before building.
 To run this script, you will need to call it from the Native Tools Command Prompt for VS.
-Alternatively, you can run vcvars64.bat from your command prompt (usually located in C:\Program Files (x86)\Microsoft Visual Studio\2026\Community\VC\Auxiliary\Build)
+Alternatively, you can run vcvars64.bat from your command prompt (usually located in C:\Program Files (x86)\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build)
 This is required to make the compiler work with CMake.
 To avoid issues with the NSIS packaging, please use NSIS version 3.03.
 The installer packages are first compressed using 7za.exe, you will need to have it installed") -f Yellow

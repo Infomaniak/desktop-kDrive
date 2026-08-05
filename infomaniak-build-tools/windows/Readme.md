@@ -69,7 +69,7 @@ Install:
   - WinUI application development
 - **Individual components**
   - Git for Windows (if not already installed)
-  - Windows 11 SDK (10.0.28000.x)
+  - Windows 11 SDK (10.0.26100.x)
 
 ### Repository checkout
 
