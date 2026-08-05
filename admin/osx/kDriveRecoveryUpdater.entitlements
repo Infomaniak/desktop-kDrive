@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.application-identifier</key>
 	<string>864VDCS2QY.com.infomaniak.drive.recoveryupdater</string>
-	<key>com.apple.security.network.client</key>
-	<true/>
+	<key>com.apple.developer.team-identifier</key>
+	<string>864VDCS2QY</string>
 </dict>
 </plist>

@@ -209,7 +209,7 @@ if [ -n "$sign_files" ]; then
 	# Staple the notarization ticket to the recovery updater app
 	if [ -d "$updater_app" ]; then
 		echo "Stapling notarization ticket to kDriveRecoveryUpdater..."
-		xcrun stapler staple "$updater_app" || true
+		xcrun stapler staple "$updater_app"
 	fi
 fi
 
