@@ -56,7 +56,7 @@ namespace KDC {
 // ─────────────────────────────────────────────────
 //
 
-Operations::Operations(const StringType &jsonDescription) {
+Operations::Operations(const SyncName &jsonDescription) {
     try {
         Poco::JSON::Parser parser;
         _jsonObject = parser.parse(SyncName2Str(jsonDescription)).extract<Poco::JSON::Object::Ptr>();

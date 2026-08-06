@@ -56,9 +56,7 @@ class OperationsParserException final : public std::runtime_error {
  */
 class Operations {
     public:
-        using StringType = std::filesystem::path::string_type;
-
-        explicit Operations(const StringType &jsonDescription); // throws if jsonDescription is not valid
+        explicit Operations(const SyncName &jsonDescription); // throws if jsonDescription is not valid
 
         // Reads the JSON from a file instead of an inline string. Throws the same way the
         // constructor does if the content isn't valid.
