@@ -70,6 +70,10 @@
 - Render the future main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
   and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
   so both outer circles remain identical.
+- For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
+  `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
+- Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
+  files under `test/gui4/linux/` until the user explicitly reopens that scope.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
@@ -137,8 +141,14 @@
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
-- `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
-    - Routes entity and sync-runtime pushes after population; drops earlier mutations and logs the invariant violation.
+- `app/cache/activitystore.*`: process-local, per-sync file-activity history. It normalizes `SyncFileItemInfo` pushes,
+  updates valid operation ids in place, preserves distinct anonymous operations, and bounds retention to 500 entries per
+  synchronization. It stays separate from the durable `AppCache` graph and is not exposed directly to QML.
+- `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
+    - Routes entity and sync-runtime pushes after population; drops earlier entity mutations and logs the invariant
+      violation.
+    - Buffers a bounded number of file activities during initial population, replays them once parent synchronizations
+      exist, and prunes activity history when the configured synchronization set changes.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `SyncRuntimeInfo`, `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
     - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
