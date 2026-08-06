@@ -5,6 +5,7 @@ set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
 
 if( APPLE )
     set( APPLICATION_CLIENTV4_APP_EXECUTABLE "kDrive_client4" )
+    set( APPLICATION_CLIENTV4_EXECUTABLE "kDrive.gui" )
 elseif( WIN32 )
     set( APPLICATION_CLIENTV4_EXECUTABLE "client/kDrive" )
 endif()
