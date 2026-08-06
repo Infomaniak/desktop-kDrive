@@ -183,6 +183,11 @@ if [ -n "$sign_files" ]; then
 		cp -a "$file" "$install_dir/notarization"
 	done
 
+	# Strip extended attributes (e.g. com.apple.provenance) that break
+	# code signature validation on macOS Sequoia when extracted on a different machine
+	echo "Stripping extended attributes before notarization zip..."
+	xattr -cr "$install_dir/notarization"
+
 	# Prepare for notarization
 	echo "Preparing for notarization"
 	/usr/bin/ditto -c -k --keepParent "$install_dir/notarization" "$install_dir/InfomaniakDrive.zip"
@@ -210,6 +215,11 @@ if [ -n "$sign_files" ]; then
 	if [ -d "$updater_app" ]; then
 		echo "Stapling notarization ticket to kDriveRecoveryUpdater..."
 		xcrun stapler staple "$updater_app"
+
+		# Strip extended attributes (e.g. com.apple.provenance) that break
+		# code signature validation on macOS Sequoia when extracted on a different machine
+		echo "Stripping extended attributes from kDriveRecoveryUpdater..."
+		xattr -cr "$updater_app"
 	fi
 fi
 
@@ -218,7 +228,7 @@ if [ -d "$updater_app" ]; then
 	updater_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/version.h" | awk '{print $3}')
 	updater_zip="$install_dir/kDriveRecoveryUpdater-${updater_version}.zip"
 	echo "Creating distributable zip for kDriveRecoveryUpdater..."
-	/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$updater_app" "$updater_zip"
+	/usr/bin/ditto -c -k --keepParent "$updater_app" "$updater_zip"
 	echo "Recovery updater zip created: $updater_zip"
 
 	# Verify the code signature survives the zip round-trip
