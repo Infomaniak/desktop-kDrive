@@ -60,6 +60,12 @@ class TestSocketComm : public CppUnit::TestFixture, public TestBase {
 
         static Poco::Net::SecureStreamSocket newSecureClient(Poco::UInt16 port);
 
+    private:
+        /// Builds a Poco client TLS context that trusts the server's self-signed certificate
+        /// and presents the client certificate/key read from the keychain (required since
+        /// the server uses VERIFY_STRICT).
+        static Poco::Net::Context::Ptr createClientContext();
+
         void testServerListen();
         void testServerCallbacks();
         void testChannelReadyReadCallback();

@@ -73,7 +73,7 @@ bool addExtension(X509 *const x509, const int32_t nid, const char *const value) 
     return true;
 }
 
-bool fillCertificateFields(X509 *const x509) {
+bool fillCertificateFields(X509 *const x509, bool isClientCert) {
     if (X509_set_version(x509, 2) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_version failed: " << sslError());
         return false;
@@ -108,7 +108,7 @@ bool fillCertificateFields(X509 *const x509) {
     // the signature.
     if (!addExtension(x509, NID_basic_constraints, "critical,CA:FALSE")) return false;
     if (!addExtension(x509, NID_key_usage, "critical,digitalSignature,keyEncipherment")) return false;
-    if (!addExtension(x509, NID_ext_key_usage, "serverAuth")) return false;
+    if (!addExtension(x509, NID_ext_key_usage, isClientCert ? "clientAuth" : "serverAuth")) return false;
     const std::string san = std::string("IP:127.0.0.1,IP:0:0:0:0:0:0:0:1,DNS:") + localHostName;
     if (!addExtension(x509, NID_subject_alt_name, san.c_str())) return false;
 
@@ -123,7 +123,7 @@ bool SelfSignedCert::generateAndPublish(Pem &pem) {
         LOG_ERROR(Log::instance()->getLogger(), "Keychain unavailable");
         return false;
     }
-    if (!generate(pem)) return false;
+    if (!generate(pem, false)) return false;
 
     if (!keychain->writeToken(std::string(certKeychainKey), pem.cert)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS certificate in the keychain");
@@ -133,8 +133,29 @@ bool SelfSignedCert::generateAndPublish(Pem &pem) {
     return true;
 }
 
-bool SelfSignedCert::generate(Pem &pem) {
-    LOG_INFO(Log::instance()->getLogger(), "Generating self-signed certificate/key pair for local TLS IPC");
+bool SelfSignedCert::generateAndPublishClientCert(Pem &pem) {
+    const auto keychain = KeyChainManager::instance();
+    if (!keychain) {
+        LOG_ERROR(Log::instance()->getLogger(), "Keychain unavailable");
+        return false;
+    }
+    if (!generate(pem, true)) return false;
+
+    if (!keychain->writeToken(std::string(clientCertKeychainKey), pem.cert)) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS client certificate in the keychain");
+        return false;
+    }
+    if (!keychain->writeToken(std::string(clientKeyKeychainKey), pem.key)) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS client private key in the keychain");
+        return false;
+    }
+
+    return true;
+}
+
+bool SelfSignedCert::generate(Pem &pem, bool isClientCert) {
+    LOG_INFO(Log::instance()->getLogger(),
+             "Generating self-signed " << (isClientCert ? "client" : "server") << " certificate/key pair for local TLS IPC");
     try {
         Poco::Crypto::RSAKey key(Poco::Crypto::RSAKey::KL_2048, Poco::Crypto::RSAKey::EXP_LARGE);
 
@@ -150,7 +171,7 @@ bool SelfSignedCert::generate(Pem &pem) {
             return false;
         }
 
-        if (!fillCertificateFields(x509.get())) return false;
+        if (!fillCertificateFields(x509.get(), isClientCert)) return false;
 
         if (X509_set_pubkey(x509.get(), pkey.get()) != 1) {
             LOG_ERROR(Log::instance()->getLogger(), "X509_set_pubkey failed: " << sslError());

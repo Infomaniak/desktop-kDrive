@@ -388,7 +388,10 @@ void SocketCommServer::execute() {
             // Postpone _channels.remove(ch), as it may destroy the channel and its
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
-            (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
+            {
+                std::lock_guard lock(_postponedLostConnectionCbksMutex);
+                (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
+            }
         });
 
         {
@@ -406,13 +409,18 @@ void SocketCommServer::execute() {
     _isListening = false;
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
-    // Join and remove all postponed lost-connection callback threads
-    for (const auto &thread: _postponedLostConnectionCbks) {
+    // Swap the vector out under the lock, then join threads outside the lock so that
+    // a pending emplace_back from a channel callback thread is not blocked while joining.
+    std::vector<std::shared_ptr<StdLoggingThread>> threadsToJoin;
+    {
+        std::lock_guard lock(_postponedLostConnectionCbksMutex);
+        threadsToJoin.swap(_postponedLostConnectionCbks);
+    }
+
+    for (const auto &thread : threadsToJoin) {
         if (thread->joinable()) {
             thread->join();
         }
     }
-
-    _postponedLostConnectionCbks.clear();
 }
 } // namespace KDC
