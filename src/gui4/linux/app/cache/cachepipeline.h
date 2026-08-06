@@ -18,18 +18,21 @@
 
 #pragma once
 
+#include "app/cache/activitystore.h"
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 
 #include <QMetaObject>
 #include <QObject>
 
+#include <cstddef>
+#include <deque>
 #include <vector>
 
 namespace KDC {
 
 /**
- * Owns all server-push signal connections from CommService to AppCache.
+ * Owns all server-push signal connections from CommService to Linux v4 cache stores.
  *
  * This is the single bridge for push-driven cache mutation in the Linux v4 services layer.
  *
@@ -37,26 +40,41 @@ namespace KDC {
  * mutations cannot race with CachePopulator's initial full-snapshot replacements. Once markPopulated() is called after
  * CachePopulator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
  *
- * Push signals are connected directly to matching AppCache mutation slots in live mode. The class owns only the signal
- * wiring; AppCache remains the cache authority, and CachePopulator remains responsible for initial snapshot loading.
+ * Entity push signals are connected directly to matching AppCache mutation slots in live mode. File activity signals are
+ * buffered during population, then replayed into ActivityStore after their parent synchronizations exist. The class owns
+ * only the signal wiring; AppCache and ActivityStore remain their respective cache authorities, and CachePopulator remains
+ * responsible for initial snapshot loading.
  */
 class CachePipeline : public QObject {
         Q_OBJECT
 
     public:
-        explicit CachePipeline(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
+        explicit CachePipeline(CommService &commService, AppCache &appCache, ActivityStore &activityStore,
+                               QObject *parent = nullptr);
 
     public slots:
         void markPopulated();
 
     private:
+        struct PendingActivity {
+                SyncDbId syncDbId{0};
+                SyncFileItemInfo item;
+        };
+
+        static constexpr std::size_t maxPendingActivities = 5000;
+
         void connectDropPipeline();
         void connectLivePipeline();
+        void bufferActivity(SyncDbId syncDbId, const SyncFileItemInfo &item);
+        void routeActivity(SyncDbId syncDbId, const SyncFileItemInfo &item) const;
+        void reconcileActivities() const;
         static void logDroppedPush(const char *signalName);
 
         CommService &_commService;
         AppCache &_appCache;
+        ActivityStore &_activityStore;
         std::vector<QMetaObject::Connection> _prePopulationConnections;
+        std::deque<PendingActivity> _pendingActivities;
         bool _populated{false};
 };
 
