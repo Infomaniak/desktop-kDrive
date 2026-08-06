@@ -34,25 +34,6 @@ namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcHomeController, "gui.v4.homecontroller", QtInfoMsg)
-
-HomeController::HomeStatus toHomeStatus(const ResolvedHomeStatus status) {
-    switch (status) {
-        case ResolvedHomeStatus::Loading:
-            return HomeController::HomeStatus::Loading;
-        case ResolvedHomeStatus::UpToDate:
-            return HomeController::HomeStatus::UpToDate;
-        case ResolvedHomeStatus::Syncing:
-            return HomeController::HomeStatus::Syncing;
-        case ResolvedHomeStatus::Paused:
-            return HomeController::HomeStatus::Paused;
-        case ResolvedHomeStatus::Offline:
-            return HomeController::HomeStatus::Offline;
-        case ResolvedHomeStatus::SetupRequired:
-            return HomeController::HomeStatus::SetupRequired;
-    }
-    return HomeController::HomeStatus::Loading;
-}
-
 } // namespace
 
 HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
@@ -81,8 +62,7 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
 
 HomeController::HomeStatus HomeController::status() const {
     const auto context = _mainSelectionStore.currentSyncContext();
-    const auto resolvedStatus = resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
-    return toHomeStatus(resolvedStatus);
+    return resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
 }
 
 HomeController::PrimaryAction HomeController::primaryAction() const {
