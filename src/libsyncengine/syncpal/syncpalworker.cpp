@@ -239,6 +239,13 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
 
 void SyncPalWorker::ensureMinimumPermission() {
     std::function<void(SyncPath)> trySetFullAcess = [this](SyncPath path) {
+        bool exist = false;
+        IoError ioError = IoError::Unknown;
+        if (!IoHelper::checkIfPathExists(path, exist, ioError, IoHelper::PathCheckOption::Sensitive ) || ioError != IoError::Success) {
+            LOGW_INFO(_logger, L"Path does not exist, skipping full access rights check: " << Utility::formatSyncPath(path));
+            return;
+        }
+
         if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
             LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
         } else {
