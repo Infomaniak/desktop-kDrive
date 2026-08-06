@@ -223,7 +223,7 @@ if [ -d "$updater_app" ]; then
 	# which appear as unsealed contents in framework directories and break
 	# code signature validation (codesign --verify rejects them).
 	updater_basename=$(basename "$updater_app")
-	(cd "$install_dir" && zip -r -X "$updater_zip" "$updater_basename")
+	(cd "$install_dir" && zip -r -X -y "$updater_zip" "$updater_basename")
 	echo "Recovery updater zip created: $updater_zip"
 
 	# Verify the code signature survives the zip round-trip
