@@ -4006,18 +4006,18 @@ bool AppServer::startClient() {
         QString pathToExecutable;
 
 #if defined(__APPLE__)
-        // Always prefer the SwiftUI GUI4 app; fall back to the legacy Qt client if it is missing.
-        pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.app").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE);
+        pathToExecutable =
+                QCoreApplication::applicationDirPath() +
+                QString("/%1.app/Contents/MacOS/%2").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE, APPLICATION_CLIENTV4_EXECUTABLE);
+        useClientV4 = true;
 
         IoError ioError = IoError::Success;
         bool exists = false;
-        if (!IoHelper::checkIfPathExists(pathToExecutable.toStdString(), exists, ioError,
-                                         IoHelper::PathCheckOption::Insensitive) ||
+        if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
-            pathToExecutable.clear();
-        }
-        if (pathToExecutable.isEmpty()) {
-            pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+            LOGW_FATAL(_logger, L"Failed to start kDrive client (GUI4 executable isn't available): "
+                                        << Path2WStr(QStr2Path(pathToExecutable)));
+            return false;
         }
 #elif defined(KD_WINDOWS)
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
