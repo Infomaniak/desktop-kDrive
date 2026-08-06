@@ -28,12 +28,12 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
-    public class SocketServerCommProtocol : Interfaces.IServerCommProtocol
+    public class TcpServerCommClient : Interfaces.IServerCommClient
     {
         private Socket? _socket;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -66,26 +66,24 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
-        private string _commPortFilePath = Path.Combine(
-               Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-               "kDrive",
-               ".comm"
-           );
-
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
-        ~SocketServerCommProtocol()
+        public TcpServerCommClient() {}
+
+        ~TcpServerCommClient()
         {
             _socket?.Dispose();
             _stopRequested = true;
         }
 
-        private int? GetServerPort()
+        protected virtual int? GetServerPort()
         {
+#if DEBUG
             try
             {
-                int port = int.Parse(File.ReadAllText(_commPortFilePath).Trim());
+                string commPortFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "kDrive", ".comm");
+                int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
                 return port;
             }
             catch (FileNotFoundException)
@@ -97,6 +95,36 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to read server port from .comm file: {ex.Message}");
                 return null;
             }
+#else
+            if (!TryParseServerPortFromArguments(Environment.GetCommandLineArgs(), out int port, out string errorMessage))
+            {
+                Logger.Log(Logger.Level.Fatal, errorMessage);
+                ConnectionLost?.Invoke(this, new EventArgs());
+                return null;
+            }
+
+            return port;
+#endif
+        }
+
+        private static bool TryParseServerPortFromArguments(string[] arguments, out int port, out string errorMessage)
+        {
+            port = 0;
+
+            if (arguments.Length < 2)
+            {
+                errorMessage = "No commPort provided";
+                return false;
+            }
+
+            if (!int.TryParse(arguments[1], out port))
+            {
+                errorMessage = $"Invalid commPort provided: {arguments[1]}";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
         }
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
@@ -116,8 +144,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     if (port is null)
                     {
+#if DEBUG
+                        // In debug mode, the client can start before the server, so we wait and retry until the .comm file is available
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                         continue;
+#else
+                        Logger.Log(Logger.Level.Fatal, "Failed to get server port.");
+                        return false;
+#endif
                     }
 
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
@@ -326,7 +360,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex);
-               
+
                 if (jsonEndIndex == -1)
                 {
                     Logger.Log(Logger.Level.Extended, "Incomplete JSON message, waiting for more data.");

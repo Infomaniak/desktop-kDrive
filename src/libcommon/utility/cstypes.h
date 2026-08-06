@@ -167,6 +167,7 @@ enum class ExitCause {
     MissingReplyData,
     BlackListPropagationError,
     FileSystemNotSupported,
+    SyncDeletionFailed,
     EnumEnd
 };
 

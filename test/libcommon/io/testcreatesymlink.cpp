@@ -25,6 +25,15 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testCreateSymlink() {
+    // Invalid parameters
+    {
+        IoError ioError = IoError::Unknown;
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(SyncPath("dummy"), SyncPath("dummy"), false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(SyncPath(), SyncPath("dummy"), false, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+    }
+
     // Successfully creates a symlink on a regular file.
     {
         const LocalTemporaryDirectory temporaryDirectory;

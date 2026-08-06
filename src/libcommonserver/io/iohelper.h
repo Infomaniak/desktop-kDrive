@@ -101,6 +101,7 @@ struct IoHelper {
         static std::string ioError2StdString(IoError ioError) noexcept;
 
         //! Get the item type of the item indicated by `path`.
+        //! Hardlinks are not supported
         /*!
           \param path is the file system path of the inspected item.
           \param itemType is the type of the item indicated by `path`.

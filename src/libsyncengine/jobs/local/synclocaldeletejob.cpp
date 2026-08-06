@@ -22,7 +22,6 @@
 #include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "requests/parameterscache.h"
 
-#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -263,10 +262,6 @@ ExitInfo SyncLocalDeleteJob::runJob() {
         return ExitCode::LogicError;
     }
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
-
-    // Make sure we are allowed to propagate the change
-    PermissionsGiver permsGiver(absoluteLocalPath().parent_path(), _logger);
-    PermissionsGiver permsGiver2(absoluteLocalPath(), _logger);
 
     if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();

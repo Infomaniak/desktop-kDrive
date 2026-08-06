@@ -18,21 +18,15 @@
 
 #pragma once
 
-#include "iohelper.h"
-#include "utility/types.h"
+#include <cstdint>
+#include <filesystem>
+#include <optional>
+#include <string>
 
-/**
- * @brief Provide full access to a file or folder.
- */
 namespace KDC {
 
-class PermissionsGiver {
-    public:
-        explicit PermissionsGiver(const SyncPath &path, const log4cplus::Logger logger);
-
-    private:
-        SyncPath _path;
-        const log4cplus::Logger _logger;
-};
+std::optional<int64_t> runningProcessPid(const std::string &processName);
+std::optional<int64_t> runningProcessPid(const std::string &processName, const std::filesystem::path &procRoot,
+                                         uint32_t effectiveUserId, int64_t currentPid);
 
 } // namespace KDC

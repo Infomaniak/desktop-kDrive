@@ -290,6 +290,7 @@ void TestParmsDb::testSync() {
         sync2.setLocalPath("/Users/xxxxxx/Movies");
         sync2.setPaused(true);
         sync2.setNotificationsDisabled(true);
+        sync2.setToDelete(true);
         bool syncIsFound = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
     }
@@ -302,6 +303,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
     }
     // Find sync by DB path
     {
@@ -311,6 +313,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
     }
     // Select all syncs
     {
@@ -321,6 +324,8 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
         CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
         CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+        CPPUNIT_ASSERT(syncList[0].toDelete() == sync1.toDelete());
+        CPPUNIT_ASSERT(syncList[1].toDelete() == sync2.toDelete());
     }
     // Delete sync
     {
@@ -401,7 +406,6 @@ void TestParmsDb::testUpdateExclusionTemplates() {
 bool TestParmsDb::deleteColumns() {
     int errId;
     std::string error;
-
     auto db = ParmsDb::instance();
 
     // Sync table
@@ -586,6 +590,53 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("test1"), std::get<std::string>(value));
 }
 
+bool TestParmsDb::deleteAppState(AppStateKey key) {
+    int errId = 0;
+    std::string error;
+
+    auto db = ParmsDb::instance();
+    const std::string requestId = "delete_app_state_test";
+    if (!db->createAndPrepareRequest(requestId.c_str(), "DELETE FROM app_state WHERE key=?1;")) return false;
+    if (!db->queryBindValue(requestId, 1, static_cast<int>(key))) {
+        db->queryFree(requestId);
+        return false;
+    }
+    if (!db->queryExec(requestId, errId, error)) {
+        db->queryFree(requestId);
+        return db->sqlFail(requestId, error);
+    }
+    db->queryFree(requestId);
+    return true;
+}
+
+void TestParmsDb::testAppStateShowV4Onboarding() {
+    bool found = false;
+
+    // Fresh database (no version upgrade): ShowV4Onboarding must default to "0" so the banner is not shown to new installs.
+    ParmsDb::instance()->_versionUpdated = false;
+    CPPUNIT_ASSERT(deleteAppState(AppStateKey::ShowV4Onboarding));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertDefaultAppState());
+    AppStateValue freshValue = "";
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::ShowV4Onboarding, freshValue, found) && found);
+    CPPUNIT_ASSERT_EQUAL(std::string("0"), std::get<std::string>(freshValue));
+
+    // Upgrade path where the key is missing: the migration must insert "1" so the banner is shown after an upgrade.
+    ParmsDb::instance()->_versionUpdated = true;
+    CPPUNIT_ASSERT(deleteAppState(AppStateKey::ShowV4Onboarding));
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertDefaultAppState());
+    AppStateValue upgradeValue = "";
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::ShowV4Onboarding, upgradeValue, found) && found);
+    CPPUNIT_ASSERT_EQUAL(std::string("1"), std::get<std::string>(upgradeValue));
+
+    // Existing value must be preserved: re-running the default insertion must not overwrite the current value.
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::ShowV4Onboarding, std::string("0"), found) && found);
+    ParmsDb::instance()->_versionUpdated = true;
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertDefaultAppState());
+    AppStateValue preservedValue = "";
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::ShowV4Onboarding, preservedValue, found) && found);
+    CPPUNIT_ASSERT_EQUAL(std::string("0"), std::get<std::string>(preservedValue));
+}
+
 #if defined(KD_MACOS)
 void TestParmsDb::testExclusionApp() {
     ExclusionApp exclusionApp1("app id 1", "description 1");
@@ -687,8 +738,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3"), std::nullopt,
-                                                                  selectedErrors, found));
+                                                                  SyncPath("/dir1/file3"), std::nullopt, selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(2), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());
@@ -701,8 +751,7 @@ void TestParmsDb::testError() {
         std::vector<Error> selectedErrors;
         bool found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectErrorByNodeInfo(sync1.dbId(), std::nullopt, std::nullopt, std::nullopt,
-                                                                  SyncPath("/dir1/file3_dest"),
-                                                                  selectedErrors, found));
+                                                                  SyncPath("/dir1/file3_dest"), selectedErrors, found));
         CPPUNIT_ASSERT(found);
         CPPUNIT_ASSERT_EQUAL(size_t(1), selectedErrors.size());
         CPPUNIT_ASSERT_EQUAL(SyncPath("/dir1/file3"), selectedErrors.at(0).path());

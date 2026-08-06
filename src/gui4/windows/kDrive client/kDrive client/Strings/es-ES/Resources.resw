@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -605,8 +605,7 @@ Inicie sesión nuevamente con la dirección de correo electrónico correcta %@</
     <value>Introduzca su contraseña</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>En esta carpeta ya existe otro %@ cuyo nombre sólo difiere en mayúsculas/minúsculas. Este tipo de nombre no es compatible con la aplicación kDrive Windows. Cambie el nombre de una de las carpetas %@ desde kDrive online para poder sincronizarla en su PC.
-</value> 
+    <value>En esta carpeta ya existe otro %@ cuyo nombre sólo difiere en mayúsculas/minúsculas. Este tipo de nombre no es compatible con la aplicación kDrive Windows. Cambie el nombre de una de las carpetas %@ desde kDrive online para poder sincronizarla en su PC.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Nombres contradictorios, distingue mayúsculas de minúsculas</value> 
@@ -701,7 +700,6 @@ Contacte con su administrador para aumentar el límite de tamaño de archivo.</v
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Acceso prohibido</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>El nombre de este %@ contiene uno o más caracteres no admitidos por la aplicación kDrive Windows. Cambie el nombre del %@ desde kDrive en línea.</value> 
@@ -1218,7 +1216,6 @@ Para acelerar el envío, recomendamos enviar solo la última sesión de kDrive.<
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Extendido</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Crítico</value> 
@@ -1303,7 +1300,7 @@ El análisis de estos datos permite a nuestro equipo mejorar continuamente la in
     <value>La carpeta elegida debe estar vacía para que la sincronización funcione correctamente.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Elija las carpetas a sincronizar en este ordenador:</value> 
+    <value>Selecciona las carpetas que deseas sincronizar en este ordenador:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Carpetas sincronizadas</value> 
@@ -1389,6 +1386,12 @@ Por favor, espere unos instantes.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Sincronización en curso…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Descubre la aplicación</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>¡Ya está aquí tu nueva aplicación kDrive!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Abrir kDrive cuando se inicie el ordenador</value> 
@@ -1561,8 +1564,8 @@ Se requiere conexión a Internet para acceder a ellos.</value>
     <value>Sincronización en curso</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Sus archivos locales siguen siendo accesibles.
-La sincronización se reanudará automáticamente en cuanto vuelva a estar conectado.</value> 
+    <value>Podrás seguir accediendo a tus archivos descargados.
+La sincronización se reanudará automáticamente en cuanto vuelvas a conectarte.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Sin conexión</value> 
@@ -1571,7 +1574,7 @@ La sincronización se reanudará automáticamente en cuanto vuelva a estar conec
     <value>La sincronización se ha detenido temporalmente.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Pausa activada</value> 
+    <value>Sincronización en pausa</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Sus archivos son accesibles y están sincronizados.</value> 

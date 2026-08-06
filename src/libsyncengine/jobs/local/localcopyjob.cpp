@@ -18,7 +18,6 @@
 
 #include "localcopyjob.h"
 
-#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -75,9 +74,6 @@ ExitInfo LocalCopyJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }
-
-    // Make sure we are allowed to propagate the change
-    PermissionsGiver _(_dest.parent_path(), _logger);
 
     ExitInfo exitInfo = ExitCode::Ok;
     try {
