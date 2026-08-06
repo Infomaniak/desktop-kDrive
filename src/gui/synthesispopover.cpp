@@ -200,8 +200,12 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
 
     QScreen *screen = QGuiApplication::screenAt(_sysTrayIconRect.center());
     if (!screen) {
-        qCDebug(lcSynthesisPopover) << "No Screen found";
-        return;
+        // The window is translucent: leaving this method without painting would leave its background fully transparent.
+        // The systray icon geometry is unreliable on Linux, so fall back to the screen of the window instead: at worst the
+        // arrow pointing to the systray icon is misplaced, but the background is always painted.
+        qCDebug(lcSynthesisPopover) << "No screen found at the systray icon position, falling back to the window screen";
+        screen = QWidget::screen();
+        if (!screen) return;
     }
 
     QRect screenRect = screen->availableGeometry();
