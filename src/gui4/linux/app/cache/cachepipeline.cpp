@@ -102,7 +102,6 @@ void CachePipeline::markPopulated() {
     _prePopulationConnections.clear();
     connectLivePipeline();
 
-    const std::size_t pendingActivityCount = _pendingActivities.size();
     while (!_pendingActivities.empty()) {
         const auto [syncDbId, syncFileItemInfo] = std::move(_pendingActivities.front());
         _pendingActivities.pop_front();
