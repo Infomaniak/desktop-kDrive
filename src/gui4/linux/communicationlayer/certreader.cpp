@@ -38,7 +38,7 @@ namespace KDC {
  * @param outPem The output string to hold the PEM data.
  * @return true if the PEM string was successfully read, false otherwise.
  */
-bool CertReader::readPem(std::string &outPem) {
+bool CertReader::readPemFromKeychain(std::string &outPem) {
     keychain::Error error{};
     outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, certKeychainKey, error);
 
@@ -60,7 +60,7 @@ bool CertReader::readPem(std::string &outPem) {
 
 bool CertReader::readCertificate(QSslCertificate &certificate) {
     std::string pem;
-    if (!readPem(pem)) {
+    if (!readPemFromKeychain(pem)) {
         return false;
     }
 
