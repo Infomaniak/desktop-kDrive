@@ -27,6 +27,7 @@
 #include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
+#include "syncpal_test_helper/syncpaltesthelper.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 namespace KDC {
@@ -236,6 +237,99 @@ void TestIntegration::testUploadBigFile() {
     CPPUNIT_ASSERT_EQUAL(fileStat.modificationTime, fileInfoJob.modificationTime());
     CPPUNIT_ASSERT_EQUAL(fileStat.size, fileInfoJob.size());
     logStep("testUploadBigFile");
+}
+
+void TestIntegration::testSimpleUpload() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Note: SyncTime is a real Unix epoch (seconds since 1970), not a "YYYYMMDDHHMMSS"-formatted number.
+    const SyncTime dirTime = testhelpers::defaultTime - 3600; // 1 hour ago
+    const Situation situation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const Operations localoperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Delete", "path":"A/AA/AAA" },
+            { "type": "Create", "itemType": "File", "path": "A/AA", "name": "BBB" }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
+
+    // The local Create operation above wrote the file directly to disk, simulating a user action, so we
+    // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Verify that the new file now exists on the remote replica...
+    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/BBB"));
+    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+    // ...and that the deleted one is gone.
+    const auto remoteDeletedFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/AAA"));
+    CPPUNIT_ASSERT(!remoteDeletedFileInfo.isValid());
+
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "C"));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "CC"));
+
+    // Now apply an operation on the remote replica (move C -> CC, i.e. rename since they share the same parent)
+    // and verify it gets propagated back to the local replica.
+    const Operations remoteoperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Move", "fromPath":"C", "toPath":"CC" }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteoperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "C"));
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "CC"));
+
+    testHelper.tearDown();
+    logStep("testSimpleUpload");
+}
+
+void TestIntegration::testNestedRemoteOperations() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Start from an empty situation.
+    const Situation situation{Str2SyncName(R"({"content": []})")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    // Imbricated remote operations applied in a single batch: create a directory, then create a file inside
+    // that same directory, right away. Resolving "A/AAA"'s parent must not rely on a stale SyncDb lookup,
+    // since "A" was only just created earlier in this very batch.
+    const Operations remoteOperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "Directory", "name": "A" },
+            { "type": "Create", "itemType": "File", "path": "A", "name": "AAA" }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "A" / "AAA"));
+
+    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AAA"));
+    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+
+    testHelper.tearDown();
+    logStep("testNestedRemoteOperations");
 }
 
 } // namespace KDC
