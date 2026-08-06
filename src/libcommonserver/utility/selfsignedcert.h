@@ -37,8 +37,14 @@ class COMMONSERVER_EXPORT SelfSignedCert {
         /// @return true on success, false otherwise.
         static bool generateAndPublish(Pem &pem);
 
+        /// Generate a fresh client certificate/key pair and publish both to the keychain,
+        /// so that the GUI can present the certificate during the TLS handshake. The private
+        /// key is stored in the keychain (same user, same machine).
+        /// @return true on success, false otherwise.
+        static bool generateAndPublishClientCert(Pem &pem);
+
     private:
-        static bool generate(Pem &pem);
+        static bool generate(Pem &pem, bool isClientCert = false);
 };
 
 } // namespace KDC

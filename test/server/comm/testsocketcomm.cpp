@@ -18,14 +18,57 @@
 
 #include "testsocketcomm.h"
 
+#include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
+
+#include <Poco/Crypto/X509Certificate.h>
+#include <Poco/Crypto/RSAKey.h>
+
+#include <sstream>
 
 namespace KDC {
 
-Poco::Net::SecureStreamSocket TestSocketComm::newSecureClient(const Poco::UInt16 port) {
+Poco::Net::Context::Ptr TestSocketComm::createClientContext() {
+    // Read the server certificate from the keychain so the client can pin it.
+    bool found = false;
+    std::string serverCertPem;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(certKeychainKey), serverCertPem, found));
+    CPPUNIT_ASSERT(found);
+
+    // Read the client certificate and private key from the keychain.
+    std::string clientCertPem;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(clientCertKeychainKey), clientCertPem, found));
+    CPPUNIT_ASSERT(found);
+
+    std::string clientKeyPem;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(clientKeyKeychainKey), clientKeyPem, found));
+    CPPUNIT_ASSERT(found);
+
     Poco::Net::Context::Ptr clientContext =
             new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
     clientContext->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+    // Add the server certificate as the only trusted CA so the client verifies the server.
+    std::istringstream certStream(serverCertPem);
+    Poco::Crypto::X509Certificate serverCert(certStream);
+    clientContext->addCertificateAuthority(serverCert);
+
+    // Present the client certificate and private key (required by server's VERIFY_STRICT).
+    std::istringstream clientCertStream(clientCertPem);
+    Poco::Crypto::X509Certificate clientCert(clientCertStream);
+    clientContext->useCertificate(clientCert);
+
+    std::istringstream clientKeyStream(clientKeyPem);
+    Poco::Crypto::RSAKey clientKey(nullptr, &clientKeyStream, "");
+    clientContext->usePrivateKey(clientKey);
+
+    return clientContext;
+}
+
+Poco::Net::SecureStreamSocket TestSocketComm::newSecureClient(const Poco::UInt16 port) {
+    Poco::Net::Context::Ptr clientContext = createClientContext();
 
     Poco::Net::StreamSocket rawSocket;
     rawSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), port));
@@ -48,6 +91,11 @@ bool SocketCommChannelTest::sendMessage(const CommString &message) {
 
 // TestSocketComm implementation
 void TestSocketComm::setUp() {
+    // Install a mock keychain before constructing any SocketCommServerTest, because the
+    // SecureContextSingleton writes the server and client TLS material to the keychain
+    // during first construction. Without this, the real OS keychain would be used and
+    // the client certificate would not be available for the test client context.
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     TestBase::start();
 }
 
