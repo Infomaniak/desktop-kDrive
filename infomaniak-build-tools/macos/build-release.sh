@@ -218,6 +218,23 @@ if [ -d "$updater_app" ]; then
 	updater_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/version.h" | awk '{print $3}')
 	updater_zip="$install_dir/kDriveRecoveryUpdater-${updater_version}.zip"
 	echo "Creating distributable zip for kDriveRecoveryUpdater..."
-	/usr/bin/ditto -c -k --keepParent "$updater_app" "$updater_zip"
+	/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$updater_app" "$updater_zip"
 	echo "Recovery updater zip created: $updater_zip"
+
+	# Verify the code signature survives the zip round-trip
+	echo "Verifying code signature in distributable zip..."
+	verify_tmp=$(mktemp -d)
+	/usr/bin/ditto -x -k "$updater_zip" "$verify_tmp"
+	if ! codesign --verify -v --strict "$verify_tmp/$(basename "$updater_app")"; then
+		echo "ERROR: Code signature verification failed after zip round-trip!" >&2
+		rm -rf "$verify_tmp"
+		exit 1
+	fi
+	echo "Code signature verified successfully after zip round-trip."
+	rm -rf "$verify_tmp"
+
+	# Generate SHA256 hash for integrity verification during transfer
+	echo "Generating SHA256 hash for recovery updater zip..."
+	shasum -a 256 "$updater_zip" | awk '{print $1}' > "$updater_zip.sha256"
+	echo "SHA256: $(cat "$updater_zip.sha256")"
 fi

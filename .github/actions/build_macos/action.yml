@@ -298,7 +298,7 @@ runs:
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-release-artifacts-recovery-updater
-          path: ${{ github.workspace }}/build-macos/client/install/kDriveRecoveryUpdater-*.zip
+          path: ${{ github.workspace }}/build-macos/client/install/kDriveRecoveryUpdater-*.zip*
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
