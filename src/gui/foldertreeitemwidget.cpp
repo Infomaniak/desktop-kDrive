@@ -176,6 +176,8 @@ ExitCode FolderTreeItemWidget::updateBlacklistSet() {
 }
 
 void FolderTreeItemWidget::updateBlacklistPathMap() {
+    if (!_syncDbId) return;
+
     for (const QString &nodeId: _oldBlackList) {
         QString path;
         if (const auto exitCode = GuiRequests::getNodePath(_syncDbId, nodeId, path); exitCode != ExitCode::Ok) {
