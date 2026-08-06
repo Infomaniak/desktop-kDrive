@@ -68,11 +68,9 @@ void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item
     }
 
     auto entry = makeEntry(syncDbId, item, *normalizedStatus, source, _nextLocalId++);
-    const GenericId insertedLocalId = entry.localId;
     entries.push_back(std::move(entry));
-    if (enforceCapacity(syncDbId, insertedLocalId, entries)) {
-        emit activitiesChanged(syncDbId);
-    }
+    enforceCapacity(entries);
+    emit activitiesChanged(syncDbId);
 }
 
 std::vector<ActivityEntry> ActivityStore::activities(const SyncDbId syncDbId) const {
@@ -228,47 +226,17 @@ ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileIt
 /**
  * @brief Trims a synchronization's activity collection to ActivityStore::maxActivitiesPerSync entries.
  *
- * Eviction preserves active work whenever possible. While the collection exceeds its limit, the oldest entry that is no
- * longer in progress is removed first, using ActivityEntry::receivedSequence as the stable age discriminator. If every
- * retained entry is still in progress, the oldest one is removed instead and the exceptional condition is logged.
+ * While the collection exceeds its limit, the activity with the oldest ActivityEntry::receivedSequence is removed,
+ * regardless of its status. The entry inserted immediately before this call has the newest sequence and is therefore
+ * always retained. This guarantees that a new error remains visible even when every retained activity is in progress.
  *
- * The newly inserted entry can itself be selected for eviction. This happens, for example, when 500 in-progress entries
- * are already retained and the new entry is the only completed candidate. Returning whether that entry survived lets
- * the caller avoid emitting activitiesChanged() when insertion followed by eviction leaves the observable collection
- * unchanged.
- *
- * @param syncDbId Database identifier used to contextualize capacity warnings.
- * @param insertedLocalId Process-local identifier of the entry inserted immediately before this call.
  * @param entries Mutable activity collection to trim.
- * @return true if the newly inserted entry remains in the collection; false if capacity enforcement evicted it.
  */
-bool ActivityStore::enforceCapacity(const SyncDbId syncDbId, const GenericId insertedLocalId,
-                                    std::vector<ActivityEntry> &entries) {
-    bool insertedEntryRetained = true;
+void ActivityStore::enforceCapacity(std::vector<ActivityEntry> &entries) {
     while (entries.size() > ActivityStore::maxActivitiesPerSync) {
-        auto oldestCompletedIt = entries.end();
-        for (auto entryIt = entries.begin(); entryIt != entries.end(); ++entryIt) {
-            if (isInProgress(entryIt->status)) {
-                continue;
-            }
-            if (oldestCompletedIt == entries.end() || entryIt->receivedSequence < oldestCompletedIt->receivedSequence) {
-                oldestCompletedIt = entryIt;
-            }
-        }
-
-        if (oldestCompletedIt != entries.end()) {
-            insertedEntryRetained = insertedEntryRetained && oldestCompletedIt->localId != insertedLocalId;
-            entries.erase(oldestCompletedIt);
-            continue;
-        }
-
         const auto oldestIt = std::ranges::min_element(entries, {}, &ActivityEntry::receivedSequence);
-        qCWarning(lcActivityStore) << "Activity capacity reached with only in-progress operations; evicting oldest"
-                                   << "| syncDbId:" << syncDbId << "/ capacity:" << maxActivitiesPerSync;
-        insertedEntryRetained = insertedEntryRetained && oldestIt->localId != insertedLocalId;
         entries.erase(oldestIt);
     }
-    return insertedEntryRetained;
 }
 
 } // namespace KDC
