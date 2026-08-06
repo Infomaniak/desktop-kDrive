@@ -129,8 +129,7 @@ class ActivityStore final : public QObject {
                                                    const SyncFileItemInfo &item, ActivityStatus status, ActivitySource source);
         [[nodiscard]] ActivityEntry makeEntry(SyncDbId syncDbId, const SyncFileItemInfo &item, ActivityStatus status,
                                               ActivitySource source, GenericId localId);
-        [[nodiscard]] static bool enforceCapacity(SyncDbId syncDbId, GenericId insertedLocalId,
-                                                  std::vector<ActivityEntry> &entries);
+        static void enforceCapacity(std::vector<ActivityEntry> &entries);
 
         std::unordered_map<SyncDbId, std::vector<ActivityEntry>> _activitiesBySyncDbId;
         GenericId _nextLocalId{1};
