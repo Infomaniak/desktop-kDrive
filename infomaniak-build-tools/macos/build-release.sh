@@ -183,11 +183,6 @@ if [ -n "$sign_files" ]; then
 		cp -a "$file" "$install_dir/notarization"
 	done
 
-	# Strip extended attributes (e.g. com.apple.provenance) that break
-	# code signature validation on macOS Sequoia when extracted on a different machine
-	echo "Stripping extended attributes before notarization zip..."
-	xattr -cr "$install_dir/notarization"
-
 	# Prepare for notarization
 	echo "Preparing for notarization"
 	/usr/bin/ditto -c -k --keepParent "$install_dir/notarization" "$install_dir/InfomaniakDrive.zip"
@@ -215,11 +210,6 @@ if [ -n "$sign_files" ]; then
 	if [ -d "$updater_app" ]; then
 		echo "Stapling notarization ticket to kDriveRecoveryUpdater..."
 		xcrun stapler staple "$updater_app"
-
-		# Strip extended attributes (e.g. com.apple.provenance) that break
-		# code signature validation on macOS Sequoia when extracted on a different machine
-		echo "Stripping extended attributes from kDriveRecoveryUpdater..."
-		xattr -cr "$updater_app"
 	fi
 fi
 
@@ -228,14 +218,24 @@ if [ -d "$updater_app" ]; then
 	updater_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/version.h" | awk '{print $3}')
 	updater_zip="$install_dir/kDriveRecoveryUpdater-${updater_version}.zip"
 	echo "Creating distributable zip for kDriveRecoveryUpdater..."
-	/usr/bin/ditto -c -k --keepParent "$updater_app" "$updater_zip"
+	# Use zip -X to exclude extended attributes (com.apple.provenance, etc.)
+	# ditto and zip without -X both preserve xattrs as ._ AppleDouble files,
+	# which appear as unsealed contents in framework directories and break
+	# code signature validation (codesign --verify rejects them).
+	updater_basename=$(basename "$updater_app")
+	(cd "$install_dir" && zip -r -X "$updater_zip" "$updater_basename")
 	echo "Recovery updater zip created: $updater_zip"
 
 	# Verify the code signature survives the zip round-trip
 	echo "Verifying code signature in distributable zip..."
 	verify_tmp=$(mktemp -d)
-	/usr/bin/ditto -x -k "$updater_zip" "$verify_tmp"
-	if ! codesign --verify -v --strict "$verify_tmp/$(basename "$updater_app")"; then
+	unzip -q "$updater_zip" -d "$verify_tmp"
+	if find "$verify_tmp" -name "._*" | grep -q .; then
+		echo "ERROR: AppleDouble (._*) files found in zip — extended attributes were not excluded" >&2
+		rm -rf "$verify_tmp"
+		exit 1
+	fi
+	if ! codesign --verify -v --strict "$verify_tmp/$updater_basename"; then
 		echo "ERROR: Code signature verification failed after zip round-trip!" >&2
 		rm -rf "$verify_tmp"
 		exit 1
