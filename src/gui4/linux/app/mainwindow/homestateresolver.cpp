@@ -20,12 +20,14 @@
 
 namespace KDC {
 
-ResolvedHomeStatus resolveHomeStatus(const bool hasSync, const bool offline, const std::optional<SyncStatus> runtimeStatus) {
+using HomeStatus = HomeController::HomeStatus;
+
+HomeStatus resolveHomeStatus(const bool hasSync, const bool offline, const std::optional<SyncStatus> runtimeStatus) {
     if (!hasSync) {
-        return ResolvedHomeStatus::SetupRequired;
+        return HomeStatus::SetupRequired;
     }
     if (!runtimeStatus.has_value()) {
-        return ResolvedHomeStatus::Loading;
+        return HomeStatus::Loading;
     }
 
     switch (*runtimeStatus) {
@@ -33,19 +35,19 @@ ResolvedHomeStatus resolveHomeStatus(const bool hasSync, const bool offline, con
         case SyncStatus::Running:
         case SyncStatus::PauseAsked:
         case SyncStatus::StopAsked:
-            return ResolvedHomeStatus::Syncing;
+            return HomeStatus::Syncing;
         case SyncStatus::Idle:
-            return offline ? ResolvedHomeStatus::Offline : ResolvedHomeStatus::UpToDate;
+            return offline ? HomeStatus::Offline : HomeStatus::UpToDate;
         case SyncStatus::Paused:
-            return offline ? ResolvedHomeStatus::Offline : ResolvedHomeStatus::Paused;
+            return offline ? HomeStatus::Offline : HomeStatus::Paused;
         case SyncStatus::Stopped:
         case SyncStatus::Error:
-            return ResolvedHomeStatus::Paused;
+            return HomeStatus::Paused;
         case SyncStatus::Undefined:
         case SyncStatus::EnumEnd:
-            return ResolvedHomeStatus::Loading;
+            return HomeStatus::Loading;
     }
-    return ResolvedHomeStatus::Loading;
+    return HomeStatus::Loading;
 }
 
 } // namespace KDC
