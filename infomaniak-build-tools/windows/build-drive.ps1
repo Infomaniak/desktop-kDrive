@@ -988,8 +988,8 @@ if ($msi) {
 #                                                                                               #
 #################################################################################################
 
-if ($upload) {
-    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -Upload $upload
+if ($ci) {
+    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -Upload $true
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
