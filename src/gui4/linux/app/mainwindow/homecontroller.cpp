@@ -61,6 +61,10 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
 }
 
 HomeController::HomeStatus HomeController::status() const {
+    if (syncActionPending()) {
+        return HomeStatus::Loading;
+    }
+
     const auto context = _mainSelectionStore.currentSyncContext();
     return resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
 }

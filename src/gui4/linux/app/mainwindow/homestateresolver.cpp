@@ -31,10 +31,7 @@ HomeStatus resolveHomeStatus(const bool hasSync, const bool offline, const std::
     }
 
     switch (*runtimeStatus) {
-        case SyncStatus::Starting:
         case SyncStatus::Running:
-        case SyncStatus::PauseAsked:
-        case SyncStatus::StopAsked:
             return HomeStatus::Syncing;
         case SyncStatus::Idle:
             return offline ? HomeStatus::Offline : HomeStatus::UpToDate;
@@ -43,6 +40,9 @@ HomeStatus resolveHomeStatus(const bool hasSync, const bool offline, const std::
         case SyncStatus::Stopped:
         case SyncStatus::Error:
             return HomeStatus::Paused;
+        case SyncStatus::Starting:
+        case SyncStatus::PauseAsked:
+        case SyncStatus::StopAsked:
         case SyncStatus::Undefined:
         case SyncStatus::EnumEnd:
             return HomeStatus::Loading;
