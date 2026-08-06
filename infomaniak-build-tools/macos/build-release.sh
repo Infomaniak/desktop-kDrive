@@ -104,7 +104,7 @@ make -j6 all install
 
 # Generate Debug Symbol files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
-dsymutil ./install/kDrive.app/Contents/MacOS/kDrive_client4.app/Contents/MacOS/kDrive.gui -o ./install/kDrive_client.dSYM
+dsymutil ./install/kDrive.app/Contents/MacOS/kDrive.app/Contents/MacOS/kDrive.gui -o ./install/kDrive_client.dSYM
 
 # Verify that no dylib targets a macOS version higher than expected.
 # Each architecture slice is checked independently: arm64 requires at least 11.0,
