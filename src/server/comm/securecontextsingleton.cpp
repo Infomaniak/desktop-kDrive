@@ -64,13 +64,29 @@ Poco::Net::Context::Ptr SecureContextSingleton::createContext() {
         throw Poco::RuntimeException("Unable to obtain TLS material for local IPC");
     }
 
+    SelfSignedCert::Pem clientPem;
+    if (!SelfSignedCert::generateAndPublishClientCert(clientPem)) {
+        throw Poco::RuntimeException("Unable to obtain TLS client material for local IPC");
+    }
+
     Poco::Net::Context::Ptr ctx(
-            new Poco::Net::Context(Poco::Net::Context::TLS_SERVER_USE, "", "", "", Poco::Net::Context::VERIFY_NONE));
+            new Poco::Net::Context(Poco::Net::Context::TLS_SERVER_USE, "", "", "", Poco::Net::Context::VERIFY_STRICT));
     ctx->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
 
     if (!applyPem(ctx->sslContext(), pem)) {
         throw Poco::RuntimeException("Failed to load in-memory TLS certificate/key");
     }
+
+    // Trust the client certificate so the server can verify the GUI's identity during the TLS handshake.
+    try {
+        std::istringstream certStream(clientPem.cert);
+        const Poco::Crypto::X509Certificate clientCert(certStream);
+        ctx->addCertificateAuthority(clientCert);
+    } catch (const Poco::Exception &e) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to add client certificate as CA: " << e.displayText());
+        throw Poco::RuntimeException("Failed to load client certificate as trusted CA");
+    }
+
     return ctx;
 }
 

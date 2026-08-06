@@ -86,6 +86,7 @@ class SocketCommServer : public AbstractCommServer {
         void execute();
         void joinAndClearPostponedLostConnectionCbks();
         std::vector<std::shared_ptr<StdLoggingThread>> _postponedLostConnectionCbks;
+        std::mutex _postponedLostConnectionCbksMutex;
 };
 
 } // namespace KDC
