@@ -24,6 +24,8 @@
 
 #include <cstdint>
 #include <QHash>
+#include <QSslCertificate>
+#include <QSslKey>
 #include <QSslSocket>
 #include <QString>
 #include <QTimer>
@@ -71,6 +73,7 @@ class IpcClient : public QObject {
         void handleServerSignal(const Poco::DynamicStruct &ipcMessage, int32_t id);
         void onSslErrors(const QList<QSslError> &errors);
         bool loadPinnedCertificate();
+        bool loadClientCertificate();
 
         QSslSocket *_socket;
         QTimer _initialConnectionRetryTimer;
@@ -82,6 +85,8 @@ class IpcClient : public QObject {
         uint32_t _initialConnectionAttemptCount{0};
         quint16 _configuredPort{0};
         QSslCertificate _pinnedCert;
+        QSslCertificate _clientCert;
+        QSslKey _clientKey;
 
 #ifdef QT_DEBUG
         static quint16 readPortFromCommFile();
