@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "certreader.h"
+#include "tlscerthelper.h"
 
 #include "comm.h"
 #include "utility/utility.h"
@@ -35,12 +35,13 @@ namespace KDC {
 
 /**
  * Reads the PEM string from the keychain.
+ * @param keychainKey The keychain key identifying the entry to read.
  * @param outPem The output string to hold the PEM data.
  * @return true if the PEM string was successfully read, false otherwise.
  */
-bool CertReader::readPemFromKeychain(std::string &outPem) {
+bool TLSCertHelper::readPemFromKeychain(const std::string &keychainKey, std::string &outPem) {
     keychain::Error error{};
-    outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, certKeychainKey, error);
+    outPem = keychain::getPassword(keychainConstant::package, keychainConstant::service, keychainKey, error);
 
     if (error.type == keychain::ErrorType::NotFound) {
         // Entry not present yet, not an error; caller may retry.
@@ -58,9 +59,9 @@ bool CertReader::readPemFromKeychain(std::string &outPem) {
     return true;
 }
 
-bool CertReader::readCertificate(QSslCertificate &certificate) {
+bool TLSCertHelper::readCertificate(QSslCertificate &certificate) {
     std::string pem;
-    if (!readPemFromKeychain(pem)) {
+    if (!readPemFromKeychain(std::string(certKeychainKey), pem)) {
         return false;
     }
 
@@ -70,6 +71,36 @@ bool CertReader::readCertificate(QSslCertificate &certificate) {
         return false;
     }
     qCInfo(lcCertReader) << "Certificate loaded from keychain";
+    return true;
+}
+
+bool TLSCertHelper::readClientCertificate(QSslCertificate &certificate) {
+    std::string pem;
+    if (!readPemFromKeychain(std::string(clientCertKeychainKey), pem)) {
+        return false;
+    }
+
+    certificate = QSslCertificate(QByteArray::fromStdString(pem), QSsl::Pem);
+    if (certificate.isNull()) {
+        qCWarning(lcCertReader) << "Failed to parse client certificate PEM from keychain";
+        return false;
+    }
+    qCInfo(lcCertReader) << "Client certificate loaded from keychain";
+    return true;
+}
+
+bool TLSCertHelper::readClientKey(QSslKey &key) {
+    std::string pem;
+    if (!readPemFromKeychain(std::string(clientKeyKeychainKey), pem)) {
+        return false;
+    }
+
+    key = QSslKey(QByteArray::fromStdString(pem), QSsl::Rsa, QSsl::Pem);
+    if (key.isNull()) {
+        qCWarning(lcCertReader) << "Failed to parse client private key PEM from keychain";
+        return false;
+    }
+    qCInfo(lcCertReader) << "Client private key loaded from keychain";
     return true;
 }
 
