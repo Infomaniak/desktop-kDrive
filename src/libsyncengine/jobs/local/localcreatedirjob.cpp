@@ -26,9 +26,8 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath, bool readOnly /*= false*/) :
-    _destFilePath(destFilepath),
-    _readOnly(readOnly) {}
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
+    _destFilePath(destFilepath) {}
 
 ExitInfo LocalCreateDirJob::canRun() {
     if (bypassCheck()) {
@@ -87,12 +86,6 @@ ExitInfo LocalCreateDirJob::runJob() {
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (_readOnly) {
-        if (IoHelper::setReadOnly(_destFilePath) != IoError::Success) {
-            LOGW_WARN(_logger, L"Failed to set read-only rights: " << Utility::formatSyncPath(_destFilePath));
-        }
     }
 
     _nodeId = std::to_string(filestat.inode);
