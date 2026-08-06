@@ -716,7 +716,7 @@ function Package-RecoveryUpdater {
     }
 
     # Copy Poco and other Conan dependencies
-    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+    $find_dep_script = "$repositoryRootPath/infomaniak-build-tools/conan/find_conan_dep.ps1"
     $packages = @(
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
@@ -740,7 +740,7 @@ function Package-RecoveryUpdater {
     # Create NSIS installer
     $version = Get-Version -IncludeBuildVersion $true
     $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
-    $nsiTemplate = "$path/infomaniak-build-tools/windows/recovery-updater.nsi"
+    $nsiTemplate = "$repositoryRootPath/infomaniak-build-tools/windows/recovery-updater.nsi"
     $nsiFile = "$buildPath/recovery-updater.nsi"
     $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $false
 
