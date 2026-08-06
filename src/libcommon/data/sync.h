@@ -131,7 +131,7 @@ class Sync : public BaseSync {
              bool supportVfs = false, VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
-             int64_t listingCursorTimestamp = 0);
+             int64_t listingCursorTimestamp = 0, bool toDelete = false);
 
         [[nodiscard]] const NodeId &localNodeId() const { return _localNodeId; }
         void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
@@ -155,6 +155,8 @@ class Sync : public BaseSync {
             listingCursor = _listingCursor;
             timestamp = _listingCursorTimestamp;
         }
+        [[nodiscard]] bool toDelete() const { return _toDelete; }
+        void setToDelete(const bool toDelete) { _toDelete = toDelete; }
 
     private:
         NodeId _localNodeId;
@@ -164,6 +166,7 @@ class Sync : public BaseSync {
         bool _hasFullyCompleted{false};
         std::string _listingCursor;
         int64_t _listingCursorTimestamp{0};
+        bool _toDelete{false};
 };
 
 } // namespace KDC

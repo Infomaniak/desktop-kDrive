@@ -290,6 +290,7 @@ void TestParmsDb::testSync() {
         sync2.setLocalPath("/Users/xxxxxx/Movies");
         sync2.setPaused(true);
         sync2.setNotificationsDisabled(true);
+        sync2.setToDelete(true);
         bool syncIsFound = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
     }
@@ -302,6 +303,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
     }
     // Find sync by DB path
     {
@@ -311,6 +313,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+        CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
     }
     // Select all syncs
     {
@@ -321,6 +324,8 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
         CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
         CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+        CPPUNIT_ASSERT(syncList[0].toDelete() == sync1.toDelete());
+        CPPUNIT_ASSERT(syncList[1].toDelete() == sync2.toDelete());
     }
     // Delete sync
     {
