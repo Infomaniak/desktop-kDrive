@@ -155,7 +155,7 @@ void HomeController::triggerPrimaryAction() {
             _appRouter.showActivities();
             return;
         case PrimaryAction::ResumeSync:
-            toggleSync();
+            _syncService.startSync(currentSyncDbId());
             return;
         case PrimaryAction::SignIn:
         case PrimaryAction::ConfigureSync:
