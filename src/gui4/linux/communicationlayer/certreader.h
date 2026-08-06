@@ -30,6 +30,8 @@ namespace KDC {
  */
 class CertReader {
     public:
+        CertReader() = delete;
+
         /**
          * Reads and parses the certificate from the keychain.
          * @param certificate The output QSslCertificate to hold the parsed certificate.
@@ -38,7 +40,7 @@ class CertReader {
         static bool readCertificate(QSslCertificate &certificate);
 
     private:
-        static bool readPem(std::string &outPem);
+        static bool readPemFromKeychain(std::string &outPem);
 };
 
 } // namespace KDC
