@@ -8,7 +8,7 @@
       "year": 2026
     },
     "macOS": {
-      "major": 3,
+      "major": 3, 
       "minor": 8,
       "patch": 6,
       "build": 4,
