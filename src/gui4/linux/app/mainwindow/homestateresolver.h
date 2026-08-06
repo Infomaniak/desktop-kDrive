@@ -18,27 +18,18 @@
 
 #pragma once
 
+#include "app/mainwindow/homecontroller.h"
 #include "libcommon/utility/cstypes.h"
 
-#include <cstdint>
 #include <optional>
 
 namespace KDC {
-
-enum class ResolvedHomeStatus : uint8_t {
-    Loading = 0,
-    UpToDate,
-    Syncing,
-    Paused,
-    Offline,
-    SetupRequired,
-};
 
 /**
  * Resolves the mutually exclusive central Home status from connectivity and synchronization runtime state.
  *
  * Structured synchronization errors are intentionally excluded because Home renders them independently in its error banner.
  */
-[[nodiscard]] ResolvedHomeStatus resolveHomeStatus(bool hasSync, bool offline, std::optional<SyncStatus> runtimeStatus);
+[[nodiscard]] HomeController::HomeStatus resolveHomeStatus(bool hasSync, bool offline, std::optional<SyncStatus> runtimeStatus);
 
 } // namespace KDC
