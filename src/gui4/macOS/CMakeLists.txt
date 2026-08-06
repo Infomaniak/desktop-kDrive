@@ -38,10 +38,12 @@ add_custom_target(build_kDrive_client ALL
     DEPENDS "${CLIENT_STAMP}"
 )
 
-# Install kDrive_client4.app inside the main kDrive.app for notarization
+# Install the Swift client as kDrive.app so macOS displays kDrive in the Dock.
 install(CODE "
+    file(REMOVE_RECURSE \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive_client4.app\")
+    file(REMOVE_RECURSE \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive.app\")
     execute_process(
-        COMMAND cp -R \"${CLIENT_DEST}\" \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/\"
+        COMMAND cp -RP \"${CLIENT_DEST}\" \"${CMAKE_INSTALL_PREFIX}/kDrive.app/Contents/MacOS/kDrive.app\"
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
 ")
