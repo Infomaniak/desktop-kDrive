@@ -19,7 +19,6 @@
 #include "testsocketcomm.h"
 
 #include "libcommon/comm.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 
