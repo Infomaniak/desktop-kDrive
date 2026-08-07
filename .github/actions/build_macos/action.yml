@@ -158,7 +158,7 @@ runs:
         run: |
           sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
           mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
-          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
+          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
           cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
