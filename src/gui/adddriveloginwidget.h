@@ -43,9 +43,16 @@ class AddDriveLoginWidget : public QWidget {
     signals:
         void terminated(bool next = true);
 
+    protected:
+        void showEvent(QShowEvent *event) override;
+
     private:
         QString _codeVerifier;
         UserDbId _userDbId{0};
+        bool _openInBrowserPending{false};
+
+        // Opens the login page once the window this widget belongs to is on screen, so that the browser comes up in front of it.
+        void scheduleOpenLoginInBrowser();
 
         QUrl generateAuthorizeUrl();
 
