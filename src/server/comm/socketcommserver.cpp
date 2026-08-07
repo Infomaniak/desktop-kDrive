@@ -19,7 +19,9 @@
 #include "securecontextsingleton.h"
 #include "socketcommserver.h"
 
+#include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 
 namespace KDC {
@@ -362,6 +364,15 @@ void SocketCommServer::execute() {
             continue;
         }
 
+        // All TLS material in the keychain (server cert, client cert, client private key) has been
+        // consumed: the handshake verified the client, and the client already pinned the server cert
+        // before connecting. Erase them to avoid leaving sensitive material accessible.
+        if (const auto keychain = KeyChainManager::instance()) {
+            (void) keychain->deleteToken(std::string(certKeychainKey));
+            (void) keychain->deleteToken(std::string(clientCertKeychainKey));
+            (void) keychain->deleteToken(std::string(clientKeyKeychainKey));
+        }
+
         // Keep a bounded receive timeout for the channel's lifetime: SSL_read() must never park on
         // _socketMutex forever (see the comment on readData).
         secureSocket.setReceiveTimeout(Poco::Timespan(channelReceiveTimeoutSec, 0));
@@ -384,10 +395,7 @@ void SocketCommServer::execute() {
             // Postpone _channels.remove(ch), as it may destroy the channel and its
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
-            {
-                const std::lock_guard lock(_postponedLostConnectionCbksMutex);
-                (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
-            }
+            (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
         });
 
         {
@@ -405,18 +413,13 @@ void SocketCommServer::execute() {
     _isListening = false;
 }
 void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
-    // Swap the vector out under the lock, then join threads outside the lock so that
-    // a pending emplace_back from a channel callback thread is not blocked while joining.
-    std::vector<std::shared_ptr<StdLoggingThread>> threadsToJoin;
-    {
-        const std::lock_guard lock(_postponedLostConnectionCbksMutex);
-        threadsToJoin.swap(_postponedLostConnectionCbks);
-    }
-
-    for (const auto &thread: threadsToJoin) {
+    // Join and remove all postponed lost-connection callback threads
+    for (const auto &thread: _postponedLostConnectionCbks) {
         if (thread->joinable()) {
             thread->join();
         }
     }
+
+    _postponedLostConnectionCbks.clear();
 }
 } // namespace KDC

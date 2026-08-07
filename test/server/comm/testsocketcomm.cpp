@@ -30,20 +30,21 @@
 namespace KDC {
 
 Poco::Net::Context::Ptr TestSocketComm::createClientContext() {
-    // Read the server certificate from the keychain so the client can pin it.
-    bool found = false;
-    std::string serverCertPem;
-    CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(certKeychainKey), serverCertPem, found));
-    CPPUNIT_ASSERT(found);
+    // Cache the PEM material from the keychain on first call. The server erases all TLS
+    // keychain entries (server cert, client cert, client key) after the first successful
+    // handshake, so subsequent test cases would fail to read them. Static locals guarantee
+    // the read happens once, before any erasure.
+    static const auto readKeychainEntry = [](const char *key) -> std::string {
+        bool found = false;
+        std::string pem;
+        CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(key), pem, found));
+        CPPUNIT_ASSERT(found);
+        return pem;
+    };
 
-    // Read the client certificate and private key from the keychain.
-    std::string clientCertPem;
-    CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(clientCertKeychainKey), clientCertPem, found));
-    CPPUNIT_ASSERT(found);
-
-    std::string clientKeyPem;
-    CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(clientKeyKeychainKey), clientKeyPem, found));
-    CPPUNIT_ASSERT(found);
+    static const std::string serverCertPem = readKeychainEntry(certKeychainKey);
+    static const std::string clientCertPem = readKeychainEntry(clientCertKeychainKey);
+    static const std::string clientKeyPem = readKeychainEntry(clientKeyKeychainKey);
 
     Poco::Net::Context::Ptr clientContext =
             new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
