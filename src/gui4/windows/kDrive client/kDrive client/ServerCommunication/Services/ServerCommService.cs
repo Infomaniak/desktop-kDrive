@@ -2124,14 +2124,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 if (app.CurrentWindow is not MainWindow mainWindow)
                 {
+                    // MainWindow.MainContent_Loaded will process the queue once XamlRoot is ready.
                     app.CreateWindow(App.CreateWindowOptions.Foreground);
-                    mainWindow = app.CurrentWindow as MainWindow;
+                    return;
                 }
 
-                if (mainWindow != null)
-                {
-                    await mainWindow.ProcessManyDeleteQueue();
-                }
+                Utility.BringWindowToFront(mainWindow);
+                await mainWindow.ProcessManyDeleteQueue();
             });
         }
 
