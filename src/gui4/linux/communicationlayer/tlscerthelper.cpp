@@ -27,7 +27,7 @@
 
 
 namespace {
-Q_LOGGING_CATEGORY(lcCertReader, "gui.v4.certreader", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcCertHelper, "gui.v4.tlscerthelper", QtInfoMsg)
 }
 
 namespace KDC {
@@ -48,12 +48,12 @@ bool TLSCertHelper::readPemFromKeychain(const std::string &keychainKey, std::str
         return false;
     }
     if (error) {
-        qCWarning(lcCertReader) << "Keychain read failed:" << QString::fromStdString(error.message) << "(code:" << error.code
+        qCWarning(lcCertHelper) << "Keychain read failed:" << QString::fromStdString(error.message) << "(code:" << error.code
                                 << ")";
         return false;
     }
     if (outPem.empty()) {
-        qCWarning(lcCertReader) << "Keychain returned an empty certificate";
+        qCWarning(lcCertHelper) << "Keychain returned an empty certificate";
         return false;
     }
     return true;
@@ -67,10 +67,10 @@ bool TLSCertHelper::readServerCertificate(QSslCertificate &certificate) {
 
     certificate = QSslCertificate(QByteArray::fromStdString(pem), QSsl::Pem);
     if (certificate.isNull()) {
-        qCWarning(lcCertReader) << "Failed to parse certificate PEM from keychain";
+        qCWarning(lcCertHelper) << "Failed to parse certificate PEM from keychain";
         return false;
     }
-    qCInfo(lcCertReader) << "Certificate loaded from keychain";
+    qCInfo(lcCertHelper) << "Certificate loaded from keychain";
     return true;
 }
 
@@ -82,10 +82,10 @@ bool TLSCertHelper::readClientCertificate(QSslCertificate &certificate) {
 
     certificate = QSslCertificate(QByteArray::fromStdString(pem), QSsl::Pem);
     if (certificate.isNull()) {
-        qCWarning(lcCertReader) << "Failed to parse client certificate PEM from keychain";
+        qCWarning(lcCertHelper) << "Failed to parse client certificate PEM from keychain";
         return false;
     }
-    qCInfo(lcCertReader) << "Client certificate loaded from keychain";
+    qCInfo(lcCertHelper) << "Client certificate loaded from keychain";
     return true;
 }
 
@@ -97,10 +97,10 @@ bool TLSCertHelper::readClientKey(QSslKey &key) {
 
     key = QSslKey(QByteArray::fromStdString(pem), QSsl::Rsa, QSsl::Pem);
     if (key.isNull()) {
-        qCWarning(lcCertReader) << "Failed to parse client private key PEM from keychain";
+        qCWarning(lcCertHelper) << "Failed to parse client private key PEM from keychain";
         return false;
     }
-    qCInfo(lcCertReader) << "Client private key loaded from keychain";
+    qCInfo(lcCertHelper) << "Client private key loaded from keychain";
     return true;
 }
 
