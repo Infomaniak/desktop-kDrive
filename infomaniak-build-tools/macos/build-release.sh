@@ -156,8 +156,7 @@ updater_app="$install_dir/kDriveRecoveryUpdater.app"
 if [ -d "$updater_app" ]; then
 	if [ -n "$SIGN_IDENTITY" ]; then
 		echo "Signing kDriveRecoveryUpdater..."
-		codesign -s "$SIGN_IDENTITY" --force --verbose=4 --deep --options=runtime "$updater_app"
-		codesign -s "$SIGN_IDENTITY" --force --verbose=4 --options=runtime \
+		codesign -s "$SIGN_IDENTITY" --force --verbose=4 --deep --options=runtime \
 			--entitlements "$src_dir/admin/osx/kDriveRecoveryUpdater.entitlements" "$updater_app"
 		codesign -dv "$updater_app"
 		codesign --verify -v --strict "$updater_app"
