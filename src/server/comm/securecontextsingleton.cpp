@@ -60,7 +60,7 @@ Poco::Net::Context::Ptr SecureContextSingleton::instance() {
 
 Poco::Net::Context::Ptr SecureContextSingleton::createContext() {
     SelfSignedCert::Pem pem;
-    if (!SelfSignedCert::generateAndPublish(pem)) {
+    if (!SelfSignedCert::generateAndPublishServerCert(pem)) {
         throw Poco::RuntimeException("Unable to obtain TLS material for local IPC");
     }
 

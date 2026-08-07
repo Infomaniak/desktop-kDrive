@@ -389,7 +389,7 @@ void SocketCommServer::execute() {
             // SocketCommChannel::callbackHandler thread while the current code
             // (SocketCommChannel::lostConnectionCbk) is executing from this same callbackHandler thread.
             {
-                std::lock_guard lock(_postponedLostConnectionCbksMutex);
+                const std::lock_guard lock(_postponedLostConnectionCbksMutex);
                 (void) _postponedLostConnectionCbks.emplace_back(std::make_shared<StdLoggingThread>(postponedLostConnectionCbk));
             }
         });
@@ -413,11 +413,11 @@ void SocketCommServer::joinAndClearPostponedLostConnectionCbks() {
     // a pending emplace_back from a channel callback thread is not blocked while joining.
     std::vector<std::shared_ptr<StdLoggingThread>> threadsToJoin;
     {
-        std::lock_guard lock(_postponedLostConnectionCbksMutex);
+        const std::lock_guard lock(_postponedLostConnectionCbksMutex);
         threadsToJoin.swap(_postponedLostConnectionCbks);
     }
 
-    for (const auto &thread : threadsToJoin) {
+    for (const auto &thread: threadsToJoin) {
         if (thread->joinable()) {
             thread->join();
         }
