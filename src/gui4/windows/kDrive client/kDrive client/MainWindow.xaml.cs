@@ -24,8 +24,11 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
@@ -129,18 +132,55 @@ namespace Infomaniak.kDrive
             {
                 while (ViewModel.ManyDeletesQueue.Count > 0)
                 {
-                    ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Dequeue();
+                    // Another ContentDialog may already be open on this XamlRoot (e.g. a conflict
+                    // or account-removal dialog); only one can be shown at a time. If so, retry
+                    // once it closes instead of showing ours now.
+                    if (IsAnotherDialogOpen(out var openPopups))
+                    {
+                        RetryOnceClosed(openPopups);
+                        return;
+                    }
 
-                    if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit)
-                        await ShowHardLimitManyDeleteDialogue(manyDeletesInfo);
-                    else if (manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.SoftLimit)
-                        await ShowSoftLimitManyDeleteDialogue(manyDeletesInfo);
+                    ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Peek();
+
+                    bool shown = manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit
+                        ? await ShowHardLimitManyDeleteDialogue(manyDeletesInfo)
+                        : await ShowSoftLimitManyDeleteDialogue(manyDeletesInfo);
+
+                    if (!shown)
+                        return; // Keep the item queued; a later trigger (e.g. dialog closing) will retry.
+
+                    ViewModel.ManyDeletesQueue.Dequeue();
                 }
             }
             finally
             {
                 _manyDeletesQueueSemaphore.Release();
             }
+        }
+
+        private bool IsAnotherDialogOpen(out IReadOnlyList<Popup> openPopups)
+        {
+            openPopups = this.Content?.XamlRoot is XamlRoot xamlRoot
+                ? VisualTreeHelper.GetOpenPopupsForXamlRoot(xamlRoot)
+                : Array.Empty<Popup>();
+            return openPopups.Count > 0;
+        }
+
+        // Re-attempts ProcessManyDeleteQueue() as soon as one of the given popups closes, instead
+        // of blocking/polling while waiting.
+        private void RetryOnceClosed(IReadOnlyList<Popup> openPopups)
+        {
+            async void OnClosed(object? s, object e)
+            {
+                foreach (var p in openPopups)
+                    p.Closed -= OnClosed;
+
+                await ProcessManyDeleteQueue();
+            }
+
+            foreach (var popup in openPopups)
+                popup.Closed += OnClosed;
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -189,7 +229,35 @@ namespace Infomaniak.kDrive
                 UpdateRequiredControl.Visibility = Visibility.Collapsed;
             }
         }
-        public async Task ShowHardLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
+        // ProcessManyDeleteQueue() already checks IsAnotherDialogOpen() before calling this, but we
+        // still guard ShowAsync() itself in case another dialog opens in between (race condition).
+        private async Task<ContentDialogResult?> TryShowDialogAsync(ContentDialog dialog)
+        {
+            if (this.Content?.XamlRoot is null)
+                return null;
+
+            try
+            {
+                return await dialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to show ContentDialog: {ex}");
+                return null;
+            }
+        }
+
+        // Prevents the dialog from being light-dismissed (e.g. clicking outside or pressing Escape).
+        private static void PreventLightDismiss(ContentDialog dialog)
+        {
+            dialog.Closing += (s, e) =>
+            {
+                if (e.Result == ContentDialogResult.None)
+                    e.Cancel = true;
+            };
+        }
+
+        public async Task<bool> ShowHardLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -201,16 +269,12 @@ namespace Infomaniak.kDrive
             dialog.DefaultButton = ContentDialogButton.Primary;
             dialog.Content = Localizer.Instance.GetString("manyDeleteDialogHardLimitContent");
 
-            dialog.Closing += (s, e) =>
-            {
-                if (e.Result == ContentDialogResult.None)
-                {
-                    e.Cancel = true; // Prevent the dialog from closing
-                }
-            };
+            PreventLightDismiss(dialog);
 
             Utility.BringCurrentWindowToFront();
-            var result = await dialog.ShowAsync();
+            var result = await TryShowDialogAsync(dialog);
+            if (result is null)
+                return false;
 
             TooManyDeletesUserChoice userChoice = result switch
             {
@@ -220,9 +284,10 @@ namespace Infomaniak.kDrive
             };
 
             await App.ServiceProvider.GetRequiredService<IServerCommService>().AcknowledgeManyDeletes(manyDeletesInfo.SyncDbId, userChoice, CancellationToken.None);
+            return true;
         }
 
-        public async Task ShowSoftLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
+        public async Task<bool> ShowSoftLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
         {
             ContentDialog dialog = new ContentDialog();
 
@@ -252,16 +317,12 @@ namespace Infomaniak.kDrive
             contentPanel.Children.Add(doNotShowAgainCheckBox);
             dialog.Content = contentPanel;
 
-            dialog.Closing += (s, e) =>
-            {
-                if (e.Result == ContentDialogResult.None)
-                {
-                    e.Cancel = true; // Prevent the dialog from closing
-                }
-            };
+            PreventLightDismiss(dialog);
 
             Utility.BringCurrentWindowToFront();
-            var result = await dialog.ShowAsync();
+            var result = await TryShowDialogAsync(dialog);
+            if (result is null)
+                return false;
 
             bool doNotShowAgain = doNotShowAgainCheckBox.IsChecked ?? false;
             await ViewModel.Settings.ChangeNotifyBeforeDelete(!doNotShowAgain);
@@ -280,8 +341,8 @@ namespace Infomaniak.kDrive
                     Logger.Log(Logger.Level.Error, $"ShowSoftLimitManyDeleteDialogue: Unable to get trash URL for sync with DbId {manyDeletesInfo.SyncDbId}.");
                 }
             }
+            return true;
         }
-
 
         private void AppTitleBar_BackRequested(TitleBar sender, object args)
         {
