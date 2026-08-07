@@ -31,6 +31,8 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 
+#include <cstdlib>
+
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -78,7 +80,7 @@ bool fillCertificateFields(X509 *const x509, bool isClientCert) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_version failed: " << sslError());
         return false;
     }
-    if (ASN1_INTEGER_set(X509_get_serialNumber(x509), 1) != 1) {
+    if (ASN1_INTEGER_set(X509_get_serialNumber(x509), rand()) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "ASN1_INTEGER_set failed: " << sslError());
         return false;
     }
@@ -91,9 +93,10 @@ bool fillCertificateFields(X509 *const x509, bool isClientCert) {
         return false;
     }
 
+    const char *const subject = isClientCert ? clientCertSubject : serverCertSubject;
     X509_NAME *const name = X509_get_subject_name(x509);
-    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(localHostName), -1, -1, 0) !=
-        1) {
+    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC,
+                                    reinterpret_cast<const unsigned char *>(subject), -1, -1, 0) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_NAME_add_entry_by_txt failed: " << sslError());
         return false;
     }
@@ -109,8 +112,10 @@ bool fillCertificateFields(X509 *const x509, bool isClientCert) {
     if (!addExtension(x509, NID_basic_constraints, "critical,CA:FALSE")) return false;
     if (!addExtension(x509, NID_key_usage, "critical,digitalSignature,keyEncipherment")) return false;
     if (!addExtension(x509, NID_ext_key_usage, isClientCert ? "clientAuth" : "serverAuth")) return false;
-    const std::string san = std::string("IP:127.0.0.1,IP:0:0:0:0:0:0:0:1,DNS:") + localHostName;
-    if (!addExtension(x509, NID_subject_alt_name, san.c_str())) return false;
+    if (!isClientCert) {
+        const std::string san = std::string("IP:127.0.0.1,IP:0:0:0:0:0:0:0:1,DNS:") + localHostName;
+        if (!addExtension(x509, NID_subject_alt_name, san.c_str())) return false;
+    }
 
     return true;
 }
