@@ -117,7 +117,7 @@ bool fillCertificateFields(X509 *const x509, bool isClientCert) {
 
 } // namespace
 
-bool SelfSignedCert::generateAndPublish(Pem &pem) {
+bool SelfSignedCert::generateAndPublishServerCert(Pem &pem) {
     const auto keychain = KeyChainManager::instance();
     if (!keychain) {
         LOG_ERROR(Log::instance()->getLogger(), "Keychain unavailable");
