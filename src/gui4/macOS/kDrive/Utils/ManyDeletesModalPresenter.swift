@@ -29,7 +29,10 @@ final class ManyDeletesModalPresenter {
     @LazyInjectService private var coherentCache: CoherentCache
 
     private var bindStore = Set<AnyCancellable>()
-    private var displayedSyncDbIds = Set<Int32>()
+
+    private var pendingNotifications = [ManyDeletesNotification]()
+    private var presentedNotification: ManyDeletesNotification?
+    private var isRunningModal = false
 
     init() {
         observeManyDeletes()
@@ -38,39 +41,92 @@ final class ManyDeletesModalPresenter {
     private func observeManyDeletes() {
         manyDeletesCacheObservable.manyDeletesPublisher
             .receiveOnMain(store: &bindStore) { [weak self] notification in
-                self?.showManyDeletesAlert(notification)
+                self?.enqueue(notification)
             }
     }
 
-    private func showManyDeletesAlert(_ notification: ManyDeletesNotification) {
-        let syncDbId = notification.syncDbId
-
-        guard notification.notificationType == .SoftLimit || notification.notificationType == .HardLimit else { return }
-
-        guard !displayedSyncDbIds.contains(syncDbId) else { return }
-        displayedSyncDbIds.insert(syncDbId)
-
-        Task {
-            defer { displayedSyncDbIds.remove(syncDbId) }
-
-            guard let synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else {
-                IKLogger.general.error("[KD] Synchro not found for syncDbId:\(syncDbId)")
-                return
-            }
-
-            switch notification.notificationType {
-            case .SoftLimit:
-                runSoftLimitAlert(nbFiles: notification.nbFiles, localPath: synchro.localPath)
-            case .HardLimit:
-                let userChoice = runHardLimitAlert(nbFiles: notification.nbFiles, localPath: synchro.localPath)
-                await acknowledge(syncDbId: syncDbId, userChoice: userChoice)
-            default:
-                break
-            }
+    private func severity(of notificationType: KDC.TooManyDeletesNotificationType) -> Int {
+        switch notificationType {
+        case .HardLimit:
+            return 2
+        case .SoftLimit:
+            return 1
+        default:
+            return 0
         }
     }
 
-    private func runSoftLimitAlert(nbFiles: UInt64, localPath: String) {
+    private func enqueue(_ notification: ManyDeletesNotification) {
+        guard severity(of: notification.notificationType) > 0 else { return }
+
+        let syncDbId = notification.syncDbId
+        if let presentedNotification, presentedNotification.syncDbId == syncDbId {
+            guard severity(of: notification.notificationType) > severity(of: presentedNotification.notificationType) else {
+                return
+            }
+
+            pendingNotifications.append(notification)
+            abortCurrentModalIfNeeded()
+            return
+        }
+
+        if let index = pendingNotifications.firstIndex(where: { $0.syncDbId == syncDbId }) {
+            guard severity(of: notification.notificationType) > severity(of: pendingNotifications[index].notificationType) else {
+                return
+            }
+
+            pendingNotifications[index] = notification
+        } else {
+            pendingNotifications.append(notification)
+        }
+
+        presentNextNotification()
+    }
+
+    private func abortCurrentModalIfNeeded() {
+        guard isRunningModal else { return }
+
+        isRunningModal = false
+        NSApp.abortModal()
+    }
+
+    private func presentNextNotification() {
+        guard presentedNotification == nil, !pendingNotifications.isEmpty else { return }
+
+        let notification = pendingNotifications.removeFirst()
+        presentedNotification = notification
+
+        Task {
+            await presentNotification(notification)
+
+            presentedNotification = nil
+            presentNextNotification()
+        }
+    }
+
+    private func presentNotification(_ notification: ManyDeletesNotification) async {
+        let syncDbId = notification.syncDbId
+
+        guard let synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else {
+            IKLogger.general.error("[KD] Synchro not found for syncDbId:\(syncDbId)")
+            return
+        }
+
+        guard let driveId = await coherentCache.getDrive(driveDbId: synchro.driveDbId)?.driveId else { return }
+
+        switch notification.notificationType {
+        case .SoftLimit:
+            runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
+        case .HardLimit:
+            guard let userChoice = runHardLimitAlert(nbFiles: notification.nbFiles) else { return }
+
+            await acknowledge(syncDbId: syncDbId, userChoice: userChoice)
+        default:
+            break
+        }
+    }
+
+    private func runSoftLimitAlert(nbFiles: UInt64, driveId: Int) {
         let alert = makeAlert(
             style: .warning,
             title: KDriveLocalizable.manyDeleteDialogTitle(nbFiles),
@@ -79,33 +135,39 @@ final class ManyDeletesModalPresenter {
         alert.addButton(withTitle: KDriveLocalizable.buttonClose)
         alert.addButton(withTitle: KDriveLocalizable.buttonOpenTrash)
 
-        let response = alert.runModal()
+        let response = runModal(for: alert)
 
         if response == .alertSecondButtonReturn {
-            guard let trashUrl = try? FileManager.default.url(
-                for: .trashDirectory,
-                in: .userDomainMask,
-                appropriateFor: nil,
-                create: false
-            ) else { return }
+            let trashUrl = WebFolder.trash.url(driveID: driveId)
 
             NSWorkspace.shared.open(trashUrl)
         }
     }
 
-    private func runHardLimitAlert(nbFiles: UInt64, localPath: String) -> KDC.TooManyDeletesUserChoice {
+    /// Returns the user choice, or `nil` if the alert has been superseded by a more severe notification.
+    private func runHardLimitAlert(nbFiles: UInt64) -> KDC.TooManyDeletesUserChoice? {
         let alert = makeAlert(
             style: .critical,
             title: KDriveLocalizable.manyDeleteDialogTitle(nbFiles),
             message: KDriveLocalizable.manyDeleteDialogHardLimitContent
         )
 
-        let primaryButton = alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitPrimary)
-        primaryButton.hasDestructiveAction = true
+        alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitPrimary)
+        let secondaryButton = alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitSecondary)
+        secondaryButton.hasDestructiveAction = true
 
-        alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitSecondary)
+        let response = runModal(for: alert)
 
-        return alert.runModal() == .alertFirstButtonReturn ? .Revert : .Continue
+        guard response != .abort else { return nil }
+
+        return response == .alertSecondButtonReturn ? .Continue : .Revert
+    }
+
+    private func runModal(for alert: NSAlert) -> NSApplication.ModalResponse {
+        isRunningModal = true
+        defer { isRunningModal = false }
+
+        return alert.runModal()
     }
 
     private func makeAlert(style: NSAlert.Style, title: String, message: String) -> NSAlert {
