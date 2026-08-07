@@ -208,32 +208,37 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="69"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="78"/>
         <source>Log in from your browser</source>
         <translation>Kirjaudu sisään selaimella</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="75"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="84"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
         <translation>Selaimesi avautuu automaattisesti yhteyden muodostamiseksi. Kun olet kirjautunut, palaat automaattisesti kDriveen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="106"/>
+        <source>Do not close this window to complete the connection.</source>
+        <translation>Älä sulje tätä ikkunaa, jotta yhteys saadaan viimeisteltyä.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="114"/>
         <source>Open the login page</source>
         <translation>Avaa kirjautumissivu</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="169"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
         <translation>Todennuksessa tapahtui virhe. Sulje kirjautumisikkuna ja yritä uudelleen.&lt;br&gt;Jos virhe jatkuu, ota yhteyttä tukitiimiimme.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="185"/>
         <source>Login failed: %1 - %2</source>
         <translation>Kirjautuminen epäonnistui: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="193"/>
         <source>Failed to open the login page in your web browser</source>
         <translation>Kirjautumissivun avaaminen selaimessa epäonnistui</translation>
     </message>
@@ -305,12 +310,12 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1690"/>
+        <location filename="../src/server/appserver.cpp" line="1751"/>
         <source>Share link copied to clipboard</source>
         <translation>Jakolinkki kopioitu leikepöydälle</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3835"/>
+        <location filename="../src/server/appserver.cpp" line="3913"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 ja %n muu tiedosto on poistettu.</numerusform>
@@ -318,13 +323,13 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3837"/>
+        <location filename="../src/server/appserver.cpp" line="3915"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 on poistettu.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3920"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 ja %n muu tiedosto on lisätty.</numerusform>
@@ -332,13 +337,13 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3844"/>
+        <location filename="../src/server/appserver.cpp" line="3922"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 on lisätty.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3849"/>
+        <location filename="../src/server/appserver.cpp" line="3927"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 ja %n muu tiedosto on päivitetty.</numerusform>
@@ -346,13 +351,13 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3851"/>
+        <location filename="../src/server/appserver.cpp" line="3929"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 on päivitetty.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3856"/>
+        <location filename="../src/server/appserver.cpp" line="3934"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 on siirretty kohteeseen %2 ja %n muu tiedosto on siirretty.</numerusform>
@@ -360,12 +365,12 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3859"/>
+        <location filename="../src/server/appserver.cpp" line="3937"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 on siirretty kohteeseen %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3867"/>
+        <location filename="../src/server/appserver.cpp" line="3945"/>
         <source>Sync Activity</source>
         <translation>Synkronointiaktiviteetti</translation>
     </message>
@@ -2768,47 +2773,47 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
         <translation>Parametreja ei voi tallentaa!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1242"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
         <source>Make available locally</source>
         <translation>Tee saataville paikallisesti</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
         <source>Free up local space</source>
         <translation>Vapauta paikallista tilaa</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
         <source>Cancel free up local space</source>
         <translation>Peruuta paikallisen tilan vapautus</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
         <source>Cancel make available locally</source>
         <translation>Peruuta paikallinen saatavillaolo</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1262"/>
         <source>Resharing this file is not allowed</source>
         <translation>Tämän tiedoston jakaminen uudelleen ei ole sallittu</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1259"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Tämän kansion jakaminen uudelleen ei ole sallittu</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
         <source>Copy public share link</source>
         <translation>Kopioi julkinen jakolinkki</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
         <source>Copy private share link</source>
         <translation>Kopioi yksityinen jakolinkki</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1275"/>
         <source>Open in browser</source>
         <translation>Avaa selaimessa</translation>
     </message>
@@ -2823,37 +2828,37 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
         <translation>Kelvollista polkua ei löydy</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2110"/>
         <source>No valid folder selected!</source>
         <translation>Kelvollista kansiota ei ole valittu!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2121"/>
         <source>The selected path does not exist!</source>
         <translation>Valittu polku ei ole olemassa!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2126"/>
         <source>The selected path is not a folder!</source>
         <translation>Valittu polku ei ole kansio!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2131"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sinulla ei ole kirjoitusoikeutta valittuun kansioon!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Paikallinen kansio %1 sisältää jo synkronoidun kansion. Valitse toinen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Paikallinen kansio %1 on jo synkronoidun kansion sisällä. Valitse toinen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2177"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Paikallinen kansio %1 on jo synkronoitu. Valitse toinen!</translation>
     </message>
@@ -2861,7 +2866,7 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="133"/>
+        <location filename="../src/server/appserver.cpp" line="140"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-sovellus suljetaan kriittisen virheen vuoksi.</translation>
     </message>

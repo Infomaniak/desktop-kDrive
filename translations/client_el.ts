@@ -208,32 +208,37 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="69"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="78"/>
         <source>Log in from your browser</source>
         <translation>Σύνδεση μέσω του περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="75"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="84"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
         <translation>Ο περιηγητής σας θα ανοίξει αυτόματα για να ολοκληρωθεί η σύνδεση. Μόλις συνδεθείτε, θα επιστρέψετε αυτόματα στο kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="85"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="106"/>
+        <source>Do not close this window to complete the connection.</source>
+        <translation>Μην κλείσετε αυτό το παράθυρο για να ολοκληρωθεί η σύνδεση.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="114"/>
         <source>Open the login page</source>
         <translation>Άνοιγμα σελίδας σύνδεσης</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="121"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="169"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε σφάλμα κατά τον έλεγχο ταυτότητας. Κλείστε το παράθυρο σύνδεσης και δοκιμάστε ξανά.&lt;br&gt;Εάν το σφάλμα επιμένει, επικοινωνήστε με την ομάδα υποστήριξής μας.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="137"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="185"/>
         <source>Login failed: %1 - %2</source>
         <translation>Αποτυχία σύνδεσης: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="193"/>
         <source>Failed to open the login page in your web browser</source>
         <translation>Αποτυχία ανοίγματος σελίδας σύνδεσης στον περιηγητή</translation>
     </message>
@@ -305,12 +310,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1690"/>
+        <location filename="../src/server/appserver.cpp" line="1751"/>
         <source>Share link copied to clipboard</source>
         <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3835"/>
+        <location filename="../src/server/appserver.cpp" line="3913"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
@@ -318,13 +323,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3837"/>
+        <location filename="../src/server/appserver.cpp" line="3915"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3920"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
@@ -332,13 +337,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3844"/>
+        <location filename="../src/server/appserver.cpp" line="3922"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3849"/>
+        <location filename="../src/server/appserver.cpp" line="3927"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
@@ -346,13 +351,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3851"/>
+        <location filename="../src/server/appserver.cpp" line="3929"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3856"/>
+        <location filename="../src/server/appserver.cpp" line="3934"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
@@ -360,12 +365,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3859"/>
+        <location filename="../src/server/appserver.cpp" line="3937"/>
         <source>%1 has been moved to %2.</source>
         <translation>Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3867"/>
+        <location filename="../src/server/appserver.cpp" line="3945"/>
         <source>Sync Activity</source>
         <translation>Δραστηριότητα συγχρονισμού</translation>
     </message>
@@ -2768,47 +2773,47 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Αδύνατη η αποθήκευση παραμέτρων!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1242"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
         <source>Make available locally</source>
         <translation>Διαθεσιμότητα τοπικά</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
         <source>Free up local space</source>
         <translation>Ελευθέρωση τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
         <source>Cancel free up local space</source>
         <translation>Ακύρωση ελευθέρωσης τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
         <source>Cancel make available locally</source>
         <translation>Ακύρωση τοπικής διαθεσιμότητας</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1262"/>
         <source>Resharing this file is not allowed</source>
         <translation>Η κοινοποίηση αυτού του αρχείου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1259"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Η κοινοποίηση αυτού του φακέλου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
         <source>Copy public share link</source>
         <translation>Αντιγραφή δημόσιου συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
         <source>Copy private share link</source>
         <translation>Αντιγραφή ιδιωτικού συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1275"/>
         <source>Open in browser</source>
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
@@ -2823,37 +2828,37 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2110"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2121"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2126"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2131"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2177"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
@@ -2861,7 +2866,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="133"/>
+        <location filename="../src/server/appserver.cpp" line="140"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>Η εφαρμογή kDrive θα κλείσει λόγω κρίσιμου σφάλματος.</translation>
     </message>
