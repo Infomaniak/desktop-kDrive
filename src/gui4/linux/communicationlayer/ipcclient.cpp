@@ -111,7 +111,7 @@ bool IpcClient::loadPinnedCertificate() {
     if (!_pinnedCert.isNull()) {
         return true;
     }
-    return TLSCertHelper::readCertificate(_pinnedCert);
+    return TLSCertHelper::readServerCertificate(_pinnedCert);
 }
 
 /**

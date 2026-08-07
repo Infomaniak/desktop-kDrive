@@ -59,7 +59,7 @@ bool TLSCertHelper::readPemFromKeychain(const std::string &keychainKey, std::str
     return true;
 }
 
-bool TLSCertHelper::readCertificate(QSslCertificate &certificate) {
+bool TLSCertHelper::readServerCertificate(QSslCertificate &certificate) {
     std::string pem;
     if (!readPemFromKeychain(std::string(certKeychainKey), pem)) {
         return false;
