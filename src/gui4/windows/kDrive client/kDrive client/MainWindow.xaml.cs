@@ -58,6 +58,34 @@ namespace Infomaniak.kDrive
             Closed += MainWindow_Closed;
             Activated += MainWindow_Activated;
             this.Content.PointerPressed += OnPointerPressed;
+            TrackMainContentReadiness();
+        }
+
+        // True once Content.Loaded has fired, meaning XamlRoot is safe to use (e.g. for ContentDialog).
+        private bool _mainContentReady = false;
+
+        private void TrackMainContentReadiness()
+        {
+            if (this.Content is not FrameworkElement contentRoot)
+                return;
+
+            if (contentRoot.IsLoaded)
+            {
+                _mainContentReady = true;
+                return;
+            }
+
+            contentRoot.Loaded += MainContent_Loaded;
+        }
+
+        private async void MainContent_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (this.Content is FrameworkElement contentRoot)
+                contentRoot.Loaded -= MainContent_Loaded;
+
+            _mainContentReady = true;
+            UpdateControlsVisibility();
+            await ProcessManyDeleteQueue();
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -82,16 +110,18 @@ namespace Infomaniak.kDrive
             }
         }
 
-        private async void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
         {
             UpdateControlsVisibility();
-            await ProcessManyDeleteQueue();
         }
 
         private readonly SemaphoreSlim _manyDeletesQueueSemaphore = new(1, 1);
 
         public async Task ProcessManyDeleteQueue()
         {
+            if (!_mainContentReady)
+                return; // MainContent_Loaded will retry once XamlRoot is ready
+
             if (!await _manyDeletesQueueSemaphore.WaitAsync(0))
                 return; // Another call is already draining the queue
 
