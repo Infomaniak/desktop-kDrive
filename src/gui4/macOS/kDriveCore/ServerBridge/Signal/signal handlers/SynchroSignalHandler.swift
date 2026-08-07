@@ -23,6 +23,7 @@ struct SynchroSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var vfsConversionStore: VFSConversionStoring
+    @LazyInjectService private var manyDeletesCache: ManyDeletesCache
 
     func handleSyncAddedOrUpdated(_ signal: Data) async throws {
         guard let syncInfoSignal = try? decoder.decode(SignalMessage<SyncInfoSignal>.self, from: signal) else {
@@ -67,6 +68,21 @@ struct SynchroSignalHandler {
 
         let syncDbId = vfsConversionSignal.body.syncDbId
         try await coherentCache.vfsConversionCompleted(synchroDbId: syncDbId)
+    }
+
+    func handleNotifyManyDeletes(_ signal: Data) async throws {
+        guard let manyDeletesSignal = try? decoder.decode(SignalMessage<SyncNotifyManyDeletesSignal>.self, from: signal) else {
+            throw SignalError.unableToGetManyDeletesFromSignal
+        }
+
+        let body = manyDeletesSignal.body
+        IKLogger.xpc.log(
+            "[KD] Too many deletes detected for syncDbId:\(body.syncDbId) type:\(body.notificationType) files:\(body.nbFiles)"
+        )
+
+        await manyDeletesCache.notifyManyDeletes(ManyDeletesNotification(syncDbId: body.syncDbId,
+                                                                         notificationType: body.notificationType,
+                                                                         nbFiles: body.nbFiles))
     }
 }
 
