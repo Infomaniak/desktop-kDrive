@@ -39,7 +39,7 @@ class TLSCertHelper {
          * @param certificate The output QSslCertificate to hold the parsed certificate.
          * @return true if the certificate was successfully read and parsed, false otherwise.
          */
-        static bool readCertificate(QSslCertificate &certificate);
+        static bool readServerCertificate(QSslCertificate &certificate);
 
         /**
          * Reads and parses the client certificate from the keychain.
