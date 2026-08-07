@@ -51,6 +51,15 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
+            Factory(type: ManyDeletesCache.self) { _, _ in
+                ManyDeletesStateCache()
+            },
+            Factory(type: ManyDeletesCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: ManyDeletesCache.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: LogUploadStatusCaching.self) { _, _ in
                 LogUploadStatusCache()
             },
