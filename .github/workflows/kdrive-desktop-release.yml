@@ -318,7 +318,7 @@ jobs:
   upload-to-kDrive-and-sentry-Linux-amd:
     if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-amd]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [windows-latest]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
@@ -360,7 +360,7 @@ jobs:
   upload-to-kDrive-and-sentry-Linux-arm:
     if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-arm]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [windows-latest]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
@@ -402,7 +402,7 @@ jobs:
   upload-to-kDrive-and-sentry-macOS:
     if: ${{ inputs.build_macos != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-MacOS]
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
+    runs-on: [windows-latest]
     env:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
