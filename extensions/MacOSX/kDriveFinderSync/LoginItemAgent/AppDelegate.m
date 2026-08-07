@@ -38,83 +38,83 @@
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
 {
     // Set exported interface
-    NSLog(@"[KD] Set exported interface");
+    NSLog(@"[KD] LoginItemAgent - Set exported interface");
     newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemProtocol)];
     newConnection.exportedObject = self;
     
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface");
+    NSLog(@"[KD] LoginItemAgent - Set remote object interface");
     newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     
     // Set connection handlers
-    NSLog(@"[KD] Setup connection handlers");
+    NSLog(@"[KD] LoginItemAgent - Setup connection handlers");
     newConnection.interruptionHandler = ^{
         if (self->_srvExtConnection == newConnection) {
-            NSLog(@"[KD] Connection with ext server interrupted");
+            NSLog(@"[KD] LoginItemAgent - Connection with ext server interrupted");
             self->_srvExtConnection = nil;
             self->_srvExtEndpoint = nil;
         } else if (self->_srvGuiConnection == newConnection) {
-            NSLog(@"[KD] Connection with gui server interrupted");
+            NSLog(@"[KD] LoginItemAgent - Connection with gui server interrupted");
             self->_srvGuiConnection = nil;
             self->_srvGuiEndpoint = nil;
         } else if (self->_guiConnection == newConnection) {
-            NSLog(@"[KD] Connection with gui interrupted");
+            NSLog(@"[KD] LoginItemAgent - Connection with gui interrupted");
             self->_guiConnection = nil;
         } else if (self->_extConnection == newConnection) {
-            NSLog(@"[KD] Connection with Finder ext interrupted");
+            NSLog(@"[KD] LoginItemAgent - Connection with Finder ext interrupted");
             self->_extConnection = nil;
         } else if (self->_fpextConnection == newConnection) {
-            NSLog(@"[KD] Connection with File Provider ext interrupted");
+            NSLog(@"[KD] LoginItemAgent - Connection with File Provider ext interrupted");
             self->_fpextConnection = nil;
         }
     };
     
     newConnection.invalidationHandler = ^{
         if (self->_srvExtConnection == newConnection) {
-            NSLog(@"[KD] Connection with ext server invalidated");
+            NSLog(@"[KD] LoginItemAgent - Connection with ext server invalidated");
             self->_srvExtConnection = nil;
             self->_srvExtEndpoint = nil;
         } else if (self->_srvGuiConnection == newConnection) {
-            NSLog(@"[KD] Connection with gui server invalidated");
+            NSLog(@"[KD] LoginItemAgent - Connection with gui server invalidated");
             self->_srvGuiConnection = nil;
             self->_srvGuiEndpoint = nil;
         } else if (self->_guiConnection == newConnection) {
-            NSLog(@"[KD] Connection with gui invalidated");
+            NSLog(@"[KD] LoginItemAgent - Connection with gui invalidated");
             self->_guiConnection = nil;
         } else if (self->_extConnection == newConnection) {
-            NSLog(@"[KD] Connection with Finder ext invalidated");
+            NSLog(@"[KD] LoginItemAgent - Connection with Finder ext invalidated");
             self->_extConnection = nil;
         } else if (self->_fpextConnection == newConnection) {
-            NSLog(@"[KD] Connection with File Provider ext invalidated");
+            NSLog(@"[KD] LoginItemAgent - Connection with File Provider ext invalidated");
             self->_fpextConnection = nil;
         }
     };
     
     // Start processing incoming messages.
-    NSLog(@"[KD] Resume connection");
+    NSLog(@"[KD] LoginItemAgent - Resume connection");
     [newConnection resume];
     
     // Get remote object role
     [[newConnection remoteObjectProxy] processType:^(ProcessType value) {
         switch (value) {
             case extServer:
-                NSLog(@"[KD] Extension server connected");
+                NSLog(@"[KD] LoginItemAgent - Extension server connected");
                 self->_srvExtConnection = newConnection;
                 break;
             case guiServer:
-                NSLog(@"[KD] GUI server connected");
+                NSLog(@"[KD] LoginItemAgent - GUI server connected");
                 self->_srvGuiConnection = newConnection;
                 break;
             case client:
-                NSLog(@"[KD] Client connected");
+                NSLog(@"[KD] LoginItemAgent - Client connected");
                 self->_guiConnection = newConnection;
                 break;
             case finderExt:
-                NSLog(@"[KD] Finder Extension connected");
+                NSLog(@"[KD] LoginItemAgent - Finder Extension connected");
                 self->_extConnection = newConnection;
                 break;
             case fileProExt:
-                NSLog(@"[KD] FileProvider Extension connected");
+                NSLog(@"[KD] LoginItemAgent - FileProvider Extension connected");
                 self->_fpextConnection = newConnection;
                 break;
         }
@@ -125,7 +125,7 @@
 
 - (void)setServerExtEndpoint:(NSXPCListenerEndpoint *)endPoint
 {
-    NSLog(@"[KD] Set server Finder ext endpoint %@", endPoint);
+    NSLog(@"[KD] LoginItemAgent - Set server Finder ext endpoint %@", endPoint);
     _srvExtEndpoint = endPoint;
     
     // Inform Finder extension
@@ -136,13 +136,13 @@
 
 - (void)serverExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
 {
-    NSLog(@"[KD] Server Finder ext endpoint asked %@", _srvExtEndpoint);
+    NSLog(@"[KD] LoginItemAgent - Server Finder ext endpoint asked %@", _srvExtEndpoint);
     callback(_srvExtEndpoint);
 }
 
 - (void)setServerGuiEndpoint:(NSXPCListenerEndpoint *)endPoint
 {
-    NSLog(@"[KD] Set server gui endpoint %@", endPoint);
+    NSLog(@"[KD] LoginItemAgent - Set server gui endpoint %@", endPoint);
     _srvGuiEndpoint = endPoint;
     
     // Inform gui
@@ -153,13 +153,13 @@
 
 - (void)serverGuiEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
 {
-    NSLog(@"[KD] Server gui endpoint asked %@", _srvGuiEndpoint);
+    NSLog(@"[KD] LoginItemAgent - Server gui endpoint asked %@", _srvGuiEndpoint);
     callback(_srvGuiEndpoint);
 }
 
 - (void)setServerFileProExtEndpoint:(NSXPCListenerEndpoint *)endPoint
 {
-    NSLog(@"[KD] Set server File Provider ext endpoint %@", endPoint);
+    NSLog(@"[KD] LoginItemAgent - Set server File Provider ext endpoint %@", endPoint);
     _srvFileProExtEndpoint = endPoint;
     
     // Inform File Provider extension
@@ -170,7 +170,7 @@
 
 - (void)serverFileProExtEndpoint:(void (^)(NSXPCListenerEndpoint *))callback
 {
-    NSLog(@"[KD] Server File Provider ext endpoint asked %@", _srvFileProExtEndpoint);
+    NSLog(@"[KD] LoginItemAgent - Server File Provider ext endpoint asked %@", _srvFileProExtEndpoint);
     callback(_srvFileProExtEndpoint);
 }
 

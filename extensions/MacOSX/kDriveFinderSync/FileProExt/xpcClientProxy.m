@@ -35,7 +35,7 @@
 
 - (void)dealloc
 {
-    NSLog(@"[KD] Extension terminating");
+    NSLog(@"[KD] FileProExt - Extension terminating");
 }
 
 - (void)start
@@ -46,34 +46,34 @@
 - (void)connectToLoginAgent
 {
     if (_loginItemAgentConnection) {
-        NSLog(@"[KD] Already connected to item agent");
+        NSLog(@"[KD] FileProExt - Already connected to item agent");
         return;
     }
     
     // Init connection with login item agent
-    NSLog(@"[KD] Initialize connection with login item agent");
+    NSLog(@"[KD] FileProExt - Initialize connection with login item agent");
     _loginItemAgentConnection = [[NSXPCConnection alloc] initWithMachServiceName:_serviceName options:0];
     if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent");
+        NSLog(@"[KD] FileProExt - Failed to connect to login item agent");
         [self scheduleRetryToConnectToLoginAgent];
         return;
     }
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with login agent");
+    NSLog(@"[KD] FileProExt - Set exported interface for connection with login agent");
     _loginItemAgentConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     _loginItemAgentConnection.exportedObject = self;
     
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with login agent");
+    NSLog(@"[KD] FileProExt - Set remote object interface for connection with login agent");
     _loginItemAgentConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemProtocol)];
     
     // Set connection handlers
-    NSLog(@"[KD] Set connection handlers for connection with login item agent");
+    NSLog(@"[KD] FileProExt - Set connection handlers for connection with login item agent");
     __weak __typeof__(self) weakSelf = self;
     _loginItemAgentConnection.interruptionHandler = ^{
         // The login agent has exited or crashed
-        NSLog(@"[KD] Connection with login item agent interrupted");
+        NSLog(@"[KD] FileProExt - Connection with login item agent interrupted");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_loginItemAgentConnection = nil;
         [strongSelf scheduleRetryToConnectToLoginAgent];
@@ -81,20 +81,20 @@
 
     _loginItemAgentConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with login item agent invalidated");
+        NSLog(@"[KD] FileProExt - Connection with login item agent invalidated");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_loginItemAgentConnection = nil;
         [strongSelf scheduleRetryToConnectToLoginAgent];
     };
         
     // Resume connection
-    NSLog(@"[KD] Resume connection with login item agent");
+    NSLog(@"[KD] FileProExt - Resume connection with login item agent");
     [_loginItemAgentConnection resume];
     
     // Get server endpoint from login item agent
-    NSLog(@"[KD] Get server FileProvider ext endpoint from login item agent");
+    NSLog(@"[KD] FileProExt - Get server endpoint from login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] serverExtEndpoint:^(NSXPCListenerEndpoint *endpoint) {
-        NSLog(@"[KD] Server FileProvider ext endpoint received %@", endpoint);
+        NSLog(@"[KD] FileProExt - Server endpoint received %@", endpoint);
         if (endpoint) {
             [self connectToServer:endpoint];
         }
@@ -104,34 +104,34 @@
 - (void)connectToServer:(NSXPCListenerEndpoint *)endpoint
 {
     if (endpoint == nil) {
-        NSLog(@"[KD] Invalid parameter");
+        NSLog(@"[KD] FileProExt - Invalid parameter");
         return;
     }
 
     if (_appConnection) {
-        NSLog(@"[KD] Already connected to app");
+        NSLog(@"[KD] FileProExt - Already connected to app");
         return;
     }
         
     // Setup connection with app
-    NSLog(@"[KD] Setup connection with app");
+    NSLog(@"[KD] FileProExt - Setup connection with app");
     _appConnection = [[NSXPCConnection alloc] initWithListenerEndpoint:endpoint];
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with app");
+    NSLog(@"[KD] FileProExt - Set exported interface for connection with app");
     _appConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCFileProExtProtocol)];
     _appConnection.exportedObject = self;
     
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with app");
+    NSLog(@"[KD] FileProExt - Set remote object interface for connection with app");
     [_appConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(XPCFileProExtRemoteProtocol)]];
     
     // Set connection handlers
-    NSLog(@"[KD] Setup connection handlers for connection with app");
+    NSLog(@"[KD] FileProExt - Setup connection handlers for connection with app");
     __weak __typeof__(self) weakSelf = self;
     _appConnection.interruptionHandler = ^{
         // The app has exited or crashed
-        NSLog(@"[KD] Connection with app interrupted");
+        NSLog(@"[KD] FileProExt - Connection with app interrupted");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_appConnection = nil;
         [strongSelf->_delegate connectionEnded];
@@ -139,21 +139,21 @@
 
     _appConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with app invalidated");
+        NSLog(@"[KD] FileProExt - Connection with app invalidated");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_appConnection = nil;
         [strongSelf->_delegate connectionEnded];
     };
     
     // Resume connection
-    NSLog(@"[KD] Resume connection with app");
+    NSLog(@"[KD] FileProExt - Resume connection with app");
     [_appConnection resume];
 }
 
 - (void)scheduleRetryToConnectToLoginAgent
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[KD] Set timer to retry to connect to login agent");
+        NSLog(@"[KD] FileProExt - Set timer to retry to connect to login agent");
         [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(connectToLoginAgent) userInfo:nil repeats:NO];
     });
 }
@@ -161,19 +161,21 @@
 // XPCFileProExtProtocol protocol implementation
 - (void)updateProgress:(NSString *_Nonnull)itemId size:(NSUInteger) size
 {
-    NSLog(@"[KD] updateProgress called for itemId:%@ size:%lu", itemId, (unsigned long) size);
+    if (_updateProgressCallback) {
+        _updateProgressCallback(itemId, size);
+    }
 }
 
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] Process type asked: fileProExt");
+    NSLog(@"[KD] FileProExt - Process type asked");
     callback(fileProExt);
 }
 
 - (void)serverIsRunning:(NSXPCListenerEndpoint *)endpoint
 {
-    NSLog(@"[KD] Server is running");
+    NSLog(@"[KD] FileProExt - Server is running");
     [self connectToServer:endpoint];
 }
 

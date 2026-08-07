@@ -13,4 +13,6 @@
     XPCClientProxy *_xpcClientProxy;
 }
 
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSProgress *> *progressMap;
+
 @end

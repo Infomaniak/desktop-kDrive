@@ -75,42 +75,42 @@
 - (void)connectToLoginAgent
 {
     if (_loginItemAgentConnection) {
-        NSLog(@"[KD] Already connected to item agent");
+        NSLog(@"[KD] App - Already connected to item agent");
         return;
     }
     
     // Setup our connection to the launch item's service
     // This will start the launch item if it isn't already running
-    NSLog(@"[KD] Setup connection with login item agent");
+    NSLog(@"[KD] App - Setup connection with login item agent");
     NSBundle *appBundle = [NSBundle bundleForClass:[self class]];
     NSString *loginItemAgentMachName = [appBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
     if (!loginItemAgentMachName) {
-        NSLog(@"[KD] LoginItemAgentMachName undefined");
+        NSLog(@"[KD] App - LoginItemAgentMachName undefined");
         return;
     }
     
     NSError *error = nil;
     _loginItemAgentConnection = [[NSXPCConnection alloc] initWithLoginItemName:loginItemAgentMachName error:&error];
     if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent: %@", [error description]);
+        NSLog(@"[KD] App - Failed to connect to login item agent: %@", [error description]);
         return;
     }
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with login agent");
+    NSLog(@"[KD] App - Set exported interface for connection with login agent");
     _loginItemAgentConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     _loginItemAgentConnection.exportedObject = self;
     
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with login agent");
+    NSLog(@"[KD] App - Set remote object interface for connection with login agent");
     _loginItemAgentConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemProtocol)];
     
     // Set connection handlers
-    NSLog(@"[KD] Setup connection handlers with login item agent");
+    NSLog(@"[KD] App - Setup connection handlers with login item agent");
     __weak __typeof__(self) weakSelf = self;
     _loginItemAgentConnection.interruptionHandler = ^{
         // The login agent has exited or crashed
-        NSLog(@"[KD] Connection with login item agent interrupted");
+        NSLog(@"[KD] App - Connection with login item agent interrupted");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_loginItemAgentConnection = nil;
         [strongSelf scheduleRetryToConnectToLoginAgent];
@@ -118,85 +118,88 @@
 
     _loginItemAgentConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with login item agent invalidated");
+        NSLog(@"[KD] App - Connection with login item agent invalidated");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_loginItemAgentConnection = nil;
         [strongSelf scheduleRetryToConnectToLoginAgent];
     };
         
     // Resume connection
-    NSLog(@"[KD] Resume connection with login item agent");
+    NSLog(@"[KD] App - Resume connection with login item agent");
     [_loginItemAgentConnection resume];
 
     // Create anonymous Finder ext listener
-    NSLog(@"[KD] Create anonymous Finder ext listener");
+    NSLog(@"[KD] App - Create anonymous Finder ext listener");
     _extListener = [NSXPCListener anonymousListener];
     [_extListener setDelegate:self];
     [_extListener resume];
     
     // Create anonymous GUI listener
-    NSLog(@"[KD] Create anonymous GUI listener");
+    NSLog(@"[KD] App - Create anonymous GUI listener");
     _guiListener = [NSXPCListener anonymousListener];
     [_guiListener setDelegate:self];
     [_guiListener resume];
 
     // Create anonymous FileProvider ext listener
-    NSLog(@"[KD] Create anonymous FileProvider ext listener");
+    NSLog(@"[KD] App - Create anonymous FileProvider ext listener");
     _fpextListener = [NSXPCListener anonymousListener];
     [_fpextListener setDelegate:self];
     [_fpextListener resume];
 
     // Send endpoints to login item agent
-    NSLog(@"[KD] Send server endpoints to login item agent");
+    NSLog(@"[KD] App - Send server Finder Ext endpoint to login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] setServerExtEndpoint:[_extListener endpoint]];
+    NSLog(@"[KD] App - Send server File Provider Ext endpoint to login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] setServerFileProExtEndpoint:[_fpextListener endpoint]];
+    
+    NSLog(@"[KD] App - Connected to LoginItemAgent");
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
 {
     if (listener == _extListener) {
         // Set exported interface
-        NSLog(@"[KD] Set exported interface for connection with Finder ext");
+        NSLog(@"[KD] App - Set exported interface for connection with Finder ext");
         newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)];
         newConnection.exportedObject = self;
         
         // Set remote object interface
-        NSLog(@"[KD] Set remote object interface for connection with Finder ext");
+        NSLog(@"[KD] App - Set remote object interface for connection with Finder ext");
         newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
     } else if (listener == _guiListener) {
         // Set exported interface
-        NSLog(@"[KD] Set exported interface for connection with GUI");
+        NSLog(@"[KD] App - Set exported interface for connection with GUI");
         newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiRemoteProtocol)];
         newConnection.exportedObject = self;
         
         // Set remote object interface
-        NSLog(@"[KD] Set remote object interface for connection with GUI");
+        NSLog(@"[KD] App - Set remote object interface for connection with GUI");
         newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCGuiProtocol)];
     } else if (listener == _fpextListener) {
         // Set exported interface
-        NSLog(@"[KD] Set exported interface for connection with File Provider ext");
+        NSLog(@"[KD] App - Set exported interface for connection with File Provider ext");
         newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCFileProExtRemoteProtocol)];
         newConnection.exportedObject = self;
         
         // Set remote object interface
-        NSLog(@"[KD] Set remote object interface for connection with File Provider ext");
+        NSLog(@"[KD] App - Set remote object interface for connection with File Provider ext");
         newConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCFileProExtProtocol)];
     }
     
     // Set connection handlers
-    NSLog(@"[KD] Set connection handlers for connection");
+    NSLog(@"[KD] App - Set connection handlers for connection");
     newConnection.interruptionHandler = ^{
         // The extension has exited or crashed
-        NSLog(@"[KD] Connection interrupted");
+        NSLog(@"[KD] App - Connection interrupted");
     };
 
     newConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection invalidated");
+        NSLog(@"[KD] App - Connection invalidated");
     };
     
     // Start processing incoming messages.
-    NSLog(@"[KD] Resume connection");
+    NSLog(@"[KD] App - Resume connection");
     [newConnection resume];
     
     if (listener == _extListener) {
@@ -213,7 +216,7 @@
 - (void)scheduleRetryToConnectToLoginAgent
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[KD] Set timer to retry to connect to login agent");
+        NSLog(@"[KD] App - Set timer to retry to connect to login agent");
         [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(connectToLoginAgent) userInfo:nil repeats:NO];
     });
 }
@@ -221,19 +224,19 @@
 // XPCGuiProtocol protocol implementation
 - (void)processQuery:(NSData * _Nonnull)query callback:(void (^ _Nonnull)(NSData * _Nonnull))callback {
     NSString *answer = [[NSString alloc] initWithData:query encoding:NSUTF8StringEncoding];
-    NSLog(@"[KD] Query received %@", answer);
+    NSLog(@"[KD] App - Query received %@", answer);
 
     NSArray *answerArr = [answer componentsSeparatedByString:@";"];
     
     // Send ack
     NSString *ack = [NSString stringWithFormat:@"%@", answerArr[0]];
-    NSLog(@"[KD] Send ack signal %@", ack);
+    NSLog(@"[KD] App - Send ack signal %@", ack);
 
     @try {
         [[_guiConnection remoteObjectProxy] processSignal:[ack dataUsingEncoding:NSUTF8StringEncoding]];
     } @catch(NSException* e) {
         // Do nothing and wait for invalidationHandler
-        NSLog(@"[KD] Error sending ack signal: %@", e.name);
+        NSLog(@"[KD] App - Error sending ack signal: %@", e.name);
     }
 }
 
@@ -244,50 +247,62 @@
 // XPCExtensionRemoteProtocol protocol implementation
 - (void)initConnection:(void (^)(BOOL))reply
 {
-    NSLog(@"[KD] initConnection called");
+    NSLog(@"[KD] App - initConnection called");
     reply(TRUE);
 }
 
 - (void)sendMessage:(NSData*)msg
 {
     NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
-    NSLog(@"[KD] Received message %@", answer);
+    NSLog(@"[KD] App - Received message %@", answer);
     
     // Send dummy reply
     NSString *query = [NSString stringWithFormat:@"%@:%@\n", @"GET_STRINGS", @""];
-    NSLog(@"[KD] Send message %@", query);
+    NSLog(@"[KD] App - Send message %@", query);
 
     @try {
         [[_extConnection remoteObjectProxy] sendMessage:[query dataUsingEncoding:NSUTF8StringEncoding]];
     } @catch(NSException* e) {
         // Do nothing and wait for invalidationHandler
-        NSLog(@"[KD] Error sending message: %@", e.name);
+        NSLog(@"[KD] App - Error sending message: %@", e.name);
     }
 }
 
 // XPCFileProExtRemoteProtocol protocol implementation
 - (void)createItem:(NSString *_Nonnull)itemId parentId:(NSString *_Nonnull)parentId fileName:(NSString *_Nonnull)name creationDate:(NSDate *_Nonnull)cDate contentModificationDate:(NSDate *_Nonnull)mDate contentType:(UTType *_Nonnull)type contents:(NSURL *_Nullable)url completionCallback:(void(^_Nullable)(NSUInteger size, NSString *_Nonnull nodeId, NSString *_Nonnull version))completionCbk
 {
-    NSLog(@"[KD] createItem called with id:%@, parentId:%@ name:%@, creation date:%@, modification date:%@", itemId, parentId, name, cDate, mDate);
-    // TODO: upload item
+    NSLog(@"[KD] App - createItem called with id:%@, parentId:%@ name:%@, creation date:%@, modification date:%@", itemId, parentId, name, cDate, mDate);
+
+    NSUInteger size = 0;
+    if (url != nil) {
+        NSData *data = [NSData dataWithContentsOfURL:url];
+        size = data.length;
+    }
+
+    // Simulate upload item
     @try {
-        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:0];
+        for (NSUInteger i = 0; i < size; i += size / 5) {
+            sleep(1);
+            NSLog(@"[KD] App - Call updateProgress with id:%@, size:%lu", itemId, (unsigned long)i);
+            [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:i];
+        }
         sleep(1);
-        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:1000];
-        sleep(1);
-        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:2000];
+        [[_fpextConnection remoteObjectProxy] updateProgress:itemId size:size];
     } @catch(NSException* e) {
         // Do nothing and wait for invalidationHandler
-        NSLog(@"[KD] Error sending message: %@", e.name);
+        NSLog(@"[KD] App - Error sending message: %@", e.name);
     }
     
-    completionCbk(2500, @"1234", @"1.0");
+    // Random remote node id
+    NSUInteger randomNodeIdInt = arc4random_uniform(1000000);
+    NSString *randomNodeIdStr = [NSString stringWithFormat:@"%lu", (unsigned long)randomNodeIdInt];
+    completionCbk(size, randomNodeIdStr, @"1.0");
 }
 
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] Process type asked: extServer");
+    NSLog(@"[KD] App - Process type asked");
     callback(extServer);
 }
 

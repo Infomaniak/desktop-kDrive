@@ -27,7 +27,8 @@
                                    NSXPCListenerDelegate,
                                    XPCExtensionRemoteProtocol,
                                    XPCLoginItemRemoteProtocol,
-                                   XPCGuiProtocol>
+                                   XPCGuiProtocol,
+                                   XPCFileProExtRemoteProtocol>
 
 @property(retain) NSXPCListener *extListener;
 @property(retain) NSXPCListener *guiListener;

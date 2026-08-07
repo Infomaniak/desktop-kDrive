@@ -16,12 +16,24 @@
 - (nonnull instancetype)initWithDomain:(nonnull NSFileProviderDomain *)domain {
     self = [super init];
 
+    if (self) {
+        _progressMap = [NSMutableDictionary dictionary];
+    }
+    
     // Connect to app
     NSBundle *extBundle = [NSBundle bundleForClass:[self class]];
     NSString *loginItemAgentMachName = [extBundle objectForInfoDictionaryKey:@"LoginItemAgentMachName"];
-    NSLog(@"loginItemAgentMachName = %@", loginItemAgentMachName);
     _xpcClientProxy = [[XPCClientProxy alloc] initWithDelegate:self serviceName:loginItemAgentMachName];
     [_xpcClientProxy start];
+    
+    __weak typeof(self) weakSelf = self;
+    _xpcClientProxy.updateProgressCallback = ^(NSString *_Nonnull itemId, NSUInteger size) {
+        NSLog(@"[KD] FileProExt - updateProgress called for item with id: %@ size: %lu", itemId, (unsigned long) size);
+        NSProgress *progress = weakSelf.progressMap[itemId];
+        if (progress) {
+            [progress setCompletedUnitCount:size];
+        }
+    };
     
     return self;
 }
@@ -35,39 +47,26 @@
 }
 
 - (nonnull NSProgress *)createItemBasedOnTemplate:(nonnull NSFileProviderItem)itemTemplate fields:(NSFileProviderItemFields)fields contents:(nullable NSURL *)url options:(NSFileProviderCreateItemOptions)options request:(nonnull NSFileProviderRequest *)request completionHandler:(nonnull void (^)(NSFileProviderItem _Nullable, NSFileProviderItemFields, BOOL, NSError * _Nullable))completionHandler {
-    NSLog(@"identifier = %@", itemTemplate.itemIdentifier);
-    
-    if (fields & NSFileProviderItemFilename)
-        NSLog(@"filename = %@", itemTemplate.filename);
-    
-    if (fields & NSFileProviderItemParentItemIdentifier)
-        NSLog(@"parent = %@", itemTemplate.parentItemIdentifier);
-    
-    if (fields & NSFileProviderItemCreationDate)
-        NSLog(@"creation date = %@", itemTemplate.creationDate);
-    
-    if (fields & NSFileProviderItemContentModificationDate)
-        NSLog(@"modification date = %@", itemTemplate.contentModificationDate);
+    NSLog(@"[KD] FileProExt - Creation asked for item with id: %@", itemTemplate.itemIdentifier);
     
     NSUInteger size = 0;
     if (fields & NSFileProviderItemContents) {
-        NSLog(@"content type = %@", itemTemplate.contentType);
         NSAssert(url != nil, @"url is null");
         NSData *data = [NSData dataWithContentsOfURL:url];
         size = data.length;
-        NSLog(@"File size = %lu", (unsigned long)size);
-    }
+     }
         
     // Call XPC create function
     NSProgress *progress = [NSProgress progressWithTotalUnitCount:size];
-    // TODO: insert {itemTemplate.itemIdentifier, progress} in the progress map
+    _progressMap[itemTemplate.itemIdentifier] = progress;
     [_xpcClientProxy createItem:itemTemplate.itemIdentifier parentId:itemTemplate.parentItemIdentifier fileName:itemTemplate.filename creationDate:itemTemplate.creationDate contentModificationDate:itemTemplate.contentModificationDate contentType:itemTemplate.contentType contents:url completionCallback:^(NSUInteger size, NSString *_Nonnull nodeId, NSString *_Nonnull version) {
-        NSLog(@"[KD] Upload progress: %lu", (unsigned long) size);
-        [progress setCompletedUnitCount:size];
         if (nodeId.length > 0) {
-            NSLog(@"[KD] Item created with nodeId: %@ version:%@", nodeId, version);
+            NSLog(@"[KD] FileProExt - Item with id: %@ created with nodeId: %@ version:%@", itemTemplate.itemIdentifier, nodeId, version);
             FileProviderItem *item = [[FileProviderItem alloc] initWithTemplate:itemTemplate identifier:nodeId version:version];
             completionHandler(item, 0, false, nil);
+        } else {
+            NSLog(@"[KD] FileProExt - Item with id: %@ creation failed", itemTemplate.itemIdentifier);
+            [progress cancel];
         }
     }];
 

@@ -31,6 +31,7 @@
 @property(retain) NSString *serviceName;
 @property(retain) NSXPCConnection *loginItemAgentConnection;
 @property(retain) NSXPCConnection *appConnection;
+@property(nonatomic, copy) void (^ __nullable updateProgressCallback)(NSString *_Nonnull itemId, NSUInteger size);
 
 - (instancetype)initWithDelegate:(id)arg1 serviceName:(NSString *)serviceName;
 - (void)dealloc;

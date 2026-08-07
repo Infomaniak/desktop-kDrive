@@ -46,34 +46,34 @@
 - (void)connectToLoginAgent
 {
     if (_loginItemAgentConnection) {
-        NSLog(@"[KD] Already connected to item agent");
+        NSLog(@"[KD] FinderExt - Already connected to item agent");
         return;
     }
     
     // Init connection with login item agent
-    NSLog(@"[KD] Initialize connection with login item agent");
+    NSLog(@"[KD] FinderExt - Initialize connection with login item agent");
     _loginItemAgentConnection = [[NSXPCConnection alloc] initWithMachServiceName:_serviceName options:0];
     if (_loginItemAgentConnection == nil) {
-        NSLog(@"[KD] Failed to connect to login item agent");
+        NSLog(@"[KD] FinderExt - Failed to connect to login item agent");
         [self scheduleRetryToConnectToLoginAgent];
         return;
     }
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with login agent");
+    NSLog(@"[KD] FinderExt - Set exported interface for connection with login agent");
     _loginItemAgentConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     _loginItemAgentConnection.exportedObject = self;
     
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with login agent");
+    NSLog(@"[KD] FinderExt - Set remote object interface for connection with login agent");
     _loginItemAgentConnection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemProtocol)];
     
     // Set connection handlers
-    NSLog(@"[KD] Set connection handlers for connection with login item agent");
+    NSLog(@"[KD] FinderExt - Set connection handlers for connection with login item agent");
     __weak __typeof__(self) weakSelf = self;
     _loginItemAgentConnection.interruptionHandler = ^{
         // The login agent has exited or crashed
-        NSLog(@"[KD] Connection with login item agent interrupted");
+        NSLog(@"[KD] FinderExt - Connection with login item agent interrupted");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_loginItemAgentConnection = nil;
         [strongSelf scheduleRetryToConnectToLoginAgent];
@@ -81,20 +81,20 @@
 
     _loginItemAgentConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with login item agent invalidated");
+        NSLog(@"[KD] FinderExt - Connection with login item agent invalidated");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_loginItemAgentConnection = nil;
         [strongSelf scheduleRetryToConnectToLoginAgent];
     };
         
     // Resume connection
-    NSLog(@"[KD] Resume connection with login item agent");
+    NSLog(@"[KD] FinderExt - Resume connection with login item agent");
     [_loginItemAgentConnection resume];
     
     // Get server endpoint from login item agent
-    NSLog(@"[KD] Get server Finder ext endpoint from login item agent");
+    NSLog(@"[KD] FinderExt - Get server endpoint from login item agent");
     [[_loginItemAgentConnection remoteObjectProxy] serverExtEndpoint:^(NSXPCListenerEndpoint *endpoint) {
-        NSLog(@"[KD] Server Finder ext endpoint received %@", endpoint);
+        NSLog(@"[KD] FinderExt - Server endpoint received %@", endpoint);
         if (endpoint) {
             [self connectToServer:endpoint];
         }
@@ -104,34 +104,34 @@
 - (void)connectToServer:(NSXPCListenerEndpoint *)endpoint
 {
     if (endpoint == nil) {
-        NSLog(@"[KD] Invalid parameter");
+        NSLog(@"[KD] FinderExt - Invalid parameter");
         return;
     }
 
     if (_appConnection) {
-        NSLog(@"[KD] Already connected to app");
+        NSLog(@"[KD] FinderExt - Already connected to app");
         return;
     }
         
     // Setup connection with app
-    NSLog(@"[KD] Setup connection with app");
+    NSLog(@"[KD] FinderExt - Setup connection with app");
     _appConnection = [[NSXPCConnection alloc] initWithListenerEndpoint:endpoint];
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with app");
+    NSLog(@"[KD] FinderExt - Set exported interface for connection with app");
     _appConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionProtocol)];
     _appConnection.exportedObject = self;
     
     // Set remote object interface
-    NSLog(@"[KD] Set remote object interface for connection with app");
+    NSLog(@"[KD] FinderExt - Set remote object interface for connection with app");
     [_appConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(XPCExtensionRemoteProtocol)]];
     
     // Set connection handlers
-    NSLog(@"[KD] Setup connection handlers for connection with app");
+    NSLog(@"[KD] FinderExt - Setup connection handlers for connection with app");
     __weak __typeof__(self) weakSelf = self;
     _appConnection.interruptionHandler = ^{
         // The app has exited or crashed
-        NSLog(@"[KD] Connection with app interrupted");
+        NSLog(@"[KD] FinderExt - Connection with app interrupted");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_appConnection = nil;
         [strongSelf->_delegate connectionEnded];
@@ -139,20 +139,20 @@
 
     _appConnection.invalidationHandler = ^{
         // Connection can not be formed or has terminated and may not be re-established
-        NSLog(@"[KD] Connection with app invalidated");
+        NSLog(@"[KD] FinderExt - Connection with app invalidated");
         __typeof__(self) strongSelf = weakSelf;
         strongSelf->_appConnection = nil;
         [strongSelf->_delegate connectionEnded];
     };
     
     // Resume connection
-    NSLog(@"[KD] Resume connection with app");
+    NSLog(@"[KD] FinderExt - Resume connection with app");
     [_appConnection resume];
 
     // Start communication
-    NSLog(@"[KD] Start communication with app");
+    NSLog(@"[KD] FinderExt - Start communication with app");
     [[_appConnection remoteObjectProxy] initConnection:^(BOOL reply) {
-        NSLog(@"[KD] Connection with app: %@", reply ? @"OK" : @"KO");
+        NSLog(@"[KD] FinderExt - Connection with app: %@", reply ? @"OK" : @"KO");
         if (reply) {
             // Everything is set up, start querying
             [self sendQuery:@"" query:@"GET_STRINGS"];
@@ -163,7 +163,7 @@
 - (void)scheduleRetryToConnectToLoginAgent
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"[KD] Set timer to retry to connect to login agent");
+        NSLog(@"[KD] FinderExt - Set timer to retry to connect to login agent");
         [NSTimer scheduledTimerWithTimeInterval:10 target:self selector:@selector(connectToLoginAgent) userInfo:nil repeats:NO];
     });
 }
@@ -171,7 +171,7 @@
 - (void)sendQuery:(NSString*)path query:(NSString*)verb
 {
     NSString *query = [NSString stringWithFormat:@"%@:%@\\/\n", verb, path];
-    NSLog(@"[KD] Send message %@", query);
+    NSLog(@"[KD] FinderExt - Send message %@", query);
 
     @try {
         [[_appConnection remoteObjectProxy] sendMessage:[query dataUsingEncoding:NSUTF8StringEncoding]];
@@ -186,11 +186,11 @@
     [self sendQuery:path query:verb];
 }
 
-// XPCFinderSyncProtocol protocol implementation
+// XPCExtensionProtocol protocol implementation
 - (void)sendMessage:(NSData*)msg
 {
 	NSString *answer = [[NSString alloc] initWithData:msg encoding:NSUTF8StringEncoding];
-    NSLog(@"[KD] Received message %@", answer);
+    NSLog(@"[KD] FinderExt - Received message %@", answer);
 	
 	// Cut the trailing newline. We always only receive one line from the client.
 	answer = [answer substringToIndex:[answer length] - 1];
@@ -235,13 +235,13 @@
 // XPCLoginItemRemoteProtocol protocol implementation
 - (void)processType:(void (^)(ProcessType))callback
 {
-    NSLog(@"[KD] Process type asked: finderExt");
+    NSLog(@"[KD] FinderExt - Process type asked");
     callback(finderExt);
 }
 
 - (void)serverIsRunning:(NSXPCListenerEndpoint *)endpoint
 {
-    NSLog(@"[KD] Server is running");
+    NSLog(@"[KD] FinderExt - Server is running");
     [self connectToServer:endpoint];
 }
 
