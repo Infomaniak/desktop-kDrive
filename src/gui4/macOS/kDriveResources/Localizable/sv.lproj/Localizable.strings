@@ -259,6 +259,9 @@
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Hantera undantag";
 
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "Öppna papperskorgen";
+
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Paus";
 
@@ -1128,6 +1131,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ versionskonflikt(er) hittades";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "Synkroniseringen är pausad för att förhindra att data raderas av misstag.\nVad vill du göra?";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Återställa filerna";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Ta bort även online";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "Dessa filer går fortfarande att återställa från kDrives papperskorg.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Visa inte denna varning igen";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ objekt har tagits bort från din mapp";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo är ett analysverktyg som driftas och hanteras exklusivt av Infomaniak för att förstå hur programmet används.\n\nAnalys av dessa data gör det möjligt för vårt team att kontinuerligt förbättra programmets gränssnitt.";

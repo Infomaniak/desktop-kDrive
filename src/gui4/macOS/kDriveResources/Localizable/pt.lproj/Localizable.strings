@@ -259,6 +259,9 @@
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Gerir exclusões";
 
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "Abrir a lixeira";
+
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Pausa";
 
@@ -1128,6 +1131,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ conflitos de versões detetados";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "A sincronização está em pausa para evitar uma eliminação acidental.\nO que pretende fazer?";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Recuperar os ficheiros";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Eliminar também online";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "Estes ficheiros continuam a poder ser recuperados na lixeira do kDrive.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Não voltar a apresentar este aviso";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ elementos eliminados da sua pasta";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "O Matomo é uma ferramenta de análise alojada e gerida exclusivamente pela Infomaniak para perceber como a aplicação é utilizada.\n\nA análise destes dados permite à nossa equipa melhorar continuamente a interface da aplicação.";

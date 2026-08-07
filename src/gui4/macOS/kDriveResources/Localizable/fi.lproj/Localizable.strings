@@ -259,6 +259,9 @@
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Hallitse poissulkemisia";
 
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "Avaa roskakori";
+
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Keskeytä";
 
@@ -1128,6 +1131,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ versioristiriitaa havaittu";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "Synkronointi on keskeytetty, jotta vältetään tahaton poisto.\nMitä haluat tehdä?";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Tiedostojen palauttaminen";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Poista myös verkosta";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "Nämä tiedostot ovat edelleen palautettavissa kDrive-roskakorista.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Älä näytä tätä varoitusta enää";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ kohdetta on poistettu kansiostasi";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo on Infomaniakin yksinomaan isännöimä ja hallinnoima analytiikkatyökalu sovelluksen käytön ymmärtämiseksi.\n\nNäiden tietojen analysointi antaa tiimillemme mahdollisuuden jatkuvasti parantaa sovelluksen käyttöliittymää.";

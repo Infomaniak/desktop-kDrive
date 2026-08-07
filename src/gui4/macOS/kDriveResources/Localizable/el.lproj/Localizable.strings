@@ -259,6 +259,9 @@
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Διαχείριση εξαιρέσεων";
 
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "Άνοιγμα του κάδου απορριμμάτων";
+
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Παύση";
 
@@ -1128,6 +1131,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ συγκρούσεις εκδόσεων εντοπίστηκαν";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "Ο συγχρονισμός έχει τεθεί σε παύση για να αποφευχθεί η ακούσια διαγραφή.\nΤι θέλετε να κάνετε;";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Επαναφορά αρχείων";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Διαγραφή και από το διαδίκτυο";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "Αυτά τα αρχεία παραμένουν διαθέσιμα για ανάκτηση στον κάδο απορριμμάτων του kDrive.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Να μην εμφανίζεται πλέον αυτή η προειδοποίηση";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ στοιχεία που διαγράφηκαν από το φάκελό σας";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Το Matomo είναι ένα εργαλείο ανάλυσης που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για να κατανοεί πώς χρησιμοποιείται η εφαρμογή.\n\nΗ ανάλυση αυτών των δεδομένων επιτρέπει στην ομάδα μας να βελτιώνει συνεχώς τη διεπαφή της εφαρμογής.";

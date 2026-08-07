@@ -259,6 +259,9 @@
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Uitsluitingen beheren";
 
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "De prullenbak openen";
+
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Pauzeren";
 
@@ -1128,6 +1131,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ versieconflicten gedetecteerd";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "De synchronisatie is onderbroken om onbedoeld verwijderen te voorkomen.\nWat wilt u doen?";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Bestanden herstellen";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Ook online verwijderen";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "Deze bestanden blijven beschikbaar in de prullenbak van kDrive.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Deze waarschuwing niet meer weergeven";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ items verwijderd uit uw map";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo is een analysetool die uitsluitend door Infomaniak wordt gehost en beheerd om te begrijpen hoe de applicatie wordt gebruikt.\n\nHet analyseren van deze gegevens stelt ons team in staat de interface van de applicatie voortdurend te verbeteren.";
