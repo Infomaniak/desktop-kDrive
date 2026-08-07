@@ -298,6 +298,8 @@ void IpcClient::onReadyRead() {
  */
 void IpcClient::onSslErrors(const QList<QSslError> &errors) {
     _pinnedCert.clear();
+    _clientCert.clear();
+    _clientKey.clear();
     for (const QSslError &error: errors) {
         qCWarning(lcIpcClient) << "SSL/TLS error :" << error.errorString();
     }
