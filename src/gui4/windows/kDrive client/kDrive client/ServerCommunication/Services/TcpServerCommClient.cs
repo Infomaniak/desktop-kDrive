@@ -16,13 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -35,7 +39,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     public class TcpServerCommClient : Interfaces.IServerCommClient
     {
-        private Socket? _socket;
+        // Must match the server-side keychain key used to publish the TLS certificate (see comm.h: certKeychainKey).
+        private const string _certKeychainKey = "kdrive_ipc_tls_cert";
+
+        private readonly IKeychainStore _keychainStore;
+        private SslStream? _stream;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
         private int _requestIdCounter = 0;
         private readonly byte[] _receiveBuffer = new byte[65536]; // 64 Ko
@@ -69,11 +77,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
-        public TcpServerCommClient() {}
+        public TcpServerCommClient(IKeychainStore keychainStore)
+        {
+            _keychainStore = keychainStore;
+        }
 
         ~TcpServerCommClient()
         {
-            _socket?.Dispose();
+            _stream?.Dispose();
             _stopRequested = true;
         }
 
@@ -126,6 +137,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             errorMessage = string.Empty;
             return true;
         }
+
+        private X509Certificate2? LoadPinnedCertificate()
+        {
+            string? pem = _keychainStore.ReadSecret(_certKeychainKey);
+            if (string.IsNullOrEmpty(pem))
+            {
+                Logger.Log(Logger.Level.Warning, "TLS certificate not found in keychain yet.");
+                return null;
+            }
+
+            try
+            {
+                return X509Certificate2.CreateFromPem(pem);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to parse pinned TLS certificate from keychain: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
             if (_pollingTask is not null)
@@ -136,7 +168,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             while (!_stopRequested && !cancellationToken.IsCancellationRequested)
             {
-                if (_socket is not null && _socket.Connected)
+                if (_stream is not null && _stream.IsAuthenticated)
                     return true;
 
                 int? port = GetServerPort();
@@ -154,11 +186,21 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #endif
                     }
 
+                    X509Certificate2? pinnedCertificate = LoadPinnedCertificate();
+                    if (pinnedCertificate is null)
+                    {
+                        // The server may not have published its certificate yet; retry.
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
-                    _socket?.Dispose();
-                    _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    await _socket.ConnectAsync(_host, port.Value, cancellationToken).ConfigureAwait(false);
-                    Logger.Log(Logger.Level.Info, "Connected to server.");
+                    DisposeConnection();
+                    using (pinnedCertificate)
+                    {
+                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, cancellationToken).ConfigureAwait(false);
+                    }
+                    Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
                     return true;
                 }
@@ -167,11 +209,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     Logger.Log(Logger.Level.Info, "Connection initialization was canceled.");
                     return false;
                 }
-                catch (SocketException ex)
+                catch (Exception ex) when (ex is SocketException or System.Security.Authentication.AuthenticationException or IOException)
                 {
                     Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 0.5 seconds...");
-                    _socket?.Dispose();
-                    _socket = null;
+                    DisposeConnection();
                     try
                     {
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
@@ -186,39 +227,48 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             return false;
         }
+
+        private void DisposeConnection()
+        {
+            _stream?.Dispose();
+            _stream = null;
+        }
+
         private async Task PollingLoop()
         {
-            if (_socket is null)
+            if (_stream is null)
+            {
+                Logger.Log(Logger.Level.Warning, "Unable to read: stream is not connected.");
                 return;
+            }
 
-            while (!_stopRequested && _socket?.Connected == true)
+            while (!_stopRequested && _stream.IsAuthenticated)
             {
                 try
                 {
-                    if (!_socket.Poll(TimeSpan.FromSeconds(5), SelectMode.SelectRead))
-                        continue;
+                    int bytesRead = await _stream.ReadAsync(_receiveBuffer).ConfigureAwait(false);
+                    if (bytesRead == 0)
+                    {
+                        Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
+                        DisposeConnection();
+                        ConnectionLost?.Invoke(this, EventArgs.Empty);
+                        return;
+                    }
+
+                    int charCount = _decoder.GetCharCount(_receiveBuffer, 0, bytesRead, flush: false);
+                    char[] chars = new char[charCount];
+                    _decoder.GetChars(_receiveBuffer, 0, bytesRead, chars, 0, flush: false);
+                    _inBuffer.Append(chars, 0, charCount);
+
+                    await OnDataReceived().ConfigureAwait(false);
+
                 }
                 catch (SocketException ex)
                 {
                     Logger.Log(Logger.Level.Error, $"Socket poll error: {ex.Message}");
-                    _socket?.Dispose();
-                    _socket = null;
+                    DisposeConnection();
                     ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
-                }
-
-                if (_socket.Available == 0)
-                {
-                    Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
-                    _socket?.Dispose();
-                    _socket = null;
-                    ConnectionLost?.Invoke(this, EventArgs.Empty);
-                    return;
-                }
-
-                try
-                {
-                    await OnReadyReadAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -236,7 +286,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Wait asynchronously until the client is connected
                 const int softWaitTimeMs = 30000; // Log every 30s
                 var lastLogTime = Stopwatch.StartNew();
-                while (_socket == null || !_socket.Connected)
+                while (_stream is null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -266,7 +316,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 await _sendLock.WaitAsync();
                 try
                 {
-                    await _socket.SendAsync(jsonBytes, SocketFlags.None);
+                    await _stream!.WriteAsync(jsonBytes, cancellationToken).ConfigureAwait(false);
+                    await _stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
                 finally
                 {
@@ -331,33 +382,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private async Task OnReadyReadAsync()
+        private async Task OnDataReceived()
         {
-            do
+            int jsonEndIndex = -1;
+
+            while (_inBuffer.Length > 0)
             {
-                if (_socket == null || !_socket.Connected)
-                {
-                    Logger.Log(Logger.Level.Warning, "Unable to read: socket is not connected.");
-                    return;
-                }
-
-                // Read the JSON message
-                int jsonEndIndex = -1;
-
-                if (_socket.Available > 0)
-                {
-                    int bytesRead = await _socket.ReceiveAsync(_receiveBuffer).ConfigureAwait(false);
-                    int charCount = _decoder.GetCharCount(_receiveBuffer, 0, bytesRead, flush: false);
-                    char[] chars = new char[charCount];
-                    _decoder.GetChars(_receiveBuffer, 0, bytesRead, chars, 0, flush: false);
-                    _inBuffer.Append(chars, 0, charCount);
-                }
-
                 if (!CheckBufferConsistency())
                 {
                     ConnectionLost?.Invoke(this, EventArgs.Empty);
                     return;
                 }
+
+                // Read the JSON message
 
                 UpdateJsonBalance(_inBuffer, ref _inBufferJsonBalanceSeen, ref _inBufferJsonBalance, ref jsonEndIndex);
 
@@ -388,7 +425,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
 
                 HandleServerMessageAsync(messageObj);
-            } while (_socket.Available > 0 || _inBuffer.Length > 0);
+            }
         }
 
         private static void UpdateJsonBalance(StringBuilder sb, ref int seenIndex, ref int balance, ref int jsonEndIndex)

@@ -18,6 +18,10 @@
 
 #pragma once
 #include <string>
+//keychain key for tls certificate
+inline constexpr char certKeychainKey[] = "kdrive_ipc_tls_cert";
+// Name for tls certification
+inline constexpr char localHostName[] = "kDrive-localhost";
 
 #define COMM_SHORT_TIMEOUT 1000
 #define COMM_AVERAGE_TIMEOUT 10000
