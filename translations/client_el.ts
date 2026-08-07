@@ -208,37 +208,37 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AddDriveLoginWidget</name>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="73"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="78"/>
         <source>Log in from your browser</source>
         <translation>Σύνδεση μέσω του περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="79"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="84"/>
         <source>Your browser should open automatically to complete the connection. Once connected, you will automatically return to kDrive.</source>
         <translation>Ο περιηγητής σας θα ανοίξει αυτόματα για να ολοκληρωθεί η σύνδεση. Μόλις συνδεθείτε, θα επιστρέψετε αυτόματα στο kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="101"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="106"/>
         <source>Do not close this window to complete the connection.</source>
         <translation>Μην κλείσετε αυτό το παράθυρο για να ολοκληρωθεί η σύνδεση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="109"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="114"/>
         <source>Open the login page</source>
         <translation>Άνοιγμα σελίδας σύνδεσης</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="145"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="169"/>
         <source>An error occurred during authentication. Please close the login window and try again.&lt;br&gt;If the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε σφάλμα κατά τον έλεγχο ταυτότητας. Κλείστε το παράθυρο σύνδεσης και δοκιμάστε ξανά.&lt;br&gt;Εάν το σφάλμα επιμένει, επικοινωνήστε με την ομάδα υποστήριξής μας.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="161"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="185"/>
         <source>Login failed: %1 - %2</source>
         <translation>Αποτυχία σύνδεσης: %1 - %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddriveloginwidget.cpp" line="169"/>
+        <location filename="../src/gui/adddriveloginwidget.cpp" line="193"/>
         <source>Failed to open the login page in your web browser</source>
         <translation>Αποτυχία ανοίγματος σελίδας σύνδεσης στον περιηγητή</translation>
     </message>
