@@ -18,7 +18,7 @@
 
 #include "ipcclient.h"
 
-#include "certreader.h"
+#include "tlscerthelper.h"
 #include "app/services/sentryservice.h"
 #include "libcommon/commjson.h"
 #include "libcommon/utility/utility.h"
@@ -111,7 +111,25 @@ bool IpcClient::loadPinnedCertificate() {
     if (!_pinnedCert.isNull()) {
         return true;
     }
-    return CertReader::readCertificate(_pinnedCert);
+    return TLSCertHelper::readServerCertificate(_pinnedCert);
+}
+
+/**
+ * Loads the TLS client certificate and private key from the keychain.
+ * @return true if both the certificate and key were successfully loaded, false otherwise.
+ */
+bool IpcClient::loadClientCertificate() {
+    if (!_clientCert.isNull() && !_clientKey.isNull()) {
+        return true;
+    }
+    if (!TLSCertHelper::readClientCertificate(_clientCert)) {
+        return false;
+    }
+    if (!TLSCertHelper::readClientKey(_clientKey)) {
+        _clientCert.clear();
+        return false;
+    }
+    return true;
 }
 
 
@@ -150,8 +168,15 @@ void IpcClient::attemptInitialConnection() {
         return;
     }
 
+    if (!loadClientCertificate()) {
+        scheduleInitialConnectionRetry("Client certificate is not available yet");
+        return;
+    }
+
     QSslConfiguration config = _socket->sslConfiguration();
     config.setCaCertificates({_pinnedCert});
+    config.setLocalCertificate(_clientCert);
+    config.setPrivateKey(_clientKey);
     _socket->setSslConfiguration(config);
 
     _socket->abort();
@@ -273,6 +298,8 @@ void IpcClient::onReadyRead() {
  */
 void IpcClient::onSslErrors(const QList<QSslError> &errors) {
     _pinnedCert.clear();
+    _clientCert.clear();
+    _clientKey.clear();
     for (const QSslError &error: errors) {
         qCWarning(lcIpcClient) << "SSL/TLS error :" << error.errorString();
     }
