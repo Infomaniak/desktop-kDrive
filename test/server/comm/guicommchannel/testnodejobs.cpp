@@ -181,7 +181,7 @@ void TestGuiCommChannel::testNodeInfoJob() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
 #endif
-    (void) queryObj.set("num", toInt(RequestNum::NODE_INFO));
+    (void) queryObj.set("num", toInt(RequestNum::REMOTE_NODE_INFO));
 
     Poco::JSON::Object queryParamsObj;
     (void) queryParamsObj.set("userDbId", 1);
@@ -212,7 +212,7 @@ void TestGuiCommChannel::testNodeInfoJob() {
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_INFO));
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::REMOTE_NODE_INFO));
     (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer

@@ -533,7 +533,7 @@ ExitCode GuiRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId
     paramsStream << withPath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::NODE_INFO, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::REMOTE_NODE_INFO, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 

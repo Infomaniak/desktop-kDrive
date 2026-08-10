@@ -519,13 +519,13 @@ ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVe
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), user, userCreated, error, errorDescr);
 }
 
-ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
-                                     NodeInfo &nodeInfo, bool withPath) {
-    return getNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
+ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
+                                           NodeInfo &nodeInfo, const bool withPath) {
+    return getRemoteNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
 }
 
-ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
-                                     bool withPath /*= false*/) {
+ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveId driveId, const QString &nodeId,
+                                           NodeInfo &nodeInfo, const bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
     try {
         job = std::make_shared<GetFileInfoJob>(userDbId, driveId, nodeId.toStdString());
@@ -556,7 +556,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
         return {ExitCode::BackError, exitCause};
     }
 
-    Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
+    const Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
         LOG_WARN(Log::instance()->getLogger(), "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
                                                                                      << " nodeId=" << nodeId.toStdString());
@@ -565,7 +565,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
 
     nodeInfo.setNodeId(nodeId);
 
-    SyncTime modTime;
+    SyncTime modTime = 0;
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, modTime)) {
         return ExitCode::BackError;
     }
@@ -1034,7 +1034,7 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
 ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
-    if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
+    if (auto exitInfo = getRemoteNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: " << exitInfo);
         return exitInfo;
     }

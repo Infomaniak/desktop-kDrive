@@ -108,10 +108,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                 const NodeId &serverFolderNodeId, bool liteSync, Sync &sync);
         static ExitInfo addSync(DriveDbId driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
                                 const QString &serverFolderNodeId, bool liteSync, Sync &sync);
-        static ExitInfo getNodeInfo(UserDbId userDbId, DriveId driveId, const std::string &nodeId, NodeInfo &nodeInfo,
-                                    bool withPath = false);
-        static ExitInfo getNodeInfo(UserDbId userDbId, DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
-                                    bool withPath = false);
+        static ExitInfo getRemoteNodeInfo(UserDbId userDbId, DriveId driveId, const std::string &nodeId, NodeInfo &nodeInfo,
+                                          bool withPath = false);
+        static ExitInfo getRemoteNodeInfo(UserDbId userDbId, DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
+                                          bool withPath = false);
 
         static ExitInfo getSubFolders(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId,
                                       std::vector<NodeInfo> &list, const bool withPath = false);

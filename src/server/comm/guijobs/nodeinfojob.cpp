@@ -38,7 +38,7 @@ namespace KDC {
 NodeInfoJob::NodeInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                          std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::NODE_INFO;
+    _requestNum = RequestNum::REMOTE_NODE_INFO;
 }
 
 ExitInfo NodeInfoJob::deserializeInputParms() {
@@ -62,7 +62,7 @@ ExitInfo NodeInfoJob::serializeOutputParms() {
 }
 
 ExitInfo NodeInfoJob::process() {
-    if (ExitInfo exitInfo = ServerRequests::getNodeInfo(_userDbId, _driveId, _nodeId, _nodeInfo, _withPath); !exitInfo) {
+    if (ExitInfo exitInfo = ServerRequests::getRemoteNodeInfo(_userDbId, _driveId, _nodeId, _nodeInfo, _withPath); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::getNodeInfo");
         addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
         return exitInfo;

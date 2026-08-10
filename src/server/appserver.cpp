@@ -1920,7 +1920,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << path;
             break;
         }
-        case RequestNum::NODE_INFO: {
+        case RequestNum::REMOTE_NODE_INFO: {
             qint64 userDbId = 0;
             qint64 driveId = 0;
             QString nodeId;
@@ -1932,7 +1932,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> withPath;
 
             NodeInfo nodeInfo;
-            const auto exitInfo = ServerRequests::getNodeInfo(userDbId, driveId, nodeId, nodeInfo, withPath);
+            const auto exitInfo = ServerRequests::getRemoteNodeInfo(userDbId, driveId, nodeId, nodeInfo, withPath);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getNodeInfo");
                 addError(Error(ERR_ID, exitInfo));
@@ -2973,11 +2973,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
