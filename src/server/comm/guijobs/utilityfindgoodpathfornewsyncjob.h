@@ -29,7 +29,7 @@ class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        SyncPath _basePath;
+        SyncName _driveName;
 
         // Output parameters
         SyncPath _goodPath;
