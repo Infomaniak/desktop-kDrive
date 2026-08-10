@@ -59,6 +59,14 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
 
     auto checkResult = checkDb();
     if (checkResult != CheckDbResult::Ok) {
+        if (checkResult == CheckDbResult::Locked) {
+            // The database is locked by another connection. This is transient and does not
+            // indicate corruption: preserve the file so the caller can retry later.
+            LOGW_WARN(_logger, L"Database is locked, aborting open (db not removed): " << Path2WStr(dbPath));
+            close();
+            return false;
+        }
+
         if (checkResult == CheckDbResult::CantPrepare) {
             // When disk space is low, preparing may fail even though the db is fine.
             // Typically CANTOPEN or IOERR.
@@ -400,12 +408,25 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
     // quick_check can fail with a disk IO error when diskspace is low
     LOG_IF_FAIL(queryCreate(PRAGMA_QUICK_CHECK_ID));
     if (!queryPrepare(PRAGMA_QUICK_CHECK_ID, PRAGMA_QUICK_CHECK, true, _errId, _error)) {
+        // A persistent lock is not a sign of corruption — abort without deleting the db.
+        if (_errId == SQLITE_BUSY || _errId == SQLITE_LOCKED) {
+            LOG_WARN(_logger, "Database is locked, consistency check aborted: " << PRAGMA_QUICK_CHECK_ID);
+            queryFree(PRAGMA_QUICK_CHECK_ID);
+            return CheckDbResult::Locked;
+        }
         LOG_WARN(_logger, "Error preparing query: " << PRAGMA_QUICK_CHECK_ID);
         queryFree(PRAGMA_QUICK_CHECK_ID);
         return CheckDbResult::CantPrepare;
     }
     bool hasData;
     if (!queryNext(PRAGMA_QUICK_CHECK_ID, hasData) || !hasData) {
+        // Same as above: a lock during step is transient, the db must not be removed.
+        const int stepErrId = _queries.at(PRAGMA_QUICK_CHECK_ID)._query->errorId();
+        if (stepErrId == SQLITE_BUSY || stepErrId == SQLITE_LOCKED) {
+            LOG_WARN(_logger, "Database is locked during consistency check step: " << PRAGMA_QUICK_CHECK_ID);
+            queryFree(PRAGMA_QUICK_CHECK_ID);
+            return CheckDbResult::Locked;
+        }
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_QUICK_CHECK_ID);
         queryFree(PRAGMA_QUICK_CHECK_ID);
         return CheckDbResult::NotOk;
