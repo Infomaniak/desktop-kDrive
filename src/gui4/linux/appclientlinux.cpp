@@ -291,8 +291,7 @@ void AppClientLinux::openMainWindow() {
     }
 
     _mainWindowActivationPending = false;
-    const auto route = determineMainWindowActivationRoute(hasConfiguredSyncs(), _preferSetupHomeWhenUnconfigured);
-    switch (route) {
+    switch (determineMainWindowActivationRoute(hasConfiguredSyncs(), _preferSetupHomeWhenUnconfigured)) {
         case MainWindowActivationRoute::Onboarding:
             _onboardingSessionManager.openOnboardingWindow();
             return;
