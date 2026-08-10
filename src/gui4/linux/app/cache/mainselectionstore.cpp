@@ -37,6 +37,11 @@ MainSelectionStore::MainSelectionStore(AppCache &cache, QObject *const parent) :
             emit currentSyncRuntimeInfoChanged();
         }
     });
+    (void) connect(&_cache, &AppCache::syncStatusChanged, this, [this](const SyncDbId syncDbId) {
+        if (syncDbId == _currentSyncDbId) {
+            emit currentSyncStatusChanged();
+        }
+    });
 }
 
 qint64 MainSelectionStore::currentSyncDbId() const {
