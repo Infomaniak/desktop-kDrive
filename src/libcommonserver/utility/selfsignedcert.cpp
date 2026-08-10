@@ -30,8 +30,8 @@
 #include <openssl/x509v3.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
-
-#include <cstdlib>
+#include <openssl/rand.h>
+#include <openssl/bn.h>
 
 #include <log4cplus/loggingmacros.h>
 
@@ -48,6 +48,11 @@ struct EvpPkeyDeleter {
         void operator()(EVP_PKEY *const p) const { EVP_PKEY_free(p); }
 };
 using UniqueEvpPkey = std::unique_ptr<EVP_PKEY, EvpPkeyDeleter>;
+
+struct BignumDeleter {
+        void operator()(BIGNUM *const b) const { BN_free(b); }
+};
+using UniqueBignum = std::unique_ptr<BIGNUM, BignumDeleter>;
 
 constexpr int64_t certValiditySeconds = 60LL * 60LL * 24LL * 365LL;
 
@@ -75,15 +80,35 @@ bool addExtension(X509 *const x509, const int32_t nid, const char *const value) 
     return true;
 }
 
+bool setRandomSerialNumber(X509 *const x509) {
+    // RFC 5280 §4.1.2.2: the serial number must be a positive integer (≤ 20 bytes).
+    // Generate a random 159-bit BIGNUM: strictly positive, always minimally DER-encoded,
+    // and safely inside the 20-byte ceiling with the sign bit clear. This mirrors
+    // OpenSSL's own rand_serial() and avoids the weak cstdlib rand() and manual masking.
+    UniqueBignum bn(BN_new());
+    if (!bn) {
+        LOG_ERROR(Log::instance()->getLogger(), "BN_new failed for serial: " << sslError());
+        return false;
+    }
+    if (constexpr int serialBits = 159; BN_rand(bn.get(), serialBits, BN_RAND_TOP_ANY, BN_RAND_BOTTOM_ANY) != 1) {
+        LOG_ERROR(Log::instance()->getLogger(), "BN_rand failed for serial: " << sslError());
+        return false;
+    }
+    ASN1_INTEGER *const serial = X509_get_serialNumber(x509);
+    if (BN_to_ASN1_INTEGER(bn.get(), serial) == nullptr) {
+        LOG_ERROR(Log::instance()->getLogger(), "BN_to_ASN1_INTEGER failed for serial: " << sslError());
+        return false;
+    }
+    return true;
+}
+
 bool fillCertificateFields(X509 *const x509, bool isClientCert) {
     if (X509_set_version(x509, 2) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_set_version failed: " << sslError());
         return false;
     }
-    if (ASN1_INTEGER_set(X509_get_serialNumber(x509), rand()) != 1) {
-        LOG_ERROR(Log::instance()->getLogger(), "ASN1_INTEGER_set failed: " << sslError());
-        return false;
-    }
+    if (!setRandomSerialNumber(x509)) return false;
+
     if (X509_gmtime_adj(X509_getm_notBefore(x509), 0) == nullptr) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_gmtime_adj (notBefore) failed: " << sslError());
         return false;
@@ -95,8 +120,7 @@ bool fillCertificateFields(X509 *const x509, bool isClientCert) {
 
     const char *const subject = isClientCert ? clientCertSubject : serverCertSubject;
     X509_NAME *const name = X509_get_subject_name(x509);
-    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC,
-                                    reinterpret_cast<const unsigned char *>(subject), -1, -1, 0) != 1) {
+    if (X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, reinterpret_cast<const unsigned char *>(subject), -1, -1, 0) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "X509_NAME_add_entry_by_txt failed: " << sslError());
         return false;
     }
