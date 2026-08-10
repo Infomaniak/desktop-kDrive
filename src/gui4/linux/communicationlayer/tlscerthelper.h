@@ -19,28 +19,44 @@
 #pragma once
 
 #include <QSslCertificate>
+#include <QSslKey>
 #include <string>
 
 namespace KDC {
 
 /**
- * Read-only accessor for the public TLS certificate stored in the OS keychain.
+ * Read-only accessor for TLS certificates and keys stored in the OS keychain.
+ * The server generates and publishes all TLS material; the client only reads.
  * Uses the same package/service as KeyChainStorage; the keychainKey maps to the
  * keychain "user" slot.
  */
-class CertReader {
+class TLSCertHelper {
     public:
-        CertReader() = delete;
+        TLSCertHelper() = delete;
 
         /**
-         * Reads and parses the certificate from the keychain.
+         * Reads and parses the server certificate from the keychain.
          * @param certificate The output QSslCertificate to hold the parsed certificate.
          * @return true if the certificate was successfully read and parsed, false otherwise.
          */
-        static bool readCertificate(QSslCertificate &certificate);
+        static bool readServerCertificate(QSslCertificate &certificate);
+
+        /**
+         * Reads and parses the client certificate from the keychain.
+         * @param certificate The output QSslCertificate to hold the parsed client certificate.
+         * @return true if the certificate was successfully read and parsed, false otherwise.
+         */
+        static bool readClientCertificate(QSslCertificate &certificate);
+
+        /**
+         * Reads and parses the client private key from the keychain.
+         * @param key The output QSslKey to hold the parsed client private key.
+         * @return true if the key was successfully read and parsed, false otherwise.
+         */
+        static bool readClientKey(QSslKey &key);
 
     private:
-        static bool readPemFromKeychain(std::string &outPem);
+        static bool readPemFromKeychain(const std::string &keychainKey, std::string &outPem);
 };
 
 } // namespace KDC
