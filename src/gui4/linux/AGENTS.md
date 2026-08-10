@@ -35,6 +35,8 @@
   screen-specific drafts, such as proxy edition, belong to the owning UI/view model.
 - Keep per-sync runtime status and progress exclusively in `AppCache`. Consumers such as the system tray and future UI
   adapters must observe and query that shared state instead of maintaining private copies.
+- Design feature storage and presentation contracts for their intended final lifecycle. A temporarily unavailable UI or
+  action may remain inactive, but must not make the underlying model discard state needed by the completed feature.
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
@@ -141,7 +143,7 @@
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
-- `app/cache/activitystore.*`: process-local, per-sync file-activity history. It normalizes `SyncFileItemInfo` pushes,
+- `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
   updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for the
   same node, preserves distinct anonymous operations, and bounds retention to 500 entries per synchronization. It stays
   separate from the durable `AppCache` graph and is not exposed directly to QML.
@@ -163,6 +165,12 @@
   into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
+- `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
+  active node errors. It maps server status and direction to the QML-facing presentation enums. Active errors remain
+  visible even when their recent activity has been evicted.
+- `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
+  presentation, including the local title-state resolver, validates local paths, and delegates asynchronous link actions
+  to `ActivityService`.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`.
@@ -217,6 +225,8 @@
   `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
+- `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`, owns
+  browser and clipboard side effects, and tracks concurrent actions without owning activity history.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
   `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
   confirmation.
