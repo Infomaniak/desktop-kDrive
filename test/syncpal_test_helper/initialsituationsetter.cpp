@@ -172,6 +172,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::
         desc.name = Str2SyncName(nameStr);
         desc.size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
+        if (desc.size < 0) throw SituationGeneratorException("'size' must be non-negative");
         addItem(side, desc, parentId);
 
         if (type == NodeType::Directory && itemObj->isArray("content")) {

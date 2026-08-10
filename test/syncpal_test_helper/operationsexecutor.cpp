@@ -169,6 +169,7 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseCreateOperation(const
 
     desc.size = obj->optValue<int64_t>(
             "size", desc.itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
+    if (desc.size < 0) throw OperationsParserException("Create operation 'size' must be non-negative");
     return desc;
 }
 
@@ -184,6 +185,7 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseEditOperation(const P
     validateRelativePath(desc.path, "path");
 
     desc.size = obj->optValue<int64_t>("newSize", 0);
+    if (desc.size < 0) throw OperationsParserException("Edit operation 'newSize' must be non-negative");
     return desc;
 }
 
