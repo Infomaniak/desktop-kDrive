@@ -18,6 +18,7 @@
 
 #include "appkiller.h"
 
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
 #include <chrono>
