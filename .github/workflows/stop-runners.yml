@@ -51,9 +51,12 @@ jobs:
           DEADLINE=$(( $(date +%s) + TIMEOUT_MIN * 60 ))
 
           while true; do
-            # Count self-hosted runners that are currently running a job
-            BUSY=$(gh api --paginate --slurp "/repos/${REPO}/actions/runners?per_page=100" \
-               --jq '[.[].runners[] | select(.busy == true and (.name | startswith("ci-runner-")))] | length')
+            # Count self-hosted runners that are currently running a job.
+            # `--slurp` cannot be combined with `--jq`, so we emit one line per
+            # busy ci-runner and count the lines instead.
+            BUSY=$(gh api --paginate "/repos/${REPO}/actions/runners?per_page=100" \
+               --jq '.runners[] | select(.busy == true and (.name | startswith("ci-runner-"))) | .id' \
+               | grep -c . || true)
 
             if [ "$BUSY" -eq 0 ]; then
               echo "All runners are idle."
@@ -90,10 +93,12 @@ jobs:
       - name: Delete public cloud instances
         if: always() # Always delete instances, even if previous steps failed, instances are billed by the hour
         run: |
-          # Find every instance tagged with purpose=ci-runner
+          # Find every ci-runner instance. `openstack server list` does not
+          # support filtering by --property, so we match on the instance name
+          # regex instead (instances are named "ci-runner-<run_id>-<i>").
           SERVERS=$(openstack server list \
             --os-cloud "$OS_CLOUD" \
-            --property "purpose=ci-runner" \
+            --name '^ci-runner-' \
             -f value -c ID)
 
           if [ -z "$SERVERS" ]; then
