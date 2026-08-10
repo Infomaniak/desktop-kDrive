@@ -76,7 +76,7 @@ enum class Destination : uint8_t {
 Q_ENUM_NS(Destination)
 
 [[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
-    const QString customUrl = QStringLiteral("infomaniak.com"); // ready for custom brand
+    // TODO manage Custom brand here.
 
     QString path;
     switch (destination) {
@@ -94,8 +94,7 @@ Q_ENUM_NS(Destination)
             break;
     }
 
-    return QUrl{
-            QStringLiteral("https://kdrive.%1/app/drive/%2/%3").arg(customUrl).arg(static_cast<qulonglong>(driveId)).arg(path)};
+    return QUrl{QStringLiteral("https://kdrive.infomaniak.com/app/drive/%1/%2").arg(static_cast<qulonglong>(driveId)).arg(path)};
 }
 
 } // namespace KDC::AppConstants::WebDrive
