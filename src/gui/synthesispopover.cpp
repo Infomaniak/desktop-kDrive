@@ -200,12 +200,12 @@ void SynthesisPopover::paintEvent(QPaintEvent *event) {
 
     QScreen *screen = QGuiApplication::screenAt(_sysTrayIconRect.center());
     if (!screen) {
-        qCDebug(lcSynthesisPopover) << "No Screen found";
-        return;
+        qCDebug(lcSynthesisPopover) << "No screen found at the systray icon position, falling back to the window screen";
+        screen = QWidget::screen();
+        if (!screen) return;
     }
 
     QRect screenRect = screen->availableGeometry();
-
     KDC::GuiUtility::systrayPosition position = KDC::GuiUtility::getSystrayPosition(screen);
 
     bool trianglePositionLeft = false;

@@ -653,9 +653,24 @@ void AppServer::quitLater(const int32_t delayMs) {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+    if (behavior == SyncPal::DbBehaviorAfterStop::Remove) {
+        // Mark the sync for deletion in the parameters DB.
+        if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found)) {
+            LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
+            addError(Error(syncDbId, ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+
+            return; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on Windows only) could
+                    // delete dehydrated placeholders whereas the sync is still in the DB.
+        } else if (!found) {
+            LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
+        }
+    }
+
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
+
+        return;
     }
 
     // Stop Vfs
@@ -794,6 +809,19 @@ void AppServer::deleteSync(const SyncDbId syncDbId) {
                                    // May even cause a crash if both sendDriveRemoved and sendSyncRemoved are processed
                                    // concurrently on the GUI side.
     }
+}
+
+void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
+    QTimer::singleShot(100, [this, syncDbId]() {
+        AppServer::stopSyncTask(syncDbId,
+                                SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
+
+        // Delete sync from DB
+        deleteSync(syncDbId);
+#if defined(KD_MACOS)
+        Utility::restartFinderExtension();
+#endif
+    });
 }
 
 void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled) noexcept {
@@ -1726,16 +1754,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ArgsWriter(params).write(tmpSyncDbId);
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
-            QTimer::singleShot(100, [this, syncDbId]() {
-                AppServer::stopSyncTask(
-                        syncDbId, SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
-
-                // Delete sync from DB
-                deleteSync(syncDbId);
-#if defined(KD_MACOS)
-                Utility::restartFinderExtension();
-#endif
-            });
+            deleteSyncAsBackgroundTask(syncDbId);
 
             break;
         }
@@ -2263,21 +2282,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            QString basePath;
+            QString driveName;
             QDataStream paramsStream(params);
-            paramsStream >> basePath;
+            paramsStream >> driveName;
 
-            QString path;
-            QString error;
-            const auto exitInfo = ServerRequests::findGoodPathForNewSync(basePath, path, error);
+            SyncPath path;
+            std::string error;
+            const auto exitInfo = ServerRequests::findGoodPathForNewSync(QStr2SyncName(driveName), path, error);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
                 addError(Error(ERR_ID, exitInfo));
             }
 
             resultStream << toInt(exitInfo.code());
-            resultStream << path;
-            resultStream << error;
+            resultStream << Path2QStr(path);
+            resultStream << QString::fromStdString(error);
             break;
         }
         case RequestNum::UTILITY_BESTVFSAVAILABLEMODE_LEGACY: {
@@ -2639,6 +2658,7 @@ ExitInfo AppServer::checkIfSyncIsValid(const BaseSync &sync) {
     // Check for nested syncs
     for (const auto &sync_: syncList) {
         if (sync_.dbId() == sync.dbId()) {
+            if (sync_.toDelete()) return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
             continue;
         }
         if (CommonUtility::isSubDir(sync.localPath(), sync_.localPath()) ||
@@ -2935,11 +2955,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -3352,6 +3372,9 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                 if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
+
+                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSyncAsBackgroundTask(sync.dbId());
+
                     continue;
                 }
 

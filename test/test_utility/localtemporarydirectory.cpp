@@ -29,33 +29,10 @@
 
 namespace KDC {
 
-LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, const SyncPath &destinationPath /*= {}*/) {
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+AbstractLocalTemporaryDirectory::AbstractLocalTemporaryDirectory(const SyncPath &inputPath) :
+    _inputPath(inputPath) {}
 
-    const auto basePath = destinationPath.empty() ? std::filesystem::temp_directory_path() : destinationPath;
-    _path = basePath / ("kdrive_" + testType + "_unit_tests_" + woss.str());
-    int retryCount = 0;
-    const int maxRetry = 100;
-    while (!std::filesystem::create_directory(_path) && retryCount < maxRetry) {
-        retryCount++;
-        _path = basePath / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
-    }
-
-    if (retryCount == maxRetry) {
-        throw std::runtime_error("Failed to create local temporary directory");
-    }
-
-    _path = std::filesystem::canonical(_path); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
-    FileStat fileStat;
-    IoError ioError = IoError::Success;
-    IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
-    _id = std::to_string(fileStat.inode);
-}
-
-LocalTemporaryDirectory::~LocalTemporaryDirectory() {
+AbstractLocalTemporaryDirectory::~AbstractLocalTemporaryDirectory() {
     auto ioError = IoError::Success;
 
     // Set full access to temp directory.
@@ -78,6 +55,59 @@ LocalTemporaryDirectory::~LocalTemporaryDirectory() {
         std::cout << CommonUtility::ws2s(Utility::formatIoError(_path, ioError)) << std::endl;
         assert(false);
     }
+}
+
+LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType, const SyncPath &destinationPath /*= {}*/) :
+    AbstractLocalTemporaryDirectory(destinationPath),
+    _testType(testType) {
+    LocalTemporaryDirectory::createDirectory();
+}
+
+void LocalTemporaryDirectory::createDirectory() {
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+
+    const auto basePath = _inputPath.empty() ? std::filesystem::temp_directory_path() : _inputPath;
+    _path = basePath / ("kdrive_" + _testType + "_unit_tests_" + woss.str());
+    int retryCount = 0;
+    const int maxRetry = 100;
+    while (!std::filesystem::create_directory(_path) && retryCount < maxRetry) {
+        retryCount++;
+        _path = basePath / ("kdrive_" + _testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
+    }
+
+    if (retryCount == maxRetry) {
+        throw std::runtime_error("Failed to create local temporary directory");
+    }
+
+    _path = std::filesystem::canonical(_path); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    (void) IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    _id = std::to_string(fileStat.inode);
+}
+
+LocalTemporaryDirectoryFromAbsolutePath::LocalTemporaryDirectoryFromAbsolutePath(
+        const SyncPath &absolutePath, const RecursiveMode recursiveMode /*= RecursiveMode::NonRecursive*/) :
+    AbstractLocalTemporaryDirectory(absolutePath),
+    _recursiveMode(recursiveMode) {
+    LocalTemporaryDirectoryFromAbsolutePath::createDirectory();
+}
+
+void LocalTemporaryDirectoryFromAbsolutePath::createDirectory() {
+    if (const auto ok = _recursiveMode == RecursiveMode::Recursive ? std::filesystem::create_directories(_inputPath)
+                                                                   : std::filesystem::create_directory(_inputPath);
+        !ok) {
+        throw std::runtime_error("Failed to create local temporary directory");
+    }
+
+    _path = std::filesystem::canonical(_inputPath); // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    (void) IoHelper::getFileStat(_path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    _id = std::to_string(fileStat.inode);
 }
 
 

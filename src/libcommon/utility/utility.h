@@ -46,6 +46,12 @@
 
 namespace KDC {
 
+namespace keychainConstant {
+// this define constant used for the key chain in the gui and server
+inline const std::string package("com.infomaniak.drive");
+inline const std::string service("desktopclient");
+} // namespace keychainConstant
+
 namespace fsType {
 static const std::string NTFS = "NTFS";
 static const std::string APFS = "APFS";
@@ -556,6 +562,13 @@ struct COMMON_EXPORT CommonUtility {
          \return An ExitInfo representing the return value of the underlying OS API call.
          */
         static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;
+
+        //! Returns the user's home directory path.
+        /*!
+         \param directoryPath is set with the path to the user's home directory. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo homeDirectoryPath(SyncPath &directoryPath) noexcept;
 
         static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
         static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;

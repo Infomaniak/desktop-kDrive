@@ -54,7 +54,7 @@ class GuiCommChannel : public SocketCommChannel {
 #endif
         bool containsCompleteMessage(const CommString &message, size_t &endIndex) const;
         void fetchDataToBuffer();
-
+        std::mutex _readBufferMutex;
         CommString _readBuffer;
         bool _validJsonInBuffer = false; // True if read buffer contains at least one valid JSON
         size_t _inBufferJsonEndIndex = 0; // Index of the end of the valid JSON in the buffer

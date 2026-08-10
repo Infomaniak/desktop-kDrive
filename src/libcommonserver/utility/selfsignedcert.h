@@ -15,31 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 
-#include "server/comm/guijobs/abstractguijob.h"
+#include "libcommonserver/commonserverlib.h"
+
+#include <string>
 
 namespace KDC {
 
-class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
+class COMMONSERVER_EXPORT SelfSignedCert {
     public:
-        UtilityFindGoodPathForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        struct Pem {
+                std::string cert;
+                std::string key;
+        };
+
+        /// Generate a fresh certificate/key pair and publish the certificate to the keychain,
+        /// so that the GUI can pin it. The private key never leaves this process.
+        /// Must run before the port is published, otherwise a GUI starting in between would pin
+        /// the previous certificate.
+        /// @return true on success, false otherwise.
+        static bool generateAndPublish(Pem &pem);
 
     private:
-        // Input parameters
-        SyncName _driveName;
-
-        // Output parameters
-        SyncPath _goodPath;
-        std::string _errorMessage;
-
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
+        static bool generate(Pem &pem);
 };
 
 } // namespace KDC

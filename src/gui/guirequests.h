@@ -56,7 +56,7 @@ struct GuiRequests {
         static ExitCode getParameters(ParametersInfo &parametersInfo);
         static ExitCode updateParameters(const ParametersInfo &parametersInfo);
         static ExitCode getNodePath(SyncDbId syncDbId, const QString &nodeId, QString &path);
-        static ExitCode findGoodPathForNewSync(const QString &basePath, QString &path, QString &error);
+        static ExitCode findGoodPathForNewSync(const QString &driveName, QString &path, QString &error);
         static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
         static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);

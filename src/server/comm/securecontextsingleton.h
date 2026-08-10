@@ -18,28 +18,21 @@
 
 #pragma once
 
-#include "server/comm/guijobs/abstractguijob.h"
+#include <Poco/Net/Context.h>
 
 namespace KDC {
 
-class UtilityFindGoodPathForNewSyncJob : public AbstractGuiJob {
+class SecureContextSingleton {
     public:
-        UtilityFindGoodPathForNewSyncJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                         const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        static Poco::Net::Context::Ptr instance();
+
+        SecureContextSingleton(const SecureContextSingleton &) = delete;
+        SecureContextSingleton &operator=(const SecureContextSingleton &) = delete;
 
     private:
-        // Input parameters
-        SyncName _driveName;
+        SecureContextSingleton() = default;
 
-        // Output parameters
-        SyncPath _goodPath;
-        std::string _errorMessage;
-
-        ExitInfo deserializeInputParms() override;
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
+        static Poco::Net::Context::Ptr createContext();
 };
 
 } // namespace KDC

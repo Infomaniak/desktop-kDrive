@@ -243,6 +243,8 @@ std::string toString(const ExitCause e) {
             return "BlackListPropagationError";
         case ExitCause::FileSystemNotSupported:
             return "FileSystemNotSupported";
+        case ExitCause::SyncDeletionFailed:
+            return "SyncDeletionFailed";
         default:
             return noConversionStr;
     }

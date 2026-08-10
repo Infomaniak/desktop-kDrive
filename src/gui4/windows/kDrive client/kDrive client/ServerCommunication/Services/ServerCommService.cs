@@ -713,11 +713,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return bestMode == VirtualFileMode.Win;
         }
 
-        public async Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken)
+        public async Task<string?> GetGoodPathForNewSync(IDrive? drive, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
             {
-                [JsonKeys.BasePath] = Utility.ToBase64String(desiredPath)
+                [JsonKeys.DriveName] = Utility.ToBase64String(drive?.Name)
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken).ConfigureAwait(false);
