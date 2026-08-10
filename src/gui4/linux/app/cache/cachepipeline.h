@@ -25,8 +25,6 @@
 #include <QMetaObject>
 #include <QObject>
 
-#include <cstddef>
-#include <deque>
 #include <vector>
 
 namespace KDC {
@@ -41,7 +39,7 @@ namespace KDC {
  * CachePopulator::bootstrapCompleted(), those temporary drop connections are removed and the live pipeline is installed.
  *
  * Entity push signals are connected directly to matching AppCache mutation slots in live mode. File activity signals are
- * buffered during population, then replayed into ActivityStore after their parent synchronizations exist. The class owns
+ * also dropped during population: receiving one in that phase violates the server/client startup contract. The class owns
  * only the signal wiring; AppCache and ActivityStore remain their respective cache authorities, and CachePopulator remains
  * responsible for initial snapshot loading.
  */
@@ -56,16 +54,8 @@ class CachePipeline : public QObject {
         void markPopulated();
 
     private:
-        struct PendingActivity {
-                SyncDbId syncDbId{0};
-                SyncFileItemInfo item;
-        };
-
-        static constexpr std::size_t maxPendingActivities = 5000;
-
         void connectDropPipeline();
         void connectLivePipeline();
-        void bufferActivity(SyncDbId syncDbId, const SyncFileItemInfo &item);
         void routeActivity(SyncDbId syncDbId, const SyncFileItemInfo &item) const;
         void reconcileActivities() const;
         static void logDroppedPush(const char *signalName);
@@ -74,7 +64,6 @@ class CachePipeline : public QObject {
         AppCache &_appCache;
         ActivityStore &_activityStore;
         std::vector<QMetaObject::Connection> _prePopulationConnections;
-        std::deque<PendingActivity> _pendingActivities;
         bool _populated{false};
 };
 
