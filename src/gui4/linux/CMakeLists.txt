@@ -77,6 +77,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         communicationlayer/signaldispatcher.h
         app/services/commservice.cpp
         app/services/commservice.h
+        app/services/activityservice.cpp
+        app/services/activityservice.h
         app/services/cachepopulator.cpp
         app/services/cachepopulator.h
         app/services/driveservice.cpp
