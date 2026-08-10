@@ -23,12 +23,13 @@ HomeStateContent {
     title: qsTrId("synchroStatusUpToDateTitle")
     description: qsTrId("synchroStatusUpToDateDescription")
     actionLabel: {
-        if (controller.primaryAction === HomeController.ShowActivities) {
+        switch (controller.primaryAction) {
+        case HomeController.ShowActivities:
             return qsTrId("buttonSeeActivities")
-        }
-        if (controller.primaryAction === HomeController.HideWindow) {
+        case HomeController.HideWindow:
             return qsTrId("buttonCloseKDrive")
+        default:
+            return ""
         }
-        return ""
     }
 }
