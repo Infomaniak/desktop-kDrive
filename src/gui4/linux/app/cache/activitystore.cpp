@@ -235,7 +235,7 @@ ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileIt
 void ActivityStore::enforceCapacity(std::vector<ActivityEntry> &entries) {
     while (entries.size() > ActivityStore::maxActivitiesPerSync) {
         const auto oldestIt = std::ranges::min_element(entries, {}, &ActivityEntry::receivedSequence);
-        entries.erase(oldestIt);
+        (void) entries.erase(oldestIt);
     }
 }
 
