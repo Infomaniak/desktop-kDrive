@@ -728,9 +728,12 @@ function Package-RecoveryUpdater {
         $depArgs = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @depArgs
         foreach ($dll in $pkg.Dlls) {
-            if (Test-Path "$binFolder/$dll.dll") {
-                Copy-Item "$binFolder/$dll.dll" -Destination $stagingDir
+            $dllPath = "$binFolder/$dll.dll"
+            if (-not (Test-Path $dllPath)) {
+                Write-Host "Missing DLL: $dll.dll" -ForegroundColor Red
+                exit 1
             }
+            Copy-Item $dllPath -Destination $stagingDir
         }
     }
 
