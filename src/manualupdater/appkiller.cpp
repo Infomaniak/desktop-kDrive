@@ -28,7 +28,7 @@ namespace KDC {
 
 namespace {
 
-bool waitForProcessesGone(const QStringList &names, int timeoutMs) {
+bool waitForProcessesGone(const QStringList &names, const int32_t timeoutMs) {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
     while (std::chrono::steady_clock::now() < deadline) {
         if (!isAnyProcessRunning(names)) {
