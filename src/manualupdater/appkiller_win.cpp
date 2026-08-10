@@ -43,7 +43,7 @@ QStringList appProcessNames() {
 
 // tasklist returns 0 when at least one matching process is found (prints "INFO: ..." to stderr
 // when none). We check the stdout content for the image name to be robust.
-bool isAnyProcessRunning(const QStringList &names) {
+ProcessCheckResult isAnyProcessRunning(const QStringList &names) {
     for (const auto &name: names) {
         QProcess p;
         p.setProgram(QStringLiteral("tasklist"));
@@ -51,14 +51,14 @@ bool isAnyProcessRunning(const QStringList &names) {
         p.start();
         if (!p.waitForFinished(5000)) {
             LOGW_WARN(Log::instance()->getLogger(), L"tasklist timed out checking " << name.toStdWString());
-            continue;
+            return ProcessCheckResult::QueryFailed;
         }
         const QString output = QString::fromUtf8(p.readAllStandardOutput());
         if (output.contains(name, Qt::CaseInsensitive)) {
-            return true;
+            return ProcessCheckResult::Running;
         }
     }
-    return false;
+    return ProcessCheckResult::NotRunning;
 }
 
 // taskkill without /F sends WM_CLOSE (soft). With /F it force-terminates (hard).

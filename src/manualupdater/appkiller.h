@@ -21,6 +21,15 @@
 
 namespace KDC {
 /**
+ * @brief Tri-state result of a process query.
+ */
+enum class ProcessCheckResult {
+    NotRunning, // Query succeeded; no matching process found.
+    Running, // Query succeeded; at least one matching process is alive.
+    QueryFailed, // The query itself failed (timeout, command not found, etc.).
+};
+
+/**
  * @brief Stop the running kDrive app (server + client) before opening the parameters database.
  *
  * Escalates from a soft kill (graceful termination) to a hard kill (SIGKILL / /F) if the
@@ -39,9 +48,11 @@ bool killRunningApp(QString &outMessage);
 QStringList appProcessNames();
 
 /**
- * @brief True if at least one of the named processes is currently running.
+ * @brief Check whether at least one of the named processes is currently running.
+ *
+ * @return A ProcessCheckResult distinguishing "not running" from "query failed".
  */
-bool isAnyProcessRunning(const QStringList &names);
+ProcessCheckResult isAnyProcessRunning(const QStringList &names);
 
 /**
  * @brief Send a termination signal (soft) or force-kill (hard) to the named processes.
