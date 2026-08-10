@@ -205,10 +205,10 @@ void AppClientLinux::refreshUpdaterState() {
 
 void AppClientLinux::handleBootstrapCompletion() {
     _bootstrapCompleted = true;
-    _hadConfiguredSync = !_appCache.syncContexts().empty();
+    _hadConfiguredSync = hasConfiguredSyncs();
     _onboardingSessionManager.completeBootstrap();
 
-    if (_appCache.syncContexts().empty()) {
+    if (!_hadConfiguredSync) {
         const bool shouldOpenOnboarding = !_systemTrayController.trayModeActive() || !_mainWindowDismissedDuringBootstrap;
         _mainWindowActivationPending = false;
         if (shouldOpenOnboarding) {
@@ -291,7 +291,7 @@ void AppClientLinux::openMainWindow() {
     }
 
     _mainWindowActivationPending = false;
-    const auto route = determineMainWindowActivationRoute(!_appCache.syncContexts().empty(), _preferSetupHomeWhenUnconfigured);
+    const auto route = determineMainWindowActivationRoute(hasConfiguredSyncs(), _preferSetupHomeWhenUnconfigured);
     switch (route) {
         case MainWindowActivationRoute::Onboarding:
             _onboardingSessionManager.openOnboardingWindow();
@@ -323,7 +323,7 @@ void AppClientLinux::openMainWindow() {
 }
 
 void AppClientLinux::openOnboardingFromHome() {
-    if (!_bootstrapCompleted || !_appCache.syncContexts().empty()) {
+    if (!_bootstrapCompleted || hasConfiguredSyncs()) {
         qCWarning(lcAppClientLinux) << "Home setup request ignored outside the unconfigured post-bootstrap state";
         return;
     }
@@ -337,7 +337,7 @@ void AppClientLinux::handleConfiguredSyncsChanged() {
         return;
     }
 
-    const bool hasConfiguredSync = !_appCache.syncContexts().empty();
+    const bool hasConfiguredSync = hasConfiguredSyncs();
     if (_hadConfiguredSync && !hasConfiguredSync) {
         _preferSetupHomeWhenUnconfigured = true;
         _mainSelectionStore.clearSelection();
