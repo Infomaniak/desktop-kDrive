@@ -46,6 +46,20 @@ namespace Infomaniak.kDrive
         public AppNavigationView AppNavView { get { return NavView; } }
         public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
+        // Bound (OneWay) to the ManyDeletes dialogs' Title so it can be updated after the dialogs are shown.
+        private int _manyDeletesNbFiles;
+        public int ManyDeletesNbFiles
+        {
+            get => _manyDeletesNbFiles;
+            set
+            {
+                if (_manyDeletesNbFiles == value)
+                    return;
+                _manyDeletesNbFiles = value;
+                Bindings.Update();
+            }
+        }
+
         public MainWindow(Type? landingPageType = null)
         {
             InitializeComponent();
@@ -120,10 +134,27 @@ namespace Infomaniak.kDrive
 
         private readonly SemaphoreSlim _manyDeletesQueueSemaphore = new(1, 1);
 
+        // Tracks the soft-limit dialog's open state and aggregated data for merging new notifications.
+        private bool _isSoftLimitDialogOpen;
+        private bool _forceCloseSoftLimitForHardLimit;
+        private int _softLimitAggregatedNbFiles;
+        private ManyDeletesInfo _currentSoftLimitInfo;
+
         public async Task ProcessManyDeleteQueue()
         {
             if (!_mainContentReady)
                 return; // MainContent_Loaded will retry once XamlRoot is ready
+
+            // Merge any newly queued soft-limit notifications directly into the currently open
+            // soft-limit dialog instead of waiting for it to close before showing a new one.
+            MergeQueuedSoftLimitsIntoOpenDialog();
+
+            // A hard limit for the same sync takes priority over an open soft-limit dialog: close it.
+            if (_isSoftLimitDialogOpen && ViewModel.ManyDeletesQueue.Any(i => i.NotificationType == TooManyDeletesNotificationType.HardLimit && i.SyncDbId == _currentSoftLimitInfo.SyncDbId))
+            {
+                _forceCloseSoftLimitForHardLimit = true;
+                SoftLimitManyDeleteDialog.Hide();
+            }
 
             if (!await _manyDeletesQueueSemaphore.WaitAsync(0))
                 return; // Another call is already draining the queue
@@ -141,21 +172,56 @@ namespace Infomaniak.kDrive
                         return;
                     }
 
-                    ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Peek();
+                    // Dequeue before showing so a re-entrant MergeQueuedSoftLimitsIntoOpenDialog()
+                    // call can't merge/count this item again while its dialog is open.
+                    ManyDeletesInfo manyDeletesInfo = ViewModel.ManyDeletesQueue.Dequeue();
 
                     bool shown = manyDeletesInfo.NotificationType == TooManyDeletesNotificationType.HardLimit
                         ? await ShowHardLimitManyDeleteDialogue(manyDeletesInfo)
                         : await ShowSoftLimitManyDeleteDialogue(manyDeletesInfo);
 
                     if (!shown)
-                        return; // Keep the item queued; a later trigger (e.g. dialog closing) will retry.
+                    {
+                        RequeueManyDeletesInfo(manyDeletesInfo); // Retry later (e.g. once XamlRoot is ready)
+                        return;
+                    }
 
-                    ViewModel.ManyDeletesQueue.Dequeue();
+                    // More soft-limit notifications may have been queued while the dialog we just
+                    // showed was open; merge them now before looping to the next item.
+                    MergeQueuedSoftLimitsIntoOpenDialog();
                 }
             }
             finally
             {
                 _manyDeletesQueueSemaphore.Release();
+            }
+        }
+
+        // Puts an item back at the front of the queue (Queue<T> has no built-in way to do this).
+        private void RequeueManyDeletesInfo(ManyDeletesInfo info)
+        {
+            var remaining = ViewModel.ManyDeletesQueue.ToArray();
+            ViewModel.ManyDeletesQueue.Clear();
+            ViewModel.ManyDeletesQueue.Enqueue(info);
+            foreach (var item in remaining)
+                ViewModel.ManyDeletesQueue.Enqueue(item);
+        }
+
+        // Merges consecutive soft-limit items for the same sync into the currently open dialog.
+        // Items for other syncs stay queued and are shown once this dialog closes.
+        private void MergeQueuedSoftLimitsIntoOpenDialog()
+        {
+            if (!_isSoftLimitDialogOpen)
+                return;
+
+            while (ViewModel.ManyDeletesQueue.Count > 0
+                && ViewModel.ManyDeletesQueue.Peek().NotificationType == TooManyDeletesNotificationType.SoftLimit
+                && ViewModel.ManyDeletesQueue.Peek().SyncDbId == _currentSoftLimitInfo.SyncDbId)
+            {
+                ManyDeletesInfo info = ViewModel.ManyDeletesQueue.Dequeue();
+                _softLimitAggregatedNbFiles += info.NbFiles;
+                _currentSoftLimitInfo = info;
+                ManyDeletesNbFiles = _softLimitAggregatedNbFiles;
             }
         }
 
@@ -229,6 +295,7 @@ namespace Infomaniak.kDrive
                 UpdateRequiredControl.Visibility = Visibility.Collapsed;
             }
         }
+
         // ProcessManyDeleteQueue() already checks IsAnotherDialogOpen() before calling this, but we
         // still guard ShowAsync() itself in case another dialog opens in between (race condition).
         private async Task<ContentDialogResult?> TryShowDialogAsync(ContentDialog dialog)
@@ -248,31 +315,28 @@ namespace Infomaniak.kDrive
         }
 
         // Prevents the dialog from being light-dismissed (e.g. clicking outside or pressing Escape).
-        private static void PreventLightDismiss(ContentDialog dialog)
+        private void PreventDialogLightDismiss(ContentDialog sender, ContentDialogClosingEventArgs e)
         {
-            dialog.Closing += (s, e) =>
-            {
-                if (e.Result == ContentDialogResult.None)
-                    e.Cancel = true;
-            };
+            if (e.Result == ContentDialogResult.None)
+                e.Cancel = true;
+        }
+
+        // Same as PreventDialogLightDismiss, but allows the dialog to be closed programmatically
+        // (via Hide()) when a hard-limit notification needs to take priority over it.
+        private void PreventSoftLimitDialogLightDismiss(ContentDialog sender, ContentDialogClosingEventArgs e)
+        {
+            if (e.Result == ContentDialogResult.None && !_forceCloseSoftLimitForHardLimit)
+                e.Cancel = true;
         }
 
         public async Task<bool> ShowHardLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
         {
-            ContentDialog dialog = new ContentDialog();
-
             // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-            dialog.XamlRoot = this.Content.XamlRoot;
-            dialog.Title = Localizer.Instance.GetString1i("manyDeleteDialogTitle", manyDeletesInfo.NbFiles);
-            dialog.PrimaryButtonText = Localizer.Instance.GetString("manyDeleteDialogHardLimitPrimary");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString("manyDeleteDialogHardLimitSecondary");
-            dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = Localizer.Instance.GetString("manyDeleteDialogHardLimitContent");
-
-            PreventLightDismiss(dialog);
+            HardLimitManyDeleteDialog.XamlRoot = this.Content.XamlRoot;
+            ManyDeletesNbFiles = manyDeletesInfo.NbFiles;
 
             Utility.BringCurrentWindowToFront();
-            var result = await TryShowDialogAsync(dialog);
+            var result = await TryShowDialogAsync(HardLimitManyDeleteDialog);
             if (result is null)
                 return false;
 
@@ -289,47 +353,44 @@ namespace Infomaniak.kDrive
 
         public async Task<bool> ShowSoftLimitManyDeleteDialogue(ManyDeletesInfo manyDeletesInfo)
         {
-            ContentDialog dialog = new ContentDialog();
-
             // XamlRoot must be set in the case of a ContentDialog running in a Desktop app
-            dialog.XamlRoot = this.Content.XamlRoot;
-            dialog.Title = Localizer.Instance.GetString1i("manyDeleteDialogTitle", manyDeletesInfo.NbFiles);
-            dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonClose");
-            dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonOpenTrash");
-            dialog.DefaultButton = ContentDialogButton.Primary;
+            SoftLimitManyDeleteDialog.XamlRoot = this.Content.XamlRoot;
 
-            StackPanel contentPanel = new StackPanel
-            {
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                Spacing = (double)Application.Current.Resources["Infomaniak.Style.Spacing.M"]
-            };
-            contentPanel.Children.Add(new TextBlock
-            {
-                Text = Localizer.Instance.GetString("manyDeleteDialogSoftLimitContent"),
-                TextWrapping = TextWrapping.Wrap,
-            });
-            CheckBox doNotShowAgainCheckBox = new CheckBox
-            {
-                Content = Localizer.Instance.GetString("manyDeleteDialogSoftLimitDoNotShowAgain"),
-                IsChecked = !ViewModel.Settings.AskBeforeDelete
-            };
-            contentPanel.Children.Add(doNotShowAgainCheckBox);
-            dialog.Content = contentPanel;
-
-            PreventLightDismiss(dialog);
+            _softLimitAggregatedNbFiles = manyDeletesInfo.NbFiles;
+            _currentSoftLimitInfo = manyDeletesInfo;
+            ManyDeletesNbFiles = _softLimitAggregatedNbFiles;
+            SoftLimitDoNotShowAgainCheckBox.IsChecked = !ViewModel.Settings.AskBeforeDelete;
 
             Utility.BringCurrentWindowToFront();
-            var result = await TryShowDialogAsync(dialog);
+
+            _isSoftLimitDialogOpen = true;
+            ContentDialogResult? result;
+            try
+            {
+                result = await TryShowDialogAsync(SoftLimitManyDeleteDialog);
+            }
+            finally
+            {
+                _isSoftLimitDialogOpen = false;
+            }
+
+            // The dialog was force-closed to give priority to a hard-limit notification; skip the
+            // usual post-processing (settings update / trash link) and let the hard limit be shown.
+            if (_forceCloseSoftLimitForHardLimit)
+            {
+                _forceCloseSoftLimitForHardLimit = false;
+                return true;
+            }
+
             if (result is null)
                 return false;
 
-            bool doNotShowAgain = doNotShowAgainCheckBox.IsChecked ?? false;
+            bool doNotShowAgain = SoftLimitDoNotShowAgainCheckBox.IsChecked ?? false;
             await ViewModel.Settings.ChangeNotifyBeforeDelete(!doNotShowAgain);
 
             if (result == ContentDialogResult.Secondary)
             {
-                Sync? sync = ViewModel.AllSyncs.FirstOrDefault(s => s.DbId == manyDeletesInfo.SyncDbId);
+                Sync? sync = ViewModel.AllSyncs.FirstOrDefault(s => s.DbId == _currentSoftLimitInfo.SyncDbId);
                 Uri? trashUrl = sync?.Drive.GetWebTrashUri();
                 if (trashUrl != null)
                 {
@@ -338,7 +399,7 @@ namespace Infomaniak.kDrive
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, $"ShowSoftLimitManyDeleteDialogue: Unable to get trash URL for sync with DbId {manyDeletesInfo.SyncDbId}.");
+                    Logger.Log(Logger.Level.Error, $"ShowSoftLimitManyDeleteDialogue: Unable to get trash URL for sync with DbId {_currentSoftLimitInfo.SyncDbId}.");
                 }
             }
             return true;
