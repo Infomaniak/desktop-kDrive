@@ -26,15 +26,28 @@ Item {
 
     required property int status
 
-    width: 228
-    height: 131
+    width: IKMainWindow.homeStatusVisualWidth
+    height: IKMainWindow.homeStatusVisualHeight
 
     Loader {
+        id: statusAnimationLoader
+
         anchors.centerIn: parent
-        active: root.status === HomeController.UpToDate
-        height: 131
-        sourceComponent: idleAnimationComponent
-        width: 178
+        active: statusAnimationLoader.sourceComponent !== null
+        sourceComponent: {
+            switch (root.status) {
+            case HomeController.UpToDate:
+                return idleAnimationComponent
+            case HomeController.Syncing:
+                return syncingAnimationComponent
+            case HomeController.Paused:
+                return pausedAnimationComponent
+            case HomeController.Offline:
+                return offlineAnimationComponent
+            default:
+                return null
+            }
+        }
     }
 
     Component {
@@ -43,14 +56,6 @@ Item {
         HomeIdleAnimation {
             anchors.fill: parent
         }
-    }
-
-    Loader {
-        anchors.centerIn: parent
-        active: root.status === HomeController.Syncing
-        height: 131
-        sourceComponent: syncingAnimationComponent
-        width: 178
     }
 
     Component {
@@ -62,14 +67,6 @@ Item {
         }
     }
 
-    Loader {
-        anchors.centerIn: parent
-        active: root.status === HomeController.Paused
-        height: 131
-        sourceComponent: pausedAnimationComponent
-        width: 178
-    }
-
     Component {
         id: pausedAnimationComponent
 
@@ -77,14 +74,6 @@ Item {
             anchors.fill: parent
             animations.loops: Animation.Infinite
         }
-    }
-
-    Loader {
-        anchors.centerIn: parent
-        active: root.status === HomeController.Offline
-        height: 90
-        sourceComponent: offlineAnimationComponent
-        width: 227
     }
 
     Component {
@@ -98,8 +87,8 @@ Item {
 
     Image {
         anchors.centerIn: parent
-        width: 126
-        height: 121
+        width: IKMainWindow.homeStatusSetupImageWidth
+        height: IKMainWindow.homeStatusSetupImageHeight
         visible: root.status === HomeController.SetupRequired
         source: "qrc:/assets/main/home/status-setup-drawer.svg"
     }
