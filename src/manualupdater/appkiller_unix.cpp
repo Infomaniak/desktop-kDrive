@@ -35,7 +35,7 @@ QStringList appProcessNames() {
 
 // pgrep returns 0 when at least one matching process is found.
 // Use a non-static QProcess with output suppressed so PIDs don't leak to the terminal.
-bool isAnyProcessRunning(const QStringList &names) {
+ProcessCheckResult isAnyProcessRunning(const QStringList &names) {
     for (const auto &name: names) {
         QProcess p;
         p.setProgram(QStringLiteral("pgrep"));
@@ -45,13 +45,13 @@ bool isAnyProcessRunning(const QStringList &names) {
         p.start();
         if (!p.waitForFinished(5000)) {
             LOGW_WARN(Log::instance()->getLogger(), L"pgrep timed out checking " << name.toStdWString());
-            continue;
+            return ProcessCheckResult::QueryFailed;
         }
         if (p.exitCode() == 0) {
-            return true;
+            return ProcessCheckResult::Running;
         }
     }
-    return false;
+    return ProcessCheckResult::NotRunning;
 }
 
 // Linux: pkill with -x for exact matching (so the updater itself is never killed).
