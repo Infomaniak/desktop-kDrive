@@ -105,8 +105,8 @@ void ExclusionTemplate::updateList(std::vector<ExclusionTemplate> &templateList)
     for (const auto &exclusionTemplate: templateList) {
         const auto normalizations = computeNormalizations(Str2SyncName(exclusionTemplate.templ()));
         for (const auto &normalization: normalizations)
-            (void) newTemplateList.push_back(
-                    ExclusionTemplate{SyncName2Str(normalization), exclusionTemplate.warning(), exclusionTemplate.def()});
+            (void) newTemplateList.emplace_back(SyncName2Str(normalization), exclusionTemplate.warning(),
+                                                exclusionTemplate.def());
     }
     templateList = newTemplateList;
 }

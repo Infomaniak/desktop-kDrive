@@ -34,16 +34,16 @@ namespace KDC {
 class ExclusionTemplate {
     public:
         ExclusionTemplate();
-        ExclusionTemplate(const std::string &templ, bool warning = false, bool def = false);
+        explicit ExclusionTemplate(const std::string &templ, bool warning = false, bool def = false);
 
-        void setTempl(const std::string &templ) {
+        void setTempl(const std::string_view templ) {
             _templ = templ;
             evaluateComplexity();
         }
         [[nodiscard]] const std::string &templ() const { return _templ; }
-        void setWarning(bool warning) { _warning = warning; }
+        void setWarning(const bool warning) { _warning = warning; }
         [[nodiscard]] bool warning() const { return _warning; }
-        void setDef(bool def) { _def = def; }
+        void setDef(const bool def) { _def = def; }
         [[nodiscard]] bool def() const { return _def; }
         [[nodiscard]] ExclusionTemplateComplexity complexity() const { return _complexity; }
 
@@ -87,18 +87,18 @@ class ExclusionTemplate {
         }
 
         friend void operator>>(QDataStream &in, QList<ExclusionTemplate> &list) {
-            auto count = 0;
+            qint64 count = 0;
             in >> count;
-            for (int i = 0; i < count; i++) {
+            for (qint64 i = 0; i < count; i++) {
                 ExclusionTemplate exclusionTemplate;
                 in >> exclusionTemplate;
                 list.push_back(exclusionTemplate);
             }
         }
         friend QDataStream &operator<<(QDataStream &out, const QList<ExclusionTemplate> &list) {
-            const int count = static_cast<int>(list.size());
+            const auto count = static_cast<qint64>(list.size());
             out << count;
-            for (int i = 0; i < count; i++) {
+            for (qint64 i = 0; i < count; i++) {
                 out << list[i];
             }
             return out;
