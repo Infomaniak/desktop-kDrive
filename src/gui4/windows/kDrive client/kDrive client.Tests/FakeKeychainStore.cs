@@ -14,7 +14,7 @@ internal sealed class FakeKeychainStore(string commFilePath) : IKeychainStore
     // Must match the keychain keys used by TcpServerCommClient (see comm.h).
     private const string ServerCertKey = "kdrive_ipc_tls_cert";
     private const string ClientCertKey = "kdrive_ipc_tls_client_cert";
-    private const string ClientKeyKey = "kdrive_ipc_tls_client_key";
+    private const string ClientPrivateKeyKey = "kdrive_ipc_tls_client_key";
 
     private readonly string _serverCertFilePath = FakeSocketServer.CertificateFilePath(commFilePath);
     private readonly string _clientCertFilePath = FakeSocketServer.ClientCertificateFilePath(commFilePath);
@@ -26,7 +26,7 @@ internal sealed class FakeKeychainStore(string commFilePath) : IKeychainStore
         {
             ServerCertKey => _serverCertFilePath,
             ClientCertKey => _clientCertFilePath,
-            ClientKeyKey => _clientKeyFilePath,
+            ClientPrivateKeyKey => _clientKeyFilePath,
             _ => null
         };
 
