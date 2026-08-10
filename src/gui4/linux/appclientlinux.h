@@ -114,6 +114,7 @@ class AppClientLinux : public QApplication {
         void openMainWindow();
         void openOnboardingFromHome();
         void handleConfiguredSyncsChanged();
+        [[nodiscard]] bool hasConfiguredSyncs() const { return !_appCache.syncContexts().empty(); }
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
