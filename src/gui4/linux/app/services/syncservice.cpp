@@ -49,6 +49,13 @@ SyncService::SyncService(CommService &commService, ServiceActionTracker &service
                            emit loadingChanged();
                        }
                    });
+    (void) connect(&_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
+                   [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
+                          const ServiceActionTracker::ScopeId scopeId, const bool) {
+                       if (serviceKey == serviceKeySync && (actionKey == actionStartSync || actionKey == actionStopSync)) {
+                           emit syncActionPendingChanged(scopeId);
+                       }
+                   });
 }
 
 bool SyncService::loading() const {
