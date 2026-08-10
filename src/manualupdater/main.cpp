@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "updaterdata.h"
+#include "appkiller.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
@@ -23,6 +24,15 @@ int main(int argc, char *argv[]) {
     {
         using namespace KDC; // Required: in Release mode the LOG macro calls a KDC method without a ::KDC qualifier.
         LOG_INFO(Log::instance()->getLogger(), "kDrive Recovery Updater started");
+    }
+
+    {
+        using namespace KDC;
+        if (QString killMsg; !killRunningApp(killMsg)) {
+            LOGW_ERROR(Log::instance()->getLogger(), L"Failed to stop kDrive: " << killMsg.toStdWString());
+            (void) QMessageBox::critical(nullptr, QStringLiteral("Cannot stop kDrive"), killMsg);
+            return 1;
+        }
     }
 
     KDC::UpdaterData updaterData;

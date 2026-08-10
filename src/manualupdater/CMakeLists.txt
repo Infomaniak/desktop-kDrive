@@ -20,11 +20,11 @@ set(SOURCES
 )
 
 if(WIN32)
-    list(APPEND SOURCES updater/osupdater_win.cpp)
+    list(APPEND SOURCES updater/osupdater_win.cpp appkiller_win.cpp)
 elseif(APPLE)
-    list(APPEND SOURCES updater/osupdater_mac.cpp)
+    list(APPEND SOURCES updater/osupdater_mac.cpp appkiller_mac.cpp)
 else()
-    list(APPEND SOURCES updater/osupdater_linux.cpp)
+    list(APPEND SOURCES updater/osupdater_linux.cpp appkiller_linux.cpp)
 endif()
 
 set(HEADERS
@@ -33,6 +33,7 @@ set(HEADERS
         httpdownloader.h
         parmsdblite.h
         updater/abstractosupdater.h
+        appkiller.h
 )
 
 if(WIN32)
