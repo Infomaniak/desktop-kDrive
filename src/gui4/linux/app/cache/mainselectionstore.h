@@ -58,6 +58,7 @@ class MainSelectionStore : public QObject {
         void currentSyncDbIdChanged();
         void currentContextChanged();
         void currentSyncRuntimeInfoChanged();
+        void currentSyncStatusChanged();
 
     private:
         void handleCacheGraphChanged();
