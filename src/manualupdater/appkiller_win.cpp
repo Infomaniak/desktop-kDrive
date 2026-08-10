@@ -62,7 +62,7 @@ bool isAnyProcessRunning(const QStringList &names) {
 }
 
 // taskkill without /F sends WM_CLOSE (soft). With /F it force-terminates (hard).
-void signalProcesses(const QStringList &names, bool force) {
+void signalProcesses(const QStringList &names, const bool force) {
     for (const auto &name: names) {
         QStringList args{QStringLiteral("/IM"), name};
         if (force) {

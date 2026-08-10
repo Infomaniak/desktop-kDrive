@@ -57,7 +57,7 @@ bool isAnyProcessRunning(const QStringList &names) {
 // Linux: pkill with -x for exact matching (so the updater itself is never killed).
 // macOS: killall matches by exact name by default.
 // Both send SIGTERM by default (soft) or SIGKILL with -9 (hard).
-void signalProcesses(const QStringList &names, bool force) {
+void signalProcesses(const QStringList &names, const bool force) {
     for (const auto &name: names) {
         QStringList args;
 #if defined(Q_OS_LINUX)
