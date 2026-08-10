@@ -263,14 +263,22 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
         const NodeId parentRemoteId = remoteParentId(parentId);
         if (desc.type == NodeType::Directory) {
             CreateDirJob job(nullptr, _syncPal->driveDbId(), parentRemoteId, desc.name);
-            (void) job.runSynchronously();
+            const ExitInfo exitInfo = job.runSynchronously();
+            if (!exitInfo) {
+                throw SituationGeneratorException("Failed to create remote directory '" + SyncName2Str(desc.name) +
+                                                   "': " + std::string(exitInfo));
+            }
             _remoteNodeIds[desc.id] = job.nodeId();
         } else {
             const SyncPath localFilePath = localFilePathForUpload(desc);
             // Use the same fixed timestamp as the local side (see _now) so both copies of the same logical
             // item, as well as sibling items, share consistent creation/modification times.
             UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, _now, _now);
-            (void) job.runSynchronously();
+            const ExitInfo exitInfo = job.runSynchronously();
+            if (!exitInfo) {
+                throw SituationGeneratorException("Failed to upload remote file '" + SyncName2Str(desc.name) +
+                                                   "': " + std::string(exitInfo));
+            }
             _remoteNodeIds[desc.id] = job.nodeId();
         }
     } catch (const SituationGeneratorException &e) {
