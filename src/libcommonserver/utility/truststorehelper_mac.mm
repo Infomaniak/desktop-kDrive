@@ -50,7 +50,7 @@ std::vector<std::vector<unsigned char>> extractSystemRootCAs() {
 
     CFIndex count = CFArrayGetCount(anchors);
     for (CFIndex i = 0; i < count; i++) {
-        SecCertificateRef certRef = static_cast<SecCertificateRef>(CFArrayGetValueAtIndex(anchors, i));
+        SecCertificateRef certRef = (SecCertificateRef)CFArrayGetValueAtIndex(anchors, i);
         if (!certRef) continue;
 
         CFDataRef certData = SecCertificateCopyData(certRef);

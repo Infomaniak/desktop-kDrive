@@ -38,7 +38,7 @@ namespace {
 std::vector<std::vector<unsigned char>> extractSystemRootCAs() {
     std::vector<std::vector<unsigned char>> certs;
 
-    HCERTSTORE hStore = CertOpenSystemStore(nullptr, L"ROOT");
+    HCERTSTORE hStore = CertOpenSystemStore(0, L"ROOT");
     if (!hStore) {
         LOG_WARN(Log::instance()->getLogger(), "CertOpenSystemStore(ROOT) failed (error=" << GetLastError() << ")");
         return {};
