@@ -90,7 +90,7 @@ bool setRandomSerialNumber(X509 *const x509) {
         LOG_ERROR(Log::instance()->getLogger(), "BN_new failed for serial: " << sslError());
         return false;
     }
-    if (constexpr int serialBits = 159; BN_rand(bn.get(), serialBits, BN_RAND_TOP_ANY, BN_RAND_BOTTOM_ANY) != 1) {
+    if (constexpr int serialBits = 159; BN_rand(bn.get(), serialBits, BN_RAND_TOP_ONE, BN_RAND_BOTTOM_ANY) != 1) {
         LOG_ERROR(Log::instance()->getLogger(), "BN_rand failed for serial: " << sslError());
         return false;
     }
