@@ -22,7 +22,7 @@ ExclTemplSetUserListJob::ExclTemplSetUserListJob(std::shared_ptr<CommManager> co
 ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in ExclTemplSetUserListJob::readParamValue: error=";
     try {
-        readParamValues(inParamsExclusionTemplateList, _exclusionTemplateList, dynamicVar2Struct<ExclusionTemplateInfo>);
+        readParamValues(inParamsExclusionTemplateList, _exclusionTemplateList, dynamicVar2Struct<ExclusionTemplate>);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
@@ -38,7 +38,7 @@ ExitInfo ExclTemplSetUserListJob::deserializeInputParms() {
 
 
 ExitInfo ExclTemplSetUserListJob::process() {
-    ExclusionTemplateInfo::updateExclusionTemplateInfoList(_exclusionTemplateList);
+    ExclusionTemplate::updateList(_exclusionTemplateList);
     std::list<std::shared_ptr<SyncPal>> syncPalList;
 
     {

@@ -1500,51 +1500,18 @@ ExitCode ServerRequests::getPrivateLinkUrl(const DriveDbId driveDbId, const QStr
     return exitCode;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplateInfo> &list) {
-    list.clear();
-    for (const ExclusionTemplate &exclusionTemplate: ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
-        ExclusionTemplateInfo exclusionTemplateInfo;
-        ServerRequests::exclusionTemplateToExclusionTemplateInfo(exclusionTemplate, exclusionTemplateInfo);
-        list.push_back(std::move(exclusionTemplateInfo));
-    }
-
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplate> &list) {
+    list = ExclusionTemplateCache::instance()->exclusionTemplates(def);
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<ExclusionTemplateInfo> &list) {
-    list.clear();
-    std::vector<ExclusionTemplateInfo> stdVector;
-
-    if (const auto exitCode = getExclusionTemplateList(def, stdVector); exitCode != ExitCode::Ok) return exitCode;
-
-    for (auto &exclusionTemplateInfo: stdVector) {
-        list.append(std::move(exclusionTemplateInfo));
-    }
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list) {
-    std::vector<ExclusionTemplate> exclusionList;
-    for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
-        ExclusionTemplate exclusionTemplate;
-        ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(std::move(exclusionTemplate));
-    }
-
-    if (const auto exitCode = ExclusionTemplateCache::instance()->update(false, exclusionList); exitCode != ExitCode::Ok) {
+ExitInfo ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplate> &list) {
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(false, list); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
 
     return ExitCode::Ok;
-}
-
-ExitCode ServerRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list) {
-    std::vector<ExclusionTemplateInfo> exclusionStdVector;
-    for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
-
-    return setUserExclusionTemplateList(exclusionStdVector);
 }
 
 #if defined(KD_MACOS)
@@ -2276,20 +2243,6 @@ void ServerRequests::proxyConfigInfoToProxyConfig(const ProxyConfigInfo &proxyCo
             return;
         }
     }
-}
-
-void ServerRequests::exclusionTemplateToExclusionTemplateInfo(const ExclusionTemplate &exclusionTemplate,
-                                                              ExclusionTemplateInfo &exclusionTemplateInfo) {
-    exclusionTemplateInfo.setTempl(QString::fromStdString(exclusionTemplate.templ()));
-    exclusionTemplateInfo.setWarning(exclusionTemplate.warning());
-    exclusionTemplateInfo.setDef(exclusionTemplate.def());
-}
-
-void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTemplateInfo &exclusionTemplateInfo,
-                                                              ExclusionTemplate &exclusionTemplate) {
-    exclusionTemplate.setTempl(exclusionTemplateInfo.templ().toStdString());
-    exclusionTemplate.setWarning(exclusionTemplateInfo.warning());
-    exclusionTemplate.setDef(exclusionTemplateInfo.def());
 }
 
 } // namespace KDC

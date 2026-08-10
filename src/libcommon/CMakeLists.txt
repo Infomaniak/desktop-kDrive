@@ -40,7 +40,7 @@ set(libcommon_SRCS
     data/error.h data/error.cpp
     info/parametersinfo.h info/parametersinfo.cpp
     info/syncfileiteminfo.h info/syncfileiteminfo.cpp
-    info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
+    data/exclusiontemplate.h data/exclusiontemplate.cpp
     data/exclusionapp.h data/exclusionapp.cpp
     info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp

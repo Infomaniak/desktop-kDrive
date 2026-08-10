@@ -20,7 +20,7 @@
 
 #include "customdialog.h"
 #include "customcheckbox.h"
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/data/exclusiontemplate.h"
 
 #include <QTableView>
 #include <QStandardItemModel>
@@ -49,16 +49,16 @@ class FileExclusionDialog : public CustomDialog {
         QColor _actionIconColor;
         QSize _actionIconSize;
         bool _needToSave{false};
-        QList<ExclusionTemplateInfo> _defaultTemplateList;
-        QList<ExclusionTemplateInfo> _userTemplateList;
+        QList<ExclusionTemplate> _defaultTemplateList;
+        QList<ExclusionTemplate> _userTemplateList;
 
         [[nodiscard]] QColor actionIconColor() const { return _actionIconColor; }
         [[nodiscard]] QSize actionIconSize() const { return _actionIconSize; }
 
         void initUI();
         void updateUI();
-        void addTemplate(const ExclusionTemplateInfo &templateInfo, const bool readOnly, int &row,
-                         const QString &scrollToTemplate, int &scrollToRow);
+        void addTemplate(const ExclusionTemplate &templateInfo, const bool readOnly, int &row, const QString &scrollToTemplate,
+                         int &scrollToRow);
         void setActionIconColor(const QColor &color);
         void setActionIconSize(const QSize &size);
         void setActionIcon();

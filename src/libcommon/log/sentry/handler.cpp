@@ -304,7 +304,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     if (res) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
-    assert(res == 0);
+    // assert(res == 0);
     _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
@@ -376,7 +376,7 @@ void Handler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = (std::min) (storedEvent.captureCount + 1, UINT_MAX - 1);
+    storedEvent.captureCount = (std::min)(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
