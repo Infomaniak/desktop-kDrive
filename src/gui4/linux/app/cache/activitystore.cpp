@@ -35,8 +35,25 @@ bool isValidOperationId(const UniqueId operationId) {
 }
 
 /** @brief Returns whether an activity is currently being synchronized. */
-bool isInProgress(const ActivityStatus status) {
-    return status == ActivityStatus::InProgress;
+bool isInProgress(const SyncFileStatus status) {
+    return status == SyncFileStatus::Syncing;
+}
+
+/** @brief Returns whether an activity ended in a state that still requires user attention. */
+bool isFailed(const SyncFileStatus status) {
+    switch (status) {
+        case SyncFileStatus::Success:
+        case SyncFileStatus::Syncing:
+            return false;
+        case SyncFileStatus::Unknown:
+        case SyncFileStatus::Error:
+        case SyncFileStatus::Conflict:
+        case SyncFileStatus::Inconsistency:
+        case SyncFileStatus::Ignored:
+        case SyncFileStatus::EnumEnd:
+            return true;
+    }
+    return true;
 }
 
 /** @brief Returns whether two activities identify the same node through a non-empty local or remote identifier. */
@@ -47,14 +64,13 @@ bool hasMatchingNodeId(const ActivityEntry &entry, const SyncFileItemInfo &item)
 }
 
 /** @brief Removes failed activities superseded by a successful or in-progress activity for the same node. */
-void removeSupersededFailures(std::vector<ActivityEntry> &entries, const SyncFileItemInfo &item, const ActivityStatus status) {
-    if (status == ActivityStatus::Failed) {
+void removeSupersededFailures(std::vector<ActivityEntry> &entries, const SyncFileItemInfo &item) {
+    if (isFailed(item.status())) {
         return;
     }
 
-    (void) std::erase_if(entries, [&item](const ActivityEntry &entry) {
-        return entry.status == ActivityStatus::Failed && hasMatchingNodeId(entry, item);
-    });
+    (void) std::erase_if(
+            entries, [&item](const ActivityEntry &entry) { return isFailed(entry.status) && hasMatchingNodeId(entry, item); });
 }
 } // namespace
 
@@ -67,15 +83,13 @@ void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item
         return;
     }
 
-    const auto normalizedStatus = normalizeStatus(item.status());
-    if (!normalizedStatus.has_value()) {
+    if (item.status() == SyncFileStatus::EnumEnd) {
         qCWarning(lcActivityStore) << "Activity ignored for unsupported status | syncDbId:" << syncDbId
                                    << "/ status:" << static_cast<int32_t>(item.status());
         return;
     }
 
-    const ActivitySource source = normalizeSource(item.direction());
-    if (source == ActivitySource::Unknown) {
+    if (item.direction() == SyncDirection::Unknown || item.direction() == SyncDirection::EnumEnd) {
         qCWarning(lcActivityStore) << "Activity received with unknown source | syncDbId:" << syncDbId
                                    << "/ direction:" << static_cast<int32_t>(item.direction());
     }
@@ -88,15 +102,15 @@ void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item
                 return;
             }
 
-            *entryIt = makeEntry(syncDbId, item, *normalizedStatus, source, entryIt->localId);
-            removeSupersededFailures(entries, item, *normalizedStatus);
+            *entryIt = makeEntry(syncDbId, item, entryIt->localId);
+            removeSupersededFailures(entries, item);
             emit activitiesChanged(syncDbId);
             return;
         }
     }
 
-    removeSupersededFailures(entries, item, *normalizedStatus);
-    auto entry = makeEntry(syncDbId, item, *normalizedStatus, source, _nextLocalId++);
+    removeSupersededFailures(entries, item);
+    auto entry = makeEntry(syncDbId, item, _nextLocalId++);
     entries.push_back(std::move(entry));
     enforceCapacity(entries);
     emit activitiesChanged(syncDbId);
@@ -145,57 +159,13 @@ void ActivityStore::clear() {
 }
 
 /**
- * @brief Maps a server file status to the reduced presentation status used by Activities.
- * @param status File status received from the server.
- * @return The corresponding presentation status, or std::nullopt when the value requires unsupported-status handling.
- */
-std::optional<ActivityStatus> ActivityStore::normalizeStatus(const SyncFileStatus status) {
-    switch (status) {
-        case SyncFileStatus::Success:
-            return ActivityStatus::Synchronized;
-        case SyncFileStatus::Syncing:
-            return ActivityStatus::InProgress;
-        case SyncFileStatus::Error:
-        case SyncFileStatus::Conflict:
-        case SyncFileStatus::Inconsistency:
-        case SyncFileStatus::Unknown:
-        case SyncFileStatus::Ignored:
-            return ActivityStatus::Failed;
-        case SyncFileStatus::EnumEnd:
-            return std::nullopt;
-    }
-    return std::nullopt;
-}
-
-/**
- * @brief Maps a server synchronization direction to its presentation source.
- * @param direction Direction received from the server.
- * @return The corresponding presentation source, or ActivitySource::Unknown when no source can be inferred.
- */
-ActivitySource ActivityStore::normalizeSource(const SyncDirection direction) {
-    switch (direction) {
-        case SyncDirection::Up:
-            return ActivitySource::Computer;
-        case SyncDirection::Down:
-            return ActivitySource::Web;
-        case SyncDirection::Unknown:
-        case SyncDirection::EnumEnd:
-            return ActivitySource::Unknown;
-    }
-    return ActivitySource::Unknown;
-}
-
-/**
  * @brief Builds a process-local activity entry from a server DTO.
  * @param syncDbId Database identifier of the owning synchronization.
  * @param item Activity DTO received from the server.
- * @param status Normalized presentation status.
- * @param source Normalized presentation source.
  * @param localId Stable process-local identifier assigned to the entry.
  * @return A fully populated activity entry with a fresh receive timestamp and sequence number.
  */
-ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileItemInfo &item, const ActivityStatus status,
-                                       const ActivitySource source, const GenericId localId) {
+ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileItemInfo &item, const GenericId localId) {
     ActivityEntry entry;
     entry.localId = localId;
     entry.syncDbId = syncDbId;
@@ -207,9 +177,7 @@ ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileIt
     entry.remoteNodeId = item.remoteNodeId();
     entry.direction = item.direction();
     entry.instruction = item.instruction();
-    entry.rawStatus = item.status();
-    entry.status = status;
-    entry.source = source;
+    entry.status = item.status();
     entry.size = item.size();
     entry.progress = item.progress();
     entry.receivedAtUtc = QDateTime::currentDateTimeUtc();
