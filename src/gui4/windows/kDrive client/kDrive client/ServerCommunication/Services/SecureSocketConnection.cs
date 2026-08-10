@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using System;
 using System.Linq;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -27,21 +28,24 @@ using System.Threading.Tasks;
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     /// <summary>
-    /// Establishes a TLS connection to the local kDrive server socket.
+    /// Establishes a mutually-authenticated TLS connection to the local kDrive server socket.
     /// The server exposes a <c>SecureServerSocket</c> secured with an auto-generated,
     /// self-signed certificate over the loopback interface. The client pins that exact
-    /// certificate (retrieved from the OS keychain) and rejects any other one.
+    /// certificate (retrieved from the OS keychain) and rejects any other one. In turn the
+    /// server requires the client to present the client certificate it published in the
+    /// keychain, so the client authenticates itself during the same handshake.
     /// </summary>
     internal static class SecureSocketConnection
     {
         /// <summary>
         /// Opens a TCP connection to <paramref name="host"/>:<paramref name="port"/> and performs
-        /// the TLS client handshake, validating the server against the <paramref name="pinnedCertificate"/>.
+        /// the TLS client handshake, validating the server against the <paramref name="pinnedCertificate"/>
+        /// and presenting <paramref name="clientCertificate"/> so the server can authenticate the client.
         /// </summary>
         /// <returns>
         /// The authenticated <see cref="SslStream"/> used to read and write application data.
         /// </returns>
-        public static async Task<SslStream> ConnectAsync(string host, int port, X509Certificate2 pinnedCertificate, CancellationToken cancellationToken)
+        public static async Task<SslStream> ConnectAsync(string host, int port, X509Certificate2 pinnedCertificate, X509Certificate2 clientCertificate, CancellationToken cancellationToken)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
@@ -55,6 +59,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     TargetHost = host,
                     EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+                    ClientCertificates = new X509CertificateCollection { clientCertificate },
                     RemoteCertificateValidationCallback =
                         (sender, certificate, chain, errors) => ValidateServerCertificate(certificate, pinnedCertificate)
                 };
@@ -66,6 +71,40 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 socket.Dispose();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Builds an <see cref="X509Certificate2"/> that carries its private key from the PEM-encoded
+        /// certificate and private key the server published in the keychain, so the client can present
+        /// it during the TLS handshake.
+        /// </summary>
+        /// <remarks>
+        /// On Windows, SChannel cannot use the private key produced directly by
+        /// <see cref="X509Certificate2.CreateFromPem(System.ReadOnlySpan{char}, System.ReadOnlySpan{char})"/>
+        /// during a TLS handshake. Round-tripping through a PKCS#12 blob yields a certificate whose private
+        /// key SChannel can access, mirroring the workaround used elsewhere for the same limitation. The
+        /// key set is not persisted, so the temporary key container is removed when the returned
+        /// certificate is disposed.
+        /// </remarks>
+        /// <returns>The certificate with its private key, or <c>null</c> when the PEM material is missing or invalid.</returns>
+        internal static X509Certificate2? BuildClientCertificate(string? certificatePem, string? privateKeyPem)
+        {
+            if (string.IsNullOrEmpty(certificatePem) || string.IsNullOrEmpty(privateKeyPem))
+            {
+                return null;
+            }
+
+            try
+            {
+                using var certificateWithKey = X509Certificate2.CreateFromPem(certificatePem, privateKeyPem);
+                byte[] pkcs12 = certificateWithKey.Export(X509ContentType.Pkcs12);
+                return X509CertificateLoader.LoadPkcs12(pkcs12, null, X509KeyStorageFlags.Exportable);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to build TLS client certificate from keychain material: {ex.Message}");
+                return null;
             }
         }
 

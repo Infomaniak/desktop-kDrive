@@ -41,6 +41,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         // Must match the server-side keychain key used to publish the TLS certificate (see comm.h: certKeychainKey).
         private const string _certKeychainKey = "kdrive_ipc_tls_cert";
+        // Must match the server-side keychain keys used to publish the TLS client certificate and its private key
+        // (see comm.h: clientCertKeychainKey / clientKeyKeychainKey). The server generates this pair, trusts the
+        // certificate as a CA and requires the client to present it during the handshake.
+        private const string _clientCertKeychainKey = "kdrive_ipc_tls_client_cert";
+        private const string _clientKeyKeychainKey = "kdrive_ipc_tls_client_key";
 
         private readonly IKeychainStore _keychainStore;
         private SslStream? _stream;
@@ -158,6 +163,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
         }
 
+        private X509Certificate2? LoadClientCertificate()
+        {
+            string? certPem = _keychainStore.ReadSecret(_clientCertKeychainKey);
+            string? keyPem = _keychainStore.ReadSecret(_clientKeyKeychainKey);
+            if (string.IsNullOrEmpty(certPem) || string.IsNullOrEmpty(keyPem))
+            {
+                Logger.Log(Logger.Level.Warning, "TLS client certificate/key not found in keychain yet.");
+                return null;
+            }
+
+            return SecureSocketConnection.BuildClientCertificate(certPem, keyPem);
+        }
+
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
         {
             if (_pollingTask is not null)
@@ -194,11 +212,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         continue;
                     }
 
+                    X509Certificate2? clientCertificate = LoadClientCertificate();
+                    if (clientCertificate is null)
+                    {
+                        // The server may not have published the client certificate/key yet, or the
+                        // material is incomplete; the server requires it, so retry until it is available.
+                        pinnedCertificate.Dispose();
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
                     DisposeConnection();
                     using (pinnedCertificate)
+                    using (clientCertificate)
                     {
-                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, cancellationToken).ConfigureAwait(false);
+                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
                     }
                     Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
