@@ -22,7 +22,6 @@
 
 #include <tuple>
 #include <unordered_set>
-#include <utility>
 
 namespace KDC {
 
@@ -77,7 +76,7 @@ void CachePipeline::connectDropPipeline() {
             },
             directCacheConnections);
     _prePopulationConnections.push_back(
-            connect(&_commService, &CommService::itemCompleted, this, &CachePipeline::bufferActivity));
+            connect(&_commService, &CommService::itemCompleted, this, [](const auto &...) { logDroppedPush("itemCompleted"); }));
 }
 
 void CachePipeline::connectLivePipeline() {
@@ -102,22 +101,7 @@ void CachePipeline::markPopulated() {
     _prePopulationConnections.clear();
     connectLivePipeline();
 
-    while (!_pendingActivities.empty()) {
-        const auto [syncDbId, syncFileItemInfo] = std::move(_pendingActivities.front());
-        _pendingActivities.pop_front();
-        routeActivity(syncDbId, syncFileItemInfo);
-    }
-
     qCInfo(lcCachePipeline) << "Cache population completed; live cache push mutations enabled";
-}
-
-void CachePipeline::bufferActivity(const SyncDbId syncDbId, const SyncFileItemInfo &item) {
-    if (_pendingActivities.size() == maxPendingActivities) {
-        qCWarning(lcCachePipeline) << "Pre-population activity buffer full; dropping oldest activity"
-                                   << "| capacity:" << maxPendingActivities;
-        _pendingActivities.pop_front();
-    }
-    _pendingActivities.push_back(PendingActivity{.syncDbId = syncDbId, .item = item});
 }
 
 void CachePipeline::routeActivity(const SyncDbId syncDbId, const SyncFileItemInfo &item) const {
