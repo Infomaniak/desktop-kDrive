@@ -160,6 +160,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Sluiten";
 
+/* loco:6a799d2786bd930f640fa666 */
+"buttonCloseDoNotAskAgain" = "Sluiten en niet meer vragen";
+
 /* loco:698c5e4ec95ac47af70ec115 */
 "buttonConfigure" = "Configureren";
 

@@ -133,18 +133,20 @@ final class ManyDeletesModalPresenter {
             message: KDriveLocalizable.manyDeleteDialogSoftLimitContent
         )
         alert.addButton(withTitle: KDriveLocalizable.buttonClose)
+        alert.addButton(withTitle: KDriveLocalizable.buttonCloseDoNotAskAgain)
         alert.addButton(withTitle: KDriveLocalizable.buttonOpenTrash)
 
         let response = runModal(for: alert)
 
-        if response == .alertSecondButtonReturn {
+        if response == .alertThirdButtonReturn {
             let trashUrl = WebFolder.trash.url(driveID: driveId)
 
             NSWorkspace.shared.open(trashUrl)
+        } else if response == .alertSecondButtonReturn {
+            closeAndDoNotAskAgain()
         }
     }
 
-    /// Returns the user choice, or `nil` if the alert has been superseded by a more severe notification.
     private func runHardLimitAlert(nbFiles: UInt64) -> KDC.TooManyDeletesUserChoice? {
         let alert = makeAlert(
             style: .critical,
@@ -187,6 +189,37 @@ final class ManyDeletesModalPresenter {
         } catch {
             SentrySDK.capture(error: error)
             IKLogger.general.error("[KD] Failed to acknowledge many deletes for syncDbId:\(syncDbId): \(error)")
+        }
+    }
+
+    private func closeAndDoNotAskAgain() {
+        @InjectService var settingsCache: SettingsCaching
+        Task {
+            do {
+                guard let parametersInfo = await settingsCache.getSettings() else { return }
+                let newParametersInfo = ParametersInfo(
+                    language: parametersInfo.language,
+                    monoIcons: parametersInfo.monoIcons,
+                    autoStart: parametersInfo.autoStart,
+                    moveToTrash: parametersInfo.moveToTrash,
+                    notificationsDisabled: parametersInfo.notificationsDisabled,
+                    useLog: parametersInfo.useLog,
+                    logLevel: parametersInfo.logLevel,
+                    extendedLog: parametersInfo.extendedLog,
+                    purgeOldLogs: parametersInfo.purgeOldLogs,
+                    proxyConfigInfo: parametersInfo.proxyConfigInfo,
+                    darkTheme: parametersInfo.darkTheme,
+                    maxAllowedCpu: parametersInfo.maxAllowedCpu,
+                    distributionChannel: parametersInfo.distributionChannel,
+                    sentryEnabled: parametersInfo.sentryEnabled,
+                    matomoEnabled: parametersInfo.matomoEnabled,
+                    askBeforeDelete: false
+                )
+                try await ParametersJobs().updateParameters(parametersInfo: newParametersInfo)
+            } catch {
+                SentrySDK.capture(error: error)
+                IKLogger.general.error("[KD] Failed to disable askBeforeDelete: \(error)")
+            }
         }
     }
 }

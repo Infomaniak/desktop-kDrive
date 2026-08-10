@@ -122,6 +122,8 @@ public enum KDriveLocalizable {
   public static let buttonChangeToOnline = KDriveLocalizable.tr("Localizable", "buttonChangeToOnline", fallback: "Store online")
   /// loco:696a343b72b6dc32e00557a4
   public static let buttonClose = KDriveLocalizable.tr("Localizable", "buttonClose", fallback: "Close")
+  /// loco:6a799d2786bd930f640fa666
+  public static let buttonCloseDoNotAskAgain = KDriveLocalizable.tr("Localizable", "buttonCloseDoNotAskAgain", fallback: "Close and don’t ask again")
   /// loco:698c5e4ec95ac47af70ec115
   public static let buttonConfigure = KDriveLocalizable.tr("Localizable", "buttonConfigure", fallback: "Configure")
   /// loco:698af6e7b8da51abf504d482
