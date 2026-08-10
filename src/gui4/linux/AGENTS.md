@@ -134,12 +134,19 @@
   prefers a classic root synchronization, then any synchronization.
     - Emits `currentContextChanged()` as a coarse invalidation signal when the selected ids stay unchanged but the
       underlying cache graph changes.
-    - Exposes selected-sync runtime through its dedicated accessor and signal so progress ticks do not rebuild the
-      configured graph context.
+    - Exposes selected-sync runtime through its dedicated accessor and signals, including a status-only notification so
+      progress ticks do not invalidate presentation that only depends on the synchronization status.
 - `app/mainwindow/syncselectormodel.*`: QML adapter for the synchronization selector. It flattens each configured drive
   into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
+- `app/mainwindow/homecontroller.*`: cache-backed adapter for Home presentation and synchronization controls. It resolves
+  the selected synchronization into one central state, exposes user, drive, and error data, and delegates pause/resume to
+  `SyncService`.
+- `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
+  independent Home banner instead of replacing the central state.
+- `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
+  reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
   it must not read `AppCache`, call backend services, or decide whether onboarding is required.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
