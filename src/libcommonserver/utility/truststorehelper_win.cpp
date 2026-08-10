@@ -25,7 +25,7 @@
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 
-#include <windows.h>
+#include <Windows.h>
 #include <wincrypt.h>
 
 #include <vector>
@@ -47,11 +47,11 @@ std::vector<std::vector<unsigned char>> extractSystemRootCAs() {
     PCCERT_CONTEXT pCertCtx = nullptr;
     while ((pCertCtx = CertEnumCertificatesInStore(hStore, pCertCtx)) != nullptr) {
         if (pCertCtx->pbCertEncoded && pCertCtx->cbCertEncoded > 0) {
-            certs.emplace_back(pCertCtx->pbCertEncoded, pCertCtx->pbCertEncoded + pCertCtx->cbCertEncoded);
+            (void) certs.emplace_back(pCertCtx->pbCertEncoded, pCertCtx->pbCertEncoded + pCertCtx->cbCertEncoded);
         }
     }
 
-    CertCloseStore(hStore, 0);
+    (void) CertCloseStore(hStore, 0);
     return certs;
 }
 
