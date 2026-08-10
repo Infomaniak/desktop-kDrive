@@ -118,7 +118,7 @@ void CachePipeline::reconcileActivities() const {
     std::unordered_set<SyncDbId> retainedSyncDbIds;
     retainedSyncDbIds.reserve(syncs.size());
     for (const auto &sync: syncs) {
-        retainedSyncDbIds.insert(sync.dbId());
+        (void) retainedSyncDbIds.insert(sync.dbId());
     }
     _activityStore.retainSyncs(retainedSyncDbIds);
 }
