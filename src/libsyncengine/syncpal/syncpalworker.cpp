@@ -620,8 +620,10 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 
 SyncStep SyncPalWorker::nextStep() const {
     // If a max step was set (used by tests to stop the sync at a given step), freeze once it is reached.
-    if (_maxStep != SyncStep::None && static_cast<int>(_step) >= static_cast<int>(_maxStep)) {
-        return _step;
+    const SyncStep step = _step;
+    const SyncStep maxStep = _maxStep;
+    if (maxStep != SyncStep::None && static_cast<int>(step) >= static_cast<int>(maxStep)) {
+        return step;
     }
     return computeNextStep();
 }
