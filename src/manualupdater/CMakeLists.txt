@@ -17,14 +17,15 @@ set(SOURCES
         httpdownloader.cpp
         parmsdblite.cpp
         updater/abstractosupdater.cpp
+        appkiller.cpp
 )
 
 if(WIN32)
     list(APPEND SOURCES updater/osupdater_win.cpp appkiller_win.cpp)
 elseif(APPLE)
-    list(APPEND SOURCES updater/osupdater_mac.cpp appkiller_mac.cpp)
+    list(APPEND SOURCES updater/osupdater_mac.cpp appkiller_unix.cpp)
 else()
-    list(APPEND SOURCES updater/osupdater_linux.cpp appkiller_linux.cpp)
+    list(APPEND SOURCES updater/osupdater_linux.cpp appkiller_unix.cpp)
 endif()
 
 set(HEADERS
@@ -44,7 +45,7 @@ else()
     list(APPEND HEADERS updater/osupdater_linux.h)
 endif()
 
-# Application icon for macOS (.icns) and Windows (.ico + .rc)
+#Application icon for macOS(.icns) and Windows(.ico +.rc)
 if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
     set(theme_dir ${KDRIVE_THEME_DIR}/theme)
 else()

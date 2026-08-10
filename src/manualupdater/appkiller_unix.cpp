@@ -29,51 +29,58 @@
 
 namespace KDC {
 
-namespace {
-
-QString exeName(const QString &baseName) {
-    return baseName + QStringLiteral(".exe");
-}
-
-} // namespace
-
 QStringList appProcessNames() {
-    return {exeName(QStringLiteral(APPLICATION_EXECUTABLE)), exeName(QStringLiteral(APPLICATION_CLIENT_EXECUTABLE))};
+    return {QStringLiteral(APPLICATION_EXECUTABLE), QStringLiteral(APPLICATION_CLIENT_EXECUTABLE)};
 }
 
-// tasklist returns 0 when at least one matching process is found (prints "INFO: ..." to stderr
-// when none). We check the stdout content for the image name to be robust.
+// pgrep returns 0 when at least one matching process is found.
+// Use a non-static QProcess with output suppressed so PIDs don't leak to the terminal.
 bool isAnyProcessRunning(const QStringList &names) {
     for (const auto &name: names) {
         QProcess p;
-        p.setProgram(QStringLiteral("tasklist"));
-        p.setArguments({QStringLiteral("/FI"), QStringLiteral("IMAGENAME eq ") + name, QStringLiteral("/NH")});
+        p.setProgram(QStringLiteral("pgrep"));
+        p.setArguments({QStringLiteral("-x"), name});
+        p.setStandardOutputFile(QProcess::nullDevice());
+        p.setStandardErrorFile(QProcess::nullDevice());
         p.start();
         if (!p.waitForFinished(5000)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"tasklist timed out checking " << name.toStdWString());
+            LOGW_WARN(Log::instance()->getLogger(), L"pgrep timed out checking " << name.toStdWString());
             continue;
         }
-        const QString output = QString::fromUtf8(p.readAllStandardOutput());
-        if (output.contains(name, Qt::CaseInsensitive)) {
+        if (p.exitCode() == 0) {
             return true;
         }
     }
     return false;
 }
 
-// taskkill without /F sends WM_CLOSE (soft). With /F it force-terminates (hard).
+// Linux: pkill with -x for exact matching (so the updater itself is never killed).
+// macOS: killall matches by exact name by default.
+// Both send SIGTERM by default (soft) or SIGKILL with -9 (hard).
 void signalProcesses(const QStringList &names, bool force) {
     for (const auto &name: names) {
-        QStringList args{QStringLiteral("/IM"), name};
+        QStringList args;
+#if defined(Q_OS_LINUX)
+        args.append(QStringLiteral("-x"));
+#endif
         if (force) {
-            args.prepend(QStringLiteral("/F"));
+            args.append(QStringLiteral("-9"));
         }
-        (void) QProcess::execute(QStringLiteral("taskkill"), args);
+        args.append(name);
+#if defined(Q_OS_LINUX)
+        (void) QProcess::execute(QStringLiteral("pkill"), args);
+#else
+        (void) QProcess::execute(QStringLiteral("killall"), args);
+#endif
     }
 }
 
 QString manualKillHint() {
-    return QStringLiteral("via Task Manager");
+#if defined(Q_OS_LINUX)
+    return QStringLiteral("via System Monitor or `kill -9`");
+#else
+    return QStringLiteral("via Activity Monitor");
+#endif
 }
 
 } // namespace KDC
