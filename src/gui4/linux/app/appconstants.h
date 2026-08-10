@@ -76,7 +76,7 @@ enum class Destination : uint8_t {
 Q_ENUM_NS(Destination)
 
 [[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
-    QString customUrl = "infomaniak.com"; // ready for custom brand
+    const QString customUrl = QStringLiteral("infomaniak.com"); // ready for custom brand
 
     QString path;
     switch (destination) {
