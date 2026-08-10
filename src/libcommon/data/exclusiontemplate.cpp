@@ -38,7 +38,7 @@ ExclusionTemplate::ExclusionTemplate(const std::string &templ, const bool warnin
 }
 
 void ExclusionTemplate::evaluateComplexity() {
-    std::string::size_type n;
+    std::string::size_type n = 0;
     n = _templ.find('*');
     if (n == std::string::npos) {
         // Simplest pattern without variable part, do not use regex
@@ -74,8 +74,6 @@ void ExclusionTemplate::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommString templateCommStr;
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateString, templateCommStr);
     _templ = CommonUtility::commString2Str(templateCommStr);
-    evaluateComplexity();
-
     CommonUtility::readValueFromStruct(dstruct, exclusionTemplateWarning, _warning);
     try {
         CommonUtility::readValueFromStruct(dstruct, exclusionTemplateDefault, _def);
@@ -107,7 +105,7 @@ void ExclusionTemplate::updateList(std::vector<ExclusionTemplate> &templateList)
     for (const auto &exclusionTemplate: templateList) {
         const auto normalizations = computeNormalizations(Str2SyncName(exclusionTemplate.templ()));
         for (const auto &normalization: normalizations)
-            newTemplateList.push_back(
+            (void) newTemplateList.push_back(
                     ExclusionTemplate{SyncName2Str(normalization), exclusionTemplate.warning(), exclusionTemplate.def()});
     }
     templateList = newTemplateList;
