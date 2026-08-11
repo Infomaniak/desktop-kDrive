@@ -32,6 +32,8 @@ Button {
     property string subtitle: ""
     property color driveColor: IKColors.driveDefaultColor
     property int errorCount: 0
+    property int accessibleErrorCount: errorCount
+    property bool errorDotVisible: errorCount > 0
     property bool warning: false
     property bool selected: false
     property bool interactive: true
@@ -44,8 +46,8 @@ Button {
         if (warning) {
             descriptions.push(qsTrId("logLevelWarning"))
         }
-        if (errorCount > 0) {
-            descriptions.push(qsTrId("informationBlockSynchroErrorTitle", errorCount)
+        if (accessibleErrorCount > 0) {
+            descriptions.push(qsTrId("informationBlockSynchroErrorTitle", accessibleErrorCount)
                               .replace("<b>", "").replace("</b>", ""))
         }
         return descriptions.join(". ")
@@ -191,7 +193,7 @@ Button {
             }
 
             IKBadge {
-                dot: root.errorCount > 0
+                dot: root.errorDotVisible
                 color: IKColors.statusMediumWarning
             }
 
