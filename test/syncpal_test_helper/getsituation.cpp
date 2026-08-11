@@ -186,7 +186,7 @@ SituationCSV GetSituation::csvToSituationCSV(const std::string &csv) {
 }
 
 SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/) const {
-    if (!_syncPal) return {};
+    if (!_syncPal) throw SituationGeneratorException("GetSituation::getRemoteSituation: no SyncPal set");
 
     // An empty remoteDirId isn't "the sync root" for CsvFullFileListWithCursorJob: it lists the whole drive from
     // its actual root. Default to the SyncPal's own remote root node id so only the sync folder's content is
@@ -195,8 +195,10 @@ SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/
 
     CsvFullFileListWithCursorJob job(_syncPal->driveDbId(), dirId);
     if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in CsvFullFileListWithCursorJob::runSynchronously: " << exitInfo);
-        return {};
+        std::ostringstream oss;
+        oss << "Error in CsvFullFileListWithCursorJob::runSynchronously: " << exitInfo;
+        LOG_WARN(Log::instance()->getLogger(), oss.str());
+        throw SituationGeneratorException(oss.str());
     }
 
     RawItemMap rawItems;
@@ -206,8 +208,9 @@ SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/
     bool eof = false;
     while (job.getItem(item, error, ignore, eof)) {
         if (error) {
-            LOG_WARN(Log::instance()->getLogger(), "Error while parsing CsvFullFileListWithCursorJob response.");
-            break;
+            const std::string msg = "Error while parsing CsvFullFileListWithCursorJob response.";
+            LOG_WARN(Log::instance()->getLogger(), msg);
+            throw SituationGeneratorException(msg);
         }
         if (!ignore) rawItems[item.id()] = {item.parentId(), SyncName2Str(item.name()), item.type(), item.size()};
 
