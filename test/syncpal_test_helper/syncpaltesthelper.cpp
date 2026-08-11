@@ -82,8 +82,9 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     _syncPal->setMaxStep(SyncStep::None); // Remove any cap left by a previous executeSyncUpToStep() call.
     if (!_syncPal->isRunning()) _syncPal->start(); // Start the Syncpal if it is not already running
 
-    // Give a pending change a chance to be detected before checking for idleness below.
-    (void) waitForDetectedUpdate();
+    // Give a pending change a short grace period to be detected before checking for idleness below,
+    // so an already-idle sync isn't penalized by the full update timeout.
+    (void) waitForDetectedUpdate(std::chrono::milliseconds(200));
 
     const auto timeOutDuration = std::chrono::minutes(2);
     const TimerUtility timeoutTimer;
