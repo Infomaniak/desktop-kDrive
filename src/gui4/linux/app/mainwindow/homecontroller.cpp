@@ -204,6 +204,10 @@ void HomeController::toggleSync() {
     }
 }
 
+void HomeController::openSupport() {
+    AppRouter::openSupport();
+}
+
 void HomeController::openDriveDestination(const int32_t destination) const {
     const auto context = _mainSelectionStore.currentSyncContext();
     if (!context.has_value() || context->drive.driveId() == 0) {
