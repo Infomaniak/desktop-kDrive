@@ -69,7 +69,7 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
     return executeSyncUntilEnd();
 }
 
-bool SyncpalTestHelper::getSituation(const Situation &localSituation, const Situation &remoteSituation) const {
+bool SyncpalTestHelper::matchesCurrentSituation(const Situation &localSituation, const Situation &remoteSituation) const {
     if (!_syncPal) return false;
 
     return _getSituation.compareSituation(localSituation, remoteSituation);

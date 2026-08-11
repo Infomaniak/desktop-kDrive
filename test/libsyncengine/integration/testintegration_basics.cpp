@@ -258,7 +258,7 @@ void TestIntegration::testSimpleComparison() {
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
-    CPPUNIT_ASSERT(testHelper.getSituation(situation, situation));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situation, situation));
 
     testHelper.tearDown();
     logStep("testSimpleComparison");
@@ -298,7 +298,7 @@ void TestIntegration::testSimpleUpload() {
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
-    CPPUNIT_ASSERT(testHelper.getSituation(endsituation, endsituation));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(endsituation, endsituation));
 
     testHelper.tearDown();
     logStep("testSimpleUpload");
@@ -326,7 +326,7 @@ void TestIntegration::testGlobalFramework() {
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
     // Sanity-check the initial situation landed on the remote before touching anything.
-    CPPUNIT_ASSERT(testHelper.getSituation(situation, situation));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situation, situation));
 
     const Operations localoperations{Str2SyncName(R"({
         "operations": [
@@ -352,7 +352,7 @@ void TestIntegration::testGlobalFramework() {
         ]
     })")};
     // Replaces the two manual getRemoteFileInfoByPath lookups below: confirms BBB exists remotely and AAA is gone.
-    CPPUNIT_ASSERT(testHelper.getSituation(situationAfterLocalOps, situationAfterLocalOps));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situationAfterLocalOps, situationAfterLocalOps));
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "C"));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "CC"));
@@ -382,7 +382,7 @@ void TestIntegration::testGlobalFramework() {
             {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "CC", "size" : 1234}
         ]
     })")};
-    CPPUNIT_ASSERT(testHelper.getSituation(finalSituation, finalSituation));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
 
     testHelper.tearDown();
     logStep("testGlobalFramework");
@@ -418,7 +418,7 @@ void TestIntegration::testNestedRemoteOperations() {
             { "type": "Directory", "name": "A", "content": [ {"type": "File", "name": "AAA"} ] }
         ]
     })")};
-    CPPUNIT_ASSERT(testHelper.getSituation(finalSituation, finalSituation));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
 
     testHelper.tearDown();
     logStep("testNestedRemoteOperations");
@@ -452,7 +452,7 @@ void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
             { "type": "Directory", "name": "B", "content": [ {"type": "File", "name": "f", "size": 222} ] }
         ]
     })")};
-    CPPUNIT_ASSERT(testHelper.getSituation(finalSituation, finalSituation));
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
 
     testHelper.tearDown();
     logStep("testRemoteMoveDirectoryDescendantRekey");

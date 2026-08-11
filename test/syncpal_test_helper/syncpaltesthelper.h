@@ -49,8 +49,8 @@ class SyncpalTestHelper {
         // Builds localSituation and remoteSituation independently against the SyncPal; they may differ. Returns false if invalid.
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
 
-        // Compares localSituation/remoteSituation against the real local/remote situations (localSituation is currently unused).
-        bool getSituation(const Situation &localSituation, const Situation &remoteSituation) const;
+        // Compares localSituation/remoteSituation against the real local/remote situations.
+        bool matchesCurrentSituation(const Situation &localSituation, const Situation &remoteSituation) const;
 
         bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         bool executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const;
@@ -78,7 +78,7 @@ class SyncpalTestHelper {
 
         InitialSituationSetter _setInitialSituation;
         OperationsExecutor _executeOperations;
-        GetSituation _getSituation;
+        SituationComparator _getSituation;
 };
 
 } // namespace KDC

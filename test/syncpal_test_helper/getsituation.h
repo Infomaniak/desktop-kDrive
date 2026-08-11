@@ -71,10 +71,10 @@ class SituationCSV {
  * Usage: construct (optionally with a SyncPal, or set one via setSyncpal), then call `compareSituation` with the
  * expected local and remote `Situation` descriptions to diff them against the real ones.
  */
-class GetSituation {
+class SituationComparator {
     public:
-        GetSituation() = default;
-        explicit GetSituation(std::shared_ptr<SyncPal> syncPal);
+        SituationComparator() = default;
+        explicit SituationComparator(std::shared_ptr<SyncPal> syncPal);
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
