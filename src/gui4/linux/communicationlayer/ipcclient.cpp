@@ -301,7 +301,7 @@ void IpcClient::handleResponseMessage(const Poco::DynamicStruct &ipcMessage, con
     qCDebug(lcIpcClient) << "Response received | RequestNum:" << requestNum << "/ id:" << id << "/ ExitInfo:" << exitInfo;
     if (const auto it = _pendingCallbacks.find(id); it != _pendingCallbacks.end()) {
         const auto callback = std::move(it.value());
-        _pendingCallbacks.erase(it);
+        (void) _pendingCallbacks.erase(it);
 
         try {
             callback(exitInfo, params);
@@ -435,8 +435,8 @@ bool IpcClient::extractNextMessage(std::string &buffer, std::string &outMessage)
         } else if (buffer[i] == '}') {
             --balance;
             if (balance == 0) {
-                outMessage.assign(buffer, 0, i + 1);
-                buffer.erase(0, i + 1);
+                (void) outMessage.assign(buffer, 0, i + 1);
+                (void) buffer.erase(0, i + 1);
                 return true;
             }
         }
