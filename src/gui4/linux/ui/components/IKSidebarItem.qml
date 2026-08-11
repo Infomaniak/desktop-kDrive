@@ -32,6 +32,7 @@ Button {
     property bool selected: false
     property int badgeCount: 0
     property bool notificationDot: false
+    property color notificationColor: IKColors.actionPrimary
     property url trailingIconSource
     signal triggered
 
@@ -94,6 +95,7 @@ Button {
             IKBadge {
                 count: root.enabled ? root.badgeCount : 0
                 dot: root.enabled && root.notificationDot
+                color: root.notificationColor
             }
 
             Image {
