@@ -17,6 +17,7 @@
  */
 
 import kDriveCoreUI
+import kDriveResources
 import SwiftUI
 
 private extension VerticalAlignment {
@@ -72,12 +73,11 @@ struct SynchroLabelView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             if shouldShowNotification && item.notification {
-                Circle()
-                    .fill(notificationColor)
-                    .frame(width: 8, height: 8)
-                    .alignmentGuide(.iconTitleCenter) {
-                        $0[VerticalAlignment.center]
-                    }
+                KDriveResources.alert.swiftUIImage
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(ColorToken.Status.Medium.warning.asColor)
+                    .frame(size: AppIconSize.iconSize16)
             }
         }
     }
