@@ -101,6 +101,7 @@ final class SynchroSelectorViewModel: ObservableObject {
     }
 
     var hasOtherSynchroWithError: Bool {
-        return items.contains { $0.notification && $0.id != selectedSynchroId }
+        guard let selectedItem else { return false }
+        return items.contains { $0.notification && $0.id != selectedItem.id }
     }
 }
