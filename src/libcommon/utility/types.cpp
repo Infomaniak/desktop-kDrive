@@ -762,6 +762,8 @@ std::string toString(const AppStateKey e) {
             return "NoUpdate";
         case AppStateKey::ShowV4Onboarding:
             return "ShowV4Onboarding";
+        case AppStateKey::NotifyBeforeDelete:
+            return "NotifyBeforeDelete";
         case AppStateKey::Unknown:
             return "Unknown";
         default:

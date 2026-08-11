@@ -106,7 +106,7 @@ bool ParmsDb::insertDefaultAppState() {
     }
 
     if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
-        LOG_WARN(_logger, "Error while inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error while inserting default value for AppUid");
         return false;
     }
 
@@ -115,13 +115,16 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::NotifyBeforeDelete, APP_STATE_KEY_DEFAULT_NotifyBeforeDelete)) {
-        LOG_WARN(_logger, "Error while inserting default value for NotifyBeforeDelete");
     // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
-    // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
-    // no need to display the banner. 
+    // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there
+    // is no need to display the banner.
     if (!insertAppState(AppStateKey::ShowV4Onboarding, _versionUpdated ? "1" : "0")) {
         LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::NotifyBeforeDelete, APP_STATE_KEY_DEFAULT_NotifyBeforeDelete)) {
+        LOG_WARN(_logger, "Error while inserting default value for NotifyBeforeDelete");
         return false;
     }
 
@@ -194,7 +197,7 @@ bool ParmsDb::selectAppState(const AppStateKey key, AppStateValue &value, bool &
     }
 
     return true;
-};
+}
 
 bool ParmsDb::updateAppState(const AppStateKey key, const AppStateValue &value, bool &found) {
     AppStateValue existingValue;
@@ -230,5 +233,5 @@ bool ParmsDb::updateAppState(const AppStateKey key, const AppStateValue &value, 
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
     }
     return true;
-};
+}
 } // namespace KDC
