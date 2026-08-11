@@ -475,8 +475,8 @@ void TestIntegration::testExecuteSyncUpToStep() {
 
     for (const auto step: stepsToTest) {
         // Generate a real local change so the sync actually has work to progress through.
-        const SyncPath filePath =
-                _syncPal->localPath() / std::format("testExecuteSyncUpToStep_{}", static_cast<int64_t>(step));
+        // Replace this line with a call to std::format (C++20) when compilation issues are addressed on Linux.
+        const SyncPath filePath = _syncPal->localPath() / Poco::format("testExecuteSyncUpToStep_%d", static_cast<int64_t>(step));
         testhelpers::generateOrEditTestFile(filePath);
 
         CPPUNIT_ASSERT(testHelper.executeSyncUpToStep(static_cast<int64_t>(step), 10000));
