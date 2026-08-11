@@ -188,7 +188,7 @@ inline std::string toString(RequestNum e) {
         case RequestNum::NODE_PATH:
             return "NODE_PATH";
         case RequestNum::REMOTE_NODE_INFO:
-            return "NODE_INFO";
+            return "REMOTE_NODE_INFO";
         case RequestNum::NODE_SUBFOLDERS:
             return "NODE_SUBFOLDERS";
         case RequestNum::NODE_SUBFOLDERS2:
