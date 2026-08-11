@@ -72,6 +72,14 @@ void OnboardingSessionManager::openOnboardingWindow() {
     openWindowIfDisplayable();
 }
 
+void OnboardingSessionManager::cancelActiveSession() const {
+    if (_state != LifecycleState::Active || _activeSession == nullptr) {
+        return;
+    }
+
+    _activeSession->flowController()->cancel();
+}
+
 void OnboardingSessionManager::ensureSession() {
     if (!_bootstrapCompleted) {
         return;
@@ -127,6 +135,7 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
                    &OnboardingSessionManager::openOnboardingWindowRequested);
     (void) connect(session->flowController(), &OnboardingFlowController::cancelRequested, this, [this, session] {
         if (_activeSession == session) {
+            emit onboardingCancelled();
             stopSession(true);
         }
     });
