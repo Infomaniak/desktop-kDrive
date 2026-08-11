@@ -444,8 +444,8 @@ void AppServer::init() {
         }
 
         connect(OldCommServer::instance().get(), &OldCommServer::requestReceived, this, &AppServer::onRequestReceived);
-        (void) connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
-                       &AppServer::onClientDisconnectedReceived);
+        connect(OldCommServer::instance().get(), &OldCommServer::clientDisconnected, this,
+                &AppServer::onClientDisconnectedReceived);
     }
 
     // Set sentry user
