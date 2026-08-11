@@ -104,8 +104,19 @@ qint32 SyncSelectorModel::selectedRow() const {
     return rowForSyncDbId(_selectedSyncDbId);
 }
 
+qint32 SyncSelectorModel::unselectedErrorCount() const {
+    qint32 count = 0;
+    for (const auto &entry: _entries) {
+        if (entry.syncDbId != _selectedSyncDbId) {
+            count += entry.errorCount;
+        }
+    }
+    return count;
+}
+
 void SyncSelectorModel::rebuild() {
     const auto previousSelectedRow = selectedRow();
+    const auto previousUnselectedErrorCount = unselectedErrorCount();
     std::vector<Entry> entries;
 
     for (const auto &driveContext: _cache.driveContexts()) {
@@ -119,6 +130,9 @@ void SyncSelectorModel::rebuild() {
 
     if (selectedRow() != previousSelectedRow) {
         emit selectedRowChanged();
+    }
+    if (unselectedErrorCount() != previousUnselectedErrorCount) {
+        emit unselectedErrorCountChanged();
     }
 }
 
@@ -156,6 +170,7 @@ void SyncSelectorModel::appendDriveEntries(std::vector<Entry> &entries, const Dr
 
 void SyncSelectorModel::handleSelectionChanged() {
     const auto previousSelectedRow = selectedRow();
+    const auto previousUnselectedErrorCount = unselectedErrorCount();
     _selectedSyncDbId = static_cast<SyncDbId>(_selectionStore.currentSyncDbId());
     const auto currentSelectedRow = selectedRow();
 
@@ -167,6 +182,9 @@ void SyncSelectorModel::handleSelectionChanged() {
     }
     if (currentSelectedRow != previousSelectedRow) {
         emit selectedRowChanged();
+    }
+    if (unselectedErrorCount() != previousUnselectedErrorCount) {
+        emit unselectedErrorCountChanged();
     }
 }
 
