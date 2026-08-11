@@ -38,9 +38,8 @@ int main(int argc, char *argv[]) {
 
     KDC::SentryService::initializeFromCachedConsent();
 
-    // see https://doc.qt.io/qt-6/qapplication.html#details
-    const QScopedPointer app(new KDC::AppClientLinux(argc, argv));
-    const int32_t exitCode = app->exec();
+    KDC::AppClientLinux app(argc, argv);
+    const int32_t exitCode = KDC::AppClientLinux::exec();
 
     qCInfo(KDC::lcAppClientLinux) << "Qt event loop exited with code" << exitCode;
     KDC::SentryService::shutdown();

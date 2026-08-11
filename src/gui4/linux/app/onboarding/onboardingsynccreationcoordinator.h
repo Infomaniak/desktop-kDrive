@@ -33,6 +33,7 @@ class CommService;
 class OnboardingFlowController;
 class OnboardingState;
 class ServiceEventBus;
+struct GoodPathResult;
 
 /**
  * Coordinates automatic sync creation at the end of Linux v4 onboarding.
@@ -52,6 +53,7 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         void startSynchronization();
         void createNextSynchronization();
         void prepareSynchronization(const AvailableDriveKey &key);
+        void handleGoodPathResult(const AvailableDriveKey &key, const ExitInfo &exitInfo, const GoodPathResult &result);
         void createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config);
         void discardPendingSynchronization(const AvailableDriveKey &key);
         void handleCreationFailure(bool cacheReconciliationRequired = false);
