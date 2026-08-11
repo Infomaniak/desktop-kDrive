@@ -37,6 +37,7 @@ namespace KDC {
 class SyncSelectorModel final : public QAbstractListModel {
         Q_OBJECT
         Q_PROPERTY(qint32 selectedRow READ selectedRow NOTIFY selectedRowChanged)
+        Q_PROPERTY(qint32 unselectedErrorCount READ unselectedErrorCount NOTIFY unselectedErrorCountChanged)
 
     public:
         enum class EntryType : uint8_t {
@@ -63,9 +64,11 @@ class SyncSelectorModel final : public QAbstractListModel {
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
         [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
         [[nodiscard]] qint32 selectedRow() const;
+        [[nodiscard]] qint32 unselectedErrorCount() const;
 
     signals:
         void selectedRowChanged();
+        void unselectedErrorCountChanged();
 
     private:
         struct Entry {

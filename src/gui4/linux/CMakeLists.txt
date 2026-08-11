@@ -141,9 +141,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
-        ui/windows/main/SidebarHeaderView.qml
-        ui/windows/main/SidebarView.qml
-        ui/windows/main/SyncSelectorView.qml
         ui/windows/main/StoragePlaceholder.qml
         ui/windows/main/home/HomeErrorBanner.qml
         ui/windows/main/home/HomeGreeting.qml
@@ -159,6 +156,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/home/states/HomeStatusVisual.qml
         ui/windows/main/home/states/HomeSyncingState.qml
         ui/windows/main/home/states/HomeUpToDateState.qml
+        ui/windows/main/sidebar/SidebarHeaderView.qml
+        ui/windows/main/sidebar/SidebarView.qml
+        ui/windows/main/sidebar/SyncSelectorView.qml
         ${GUI_GENERATED_QML_FILES}
         ui/windows/onboarding/DriveCellView.qml
         ui/windows/onboarding/DriveIconView.qml
