@@ -32,7 +32,8 @@ final class ManyDeletesModalPresenter {
 
     private var pendingNotifications = [ManyDeletesNotification]()
     private var presentedNotification: ManyDeletesNotification?
-    private var isRunningModal = false
+    private var currentParentWindow: NSWindow?
+    private var currentSheet: NSWindow?
 
     init() {
         observeManyDeletes()
@@ -40,9 +41,11 @@ final class ManyDeletesModalPresenter {
 
     private func observeManyDeletes() {
         manyDeletesCacheObservable.manyDeletesPublisher
-            .receiveOnMain(store: &bindStore) { [weak self] notification in
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
                 self?.enqueue(notification)
             }
+            .store(in: &bindStore)
     }
 
     private func severity(of notificationType: KDC.TooManyDeletesNotificationType) -> Int {
@@ -84,10 +87,13 @@ final class ManyDeletesModalPresenter {
     }
 
     private func abortCurrentModalIfNeeded() {
-        guard isRunningModal else { return }
+        guard let sheet = currentSheet else { return }
 
-        isRunningModal = false
-        NSApp.abortModal()
+        currentSheet = nil
+        if let window = currentParentWindow {
+            window.endSheet(sheet, returnCode: .abort)
+        }
+        currentParentWindow = nil
     }
 
     private func presentNextNotification() {
@@ -97,6 +103,7 @@ final class ManyDeletesModalPresenter {
         presentedNotification = notification
 
         Task {
+            (NSApp.delegate as? AppDelegate)?.openMainWindow()
             await presentNotification(notification)
 
             presentedNotification = nil
@@ -116,9 +123,9 @@ final class ManyDeletesModalPresenter {
 
         switch notification.notificationType {
         case .SoftLimit:
-            runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
+            await runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
         case .HardLimit:
-            guard let userChoice = runHardLimitAlert(nbFiles: notification.nbFiles) else { return }
+            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles) else { return }
 
             await acknowledge(syncDbId: syncDbId, userChoice: userChoice)
         default:
@@ -126,7 +133,7 @@ final class ManyDeletesModalPresenter {
         }
     }
 
-    private func runSoftLimitAlert(nbFiles: UInt64, driveId: Int) {
+    private func runSoftLimitAlert(nbFiles: UInt64, driveId: Int) async {
         let alert = makeAlert(
             style: .warning,
             title: KDriveLocalizable.manyDeleteDialogTitle(nbFiles),
@@ -136,7 +143,7 @@ final class ManyDeletesModalPresenter {
         alert.addButton(withTitle: KDriveLocalizable.buttonCloseDoNotAskAgain)
         alert.addButton(withTitle: KDriveLocalizable.buttonOpenTrash)
 
-        let response = runModal(for: alert)
+        let response = await runModal(for: alert)
 
         if response == .alertThirdButtonReturn {
             let trashUrl = WebFolder.trash.url(driveID: driveId)
@@ -147,7 +154,7 @@ final class ManyDeletesModalPresenter {
         }
     }
 
-    private func runHardLimitAlert(nbFiles: UInt64) -> KDC.TooManyDeletesUserChoice? {
+    private func runHardLimitAlert(nbFiles: UInt64) async -> KDC.TooManyDeletesUserChoice? {
         let alert = makeAlert(
             style: .critical,
             title: KDriveLocalizable.manyDeleteDialogTitle(nbFiles),
@@ -158,18 +165,27 @@ final class ManyDeletesModalPresenter {
         let secondaryButton = alert.addButton(withTitle: KDriveLocalizable.manyDeleteDialogHardLimitSecondary)
         secondaryButton.hasDestructiveAction = true
 
-        let response = runModal(for: alert)
+        let response = await runModal(for: alert)
 
         guard response != .abort else { return nil }
 
         return response == .alertSecondButtonReturn ? .Continue : .Revert
     }
 
-    private func runModal(for alert: NSAlert) -> NSApplication.ModalResponse {
-        isRunningModal = true
-        defer { isRunningModal = false }
+    private func runModal(for alert: NSAlert) async -> NSApplication.ModalResponse {
+        guard let window = NSApp.mainWindow ?? NSApp.keyWindow else {
+            return alert.runModal()
+        }
 
-        return alert.runModal()
+        return await withCheckedContinuation { continuation in
+            alert.beginSheetModal(for: window) { [weak self] response in
+                self?.currentSheet = nil
+                self?.currentParentWindow = nil
+                continuation.resume(returning: response)
+            }
+            currentParentWindow = window
+            currentSheet = window.attachedSheet
+        }
     }
 
     private func makeAlert(style: NSAlert.Style, title: String, message: String) -> NSAlert {
