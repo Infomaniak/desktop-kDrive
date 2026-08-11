@@ -57,7 +57,7 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         return false;
     }
 
-    auto checkResult = checkDb();
+    const auto checkResult = checkDb();
     if (checkResult != CheckDbResult::Ok) {
         if (checkResult == CheckDbResult::Locked) {
             // The database is locked by another connection. This is transient and does not
