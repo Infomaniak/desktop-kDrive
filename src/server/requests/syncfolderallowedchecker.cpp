@@ -129,7 +129,7 @@ ExitInfo SyncFolderAllowedChecker::expandRulePath(const SyncPath &rulePath, Sync
                                const std::basic_string_view<SyncName::value_type> to) {
         auto pos = str.find(from.data(), 0, from.length());
         while (pos != SyncName::npos) {
-            str.replace(pos, from.length(), to.data(), to.length());
+            (void) str.replace(pos, from.length(), to.data(), to.length());
             pos = str.find(from.data(), pos + to.length(), from.length());
         }
     };

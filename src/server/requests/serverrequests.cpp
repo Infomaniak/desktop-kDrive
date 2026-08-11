@@ -296,7 +296,7 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     LOGW_DEBUG(Log::instance()->getLogger(), L"isPathValidForNewSync: checking path=" << Utility::formatSyncPath(path)
                                                                                       << L", syncConfig="
                                                                                       << static_cast<int>(syncConfig));
-    bool rulesValidity;
+    bool rulesValidity = true;
     if (const auto exitInfo = SyncFolderAllowedChecker::check(path, rulesValidity); !exitInfo) {
         return exitInfo;
     }
