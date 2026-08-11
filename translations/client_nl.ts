@@ -284,7 +284,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         <translation>Kan geen nieuwe synchronisatie aanmaken</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivewizard.cpp" line="270"/>
+        <location filename="../src/gui/adddrivewizard.cpp" line="269"/>
         <source>The kDrive %1 is already synchronized on this computer. Continue anyway?</source>
         <translation>De kDrive %1 is al gesynchroniseerd op deze computer. Toch doorgaan?</translation>
     </message>
@@ -302,7 +302,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         <translation>kDrive-client draait al!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="713"/>
+        <location filename="../src/gui/appclient.cpp" line="724"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Gebruiker %1 is niet verbonden. Log opnieuw in.</translation>
     </message>
@@ -310,12 +310,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1751"/>
+        <location filename="../src/server/appserver.cpp" line="1774"/>
         <source>Share link copied to clipboard</source>
         <translation>Deellink gekopieerd naar klembord</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3913"/>
+        <location filename="../src/server/appserver.cpp" line="3942"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 is verwijderd.</numerusform>
@@ -323,13 +323,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3915"/>
+        <location filename="../src/server/appserver.cpp" line="3944"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is verwijderd.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3920"/>
+        <location filename="../src/server/appserver.cpp" line="3949"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 en %n ander(e) bestand(en) zijn toegevoegd.</numerusform>
@@ -337,13 +337,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3922"/>
+        <location filename="../src/server/appserver.cpp" line="3951"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is toegevoegd.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3927"/>
+        <location filename="../src/server/appserver.cpp" line="3956"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 is bijgewerkt.</numerusform>
@@ -351,13 +351,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3929"/>
+        <location filename="../src/server/appserver.cpp" line="3958"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is bijgewerkt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3934"/>
+        <location filename="../src/server/appserver.cpp" line="3963"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 is verplaatst naar %2.</numerusform>
@@ -365,12 +365,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3937"/>
+        <location filename="../src/server/appserver.cpp" line="3966"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 is verplaatst naar %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3945"/>
+        <location filename="../src/server/appserver.cpp" line="3974"/>
         <source>Sync Activity</source>
         <translation>Synchronisatieactiviteit</translation>
     </message>
@@ -378,7 +378,7 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::BaseFolderTreeItemWidget</name>
     <message>
-        <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="102"/>
+        <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="103"/>
         <source>No subfolders currently on the server.</source>
         <translation>Geen submappen op de server.</translation>
     </message>
@@ -459,113 +459,128 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::ClientGui</name>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="189"/>
+        <location filename="../src/gui/clientgui.cpp" line="190"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
         <translation>Kan conflict(en) niet oplossen voor %1 item(s) in synchronisatiemap: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="242"/>
+        <location filename="../src/gui/clientgui.cpp" line="243"/>
         <source>Please sign in</source>
         <translation>Log alstublieft in</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="292"/>
+        <location filename="../src/gui/clientgui.cpp" line="293"/>
         <source>Folder %1: %2</source>
         <translation>Map %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="298"/>
+        <location filename="../src/gui/clientgui.cpp" line="299"/>
         <source>There are no sync folders configured.</source>
         <translation>Er zijn geen synchronisatiemappen geconfigureerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1422"/>
+        <location filename="../src/gui/clientgui.cpp" line="1508"/>
         <source>Synthesis</source>
         <translation>Overzicht</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1423"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Preferences</source>
         <translatorcomment>Voorkeuren</translatorcomment>
         <translation>Voorkeuren</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1424"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Quit</source>
         <translation>Afsluiten</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="673"/>
+        <location filename="../src/gui/clientgui.cpp" line="674"/>
         <source>Undefined State.</source>
         <translation>Ongedefinieerde status.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="676"/>
+        <location filename="../src/gui/clientgui.cpp" line="677"/>
         <source>Waiting to start syncing.</source>
         <translation>Wachten om synchronisatie te starten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="679"/>
+        <location filename="../src/gui/clientgui.cpp" line="680"/>
         <source>Sync is running.</source>
         <translation>Synchronisatie wordt uitgevoerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="683"/>
+        <location filename="../src/gui/clientgui.cpp" line="684"/>
         <source>Sync was successful, unresolved conflicts.</source>
         <translation>Synchronisatie gelukt, niet-opgeloste conflicten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="685"/>
+        <location filename="../src/gui/clientgui.cpp" line="686"/>
         <source>Last Sync was successful.</source>
         <translation>Laatste synchronisatie was succesvol.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="692"/>
+        <location filename="../src/gui/clientgui.cpp" line="693"/>
         <source>User Abort.</source>
         <translation>Afgebroken door gebruiker.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="696"/>
+        <location filename="../src/gui/clientgui.cpp" line="697"/>
         <source>Sync is paused.</source>
         <translation>Synchronisatie is gepauzeerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="705"/>
+        <location filename="../src/gui/clientgui.cpp" line="706"/>
         <source>%1 (Sync is paused)</source>
         <translation>%1 (Synchronisatie gepauzeerd)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1257"/>
+        <location filename="../src/gui/clientgui.cpp" line="1250"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Weet u zeker dat u de synchronisaties van het account &lt;i&gt;%1&lt;/i&gt; wilt verwijderen?&lt;br&gt;&lt;b&gt;Opmerking:&lt;/b&gt; Dit zal &lt;b&gt;geen&lt;/b&gt; bestanden verwijderen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1261"/>
+        <location filename="../src/gui/clientgui.cpp" line="1254"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>ALLE SYNCHRONISATIES VERWIJDEREN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1262"/>
+        <location filename="../src/gui/clientgui.cpp" line="1255"/>
         <source>CANCEL</source>
         <translation>ANNULEREN</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1590"/>
+        <location filename="../src/gui/clientgui.cpp" line="1382"/>
+        <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
+        <translation>%1 items zijn verwijderd uit uw lokale synchronisatiemap &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Om onbedoelde verwijderingen te voorkomen is de synchronisatie gepauzeerd.&lt;br&gt;Wilt u deze verwijderingen doorvoeren naar uw kDrive?</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1420"/>
+        <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
+        <translation>Meerdere bestanden zijn verwijderd uit uw lokale synchronisatiemap &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Verwijderde bestanden zijn te vinden in de &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;prullenbak&lt;/a&gt; van kDrive.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
+        <source>Don&apos;t show again</source>
+        <translation>Niet meer weergeven</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1676"/>
         <source>Failed to start synchronizations!</source>
         <translation>Kan synchronisaties niet starten!</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="849"/>
+        <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan debugmap %1 niet openen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="116"/>
+        <location filename="../src/gui/clientgui.cpp" line="117"/>
         <source>Unable to initialize kDrive client</source>
         <translation>Kan kDrive-client niet initialiseren</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="255"/>
+        <location filename="../src/gui/clientgui.cpp" line="256"/>
         <source>Synchronization is paused</source>
         <translation>Synchronisatie is gepauzeerd</translation>
     </message>
@@ -702,22 +717,22 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="100"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="105"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="110"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="115"/>
         <source>CANCEL</source>
         <translation>ANNULEREN</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="120"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="125"/>
         <source>YES</source>
         <translation>JA</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="130"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="135"/>
         <source>NO</source>
         <translation>NEE</translation>
     </message>
@@ -1091,12 +1106,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::DriveSelectionWidget</name>
     <message>
-        <location filename="../src/gui/driveselectionwidget.cpp" line="216"/>
+        <location filename="../src/gui/driveselectionwidget.cpp" line="218"/>
         <source>Synchronize a kDrive</source>
         <translation>Een kDrive synchroniseren</translation>
     </message>
     <message>
-        <location filename="../src/gui/driveselectionwidget.cpp" line="150"/>
+        <location filename="../src/gui/driveselectionwidget.cpp" line="151"/>
         <source>Add a kDrive</source>
         <translation>Een kDrive toevoegen</translation>
     </message>
@@ -1568,22 +1583,22 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan mappad %1 niet openen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Verzending voltooid!&lt;br&gt;Gelieve te verwijzen naar identificatie &lt;b&gt;%1&lt;/b&gt; in bugrapporten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
         <source>No kDrive configured!</source>
         <translation>Geen kDrive geconfigureerd!</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Verzending mislukt!
@@ -1591,10 +1606,10 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="337"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="440"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="506"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="546"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="560"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="441"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="507"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="547"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="561"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Er is een technische fout opgetreden (fout %1).&lt;br&gt;Wis de geschiedenis en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
@@ -1605,7 +1620,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="347"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="516"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="517"/>
         <source>Cannot connect to kDrive server (error %1).&lt;br&gt;Attempting reconnection. Please check your Internet connection and your firewall.</source>
         <translation>Kan geen verbinding maken met kDrive-server (fout %1).&lt;br&gt;Opnieuw verbinden proberen. Controleer uw internetverbinding en uw firewall.</translation>
     </message>
@@ -1625,17 +1640,17 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>Het uploaden van het logboek is mislukt (fout %1).&lt;br&gt;Probeer het later opnieuw.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="385"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="386"/>
         <source>The synchronization folder is no longer accessible (error %1).&lt;br&gt;Synchronization will resume as soon as the folder is accessible.</source>
         <translation>De synchronisatiemap is niet langer toegankelijk (fout %1).&lt;br&gt;De synchronisatie wordt hervat zodra de map toegankelijk is.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="532"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="533"/>
         <source>The synchronization folder has been replaced or moved in a way that prevents syncing (error %1).&lt;br&gt;This can happen after copying, moving, or restoring the folder.&lt;br&gt;To fix this, please create a new synchronization with a new folder.&lt;br&gt;Note: if you have unsynced changes in the old folder, you will need to copy them manually into the new one.</source>
         <translation>De synchronisatiemap is vervangen of verplaatst op een manier die synchronisatie verhindert (fout %1).&lt;br&gt;Dit kan gebeuren na het kopiëren, verplaatsen of herstellen van de map.&lt;br&gt;Om dit op te lossen, maakt u een nieuwe synchronisatie met een nieuwe map.&lt;br&gt;Opmerking: als u niet-gesynchroniseerde wijzigingen in de oude map heeft, moet u deze handmatig naar de nieuwe map kopiëren.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="397"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="398"/>
         <source>There is not enough memory left on your machine.&lt;br&gt;The synchronization has been stopped.</source>
         <translation>Er is niet genoeg geheugen over op uw machine.&lt;br&gt;De synchronisatie is gestopt.</translation>
     </message>
@@ -1646,313 +1661,318 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="330"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="487"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="488"/>
         <source>A technical error has occurred.&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
         <translation>Er is een technische fout opgetreden.&lt;br&gt;De synchronisatie wordt zo snel mogelijk hervat. Neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="401"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="402"/>
         <source>The number of inotify watches is insufficient (error %1).&lt;br&gt;You can raise this number by editing &apos;/etc/sysctl.conf&apos;.</source>
         <translation>Het aantal inotify-watches is onvoldoende (fout %1).&lt;br&gt;U kunt dit aantal verhogen door &apos;/etc/sysctl.conf&apos; te bewerken.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="406"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="407"/>
         <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; General &gt;&gt; Login Items &amp; Extensions &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
         <translation>Kan synchronisatie niet starten (fout %1).&lt;br&gt;U moet toestaan:&lt;br&gt;- kDrive in Systeeminstellingen &gt;&gt; Algemeen &gt;&gt; Inlogitems en extensies &gt;&gt; Endpoint Security Extensions&lt;br&gt;- kDrive LiteSync Extension in Systeeminstellingen &gt;&gt; Privacy en beveiliging &gt;&gt; Volledige schijftoegang.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="419"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="420"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension is installed and Windows Search service is enabled.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
         <translation>Kan Lite Sync-plugin niet starten (fout %1).&lt;br&gt;Controleer of de Lite Sync-extensie is geïnstalleerd en de Windows Search-service is ingeschakeld.&lt;br&gt;Wis de geschiedenis, start opnieuw op en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="424"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="425"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension has the correct permissions and is running.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
         <translation>Kan Lite Sync-plugin niet starten (fout %1).&lt;br&gt;Controleer of de Lite Sync-extensie de juiste rechten heeft en actief is.&lt;br&gt;Wis de geschiedenis, start opnieuw op en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="429"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="430"/>
         <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
         <translation>Kan Lite Sync-plugin niet starten (fout %1).&lt;br&gt;Wis de geschiedenis, start opnieuw op en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="435"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="436"/>
         <source>A file or folder inside your synchronisation folder appears to be corrupted.&lt;br&gt;The synchronization has been stopped.</source>
         <translation>Een bestand of map in uw synchronisatiemap lijkt beschadigd te zijn.&lt;br&gt;De synchronisatie is gestopt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="449"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="450"/>
         <source>The kDrive is in maintenance mode.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
         <translation>De kDrive is in onderhoudsmodus.&lt;br&gt;De synchronisatie wordt zo snel mogelijk hervat. Neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="455"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="456"/>
         <source>The kDrive is blocked.&lt;br&gt;Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
         <translation>De kDrive is geblokkeerd.&lt;br&gt;Verleng uw kDrive. Als er geen actie wordt ondernomen, worden de gegevens permanent verwijderd en is het onmogelijk ze te herstellen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="460"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="461"/>
         <source>The kDrive is blocked.&lt;br&gt;Please contact an administrator to renew the kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
         <translation>De kDrive is geblokkeerd.&lt;br&gt;Neem contact op met een beheerder om de kDrive te verlengen. Als er geen actie wordt ondernomen, worden de gegevens permanent verwijderd en is het onmogelijk ze te herstellen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="466"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="467"/>
         <source>The kDrive is waking up.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
         <translation>De kDrive wordt wakker.&lt;br&gt;De synchronisatie wordt zo snel mogelijk hervat. Neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="475"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="476"/>
         <source>The kDrive is asleep.&lt;br&gt;Please, login to the &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;web version&lt;/a&gt; to check your kDrive&apos;s status, or contact your administrator.</source>
         <translation>De kDrive slaapt.&lt;br&gt;Log in op de &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;webversie&lt;/a&gt; om de status van uw kDrive te controleren, of neem contact op met uw beheerder.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="479"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="480"/>
         <source>The kDrive is asleep.&lt;br&gt;Please, login to the web version to check your kDrive&apos;s status, or contact your administrator.</source>
         <translation>De kDrive slaapt.&lt;br&gt;Log in op de webversie om de status van uw kDrive te controleren, of neem contact op met uw beheerder.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="483"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="484"/>
         <source>You are not authorised to access this kDrive.&lt;br&gt;Synchronization has been paused. Please contact an administrator.</source>
         <translation>U bent niet gemachtigd om toegang te krijgen tot deze kDrive.&lt;br&gt;De synchronisatie is gepauzeerd. Neem contact op met een beheerder.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="493"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="494"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
         <translation>Er is een technische fout opgetreden (fout %1).&lt;br&gt;De synchronisatie wordt zo snel mogelijk hervat. Neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="512"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="513"/>
         <source>The network connections have been dropped by the kernel (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>De netwerkverbindingen zijn verbroken door de kernel (fout %1).&lt;br&gt;Wis de geschiedenis en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="522"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="523"/>
         <source>Unfortunately your old configuration could not be migrated.&lt;br&gt;The application will use a blank configuration.</source>
         <translation>Helaas kon uw oude configuratie niet worden gemigreerd.&lt;br&gt;De applicatie zal een lege configuratie gebruiken.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="526"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="527"/>
         <source>Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at this time.&lt;br&gt;The application will use system proxy settings instead.</source>
         <translation>Helaas kon uw oude proxy-configuratie niet worden gemigreerd, SOCKS5-proxies worden op dit moment niet ondersteund.&lt;br&gt;De applicatie zal in plaats daarvan de systeem-proxy-instellingen gebruiken.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="539"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="540"/>
         <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization has been restarted. Please empty the history and if the error persists, please contact our support team.</source>
         <translation>Er is een technische fout opgetreden (fout %1).&lt;br&gt;De synchronisatie is opnieuw gestart. Wis de geschiedenis en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="550"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="551"/>
         <source>An error accessing the synchronization database has happened (error %1).&lt;br&gt;Synchronization has been stopped.</source>
         <translation>Er is een fout opgetreden bij het toegang krijgen tot de synchronisatiedatabase (fout %1).&lt;br&gt;De synchronisatie is gestopt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="564"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="565"/>
         <source>A login problem has occurred (error %1).&lt;br&gt;Token invalid or revoked.</source>
         <translation>Er is een inlogprobleem opgetreden (fout %1).&lt;br&gt;Token ongeldig of ingetrokken.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="569"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="570"/>
         <source>Nested synchronizations are prohibited (error %1).&lt;br&gt;You should only keep synchronizations whose folders are not nested.</source>
         <translation>Geneste synchronisaties zijn verboden (fout %1).&lt;br&gt;U moet alleen synchronisaties behouden waarvan de mappen niet genest zijn.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="573"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="574"/>
         <source>The sync folder on the remote kDrive no longer exists or is no longer accessible (error %1).&lt;br&gt;You need to restore it or give it back access rights or delete/recreate the synchronization.</source>
         <translation>De synchronisatiemap op de externe kDrive bestaat niet meer of is niet langer toegankelijk (fout %1).&lt;br&gt;U moet deze herstellen of opnieuw toegangsrechten geven, of de synchronisatie verwijderen/opnieuw aanmaken.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="580"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="581"/>
         <source>File name parsing error (error %1).&lt;br&gt;Special characters such as double quotes, backslashes or line returns can cause parsing failures.</source>
         <translation>Fout bij het ontleden van bestandsnamen (fout %1).&lt;br&gt;Speciale tekens zoals aanhalingstekens, backslashes of regeleinden kunnen ontledingsfouten veroorzaken.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="703"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="705"/>
         <source>Either you are not allowed to create an item, or another item already exists with the same name. The item has been ignored.</source>
         <translation>U heeft geen toestemming om een item aan te maken, of er bestaat al een ander item met dezelfde naam. Het item is genegeerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="722"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="724"/>
         <source>You are not allowed to move item to &quot;%1&quot;.&lt;br&gt;It will be restored into its original parent folder.</source>
         <translation>U mag het item niet verplaatsen naar &quot;%1&quot;.&lt;br&gt;Het wordt hersteld in de oorspronkelijke bovenliggende map.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="814"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Er is niet genoeg ruimte over op uw computer.&lt;br&gt;De download is geannuleerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="609"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="611"/>
         <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Dit element is ergens anders naartoe verplaatst.&lt;br&gt;De lokale bewerking is geannuleerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="618"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="620"/>
         <source>An element with the same name already exists in this location.&lt;br&gt;The local element has been renamed.</source>
         <translation>Er bestaat al een element met dezelfde naam op deze locatie.&lt;br&gt;Het lokale element is hernoemd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="614"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="616"/>
         <source>An element with the same name already exists in this location.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Er bestaat al een element met dezelfde naam op deze locatie.&lt;br&gt;De lokale bewerking is geannuleerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="393"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="394"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The synchronization has been stopped.</source>
         <translation>Er is niet genoeg ruimte over op uw computer.&lt;br&gt;De synchronisatie is gestopt.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="622"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="624"/>
         <source>The file was modified at the same time by another user.&lt;br&gt;Your modifications have been saved in a copy.</source>
         <translation>Het bestand is op hetzelfde moment gewijzigd door een andere gebruiker.&lt;br&gt;Uw wijzigingen zijn opgeslagen in een kopie.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="626"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="628"/>
         <source>Another user has moved a parent folder of the destination.&lt;br&gt;The local operation has been canceled.</source>
         <translation>Een andere gebruiker heeft een bovenliggende map van de bestemming verplaatst.&lt;br&gt;De lokale bewerking is geannuleerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="692"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="694"/>
         <source>The item name contains only spaces.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>De itemnaam bevat alleen spaties.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="708"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="710"/>
         <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
         <translation>U mag het item niet bewerken.&lt;br&gt;Het bestand met uw wijzigingen is hernoemd en uitgesloten van synchronisatie.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="716"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="718"/>
         <source>You are not allowed to rename item.&lt;br&gt;It will be restored with its original name.</source>
         <translation>U mag het item niet hernoemen.&lt;br&gt;Het wordt hersteld met zijn oorspronkelijke naam.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="727"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="729"/>
         <source>You are not allowed to delete item.&lt;br&gt;It will be restored to its original location.</source>
         <translation>U mag het item niet verwijderen.&lt;br&gt;Het wordt hersteld naar zijn oorspronkelijke locatie.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="732"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="734"/>
         <source>Failed to move this item to trash, it has been blacklisted.</source>
         <translation>Kan dit item niet naar de prullenbak verplaatsen, het is op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="748"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="750"/>
         <source>The file has been modified locally while it has been deleted on the remote kDrive.&lt;br&gt;Local copy has been saved in the rescue folder.</source>
         <translation>Het bestand is lokaal gewijzigd terwijl het op de externe kDrive is verwijderd.&lt;br&gt;De lokale kopie is opgeslagen in de reddingsmap.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="765"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="767"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>De uitgevoerde bewerking op het item is verboden.&lt;br&gt;Het item is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="771"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="773"/>
         <source>The operation performed on this item failed.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>De uitgevoerde bewerking op dit item is mislukt.&lt;br&gt;Het item is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="778"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>Het bestand is te groot om te uploaden. Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="782"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="784"/>
         <source>Impossible to download the file.</source>
         <translation>Onmogelijk om het bestand te downloaden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="779"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="781"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>U heeft uw quotum overschreden. Verhoog uw ruimtequotum om het uploaden van bestanden opnieuw in te schakelen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="389"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="390"/>
         <source>The drive containing your synchronization folder is no longer connected (error %1).&lt;br&gt;Please reconnect it to resume synchronization.</source>
         <translation>Het station dat uw synchronisatiemap bevat, is niet langer verbonden (fout %1).&lt;br&gt;Sluit het opnieuw aan om de synchronisatie te hervatten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="413"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="414"/>
         <source>Unable to start synchronization (error %1).&lt;br&gt;The LiteSyncExt process is not currently running. Synchronization will resume as soon as it is started.</source>
         <translation>Kan synchronisatie niet starten (fout %1).&lt;br&gt;Het LiteSyncExt-proces wordt momenteel niet uitgevoerd. De synchronisatie wordt hervat zodra het wordt gestart.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="649"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="651"/>
         <source>An existing item has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Een bestaand item heeft een identieke naam met dezelfde hoofdletteropties (dezelfde hoofd- en kleine letters).&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="656"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="658"/>
         <source>The item name contains an unsupported character.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>De itemnaam bevat een niet-ondersteund teken.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="662"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="664"/>
         <source>The item name ends with a space, which is forbidden on your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>De itemnaam eindigt met een spatie, wat verboden is op uw besturingssysteem.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="668"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="670"/>
         <source>This item name is reserved by your operating system.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Deze itemnaam is gereserveerd door uw besturingssysteem.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="674"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="676"/>
         <source>The item name is too long.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>De itemnaam is te lang.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="680"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="682"/>
         <source>The item path is too long.&lt;br&gt;It has been ignored.</source>
         <translation>Het itempad is te lang.&lt;br&gt;Het is genegeerd.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="686"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="688"/>
         <source>The item name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
         <translation>De itemnaam bevat een recent UNICODE-teken dat nog niet wordt ondersteund door uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="737"/>
         <source>Failed to synchronize this item. It has been temporarily blacklisted.&lt;br&gt;Another attempt to sync it will be done in one hour or on next application startup.</source>
         <translation>Kan dit item niet synchroniseren. Het is tijdelijk op de zwarte lijst gezet.&lt;br&gt;Er wordt over een uur of bij de volgende start van de applicatie opnieuw geprobeerd het te synchroniseren.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="740"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="742"/>
         <source>This item has been excluded from sync by a custom template.&lt;br&gt;You can disable this type of notification from the Preferences</source>
         <translation>Dit item is uitgesloten van synchronisatie door een aangepast sjabloon.&lt;br&gt;U kunt dit type melding uitschakelen in de Voorkeuren</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="745"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="747"/>
         <source>This item has been excluded from sync because it is a hard link.</source>
         <translation>Dit item is uitgesloten van synchronisatie omdat het een harde link is.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="785"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="787"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
         <translation>Dit item is momenteel vergrendeld door een andere gebruiker online.&lt;br&gt;We zullen later opnieuw proberen uw wijzigingen te uploaden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="792"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
         <source>Synchronization error.</source>
         <translation>Synchronisatiefout.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="810"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="812"/>
         <source>Can&apos;t access item.&lt;br&gt;Please fix the read and write permissions.</source>
         <translation>Kan geen toegang krijgen tot item.&lt;br&gt;Corrigeer de lees- en schrijfrechten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="820"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Kan bestand &quot;%1&quot; niet aanmaken omdat het niet wordt ondersteund door uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="823"/>
         <source>System error.</source>
         <translation>Systeemfout.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Item bestaat al aan de andere kant.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Er is een technische fout opgetreden.&lt;br&gt;Wis de geschiedenis en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
@@ -2754,47 +2774,47 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>Kan parameters niet opslaan!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="466"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>De bovenliggende map is een synchronisatiemap of zit erin</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="500"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Kan geen geldig pad vinden</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2110"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2102"/>
         <source>No valid folder selected!</source>
         <translation>Geen geldige map geselecteerd!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2121"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2113"/>
         <source>The selected path does not exist!</source>
         <translation>Het geselecteerde pad bestaat niet!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2126"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2118"/>
         <source>The selected path is not a folder!</source>
         <translation>Het geselecteerde pad is geen map!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2131"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>U heeft geen schrijfrechten voor de geselecteerde map!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2153"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>De lokale map %1 bevat een map die al gesynchroniseerd is. Kies een andere!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>De lokale map %1 zit in een map die al gesynchroniseerd is. Kies een andere!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2177"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>De lokale map %1 is al gesynchroniseerd. Kies een andere!</translation>
     </message>
