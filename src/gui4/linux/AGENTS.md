@@ -50,8 +50,8 @@
   hexadecimal or RGBA values.
 - Do not run `qmlformat --normalize` on structured token files: it reorders QML members independently of the intended
   T1/T2/T3 hierarchy and detaches section comments from their tokens.
-- Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place
-  the glyph on a colored tile.
+- Render the main-sidebar synchronization selector with the bare drive glyph tinted by the drive color; do not place the
+  glyph on a colored tile.
 - Render advanced synchronizations with the outline `ui/assets/main/folder.svg` tinted by the owning drive color;
   reserve the bare drive glyph for classic root synchronizations.
 - In the main-sidebar Figma variants, "no synchronization" means no advanced synchronization. The drive row is the
@@ -70,6 +70,10 @@
 - Render the future main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
   and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
   so both outer circles remain identical.
+- For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
+  `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
+- Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
+  files under `test/gui4/linux/` until the user explicitly reopens that scope.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
@@ -84,8 +88,8 @@
   window shell.
 - When ending an onboarding session, unpublish it so QML unloads the onboarding `Loader`, then destroy it with
   `deleteLater()`. Invalidate session-scoped asynchronous results before allowing a new session to consume them.
-- Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login into
-  dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
+- Keep `AppClientLinux` as an application composition root. Move multi-step feature workflows such as onboarding login
+  into dedicated coordinators instead of accumulating workflow lambdas in `AppClientLinux`.
 - `Qt.labs.lottieqt` renders Lottie JSON assets, not `.lottie` zip containers.
 - For Qt 6.11+ onboarding Lottie assets, prefer generated QML from `lottietoqml` over PNG spritesheets when the
   generated output builds and visually matches the source animation.
@@ -137,8 +141,14 @@
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
-- `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache` push signals.
-    - Routes entity and sync-runtime pushes after population; drops earlier mutations and logs the invariant violation.
+- `app/cache/activitystore.*`: process-local, per-sync file-activity history. It normalizes `SyncFileItemInfo` pushes,
+  updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for the
+  same node, preserves distinct anonymous operations, and bounds retention to 500 entries per synchronization. It stays
+  separate from the durable `AppCache` graph and is not exposed directly to QML.
+- `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
+    - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
+      violations.
+    - Prunes activity history when the configured synchronization set changes.
 - `app/cache/cachetypes.h`: cache read models and onboarding keys (`SyncContext`, `DriveContext`,
   `SyncRuntimeInfo`, `AvailableDriveContext`, `AvailableDriveKey`, `PendingSyncConfig`).
     - Configured-drive state uses the unified `libcommon/data/drive.h` `Drive` model; do not reintroduce the removed
@@ -167,13 +177,13 @@
   next activation.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
   configs.
-- `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`).
-  It is populated during the bootstrap sequence next to the product graph snapshot, but remains separate from `AppCache`
+- `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`). It is
+  populated during the bootstrap sequence next to the product graph snapshot, but remains separate from `AppCache`
   because the server is still the persistence source of truth for application settings. It stores only the last
   server-confirmed snapshot; update workflows publish a new value only after `PARAMETERS_UPDATE` succeeds.
 - `app/onboarding/availabledrivesmodel.*`: QML adapter for onboarding drive selection. It derives rows from
-  `AppCache::availableDriveContexts(selectedUserDbId)` and stores row selection through `OnboardingState`. It must not own
-  screen-level loading, user, or navigation state.
+  `AppCache::availableDriveContexts(selectedUserDbId)` and stores row selection through `OnboardingState`. It must not
+  own screen-level loading, user, or navigation state.
 - `app/onboarding/driveselectioncontroller.*`: QML-facing screen controller for user presentation, loading/error state,
   counts, retry, and navigation actions. It owns the session's `AvailableDrivesModel`.
 - `app/onboarding/onboardingentrydecision.*`: pure post-bootstrap decision from `AppCache` to Inactive, Login, or
@@ -181,21 +191,21 @@
   lowest database id, preserving the stable ordering returned by `AppCache::users()`.
 - `app/onboarding/onboardingsession.*`: ephemeral owner of onboarding state, flow, login workflow, and drive-selection
   controller/model.
-- `app/onboarding/onboardingsessionmanager.*`: process-long nullable-session owner and the only onboarding object exposed
-  at the root QML boundary. It creates a session after cache bootstrap and unpublishes it before deferred destruction. It
-  accepts activation requests while onboarding is required and rejects them with an explanatory log when no onboarding
-  route is displayable. On successful onboarding completion, `AppClientLinux` opens the main window route.
+- `app/onboarding/onboardingsessionmanager.*`: process-long nullable-session owner and the only onboarding object
+  exposed at the root QML boundary. It creates a session after cache bootstrap and unpublishes it before deferred
+  destruction. It accepts activation requests while onboarding is required and rejects them with an explanatory log when
+  no onboarding route is displayable. On successful onboarding completion, `AppClientLinux` opens the main window route.
 - `app/onboarding/onboardingflowcontroller.*`: QML-facing onboarding flow controller aligned with the macOS flow
   (`login -> drive selection -> synchronization -> ready`, with macOS permission steps omitted on Linux). It owns simple
   onboarding UI actions such as opening account signup and drive-offer URLs, plus synchronization/ready presentation
   state; OAuth launch, `LOGIN_REQUESTTOKEN`, available-drive loading, and sync creation stay outside QML-facing flow
   state.
-- `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow controller,
-  OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not accumulate
-  login-specific workflow logic.
-- `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It derives
-  collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only failed and
-  not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a failed `SYNC_ADD`.
+- `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow
+  controller, OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not
+  accumulate login-specific workflow logic.
+- `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It
+  derives collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only
+  failed and not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a failed `SYNC_ADD`.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
@@ -236,9 +246,10 @@
       diffuse shadow. It publishes `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible
       surface rather than the transparent shadow during snapping and maximization. Native Wayland intentionally uses
       public Qt APIs only and therefore snaps the complete native window, including its transparent shadow margin.
-    - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON payloads.
-      Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator and the
-      QML compilation step.
+    - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON
+      payloads. Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator
+      and the QML compilation step.
+
 ### Regenerate Onboarding Lottie QML
 
 Run `lottietoqml` from the Qt/Conan package that provides `qtlottie`. The loader source JSON is supplied locally and is
@@ -344,8 +355,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Request methods should parse `Poco::DynamicStruct` into typed DTOs before exposing data upward.
 - Generic UI-facing request failures from high-level services should be emitted through `ServiceEventBus` so UI can
   subscribe once (`genericErrorOccurred()`).
-- Sentry captures in Linux v4 should go through `SentryService`; capture helpers must tolerate Sentry being uninitialized
-  because consent can disable the native SDK.
+- Sentry captures in Linux v4 should go through `SentryService`; capture helpers must tolerate Sentry being
+  uninitialized because consent can disable the native SDK.
 - Action-level and per-service loading state should come from `ServiceActionTracker`
   (`isActionPending(...)`, `isServicePending(...)`).
 - Use shared `msgParam*` keys and enums from `libcommon`; avoid ad-hoc string keys.
