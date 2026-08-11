@@ -245,19 +245,19 @@ import InfomaniakDI
             do {
                 let loginItemProxy = try loginItemAgentConnection.proxy(errorHandler: { error in
                     IKLogger.xpc.error("[KD] Failed to get server gui endpoint: \(error)")
-                    Task { await continuation.resume(throwing: error) }
+                    continuation.resume(throwing: error)
                 }, type: XPCLoginItemProtocol.self)
                 loginItemProxy.serverGuiEndpoint { endpoint in
                     IKLogger.xpc.log("[KD] Server gui endpoint received: \(endpoint != nil)")
                     if let endpoint {
-                        Task { await continuation.resume(returning: endpoint) }
+                        continuation.resume(returning: endpoint)
                     } else {
                         IKLogger.xpc.error("[KD] endpoint nil")
-                        Task { await continuation.resume(throwing: XPCError.serverGUIEndpointWasNil) }
+                        continuation.resume(throwing: XPCError.serverGUIEndpointWasNil)
                     }
                 }
             } catch {
-                Task { await continuation.resume(throwing: error) }
+                continuation.resume(throwing: error)
             }
         }
     }

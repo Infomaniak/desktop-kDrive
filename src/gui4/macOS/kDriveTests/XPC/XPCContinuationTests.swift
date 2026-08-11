@@ -26,29 +26,55 @@ struct XPCContinuationTests {
     }
 
     @Test func ignoresProxyErrorAfterReply() async throws {
+        let replyCompleted = DispatchSemaphore(value: 0)
+        let errorCompleted = DispatchSemaphore(value: 0)
         let result: String = try await withCheckedThrowingContinuation { continuation in
             let continuation = XPCContinuation(continuation)
-            Task {
-                await continuation.resume(returning: "reply")
-                await continuation.resume(throwing: TestError.proxyFailure)
+            DispatchQueue.global().async {
+                continuation.resume(returning: "reply")
+                replyCompleted.signal()
+            }
+            DispatchQueue.global().async {
+                replyCompleted.wait()
+                continuation.resume(throwing: TestError.proxyFailure)
+                errorCompleted.signal()
             }
         }
 
         #expect(result == "reply")
+        let lateErrorCompleted = await didSignal(errorCompleted)
+        #expect(lateErrorCompleted)
     }
 
     @Test func ignoresReplyAfterProxyError() async throws {
+        let errorCompleted = DispatchSemaphore(value: 0)
+        let replyCompleted = DispatchSemaphore(value: 0)
         do {
             let _: String = try await withCheckedThrowingContinuation { continuation in
                 let continuation = XPCContinuation<String>(continuation)
-                Task {
-                    await continuation.resume(throwing: TestError.proxyFailure)
-                    await continuation.resume(returning: "late reply")
+                DispatchQueue.global().async {
+                    continuation.resume(throwing: TestError.proxyFailure)
+                    errorCompleted.signal()
+                }
+                DispatchQueue.global().async {
+                    errorCompleted.wait()
+                    continuation.resume(returning: "late reply")
+                    replyCompleted.signal()
                 }
             }
             Issue.record("Expected the proxy error to be thrown")
         } catch {
             #expect(error is TestError)
+            let lateReplyCompleted = await didSignal(replyCompleted)
+            #expect(lateReplyCompleted)
+        }
+    }
+
+    private func didSignal(_ semaphore: DispatchSemaphore) async -> Bool {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global().async {
+                continuation.resume(returning: semaphore.wait(timeout: .now() + 1) == .success)
+            }
         }
     }
 }

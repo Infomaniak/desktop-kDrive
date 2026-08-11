@@ -67,14 +67,14 @@ extension XPCConnectionManager: XPCConnectionProvider {
             do {
                 let proxy = try connection.proxy(errorHandler: { error in
                     IKLogger.xpc.error("[KD] Failed to send query to server: \(error)")
-                    Task { await continuation.resume(throwing: error) }
+                    continuation.resume(throwing: error)
                 }, type: XPCGuiProtocol.self)
                 proxy.processQuery(requestData) { data in
                     IKLogger.xpc.log("[KD] recv raw callback len: \(data.count)")
-                    Task { await continuation.resume(returning: data) }
+                    continuation.resume(returning: data)
                 }
             } catch {
-                Task { await continuation.resume(throwing: error) }
+                continuation.resume(throwing: error)
             }
         }
     }

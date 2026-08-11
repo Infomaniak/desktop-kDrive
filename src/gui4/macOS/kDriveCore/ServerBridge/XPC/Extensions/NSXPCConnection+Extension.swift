@@ -36,7 +36,8 @@ extension NSXPCConnection {
     }
 }
 
-actor XPCContinuation<Value: Sendable> {
+final class XPCContinuation<Value>: @unchecked Sendable {
+    private let lock = NSLock()
     private var continuation: CheckedContinuation<Value, Error>?
 
     init(_ continuation: CheckedContinuation<Value, Error>) {
@@ -44,12 +45,19 @@ actor XPCContinuation<Value: Sendable> {
     }
 
     func resume(returning value: Value) {
-        continuation?.resume(returning: value)
-        continuation = nil
+        takeContinuation()?.resume(returning: value)
     }
 
     func resume(throwing error: Error) {
-        continuation?.resume(throwing: error)
-        continuation = nil
+        takeContinuation()?.resume(throwing: error)
+    }
+
+    private func takeContinuation() -> CheckedContinuation<Value, Error>? {
+        lock.lock()
+        defer { lock.unlock() }
+
+        let continuation = continuation
+        self.continuation = nil
+        return continuation
     }
 }
