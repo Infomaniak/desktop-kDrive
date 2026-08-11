@@ -18,9 +18,14 @@
 
 #pragma once
 
+#include "libcommon/utility/types.h"
+
 #include <QColor>
+#include <QObject>
 #include <QString>
 #include <QUrl>
+
+#include <cstdint>
 
 namespace KDC::AppConstants::Drive {
 
@@ -57,3 +62,39 @@ namespace KDC::AppConstants::Support {
 }
 
 } // namespace KDC::AppConstants::Support
+
+namespace KDC::AppConstants::WebDrive {
+Q_NAMESPACE
+
+// Exposed to QML as `WebDrive` (registered in AppClientLinux::setupQmlEngine).
+enum class Destination : uint8_t {
+    Favorites = 0,
+    Shared,
+    OnlineDrive,
+    Trash,
+};
+Q_ENUM_NS(Destination)
+
+[[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
+    // TODO manage Custom brand here.
+
+    QString path;
+    switch (destination) {
+        case Destination::Favorites:
+            path = QStringLiteral("favorites");
+            break;
+        case Destination::Shared:
+            path = QStringLiteral("shared-with-me");
+            break;
+        case Destination::OnlineDrive:
+            path = QStringLiteral("files");
+            break;
+        case Destination::Trash:
+            path = QStringLiteral("trash");
+            break;
+    }
+
+    return QUrl{QStringLiteral("https://kdrive.infomaniak.com/app/drive/%1/%2").arg(static_cast<qulonglong>(driveId)).arg(path)};
+}
+
+} // namespace KDC::AppConstants::WebDrive

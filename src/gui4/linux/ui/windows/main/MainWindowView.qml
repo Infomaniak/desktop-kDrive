@@ -19,12 +19,14 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Window
 import kDrive.UI
 
 Item {
     id: root
 
     required property var appRouter
+    required property var homeController
     required property var mainSidebarController
 
     readonly property int tabHome: AppRouter.Home
@@ -33,6 +35,7 @@ Item {
     readonly property int tabBlockingError: AppRouter.BlockingError
     readonly property real sidebarWidth: IKMainWindow.sidebarWidth
     readonly property int currentTab: appRouter.currentMainTabIndex
+    readonly property bool windowVisible: root.Window.window !== null && root.Window.window.visible
 
     Row {
         anchors.fill: parent
@@ -55,9 +58,10 @@ Item {
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
 
-                HomePlaceholder {
+                Loader {
                     anchors.fill: parent
-                    visible: root.currentTab === root.tabHome
+                    active: root.currentTab === root.tabHome && root.windowVisible
+                    sourceComponent: homeViewComponent
                 }
 
                 ActivitiesPlaceholder {
@@ -75,6 +79,14 @@ Item {
                     visible: root.currentTab === root.tabBlockingError
                 }
             }
+        }
+    }
+
+    Component {
+        id: homeViewComponent
+
+        HomeView {
+            controller: root.homeController
         }
     }
 }
