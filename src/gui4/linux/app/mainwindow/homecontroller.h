@@ -38,8 +38,8 @@ class SystemTrayController;
 /**
  * Cache-backed QML adapter for the Linux v4 Home and its toolbar controls.
  *
- * The controller centralizes presentation-state resolution and synchronization actions. QML remains a modular rendering layer
- * and does not call backend services directly.
+ * The controller centralizes presentation-state resolution and user actions. QML remains a modular rendering layer and never
+ * constructs product URLs or calls backend services directly.
  */
 class HomeController final : public QObject {
         Q_OBJECT
@@ -98,6 +98,8 @@ class HomeController final : public QObject {
 
         Q_INVOKABLE void triggerPrimaryAction();
         Q_INVOKABLE void toggleSync();
+        Q_INVOKABLE void openDriveDestination(int32_t destination) const;
+        Q_INVOKABLE void showActivities() const;
 
     signals:
         void homeChanged();
