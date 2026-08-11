@@ -119,31 +119,35 @@ void CachePopulator::loadSyncErrors(const PopulationMode mode) {
             return;
         }
 
-        std::vector<Error> syncErrors;
-        std::vector<Error> serverErrors;
-        syncErrors.reserve(list.size());
-        serverErrors.reserve(list.size());
-        for (const auto &info: list) {
-            switch (info.level()) {
-                using enum KDC::ErrorLevel;
-
-                case Node:
-                case SyncPal:
-                    syncErrors.push_back(info);
-                    break;
-                case Server:
-                    serverErrors.push_back(info);
-                    break;
-                default:
-                    qCWarning(lcCachePopulator)
-                            << "Received error with unknown level:" << toInt(info.level()) << "and dbId:" << info.dbId();
-            }
-        }
-
-        _appCache.replaceSyncErrors(syncErrors);
-        _appCache.replaceServerErrors(serverErrors);
+        replaceErrorsByLevel(list);
         markBranchCompleted(mode, PopulationBranch::UserData);
     });
+}
+
+void CachePopulator::replaceErrorsByLevel(const std::vector<Error> &list) {
+    std::vector<Error> syncErrors;
+    std::vector<Error> serverErrors;
+    syncErrors.reserve(list.size());
+    serverErrors.reserve(list.size());
+    for (const auto &info: list) {
+        switch (info.level()) {
+            using enum KDC::ErrorLevel;
+
+            case Node:
+            case SyncPal:
+                syncErrors.push_back(info);
+                break;
+            case Server:
+                serverErrors.push_back(info);
+                break;
+            default:
+                qCWarning(lcCachePopulator) << "Received error with unknown level:" << toInt(info.level())
+                                            << "and dbId:" << info.dbId();
+        }
+    }
+
+    _appCache.replaceSyncErrors(syncErrors);
+    _appCache.replaceServerErrors(serverErrors);
 }
 
 void CachePopulator::markBranchCompleted(const PopulationMode mode, const PopulationBranch branch) {
