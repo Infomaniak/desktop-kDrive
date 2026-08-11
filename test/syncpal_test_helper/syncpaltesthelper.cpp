@@ -112,8 +112,7 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
 bool SyncpalTestHelper::executeSyncUpToStep(const SyncStep targetStep, const int64_t timeout) const {
     if (!_syncPal) return false;
 
-    const auto step = static_cast<SyncStep>(targetStep);
-    _syncPal->setMaxStep(step);
+    _syncPal->setMaxStep(targetStep);
 
     // The cap is left in place on purpose: the sync stays frozen at `step` until the caller either checks it
     // or calls executeSyncUntilEnd(), which lifts the cap before waiting for the sync to reach Idle.
