@@ -91,7 +91,7 @@ void ServiceActionTracker::endActions(const ServiceKey &serviceKey, const Action
     }
 
     auto &serviceActions = serviceIt.value();
-    auto actionIt = serviceActions.find(actionKey);
+    const auto actionIt = serviceActions.find(actionKey);
     if (actionIt == serviceActions.end()) {
         qCWarning(lcServiceActionTracker) << operation << "called for unknown actionKey:" << actionKey
                                           << "| serviceKey:" << serviceKey << "| scopeId:" << scopeId;
@@ -126,7 +126,7 @@ void ServiceActionTracker::endActions(const ServiceKey &serviceKey, const Action
     }
 
     if (_pendingCountByService.value(serviceKey, 0) == 0) {
-        _pendingCountByService.remove(serviceKey);
+        (void) _pendingCountByService.remove(serviceKey);
         emit servicePendingChanged(serviceKey, false);
     }
 }
