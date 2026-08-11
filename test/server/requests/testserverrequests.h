@@ -47,6 +47,15 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule);
         CPPUNIT_TEST(isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent);
         CPPUNIT_TEST(isSyncFolderAllowedByRules_expandsHomeDirVariable);
+#if defined(KD_WINDOWS)
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_windowsExternalDriveAllowed);
+#elif defined(KD_MACOS)
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_macExternalVolumeAllowed);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_macVolumesRootDenied);
+#elif defined(KD_LINUX)
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_linuxExternalDriveAllowed);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_linuxMediaRootDenied);
+#endif
 
         CPPUNIT_TEST_SUITE_END();
 
@@ -79,6 +88,15 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule();
         void isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent();
         void isSyncFolderAllowedByRules_expandsHomeDirVariable();
+#if defined(KD_WINDOWS)
+        void isSyncFolderAllowedByRules_windowsExternalDriveAllowed();
+#elif defined(KD_MACOS)
+        void isSyncFolderAllowedByRules_macExternalVolumeAllowed();
+        void isSyncFolderAllowedByRules_macVolumesRootDenied();
+#elif defined(KD_LINUX)
+        void isSyncFolderAllowedByRules_linuxExternalDriveAllowed();
+        void isSyncFolderAllowedByRules_linuxMediaRootDenied();
+#endif
 
     private:
         int _driveDbId{0};
