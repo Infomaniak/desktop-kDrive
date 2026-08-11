@@ -142,8 +142,9 @@
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It normalizes `SyncFileItemInfo` pushes,
-  updates valid operation ids in place, preserves distinct anonymous operations, and bounds retention to 500 entries per
-  synchronization. It stays separate from the durable `AppCache` graph and is not exposed directly to QML.
+  updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for the
+  same node, preserves distinct anonymous operations, and bounds retention to 500 entries per synchronization. It stays
+  separate from the durable `AppCache` graph and is not exposed directly to QML.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
     - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
       violations.
