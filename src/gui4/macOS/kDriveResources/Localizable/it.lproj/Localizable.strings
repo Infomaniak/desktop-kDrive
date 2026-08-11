@@ -160,6 +160,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Chiudi";
 
+/* loco:6a799d2786bd930f640fa666 */
+"buttonCloseDoNotAskAgain" = "Chiudi e non chiedere più";
+
 /* loco:698c5e4ec95ac47af70ec115 */
 "buttonConfigure" = "Configura";
 
@@ -258,6 +261,9 @@
 
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Gestisci esclusioni";
+
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "Apri il cestino";
 
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Sospendi";
@@ -1128,6 +1134,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ conflitti di versione rilevati";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "La sincronizzazione è stata sospesa per evitare una cancellazione involontaria.\nCosa desideri fare?";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Ripristinare i file";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Eliminare anche online";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "Questi file rimangono recuperabili nel cestino di kDrive.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Non mostrare più questo avviso";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ elementi eliminati dalla cartella";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.\n\nL’analisi di questi dati consente al nostro team di migliorare continuamente l’interfaccia dell’applicazione.";

@@ -40,6 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // periphery:ignore - We keep a strong reference on the updateModalPresenter
     private(set) var updateModalPresenter: UpdateModalPresenter?
 
+    // periphery:ignore - We keep a strong reference on the manyDeletesModalPresenter
+    private(set) var manyDeletesModalPresenter: ManyDeletesModalPresenter?
+
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
             || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
@@ -59,6 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusBarManager = StatusBarManager()
         dockIconManager = DockIconManager()
         updateModalPresenter = UpdateModalPresenter()
+        manyDeletesModalPresenter = ManyDeletesModalPresenter()
 
         observeAppPresentation()
         openMainWindow()

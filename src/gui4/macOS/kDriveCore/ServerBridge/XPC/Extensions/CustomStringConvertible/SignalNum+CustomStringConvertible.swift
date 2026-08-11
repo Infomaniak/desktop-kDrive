@@ -60,6 +60,8 @@ extension SignalNum: CustomStringConvertible {
             return "SYNC_VFS_CONVERSION_COMPLETED"
         case .SYNC_DELETE_FAILED:
             return "SYNC_DELETE_FAILED"
+        case .SYNC_NOTIFY_MANY_DELETES:
+            return "SYNC_NOTIFY_MANY_DELETES"
         case .NODE_FOLDER_SIZE_COMPLETED:
             return "NODE_FOLDER_SIZE_COMPLETED"
         case .NODE_FIX_CONFLICTED_FILES_COMPLETED:

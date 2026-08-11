@@ -201,6 +201,16 @@ public struct SyncJobs: Sendable {
         }
     }
 
+    public func acknowledgeManyDeletes(syncDbId: Int32, userChoice: KDC.TooManyDeletesUserChoice) async throws {
+        let query = AcknowledgeManyDeletesQuery(syncDbId: syncDbId, userChoice: userChoice)
+        let request = await RequestMessage<AcknowledgeManyDeletesQuery>(
+            num: RequestNum.SYNC_ACKNOWLEDGE_MANY_DELETES,
+            body: query
+        )
+
+        try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+    }
+
     public func getOfflineFilesSize(syncDbId: Int32) async throws -> UInt64 {
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_OFFLINE_FILES_SIZE, body: query)

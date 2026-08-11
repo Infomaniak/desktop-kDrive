@@ -122,6 +122,8 @@ public enum KDriveLocalizable {
   public static let buttonChangeToOnline = KDriveLocalizable.tr("Localizable", "buttonChangeToOnline", fallback: "Store online")
   /// loco:696a343b72b6dc32e00557a4
   public static let buttonClose = KDriveLocalizable.tr("Localizable", "buttonClose", fallback: "Close")
+  /// loco:6a799d2786bd930f640fa666
+  public static let buttonCloseDoNotAskAgain = KDriveLocalizable.tr("Localizable", "buttonCloseDoNotAskAgain", fallback: "Close and don’t ask again")
   /// loco:698c5e4ec95ac47af70ec115
   public static let buttonConfigure = KDriveLocalizable.tr("Localizable", "buttonConfigure", fallback: "Configure")
   /// loco:698af6e7b8da51abf504d482
@@ -188,6 +190,8 @@ public enum KDriveLocalizable {
   public static let buttonOpenParentFolder = KDriveLocalizable.tr("Localizable", "buttonOpenParentFolder", fallback: "Open parent folder")
   /// loco:699c79a3de97a50065067d72
   public static let buttonOpenSyncExclusionRules = KDriveLocalizable.tr("Localizable", "buttonOpenSyncExclusionRules", fallback: "Manage exclusions")
+  /// loco:6a6c9c86ff200576ff04d522
+  public static let buttonOpenTrash = KDriveLocalizable.tr("Localizable", "buttonOpenTrash", fallback: "Open the Recycle Bin")
   /// loco:69a7ed0ecbb2fb59660bfa12
   public static let buttonPause = KDriveLocalizable.tr("Localizable", "buttonPause", fallback: "Pause")
   /// loco:697b65a56840f9d35605a134
@@ -845,6 +849,20 @@ public enum KDriveLocalizable {
   /// loco:69aaac472fbbf3de57090942
   public static func manyConflictErrorTitle(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "manyConflictErrorTitle", String(describing: p1), fallback: "%@ version conflicts detected")
+  }
+  /// loco:6a6c9bf050ca28e030064893
+  public static let manyDeleteDialogHardLimitContent = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitContent", fallback: "Synchronization is paused to prevent accidental deletion.\nWhat would you like to do?")
+  /// loco:6a6c9c2250ca28e030064894
+  public static let manyDeleteDialogHardLimitPrimary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitPrimary", fallback: "Restore the files")
+  /// loco:6a6c9c3be4819f7c890366e2
+  public static let manyDeleteDialogHardLimitSecondary = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitSecondary", fallback: "Delete online as well")
+  /// loco:6a6c9cb7e46a51ff3e04e779
+  public static let manyDeleteDialogSoftLimitContent = KDriveLocalizable.tr("Localizable", "manyDeleteDialogSoftLimitContent", fallback: "These files can still be recovered from the kDrive Recycle Bin.")
+  /// loco:6a6c9cde3113a18766030f05
+  public static let manyDeleteDialogSoftLimitDoNotShowAgain = KDriveLocalizable.tr("Localizable", "manyDeleteDialogSoftLimitDoNotShowAgain", fallback: "Don’t show this warning again")
+  /// loco:6a6c9bbdc9295e0aa40aede2
+  public static func manyDeleteDialogTitle(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "manyDeleteDialogTitle", String(describing: p1), fallback: "%@ items deleted from your folder")
   }
   /// loco:698b2e50ea6bcf51bf026fc2
   public static let matomoDescription = KDriveLocalizable.tr("Localizable", "matomoDescription", fallback: "Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.\n\nAnalyzing this data allows our team to continuously improve the application’s interface.")

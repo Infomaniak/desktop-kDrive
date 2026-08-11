@@ -160,6 +160,9 @@
 /* loco:696a343b72b6dc32e00557a4 */
 "buttonClose" = "Close";
 
+/* loco:6a799d2786bd930f640fa666 */
+"buttonCloseDoNotAskAgain" = "Close and don’t ask again";
+
 /* loco:698c5e4ec95ac47af70ec115 */
 "buttonConfigure" = "Configure";
 
@@ -258,6 +261,9 @@
 
 /* loco:699c79a3de97a50065067d72 */
 "buttonOpenSyncExclusionRules" = "Manage exclusions";
+
+/* loco:6a6c9c86ff200576ff04d522 */
+"buttonOpenTrash" = "Open the Recycle Bin";
 
 /* loco:69a7ed0ecbb2fb59660bfa12 */
 "buttonPause" = "Pause";
@@ -1128,6 +1134,24 @@
 
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ version conflicts detected";
+
+/* loco:6a6c9bf050ca28e030064893 */
+"manyDeleteDialogHardLimitContent" = "Synchronization is paused to prevent accidental deletion.\nWhat would you like to do?";
+
+/* loco:6a6c9c2250ca28e030064894 */
+"manyDeleteDialogHardLimitPrimary" = "Restore the files";
+
+/* loco:6a6c9c3be4819f7c890366e2 */
+"manyDeleteDialogHardLimitSecondary" = "Delete online as well";
+
+/* loco:6a6c9cb7e46a51ff3e04e779 */
+"manyDeleteDialogSoftLimitContent" = "These files can still be recovered from the kDrive Recycle Bin.";
+
+/* loco:6a6c9cde3113a18766030f05 */
+"manyDeleteDialogSoftLimitDoNotShowAgain" = "Don’t show this warning again";
+
+/* loco:6a6c9bbdc9295e0aa40aede2 */
+"manyDeleteDialogTitle" = "%@ items deleted from your folder";
 
 /* loco:698b2e50ea6bcf51bf026fc2 */
 "matomoDescription" = "Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.\n\nAnalyzing this data allows our team to continuously improve the application’s interface.";
