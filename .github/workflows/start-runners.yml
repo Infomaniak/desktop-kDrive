@@ -103,7 +103,7 @@ jobs:
               --user-data userdata-final.ps1 \
               --property "purpose=ci-runner" \
               --wait \
-              -c id -c name -c status -c addresses \
+              -c id -c name -c status  \
               "$NAME" &
             pids+=("$!")
           done
