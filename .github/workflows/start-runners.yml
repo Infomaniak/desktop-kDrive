@@ -89,6 +89,9 @@ jobs:
           COUNT="${{ steps.params.outputs.count }}"
           FLAVOR="${{ steps.params.outputs.flavor }}"
 
+          pids=()
+          rc=0
+
           for i in $(seq 1 "$COUNT"); do
             NAME="ci-runner-${RUN_ID}-${i}"
             echo "Launching $NAME ..."
@@ -101,8 +104,18 @@ jobs:
               --property "purpose=ci-runner" \
               --wait \
               -c id -c name -c status -c addresses \
-              "$NAME"
+              "$NAME" &
+            pids+=("$!")
           done
+
+          # Wait for every background creation and capture the first failure.
+          for pid in "${pids[@]}"; do
+            if ! wait "$pid"; then
+              rc=1
+            fi
+          done
+
+          exit "$rc"
 
       - name: Clean up rendered user-data
         if: always()
