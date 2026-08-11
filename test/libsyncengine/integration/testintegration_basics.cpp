@@ -479,7 +479,7 @@ void TestIntegration::testExecuteSyncUpToStep() {
         const SyncPath filePath = _syncPal->localPath() / Poco::format("testExecuteSyncUpToStep_%d", static_cast<int64_t>(step));
         testhelpers::generateOrEditTestFile(filePath);
 
-        CPPUNIT_ASSERT(testHelper.executeSyncUpToStep(static_cast<int64_t>(step), 10000));
+        CPPUNIT_ASSERT(testHelper.executeSyncUpToStep(step, 10000));
 
         CPPUNIT_ASSERT_EQUAL(step, _syncPal->step());
 
