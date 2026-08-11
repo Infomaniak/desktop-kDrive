@@ -27,7 +27,7 @@ class SyncFolderAllowedChecker {
         static ExitInfo check(const SyncPath &path, bool &allowed);
 
     private:
-        static SyncPath expandRulePath(const SyncPath &rulePath);
+        static ExitInfo expandRulePath(const SyncPath &rulePath, SyncPath &expandedPath);
 };
 
 } // namespace KDC

@@ -58,7 +58,10 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
                                                          << Utility::formatSyncPath(rule.syncPath()) << L" type: "
                                                          << static_cast<int>(rule.folderRuleType()));
 
-        SyncPath expandedRulePath = expandRulePath(rule.syncPath());
+        SyncPath expandedRulePath;
+        if (const auto exitInfo = expandRulePath(rule.syncPath(), expandedRulePath); !exitInfo) {
+            return exitInfo;
+        }
 
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"isSyncFolderAllowedByRules: expanded rule syncPath: " << Utility::formatSyncPath(expandedRulePath));
@@ -114,20 +117,31 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
     return ExitCode::Ok;
 }
 
-SyncPath SyncFolderAllowedChecker::expandRulePath(const SyncPath &rulePath) {
-    QString pathStr = Path2QStr(rulePath);
-    const QString homeDir = QDir::homePath();
+ExitInfo SyncFolderAllowedChecker::expandRulePath(const SyncPath &rulePath, SyncPath &expandedPath) {
+    SyncName pathStr = rulePath.native();
+    SyncPath homeDir;
+    if (const auto exitInfo = CommonUtility::homeDirectoryPath(homeDir); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in CommonUtility::homeDirectoryPath");
+        return exitInfo;
+    }
 
+    const auto replaceAll = [](SyncName &str, const SyncName &from, const SyncName &to) {
+        for (auto pos = str.find(from); pos != SyncName::npos; pos = str.find(from, pos + to.length())) {
+            str.replace(pos, from.length(), to);
+        }
+    };
 
     // $HOME -> user profile / home directory.
-    (void) pathStr.replace("$HOME", homeDir);
+    const SyncName homeStr = homeDir.native();
+    replaceAll(pathStr, Str("$HOME"), homeStr);
 
     // $SYSROOT -> root of the volume the home dir lives on.
     // Windows -> "C:/", macOS/Linux -> "/". Handles UNC paths too, no #ifdef.
-    const QString sysRoot = Path2QStr(QStr2Path(homeDir).root_path());
-    (void) pathStr.replace("$SYSROOT", sysRoot);
+    const SyncName sysRootStr = homeDir.root_path().native();
+    replaceAll(pathStr, Str("$SYSROOT"), sysRootStr);
 
-    return QStr2Path(pathStr);
+    expandedPath = SyncPath(pathStr);
+    return ExitCode::Ok;
 }
 
 } // namespace KDC
