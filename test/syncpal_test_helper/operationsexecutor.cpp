@@ -397,16 +397,15 @@ void OperationsExecutor::applyRemoteMove(const OperationDesc &desc) {
 
     // Rekey any descendants still under the old prefix (no-op if fromPath is a file).
     std::map<SyncPath, NodeId> rekeyed;
-    for (auto it = _batchRemoteIds.begin(); it != _batchRemoteIds.end();) {
-        const auto &path = it->first;
+    (void) std::erase_if(_batchRemoteIds, [&](const auto &entry) {
+        const auto &[path, id] = entry;
         if (auto relative = path.lexically_relative(desc.fromPath);
             !relative.empty() && relative.native().substr(0, 2) != Str2SyncName("..")) {
-            rekeyed[desc.toPath / relative] = it->second;
-            it = _batchRemoteIds.erase(it);
-        } else {
-            ++it;
+            rekeyed[desc.toPath / relative] = id;
+            return true;
         }
-    }
+        return false;
+    });
     for (auto &[path, id]: rekeyed) {
         _batchRemoteIds[path] = id;
     }

@@ -476,7 +476,7 @@ void TestIntegration::testExecuteSyncUpToStep() {
     for (const auto step: stepsToTest) {
         // Generate a real local change so the sync actually has work to progress through.
         const SyncPath filePath =
-                _syncPal->localPath() / ("testExecuteSyncUpToStep_" + std::to_string(static_cast<int>(step)));
+                _syncPal->localPath() / std::format("testExecuteSyncUpToStep_{}", static_cast<int64_t>(step));
         testhelpers::generateOrEditTestFile(filePath);
 
         CPPUNIT_ASSERT(testHelper.executeSyncUpToStep(static_cast<int64_t>(step), 10000));

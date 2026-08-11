@@ -254,7 +254,7 @@ SyncStep SyncPal::step() const {
     return (_syncPalWorker ? _syncPalWorker->step() : SyncStep::None);
 }
 
-void SyncPal::setMaxStep(SyncStep step) {
+void SyncPal::setMaxStep(const SyncStep step) {
     if (_syncPalWorker) _syncPalWorker->setMaxStep(step);
 }
 

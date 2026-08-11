@@ -41,7 +41,7 @@ class SyncpalTestHelper {
         explicit SyncpalTestHelper(std::shared_ptr<SyncPal> syncPal);
 
         // ---- High-level test driver API ----
-        void setUp();
+        bool setUp();
         void tearDown();
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);

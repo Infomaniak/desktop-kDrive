@@ -96,9 +96,11 @@ struct RawItem {
         int64_t size = 0;
 };
 
-using RawItemMap = std::unordered_map<NodeId, RawItem>;
+using RawItemMap = std::unordered_map<NodeId, RawItem, StringHashFunction, std::equal_to<>>;
 
-SyncPath resolvePath(const NodeId &id, const RawItemMap &rawItems, std::unordered_map<NodeId, SyncPath> &pathCache) {
+using PathCache = std::unordered_map<NodeId, SyncPath, StringHashFunction, std::equal_to<>>;
+
+SyncPath resolvePath(const NodeId &id, const RawItemMap &rawItems, PathCache &pathCache) {
     if (const auto it = pathCache.find(id); it != pathCache.end()) return it->second;
 
     const RawItem &item = rawItems.at(id);
@@ -112,7 +114,7 @@ SyncPath resolvePath(const NodeId &id, const RawItemMap &rawItems, std::unordere
 // (which only lists root's children), so it is used to resolve its children's paths but never added to the result.
 SituationCSV rawItemsToSituationCSV(const RawItemMap &rawItems) {
     SituationCSV situationCSV;
-    std::unordered_map<NodeId, SyncPath> pathCache;
+    PathCache pathCache;
     for (const auto &[id, item]: rawItems) {
         if (item.parentId.empty()) continue; // root, skip
         if (item.name.starts_with("tmpFile_")) continue; // trash, skip
@@ -153,8 +155,7 @@ void GetSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
 
 SituationCSV GetSituation::jsonToSituationCSV(const Situation &situation) {
     SituationCSV situationCSV;
-    const auto &obj = situation.jsonObject();
-    if (obj->isArray("content")) {
+    if (const auto &obj = situation.jsonObject(); obj->isArray("content")) {
         flatten(obj->getArray("content"), {}, situationCSV);
     } else {
         // No "content" array: legacy format, where the object's own keys are the items.
@@ -172,15 +173,12 @@ SituationCSV GetSituation::csvToSituationCSV(const std::string &csv) {
     bool error = false;
     bool ignore = false;
     bool eof = false;
-    while (handler.getItem(item, ss, error, ignore, eof)) {
-        if (error) {
-            LOG_WARN(Log::instance()->getLogger(), "Error while parsing CSV listing.");
-            break;
-        }
+    while (handler.getItem(item, ss, error, ignore, eof) && !error) {
         if (!ignore) rawItems[item.id()] = {item.parentId(), SyncName2Str(item.name()), item.type(), item.size()};
 
         if (eof) break;
     }
+    if (error) LOG_WARN(Log::instance()->getLogger(), "Error while parsing CSV listing.");
 
     return rawItemsToSituationCSV(rawItems);
 }

@@ -117,7 +117,7 @@ void InitialSituationSetter::generateInitialSituation(const Situation &localSitu
     if (!_syncPal) throw SituationGeneratorException("Invalid parameters!");
 
     // Captured once and reused for every item on both sides (see _now's declaration for why).
-    _now = std::time(nullptr);
+    _now = static_cast<SyncTime>(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 
     generateSituation(localSituation, ReplicaSide::Local);
     generateSituation(remoteSituation, ReplicaSide::Remote);

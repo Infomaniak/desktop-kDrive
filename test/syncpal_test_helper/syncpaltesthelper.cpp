@@ -32,9 +32,8 @@ SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
     _executeOperations(syncPal),
     _getSituation(syncPal) {}
 
-void SyncpalTestHelper::setUp() {
-    startSync();
-    executeSyncUntilEnd();
+bool SyncpalTestHelper::setUp() {
+    return startSync() && executeSyncUntilEnd();
 }
 
 void SyncpalTestHelper::tearDown() {

@@ -49,7 +49,7 @@ class SyncPalWorker : public ISyncWorker {
         static std::string stepName(SyncStep step);
 
         // If set to a value other than SyncStep::None, the sync loop will stop advancing past `step` (used by tests).
-        inline void setMaxStep(SyncStep step) { _maxStep.store(step); }
+        inline void setMaxStep(const SyncStep step) { _maxStep.store(step); }
         inline SyncStep maxStep() const { return _maxStep.load(); }
 
     private:
