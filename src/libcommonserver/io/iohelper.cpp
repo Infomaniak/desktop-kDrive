@@ -878,6 +878,7 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
+    // NB: Symlinks are not followed (symlink is removed, not its target).
     std::error_code ec;
     (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
@@ -893,8 +894,34 @@ bool IoHelper::deleteItem(const SyncPath &path) noexcept {
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    ioError = IoError::Unknown;
+
+    // Get the destination type.
+    ItemType destinationType;
+    if (!getItemType(destinationPath, destinationType)) {
+        LOGW_WARN(logger(),
+                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(destinationPath, destinationType.ioError));
+        ioError = destinationType.ioError;
+        return false;
+    }
+
     std::error_code ec;
-    std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
+    if (destinationType.ioError == IoError::Success && isLink(destinationType.linkType)) {
+        // Remove the destination path.
+        if (!deleteItem(destinationPath, ioError)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destinationPath, ioError));
+            return false;
+        }
+    }
+
+    // Copy the source path to the destination path
+    // - Overwrite if the destination path already exists
+    // - Copy recursively if it is a directory
+    // - Allow symlinks copy
+    std::filesystem::copy(sourcePath, destinationPath,
+                          std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive |
+                                  std::filesystem::copy_options::copy_symlinks,
+                          ec);
     ioError = IoHelper::stdError2ioError(ec);
 
     return ioError == IoError::Success;
@@ -921,6 +948,12 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
+        ioError = IoError::InvalidArgument;
+        return false;
+    }
+
+    if (targetPath.empty()) {
+        LOGW_DEBUG(logger(), L"Cannot create symlink on an empty target: " << Utility::formatSyncPath(path));
         ioError = IoError::InvalidArgument;
         return false;
     }

@@ -219,11 +219,13 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
             return {ExitCode::DataError, ExitCause::BlackListPropagationError};
         }
 
-
+        _isPaused = true;
         if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            _isPaused = false;
             return exitInfo;
         }
+        _isPaused = false;
     }
 
     if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
@@ -237,6 +239,21 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
     }
 
     return ExitCode::Ok;
+}
+
+void SyncPalWorker::ensureMinimumPermission() {
+    std::function<void(SyncPath)> trySetFullAcess = [this](SyncPath path) {
+        if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
+            LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
+        } else {
+            LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+        }
+    };
+
+    if (!_syncPal->isAdvancedSync()) {
+        trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
+        trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+    }
 }
 
 void SyncPalWorker::execute() {
@@ -261,6 +278,8 @@ void SyncPalWorker::execute() {
         setDone(exitInfo.code());
         return;
     }
+
+    ensureMinimumPermission();
 
     // Wait before really starting
     bool awakenByStop = false;

@@ -243,6 +243,8 @@ std::string toString(const ExitCause e) {
             return "BlackListPropagationError";
         case ExitCause::FileSystemNotSupported:
             return "FileSystemNotSupported";
+        case ExitCause::SyncDeletionFailed:
+            return "SyncDeletionFailed";
         default:
             return noConversionStr;
     }
@@ -758,6 +760,8 @@ std::string toString(const AppStateKey e) {
             return "AppUid";
         case AppStateKey::NoUpdate:
             return "NoUpdate";
+        case AppStateKey::ShowV4Onboarding:
+            return "ShowV4Onboarding";
         case AppStateKey::Unknown:
             return "Unknown";
         default:

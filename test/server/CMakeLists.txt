@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML Net)
+find_package(Poco 1.13.3 REQUIRED XML Net NetSSL Crypto)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -24,6 +24,7 @@ set(server_SRCS
     ${server_srcs_path}/appserver.h ${server_srcs_path}/appserver.cpp
     ${server_srcs_path}/comm/oldcommserver.h ${server_srcs_path}/comm/oldcommserver.cpp
     ${server_srcs_path}/comm/abstractcommchannel.h ${server_srcs_path}/comm/abstractcommchannel.cpp
+    ${server_srcs_path}/comm/securecontextsingleton.h ${server_srcs_path}/comm/securecontextsingleton.cpp
     ${server_srcs_path}/comm/socketcommserver.h ${server_srcs_path}/comm/socketcommserver.cpp
     ${server_srcs_path}/comm/commmanager.h ${server_srcs_path}/comm/commmanager.cpp
     ${server_srcs_path}/comm/guicommserver.h ${server_srcs_path}/comm/guicommserver.cpp
@@ -223,6 +224,7 @@ if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_mac.cpp)
 elseif(UNIX)
+    list(APPEND server_SRCS ${server_srcs_path}/runningprocessinfo_linux.h ${server_srcs_path}/runningprocessinfo_linux.cpp)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_linux.cpp)
 elseif(WIN32)
     list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)

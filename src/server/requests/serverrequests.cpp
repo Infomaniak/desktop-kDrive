@@ -49,6 +49,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "server/comm/guijobs/signalerrorremovedjob.h"
+#include "theme/theme.h"
 
 #include <QDir>
 #include <QUuid>
@@ -423,80 +424,68 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::findGoodPathForNewSync(const SyncPath &basePath, SyncPath &path, std::string &error) {
-    const QString qBasePath = Path2QStr(basePath);
-    QString qPath;
-    QString qError;
-    const ExitInfo exitInfo = findGoodPathForNewSync(qBasePath, qPath, qError);
-    path = QStr2Path(qPath);
-    error = QStr2Str(qError);
-    return exitInfo;
-}
-
-ExitInfo ServerRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
+ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
         return ExitCode::DbError;
     }
 
-    QString folder = basePath;
+    SyncPath homeFolder;
+    if (const auto exitCode = CommonUtility::homeDirectoryPath(homeFolder); !exitCode) {
+        return exitCode;
+    }
+    const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
+    SyncPath initialPath = homeFolder / initialFolderName;
 
     // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
-    QString parentFolder = QFileInfo(folder).dir().canonicalPath();
     SyncDbId syncDbId = 0;
-    ExitCode exitCode = syncForPath(syncList, parentFolder, syncDbId);
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = syncForPath(syncList, Path2QStr(homeFolder), syncDbId); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath: code=" << exitCode);
         return exitCode;
     }
 
     if (syncDbId) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"The parent folder is a sync folder or contained in one : " << Path2WStr(QStr2Path(parentFolder)));
-        error = QObject::tr("The parent folder is a sync folder or contained in one");
+                  L"The parent folder is a sync folder or contained in one : " << Utility::formatSyncPath(homeFolder));
+        error = "The parent folder is a sync folder or contained in one";
         return ExitCode::SystemError;
     }
 
-    int attempt = 1;
+    QString errorMessage;
+    const ExitInfo exitInfo = checkSyncNesting(syncList, Path2QStr(initialPath), errorMessage);
+    if (!exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(), QStr2WStr(errorMessage));
+        return exitInfo;
+    }
+
+    auto attempt = 1;
+    SyncPath finalPath = initialPath;
     forever {
-        const ExitInfo exitInfo = checkSyncNesting(syncList, folder, error);
-        if (!exitInfo && (exitInfo.code() != ExitCode::InvalidSync ||
-                          attempt >= 100)) { // If the error is a sync nesting error, we can try another
-                                             // as the folder can just be already used by another sync
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkSyncNesting:" << exitInfo);
-            return exitInfo;
+        // Check if the local directory already exists
+        auto ioError = IoError::Success;
+        bool alreadyExists = false;
+        if (!IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(finalPath, ioError));
+            return ExitCode::SystemError;
         }
-
-        if (exitInfo) {
-            // Check if the local directory already exists
-            auto ioError = IoError::Success;
-            bool alreadyExists = false;
-            const bool success = IoHelper::checkIfPathExists(QStr2Path(folder), alreadyExists, ioError,
-                                                             IoHelper::PathCheckOption::Insensitive);
-            if (!success) {
-                LOGW_WARN(Log::instance()->getLogger(),
-                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(folder, ioError));
-                return ExitCode::SystemError;
-            }
-
-            if (!alreadyExists) {
-                break;
-            }
+        if (!alreadyExists) {
+            break;
         }
 
         // Count attempts and give up eventually
         if (attempt >= 100) {
             LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
-            error = QObject::tr("Can't find a valid path");
+            error = "Can't find a valid path";
             return ExitCode::SystemError;
         }
         attempt++;
 
-        folder = basePath + " " + QString::number(attempt);
+        finalPath = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attempt)));
     }
 
-    path = folder;
+    path = finalPath;
     error = "";
     return ExitCode::Ok;
 }
@@ -1932,6 +1921,7 @@ ExitInfo ServerRequests::loadUserInfo(User &user, bool &updated) {
         if (exitInfo.code() == ExitCode::InvalidToken) {
             user.setKeychainKey(""); // Invalid keychain key
             user.setConnected(false);
+            updated = true;
         }
         return exitInfo;
     }

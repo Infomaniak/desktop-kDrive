@@ -170,4 +170,14 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     return ExitCode::Ok;
 }
 
+ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
+    NSString *homeDir = NSHomeDirectory();
+    if (!homeDir) {
+        return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+
+    directoryPath = SyncPath([homeDir UTF8String]);
+    return ExitCode::Ok;
+}
+
 } // namespace KDC

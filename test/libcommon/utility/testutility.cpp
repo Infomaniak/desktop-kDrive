@@ -475,7 +475,8 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("el"), CommonUtility::languageCode(Language::Greek).toStdString());
 
     const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
-    CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
+    const auto expectedLanguage = CommonUtility::isSupportedLanguage(systemLanguage) ? systemLanguage : QStringLiteral("en");
+    CPPUNIT_ASSERT_EQUAL(expectedLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
 
     // English is the default language and is always returned if the provided language code is unknown.
     CPPUNIT_ASSERT_EQUAL(std::string("en"), CommonUtility::languageCode(static_cast<Language>(18)).toStdString());
@@ -1459,6 +1460,46 @@ void TestUtility::testPathDepth() {
         path /= "dir";
         CPPUNIT_ASSERT_EQUAL(i, CommonUtility::pathDepth(path));
     }
+}
+
+void TestUtility::testHomeDirectoryPath() {
+    SyncPath homePath;
+    const auto exitInfo = CommonUtility::homeDirectoryPath(homePath);
+    const std::string failureMessage = "homeDirectoryPath failed: path=" + homePath.string();
+
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), exitInfo);
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), !homePath.empty());
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homePath.is_absolute());
+
+#if defined(KD_WINDOWS)
+    // On Windows the home directory follows the pattern: <drive letter>:\Users\<username>
+    // e.g. C:\Users\John
+    const std::string homeStr = homePath.string();
+    // Must contain a drive letter root such as "C:\"
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr.size() >= 3);
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), std::isalpha(homeStr[0], std::locale{}));
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr[1] == ':');
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr[2] == '\\');
+    // Must contain the "Users" segment
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr.find("Users") != std::string::npos);
+    // Must match the pattern <letter>:\Users\<non-empty username>
+    const std::regex windowsHomePattern(R"([A-Za-z]:\\Users\\[^\\]+.*)");
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), std::regex_match(homeStr, windowsHomePattern));
+#elif defined(KD_MACOS)
+    // On macOS the home directory follows the pattern: /Users/<username>
+    // e.g. /Users/john
+    const std::string homeStr = homePath.string();
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr[0] == '/');
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr.find("Users") != std::string::npos);
+    const std::regex macOsHomePattern(R"(/Users/[^/]+.*)");
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), std::regex_match(homeStr, macOsHomePattern));
+#else
+    // On Linux the home directory is typically /home/<username> or /root for the root user
+    const std::string homeStr = homePath.string();
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), homeStr[0] == '/');
+    const std::regex linuxHomePattern(R"((/home/[^/]+.*|/root))");
+    CPPUNIT_ASSERT_MESSAGE(failureMessage.c_str(), std::regex_match(homeStr, linuxHomePattern));
+#endif
 }
 
 void TestUtility::testGetSyncTime() {

@@ -254,7 +254,7 @@ void AddDriveLocalFolderWidget::initUI() {
 }
 
 void AddDriveLocalFolderWidget::updateUI() {
-    if (const bool ok = !_localFolderPath.isEmpty(); !ok) return;
+    if (_localFolderPath.isEmpty()) return;
 
     const QDir dir(_localFolderPath);
     _folderNameLabel->setText(dir.dirName());
@@ -361,6 +361,12 @@ void AddDriveLocalFolderWidget::onBackButtonTriggered(bool checked) {
 void AddDriveLocalFolderWidget::onContinueButtonTriggered(bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("addDriveLocalFolder", MatomoEventAction::Click, "continueButton");
+
+    if (_localFolderPath.isEmpty()) {
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Please select a folder to continue."), QMessageBox::Ok, this);
+        msgBox.exec();
+        return;
+    }
 
     emit terminated();
 }

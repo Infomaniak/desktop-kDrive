@@ -114,6 +114,14 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
+    // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
+    // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
+    // no need to display the banner. 
+    if (!insertAppState(AppStateKey::ShowV4Onboarding, _versionUpdated ? "1" : "0")) {
+        LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
+        return false;
+    }
+
     return true;
 }
 

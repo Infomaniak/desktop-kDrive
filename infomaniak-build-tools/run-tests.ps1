@@ -22,15 +22,26 @@ $failures = @()
 
 pushd build-windows\install\bin
 
+$env:PATH = "C:\Program Files (x86)\cppunit\lib;" + $env:PATH
+
 foreach ($file in $testers)
 {
     Write-Host "---------- Running $file ----------" -f Yellow
     $path="..\..\$file"
+
+    # Check if the file exists before executing it
+    if (-not (Test-Path $path -PathType Leaf)) {
+        Write-Host "Error: File $path does not exist." -f Red
+        $errors += 1
+        $failures+=$file
+        continue
+    }
+
     & $path
     if ($LASTEXITCODE -ne 0) {
         $errors += 1
         $failures+=$file
-        Write-Host "---------- Failure: $file ----------" -f Red
+        Write-Host "-------- Failure: $file ($LASTEXITCODE)  --------" -f Red
     }
     else {
         Write-Host "---------- Success: $file ----------" -f Green

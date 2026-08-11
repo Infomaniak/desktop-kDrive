@@ -17,6 +17,10 @@
  */
 
 #include "appserver.h"
+#if defined(KD_LINUX)
+#include "qtlocalpeer.h"
+#include "runningprocessinfo_linux.h"
+#endif
 #include "version.h"
 #include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
@@ -82,6 +86,7 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <cstdint>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
 #endif
@@ -122,13 +127,15 @@ static const char optionsC[] =
         "  -v --version         : show the application version.\n"
         "  --settings           : show the Settings window (if the application is running).\n"
         "  --synthesis          : show the Synthesis window (if the application is running).\n";
-}
+
+} // namespace
 
 static const QString showSynthesisMsg("showSynthesis");
 static const QString showSettingsMsg("showSettings");
 static const QString restartClientMsg("restartClient");
 static const QString authorizationCodeMsg("redirectLogin");
 static const QString separatorMsg("$$$");
+static constexpr std::int32_t singleApplicationMessageTimeoutMs = 5000;
 
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
@@ -180,9 +187,17 @@ void AppServer::init() {
     setWindowIcon(_theme->applicationIcon());
     setApplicationVersion(QString::fromStdString(_theme->version()));
 
+    // OAuth deeplinks start a short-lived helper process. It must not initialize logging because doing so would archive the
+    // running server's active log file.
     parseOptions(_arguments);
     if (!_authorizationCodeStr.isEmpty()) {
-        std::cout << "Authorization code received";
+        if (!isRunning()) {
+#if defined(KD_LINUX)
+            if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
+                _runningServerPid = *processPid;
+            }
+#endif
+        }
         return;
     }
 
@@ -200,12 +215,40 @@ void AppServer::init() {
         LOG_INFO(_logger, "AppServer already running");
         return;
     }
-
+#if defined(KD_LINUX)
+    if (const auto processPid = runningProcessPid(APPLICATION_EXECUTABLE); processPid.has_value()) {
+        _runningServerPid = *processPid;
+        LOG_INFO(_logger, "AppServer already running with PID " << _runningServerPid);
+        return;
+    }
+#endif
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+
+#if defined(KD_LINUX)
+    // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
+    // planned removal of QtSingleApplication will de facto remove this small Qt addition along with it.
+    // The removal of QtSingleApplication will be done before Qt is fully removed from the server.
+    _fallbackLocalPeer = std::make_unique<SharedTools::QtLocalPeer>(
+            this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
+    (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
+                   &AppServer::onMessageReceivedFromAnotherProcess);
+    // isClient() starts the fallback server when possible; true means this process is only a client.
+    if (_fallbackLocalPeer->isClient()) {
+        _fallbackLocalPeer.reset();
+    } else {
+        LOG_INFO(_logger, "Started Linux fallback single-application peer");
+    }
+#endif
+
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -399,17 +442,21 @@ void AppServer::init() {
                        &AppServer::onClientDisconnectedReceived);
     }
 
-    // Update users,accounts and drives info.
-    if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
-        exitInfo.code() == ExitCode::InvalidToken) {
-        // The user will be asked to enter its credentials later.
-    } else if (!exitInfo) {
-        LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
-        addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
-    }
-
     // Set sentry user
     updateSentryUser();
+    QTimer::singleShot(0, this, [this]() {
+        // Update users,accounts and drives info.
+        if (const auto exitInfo = updateAllUsersInfo(UpdateFollowUpAction::CleanUserDbEntry);
+            exitInfo.code() == ExitCode::InvalidToken) {
+            // The user will be asked to enter its credentials later.
+        } else if (!exitInfo) {
+            LOG_WARN(_logger, "Error in updateAllUsersInfo: " << exitInfo);
+            addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
+        }
+
+        // refresh sentry user
+        updateSentryUser();
+    });
 
     // Read Updater activation flag
     AppStateValue noUpdateAppStateValue = 0;
@@ -486,7 +533,7 @@ void AppServer::init() {
 
     // Start syncs
     LOG_DEBUG(_logger, "Start syncs");
-    QTimer::singleShot(0, [=, this]() { startSyncsAndRetryOnError(); });
+    QTimer::singleShot(0, this, [this]() { startSyncsAndRetryOnError(); });
 
     // Init JobManager(s)
     if (!GuiJobManagerSingleton::instance()) {
@@ -506,12 +553,6 @@ void AppServer::init() {
 
     // Process possible interrupted logs upload
     processInterruptedLogsUpload();
-
-    if (!Utility::registerLoginRedirection()) {
-        std::string errorMsg = "Failed to register login redirection";
-        LOG_ERROR(_logger, errorMsg);
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
-    }
 
     // Start client
     if (!startClient()) {
@@ -612,9 +653,24 @@ void AppServer::quitLater(const int32_t delayMs) {
 // This task can be long and block the GUI
 void AppServer::stopSyncTask(const SyncDbId syncDbId,
                              const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+    if (behavior == SyncPal::DbBehaviorAfterStop::Remove) {
+        // Mark the sync for deletion in the parameters DB.
+        if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found)) {
+            LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
+            addError(Error(syncDbId, ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+
+            return; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on Windows only) could
+                    // delete dehydrated placeholders whereas the sync is still in the DB.
+        } else if (!found) {
+            LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
+        }
+    }
+
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
+
+        return;
     }
 
     // Stop Vfs
@@ -753,6 +809,19 @@ void AppServer::deleteSync(const SyncDbId syncDbId) {
                                    // May even cause a crash if both sendDriveRemoved and sendSyncRemoved are processed
                                    // concurrently on the GUI side.
     }
+}
+
+void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
+    QTimer::singleShot(100, [this, syncDbId]() {
+        AppServer::stopSyncTask(syncDbId,
+                                SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
+
+        // Delete sync from DB
+        deleteSync(syncDbId);
+#if defined(KD_MACOS)
+        Utility::restartFinderExtension();
+#endif
+    });
 }
 
 void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled) noexcept {
@@ -1685,16 +1754,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ArgsWriter(params).write(tmpSyncDbId);
 
             const auto syncDbId = static_cast<SyncDbId>(tmpSyncDbId);
-            QTimer::singleShot(100, [this, syncDbId]() {
-                AppServer::stopSyncTask(
-                        syncDbId, SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
-
-                // Delete sync from DB
-                deleteSync(syncDbId);
-#if defined(KD_MACOS)
-                Utility::restartFinderExtension();
-#endif
-            });
+            deleteSyncAsBackgroundTask(syncDbId);
 
             break;
         }
@@ -2222,21 +2282,21 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
-            QString basePath;
+            QString driveName;
             QDataStream paramsStream(params);
-            paramsStream >> basePath;
+            paramsStream >> driveName;
 
-            QString path;
-            QString error;
-            const auto exitInfo = ServerRequests::findGoodPathForNewSync(basePath, path, error);
+            SyncPath path;
+            std::string error;
+            const auto exitInfo = ServerRequests::findGoodPathForNewSync(QStr2SyncName(driveName), path, error);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::findGoodPathForNewSyncFolder");
                 addError(Error(ERR_ID, exitInfo));
             }
 
             resultStream << toInt(exitInfo.code());
-            resultStream << path;
-            resultStream << error;
+            resultStream << Path2QStr(path);
+            resultStream << QString::fromStdString(error);
             break;
         }
         case RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC: {
@@ -2492,7 +2552,7 @@ void AppServer::startSyncsAndRetryOnError(const std::unordered_set<SyncDbId> &to
             LOG_DEBUG(_logger, "Retry to start syncs in " << START_SYNCPALS_RETRY_INTERVAL << " ms");
             startedSyncDbIds.insert(toIgnoreSyncDbIds.begin(), toIgnoreSyncDbIds.end());
             QTimer::singleShot(START_SYNCPALS_RETRY_INTERVAL, this,
-                               [&startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
+                               [startedSyncDbIds, this]() { startSyncsAndRetryOnError(startedSyncDbIds); });
         }
     }
 }
@@ -2616,6 +2676,7 @@ ExitInfo AppServer::checkIfSyncIsValid(const BaseSync &sync) {
     // Check for nested syncs
     for (const auto &sync_: syncList) {
         if (sync_.dbId() == sync.dbId()) {
+            if (sync_.toDelete()) return {ExitCode::SystemError, ExitCause::SyncDeletionFailed};
             continue;
         }
         if (CommonUtility::isSubDir(sync.localPath(), sync_.localPath()) ||
@@ -2912,11 +2973,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -2974,17 +3035,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
 
 ExitInfo AppServer::updateUser(User &user) {
     bool updated = false;
-    if (const auto exitInfo = _loadUserInfo(user, updated); !exitInfo) {
-        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
-        if (exitInfo.code() == ExitCode::InvalidToken) {
-            // Notify client app that the user is disconnected
-            user.setKeychainKey(""); // Invalid keychain key
-            user.setConnected(false);
-            sendUserUpdated(user);
-        }
-
-        return exitInfo;
-    }
+    const auto exitInfo = _loadUserInfo(user, updated);
 
     if (updated) {
         bool found = false;
@@ -2999,6 +3050,12 @@ ExitInfo AppServer::updateUser(User &user) {
 
         sendUserUpdated(user);
     }
+
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::loadUserInfo: " << exitInfo);
+        return exitInfo;
+    }
+
     return ExitCode::Ok;
 }
 
@@ -3333,6 +3390,9 @@ ExitInfo AppServer::startSyncs(User &user, const std::unordered_set<SyncDbId> to
                 if (const auto exitInfo = checkIfSyncIsValid(sync); !exitInfo) {
                     LOG_WARN(_logger, "Error in checkIfSyncIsValid for syncDbId=" << sync.dbId() << " : " << exitInfo);
                     addError(Error(sync.dbId(), ERR_ID, exitInfo));
+
+                    if (exitInfo.cause() == ExitCause::SyncDeletionFailed) deleteSyncAsBackgroundTask(sync.dbId());
+
                     continue;
                 }
 
@@ -3782,20 +3842,33 @@ void AppServer::clearSyncNodes() {
     }
 }
 
-void AppServer::sendShowSettingsMsg() {
-    sendMessage(showSettingsMsg);
+void AppServer::sendShowSettingsMsg(qint64 pid) {
+    if (!sendMessage(showSettingsMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward show-settings request to the running server");
+    }
 }
 
-void AppServer::sendShowSynthesisMsg() {
-    sendMessage(showSynthesisMsg);
+void AppServer::sendShowSynthesisMsg(qint64 pid) {
+    if (!sendMessage(showSynthesisMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward show-synthesis request to the running server");
+    }
 }
 
-void AppServer::sendRestartClientMsg() {
-    sendMessage(restartClientMsg);
+void AppServer::sendRestartClientMsg(qint64 pid) {
+    if (!sendMessage(restartClientMsg, singleApplicationMessageTimeoutMs, pid)) {
+        LOG_WARN(_logger, "Failed to forward restart-client request to the running server");
+    }
 }
 
-void AppServer::sendAuthorizationCode() {
-    sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr);
+void AppServer::sendAuthorizationCode(qint64 pid) {
+    if (Log::isSet()) {
+        LOG_INFO(Log::instance()->getLogger(), "Forwarding login authorization callback to the running server");
+    }
+    if (!sendMessage(authorizationCodeMsg + separatorMsg + _authorizationCodeStr, singleApplicationMessageTimeoutMs, pid)) {
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to forward login authorization callback to the running server");
+        }
+    }
 }
 
 void AppServer::showSettings() {
@@ -3944,34 +4017,51 @@ bool AppServer::startClient() {
     startClient = true;
 #endif
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-
+    bool useClientV4 = false;
     if (startClient) {
         // Start the client
         QString pathToExecutable;
 
 #if defined(KD_WINDOWS)
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENTV4_EXECUTABLE);
-
+        useClientV4 = true;
         IoError ioError = IoError::Success;
         bool exists = false;
         if (!IoHelper::checkIfPathExists(QStr2Path(pathToExecutable), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
             !exists || ioError != IoError::Success) {
             pathToExecutable.clear();
+            useClientV4 = false;
         }
         if (pathToExecutable.isEmpty()) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1.exe").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
 #else
         pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
+        useClientV4 = KDRIVE_VERSION_MAJOR >= 4;
 #endif
 
         QStringList arguments;
-        if (useOldCommServer()) {
-            arguments << QString::number(OldCommServer::instance()->commPort());
+        if (useClientV4 && useCommManager(true)) {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+            const auto port = _commManager->tryGetGUICommPort();
+            if (port <= 0) {
+                LOG_FATAL(_logger, "Failed to start kDrive client (comm manager port isn't available)");
+                return false;
+            }
+            arguments << QString::number(port);
 
-            LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                                 << arguments[0].toStdWString());
+#else
+            // On macOS the client communicates with the server through XPC and doesn't need the port number as argument.
+#endif
+        } else if (!useClientV4 && useOldCommServer()) {
+            arguments << QString::number(OldCommServer::instance()->commPort());
+        } else {
+            LOG_FATAL(_logger, "Failed to start kDrive client (no communication method available)");
+            return false;
         }
+
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
+                                                             << (arguments.size() >= 1 ? arguments[0].toStdWString() : L""));
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);
@@ -4014,6 +4104,7 @@ ExitInfo AppServer::updateAllUsersInfo(const UpdateFollowUpAction action) {
 
         if (const auto exitInfo = updateUserInfo(user); !exitInfo) {
             LOG_WARN(_logger, "Error in updateUserInfo: " << exitInfo);
+            if (exitInfo.code() == ExitCode::InvalidToken) continue;
             return exitInfo;
         }
     }
