@@ -18,7 +18,9 @@
 
 #include "appclientlinux.h"
 
+#include "app/appconstants.h"
 #include "app/applicationidentity.h"
+#include "app/navigation/mainwindowactivationdecision.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/logger.h"
 
@@ -78,6 +80,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
     (void) qmlRegisterUncreatableType<SyncSelectorModel>("kDrive.UI", 1, 0, "SyncSelectorModel",
                                                          "SyncSelectorModel is owned by MainSidebarController.");
+    (void) qmlRegisterUncreatableType<HomeController>("kDrive.UI", 1, 0, "HomeController",
+                                                      "HomeController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
+                                            QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
@@ -87,6 +93,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     _qmlEngine.setInitialProperties({
             {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
+            {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
@@ -137,9 +144,17 @@ void AppClientLinux::setupSignalConnections() {
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
                    &SystemTrayController::hideMainWindow);
-    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this,
-                   [this] { QTimer::singleShot(0, this, &AppClientLinux::openMainWindow); });
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this, [this] {
+        _preferSetupHomeWhenUnconfigured = false;
+        QTimer::singleShot(0, this, &AppClientLinux::openMainWindow);
+    });
+    (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCancelled, this, [this] {
+        _preferSetupHomeWhenUnconfigured = true;
+        qCInfo(lcAppClientLinux) << "Future unconfigured activation will open the Home after onboarding cancellation";
+    });
+    (void) connect(&_homeController, &HomeController::setupRequested, this, &AppClientLinux::openOnboardingFromHome);
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_appCache, &AppCache::syncsChanged, this, &AppClientLinux::handleConfiguredSyncsChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
     (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerMinLevel);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, &AppClientLinux::requestQuit);
@@ -190,9 +205,10 @@ void AppClientLinux::refreshUpdaterState() {
 
 void AppClientLinux::handleBootstrapCompletion() {
     _bootstrapCompleted = true;
+    _hadConfiguredSync = hasConfiguredSyncs();
     _onboardingSessionManager.completeBootstrap();
 
-    if (_appCache.syncContexts().empty()) {
+    if (!_hadConfiguredSync) {
         const bool shouldOpenOnboarding = !_systemTrayController.trayModeActive() || !_mainWindowDismissedDuringBootstrap;
         _mainWindowActivationPending = false;
         if (shouldOpenOnboarding) {
@@ -275,9 +291,19 @@ void AppClientLinux::openMainWindow() {
     }
 
     _mainWindowActivationPending = false;
-    if (_appCache.syncContexts().empty()) {
-        _onboardingSessionManager.openOnboardingWindow();
-        return;
+    switch (determineMainWindowActivationRoute(hasConfiguredSyncs(), _preferSetupHomeWhenUnconfigured)) {
+        case MainWindowActivationRoute::Onboarding:
+            _onboardingSessionManager.openOnboardingWindow();
+            return;
+        case MainWindowActivationRoute::SetupHome:
+            _mainSelectionStore.clearSelection();
+            _appRouter.showHome();
+            _appRouter.showMainWindow();
+            _systemTrayController.showMainWindow();
+            qCInfo(lcAppClientLinux) << "Unconfigured Home opened after onboarding dismissal or configuration removal";
+            return;
+        case MainWindowActivationRoute::ConfiguredHome:
+            break;
     }
 
     _mainSelectionStore.ensureValidSelection();
@@ -293,6 +319,31 @@ void AppClientLinux::openMainWindow() {
                              << "| size of configured drives:" << _appCache.driveContexts().size()
                              << "| size of configured syncs:" << _appCache.syncContexts().size()
                              << "| current sync DB ID:" << _mainSelectionStore.currentSyncDbId();
+}
+
+void AppClientLinux::openOnboardingFromHome() {
+    if (!_bootstrapCompleted || hasConfiguredSyncs()) {
+        qCWarning(lcAppClientLinux) << "Home setup request ignored outside the unconfigured post-bootstrap state";
+        return;
+    }
+
+    _preferSetupHomeWhenUnconfigured = false;
+    _onboardingSessionManager.openOnboardingWindow();
+}
+
+void AppClientLinux::handleConfiguredSyncsChanged() {
+    if (!_bootstrapCompleted) {
+        return;
+    }
+
+    const bool hasConfiguredSync = hasConfiguredSyncs();
+    if (_hadConfiguredSync && !hasConfiguredSync) {
+        _preferSetupHomeWhenUnconfigured = true;
+        _mainSelectionStore.clearSelection();
+        _appRouter.showHome();
+        qCInfo(lcAppClientLinux) << "Configured synchronization set became empty; Home switched to setup state";
+    }
+    _hadConfiguredSync = hasConfiguredSync;
 }
 
 void AppClientLinux::setupLogging() {
