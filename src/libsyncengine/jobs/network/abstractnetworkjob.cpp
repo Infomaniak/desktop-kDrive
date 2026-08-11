@@ -72,9 +72,10 @@ AbstractNetworkJob::AbstractNetworkJob() :
 
                 // Load the platform-native trust store (macOS keychain / Windows cert store /
                 // Linux ca-certificates) into the underlying OpenSSL SSL_CTX.
-                if (!TrustStoreHelper::loadSystemCAs(_context->sslContext())) {
-                    LOG_WARN(_logger, "Failed to load system CAs — peer verification may fail");
+                if (TrustStoreHelper::loadSystemCAs(_context->sslContext())) {
+                    break;
                 }
+                LOG_ERROR(_logger, "Failed to load system CAs, peer verification may fail");
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
