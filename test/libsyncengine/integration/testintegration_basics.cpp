@@ -241,7 +241,7 @@ void TestIntegration::testUploadBigFile() {
 
 void TestIntegration::testSimpleComparison() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+    CPPUNIT_ASSERT(testHelper.setUp());
 
     const Situation situation{Str2SyncName(R"({
         "content" : [
@@ -266,7 +266,7 @@ void TestIntegration::testSimpleComparison() {
 
 void TestIntegration::testSimpleUpload() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+    CPPUNIT_ASSERT(testHelper.setUp());
 
     const Situation startsituation{Str2SyncName(R"({
         "content" : [
@@ -306,7 +306,7 @@ void TestIntegration::testSimpleUpload() {
 
 void TestIntegration::testGlobalFramework() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+    CPPUNIT_ASSERT(testHelper.setUp());
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
@@ -390,7 +390,7 @@ void TestIntegration::testGlobalFramework() {
 
 void TestIntegration::testNestedRemoteOperations() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+    CPPUNIT_ASSERT(testHelper.setUp());
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
@@ -426,7 +426,7 @@ void TestIntegration::testNestedRemoteOperations() {
 
 void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+    CPPUNIT_ASSERT(testHelper.setUp());
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
@@ -460,7 +460,7 @@ void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
 
 void TestIntegration::testExecuteSyncUpToStep() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+    CPPUNIT_ASSERT(testHelper.setUp());
 
     // Start from an empty situation.
     const Situation situation{Str2SyncName(R"({"content": []})")};
