@@ -296,11 +296,12 @@ ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfigu
     LOGW_DEBUG(Log::instance()->getLogger(), L"isPathValidForNewSync: checking path=" << Utility::formatSyncPath(path)
                                                                                       << L", syncConfig="
                                                                                       << static_cast<int>(syncConfig));
-
-    if (const auto exitInfo = SyncFolderAllowedChecker::check(path, valid); !exitInfo) {
+    bool rulesValidity;
+    if (const auto exitInfo = SyncFolderAllowedChecker::check(path, rulesValidity); !exitInfo) {
         return exitInfo;
     }
-    if (!valid) {
+
+    if (!rulesValidity) {
         LOGW_INFO(Log::instance()->getLogger(), L"Path rejected by sync folder rules: " << Utility::formatSyncPath(path));
         return ExitCode::Ok;
     }
@@ -1153,7 +1154,6 @@ ExitCode ServerRequests::createSync(const Sync &sync) {
 
     return ExitCode::Ok;
 }
-
 
 
 ExitCode ServerRequests::fixProxyConfig() {

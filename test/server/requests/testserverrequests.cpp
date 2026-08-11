@@ -125,10 +125,28 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     CPPUNIT_ASSERT(previousPath != returnedPath);
 }
 
+static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
+    bool constraintError = false;
+    const bool ok = ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    CPPUNIT_ASSERT_MESSAGE("insertSyncFolderRule failed", ok && !constraintError);
+}
+
+static void clearRules() {
+    std::vector<SyncFolderRule> rules;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncFolderRules(rules));
+    for (const auto &rule: rules) {
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found));
+        CPPUNIT_ASSERT(found);
+    }
+}
+
+
 void TestServerRequests::testIsPathValidForNewSync() {
     LocalTemporaryDirectory localTempDir("testIsPathValidForNewSync");
     const SyncPath basePath = localTempDir.path();
     const SyncPath defaultPath = basePath / APPLICATION_NAME;
+    insertRule(defaultPath, SyncFolderRuleType::WhiteList);
 
     auto ioError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
@@ -328,21 +346,6 @@ void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
                          ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
     CPPUNIT_ASSERT(containsNonExcludedFile);
-}
-static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
-    bool constraintError = false;
-    const bool ok = ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
-    CPPUNIT_ASSERT_MESSAGE("insertSyncFolderRule failed", ok && !constraintError);
-}
-
-static void clearRules() {
-    std::vector<SyncFolderRule> rules;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncFolderRules(rules));
-    for (const auto &rule: rules) {
-        bool found = false;
-        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found));
-        CPPUNIT_ASSERT(found);
-    }
 }
 
 void TestServerRequests::isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist() {
