@@ -294,6 +294,17 @@ runs:
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
+      - name: Generate recovery updater SHA256
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-macos/client/install/kDriveRecoveryUpdater-"*.zip | head -n 1)
+          if [ -n "$FILE" ]; then
+            HASH=$(shasum -a 256 "$FILE" | awk '{print $1}')
+            echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
+            echo "Recovery updater SHA256: $HASH"
+          fi
+
       - name: Upload recovery updater
         uses: actions/upload-artifact@v7.0.1
         with:
