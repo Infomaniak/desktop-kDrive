@@ -21,6 +21,7 @@
 #include <QLoggingCategory>
 
 #include <tuple>
+#include <unordered_set>
 
 namespace KDC {
 
@@ -57,10 +58,11 @@ constexpr auto directCacheConnections =
                         makeCacheConnection("errorRemoved", &CommService::errorRemoved, &AppCache::removeError));
 } // namespace
 
-CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, QObject *const parent) :
+CachePipeline::CachePipeline(CommService &commService, AppCache &appCache, ActivityStore &activityStore, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache) {
+    _appCache(appCache),
+    _activityStore(activityStore) {
     connectDropPipeline();
 }
 
@@ -73,6 +75,8 @@ void CachePipeline::connectDropPipeline() {
                  ...);
             },
             directCacheConnections);
+    _prePopulationConnections.push_back(
+            connect(&_commService, &CommService::itemCompleted, this, [](const auto &...) { logDroppedPush("itemCompleted"); }));
 }
 
 void CachePipeline::connectLivePipeline() {
@@ -81,6 +85,8 @@ void CachePipeline::connectLivePipeline() {
                 ((void) connect(&_commService, connection.signal, &_appCache, connection.slot, Qt::UniqueConnection), ...);
             },
             directCacheConnections);
+    (void) connect(&_commService, &CommService::itemCompleted, this, &CachePipeline::routeActivity, Qt::UniqueConnection);
+    (void) connect(&_appCache, &AppCache::syncsChanged, this, &CachePipeline::reconcileActivities, Qt::UniqueConnection);
 }
 
 void CachePipeline::markPopulated() {
@@ -94,7 +100,27 @@ void CachePipeline::markPopulated() {
     }
     _prePopulationConnections.clear();
     connectLivePipeline();
+
     qCInfo(lcCachePipeline) << "Cache population completed; live cache push mutations enabled";
+}
+
+void CachePipeline::routeActivity(const SyncDbId syncDbId, const SyncFileItemInfo &item) const {
+    if (!_appCache.sync(syncDbId).has_value()) {
+        qCWarning(lcCachePipeline) << "Activity dropped for unknown synchronization | syncDbId:" << syncDbId
+                                   << "/ operationId:" << item.operationId();
+        return;
+    }
+    _activityStore.ingest(syncDbId, item);
+}
+
+void CachePipeline::reconcileActivities() const {
+    const auto syncs = _appCache.syncs();
+    std::unordered_set<SyncDbId> retainedSyncDbIds;
+    retainedSyncDbIds.reserve(syncs.size());
+    for (const auto &sync: syncs) {
+        (void) retainedSyncDbIds.insert(sync.dbId());
+    }
+    _activityStore.retainSyncs(retainedSyncDbIds);
 }
 
 void CachePipeline::logDroppedPush(const char *const signalName) {
