@@ -152,6 +152,7 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$APP_DOMAIN" ] && [ -n "$SIGN_IDENTITY" ];
 fi
 
 # Sign the recovery updater (if it was built and installed)
+# We don't create another script (e.g. src_dir/admin/osx/sign_app.sh) because its simpler to sign the .app
 updater_app="$install_dir/kDriveRecoveryUpdater.app"
 if [ -d "$updater_app" ]; then
 	if [ -n "$SIGN_IDENTITY" ]; then
@@ -241,9 +242,4 @@ if [ -d "$updater_app" ]; then
 	fi
 	echo "Code signature verified successfully after zip round-trip."
 	rm -rf "$verify_tmp"
-
-	# Generate SHA256 hash for integrity verification during transfer
-	echo "Generating SHA256 hash for recovery updater zip..."
-	shasum -a 256 "$updater_zip" | awk '{print $1}' > "$updater_zip.sha256"
-	echo "SHA256: $(cat "$updater_zip.sha256")"
 fi

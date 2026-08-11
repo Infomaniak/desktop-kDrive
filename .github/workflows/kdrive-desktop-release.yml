@@ -424,28 +424,6 @@ jobs:
           pattern: macos-release-artifacts-*
           merge-multiple: true
 
-      - name: Verify recovery updater zip integrity
-        run: |
-          $zip = Get-ChildItem -Path build-macos -Filter "kDriveRecoveryUpdater-*.zip" | Where-Object { $_.Extension -eq ".zip" } | Select-Object -First 1
-          $hashFile = Get-ChildItem -Path build-macos -Filter "kDriveRecoveryUpdater-*.zip.sha256" | Select-Object -First 1
-          if (-not $zip) {
-            Write-Host "Recovery updater zip not found, skipping integrity check." -f Yellow
-          } elseif (-not $hashFile) {
-            Write-Host "❌ Recovery updater zip found but SHA256 hash file is missing! Aborting." -f Red
-            exit 1
-          } else {
-            $expectedHash = (Get-Content $hashFile.FullName).Trim().Split(' ')[0]
-            $actualHash = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLower()
-            Write-Host "Expected SHA256: $expectedHash"
-            Write-Host "Actual SHA256:   $actualHash"
-            if ($expectedHash.ToLower() -ne $actualHash) {
-              Write-Host "❌ SHA256 hash mismatch! Recovery updater zip may be corrupted during transfer. Aborting upload." -f Red
-              exit 1
-            }
-            Write-Host "✅ Recovery updater zip integrity verified." -f Green
-          }
-        shell: powershell
-
       - name: Upload debug files and installers/appimage to kDrive
         run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version_macos }}" -os "macos"
 

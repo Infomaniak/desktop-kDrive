@@ -685,8 +685,7 @@ function Package-RecoveryUpdater {
     param (
         [string] $buildPath,
         [string] $contentPath,
-        [string] $thumbprint,
-        [bool]   $upload
+        [string] $thumbprint
     )
 
     $updaterExe = "$buildPath/bin/kDriveRecoveryUpdater.exe"
@@ -992,7 +991,7 @@ if ($msi) {
 #################################################################################################
 
 if ($ci) {
-    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -Upload $true
+    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
