@@ -43,6 +43,9 @@
   old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
+- Size Home Quick Access from the widest translated shortcut label or the drive name capped to the Windows-aligned
+  display width. Keep shortcut labels fully visible, while the drive name wraps to two lines before eliding. Let the
+  Home status panel consume the remaining horizontal space.
 - Keep raw color values in T1 primitives. T3 contextual color tokens must reference T1 or T2 tokens instead of embedding
   hexadecimal or RGBA values.
 - Do not run `qmlformat --normalize` on structured token files: it reorders QML members independently of the intended
@@ -57,6 +60,7 @@
   little luminance and remain dark when the theme color changes.
 - Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
   accessory must remain independent presentation inputs rather than a screen-specific state enum.
+- Keep the Home error banner surface visibly distinct from the Home background in both themes.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
@@ -140,15 +144,18 @@
   into classic and advanced synchronization rows and exposes only the presentation data required by the selector.
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
-- `app/mainwindow/homecontroller.*`: cache-backed adapter for Home presentation and synchronization controls. It resolves
-  the selected synchronization into one central state, exposes user, drive, and error data, and delegates pause/resume to
-  `SyncService`.
+- `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and synchronization controls. It
+  resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
+  construction, and delegates pause/resume to `SyncService`.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/navigation/approuter.*`: minimal main-window router. It owns only `mainWindowActive` and the selected main tab;
   it must not read `AppCache`, call backend services, or decide whether onboarding is required.
+- `app/navigation/mainwindowactivationdecision.*`: pure post-bootstrap choice between onboarding, the unconfigured Home,
+  and the configured Home. Closing onboarding or removing the last configured sync selects the unconfigured Home on the
+  next activation.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
   configs.
 - `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`).
@@ -198,10 +205,12 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
-    - `ui/windows/main/`: main-window shell and temporary placeholders. Generated Home animations live under
-      `ui/windows/main/home/animations/`. The shell is loaded only when `AppRouter` marks
-      the main window active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in
-      cache-backed QML models.
+    - `ui/windows/main/`: main-window shell, temporary tab placeholders, and the modular Home grouped under `home/`.
+      Home presentation is split between its root composition, `shortcuts/`, `states/`, and versioned generated
+      `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no onboarding session is
+      active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
+    - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
+      status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
