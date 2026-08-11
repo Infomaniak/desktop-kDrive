@@ -23,12 +23,33 @@ enum NSXPCConnectionError: Error {
 }
 
 extension NSXPCConnection {
-    func proxy<Interface: AnyObject>(type: Interface.Type) throws -> Interface {
-        let proxy = remoteObjectProxy
+    func proxy<Interface: AnyObject>(
+        errorHandler: @escaping (Error) -> Void,
+        type: Interface.Type
+    ) throws -> Interface {
+        let proxy = remoteObjectProxyWithErrorHandler(errorHandler)
         guard let typedProxy = proxy as? Interface else {
             throw NSXPCConnectionError.failedToCastProxy(String(describing: Interface.self))
         }
 
         return typedProxy
+    }
+}
+
+actor XPCContinuation<Value: Sendable> {
+    private var continuation: CheckedContinuation<Value, Error>?
+
+    init(_ continuation: CheckedContinuation<Value, Error>) {
+        self.continuation = continuation
+    }
+
+    func resume(returning value: Value) {
+        continuation?.resume(returning: value)
+        continuation = nil
+    }
+
+    func resume(throwing error: Error) {
+        continuation?.resume(throwing: error)
+        continuation = nil
     }
 }

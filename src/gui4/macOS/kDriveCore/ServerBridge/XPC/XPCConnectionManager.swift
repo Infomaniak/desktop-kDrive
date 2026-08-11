@@ -234,22 +234,30 @@ import InfomaniakDI
     }
 
     func getServerEndpoint() async throws -> NSXPCListenerEndpoint {
-        guard let loginItemAgentConnection,
-              let loginItemProxy = loginItemAgentConnection.remoteObjectProxy as? XPCLoginItemProtocol else {
+        guard let loginItemAgentConnection else {
             throw XPCError.noLoginItemAgentConnection
         }
 
         IKLogger.xpc.log("[KD] Get server gui endpoint from login item agent")
 
-        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NSXPCListenerEndpoint, Error>) in
-            loginItemProxy.serverGuiEndpoint { endpoint in
-                IKLogger.xpc.log("[KD] Server gui endpoint received: \(endpoint != nil)")
-                if let endpoint {
-                    continuation.resume(returning: endpoint)
-                } else {
-                    IKLogger.xpc.error("[KD] endpoint nil")
-                    continuation.resume(throwing: XPCError.serverGUIEndpointWasNil)
+        return try await withCheckedThrowingContinuation { continuation in
+            let continuation = XPCContinuation(continuation)
+            do {
+                let loginItemProxy = try loginItemAgentConnection.proxy(errorHandler: { error in
+                    IKLogger.xpc.error("[KD] Failed to get server gui endpoint: \(error)")
+                    Task { await continuation.resume(throwing: error) }
+                }, type: XPCLoginItemProtocol.self)
+                loginItemProxy.serverGuiEndpoint { endpoint in
+                    IKLogger.xpc.log("[KD] Server gui endpoint received: \(endpoint != nil)")
+                    if let endpoint {
+                        Task { await continuation.resume(returning: endpoint) }
+                    } else {
+                        IKLogger.xpc.error("[KD] endpoint nil")
+                        Task { await continuation.resume(throwing: XPCError.serverGUIEndpointWasNil) }
+                    }
                 }
+            } catch {
+                Task { await continuation.resume(throwing: error) }
             }
         }
     }

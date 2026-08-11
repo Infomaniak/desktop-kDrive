@@ -62,9 +62,21 @@ extension XPCConnectionManager: XPCConnectionProvider {
         try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
         let connection = try connection
-        let proxy = try connection.proxy(type: XPCGuiProtocol.self)
-
-        return await proxy.sendQueryAsync(requestData)
+        return try await withCheckedThrowingContinuation { continuation in
+            let continuation = XPCContinuation(continuation)
+            do {
+                let proxy = try connection.proxy(errorHandler: { error in
+                    IKLogger.xpc.error("[KD] Failed to send query to server: \(error)")
+                    Task { await continuation.resume(throwing: error) }
+                }, type: XPCGuiProtocol.self)
+                proxy.processQuery(requestData) { data in
+                    IKLogger.xpc.log("[KD] recv raw callback len: \(data.count)")
+                    Task { await continuation.resume(returning: data) }
+                }
+            } catch {
+                Task { await continuation.resume(throwing: error) }
+            }
+        }
     }
 
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {

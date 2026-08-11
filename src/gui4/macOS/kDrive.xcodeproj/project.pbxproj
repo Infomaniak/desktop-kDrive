@@ -236,6 +236,7 @@
 				Utils/MacOSPermissionHandlerTests.swift,
 				XPC/JSON/AnyValidJobResponse.json,
 				XPC/JSON/ParsingError.json,
+				XPC/XPCContinuationTests.swift,
 				XPC/XPCQueryFetcherTest.swift,
 			);
 			target = 7A4DFBB02EA91F9D00B138B8 /* kDriveTests */;
