@@ -99,4 +99,8 @@ final class SynchroSelectorViewModel: ObservableObject {
     func update(with contexts: [UISynchroInfo]) {
         items = contexts.selectorItems()
     }
+
+    var hasOtherSynchroWithError: Bool {
+        return items.contains { $0.notification && $0.id != selectedSynchroId }
+    }
 }

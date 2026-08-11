@@ -34,6 +34,7 @@ struct SynchroLabelView: View {
     let item: SynchroSelectorItem
     var shouldShowNotification = false
     var isSelected = false
+    var showErrorDot = false
 
     private var titleColor: Color {
         isSelected ? .white : ColorToken.Text.primary.asColor
@@ -43,13 +44,9 @@ struct SynchroLabelView: View {
         isSelected ? .white.opacity(0.8) : ColorToken.Text.secondary.asColor
     }
 
-    private var notificationColor: Color {
-        isSelected ? .white : ColorToken.Accent.primary.asColor
-    }
-
     var body: some View {
         HStack(alignment: .iconTitleCenter, spacing: AppPadding.padding8) {
-            BadgeView(image: item.icon, color: item.iconColor)
+            BadgeView(image: item.icon, color: item.iconColor, showErrorDot: showErrorDot)
                 .alignmentGuide(.iconTitleCenter) {
                     $0[VerticalAlignment.center]
                 }

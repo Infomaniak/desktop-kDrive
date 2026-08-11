@@ -39,7 +39,7 @@ struct SynchroSelectorView: View {
             } label: {
                 HStack {
                     if let selectedItem = viewModel.selectedItem {
-                        SynchroLabelView(item: selectedItem)
+                        SynchroLabelView(item: selectedItem, showErrorDot: viewModel.hasOtherSynchroWithError)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
