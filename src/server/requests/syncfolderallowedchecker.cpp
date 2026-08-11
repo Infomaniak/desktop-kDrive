@@ -125,9 +125,12 @@ ExitInfo SyncFolderAllowedChecker::expandRulePath(const SyncPath &rulePath, Sync
         return exitInfo;
     }
 
-    const auto replaceAll = [](SyncName &str, const SyncName &from, const SyncName &to) {
-        for (auto pos = str.find(from); pos != SyncName::npos; pos = str.find(from, pos + to.length())) {
-            str.replace(pos, from.length(), to);
+    const auto replaceAll = [](SyncName &str, const std::basic_string_view<SyncName::value_type> from,
+                               const std::basic_string_view<SyncName::value_type> to) {
+        auto pos = str.find(from.data(), 0, from.length());
+        while (pos != SyncName::npos) {
+            str.replace(pos, from.length(), to.data(), to.length());
+            pos = str.find(from.data(), pos + to.length(), from.length());
         }
     };
 
