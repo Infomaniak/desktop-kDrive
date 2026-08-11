@@ -23,7 +23,6 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/syncfolderrule.h"
 
-#include <QDir>
 
 namespace KDC {
 
@@ -46,8 +45,7 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
 
     LOG_DEBUG(Log::instance()->getLogger(), "isSyncFolderAllowedByRules: found " << rules.size() << " rules");
 
-    QString candidateDir = QDir::cleanPath(Path2QStr(path));
-    if (!candidateDir.endsWith('/')) candidateDir += '/';
+    const SyncPath candidateDir = path.lexically_normal();
 
     const SyncFolderRule *bestMatch = nullptr;
     SyncPath bestMatchExpandedPath;
@@ -66,9 +64,8 @@ ExitInfo SyncFolderAllowedChecker::check(const SyncPath &path, bool &allowed) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"isSyncFolderAllowedByRules: expanded rule syncPath: " << Utility::formatSyncPath(expandedRulePath));
 
-        QString ruleDir = QDir::cleanPath(Path2QStr(expandedRulePath));
-        if (!ruleDir.endsWith('/')) ruleDir += '/';
-        if (!candidateDir.startsWith(ruleDir, Qt::CaseSensitive)) continue;
+        const SyncPath ruleDir = expandedRulePath.lexically_normal();
+        if (!CommonUtility::isDescendantOrEqual(candidateDir, ruleDir)) continue;
         LOGW_DEBUG(Log::instance()->getLogger(), L"isSyncFolderAllowedByRules: rule matched");
 
         if (const int32_t depth = CommonUtility::pathDepth(expandedRulePath); depth > bestDepth) {
