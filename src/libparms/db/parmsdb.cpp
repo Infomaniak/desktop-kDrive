@@ -933,7 +933,9 @@ bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
             }
         }
 
-        tryParseCsvLine(line, fileSyncFolderRules, _logger);
+        if (!tryParseCsvLine(line, fileSyncFolderRules, _logger)) {
+            LOG_WARN(_logger, "Skipping malformed sync folder rule line: " << line.c_str());
+        }
     }
 
     return true;
