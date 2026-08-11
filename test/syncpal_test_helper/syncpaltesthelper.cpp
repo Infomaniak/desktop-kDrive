@@ -114,10 +114,10 @@ bool SyncpalTestHelper::executeSyncUpToStep(const SyncStep targetStep, const int
 
     _syncPal->setMaxStep(targetStep);
 
-    // The cap is left in place on purpose: the sync stays frozen at `step` until the caller either checks it
+    // The cap is left in place on purpose: the sync stays frozen at `targetStep` until the caller either checks it
     // or calls executeSyncUntilEnd(), which lifts the cap before waiting for the sync to reach Idle.
-    return TimeoutHelper::waitFor([this, step]() { return _syncPal->step() == step; }, std::chrono::milliseconds(timeout),
-                                  std::chrono::milliseconds(50));
+    return TimeoutHelper::waitFor([this, targetStep]() { return _syncPal->step() == targetStep; },
+                                  std::chrono::milliseconds(timeout), std::chrono::milliseconds(50));
 }
 
 bool SyncpalTestHelper::waitForDetectedUpdate(const std::chrono::milliseconds timeout) const {
