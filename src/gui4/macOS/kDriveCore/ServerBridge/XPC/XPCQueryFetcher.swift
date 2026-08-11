@@ -40,7 +40,6 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
     }
 
     enum QueryError: Error {
-        case noReplyData
         case unableToDecodeReply(parsingError: Error)
     }
 
@@ -53,11 +52,7 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
         let startTime = DispatchTime.now()
 
-        let guiConnection = try await xpcConnectionProvider.guiConnection
-        guard let replyData = await guiConnection.sendQueryAsync(requestData) else {
-            logNoReply(logContext)
-            throw QueryError.noReplyData
-        }
+        let replyData = try await xpcConnectionProvider.sendQuery(requestData)
 
         let headerMessage = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: replyData)
         logCallbackReceived(headerMessage, context: logContext, since: startTime)
@@ -89,10 +84,6 @@ private extension XPCQueryFetcher {
 
     func logRequestSent(_ context: RequestLogContext) {
         IKLogger.xpc.info("[KD] [Job →] #\(context.id) \(context.num)")
-    }
-
-    func logNoReply(_ context: RequestLogContext) {
-        IKLogger.xpc.error("[KD] [Job ←] #\(context.id) \(context.num) no reply data")
     }
 
     func logCallbackReceived(_ header: CallbackMessage<EmptyResponse>, context: RequestLogContext, since start: DispatchTime) {

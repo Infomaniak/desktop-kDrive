@@ -20,45 +20,17 @@ import Combine
 @testable import kDriveCore
 import Testing
 
-// TODO: Test OK + ErrorCode + Corrupted
-
-class MCKXPCGuiProtocol: XPCGuiProtocol {
-    private let decoder = JSONDecoder()
-
-    let payloadFileName: String
-
-    init(payloadFileName: String) {
-        self.payloadFileName = payloadFileName
-    }
-
-    var responseData: Data {
+struct MCKXPCConnectionProvider: XPCConnectionProvider, @unchecked Sendable {
+    func sendQuery(_ requestData: Data) async throws -> Data {
         let bundle = Bundle(for: TestBundleMarker.self)
 
         guard let url = bundle.url(forResource: payloadFileName, withExtension: "json") else {
             fatalError("Unable to find specified JSON file")
         }
 
-        return try! Data(contentsOf: url)
+        return try Data(contentsOf: url)
     }
 
-    func processQuery(_ query: Data, callback: @escaping (Data) -> Void) {
-        callback(responseData)
-    }
-}
-
-class MCKXPCGuiProtocolWithData: XPCGuiProtocol {
-    init(responseData: Data) {
-        self.responseData = responseData
-    }
-
-    let responseData: Data
-
-    func processQuery(_ query: Data, callback: @escaping (Data) -> Void) {
-        callback(responseData)
-    }
-}
-
-struct MCKXPCConnectionProvider: XPCConnectionProvider {
     var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
 
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
@@ -70,16 +42,60 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
 
     let payloadFileName: String
 
-    var guiConnection: XPCGuiProtocol {
-        get async throws {
-            MCKXPCGuiProtocol(payloadFileName: payloadFileName)
-        }
+    func reconnectToLoginAgent() async {}
+}
+
+actor RequestRecorder {
+    private(set) var requestData: Data?
+
+    func record(_ requestData: Data) {
+        self.requestData = requestData
+    }
+}
+
+struct RecordingXPCConnectionProvider: XPCConnectionProvider, @unchecked Sendable {
+    var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
+
+    var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
+    var loginItemAgentConnectionState: kDriveCore.XPCLoginItemAgentConnectionState = .connected
+
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<kDriveCore.XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
+
+    let recorder: RequestRecorder
+    let responseData: Data
+
+    func sendQuery(_ requestData: Data) async throws -> Data {
+        await recorder.record(requestData)
+        return responseData
     }
 
     func reconnectToLoginAgent() async {}
 }
 
-struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
+struct FailingXPCConnectionProvider: XPCConnectionProvider, @unchecked Sendable {
+    enum TransportError: Error {
+        case connectionLost
+    }
+
+    var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
+
+    var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
+
+    var loginItemAgentConnectionState: kDriveCore.XPCLoginItemAgentConnectionState = .connected
+
+    var loginItemAgentConnectionStatePublisher: AnyPublisher<kDriveCore.XPCLoginItemAgentConnectionState, Never> =
+        Just(.connected).eraseToAnyPublisher()
+
+    func sendQuery(_ requestData: Data) async throws -> Data {
+        throw TransportError.connectionLost
+    }
+
+    func reconnectToLoginAgent() async {}
+}
+
+struct MCKXPCConnectionProviderWithData: XPCConnectionProvider, @unchecked Sendable {
     var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
 
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
@@ -91,10 +107,8 @@ struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
 
     let responseData: Data
 
-    var guiConnection: XPCGuiProtocol {
-        get async throws {
-            MCKXPCGuiProtocolWithData(responseData: responseData)
-        }
+    func sendQuery(_ requestData: Data) async throws -> Data {
+        responseData
     }
 
     func reconnectToLoginAgent() async {}
@@ -103,6 +117,10 @@ struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
 typealias SendableCodable = Codable & Sendable
 
 struct XPCQueryFetcherTests {
+    struct TestQuery: Codable {
+        let value: String
+    }
+
     static let allResponseTypes: [any SendableCodable.Type] = [
         // UtilityJobs responses
         CallbackMessage<UtilityGetAppStateResponse>.self,
@@ -148,6 +166,31 @@ struct XPCQueryFetcherTests {
         #expect(decodedMessage.cause == KDC.ExitCause.Unknown)
     }
 
+    @Test func forwardsEncodedRequestToTransport() async throws {
+        let response = CallbackMessage<EmptyResponse>(code: .Ok, cause: .Unknown, id: 1, body: EmptyResponse())
+        let recorder = RequestRecorder()
+        let provider = try RecordingXPCConnectionProvider(recorder: recorder, responseData: JSONEncoder().encode(response))
+        let queryFetcher = XPCQueryFetcher(xpcConnectionProvider: provider)
+
+        try await queryFetcher.query(TestQuery(value: "request payload"), responseType: CallbackMessage<EmptyResponse>.self)
+
+        let recordedRequestData = await recorder.requestData
+        let requestData = try #require(recordedRequestData)
+        let request = try JSONDecoder().decode(TestQuery.self, from: requestData)
+        #expect(request.value == "request payload")
+    }
+
+    @Test func propagatesTransportError() async throws {
+        let queryFetcher = XPCQueryFetcher(xpcConnectionProvider: FailingXPCConnectionProvider())
+
+        do {
+            try await queryFetcher.query(EmptyQuery(), responseType: CallbackMessage<EmptyResponse>.self)
+            Issue.record("Expected the transport error to be thrown")
+        } catch {
+            #expect(error is FailingXPCConnectionProvider.TransportError)
+        }
+    }
+
     @Test(arguments: allResponseTypes)
     func decodingSomeErrorResponse(queryType: any SendableCodable.Type) async throws {
         // GIVEN
@@ -170,9 +213,7 @@ struct XPCQueryFetcherTests {
 
             // THEN
             Issue.record("We should throw")
-        }
-
-        catch {
+        } catch {
             guard let error = error as? CallbackError else {
                 Issue.record("unexpected error \(error)")
                 return
@@ -193,9 +234,7 @@ struct XPCQueryFetcherTests {
 
             // THEN
             Issue.record("We should throw")
-        }
-
-        catch {
+        } catch {
             guard let error = error as? XPCQueryFetcher.QueryError else {
                 Issue.record("unexpected error \(error)")
                 return

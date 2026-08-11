@@ -36,7 +36,7 @@ public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
 }
 
 public protocol XPCConnectionProvider: Sendable {
-    var guiConnection: XPCGuiProtocol { get async throws }
+    func sendQuery(_ requestData: Data) async throws -> Data
 
     var guiConnectionState: XPCConnectionState { get }
     var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
@@ -58,15 +58,13 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
-    public var guiConnection: XPCGuiProtocol {
-        get async throws {
-            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+    public func sendQuery(_ requestData: Data) async throws -> Data {
+        try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
-            let connection = try connection
-            let proxy = try connection.proxy(from: connection, type: XPCGuiProtocol.self)
+        let connection = try connection
+        let proxy = try connection.proxy(type: XPCGuiProtocol.self)
 
-            return proxy
-        }
+        return await proxy.sendQueryAsync(requestData)
     }
 
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> {

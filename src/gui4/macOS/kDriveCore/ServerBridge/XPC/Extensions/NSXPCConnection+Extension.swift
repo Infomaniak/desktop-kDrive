@@ -22,12 +22,9 @@ enum NSXPCConnectionError: Error {
     case failedToCastProxy(_: String)
 }
 
-public extension NSXPCConnection {
-    func proxy<Interface>(
-        from connection: NSXPCConnection,
-        type: Interface.Type
-    ) throws -> Interface where Interface: AnyObject {
-        let proxy = connection.remoteObjectProxy
+extension NSXPCConnection {
+    func proxy<Interface: AnyObject>(type: Interface.Type) throws -> Interface {
+        let proxy = remoteObjectProxy
         guard let typedProxy = proxy as? Interface else {
             throw NSXPCConnectionError.failedToCastProxy(String(describing: Interface.self))
         }
