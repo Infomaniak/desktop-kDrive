@@ -39,7 +39,9 @@ Item {
         title: root.controller.currentTitle
         subtitle: root.controller.currentSubtitle
         driveColor: root.controller.currentDriveColor
-        errorCount: root.controller.currentErrorCount
+        errorCount: root.controller.unselectedErrorCount
+        accessibleErrorCount: root.controller.currentErrorCount
+        errorDotVisible: errorCount > 0 && !selectorPopup.opened
         warning: root.controller.currentHasWarning
         interactive: root.controller.entryCount > 1
         showSurface: root.controller.entryCount > 1

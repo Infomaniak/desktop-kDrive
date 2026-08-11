@@ -62,8 +62,6 @@ class AppRouter final : public QObject {
         Q_INVOKABLE void showBlockingError();
         Q_INVOKABLE void navigateToMainTab(int32_t tabIndex);
         Q_INVOKABLE static void openSupport();
-        Q_INVOKABLE static void requestPauseCurrentSync();
-        Q_INVOKABLE static void requestSearch();
 
     signals:
         void mainWindowActiveChanged();
