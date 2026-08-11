@@ -421,7 +421,7 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
     bool hasData;
     if (!queryNext(PRAGMA_QUICK_CHECK_ID, hasData) || !hasData) {
         // Same as above: a lock during step is transient, the db must not be removed.
-        const int stepErrId = _queries.at(PRAGMA_QUICK_CHECK_ID)._query->errorId();
+        const int32_t stepErrId = _queries.at(PRAGMA_QUICK_CHECK_ID)._query->errorId();
         if (stepErrId == SQLITE_BUSY || stepErrId == SQLITE_LOCKED) {
             LOG_WARN(_logger, "Database is locked during consistency check step: " << PRAGMA_QUICK_CHECK_ID);
             queryFree(PRAGMA_QUICK_CHECK_ID);
