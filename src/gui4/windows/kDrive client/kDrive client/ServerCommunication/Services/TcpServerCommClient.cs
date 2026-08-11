@@ -47,6 +47,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         private const string _clientCertKeychainKey = "kdrive_ipc_tls_client_cert";
         private const string _clientKeyKeychainKey = "kdrive_ipc_tls_client_key";
 
+        private readonly string _commPortFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "kDrive", ".comm");
         private readonly IKeychainStore _keychainStore;
         private SslStream? _stream;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -98,8 +99,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #if DEBUG
             try
             {
-                string commPortFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "kDrive", ".comm");
-                int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
+                int port = int.Parse(File.ReadAllText(_commPortFilePath).Trim());
                 return port;
             }
             catch (FileNotFoundException)
@@ -327,8 +327,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
-                _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
+                var replySource = new TaskCompletionSource<CommData>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
+                _pendingRequests[requestId] = replySource;
 
                 // Create the JSON object
                 var requestObj = new JsonObject
@@ -354,7 +355,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
-                CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
+                CommData reply = await WaitForReplyAsync(requestId, replySource, cancellationToken).ConfigureAwait(false);
                 if (reply.RequestNum == RequestNum.Unknown)
                 {
                     Logger.Log(Logger.Level.Debug, "Request not implemented server-side");
@@ -377,15 +378,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-        private Task<CommData> WaitForReplyAsync(long requestId, CancellationToken ct = default)
+        private Task<CommData> WaitForReplyAsync(long requestId, TaskCompletionSource<CommData> tcs, CancellationToken ct = default)
         {
-
-            if (!_pendingRequests.TryGetValue(requestId, out var tcs))
-            {
-                Logger.Log(Logger.Level.Error, $"RequestId {requestId} not found in pending requests.");
-                return Task.FromResult(new CommData());
-            }
-
             // Tie cancellation to the task
             if (ct.CanBeCanceled)
             {
