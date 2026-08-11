@@ -112,6 +112,9 @@ class AppClientLinux : public QApplication {
         void updateLoggerMinLevel() const;
         void requestQuit() const;
         void openMainWindow();
+        void openOnboardingFromHome();
+        void handleConfiguredSyncsChanged();
+        [[nodiscard]] bool hasConfiguredSyncs() const { return !_appCache.syncContexts().empty(); }
 
         IpcClient _ipcClient{this};
         SignalDispatcher _signalDispatcher{this};
@@ -143,6 +146,8 @@ class AppClientLinux : public QApplication {
         bool _bootstrapCompleted{false};
         bool _mainWindowActivationPending{false};
         bool _mainWindowDismissedDuringBootstrap{false};
+        bool _preferSetupHomeWhenUnconfigured{false};
+        bool _hadConfiguredSync{false};
 };
 
 } // namespace KDC
