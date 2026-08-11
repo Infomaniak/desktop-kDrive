@@ -141,19 +141,19 @@ void SituationCSV::log() const {
 
 //
 // ─────────────────────────────────────────────────
-// GetSituation
+// SituationComparator
 // ─────────────────────────────────────────────────
 //
 
-GetSituation::GetSituation(const std::shared_ptr<SyncPal> syncPal) {
+SituationComparator::SituationComparator(const std::shared_ptr<SyncPal> syncPal) {
     setSyncpal(syncPal);
 }
 
-void GetSituation::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
+void SituationComparator::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
 }
 
-SituationCSV GetSituation::jsonToSituationCSV(const Situation &situation) {
+SituationCSV SituationComparator::jsonToSituationCSV(const Situation &situation) {
     SituationCSV situationCSV;
     if (const auto &obj = situation.jsonObject(); obj->isArray("content")) {
         flatten(obj->getArray("content"), {}, situationCSV);
@@ -164,7 +164,7 @@ SituationCSV GetSituation::jsonToSituationCSV(const Situation &situation) {
     return situationCSV;
 }
 
-SituationCSV GetSituation::csvToSituationCSV(const std::string &csv) {
+SituationCSV SituationComparator::csvToSituationCSV(const std::string &csv) {
     SnapshotItemHandler handler(Log::instance()->getLogger());
     std::stringstream ss(csv);
 
@@ -183,8 +183,8 @@ SituationCSV GetSituation::csvToSituationCSV(const std::string &csv) {
     return rawItemsToSituationCSV(rawItems);
 }
 
-SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/) const {
-    if (!_syncPal) throw SituationGeneratorException("GetSituation::getRemoteSituation: no SyncPal set");
+SituationCSV SituationComparator::getRemoteSituation(const NodeId &remoteDirId /*= {}*/) const {
+    if (!_syncPal) throw SituationGeneratorException("SituationComparator::getRemoteSituation: no SyncPal set");
 
     // An empty remoteDirId isn't "the sync root" for CsvFullFileListWithCursorJob: it lists the whole drive from
     // its actual root. Default to the SyncPal's own remote root node id so only the sync folder's content is
@@ -218,7 +218,7 @@ SituationCSV GetSituation::getRemoteSituation(const NodeId &remoteDirId /*= {}*/
     return rawItemsToSituationCSV(rawItems);
 }
 
-SituationCSV GetSituation::getLocalSituation() const {
+SituationCSV SituationComparator::getLocalSituation() const {
     SituationCSV situationCSV;
 
     if (!_syncPal) return situationCSV;
@@ -277,19 +277,19 @@ SituationCSV GetSituation::getLocalSituation() const {
     return situationCSV;
 }
 
-bool GetSituation::compareLocal(const Situation &expectedLocalSituation) const {
+bool SituationComparator::compareLocal(const Situation &expectedLocalSituation) const {
     const SituationCSV expected = jsonToSituationCSV(expectedLocalSituation);
     const SituationCSV actual = getLocalSituation();
     return expected == actual;
 }
 
-bool GetSituation::compareRemote(const Situation &expectedRemoteSituation) const {
+bool SituationComparator::compareRemote(const Situation &expectedRemoteSituation) const {
     const SituationCSV expected = jsonToSituationCSV(expectedRemoteSituation);
     const SituationCSV actual = getRemoteSituation();
     return expected == actual;
 }
 
-bool GetSituation::compareSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation) const {
+bool SituationComparator::compareSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation) const {
     return compareLocal(expectedLocalSituation) && compareRemote(expectedRemoteSituation);
 }
 
