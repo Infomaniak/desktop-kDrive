@@ -52,7 +52,13 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
         let startTime = DispatchTime.now()
 
-        let replyData = try await xpcConnectionProvider.sendQuery(requestData)
+        let replyData: Data
+        do {
+            replyData = try await xpcConnectionProvider.sendQuery(requestData)
+        } catch {
+            logNoReply(error, context: logContext, since: startTime)
+            throw error
+        }
 
         let headerMessage = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: replyData)
         logCallbackReceived(headerMessage, context: logContext, since: startTime)
@@ -84,6 +90,11 @@ private extension XPCQueryFetcher {
 
     func logRequestSent(_ context: RequestLogContext) {
         IKLogger.xpc.info("[KD] [Job →] #\(context.id) \(context.num)")
+    }
+
+    func logNoReply(_ error: Error, context: RequestLogContext, since start: DispatchTime) {
+        let elapsed = String(format: "%.1f", Self.elapsedMilliseconds(since: start))
+        IKLogger.xpc.error("[KD] [Job ←] #\(context.id) \(context.num) no reply data: \(error) (\(elapsed)ms)")
     }
 
     func logCallbackReceived(_ header: CallbackMessage<EmptyResponse>, context: RequestLogContext, since start: DispatchTime) {
