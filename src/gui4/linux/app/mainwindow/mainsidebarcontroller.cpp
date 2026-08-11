@@ -35,10 +35,11 @@ MainSidebarController::MainSidebarController(const AppCache &cache, MainSelectio
     _syncSelectorModel(cache, selectionStore, this) {
     (void) connect(&_syncSelectorModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::entryCountChanged);
     (void) connect(&_syncSelectorModel, &QAbstractItemModel::modelReset, this, &MainSidebarController::currentContextChanged);
-    (void) connect(&_syncSelectorModel, &SyncSelectorModel::selectedRowChanged, this,
-                   &MainSidebarController::selectedRowChanged);
+    (void) connect(&_syncSelectorModel, &SyncSelectorModel::selectedRowChanged, this, &MainSidebarController::selectedRowChanged);
     (void) connect(&_syncSelectorModel, &SyncSelectorModel::selectedRowChanged, this,
                    &MainSidebarController::currentContextChanged);
+    (void) connect(&_syncSelectorModel, &SyncSelectorModel::unselectedErrorCountChanged, this,
+                   &MainSidebarController::unselectedErrorCountChanged);
 }
 
 qint32 MainSidebarController::entryCount() const {
@@ -78,6 +79,10 @@ bool MainSidebarController::canOpenCurrentSyncFolder() const {
 
 qint32 MainSidebarController::currentErrorCount() const {
     return selectedData(SyncSelectorModel::ErrorCountRole).value<qint32>();
+}
+
+qint32 MainSidebarController::unselectedErrorCount() const {
+    return _syncSelectorModel.unselectedErrorCount();
 }
 
 void MainSidebarController::selectSync(const qint64 syncDbId) {
