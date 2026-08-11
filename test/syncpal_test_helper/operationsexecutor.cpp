@@ -394,6 +394,22 @@ void OperationsExecutor::applyRemoteMove(const OperationDesc &desc) {
     }
     (void) _batchRemoteIds.erase(desc.fromPath);
     _batchRemoteIds[desc.toPath] = itemId;
+
+    // Rekey any descendants still under the old prefix (no-op if fromPath is a file).
+    std::map<SyncPath, NodeId> rekeyed;
+    for (auto it = _batchRemoteIds.begin(); it != _batchRemoteIds.end();) {
+        const auto &path = it->first;
+        if (auto relative = path.lexically_relative(desc.fromPath);
+            !relative.empty() && relative.native().substr(0, 2) != Str2SyncName("..")) {
+            rekeyed[desc.toPath / relative] = it->second;
+            it = _batchRemoteIds.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    for (auto &[path, id]: rekeyed) {
+        _batchRemoteIds[path] = id;
+    }
 }
 
 } // namespace KDC

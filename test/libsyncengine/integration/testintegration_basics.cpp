@@ -424,6 +424,40 @@ void TestIntegration::testNestedRemoteOperations() {
     logStep("testNestedRemoteOperations");
 }
 
+void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
+    SyncpalTestHelper testHelper(_syncPal);
+    testHelper.setUp();
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Start from an empty situation.
+    const Situation situation{Str2SyncName(R"({"content": []})")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    // Single batch: create A, create A/f, move A -> B, then edit B/f. Resolving "B/f" for the Edit must rely
+    // on _batchRemoteIds rekeying A/f -> B/f done by the Move, since SyncDb hasn't been refreshed yet.
+    const Operations remoteOperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "Directory", "name": "A" },
+            { "type": "Create", "itemType": "File", "path": "A", "name": "f", "size": 111 },
+            { "type": "Move", "fromPath": "A", "toPath": "B" },
+            { "type": "Edit", "path": "B/f", "newSize": 222 }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const Situation finalSituation{Str2SyncName(R"({
+        "content": [
+            { "type": "Directory", "name": "B", "content": [ {"type": "File", "name": "f", "size": 222} ] }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.getSituation(finalSituation, finalSituation));
+
+    testHelper.tearDown();
+    logStep("testRemoteMoveDirectoryDescendantRekey");
+}
+
 void TestIntegration::testExecuteSyncUpToStep() {
     SyncpalTestHelper testHelper(_syncPal);
     testHelper.setUp();
