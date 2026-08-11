@@ -88,6 +88,9 @@ class ActivityStore final : public QObject {
 
         /**
          * @brief Inserts a new server activity or updates the matching in-progress operation.
+         *
+         * Successful and in-progress activities remove superseded failed entries that share a non-empty local or remote
+         * node identifier.
          * @param syncDbId Database identifier of the owning synchronization.
          * @param item Activity DTO received from the server.
          */
@@ -125,8 +128,6 @@ class ActivityStore final : public QObject {
     private:
         [[nodiscard]] static std::optional<ActivityStatus> normalizeStatus(SyncFileStatus status);
         [[nodiscard]] static ActivitySource normalizeSource(SyncDirection direction);
-        [[nodiscard]] bool updateExistingOperation(SyncDbId syncDbId, std::vector<ActivityEntry> &entries,
-                                                   const SyncFileItemInfo &item, ActivityStatus status, ActivitySource source);
         [[nodiscard]] ActivityEntry makeEntry(SyncDbId syncDbId, const SyncFileItemInfo &item, ActivityStatus status,
                                               ActivitySource source, GenericId localId);
         static void enforceCapacity(std::vector<ActivityEntry> &entries);
