@@ -359,6 +359,7 @@ enum class AppStateKey {
     AppUid = 7,
     NoUpdate = 8,
     ShowV4Onboarding = 9,
+    NotifyBeforeDelete = 10,
     Unknown, // Only for initialization purpose, never use it in the database
     EnumEnd
 };
