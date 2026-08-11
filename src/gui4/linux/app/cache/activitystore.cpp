@@ -38,6 +38,24 @@ bool isValidOperationId(const UniqueId operationId) {
 bool isInProgress(const ActivityStatus status) {
     return status == ActivityStatus::InProgress;
 }
+
+/** @brief Returns whether two activities identify the same node through a non-empty local or remote identifier. */
+bool hasMatchingNodeId(const ActivityEntry &entry, const SyncFileItemInfo &item) {
+    const bool sameLocalNode = !item.localNodeId().isEmpty() && item.localNodeId() == entry.localNodeId;
+    const bool sameRemoteNode = !item.remoteNodeId().isEmpty() && item.remoteNodeId() == entry.remoteNodeId;
+    return sameLocalNode || sameRemoteNode;
+}
+
+/** @brief Removes failed activities superseded by a successful or in-progress activity for the same node. */
+void removeSupersededFailures(std::vector<ActivityEntry> &entries, const SyncFileItemInfo &item, const ActivityStatus status) {
+    if (status == ActivityStatus::Failed) {
+        return;
+    }
+
+    (void) std::erase_if(entries, [&item](const ActivityEntry &entry) {
+        return entry.status == ActivityStatus::Failed && hasMatchingNodeId(entry, item);
+    });
+}
 } // namespace
 
 ActivityStore::ActivityStore(QObject *const parent) :
@@ -63,10 +81,21 @@ void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item
     }
 
     auto &entries = _activitiesBySyncDbId[syncDbId];
-    if (updateExistingOperation(syncDbId, entries, item, *normalizedStatus, source)) {
-        return;
+    if (isValidOperationId(item.operationId())) {
+        if (const auto entryIt = std::ranges::find(entries, item.operationId(), &ActivityEntry::operationId);
+            entryIt != entries.end()) {
+            if (!isInProgress(entryIt->status)) {
+                return;
+            }
+
+            *entryIt = makeEntry(syncDbId, item, *normalizedStatus, source, entryIt->localId);
+            removeSupersededFailures(entries, item, *normalizedStatus);
+            emit activitiesChanged(syncDbId);
+            return;
+        }
     }
 
+    removeSupersededFailures(entries, item, *normalizedStatus);
     auto entry = makeEntry(syncDbId, item, *normalizedStatus, source, _nextLocalId++);
     entries.push_back(std::move(entry));
     enforceCapacity(entries);
@@ -154,41 +183,6 @@ ActivitySource ActivityStore::normalizeSource(const SyncDirection direction) {
             return ActivitySource::Unknown;
     }
     return ActivitySource::Unknown;
-}
-
-/**
- * @brief Updates an existing operation or absorbs a late event for an operation that is no longer in progress.
- *
- * Invalid and unknown operation identifiers return false so the caller can insert a distinct activity. An in-progress
- * entry is replaced while preserving its local identifier. Entries that are no longer in progress absorb duplicate or
- * regressive events without emitting a change.
- *
- * @param syncDbId Database identifier of the owning synchronization.
- * @param entries Mutable activity collection for that synchronization.
- * @param item Latest activity DTO received for the operation.
- * @param status Normalized presentation status.
- * @param source Normalized presentation source.
- * @return true when the operation identifier was already present, whether updated or deliberately ignored; false when a
- * new entry must be inserted.
- */
-bool ActivityStore::updateExistingOperation(const SyncDbId syncDbId, std::vector<ActivityEntry> &entries,
-                                            const SyncFileItemInfo &item, const ActivityStatus status,
-                                            const ActivitySource source) {
-    if (!isValidOperationId(item.operationId())) {
-        return false;
-    }
-
-    const auto entryIt = std::ranges::find(entries, item.operationId(), &ActivityEntry::operationId);
-    if (entryIt == entries.end()) {
-        return false;
-    }
-    if (!isInProgress(entryIt->status)) {
-        return true;
-    }
-
-    *entryIt = makeEntry(syncDbId, item, status, source, entryIt->localId);
-    emit activitiesChanged(syncDbId);
-    return true;
 }
 
 /**
