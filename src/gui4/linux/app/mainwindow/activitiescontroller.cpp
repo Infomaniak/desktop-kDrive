@@ -118,9 +118,6 @@ bool isContainedIn(const SyncPath &root, const SyncPath &candidate) {
     return true;
 }
 
-QString activityRowId(const GenericId localId) {
-    return QStringLiteral("activity:%1").arg(static_cast<qlonglong>(localId));
-}
 } // namespace
 
 ActivitiesController::ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
@@ -141,10 +138,12 @@ ActivitiesController::ActivitiesController(const ActivityStore &activityStore, c
                    &ActivitiesController::refreshPageState);
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this,
                    &ActivitiesController::refreshPageState);
-    (void) connect(&_activityService, &ActivityService::shareLinkCopied, this,
-                   [this](const GenericId activityLocalId) { emit shareLinkCopied(activityRowId(activityLocalId)); });
-    (void) connect(&_activityService, &ActivityService::actionFailed, this,
-                   [this](const GenericId activityLocalId) { emit actionFailed(activityRowId(activityLocalId)); });
+    (void) connect(&_activityService, &ActivityService::shareLinkCopied, this, [this](const GenericId activityLocalId) {
+        emit shareLinkCopied(ActivityListModel::activityRowId(activityLocalId));
+    });
+    (void) connect(&_activityService, &ActivityService::actionFailed, this, [this](const GenericId activityLocalId) {
+        emit actionFailed(ActivityListModel::activityRowId(activityLocalId));
+    });
     refreshPageState();
 }
 
