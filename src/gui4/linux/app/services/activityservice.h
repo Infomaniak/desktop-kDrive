@@ -55,6 +55,9 @@ class ActivityService final : public QObject {
         void endAction(const ServiceActionTracker::ActionKey &actionKey, GenericId activityLocalId) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum, GenericId activityLocalId);
 
+        void handlePrivateLinkUrl(const ExitInfo &exitInfo, const QString &urlText, GenericId activityLocalId);
+        void handlePublicLinkUrl(const ExitInfo &exitInfo, const QString &urlText, GenericId activityLocalId);
+
         CommService &_commService;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
