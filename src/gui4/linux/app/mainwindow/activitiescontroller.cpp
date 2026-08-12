@@ -153,8 +153,8 @@ void ActivitiesController::setFilter(const ActivityListModel::Filter filter) {
 
 void ActivitiesController::openLocal(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
-    if (!target.has_value() || !target->canOpenLocal) {
-        qCWarning(lcActivitiesController) << "Local activity action rejected for unavailable row | rowId:" << rowId;
+    if (!target.has_value()) {
+        qCWarning(lcActivitiesController) << "Local activity action rejected for unknown row | rowId:" << rowId;
         emit actionFailed(rowId);
         return;
     }
@@ -196,8 +196,8 @@ void ActivitiesController::openLocal(const QString &rowId) {
 
 void ActivitiesController::openOnline(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
-    if (!target.has_value() || !target->canOpenOnline) {
-        qCWarning(lcActivitiesController) << "Online activity action rejected for unavailable row | rowId:" << rowId;
+    if (!target.has_value() || target->remoteNodeId.empty()) {
+        qCWarning(lcActivitiesController) << "Online activity action rejected for unavailable node | rowId:" << rowId;
         emit actionFailed(rowId);
         return;
     }
@@ -211,8 +211,8 @@ void ActivitiesController::openOnline(const QString &rowId) {
 
 void ActivitiesController::copyShareLink(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
-    if (!target.has_value() || !target->canCopyShareLink) {
-        qCWarning(lcActivitiesController) << "Share-link activity action rejected for unavailable row | rowId:" << rowId;
+    if (!target.has_value() || target->remoteNodeId.empty()) {
+        qCWarning(lcActivitiesController) << "Share-link activity action rejected for unavailable node | rowId:" << rowId;
         emit actionFailed(rowId);
         return;
     }
@@ -226,7 +226,7 @@ void ActivitiesController::copyShareLink(const QString &rowId) {
 
 void ActivitiesController::requestFixErrors(const QString &rowId) const {
     const auto target = _model.actionTarget(rowId);
-    if (!target.has_value() || !target->canFixErrors) {
+    if (!target.has_value() || target->activeErrorDbIds.empty()) {
         qCInfo(lcActivitiesController) << "Activity error resolution ignored because the row has no active error"
                                        << "| rowId:" << rowId;
         return;
