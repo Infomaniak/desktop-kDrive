@@ -101,6 +101,9 @@ class ActivityListModel final : public QAbstractListModel {
         explicit ActivityListModel(const ActivityStore &activityStore, const AppCache &appCache,
                                    MainSelectionStore &selectionStore, QObject *parent = nullptr);
 
+        /** Returns the stable model row identifier for an activity. */
+        [[nodiscard]] static QString activityRowId(GenericId localId);
+
         [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
         [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
