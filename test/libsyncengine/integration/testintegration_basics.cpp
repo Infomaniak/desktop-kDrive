@@ -75,6 +75,17 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size, prevRemoteTestFileInfo.size);
     logStep("test edit local file");
 
+    // Generate a dummy edit in local snapshot without changes
+    CPPUNIT_ASSERT(!_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
+    SnapshotItem dummySnapshotItem(std::to_string(fileStat.inode), "1", filePath.filename(), fileStat.creationTime,
+                                   fileStat.modificationTime, fileStat.nodeType, fileStat.size, false, true, true);
+    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
+    CPPUNIT_ASSERT(!_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
+
+    dummySnapshotItem.setLastModified(dummySnapshotItem.lastModified() + 1);
+    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
+    CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
+
     // Generate a move operation.
     const SyncName newName = Str("testFileLocal_renamed");
     const std::filesystem::path destinationPath = subDirPath / newName;
