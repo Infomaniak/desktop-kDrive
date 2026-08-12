@@ -93,8 +93,10 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
 
     bool parentChanged = false;
     auto item = findItem(newItem.id());
+    bool hasChanged = false;
     // Update old parent's children lists if the item already exists
     if (item) {
+        hasChanged = *item == newItem;
         parentChanged = item->id() != rootFolderId() && item->parentId() != newItem.parentId();
         // Remove children from previous parent
         if (parentChanged) {
@@ -128,7 +130,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
             newParent->addChild(item);
         }
     }
-    if (parentChanged || !isOrphan(item->id())) {
+    if ((parentChanged || hasChanged) && !isOrphan(item->id())) {
         startUpdate();
     }
 
