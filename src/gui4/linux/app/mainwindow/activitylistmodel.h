@@ -77,11 +77,6 @@ class ActivityListModel final : public QAbstractListModel {
             ProgressRole,
             HasActiveErrorRole,
             ActiveErrorCountRole,
-            HasOptionsRole,
-            CanOpenLocalRole,
-            CanOpenOnlineRole,
-            CanCopyShareLinkRole,
-            CanFixErrorsRole,
         };
         Q_ENUM(Role)
 
@@ -89,13 +84,8 @@ class ActivityListModel final : public QAbstractListModel {
                 GenericId activityLocalId{0};
                 SyncDbId syncDbId{0};
                 SyncPath relativePath;
-                NodeType nodeType{NodeType::Unknown};
                 NodeId remoteNodeId;
                 std::vector<ErrorDbId> activeErrorDbIds;
-                bool canOpenLocal{false};
-                bool canOpenOnline{false};
-                bool canCopyShareLink{false};
-                bool canFixErrors{false};
         };
 
         explicit ActivityListModel(const ActivityStore &activityStore, const AppCache &appCache,
@@ -138,10 +128,6 @@ class ActivityListModel final : public QAbstractListModel {
                 NodeId localNodeId;
                 NodeId remoteNodeId;
                 std::vector<ErrorDbId> activeErrorDbIds;
-                bool canOpenLocal{false};
-                bool canOpenOnline{false};
-                bool canCopyShareLink{false};
-                bool canFixErrors{false};
 
                 friend bool operator==(const Row &lhs, const Row &rhs) = default;
         };
