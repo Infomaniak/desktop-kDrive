@@ -79,7 +79,7 @@ class SnapshotItem {
                    _normalizedName == other._normalizedName && _createdAt == other._createdAt &&
                    _lastModified == other._lastModified && _type == other._type && _size == other._size &&
                    _isLink == other._isLink && _contentChecksum == other._contentChecksum && _canWrite == other._canWrite &&
-                   _canShare == other._canShare && _children == other._children;
+                   _canShare == other._canShare;
         }
 
         void copyExceptChildren(const SnapshotItem &other);
