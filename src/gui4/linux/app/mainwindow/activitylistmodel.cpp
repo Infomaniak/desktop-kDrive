@@ -193,16 +193,6 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return !row.activeErrorDbIds.empty();
         case ActiveErrorCountRole:
             return static_cast<qint32>(row.activeErrorDbIds.size());
-        case HasOptionsRole:
-            return row.canOpenLocal || row.canOpenOnline || row.canCopyShareLink || row.canFixErrors;
-        case CanOpenLocalRole:
-            return row.canOpenLocal;
-        case CanOpenOnlineRole:
-            return row.canOpenOnline;
-        case CanCopyShareLinkRole:
-            return row.canCopyShareLink;
-        case CanFixErrorsRole:
-            return row.canFixErrors;
         default:
             return {};
     }
@@ -222,11 +212,6 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {ProgressRole, "progress"},
             {HasActiveErrorRole, "hasActiveError"},
             {ActiveErrorCountRole, "activeErrorCount"},
-            {HasOptionsRole, "hasOptions"},
-            {CanOpenLocalRole, "canOpenLocal"},
-            {CanOpenOnlineRole, "canOpenOnline"},
-            {CanCopyShareLinkRole, "canCopyShareLink"},
-            {CanFixErrorsRole, "canFixErrors"},
     };
 }
 
@@ -256,13 +241,8 @@ std::optional<ActivityListModel::ActionTarget> ActivityListModel::actionTarget(c
             .activityLocalId = rowIt->activityLocalId,
             .syncDbId = rowIt->syncDbId,
             .relativePath = rowIt->relativePath,
-            .nodeType = rowIt->nodeType,
             .remoteNodeId = rowIt->remoteNodeId,
             .activeErrorDbIds = rowIt->activeErrorDbIds,
-            .canOpenLocal = rowIt->canOpenLocal,
-            .canOpenOnline = rowIt->canOpenOnline,
-            .canCopyShareLink = rowIt->canCopyShareLink,
-            .canFixErrors = rowIt->canFixErrors,
     };
 }
 
@@ -310,7 +290,6 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
             activity.instruction == SyncFileInstruction::Move && !activity.newPath.isEmpty() ? activity.newPath : activity.path;
     const SyncPath relativePath = normalizedRelativePath(currentPath);
     const auto status = toModelStatus(activity.status);
-    const bool synchronizedWithOptions = status == Status::Synchronized && activity.instruction != SyncFileInstruction::Remove;
 
     Row row;
     row.rowId = activityRowId(activity.localId);
@@ -332,9 +311,6 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.destinationPath = normalizedRelativePath(activity.newPath);
     row.localNodeId = activity.localNodeId.toStdString();
     row.remoteNodeId = activity.remoteNodeId.toStdString();
-    row.canOpenLocal = synchronizedWithOptions && !relativePath.empty();
-    row.canOpenOnline = synchronizedWithOptions && !row.remoteNodeId.empty();
-    row.canCopyShareLink = row.canOpenOnline;
     return row;
 }
 
@@ -377,10 +353,6 @@ ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row>
 }
 
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
-    for (auto &row: rows) {
-        row.canFixErrors = row.status == Status::Failed && !row.activeErrorDbIds.empty();
-    }
-
     (void) std::erase_if(rows, [this](const Row &row) {
         return row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
     });
@@ -524,13 +496,6 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
     addRoleIf(row.progress != nextRow.progress, ProgressRole);
     addRoleIf(row.activeErrorDbIds.empty() != nextRow.activeErrorDbIds.empty(), HasActiveErrorRole);
     addRoleIf(row.activeErrorDbIds.size() != nextRow.activeErrorDbIds.size(), ActiveErrorCountRole);
-    addRoleIf(row.canOpenLocal != nextRow.canOpenLocal || row.canOpenOnline != nextRow.canOpenOnline ||
-                      row.canCopyShareLink != nextRow.canCopyShareLink || row.canFixErrors != nextRow.canFixErrors,
-              HasOptionsRole);
-    addRoleIf(row.canOpenLocal != nextRow.canOpenLocal, CanOpenLocalRole);
-    addRoleIf(row.canOpenOnline != nextRow.canOpenOnline, CanOpenOnlineRole);
-    addRoleIf(row.canCopyShareLink != nextRow.canCopyShareLink, CanCopyShareLinkRole);
-    addRoleIf(row.canFixErrors != nextRow.canFixErrors, CanFixErrorsRole);
 
     row = nextRow;
     if (!changedRoles.empty()) {
