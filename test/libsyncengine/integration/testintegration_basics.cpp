@@ -79,11 +79,11 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT(!_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
     SnapshotItem dummySnapshotItem(std::to_string(fileStat.inode), "1", filePath.filename(), fileStat.creationTime,
                                    fileStat.modificationTime, fileStat.nodeType, fileStat.size, false, true, true);
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
     CPPUNIT_ASSERT(!_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
 
     dummySnapshotItem.setLastModified(dummySnapshotItem.lastModified() + 1);
-    _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
     CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
 
     // Generate a move operation.
