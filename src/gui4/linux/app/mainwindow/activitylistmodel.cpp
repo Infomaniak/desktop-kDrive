@@ -42,10 +42,6 @@ constexpr auto hour = std::chrono::hours{1};
 constexpr auto day = std::chrono::days{1};
 constexpr auto relativeDateThreshold = std::chrono::days{4};
 
-QString activityRowId(const GenericId localId) {
-    return QStringLiteral("activity:%1").arg(static_cast<qlonglong>(localId));
-}
-
 QString errorRowId(const ErrorDbId errorDbId) {
     return QStringLiteral("error:%1").arg(static_cast<qlonglong>(errorDbId));
 }
@@ -136,6 +132,10 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
 }
 
 } // namespace
+
+QString ActivityListModel::activityRowId(const GenericId localId) {
+    return QStringLiteral("activity:%1").arg(static_cast<qlonglong>(localId));
+}
 
 ActivityListModel::ActivityListModel(const ActivityStore &activityStore, const AppCache &appCache,
                                      MainSelectionStore &selectionStore, QObject *const parent) :
@@ -378,17 +378,13 @@ ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row>
 
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
     for (auto &row: rows) {
-        std::ranges::sort(row.activeErrorDbIds);
-        const auto uniqueResult = std::ranges::unique(row.activeErrorDbIds);
-        const auto duplicateIt = uniqueResult.begin();
-        row.activeErrorDbIds.erase(duplicateIt, row.activeErrorDbIds.end());
         row.canFixErrors = row.status == Status::Failed && !row.activeErrorDbIds.empty();
     }
 
-    std::erase_if(rows, [this](const Row &row) {
+    (void) std::erase_if(rows, [this](const Row &row) {
         return row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
     });
-    std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {
+    (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {
         const bool lhsInProgress = lhs.status == Status::InProgress;
         const bool rhsInProgress = rhs.status == Status::InProgress;
         if (lhsInProgress != rhsInProgress) {
@@ -456,7 +452,7 @@ bool ActivityListModel::removeMissingRows(const std::vector<Row> &nextRows) {
             continue;
         }
         beginRemoveRows({}, rowIndex, rowIndex);
-        _rows.erase(_rows.begin() + rowIndex);
+        (void) _rows.erase(_rows.begin() + rowIndex);
         endRemoveRows();
         changed = true;
     }
@@ -479,17 +475,24 @@ bool ActivityListModel::alignRows(const std::vector<Row> &nextRows) {
             const auto matchingIt = std::ranges::find(_rows.begin() + targetIndex + 1, _rows.end(), nextRow.rowId, &Row::rowId);
             if (matchingIt == _rows.end()) {
                 beginInsertRows({}, targetIndex, targetIndex);
-                _rows.insert(_rows.begin() + targetIndex, nextRow);
+                (void) _rows.insert(_rows.begin() + targetIndex, nextRow);
                 endInsertRows();
                 changed = true;
                 continue;
             }
 
-            const qsizetype sourceIndex = std::distance(_rows.begin(), matchingIt);
-            beginMoveRows({}, sourceIndex, sourceIndex, {}, targetIndex);
+            if (const qsizetype sourceIndex = std::distance(_rows.begin(), matchingIt);
+                !beginMoveRows({}, sourceIndex, sourceIndex, {}, targetIndex)) {
+                qCWarning(lcActivityListModel) << "Incremental row move rejected; resetting activity projection"
+                                               << "| sourceIndex:" << sourceIndex << "| targetIndex:" << targetIndex;
+                beginResetModel();
+                _rows = nextRows;
+                endResetModel();
+                return true;
+            }
             auto movedRow = std::move(*matchingIt);
-            _rows.erase(matchingIt);
-            _rows.insert(_rows.begin() + targetIndex, std::move(movedRow));
+            (void) _rows.erase(matchingIt);
+            (void) _rows.insert(_rows.begin() + targetIndex, std::move(movedRow));
             endMoveRows();
             changed = true;
         }
