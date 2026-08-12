@@ -102,7 +102,7 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
             return handleLockedDb();
         case CheckDbResult::CantPrepare:
             return handleCantPrepare();
-        case CheckDbResult::NotOk: // error never returned by checkDb yet
+        case CheckDbResult::NotOk:
         {
             LOGW_WARN(_logger, L"Database is not ok " << Path2WStr(dbPath));
             close();
