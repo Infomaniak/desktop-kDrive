@@ -130,7 +130,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
             newParent->addChild(item);
         }
     }
-    if ((parentChanged || hasChanged) && !isOrphan(item->id())) {
+    if (hasChanged || (parentChanged && !isOrphan(item->id()))) {
         startUpdate();
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" ("
@@ -138,7 +138,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
                                                                << item->lastModified());
         }
     }
-    
+
     return true;
 }
 
