@@ -74,7 +74,13 @@ class SnapshotItem {
             _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
         SnapshotItem &operator=(const SnapshotItem &other);
-        bool operator==(const SnapshotItem &other) const = default;
+        bool operator==(const SnapshotItem &other) const {
+            return _id == other._id && _parentId == other._parentId && _name == other._name &&
+                   _normalizedName == other._normalizedName && _createdAt == other._createdAt &&
+                   _lastModified == other._lastModified && _type == other._type && _size == other._size &&
+                   _isLink == other._isLink && _contentChecksum == other._contentChecksum && _canWrite == other._canWrite &&
+                   _canShare == other._canShare && _children == other._children;
+        }
 
         void copyExceptChildren(const SnapshotItem &other);
         void addChild(const std::shared_ptr<SnapshotItem> child);
