@@ -174,6 +174,9 @@
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
   active node errors. It maps server status and direction to the QML-facing presentation enums. Active errors remain
   visible even when their recent activity has been evicted.
+- `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
+  presentation, including the local title-state resolver, validates local paths, and delegates asynchronous link actions
+  to `ActivityService`.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`.
@@ -228,6 +231,8 @@
   `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
+- `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`, owns
+  browser and clipboard side effects, and tracks concurrent actions without owning activity history.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
   `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
   confirmation.
