@@ -57,31 +57,6 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         return false;
     }
 
-    const auto handleLockedDb = [this, &dbPath]() -> bool {
-        LOGW_WARN(_logger, L"Database is locked, aborting open (db not removed): " << Path2WStr(dbPath));
-        close();
-        return false;
-    };
-
-    const auto handleCantPrepare = [this, &dbPath]() -> bool {
-        // When disk space is low, preparing may fail even though the db is fine.
-        // Typically CANTOPEN or IOERR.
-        if (const int64_t freeSpace = Utility::getFreeDiskSpace(dbPath); freeSpace != -1 && freeSpace < 1000000) {
-            LOG_WARN(_logger, "Can't prepare consistency check and disk space is low: " << freeSpace);
-            close();
-            return true;
-        }
-
-        // Even when there's enough disk space, it might very well be that the
-        // file is on a read-only filesystem and can't be opened because of that.
-        if (_errId == SQLITE_CANTOPEN) {
-            LOG_WARN(_logger, "Can't open db to prepare consistency check, aborting");
-            close();
-            return true;
-        }
-        return false;
-    };
-
     const auto removeAndReopen = [this, &dbPath]() -> bool {
         LOGW_FATAL(_logger, L"Consistency check failed, removing broken db " << Path2WStr(dbPath));
         close();
@@ -93,22 +68,52 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         return openHelper(dbPath, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     };
 
+
+    const auto handleLockedDb = [this, &dbPath]() -> bool {
+        LOGW_WARN(_logger, L"Database is locked, aborting open (db not removed): " << Path2WStr(dbPath));
+        close();
+        return false;
+    };
+
+    const auto handleCantPrepare = [this, &dbPath, removeAndReopen]() -> bool {
+        // When disk space is low, preparing may fail even though the db is fine.
+        // Typically CANTOPEN or IOERR.
+        if (const int64_t freeSpace = Utility::getFreeDiskSpace(dbPath); freeSpace != -1 && freeSpace < 1000000) {
+            LOG_WARN(_logger, "Can't prepare consistency check and disk space is low: " << freeSpace);
+            close();
+            return false;
+        }
+
+        // Even when there's enough disk space, it might very well be that the
+        // file is on a read-only filesystem and can't be opened because of that.
+        if (_errId == SQLITE_CANTOPEN) {
+            LOG_WARN(_logger, "Can't open db to prepare consistency check, aborting");
+            close();
+            return false;
+        }
+        return removeAndReopen(); // we assume the db is corrupted and delete the db
+    };
+
+
     switch (checkDb()) {
         case CheckDbResult::Ok:
             return true;
         case CheckDbResult::Locked:
             return handleLockedDb();
         case CheckDbResult::CantPrepare:
-            if (handleCantPrepare()) return false;
-            return removeAndReopen();
+            return handleCantPrepare();
         case CheckDbResult::NotOk: // error never returned by checkDb yet
+        {
             LOGW_WARN(_logger, L"Database is not ok " << Path2WStr(dbPath));
             close();
-            return removeAndReopen();
+            return removeAndReopen(); // we assume the db is corrupted and delete the db
+        }
         case CheckDbResult::CantExec: // error never returned by checkDb yet
+        {
             LOGW_WARN(_logger, L"Database can't exec " << Path2WStr(dbPath));
             close();
             return false;
+        }
     }
     return false;
 }
