@@ -72,30 +72,13 @@ void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbI
     }
 
     const QPointer<ActivityService> guard{this};
-    _commService.requestSyncGetPrivateLinkUrl(
-            driveDbId, remoteNodeId, [guard, activityLocalId](const ExitInfo &exitInfo, const QString &urlText) {
-                if (guard.isNull()) {
-                    return;
-                }
-                guard->endAction(actionOpenOnline, activityLocalId);
-                if (!exitInfo) {
-                    guard->notifyRequestFailure(exitInfo, RequestNum::SYNC_GETPRIVATELINKURL, activityLocalId);
-                    return;
-                }
-
-                const QUrl url{urlText};
-                if (!isSupportedWebUrl(url)) {
-                    qCWarning(lcActivityService) << "Private activity URL is empty or invalid"
-                                                 << "| activityLocalId:" << activityLocalId;
-                    emit guard->actionFailed(activityLocalId);
-                    return;
-                }
-                if (!QDesktopServices::openUrl(url)) {
-                    qCWarning(lcActivityService) << "Desktop service failed to open private activity URL"
-                                                 << "| activityLocalId:" << activityLocalId;
-                    emit guard->actionFailed(activityLocalId);
-                }
-            });
+    _commService.requestSyncGetPrivateLinkUrl(driveDbId, remoteNodeId,
+                                              [guard, activityLocalId](const ExitInfo &exitInfo, const QString &urlText) {
+                                                  if (guard.isNull()) {
+                                                      return;
+                                                  }
+                                                  guard->handlePrivateLinkUrl(exitInfo, urlText, activityLocalId);
+                                              });
 }
 
 void ActivityService::copyShareLink(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
@@ -110,34 +93,59 @@ void ActivityService::copyShareLink(const GenericId activityLocalId, const Drive
     }
 
     const QPointer<ActivityService> guard{this};
-    _commService.requestSyncGetPublicLinkUrl(
-            driveDbId, remoteNodeId, [guard, activityLocalId](const ExitInfo &exitInfo, const QString &urlText) {
-                if (guard.isNull()) {
-                    return;
-                }
-                guard->endAction(actionCopyShareLink, activityLocalId);
-                if (!exitInfo) {
-                    guard->notifyRequestFailure(exitInfo, RequestNum::SYNC_GETPUBLICLINKURL, activityLocalId);
-                    return;
-                }
+    _commService.requestSyncGetPublicLinkUrl(driveDbId, remoteNodeId,
+                                             [guard, activityLocalId](const ExitInfo &exitInfo, const QString &urlText) {
+                                                 if (guard.isNull()) {
+                                                     return;
+                                                 }
+                                                 guard->handlePublicLinkUrl(exitInfo, urlText, activityLocalId);
+                                             });
+}
 
-                const QUrl url{urlText};
-                if (!isSupportedWebUrl(url)) {
-                    qCWarning(lcActivityService) << "Public activity URL is empty or invalid"
-                                                 << "| activityLocalId:" << activityLocalId;
-                    emit guard->actionFailed(activityLocalId);
-                    return;
-                }
-                auto *const clipboard = QGuiApplication::clipboard();
-                if (clipboard == nullptr) {
-                    qCWarning(lcActivityService) << "Clipboard unavailable for activity share link"
-                                                 << "| activityLocalId:" << activityLocalId;
-                    emit guard->actionFailed(activityLocalId);
-                    return;
-                }
-                clipboard->setText(url.toString());
-                emit guard->shareLinkCopied(activityLocalId);
-            });
+void ActivityService::handlePrivateLinkUrl(const ExitInfo &exitInfo, const QString &urlText, const GenericId activityLocalId) {
+    endAction(actionOpenOnline, activityLocalId);
+    if (!exitInfo) {
+        notifyRequestFailure(exitInfo, RequestNum::SYNC_GETPRIVATELINKURL, activityLocalId);
+        return;
+    }
+
+    const QUrl url{urlText};
+    if (!isSupportedWebUrl(url)) {
+        qCWarning(lcActivityService) << "Private activity URL is empty or invalid"
+                                     << "| activityLocalId:" << activityLocalId;
+        emit actionFailed(activityLocalId);
+        return;
+    }
+    if (!QDesktopServices::openUrl(url)) {
+        qCWarning(lcActivityService) << "Desktop service failed to open private activity URL"
+                                     << "| activityLocalId:" << activityLocalId;
+        emit actionFailed(activityLocalId);
+    }
+}
+
+void ActivityService::handlePublicLinkUrl(const ExitInfo &exitInfo, const QString &urlText, const GenericId activityLocalId) {
+    endAction(actionCopyShareLink, activityLocalId);
+    if (!exitInfo) {
+        notifyRequestFailure(exitInfo, RequestNum::SYNC_GETPUBLICLINKURL, activityLocalId);
+        return;
+    }
+
+    const QUrl url{urlText};
+    if (!isSupportedWebUrl(url)) {
+        qCWarning(lcActivityService) << "Public activity URL is empty or invalid"
+                                     << "| activityLocalId:" << activityLocalId;
+        emit actionFailed(activityLocalId);
+        return;
+    }
+    auto *const clipboard = QGuiApplication::clipboard();
+    if (clipboard == nullptr) {
+        qCWarning(lcActivityService) << "Clipboard unavailable for activity share link"
+                                     << "| activityLocalId:" << activityLocalId;
+        emit actionFailed(activityLocalId);
+        return;
+    }
+    clipboard->setText(url.toString());
+    emit shareLinkCopied(activityLocalId);
 }
 
 bool ActivityService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const GenericId activityLocalId) const {
