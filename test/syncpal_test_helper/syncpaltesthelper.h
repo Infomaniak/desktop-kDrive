@@ -78,7 +78,7 @@ class SyncpalTestHelper {
 
         InitialSituationSetter _setInitialSituation;
         OperationsExecutor _executeOperations;
-        SituationComparator _getSituation;
+        SituationComparator _situationComparator;
 };
 
 } // namespace KDC

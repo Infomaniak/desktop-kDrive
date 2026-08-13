@@ -30,7 +30,7 @@ SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
     _syncPal(syncPal),
     _setInitialSituation(syncPal),
     _executeOperations(syncPal),
-    _getSituation(syncPal) {}
+    _situationComparator(syncPal) {}
 
 bool SyncpalTestHelper::setUp() {
     return startSync() && executeSyncUntilEnd();
@@ -47,7 +47,7 @@ void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
     _setInitialSituation.setSyncpal(syncPal);
     _executeOperations.setSyncpal(syncPal);
-    _getSituation.setSyncpal(syncPal);
+    _situationComparator.setSyncpal(syncPal);
 }
 
 bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
@@ -72,7 +72,7 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
 bool SyncpalTestHelper::matchesCurrentSituation(const Situation &localSituation, const Situation &remoteSituation) const {
     if (!_syncPal) return false;
 
-    return _getSituation.compareSituation(localSituation, remoteSituation);
+    return _situationComparator.compareSituation(localSituation, remoteSituation);
 }
 
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
