@@ -74,6 +74,7 @@ class SqliteDb {
             CantPrepare,
             CantExec,
             NotOk,
+            Locked,
         };
 
         struct QueryInfo {
