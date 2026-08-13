@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
                         nullptr, QStringLiteral("Database read error"),
                         QStringLiteral("Error reading from the kDrive database (could not retrieve the app UID)."));
                 break;
-            default:
+            case KDC::InitError::None:
                 break;
         }
 
