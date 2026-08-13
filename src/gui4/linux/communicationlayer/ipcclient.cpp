@@ -18,13 +18,14 @@
 
 #include "ipcclient.h"
 
+#include "tlscerthelper.h"
 #include "app/services/sentryservice.h"
 #include "libcommon/commjson.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/types.h"
 
-#include <QHostAddress>
 #include <QLoggingCategory>
+#include <QSslConfiguration>
 #include <QString>
 
 #include <Poco/Dynamic/Struct.h>
@@ -46,15 +47,16 @@ namespace KDC {
 
 IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
-    _socket(new QTcpSocket(this)),
+    _socket(new QSslSocket(this)),
     _initialConnectionRetryTimer(this),
     _serverSignalSequencer(this) {
     _initialConnectionRetryTimer.setSingleShot(true);
     (void) connect(&_initialConnectionRetryTimer, &QTimer::timeout, this, &IpcClient::attemptInitialConnection);
-    (void) connect(_socket, &QTcpSocket::connected, this, &IpcClient::onConnected);
-    (void) connect(_socket, &QTcpSocket::disconnected, this, &IpcClient::onDisconnected);
-    (void) connect(_socket, &QTcpSocket::errorOccurred, this, &IpcClient::onErrorOccurred);
-    (void) connect(_socket, &QTcpSocket::readyRead, this, &IpcClient::onReadyRead);
+    (void) connect(_socket, &QSslSocket::encrypted, this, &IpcClient::onConnected);
+    (void) connect(_socket, &QSslSocket::disconnected, this, &IpcClient::onDisconnected);
+    (void) connect(_socket, &QSslSocket::errorOccurred, this, &IpcClient::onErrorOccurred);
+    (void) connect(_socket, &QSslSocket::readyRead, this, &IpcClient::onReadyRead);
+    (void) connect(_socket, &QSslSocket::sslErrors, this, &IpcClient::onSslErrors);
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::signalReady, this, &IpcClient::serverSignalReceived);
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::protocolError, this,
                    [](const QString &message, const QString &details) { SentryService::reportFatalAndExit(message, details); });
@@ -102,6 +104,36 @@ void IpcClient::connectToServer(const quint16 port) {
 }
 
 /**
+ * Loads the pinned TLS certificate from the keychain.
+ * @return true if the certificate was successfully loaded, false otherwise.
+ */
+bool IpcClient::loadPinnedCertificate() {
+    if (!_pinnedCert.isNull()) {
+        return true;
+    }
+    return TLSCertHelper::readServerCertificate(_pinnedCert);
+}
+
+/**
+ * Loads the TLS client certificate and private key from the keychain.
+ * @return true if both the certificate and key were successfully loaded, false otherwise.
+ */
+bool IpcClient::loadClientCertificate() {
+    if (!_clientCert.isNull() && !_clientKey.isNull()) {
+        return true;
+    }
+    if (!TLSCertHelper::readClientCertificate(_clientCert)) {
+        return false;
+    }
+    if (!TLSCertHelper::readClientKey(_clientKey)) {
+        _clientCert.clear();
+        return false;
+    }
+    return true;
+}
+
+
+/**
  * Attempts to connect to the server. Called on the first attempt and on each retry timer tick.
  * No-op if a connection has already been established (@c _hasConnectedOnce).
  * In debug mode without a configured port, the port is resolved from the .comm file on every attempt because the server
@@ -131,8 +163,24 @@ void IpcClient::attemptInitialConnection() {
                             << _initialConnectionAttemptCount;
     }
 
+    if (!loadPinnedCertificate()) {
+        scheduleInitialConnectionRetry("Pinned certificate is not available yet");
+        return;
+    }
+
+    if (!loadClientCertificate()) {
+        scheduleInitialConnectionRetry("Client certificate is not available yet");
+        return;
+    }
+
+    QSslConfiguration config = _socket->sslConfiguration();
+    config.setCaCertificates({_pinnedCert});
+    config.setLocalCertificate(_clientCert);
+    config.setPrivateKey(_clientKey);
+    _socket->setSslConfiguration(config);
+
     _socket->abort();
-    _socket->connectToHost(QHostAddress::LocalHost, port);
+    _socket->connectToHostEncrypted(QStringLiteral("127.0.0.1"), port, QString::fromLatin1(localHostName));
 }
 
 /**
@@ -240,6 +288,21 @@ void IpcClient::onReadyRead() {
     const QByteArray bytes = _socket->readAll();
     (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
     processBuffer();
+}
+
+
+/**
+ * Logs SSL/TLS errors reported by the socket.
+ *
+ * @param errors The list of SSL/TLS errors to log.
+ */
+void IpcClient::onSslErrors(const QList<QSslError> &errors) {
+    _pinnedCert.clear();
+    _clientCert.clear();
+    _clientKey.clear();
+    for (const QSslError &error: errors) {
+        qCWarning(lcIpcClient) << "SSL/TLS error :" << error.errorString();
+    }
 }
 
 /**
