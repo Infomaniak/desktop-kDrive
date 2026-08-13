@@ -17,7 +17,6 @@
  */
 
 import CppInterop
-import CoreServices
 import Foundation
 
 public enum SyncOrigin: Sendable {
@@ -84,7 +83,7 @@ public final class SyncCreationService: SyncCreator {
 
         let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
         let syncRootURL = URL(fileURLWithPath: syncInfo.localPath, isDirectory: true)
-        if !addFinderSidebarFavorite(at: syncRootURL) {
+        if !FinderSidebarFavorites.add(syncRootURL) {
             IKLogger.general.warning("Failed to add sync root to Finder Favorites")
         }
 
@@ -158,23 +157,5 @@ public final class SyncCreationService: SyncCreator {
         }
 
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-    }
-
-    private func addFinderSidebarFavorite(at url: URL) -> Bool {
-        let favoriteItems = kLSSharedFileListFavoriteItems.takeUnretainedValue()
-        guard let favorites = LSSharedFileListCreate(nil, favoriteItems, nil)?.takeRetainedValue() else {
-            return false
-        }
-
-        let lastItem = kLSSharedFileListItemLast.takeUnretainedValue()
-        return LSSharedFileListInsertItemURL(
-            favorites,
-            lastItem,
-            nil,
-            nil,
-            url as CFURL,
-            nil,
-            nil
-        ) != nil
     }
 }
