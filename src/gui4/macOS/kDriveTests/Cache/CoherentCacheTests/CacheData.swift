@@ -279,4 +279,25 @@ enum CacheData {
         name: secondAvailableDriveName,
         color: secondAvailableDriveColor
     )
+
+    // MARK: - InvalidTokenUnknownError
+
+    static let expectedInvalidTokenUnknownErrorDbId = Int32.random(in: 0 ... 10000)
+    static let expectedInvalidTokenUnknownError = ErrorInfo(dbId: expectedInvalidTokenUnknownErrorDbId,
+                                                            synchroDbId: expectedSynchroDbId,
+                                                            time: Date().timeIntervalSince1970,
+                                                            level: KDC.ErrorLevel.SyncPal,
+                                                            functionName: "",
+                                                            workerName: "",
+                                                            exitCode: KDC.ExitCode.InvalidToken,
+                                                            exitCause: KDC.ExitCause.Unknown,
+                                                            localNodeId: "",
+                                                            remoteNodeId: "",
+                                                            nodeType: KDC.NodeType.Unknown,
+                                                            path: "",
+                                                            conflictType: KDC.ConflictType.None,
+                                                            cancelType: KDC.CancelType.None,
+                                                            inconsistencyType: KDC.InconsistencyType.None,
+                                                            destinationPath: "",
+                                                            autoResolved: false)
 }
