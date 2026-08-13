@@ -234,7 +234,6 @@ Type=Application
 Name=kDriveRecoveryUpdater
 Exec=kDriveRecoveryUpdater
 Icon=kDriveRecoveryUpdater
-Categories=Utility;
 EOF
 
   # Use the recovery updater icon
