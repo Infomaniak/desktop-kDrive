@@ -50,10 +50,6 @@ SyncPath normalizedRelativePath(const SyncPath &path) {
     return path.relative_path().lexically_normal();
 }
 
-SyncPath normalizedRelativePath(const QString &path) {
-    return normalizedRelativePath(QStr2Path(path));
-}
-
 QString itemName(const SyncPath &path) {
     return Path2QStr(path.filename());
 }
@@ -286,8 +282,8 @@ void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &
 }
 
 ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity) {
-    const QString currentPath =
-            activity.instruction == SyncFileInstruction::Move && !activity.newPath.isEmpty() ? activity.newPath : activity.path;
+    const SyncPath &currentPath =
+            activity.instruction == SyncFileInstruction::Move && !activity.newPath.empty() ? activity.newPath : activity.path;
     const SyncPath relativePath = normalizedRelativePath(currentPath);
     const auto status = toModelStatus(activity.status);
 
