@@ -40,7 +40,7 @@ class SyncPal;
  * (see initialsituationsetter.h) - it has no relationship to the real int64_t node id the server (or the local
  * DB) later assigns. Path is the one thing both a JSON description and a real listing can express in common.
  */
-class SituationCSV {
+class SituationMap {
     public:
         struct ItemInfo {
                 NodeType type = NodeType::Unknown;
@@ -49,14 +49,14 @@ class SituationCSV {
         };
         using ItemMap = std::map<SyncPath, ItemInfo>; // item relative path -> {type, size}
 
-        SituationCSV() = default;
+        SituationMap() = default;
 
         void add(const SyncPath &path, const ItemInfo &info) { _items[path] = info; }
 
         [[nodiscard]] const ItemMap &items() const noexcept { return _items; }
         [[nodiscard]] size_t size() const noexcept { return _items.size(); }
 
-        bool operator==(const SituationCSV &other) const noexcept = default;
+        bool operator==(const SituationMap &other) const noexcept = default;
 
         void log() const;
 
@@ -78,21 +78,21 @@ class SituationComparator {
 
         void setSyncpal(std::shared_ptr<SyncPal> syncPal);
 
-        // Converts a JSON `Situation` description into the flat `SituationCSV` representation (relative path ->
+        // Converts a JSON `Situation` description into the flat `SituationMap` representation (relative path ->
         // {type, size}) used for comparison. A size left unspecified in the JSON is defaulted the same way
         // InitialSituationSetter does (testhelpers::defaultFileSize / defaultDirSize), so that comparing against
         // a situation generated from the same description lines up.
-        [[nodiscard]] static SituationCSV jsonToSituationCSV(const Situation &situation);
+        [[nodiscard]] static SituationMap jsonToSituationMap(const Situation &situation);
 
-        // Parses a raw CSV listing (same format as returned by CsvFullFileListWithCursorJob) into a `SituationCSV`.
-        [[nodiscard]] static SituationCSV csvToSituationCSV(const std::string &csv);
+        // Parses a raw CSV listing (same format as returned by CsvFullFileListWithCursorJob) into a `SituationMap`.
+        [[nodiscard]] static SituationMap csvToSituationMap(const std::string &csv);
 
         // Fetches the real remote situation by running a CsvFullFileListWithCursorJob against `remoteDirId`
         // (or the drive root if empty).
-        [[nodiscard]] SituationCSV getRemoteSituation(const NodeId &remoteDirId = {}) const;
+        [[nodiscard]] SituationMap getRemoteSituation(const NodeId &remoteDirId = {}) const;
 
         // fetches the real local situation by scanning the local sync folder.
-        [[nodiscard]] SituationCSV getLocalSituation() const;
+        [[nodiscard]] SituationMap getLocalSituation() const;
 
         // Compares expectedLocalSituation / expectedRemoteSituation (same JSON format as InitialSituationSetter)
         // against the real local / remote situations.

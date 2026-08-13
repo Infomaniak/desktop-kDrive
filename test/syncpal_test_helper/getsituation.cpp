@@ -38,13 +38,13 @@ namespace {
 
 //
 // ─────────────────────────────────────────────────
-// JSON Situation -> SituationCSV
+// JSON Situation -> SituationMap
 // ─────────────────────────────────────────────────
 //
 // Mirrors the walk InitialSituationSetter::addItem does for both supported formats (see initialsituationsetter.h),
 // except it only ever accumulates a path/type/size in `out` instead of touching the real filesystem or drive.
 
-void flatten(const Poco::JSON::Object::Ptr &obj, const SyncPath &parentPath, SituationCSV &out) {
+void flatten(const Poco::JSON::Object::Ptr &obj, const SyncPath &parentPath, SituationMap &out) {
     std::vector<std::string> keys;
     obj->getNames(keys);
 
@@ -58,7 +58,7 @@ void flatten(const Poco::JSON::Object::Ptr &obj, const SyncPath &parentPath, Sit
     }
 }
 
-void flatten(const Poco::JSON::Array::Ptr &arr, const SyncPath &parentPath, SituationCSV &out) {
+void flatten(const Poco::JSON::Array::Ptr &arr, const SyncPath &parentPath, SituationMap &out) {
     for (size_t i = 0; i < arr->size(); ++i) {
         const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
@@ -81,7 +81,7 @@ void flatten(const Poco::JSON::Array::Ptr &arr, const SyncPath &parentPath, Situ
 
 //
 // ─────────────────────────────────────────────────
-// CSV listing -> SituationCSV
+// CSV listing -> SituationMap
 // ─────────────────────────────────────────────────
 //
 // A CSV listing (whether read from a file or fetched live) gives us, per item, only its own id/parentId/name/
@@ -112,26 +112,26 @@ SyncPath resolvePath(const NodeId &id, const RawItemMap &rawItems, PathCache &pa
 
 // The root item itself (the one with no parent in `rawItems`) has no counterpart in a JSON Situation description
 // (which only lists root's children), so it is used to resolve its children's paths but never added to the result.
-SituationCSV rawItemsToSituationCSV(const RawItemMap &rawItems) {
-    SituationCSV situationCSV;
+SituationMap rawItemsToSituationMap(const RawItemMap &rawItems) {
+    SituationMap SituationMap;
     PathCache pathCache;
     for (const auto &[id, item]: rawItems) {
         if (item.parentId.empty()) continue; // root, skip
         if (item.name.starts_with("tmpFile_")) continue; // trash, skip
-        situationCSV.add(resolvePath(id, rawItems, pathCache), {item.type, item.size});
+        SituationMap.add(resolvePath(id, rawItems, pathCache), {item.type, item.size});
     }
-    return situationCSV;
+    return SituationMap;
 }
 
 } // namespace
 
 //
 // ─────────────────────────────────────────────────
-// SituationCSV
+// SituationMap
 // ─────────────────────────────────────────────────
 //
 
-void SituationCSV::log() const {
+void SituationMap::log() const {
     for (const auto &[path, info]: _items) {
         LOG_INFO(Log::instance()->getLogger(), path.string()
                                                        << " -> " << (info.type == NodeType::Directory ? "Directory" : "File")
@@ -153,18 +153,18 @@ void SituationComparator::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
     _syncPal = syncPal;
 }
 
-SituationCSV SituationComparator::jsonToSituationCSV(const Situation &situation) {
-    SituationCSV situationCSV;
+SituationMap SituationComparator::jsonToSituationMap(const Situation &situation) {
+    SituationMap SituationMap;
     if (const auto &obj = situation.jsonObject(); obj->isArray("content")) {
-        flatten(obj->getArray("content"), {}, situationCSV);
+        flatten(obj->getArray("content"), {}, SituationMap);
     } else {
         // No "content" array: legacy format, where the object's own keys are the items.
-        flatten(obj, {}, situationCSV);
+        flatten(obj, {}, SituationMap);
     }
-    return situationCSV;
+    return SituationMap;
 }
 
-SituationCSV SituationComparator::csvToSituationCSV(const std::string &csv) {
+SituationMap SituationComparator::csvToSituationMap(const std::string &csv) {
     SnapshotItemHandler handler(Log::instance()->getLogger());
     std::stringstream ss(csv);
 
@@ -180,10 +180,10 @@ SituationCSV SituationComparator::csvToSituationCSV(const std::string &csv) {
     }
     if (error) LOG_WARN(Log::instance()->getLogger(), "Error while parsing CSV listing.");
 
-    return rawItemsToSituationCSV(rawItems);
+    return rawItemsToSituationMap(rawItems);
 }
 
-SituationCSV SituationComparator::getRemoteSituation(const NodeId &remoteDirId /*= {}*/) const {
+SituationMap SituationComparator::getRemoteSituation(const NodeId &remoteDirId /*= {}*/) const {
     if (!_syncPal) throw SituationGeneratorException("SituationComparator::getRemoteSituation: no SyncPal set");
 
     // An empty remoteDirId isn't "the sync root" for CsvFullFileListWithCursorJob: it lists the whole drive from
@@ -215,13 +215,13 @@ SituationCSV SituationComparator::getRemoteSituation(const NodeId &remoteDirId /
         if (eof) break;
     }
 
-    return rawItemsToSituationCSV(rawItems);
+    return rawItemsToSituationMap(rawItems);
 }
 
-SituationCSV SituationComparator::getLocalSituation() const {
-    SituationCSV situationCSV;
+SituationMap SituationComparator::getLocalSituation() const {
+    SituationMap SituationMap;
 
-    if (!_syncPal) return situationCSV;
+    if (!_syncPal) return SituationMap;
 
     const SyncPath rootPath = _syncPal->localPath();
 
@@ -230,7 +230,7 @@ SituationCSV SituationComparator::getLocalSituation() const {
 
     if (!IoHelper::getRecursiveDirectoryIterator(rootPath, ioError, dirIt)) {
         LOG_WARN(Log::instance()->getLogger(), "Failed to create DirectoryIterator for local path: " << rootPath.string());
-        return situationCSV;
+        return SituationMap;
     }
 
     DirectoryEntry entry;
@@ -249,7 +249,7 @@ SituationCSV SituationComparator::getLocalSituation() const {
         if (relativePath.filename().string().starts_with("tmpFile_")) continue;
         if (relativePath.filename().string().starts_with(".kDrive-cache")) continue;
 
-        SituationCSV::ItemInfo info;
+        SituationMap::ItemInfo info;
         if (entry.is_directory(ec)) {
             info.type = NodeType::Directory;
             info.size = testhelpers::defaultDirSize;
@@ -265,7 +265,7 @@ SituationCSV SituationComparator::getLocalSituation() const {
             continue;
         }
 
-        situationCSV.add(relativePath, info);
+        SituationMap.add(relativePath, info);
     }
 
     const auto exitInfo = IoHelper::checkDirectoryIteratorInterruption(endOfDirectory, ioError, entry, exceptionOccurred);
@@ -274,18 +274,18 @@ SituationCSV SituationComparator::getLocalSituation() const {
                  "Directory iteration did not complete cleanly for local path: " << rootPath.string());
     }
 
-    return situationCSV;
+    return SituationMap;
 }
 
 bool SituationComparator::compareLocal(const Situation &expectedLocalSituation) const {
-    const SituationCSV expected = jsonToSituationCSV(expectedLocalSituation);
-    const SituationCSV actual = getLocalSituation();
+    const SituationMap expected = jsonToSituationMap(expectedLocalSituation);
+    const SituationMap actual = getLocalSituation();
     return expected == actual;
 }
 
 bool SituationComparator::compareRemote(const Situation &expectedRemoteSituation) const {
-    const SituationCSV expected = jsonToSituationCSV(expectedRemoteSituation);
-    const SituationCSV actual = getRemoteSituation();
+    const SituationMap expected = jsonToSituationMap(expectedRemoteSituation);
+    const SituationMap actual = getRemoteSituation();
     return expected == actual;
 }
 
