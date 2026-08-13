@@ -107,6 +107,13 @@ class ActivityListModel final : public QAbstractListModel {
         void projectionChanged();
 
     private:
+        using MatchScore = uint8_t;
+
+        static constexpr MatchScore noMatchScore = 0;
+        static constexpr MatchScore pathMatchScore = 1;
+        static constexpr MatchScore remoteNodeIdMatchScore = 2;
+        static constexpr MatchScore localNodeIdMatchScore = 3;
+
         struct Row {
                 QString rowId;
                 GenericId activityLocalId{0};
@@ -139,7 +146,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] static Row makeActivityRow(SyncDbId syncDbId, const ActivityEntry &activity);
         [[nodiscard]] static Row makeErrorRow(SyncDbId syncDbId, const Error &error);
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
-        [[nodiscard]] static int32_t errorMatchScore(const Row &row, const Error &error);
+        [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
         void finalizeProjection(std::vector<Row> &rows) const;
         void resetProjection();
         void reconcileProjection();
