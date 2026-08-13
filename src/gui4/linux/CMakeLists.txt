@@ -75,6 +75,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         communicationlayer/serversignalsequencer.h
         communicationlayer/signaldispatcher.cpp
         communicationlayer/signaldispatcher.h
+        communicationlayer/tlscerthelper.cpp
+        communicationlayer/tlscerthelper.h
         app/services/commservice.cpp
         app/services/commservice.h
         app/services/cachepopulator.cpp
