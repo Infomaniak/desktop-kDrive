@@ -593,8 +593,8 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
-        (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
+        (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
         DbNode dbNode;
@@ -639,8 +639,8 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
-        (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
+        (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
         DbNode dbNode;
