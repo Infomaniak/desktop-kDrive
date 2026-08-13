@@ -54,11 +54,13 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           FILE=$(ls "${{ github.workspace }}/build-linux/install/kDriveRecoveryUpdater-"*-amd64.AppImage | head -n 1)
-          if [ -n "$FILE" ]; then
-            HASH=$(sha256sum "$FILE" | awk '{print $1}')
-            echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
-            echo "Recovery updater SHA256: $HASH"
-          fi
+
+          HASH=$(sha256sum "$FILE" | awk '{print $1}')
+
+          echo "### Linux amd64 Recovery Updater SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
 
       - name: Upload recovery updater AppImage
         uses: actions/upload-artifact@v7.0.1
