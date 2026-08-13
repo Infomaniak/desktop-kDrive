@@ -39,6 +39,7 @@ class SyncpalTestHelper {
     public:
         SyncpalTestHelper() = default;
         explicit SyncpalTestHelper(std::shared_ptr<MockSyncPal> syncPal);
+        ~SyncpalTestHelper();
 
         // ---- High-level test driver API ----
         bool setUp();

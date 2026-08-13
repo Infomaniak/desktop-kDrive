@@ -30,7 +30,13 @@ SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<MockSyncPal> syncPal)
     _syncPal(syncPal),
     _setInitialSituation(syncPal),
     _executeOperations(syncPal),
-    _situationComparator(syncPal) {}
+    _situationComparator(syncPal) {
+    (void) setUp();
+}
+
+SyncpalTestHelper::~SyncpalTestHelper() {
+    tearDown();
+}
 
 bool SyncpalTestHelper::setUp() {
     return startSync() && executeSyncUntilEnd();
