@@ -30,6 +30,7 @@
 
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "mocks/mockkeychainstorage.h"
+#include "requests/syncfolderallowedchecker.h"
 
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
@@ -124,10 +125,28 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     CPPUNIT_ASSERT(previousPath != returnedPath);
 }
 
+static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
+    bool constraintError = false;
+    const bool ok = ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    CPPUNIT_ASSERT_MESSAGE("insertSyncFolderRule failed", ok && !constraintError);
+}
+
+static void clearRules() {
+    std::vector<SyncFolderRule> rules;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncFolderRules(rules));
+    for (const auto &rule: rules) {
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found));
+        CPPUNIT_ASSERT(found);
+    }
+}
+
+
 void TestServerRequests::testIsPathValidForNewSync() {
     LocalTemporaryDirectory localTempDir("testIsPathValidForNewSync");
     const SyncPath basePath = localTempDir.path();
     const SyncPath defaultPath = basePath / APPLICATION_NAME;
+    insertRule(defaultPath, SyncFolderRuleType::WhiteList);
 
     auto ioError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
@@ -328,5 +347,246 @@ void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
                          ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
     CPPUNIT_ASSERT(containsNonExcludedFile);
 }
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist() {
+    clearRules();
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/some/arbitrary/path", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/opt/someapp/data", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents/Projects", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule() {
+    clearRules();
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/.cache", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule() {
+    clearRules();
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/.cache/thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+
+void TestServerRequests::isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule() {
+    clearRules();
+    // Parent whitelists /home/user, but a deeper blacklist blocks /home/user/.cache
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/.cache/thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/home/user/.local/share/Trash", SyncFolderRuleType::BlackList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         SyncFolderAllowedChecker::check("/home/user/.local/share/Trash/OldDocuments", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_expandsHomeDirVariable() {
+    clearRules();
+    // Insert rule using $HOME variable, mirroring what sync-folder-rules-linux.csv does
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("$HOME/.cache", SyncFolderRuleType::BlackList);
+
+    const SyncPath homeDir = QStr2Path(QDir::homePath());
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(homeDir / "Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(homeDir / ".cache" / "thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(homeDir, allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+#if defined(KD_WINDOWS)
+void TestServerRequests::isSyncFolderAllowedByRules_windowsExternalDriveAllowed() {
+    clearRules();
+    // Mirror the real sync-folder-rules-win.csv:
+    //   $SYSROOT      -> BlackList
+    //   $HOME         -> WhiteListSubFolder
+    //   $HOME/AppData -> BlackList
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("$HOME/AppData", SyncFolderRuleType::BlackList);
+
+    // A path on a different drive (e.g. a USB key mounted on E:) does not match any rule.
+    // It should be allowed by default (no matching rule → allowed).
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("E:\\MySyncFolder", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // A subfolder on E: should also be allowed.
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("E:\\MySyncFolder\\SubDir", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // The system drive itself (e.g. C:) should be denied (BlackList via $SYSROOT).
+    const SyncPath homeDir = QStr2Path(QDir::homePath());
+    const SyncPath sysRoot = homeDir.root_path();
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(sysRoot, allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    // A folder directly under the system drive (e.g. C:\MySync) should be denied
+    // because $SYSROOT (BlackList) is the deepest matching rule.
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(sysRoot / "MySync", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+#elif defined(KD_MACOS)
+void TestServerRequests::isSyncFolderAllowedByRules_macExternalVolumeAllowed() {
+    clearRules();
+    // Mirror the real sync-folder-rules-osx.csv:
+    //   $SYSROOT  -> BlackList
+    //   $HOME     -> WhiteListSubFolder
+    //   /Volumes  -> WhiteListSubFolder
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/Volumes", SyncFolderRuleType::WhiteListSubFolder);
+
+    // A sync folder on an external volume mounted under /Volumes should be allowed
+    // (it is a subfolder of the /Volumes WhiteListSubFolder rule).
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/Volumes/MyUSBDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // The volume root itself (e.g. /Volumes/MyUSBDrive) should also be allowed
+    // (it is still a subfolder of /Volumes, not an exact match of /Volumes).
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/Volumes/MyUSBDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_macVolumesRootDenied() {
+    clearRules();
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("/Volumes", SyncFolderRuleType::WhiteListSubFolder);
+
+    // /Volumes itself should be denied (exact match of WhiteListSubFolder rule).
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/Volumes", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+#elif defined(KD_LINUX)
+void TestServerRequests::isSyncFolderAllowedByRules_linuxExternalDriveAllowed() {
+    clearRules();
+    // Mirror the real sync-folder-rules-linux.csv:
+    //   $SYSROOT  -> BlackList
+    //   $HOME     -> WhiteListSubFolder
+    //   /media    -> WhiteListSubFolder
+    //   /run/media-> WhiteListSubFolder
+    //   /mnt      -> WhiteListSubFolder
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/run/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/mnt", SyncFolderRuleType::WhiteListSubFolder);
+
+    // /media/<username>/<drivename>/kDrive should be allowed
+    // (subfolder of /media WhiteListSubFolder, deeper than $SYSROOT BlackList).
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/media/username/MyUSBDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // /run/media/<username>/<drivename>/kDrive should be allowed
+    // (subfolder of /run/media WhiteListSubFolder, deeper than $SYSROOT BlackList).
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         SyncFolderAllowedChecker::check("/run/media/username/MyUSBDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // /mnt/<drivename>/kDrive should be allowed
+    // (subfolder of /mnt WhiteListSubFolder, deeper than $SYSROOT BlackList).
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/mnt/MyDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // The system root "/" should be denied ($SYSROOT BlackList).
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_linuxMediaRootDenied() {
+    clearRules();
+    insertRule("/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/run/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/mnt", SyncFolderRuleType::WhiteListSubFolder);
+
+    // /media itself should be denied (exact match of WhiteListSubFolder rule).
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/media", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    // /run/media itself should be denied (exact match of WhiteListSubFolder rule).
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/run/media", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    // /mnt itself should be denied (exact match of WhiteListSubFolder rule).
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/mnt", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+#endif
+
 
 } // namespace KDC

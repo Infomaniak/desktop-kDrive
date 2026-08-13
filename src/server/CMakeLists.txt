@@ -147,6 +147,7 @@ set(server_SRCS
 
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
+    requests/syncfolderallowedchecker.h requests/syncfolderallowedchecker.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
     app_resources.rc
 )

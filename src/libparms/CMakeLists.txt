@@ -16,7 +16,7 @@ set(parms_SRCS
     db/exclusiontemplate.h db/exclusiontemplate.cpp
     db/migrationselectivesync.h db/migrationselectivesync.cpp
     db/uploadsessiontoken.h db/uploadsessiontoken.cpp
-    db/parmsdbappstate.cpp
+    db/parmsdbappstate.cpp db/syncfolderrule.h db/syncfolderrule.cpp
 )
 
 

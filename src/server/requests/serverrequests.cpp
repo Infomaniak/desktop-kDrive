@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "syncfolderallowedchecker.h"
+
 #include "jobs/network/login/deletetokenjob.h"
 #if defined(KD_WINDOWS)
 #define _WINSOCKAPI_
@@ -290,6 +292,19 @@ ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) 
 
 ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid) {
     valid = false;
+
+    LOGW_DEBUG(Log::instance()->getLogger(), L"isPathValidForNewSync: checking path=" << Utility::formatSyncPath(path)
+                                                                                      << L", syncConfig="
+                                                                                      << static_cast<int>(syncConfig));
+    bool rulesValidity = true;
+    if (const auto exitInfo = SyncFolderAllowedChecker::check(path, rulesValidity); !exitInfo) {
+        return exitInfo;
+    }
+
+    if (!rulesValidity) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Path rejected by sync folder rules: " << Utility::formatSyncPath(path));
+        return ExitCode::Ok;
+    }
 
     // Check the FS
     if (!CommonUtility::isSyncCompatible(path)) {
@@ -706,6 +721,18 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
                                                                             << Path2WStr(localFolderPath) << L" serverFolderPath="
                                                                             << Path2WStr(serverFolderPath) << L" liteSync="
                                                                             << liteSync);
+
+    bool pathAllowedByRules = true;
+    if (const auto exitInfo = SyncFolderAllowedChecker::check(localFolderPath, pathAllowedByRules); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in isSyncFolderAllowedByRules");
+        return exitInfo;
+    }
+    if (!pathAllowedByRules) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Path rejected by sync folder rules: " << Utility::formatSyncPath(localFolderPath));
+        return ExitCode::InvalidSync;
+    }
+
     // Create the sync folder if it does not exist
     IoError ioError = IoError::Success;
     bool res = IoHelper::createDirectory(localFolderPath, true, ioError);
@@ -1127,6 +1154,7 @@ ExitCode ServerRequests::createSync(const Sync &sync) {
 
     return ExitCode::Ok;
 }
+
 
 ExitCode ServerRequests::fixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();

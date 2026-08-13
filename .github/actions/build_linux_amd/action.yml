@@ -166,6 +166,7 @@ runs:
         run: | 
           mkdir uncached_dependencies
           cp ${{ github.workspace }}/build-linux/build/bin/sync-exclude.lst ./uncached_dependencies/
+          cp ${{ github.workspace }}/build-linux/build/bin/sync-folder-rules.csv ./uncached_dependencies/
         shell: bash
         if: steps.build.outcome == 'success'
 

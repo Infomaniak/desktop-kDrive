@@ -22,6 +22,8 @@
 #include "libcommongui/commclient.h"
 #include "libcommon/utility/utility.h"
 
+Q_LOGGING_CATEGORY(lcGuiRequests, "gui.guirequests", QtInfoMsg)
+
 namespace KDC {
 
 bool GuiRequests::isConnnected() {
@@ -466,6 +468,30 @@ ExitCode GuiRequests::findGoodPathForNewSync(const QString &driveName, QString &
     resultStream >> exitCode;
     resultStream >> path;
     resultStream >> error;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::isPathValidForNewSync(const QString &path, const SyncConfiguration syncConfig, bool &valid) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << path;
+    paramsStream << syncConfig;
+
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params, results)) {
+        qCWarning(lcGuiRequests) << "isPathValidForNewSync: execute FAILED (timeout or comm error) for path=" << path
+                                 << ", RequestNum=" << RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC
+                                 << ", timeout=" << COMM_SHORT_TIMEOUT << "ms";
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> valid;
+
 
     return exitCode;
 }

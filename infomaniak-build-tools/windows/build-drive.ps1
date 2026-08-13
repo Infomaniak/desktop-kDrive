@@ -542,6 +542,7 @@ function Prepare-Archive {
     }
 
     Copy-Item -Path "$repositoryRootPath/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
+    Copy-Item -Path "$repositoryRootPath/sync-folder-rules-win.csv" -Destination "$archivePath/sync-folder-rules.csv"
 
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 

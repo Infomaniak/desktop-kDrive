@@ -373,6 +373,26 @@
 #define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID "select_exclusion_templates"
 #define SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST "SELECT template, warning, def FROM exclusion_template;"
 
+
+#define CREATE_SYNC_FOLDER_RULE_TABLE_ID "create_sync_folder_rule"
+#define CREATE_SYNC_FOLDER_RULE_TABLE              \
+    "CREATE TABLE IF NOT EXISTS sync_folder_rule(" \
+    "path TEXT PRIMARY KEY,"                       \
+    "type INTEGER);"
+
+#define INSERT_SYNC_FOLDER_RULE_REQUEST_ID "insert_sync_folder_rule"
+#define INSERT_SYNC_FOLDER_RULE_REQUEST "INSERT INTO sync_folder_rule (path, type) VALUES (?1, ?2);"
+
+#define UPDATE_SYNC_FOLDER_RULE_REQUEST_ID "update_sync_folder_rule"
+#define UPDATE_SYNC_FOLDER_RULE_REQUEST "UPDATE sync_folder_rule SET type=?1 WHERE path=?2;"
+
+#define DELETE_SYNC_FOLDER_RULE_REQUEST_ID "delete_sync_folder_rule"
+#define DELETE_SYNC_FOLDER_RULE_REQUEST "DELETE FROM sync_folder_rule WHERE path=?1;"
+
+#define SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID "select_sync_folder_rules"
+#define SELECT_ALL_SYNC_FOLDER_RULE_REQUEST "SELECT path, type FROM sync_folder_rule;"
+
+
 #define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID "select_exclusion_templates_by_def"
 #define SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST    \
     "SELECT template, warning FROM exclusion_template " \
@@ -843,6 +863,136 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     return result;
 }
 
+
+namespace {
+
+void stripLineEndings(std::string &line) {
+    while (!line.empty() && (line.back() == '\n' || line.back() == '\r')) {
+        line.pop_back();
+    }
+}
+
+bool parseRuleType(const std::string_view typeStr, SyncFolderRuleType &ruleType) {
+    if (typeStr == "BlackList")
+        ruleType = SyncFolderRuleType::BlackList;
+    else if (typeStr == "WhiteList")
+        ruleType = SyncFolderRuleType::WhiteList;
+    else if (typeStr == "WhiteListSubFolder")
+        ruleType = SyncFolderRuleType::WhiteListSubFolder;
+    else
+        return false;
+    return true;
+}
+
+// Returns true if a valid rule was parsed and appended.
+bool tryParseCsvLine(const std::string &line, std::vector<SyncFolderRule> &rules, log4cplus::Logger _logger) {
+    const std::vector<std::string> columns = Utility::splitStr(line, ',');
+    if (columns.size() != 2) {
+        return false;
+    }
+
+    const std::string pathStr = CommonUtility::trim(columns[0]);
+    const std::string typeStr = CommonUtility::trim(columns[1]);
+    if (pathStr.empty() || typeStr.empty()) {
+        return false;
+    }
+
+    SyncFolderRuleType ruleType = SyncFolderRuleType::None;
+    if (!parseRuleType(typeStr, ruleType)) {
+        LOG_WARN(_logger, "Invalid sync folder rule type: " << typeStr.c_str());
+        return false;
+    }
+
+    (void) rules.emplace_back(SyncPath(pathStr), ruleType);
+    return true;
+}
+
+} // namespace
+
+bool ParmsDb::getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
+                                         std::vector<SyncFolderRule> &fileSyncFolderRules) const {
+    fileSyncFolderRules.clear();
+
+    std::ifstream rulesFile(syncFolderRulesPath);
+    if (!rulesFile.is_open()) {
+        return false;
+    }
+
+    std::string line;
+    bool headerSkipped = false;
+    while (std::getline(rulesFile, line)) {
+        stripLineEndings(line);
+        if (line.empty()) {
+            continue;
+        }
+
+        if (!headerSkipped) {
+            headerSkipped = true;
+            if (line.find("Path") != std::string::npos) {
+                continue;
+            }
+        }
+
+        if (!tryParseCsvLine(line, fileSyncFolderRules, _logger)) {
+            LOG_WARN(_logger, "Skipping malformed sync folder rule line: " << line.c_str());
+        }
+    }
+
+    return true;
+}
+
+
+bool ParmsDb::updateSyncFolderRules() {
+    std::vector<SyncFolderRule> dbSyncFolderRules;
+    if (!selectAllSyncFolderRules(dbSyncFolderRules)) {
+        LOG_WARN(_logger, "Error in selectAllSyncFolderRules");
+        return false;
+    }
+
+    std::vector<SyncFolderRule> fileSyncFolderRules;
+    if (const auto &syncFolderRulesFilePath = Utility::getSyncFolderRulesFilePath(_test);
+        !getSyncFolderRulesFromFile(syncFolderRulesFilePath, fileSyncFolderRules)) {
+        LOGW_WARN(_logger, L"Cannot open sync folder rules file " << Utility::formatSyncName(syncFolderRulesFilePath));
+        return false;
+    }
+
+    for (const auto &dbRule: dbSyncFolderRules) {
+        const auto it = std::ranges::find_if(std::as_const(fileSyncFolderRules), [&dbRule](const SyncFolderRule &fileRule) {
+            return fileRule.syncPath() == dbRule.syncPath();
+        });
+
+        if (it == fileSyncFolderRules.cend()) {
+            if (bool found = false; !deleteSyncFolderRule(dbRule.syncPath(), found)) {
+                LOG_WARN(_logger, "Error in deleteSyncFolderRule");
+                return false;
+            }
+        }
+    }
+
+    for (const auto &fileRule: fileSyncFolderRules) {
+        const auto it = std::ranges::find_if(std::as_const(dbSyncFolderRules), [&fileRule](const SyncFolderRule &dbRule) {
+            return dbRule.syncPath() == fileRule.syncPath();
+        });
+
+        if (it == dbSyncFolderRules.cend()) {
+            if (bool constraintError = false; !insertSyncFolderRule(fileRule, constraintError)) {
+                LOG_WARN(_logger, "Error in insertSyncFolderRule");
+                return false;
+            }
+            continue;
+        }
+
+        if (it->folderRuleType() != fileRule.folderRuleType()) {
+            if (bool found = false; !updateSyncFolderRule(fileRule, found)) {
+                LOG_WARN(_logger, "Error in updateSyncFolderRule");
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 #if defined(KD_MACOS)
 bool ParmsDb::updateExclusionApps() {
     // Load exclusion apps in DB
@@ -990,6 +1140,7 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
 
+
 #if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE)) return false;
@@ -1014,6 +1165,11 @@ bool ParmsDb::create(bool &retry) {
         return false;
     }
 
+    // Sync folder rule
+    if (!createSyncFolderRule()) {
+        LOG_WARN(_logger, "Error in createSyncFolderRule");
+        return false;
+    }
     // Migration old selectivesync table
     if (!createAndPrepareRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE)) return false;
     if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
@@ -1022,6 +1178,18 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
 
+    return true;
+}
+
+bool ParmsDb::createSyncFolderRule() {
+    int errId = 0;
+    std::string error;
+    if (!createAndPrepareRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE)) return false;
+    if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
+        queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
+        return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
+    }
+    queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
     return true;
 }
 
@@ -1073,6 +1241,11 @@ bool ParmsDb::prepare() {
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST)) return false;
     if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
         return false;
+    // Sync folder rule
+    if (!createAndPrepareRequest(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, INSERT_SYNC_FOLDER_RULE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, UPDATE_SYNC_FOLDER_RULE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_SYNC_FOLDER_RULE_REQUEST_ID, DELETE_SYNC_FOLDER_RULE_REQUEST)) return false;
+    if (!createAndPrepareRequest(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, SELECT_ALL_SYNC_FOLDER_RULE_REQUEST)) return false;
 #if defined(KD_MACOS)
     // Exclusion App
     if (!createAndPrepareRequest(INSERT_EXCLUSION_APP_REQUEST_ID, INSERT_EXCLUSION_APP_REQUEST)) return false;
@@ -1121,6 +1294,9 @@ bool ParmsDb::prepare() {
 }
 
 bool ParmsDb::upgradeTables() {
+    int errId = 0;
+    std::string error;
+
     // Parameters table
     std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
@@ -1140,9 +1316,6 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (updateParameters) {
-        int errId = 0;
-        std::string error;
-
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
@@ -1171,6 +1344,17 @@ bool ParmsDb::upgradeTables() {
     if (!exist) {
         if (!createAppState()) {
             LOG_WARN(_logger, "Error in createAppState");
+            return false;
+        }
+    }
+
+    // Sync folder rule table
+    tableName = "sync_folder_rule";
+    exist = false;
+    if (!tableExists(tableName, exist)) return false;
+    if (!exist) {
+        if (!createSyncFolderRule()) {
+            LOG_WARN(_logger, "Error in createSyncFolderRule");
             return false;
         }
     }
@@ -1260,6 +1444,12 @@ bool ParmsDb::initData() {
     // Update exclusion templates
     if (!updateExclusionTemplates()) {
         LOG_WARN(_logger, "Error in updateExclusionTemplates");
+        return false;
+    }
+
+    // update sync folder rules
+    if (!updateSyncFolderRules()) {
+        LOG_WARN(_logger, "Error in updateSyncFolderRules");
         return false;
     }
 
@@ -2982,6 +3172,96 @@ bool ParmsDb::updateAllExclusionApps(const bool def, const std::vector<Exclusion
     return true;
 }
 #endif
+
+bool ParmsDb::insertSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &constraintError) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(INSERT_SYNC_FOLDER_RULE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, 1, syncFolderRule.syncPath()));
+    LOG_IF_FAIL(queryBindValue(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, 2, static_cast<int>(syncFolderRule.folderRuleType())));
+    if (!queryExec(INSERT_SYNC_FOLDER_RULE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << INSERT_SYNC_FOLDER_RULE_REQUEST_ID);
+        constraintError = (errId == SQLITE_CONSTRAINT);
+        return false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::updateSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, 1, static_cast<int>(syncFolderRule.folderRuleType())));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, 2, syncFolderRule.syncPath()));
+    if (!queryExec(UPDATE_SYNC_FOLDER_RULE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_FOLDER_RULE_REQUEST_ID);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_FOLDER_RULE_REQUEST_ID << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::deleteSyncFolderRule(const SyncPath &syncPath, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = -1;
+    std::string error;
+
+    LOG_IF_FAIL(queryResetAndClearBindings(DELETE_SYNC_FOLDER_RULE_REQUEST_ID));
+    LOG_IF_FAIL(queryBindValue(DELETE_SYNC_FOLDER_RULE_REQUEST_ID, 1, syncPath));
+    if (!queryExec(DELETE_SYNC_FOLDER_RULE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << DELETE_SYNC_FOLDER_RULE_REQUEST_ID);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << DELETE_SYNC_FOLDER_RULE_REQUEST_ID << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::selectAllSyncFolderRules(std::vector<SyncFolderRule> &syncFolderRuleList) {
+    const std::scoped_lock lock(_mutex);
+
+    syncFolderRuleList.clear();
+
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID));
+    bool found = false;
+    for (;;) {
+        if (!queryNext(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID);
+            return false;
+        }
+        if (!found) {
+            break;
+        }
+        std::string syncPath;
+        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, 0, syncPath));
+        int ruleType{0};
+        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID, 1, ruleType));
+
+        (void) syncFolderRuleList.emplace_back(SyncPath(syncPath), static_cast<SyncFolderRuleType>(ruleType));
+    }
+    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNC_FOLDER_RULE_REQUEST_ID));
+
+    return true;
+}
 
 bool ParmsDb::insertError(Error &err) {
     const std::scoped_lock lock(_mutex);
