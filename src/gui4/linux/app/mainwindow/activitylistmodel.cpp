@@ -408,7 +408,7 @@ void ActivityListModel::resetProjection() {
 void ActivityListModel::reconcileProjection() {
     const auto nextRows = buildProjection();
     bool changed = removeMissingRows(nextRows);
-    changed = alignRows(nextRows) || changed;
+    changed = applyProjectionRows(nextRows) || changed;
     if (changed) {
         emit projectionChanged();
     }
@@ -431,7 +431,7 @@ bool ActivityListModel::removeMissingRows(const std::vector<Row> &nextRows) {
     return changed;
 }
 
-bool ActivityListModel::alignRows(const std::vector<Row> &nextRows) {
+bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
     bool changed = false;
     for (qsizetype targetIndex = 0; targetIndex < static_cast<qsizetype>(nextRows.size()); ++targetIndex) {
         const auto &nextRow = nextRows[static_cast<std::size_t>(targetIndex)];
