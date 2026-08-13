@@ -394,11 +394,17 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
           $file = Get-ChildItem "${{ github.workspace }}\build-windows\kDriveRecoveryUpdater-*.exe" | Select-Object -First 1
-          if ($file) {
-            $hash = (Get-FileHash -Path $file.FullName).Hash
-            Set-Content -Path "$($file.FullName).sha256" -Value $hash
-            Write-Host "Recovery updater SHA256: $hash"
-          }
+
+          $hash = (Get-FileHash -Path $file.FullName).Hash
+
+          $summary = @()
+          $summary += "### Windows Recovery Updater SHA256"
+          $summary += ""
+          $summary += $hash
+          $summary += ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ($summary -join "`n")
+
+          Set-Content -Path "$($file.FullName).sha256" -Value $hash
 
       - name: Upload recovery updater
         uses: actions/upload-artifact@v7.0.1
