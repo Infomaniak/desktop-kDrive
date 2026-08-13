@@ -54,8 +54,8 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
         case unsupported
     }
 
-    public var guiConnection: XPCGuiProtocol {
-        self
+    public func sendQuery(_ requestData: Data) async throws -> Data {
+        await sendQueryAsync(requestData)
     }
 
     public func reconnectToLoginAgent() async {}

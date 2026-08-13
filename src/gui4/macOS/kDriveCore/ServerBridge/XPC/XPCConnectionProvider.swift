@@ -36,7 +36,7 @@ public enum XPCLoginItemAgentConnectionState: Sendable, Equatable {
 }
 
 public protocol XPCConnectionProvider: Sendable {
-    var guiConnection: XPCGuiProtocol { get async throws }
+    func sendQuery(_ requestData: Data) async throws -> Data
 
     var guiConnectionState: XPCConnectionState { get }
     var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> { get }
@@ -58,14 +58,24 @@ extension XPCConnectionManager: XPCConnectionProvider {
         }
     }
 
-    public var guiConnection: XPCGuiProtocol {
-        get async throws {
-            try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
+    public func sendQuery(_ requestData: Data) async throws -> Data {
+        try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
 
-            let connection = try connection
-            let proxy = try connection.proxy(from: connection, type: XPCGuiProtocol.self)
-
-            return proxy
+        let connection = try connection
+        return try await withCheckedThrowingContinuation { continuation in
+            let continuation = XPCContinuation(continuation)
+            do {
+                let proxy = try connection.proxy(errorHandler: { error in
+                    IKLogger.xpc.error("[KD] Failed to send query to server: \(error)")
+                    continuation.resume(throwing: error)
+                }, type: XPCGuiProtocol.self)
+                proxy.processQuery(requestData) { data in
+                    IKLogger.xpc.log("[KD] recv raw callback len: \(data.count)")
+                    continuation.resume(returning: data)
+                }
+            } catch {
+                continuation.resume(throwing: error)
+            }
         }
     }
 
