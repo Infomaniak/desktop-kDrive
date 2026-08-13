@@ -337,14 +337,14 @@ ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, 
 
 ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row> &rows, const Error &error) {
     Row *matchingRow = nullptr;
-    int32_t bestScore = 0;
+    MatchScore bestScore = noMatchScore;
     for (auto &row: rows) {
         if (row.status != Status::Failed) {
             continue;
         }
-        if (const int32_t score = errorMatchScore(row, error);
-            score > bestScore ||
-            (score == bestScore && score > 0 && matchingRow != nullptr && row.receivedSequence > matchingRow->receivedSequence)) {
+        if (const MatchScore score = errorMatchScore(row, error);
+            score > bestScore || (score == bestScore && score > noMatchScore && matchingRow != nullptr &&
+                                  row.receivedSequence > matchingRow->receivedSequence)) {
             matchingRow = &row;
             bestScore = score;
         }
@@ -378,20 +378,20 @@ void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
  * The comparisons mirror the server's `selectErrorByNodeInfo` lookup: local node id, remote node id, source path, then
  * destination path. A stronger match wins when several recent failed activities could represent the same error.
  */
-int32_t ActivityListModel::errorMatchScore(const Row &row, const Error &error) {
+ActivityListModel::MatchScore ActivityListModel::errorMatchScore(const Row &row, const Error &error) {
     if (!row.localNodeId.empty() && row.localNodeId == error.localNodeId()) {
-        return 3;
+        return localNodeIdMatchScore;
     }
     if (!row.remoteNodeId.empty() && row.remoteNodeId == error.remoteNodeId()) {
-        return 2;
+        return remoteNodeIdMatchScore;
     }
     if (!error.path().empty() && row.sourcePath == normalizedRelativePath(error.path())) {
-        return 1;
+        return pathMatchScore;
     }
     if (!error.destinationPath().empty() && row.destinationPath == normalizedRelativePath(error.destinationPath())) {
-        return 1;
+        return pathMatchScore;
     }
-    return 0;
+    return noMatchScore;
 }
 
 void ActivityListModel::resetProjection() {
