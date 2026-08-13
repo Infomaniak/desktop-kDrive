@@ -37,8 +37,8 @@ struct ActivityEntry {
         SyncDbId syncDbId{0};
         UniqueId operationId{0};
         NodeType nodeType{NodeType::Unknown};
-        QString path;
-        QString newPath;
+        SyncPath path;
+        SyncPath newPath;
         QString localNodeId;
         QString remoteNodeId;
         SyncDirection direction{SyncDirection::Unknown};
