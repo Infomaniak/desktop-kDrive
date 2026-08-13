@@ -171,8 +171,8 @@ ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileIt
     entry.syncDbId = syncDbId;
     entry.operationId = item.operationId();
     entry.nodeType = item.type();
-    entry.path = item.path();
-    entry.newPath = item.newPath();
+    entry.path = QStr2Path(item.path());
+    entry.newPath = QStr2Path(item.newPath());
     entry.localNodeId = item.localNodeId();
     entry.remoteNodeId = item.remoteNodeId();
     entry.direction = item.direction();
