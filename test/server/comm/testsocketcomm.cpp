@@ -18,10 +18,65 @@
 
 #include "testsocketcomm.h"
 
-#include "libcommon/utility/utility.h"
+#include "libcommon/comm.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
+
+#include <Poco/Crypto/X509Certificate.h>
+#include <Poco/Crypto/RSAKey.h>
+
+#include <sstream>
 
 namespace KDC {
 
+Poco::Net::Context::Ptr TestSocketComm::createClientContext() {
+    // Cache the PEM material from the keychain on first call. The server erases all TLS
+    // keychain entries (server cert, client cert, client key) after the first successful
+    // handshake, so subsequent test cases would fail to read them. Static locals guarantee
+    // the read happens once, before any erasure.
+    static const auto readKeychainEntry = [](const char *key) -> std::string {
+        bool found = false;
+        std::string pem;
+        CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(key), pem, found));
+        CPPUNIT_ASSERT(found);
+        return pem;
+    };
+
+    static const std::string serverCertPem = readKeychainEntry(certKeychainKey);
+    static const std::string clientCertPem = readKeychainEntry(clientCertKeychainKey);
+    static const std::string clientKeyPem = readKeychainEntry(clientKeyKeychainKey);
+
+    Poco::Net::Context::Ptr clientContext =
+            new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+    clientContext->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+    // Add the server certificate as the only trusted CA so the client verifies the server.
+    std::istringstream certStream(serverCertPem);
+    Poco::Crypto::X509Certificate serverCert(certStream);
+    clientContext->addCertificateAuthority(serverCert);
+
+    // Present the client certificate and private key (required by server's VERIFY_STRICT).
+    std::istringstream clientCertStream(clientCertPem);
+    Poco::Crypto::X509Certificate clientCert(clientCertStream);
+    clientContext->useCertificate(clientCert);
+
+    std::istringstream clientKeyStream(clientKeyPem);
+    Poco::Crypto::RSAKey clientKey(nullptr, &clientKeyStream, "");
+    clientContext->usePrivateKey(clientKey);
+
+    return clientContext;
+}
+
+Poco::Net::SecureStreamSocket TestSocketComm::newSecureClient(const Poco::UInt16 port) {
+    Poco::Net::Context::Ptr clientContext = createClientContext();
+
+    Poco::Net::StreamSocket rawSocket;
+    rawSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), port));
+    Poco::Net::SecureStreamSocket secureSocket = Poco::Net::SecureStreamSocket::attach(rawSocket, clientContext);
+    CPPUNIT_ASSERT_EQUAL(1, secureSocket.completeHandshake());
+
+    return secureSocket;
+}
 // Mock implementation of readMessage and sendMessage for testing purpose
 CommString SocketCommChannelTest::readMessage() {
     CommChar data[1024];
@@ -36,6 +91,11 @@ bool SocketCommChannelTest::sendMessage(const CommString &message) {
 
 // TestSocketComm implementation
 void TestSocketComm::setUp() {
+    // Install a mock keychain before constructing any SocketCommServerTest, because the
+    // SecureContextSingleton writes the server and client TLS material to the keychain
+    // during first construction. Without this, the real OS keychain would be used and
+    // the client certificate would not be available for the test client context.
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     TestBase::start();
 }
 
@@ -48,9 +108,8 @@ void TestSocketComm::testServerListen() {
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testServerListen");
     _socketCommServerTest->listen();
 
-    // Create a client socket and connect to the server
-    Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
+    // Create a secure client socket and connect to the server
+    auto clientSocket = TestSocketComm::newSecureClient(_socketCommServerTest->getPort());
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -68,10 +127,11 @@ void TestSocketComm::testServerListen() {
 
     // Wait for the server to receive the message
     remainWait = 100; // wait max 1 second
-    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+    while (!serverSidechannel->isReadable() && remainWait > 0) {
+        --remainWait;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
+    CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->isReadable());
 
     // Read the message on the server side
     auto message = serverSidechannel->readMessage();
@@ -93,9 +153,8 @@ void TestSocketComm::testServerCallbacks() {
                 lostChannel = channel;
             });
 
-    // Create a client socket and connect to the server
-    Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
+    // Create a secure client socket and connect to the server
+    auto clientSocket = TestSocketComm::newSecureClient(_socketCommServerTest->getPort());
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -113,6 +172,11 @@ void TestSocketComm::testServerCallbacks() {
     // Close the client side channel to trigger lost connection callback
     clientSideChannel->close();
 
+    // Force a read on the server side channel to detect the peer close and
+    // trigger lostConnectionCbk(), required because available() can no longer
+    // be used as a proxy for EOF with TLS sockets.
+    (void) serverSidechannel->readMessage();
+
     // Wait for the lost connection callback to be called
     remainWait = 400; // wait max 4 seconds
     while (!lostConnectionCalled && remainWait-- > 0) {
@@ -128,9 +192,8 @@ void TestSocketComm::testChannelReadyReadCallback() {
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadyReadCallback");
     _socketCommServerTest->listen();
 
-    // Create a client socket and connect to the server
-    Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
+    // Create a secure client socket and connect to the server
+    auto clientSocket = TestSocketComm::newSecureClient(_socketCommServerTest->getPort());
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -168,9 +231,8 @@ void TestSocketComm::testChannelReadAndWriteData() {
     auto _socketCommServerTest = std::make_unique<SocketCommServerTest>("TestSocketComm::testChannelReadAndWriteData");
     CPPUNIT_ASSERT_MESSAGE("Server failed to start listening", _socketCommServerTest->listen());
 
-    // Create a client socket and connect to the server
-    Poco::Net::StreamSocket clientSocket;
-    clientSocket.connect(Poco::Net::SocketAddress(SocketCommServer::getHost(), _socketCommServerTest->getPort()));
+    // Create a secure client socket and connect to the server
+    auto clientSocket = TestSocketComm::newSecureClient(_socketCommServerTest->getPort());
     auto clientSideChannel = std::make_shared<SocketCommChannelTest>(clientSocket);
 
     // Wait for the server to accept the connection
@@ -192,10 +254,11 @@ void TestSocketComm::testChannelReadAndWriteData() {
         clientSideChannel->sendMessage(msg);
         // Wait for the server to receive the message
         int remainWait = 100; // wait max 1 second
-        while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+        while (!serverSidechannel->isReadable() && remainWait > 0) {
+            --remainWait;
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->bytesAvailable() > 0);
+        CPPUNIT_ASSERT_MESSAGE("Server did not receive the message in time", serverSidechannel->isReadable());
         // Read the message on the server side
         auto message = serverSidechannel->readMessage();
         CPPUNIT_ASSERT(message.starts_with(msg)); // The mock readMessage always return a 1024 CommChar string.
@@ -212,10 +275,11 @@ void TestSocketComm::testChannelReadAndWriteData() {
 
     // Wait for the server to receive the message
     remainWait = 100; // wait max 1 second
-    while (serverSidechannel->bytesAvailable() == 0 && remainWait-- > 0) {
+    while (!serverSidechannel->isReadable() && remainWait > 0) {
+        --remainWait;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->bytesAvailable() > 0);
+    CPPUNIT_ASSERT_MESSAGE("Server did not receive the long message in time", serverSidechannel->isReadable());
 
     // Read the message on the server side
     CommChar data[101];

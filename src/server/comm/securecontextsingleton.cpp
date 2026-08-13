@@ -1,0 +1,93 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "securecontextsingleton.h"
+
+#include "libcommonserver/utility/selfsignedcert.h"
+#include "libcommonserver/log/log.h"
+
+#include <Poco/Net/Context.h>
+#include <Poco/Crypto/X509Certificate.h>
+#include <Poco/Crypto/RSAKey.h>
+#include <Poco/Exception.h>
+
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+
+#include <sstream>
+
+namespace KDC {
+
+namespace {
+
+bool applyPem(SSL_CTX *const sslCtx, const SelfSignedCert::Pem &pem) {
+    try {
+        std::istringstream certStream(pem.cert);
+        std::istringstream keyStream(pem.key);
+
+        const Poco::Crypto::X509Certificate cert(certStream);
+        const Poco::Crypto::RSAKey key(nullptr, &keyStream, "");
+
+        return SSL_CTX_use_certificate(sslCtx, const_cast<X509 *>(cert.certificate())) == 1 &&
+               SSL_CTX_use_RSAPrivateKey(sslCtx, key.impl()->getRSA()) == 1 && SSL_CTX_check_private_key(sslCtx) == 1;
+    } catch (const Poco::Exception &e) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to apply TLS material: " << e.displayText());
+        return false;
+    }
+}
+
+} // namespace
+
+Poco::Net::Context::Ptr SecureContextSingleton::instance() {
+    static const Poco::Net::Context::Ptr ctx = createContext();
+    return ctx;
+}
+
+Poco::Net::Context::Ptr SecureContextSingleton::createContext() {
+    SelfSignedCert::Pem pem;
+    if (!SelfSignedCert::generateAndPublishServerCert(pem)) {
+        throw Poco::RuntimeException("Unable to obtain TLS material for local IPC");
+    }
+
+    SelfSignedCert::Pem clientPem;
+    if (!SelfSignedCert::generateAndPublishClientCert(clientPem)) {
+        throw Poco::RuntimeException("Unable to obtain TLS client material for local IPC");
+    }
+
+    Poco::Net::Context::Ptr ctx(
+            new Poco::Net::Context(Poco::Net::Context::TLS_SERVER_USE, "", "", "", Poco::Net::Context::VERIFY_STRICT));
+    ctx->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+    if (!applyPem(ctx->sslContext(), pem)) {
+        throw Poco::RuntimeException("Failed to load in-memory TLS certificate/key");
+    }
+
+    // Trust the client certificate so the server can verify the GUI's identity during the TLS handshake.
+    try {
+        std::istringstream certStream(clientPem.cert);
+        const Poco::Crypto::X509Certificate clientCert(certStream);
+        ctx->addCertificateAuthority(clientCert);
+    } catch (const Poco::Exception &e) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to add client certificate as CA: " << e.displayText());
+        throw Poco::RuntimeException("Failed to load client certificate as trusted CA");
+    }
+
+    return ctx;
+}
+
+} // namespace KDC

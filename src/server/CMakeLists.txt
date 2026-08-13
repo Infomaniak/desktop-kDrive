@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML)
+find_package(Poco 1.13.3 REQUIRED XML Net NetSSL Crypto)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -196,11 +196,11 @@ if(APPLE)
 elseif(WIN32)
     list(APPEND server_SRCS navigationpanehelper.h navigationpanehelper.cpp)
     list(APPEND server_SRCS ../common/utility_win.cpp)
-    list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/securecontextsingleton.h comm/securecontextsingleton.cpp comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
-    list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/securecontextsingleton.h comm/securecontextsingleton.cpp comm/socketcommserver.h comm/socketcommserver.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
@@ -347,6 +347,9 @@ target_link_libraries(updater
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Svg
+    Poco::Net
+    Poco::NetSSL
+    Poco::Crypto
     sentry::sentry
     updater)
 
