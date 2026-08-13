@@ -38,7 +38,7 @@ namespace KDC {
 NodeInfoJob::NodeInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                          std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
-    _requestNum = RequestNum::REMOTE_NODE_INFO;
+    _requestNum = RequestNum::NODE_INFO_REMOTE;
 }
 
 ExitInfo NodeInfoJob::deserializeInputParms() {

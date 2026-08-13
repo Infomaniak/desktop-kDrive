@@ -1920,7 +1920,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << path;
             break;
         }
-        case RequestNum::REMOTE_NODE_INFO: {
+        case RequestNum::NODE_INFO_REMOTE: {
             qint64 userDbId = 0;
             qint64 driveId = 0;
             QString nodeId;

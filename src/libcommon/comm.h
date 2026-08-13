@@ -81,7 +81,7 @@ enum class RequestNum {
     BLACKLISTED_NODE_LIST,
     BLACKLISTED_NODE_SETLIST,
     NODE_PATH,
-    REMOTE_NODE_INFO,
+    NODE_INFO_REMOTE,
     NODE_SUBFOLDERS,
     NODE_SUBFOLDERS2,
     NODE_FOLDER_SIZE,
@@ -187,8 +187,8 @@ inline std::string toString(RequestNum e) {
             return "BLACKLISTED_NODE_SETLIST";
         case RequestNum::NODE_PATH:
             return "NODE_PATH";
-        case RequestNum::REMOTE_NODE_INFO:
-            return "REMOTE_NODE_INFO";
+        case RequestNum::NODE_INFO_REMOTE:
+            return "NODE_INFO_REMOTE";
         case RequestNum::NODE_SUBFOLDERS:
             return "NODE_SUBFOLDERS";
         case RequestNum::NODE_SUBFOLDERS2:
