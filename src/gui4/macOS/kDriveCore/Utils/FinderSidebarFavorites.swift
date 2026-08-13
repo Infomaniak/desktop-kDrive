@@ -20,6 +20,7 @@ import CoreServices
 import Darwin
 import Foundation
 
+// Swift imports LSSharedFileListItemRef as a managed CF object, but the legacy API also uses raw sentinel pointers.
 typealias RawLSSharedFileListInsertItemURL = @convention(c) (
     OpaquePointer,
     OpaquePointer,
@@ -43,6 +44,7 @@ enum FinderSidebarFavorites {
             return false
         }
 
+        // Call through the C ABI so ARC does not try to retain the sentinel passed as the second argument.
         let insertItem = unsafeBitCast(symbol, to: RawLSSharedFileListInsertItemURL.self)
         let favoritesPointer = OpaquePointer(Unmanaged.passUnretained(favorites).toOpaque())
         let folderURL = url as CFURL
