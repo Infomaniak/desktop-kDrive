@@ -46,11 +46,7 @@ else()
 endif()
 
 #Application icon for macOS(.icns) and Windows(.ico +.rc)
-if(EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
-    set(theme_dir ${KDRIVE_THEME_DIR}/theme)
-else()
-    set(theme_dir ${CMAKE_SOURCE_DIR}/theme)
-endif()
+set(theme_dir ${KDRIVE_THEME_DIR}/theme)
 file(GLOB_RECURSE RECOVERY_UPDATER_ICONS "${theme_dir}/colored/*-kdrive-recovery-updater-icon*")
 ecm_add_app_icon(SOURCES ICONS "${RECOVERY_UPDATER_ICONS}" OUTFILE_BASENAME "${UPDATER_NAME}")
 
