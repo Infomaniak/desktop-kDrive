@@ -27,6 +27,8 @@
 #include <openssl/x509.h>
 #include <openssl/pem.h>
 
+#include <cstdint>
+
 #include <Security/Security.h>
 #include <Security/SecCertificate.h>
 #include <Security/SecTrust.h>
@@ -87,7 +89,7 @@ bool TrustStoreHelper::loadSystemCAs(SSL_CTX *ctx) {
                                         "(OpenSSL default paths fallback is unreliable on this platform)");
         // This line is only useful so we have a default path for the context
         // We still return false because we failed to load any CA and verification would very likely fail
-        SSL_CTX_set_default_verify_paths(ctx);
+        (void) SSL_CTX_set_default_verify_paths(ctx);
         return false;
     }
 
@@ -101,8 +103,8 @@ bool TrustStoreHelper::loadSystemCAs(SSL_CTX *ctx) {
         SSL_CTX_set_cert_store(ctx, store);
     }
 
-    int addedCount = 0;
-    int failedCount = 0;
+    int32_t addedCount = 0;
+    int32_t failedCount = 0;
     for (const auto &der: derCerts) {
         const unsigned char *data = der.data();
         X509 *cert = d2i_X509(nullptr, &data, static_cast<long>(der.size()));
