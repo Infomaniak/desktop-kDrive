@@ -19,4 +19,3 @@
 // Bridging-Header.h
 #import "ServerBridge/XPC/xpcGuiProtocol.h"
 #import "ServerBridge/XPC/xpcLoginItemProtocol.h"
-#import "Utils/FinderSidebarFavorites.h"
