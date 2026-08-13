@@ -21,11 +21,11 @@
 #include "getsituation.h"
 #include "initialsituationsetter.h"
 #include "operationsexecutor.h"
+#include "mocksyncpal.h"
 
 #include <memory>
 
 namespace KDC {
-class SyncPal;
 
 /**
  * @brief Single entry point for setting up and driving Syncpal-based tests: building an initial
@@ -38,13 +38,13 @@ class SyncPal;
 class SyncpalTestHelper {
     public:
         SyncpalTestHelper() = default;
-        explicit SyncpalTestHelper(std::shared_ptr<SyncPal> syncPal);
+        explicit SyncpalTestHelper(std::shared_ptr<MockSyncPal> syncPal);
 
         // ---- High-level test driver API ----
         bool setUp();
         void tearDown();
 
-        void setSyncpal(std::shared_ptr<SyncPal> syncPal);
+        void setSyncpal(std::shared_ptr<MockSyncPal> syncPal);
 
         // Builds localSituation and remoteSituation independently against the SyncPal; they may differ. Returns false if invalid.
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
@@ -74,7 +74,7 @@ class SyncpalTestHelper {
         bool execute(ReplicaSide side, const Operations &operations);
 
     private:
-        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<MockSyncPal> _syncPal;
 
         InitialSituationSetter _setInitialSituation;
         OperationsExecutor _executeOperations;

@@ -20,13 +20,13 @@
 #include "libcommon/utility/timerutility.h"
 #include "test_utility/timeouthelper.h"
 
-#include "syncpal/syncpal.h"
+#include "mocksyncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "libcommonserver/log/log.h"
 
 namespace KDC {
 
-SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
+SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<MockSyncPal> syncPal) :
     _syncPal(syncPal),
     _setInitialSituation(syncPal),
     _executeOperations(syncPal),
@@ -43,7 +43,7 @@ void SyncpalTestHelper::tearDown() {
     }
 }
 
-void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
+void SyncpalTestHelper::setSyncpal(const std::shared_ptr<MockSyncPal> syncPal) {
     _syncPal = syncPal;
     _setInitialSituation.setSyncpal(syncPal);
     _executeOperations.setSyncpal(syncPal);

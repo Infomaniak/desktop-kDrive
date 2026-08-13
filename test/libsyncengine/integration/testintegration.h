@@ -19,6 +19,7 @@
 #pragma once
 
 #include "syncpal/syncpal.h"
+#include "syncpal_test_helper/mocksyncpal.h"
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
@@ -155,7 +156,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         int64_t countItemsInRemoteDir(int64_t driveDbId, const NodeId &parentId) const;
 
         log4cplus::Logger _logger;
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<MockSyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
         int64_t _driveDbId = 0;
