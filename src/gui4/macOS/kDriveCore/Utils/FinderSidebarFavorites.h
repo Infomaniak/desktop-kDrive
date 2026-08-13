@@ -16,7 +16,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Bridging-Header.h
-#import "ServerBridge/XPC/xpcGuiProtocol.h"
-#import "ServerBridge/XPC/xpcLoginItemProtocol.h"
-#import "Utils/FinderSidebarFavorites.h"
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+BOOL KDCAddFinderSidebarFavorite(NSURL *folderURL);
+
+NS_ASSUME_NONNULL_END

@@ -81,7 +81,13 @@ public final class SyncCreationService: SyncCreator {
 
         try createDestinationIfNecessary(at: localFolderURL)
 
-        return try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
+        let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
+        let syncRootURL = URL(fileURLWithPath: syncInfo.localPath, isDirectory: true)
+        if !KDCAddFinderSidebarFavorite(syncRootURL) {
+            IKLogger.general.warning("Failed to add sync root to Finder Favorites")
+        }
+
+        return syncInfo
     }
 
     public func preferredLocalPath(for driveName: String) async throws -> URL {
