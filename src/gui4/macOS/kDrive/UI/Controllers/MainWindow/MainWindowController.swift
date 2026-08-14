@@ -169,11 +169,13 @@ final class MainWindowController: NSWindowController {
         case .onboarding(let user, let steps, let initialStep):
             setViewController(OnboardingViewController(user: user, steps: steps, initialStep: initialStep))
         case .mainWindow(let tab):
-            setViewController(MainViewController())
+            @InjectService var mainViewRouter: MainViewRouter
             if let tab {
-                @InjectService var mainViewRouter: MainViewRouter
                 mainViewRouter.setCurrentTab(tab)
+            } else {
+                mainViewRouter.resetToDefaultState()
             }
+            setViewController(MainViewController())
         case .updateRequired:
             setViewController(UpdateRequiredViewController())
         case .enableBackgroundActivity:
