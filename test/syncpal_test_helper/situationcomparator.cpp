@@ -113,14 +113,14 @@ SyncPath resolvePath(const NodeId &id, const RawItemMap &rawItems, PathCache &pa
 // The root item itself (the one with no parent in `rawItems`) has no counterpart in a JSON Situation description
 // (which only lists root's children), so it is used to resolve its children's paths but never added to the result.
 SituationMap rawItemsToSituationMap(const RawItemMap &rawItems) {
-    SituationMap SituationMap;
+    SituationMap situationMap;
     PathCache pathCache;
     for (const auto &[id, item]: rawItems) {
         if (item.parentId.empty()) continue; // root, skip
         if (item.name.starts_with("tmpFile_")) continue; // trash, skip
-        SituationMap.add(resolvePath(id, rawItems, pathCache), {item.type, item.size});
+        situationMap.add(resolvePath(id, rawItems, pathCache), {item.type, item.size});
     }
-    return SituationMap;
+    return situationMap;
 }
 
 } // namespace
@@ -154,14 +154,14 @@ void SituationComparator::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
 }
 
 SituationMap SituationComparator::jsonToSituationMap(const Situation &situation) {
-    SituationMap SituationMap;
+    SituationMap situationMap;
     if (const auto &obj = situation.jsonObject(); obj->isArray("content")) {
-        flatten(obj->getArray("content"), {}, SituationMap);
+        flatten(obj->getArray("content"), {}, situationMap);
     } else {
         // No "content" array: legacy format, where the object's own keys are the items.
-        flatten(obj, {}, SituationMap);
+        flatten(obj, {}, situationMap);
     }
-    return SituationMap;
+    return situationMap;
 }
 
 SituationMap SituationComparator::csvToSituationMap(const std::string &csv) {
@@ -219,9 +219,9 @@ SituationMap SituationComparator::getRemoteSituation(const NodeId &remoteDirId /
 }
 
 SituationMap SituationComparator::getLocalSituation() const {
-    SituationMap SituationMap;
+    SituationMap situationMap;
 
-    if (!_syncPal) return SituationMap;
+    if (!_syncPal) return situationMap;
 
     const SyncPath rootPath = _syncPal->localPath();
 
@@ -230,7 +230,7 @@ SituationMap SituationComparator::getLocalSituation() const {
 
     if (!IoHelper::getRecursiveDirectoryIterator(rootPath, ioError, dirIt)) {
         LOG_WARN(Log::instance()->getLogger(), "Failed to create DirectoryIterator for local path: " << rootPath.string());
-        return SituationMap;
+        return situationMap;
     }
 
     DirectoryEntry entry;
@@ -265,7 +265,7 @@ SituationMap SituationComparator::getLocalSituation() const {
             continue;
         }
 
-        SituationMap.add(relativePath, info);
+        situationMap.add(relativePath, info);
     }
 
     const auto exitInfo = IoHelper::checkDirectoryIteratorInterruption(endOfDirectory, ioError, entry, exceptionOccurred);
@@ -274,7 +274,7 @@ SituationMap SituationComparator::getLocalSituation() const {
                  "Directory iteration did not complete cleanly for local path: " << rootPath.string());
     }
 
-    return SituationMap;
+    return situationMap;
 }
 
 bool SituationComparator::compareLocal(const Situation &expectedLocalSituation) const {
