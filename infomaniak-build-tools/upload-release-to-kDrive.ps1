@@ -231,12 +231,12 @@ function Upload-RecoveryUpdaterLink {
     param (
         [int]$fileId,
         [int]$parentId,
-        [string]$targetSubDir,
+        [string]$osName,
         [string]$fullVersion
     )
 
     $ksuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$parentId/preview/unknown/$fileId"
-    $urlFileName = "kDriveRecoveryUpdater-$fullVersion-$targetSubDir.url"
+    $urlFileName = "kDriveRecoveryUpdater-$fullVersion-$osName.url"
     $linkDirPath = "kDriveRecoveryUpdater"
     if ($test) {
         $linkDirPath = "Test/$linkDirPath"
@@ -250,10 +250,10 @@ function Upload-RecoveryUpdaterLink {
         $listResponse = Invoke-RestMethod -Method "GET" -Uri $listUri -Header $headers
 
         if ($listResponse.data) {
-            $existingFiles = $listResponse.data | Where-Object { $_.name -like "kDriveRecoveryUpdater-*-$targetSubDir.url" }
+            $existingFiles = $listResponse.data | Where-Object { $_.name -like "kDriveRecoveryUpdater-*-$osName.url" }
             if ($existingFiles) {
                 foreach ($existingFile in $existingFiles) {
-                    $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$targetSubDir\.url")
+                    $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$osName\.url")
                     if ($versionMatch.Success) {
                         $existingVersion = $versionMatch.Groups[1].Value
                         Write-Host "Existing recovery updater link points to version $existingVersion, new version is $fullVersion"
@@ -325,7 +325,7 @@ if ($os -eq "win") {
     $recoveryFileName = "kDriveRecoveryUpdater-$version.exe"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
         $fileInfo = $uploadedIds[$recoveryFileName]
-        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "windows" -fullVersion $version
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "windows" -fullVersion $version
     }
     Write-Host " - Windows Files - \n"
 }
@@ -349,7 +349,7 @@ if ($os -eq "macos") {
     $recoveryFileName = "kDriveRecoveryUpdater-$version.zip"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
         $fileInfo = $uploadedIds[$recoveryFileName]
-        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "macos" -fullVersion $version
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "macos" -fullVersion $version
     }
     Write-Host " - macOS Files - \n"
 }
@@ -371,7 +371,7 @@ if ($os -eq "linux-amd") {
     $recoveryFileName = "kDriveRecoveryUpdater-$version-amd64.AppImage"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
         $fileInfo = $uploadedIds[$recoveryFileName]
-        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "linux-amd" -fullVersion $version
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "linux-amd" -fullVersion $version
     }
     Write-Host " - Linux AMD64 Files - \n"
 }
@@ -393,7 +393,7 @@ if ($os -eq "linux-arm") {
     $recoveryFileName = "kDriveRecoveryUpdater-$version-arm64.AppImage"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
         $fileInfo = $uploadedIds[$recoveryFileName]
-        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "linux-arm" -fullVersion $version
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -osName "linux-arm" -fullVersion $version
     }
     Write-Host " - Linux ARM64 Files - \n"
 }
