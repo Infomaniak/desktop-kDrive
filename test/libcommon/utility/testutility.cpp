@@ -996,7 +996,13 @@ void TestUtility::testFileSystemInfo() {
     std::cout << " mountPoint: " << mountPoint << std::endl;
 
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
-                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
+                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS"));
+
+    if (testhelpers::isRunningOnCI()) {
+        CPPUNIT_ASSERT(mountPoint == "/mnt/data"); // Linux CI special setup for extended tests (cf. Linux MAX conf).
+    } else {
+        CPPUNIT_ASSERT(mountPoint == "/");
+    }
     // TODO: implement these tests on the CI.
     // External disk.
     /*
