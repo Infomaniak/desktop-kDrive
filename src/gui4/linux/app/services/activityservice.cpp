@@ -40,6 +40,17 @@ namespace KDC {
 
 namespace {
 Q_LOGGING_CATEGORY(lcActivityService, "gui.v4.activityservice", QtInfoMsg)
+
+bool validateActivityTarget(const ServiceActionTracker::ActionKey &actionKey, const GenericId activityLocalId,
+                            const DriveDbId driveDbId, const NodeId &remoteNodeId) {
+    if (activityLocalId > 0 && driveDbId > 0 && !remoteNodeId.empty()) {
+        return true;
+    }
+    qCWarning(lcActivityService) << "Activity action rejected because its target is incomplete"
+                                 << "| action:" << actionKey << "| activityLocalId:" << activityLocalId
+                                 << "| driveDbId:" << driveDbId << "| remoteNodeId:" << QString::fromStdString(remoteNodeId);
+    return false;
+}
 } // namespace
 
 ActivityService::ActivityService(CommService &commService, ServiceActionTracker &serviceActionTracker,
@@ -61,9 +72,7 @@ bool ActivityService::loading() const {
 }
 
 void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
-    if (activityLocalId <= 0 || driveDbId <= 0 || remoteNodeId.empty()) {
-        qCWarning(lcActivityService) << "Online activity action rejected because its target is incomplete"
-                                     << "| activityLocalId:" << activityLocalId << "| driveDbId:" << driveDbId;
+    if (!validateActivityTarget(actionOpenOnline, activityLocalId, driveDbId, remoteNodeId)) {
         emit actionFailed(activityLocalId);
         return;
     }
@@ -82,9 +91,7 @@ void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbI
 }
 
 void ActivityService::copyShareLink(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
-    if (activityLocalId <= 0 || driveDbId <= 0 || remoteNodeId.empty()) {
-        qCWarning(lcActivityService) << "Share-link activity action rejected because its target is incomplete"
-                                     << "| activityLocalId:" << activityLocalId << "| driveDbId:" << driveDbId;
+    if (!validateActivityTarget(actionCopyShareLink, activityLocalId, driveDbId, remoteNodeId)) {
         emit actionFailed(activityLocalId);
         return;
     }
