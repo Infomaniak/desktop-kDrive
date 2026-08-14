@@ -49,6 +49,8 @@ ActivitiesTitleState resolveTitleState(const bool hasSync, const bool offline, c
         return ActivitiesTitleState::Loading;
     }
 
+    // Select the title by priority: runtime availability, synchronization state, list content, then stable runtime state.
+    // This keeps a meaningful synchronization state visible even before the first activity is received.
     switch (*runtimeStatus) {
         case SyncStatus::Undefined:
         case SyncStatus::EnumEnd:
