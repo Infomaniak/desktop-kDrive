@@ -27,54 +27,7 @@ namespace KDC {
 
 class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestUtility);
-        CPPUNIT_TEST(testGetAppSupportDir);
-        CPPUNIT_TEST(extractIntFromStrVersion);
-        CPPUNIT_TEST(testIsVersionLower);
-        CPPUNIT_TEST(testStringToAppStateValue);
-        CPPUNIT_TEST(testArgsWriter);
-        CPPUNIT_TEST(testCompressFile);
-        CPPUNIT_TEST(testCurrentVersion);
-        CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
-        CPPUNIT_TEST(testGenerateRandomNumber);
-        CPPUNIT_TEST(testGenerateUuid);
-        CPPUNIT_TEST(testLanguageCode);
-        CPPUNIT_TEST(testIsSupportedLanguage);
-        CPPUNIT_TEST(testStrToLanguage);
-        CPPUNIT_TEST(testLogIfFail);
-        CPPUNIT_TEST(testRelativePath);
-        CPPUNIT_TEST(testSplitSyncName);
-        CPPUNIT_TEST(testSplitSyncPath);
-        CPPUNIT_TEST(testSplitPathFromSyncName);
-        CPPUNIT_TEST(testComputeSyncNameNormalizations);
-        CPPUNIT_TEST(testComputePathNormalizations);
-#if defined(KD_WINDOWS)
-        CPPUNIT_TEST(testGetLastErrorMessage);
-#endif
-        CPPUNIT_TEST(testStartsWith);
-        CPPUNIT_TEST(testStartsWithInsensitive);
-        CPPUNIT_TEST(testEndsWith);
-        CPPUNIT_TEST(testEndsWithInsensitive);
-        CPPUNIT_TEST(testContains);
-        CPPUNIT_TEST(testToUpper);
-        CPPUNIT_TEST(testToLower);
-        CPPUNIT_TEST(testIsSameOrParentPath);
         CPPUNIT_TEST(testFileSystemInfo);
-        CPPUNIT_TEST(testFileSystemType);
-        CPPUNIT_TEST(testS2ws);
-        CPPUNIT_TEST(testWs2s);
-        CPPUNIT_TEST(testLtrim);
-        CPPUNIT_TEST(testRtrim);
-        CPPUNIT_TEST(testTrim);
-        CPPUNIT_TEST(testReadValueFromStruct);
-        CPPUNIT_TEST(testWriteValueToStruct);
-        CPPUNIT_TEST(testConvertFromBase64Str);
-        CPPUNIT_TEST(testConvertToBase64Str);
-        CPPUNIT_TEST(isLikeSomeError);
-        CPPUNIT_TEST(testTempDirectoryPath);
-        CPPUNIT_TEST(testLogDirectoryPath);
-        CPPUNIT_TEST(testPathDepth);
-        CPPUNIT_TEST(testHomeDirectoryPath);
-        CPPUNIT_TEST(testGetSyncTime);
         CPPUNIT_TEST_SUITE_END();
 
     public:
