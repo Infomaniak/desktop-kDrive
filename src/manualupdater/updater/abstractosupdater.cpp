@@ -2,11 +2,15 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommon/utility/utility.h"
+#include "manualupdater/httpdownloader.h"
 
 #include <QObject>
 
 #include <fstream>
+#include <sstream>
 #include <array>
+#include <algorithm>
+#include <cctype>
 #include <Poco/SHA2Engine.h>
 
 #if defined(KD_MACOS)
@@ -23,11 +27,52 @@ std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
     return std::make_unique<OSUpdater>();
 }
 
-bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const SyncPath &filepath, QString &outMessage) {
-    (void) versionInfo;
-    (void) filepath;
-    (void) outMessage;
-    return true; // placeholder for a future PR
+bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const std::string &fileUrl, const SyncPath &filepath,
+                                           QString &outMessage) {
+    // 1. Try fetching the .sha256 sidecar file.
+    std::string expectedChecksum;
+    const std::string sha256Url = fileUrl + ".sha256";
+
+    if (const auto result = HttpDownloader::get(sha256Url); result.success && !result.body.empty()) {
+        // The file contains either "hash" or "hash  filename" — take the first token.
+        std::istringstream iss(result.body);
+        iss >> expectedChecksum;
+    }
+
+    // 2. Fall back to the API-provided checksum.
+    if (expectedChecksum.empty()) {
+        expectedChecksum = versionInfo.checksum;
+    }
+
+    // 3. If still empty, skip verification.
+    if (expectedChecksum.empty()) {
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"No checksum available for verification, skipping: " << CommonUtility::s2ws(fileUrl));
+        return true;
+    }
+
+    // 4. Compute the local file's SHA-256.
+    std::string actualChecksum;
+    if (!computeFileChecksum(filepath, actualChecksum)) {
+        outMessage = QObject::tr("Failed to compute file checksum.");
+        return false;
+    }
+
+    // 5. Compare case-insensitively.
+    if (actualChecksum.size() != expectedChecksum.size() ||
+        !std::equal(actualChecksum.begin(), actualChecksum.end(), expectedChecksum.begin(), [](char a, char b) {
+            return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
+        })) {
+        outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
+        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch for "
+                                                         << CommonUtility::s2ws(filepath.string()) << L" — expected: "
+                                                         << CommonUtility::s2ws(expectedChecksum) << L" actual: "
+                                                         << CommonUtility::s2ws(actualChecksum));
+        return false;
+    }
+
+    LOGW_INFO(Log::instance()->getLogger(), L"Checksum verified for " << CommonUtility::s2ws(filepath.string()));
+    return true;
 }
 
 bool AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath, std::string &outChecksum) {
