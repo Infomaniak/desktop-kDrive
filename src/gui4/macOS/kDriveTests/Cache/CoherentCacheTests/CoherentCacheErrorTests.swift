@@ -335,4 +335,36 @@ struct CoherentCacheErrorTests {
         #expect(fetchedSynchro.latestError == nil)
         #expect(fetchedSynchro.errors.count == 0)
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func setInvalidTokenWithUnknownCauseInSynchro() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = ServerCoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        #expect(await cache.getAccount(accountDbId: CacheData.expectedAccountDbId,
+                                       userDbId: CacheData.expectedUserDbId) == CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == CacheData.expectedSynchro)
+
+        // WHEN — InvalidToken with Unknown cause (as returned by handleDriveUnauthorizedResponse
+        //        when access token is empty, e.g. remote disconnection)
+        try await cache.addOrUpdateError(CacheData.expectedInvalidTokenUnknownError)
+
+        // THEN — should be interpreted as a logging error (reconnection page), not nil
+        guard let fetchedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) else {
+            Issue.record("Synchro not found")
+            return
+        }
+
+        #expect(fetchedSynchro.dbId == CacheData.expectedSynchroDbId)
+        #expect(fetchedSynchro.latestError == .loggingError,
+                "InvalidToken with Unknown cause should map to loggingError for reconnection")
+        #expect(fetchedSynchro.errors.values.first == CacheData.expectedInvalidTokenUnknownError)
+        #expect(await cache.serverErrors.count == 0)
+    }
 }

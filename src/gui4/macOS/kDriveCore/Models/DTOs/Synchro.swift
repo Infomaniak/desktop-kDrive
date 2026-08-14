@@ -177,6 +177,11 @@ public enum BlockingSynchroError: Error, Hashable, Sendable, CaseIterable {
     case loggingError
 
     init?(errorInfo: ErrorInfo) {
+        if errorInfo.exitCode == .InvalidToken {
+            self = .loggingError
+            return
+        }
+
         switch errorInfo.exitCause {
         case .DriveAsleep:
             self = .asleep
