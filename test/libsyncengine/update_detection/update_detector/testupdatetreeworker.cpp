@@ -1322,19 +1322,21 @@ void TestUpdateTreeWorker::testResetNodesRecursiveDelete() {
     _remoteUpdateTree->insertNode(node2);
 
 
-    auto parent = _remoteUpdateTree->_validNodes.begin();
-    if (parent->second == _remoteUpdateTree->rootNode()) ++parent;
+    const auto parent = std::ranges::find_if(_remoteUpdateTree->_validNodes.begin(), _remoteUpdateTree->_validNodes.end(),
+                                             [](const auto &pair) { return pair.second->name() == Str("node1"); });
+    CPPUNIT_ASSERT(parent != _remoteUpdateTree->_validNodes.end());
 
-    auto children = parent++;
-    if (children->second == _remoteUpdateTree->rootNode()) ++children;
+    const auto children = std::ranges::find_if(_remoteUpdateTree->_validNodes.begin(), _remoteUpdateTree->_validNodes.end(),
+                                               [](const auto &pair) { return pair.second->name() == Str("node2"); });
+    CPPUNIT_ASSERT(children != _remoteUpdateTree->_validNodes.end());
+
 
     CPPUNIT_ASSERT(children->second->setParentNode(parent->second));
-
     parent->second->setStatus(NodeStatus::ToDelete);
     CPPUNIT_ASSERT(parent->second->insertChild(children->second));
 
-    auto parentId = *parent->second->id();
-    auto childrenId = *children->second->id();
+    const auto parentId = *parent->second->id();
+    const auto childrenId = *children->second->id();
     CPPUNIT_ASSERT(_remoteUpdateTreeWorker->resetNodes());
 
     CPPUNIT_ASSERT(!_remoteUpdateTree->exists(parentId));
