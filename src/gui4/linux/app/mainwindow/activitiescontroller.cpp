@@ -94,7 +94,7 @@ QString titleForState(const ActivitiesTitleState state) {
 }
 
 std::optional<SyncPath> safeRelativePath(const SyncPath &path) {
-    if (path.has_root_name()) {
+    if (path.has_root_path()) {
         return std::nullopt;
     }
     SyncPath normalizedPath = path.relative_path().lexically_normal();
@@ -148,9 +148,14 @@ void ActivitiesController::openLocal(const QString &rowId) {
         return;
     }
     const auto context = actionSyncContext(*target, rowId);
+    if (!context.has_value()) {
+        emit actionFailed(rowId);
+        return;
+    }
     const auto relativePath = safeRelativePath(target->relativePath);
-    if (!context.has_value() || !relativePath.has_value()) {
-        qCWarning(lcActivitiesController) << "Local activity action rejected for invalid path | rowId:" << rowId;
+    if (!relativePath.has_value()) {
+        qCWarning(lcActivitiesController) << "Local activity action rejected for invalid path"
+                                          << "| rowId:" << rowId << "| path:" << Path2QStr(target->relativePath);
         emit actionFailed(rowId);
         return;
     }
