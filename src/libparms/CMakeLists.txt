@@ -13,7 +13,6 @@ add_definitions(-D_UNICODE)
 set(parms_SRCS
     db/parmsdb.h db/parmsdb.cpp
     db/parameters.h db/parameters.cpp
-    db/exclusiontemplate.h db/exclusiontemplate.cpp
     db/migrationselectivesync.h db/migrationselectivesync.cpp
     db/uploadsessiontoken.h db/uploadsessiontoken.cpp
     db/parmsdbappstate.cpp db/syncfolderrule.h db/syncfolderrule.cpp

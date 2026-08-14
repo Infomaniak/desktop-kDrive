@@ -23,7 +23,8 @@
 #include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
 #include "libcommon/data/sync.h"
-#include "exclusiontemplate.h"
+#include "libcommon/data/exclusiontemplate.h"
+
 #include "syncfolderrule.h"
 
 #if defined(KD_MACOS)

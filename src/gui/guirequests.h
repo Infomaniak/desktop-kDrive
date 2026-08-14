@@ -28,7 +28,7 @@
 #include "libcommon/data/sync.h"
 #include "libcommon/data/error.h"
 #include "libcommon/info/parametersinfo.h"
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/exclusionapp.h"
 
 #include <QDataStream>
@@ -60,8 +60,8 @@ struct GuiRequests {
         static ExitCode isPathValidForNewSync(const QString &path, SyncConfiguration syncConfig, bool &valid);
         static ExitCode getPrivateLinkUrl(DriveDbId driveDbId, const QString &fileId, QString &linkUrl);
         static ExitCode getNameExcluded(const QString &name, bool excluded);
-        static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList);
-        static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList);
+        static ExitCode getExclusionTemplateList(bool def, QList<ExclusionTemplate> &templateList);
+        static ExitCode setUserExclusionTemplateList(const QList<ExclusionTemplate> &templateList);
 #ifdef Q_OS_MAC
         static ExitCode getExclusionAppList(bool def, QList<ExclusionApp> &appList);
         static ExitCode setExclusionAppList(bool def, const QList<ExclusionApp> &appList);

@@ -68,7 +68,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/comm.h"
 #include "libcommon/data/user.h"
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/log/sentry/ptraces.h"
 
@@ -1920,7 +1920,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << path;
             break;
         }
-        case RequestNum::NODE_INFO: {
+        case RequestNum::NODE_INFO_REMOTE: {
             qint64 userDbId = 0;
             qint64 driveId = 0;
             QString nodeId;
@@ -1932,7 +1932,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> withPath;
 
             NodeInfo nodeInfo;
-            const auto exitInfo = ServerRequests::getNodeInfo(userDbId, driveId, nodeId, nodeInfo, withPath);
+            const auto exitInfo = ServerRequests::getRemoteNodeInfo(userDbId, driveId, nodeId, nodeInfo, withPath);
             if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getNodeInfo");
                 addError(Error(ERR_ID, exitInfo));
@@ -2107,7 +2107,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> def;
 
-            std::vector<ExclusionTemplateInfo> exclusionTemplateList;
+            std::vector<ExclusionTemplate> exclusionTemplateList;
             if (auto exitCode = ServerRequests::getExclusionTemplateList(def, exclusionTemplateList); exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getExclusionTemplateList: code=" << exitCode);
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
@@ -2115,27 +2115,27 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(exclusionTemplateList);
+            ExclusionTemplate::normalizeList(exclusionTemplateList);
 
-            QList<ExclusionTemplateInfo> list;
+            QList<ExclusionTemplate> list;
             (void) std::for_each(exclusionTemplateList.begin(), exclusionTemplateList.end(),
-                                 [&list](const ExclusionTemplateInfo &templateInfo) { list.append(templateInfo); });
+                                 [&list](const ExclusionTemplate &templateInfo) { list.append(templateInfo); });
 
             resultStream << toInt(ExitCode::Ok);
             resultStream << list;
             break;
         }
         case RequestNum::EXCLTEMPL_SETUSERLIST: {
-            QList<ExclusionTemplateInfo> list;
+            QList<ExclusionTemplate> list;
             QDataStream paramsStream(params);
             paramsStream >> list;
 
-            std::vector<ExclusionTemplateInfo> exclusionTemplateList;
-            (void) std::for_each(list.begin(), list.end(), [&exclusionTemplateList](const ExclusionTemplateInfo &templateInfo) {
+            std::vector<ExclusionTemplate> exclusionTemplateList;
+            (void) std::for_each(list.begin(), list.end(), [&exclusionTemplateList](const ExclusionTemplate &templateInfo) {
                 exclusionTemplateList.push_back(templateInfo);
             });
 
-            ExclusionTemplateInfo::updateExclusionTemplateInfoList(exclusionTemplateList);
+            ExclusionTemplate::updateList(exclusionTemplateList);
 
 
             const auto exitInfo = ServerRequests::setUserExclusionTemplateList(exclusionTemplateList);
@@ -2973,11 +2973,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 

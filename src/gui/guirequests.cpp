@@ -533,7 +533,7 @@ ExitCode GuiRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId
     paramsStream << withPath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::NODE_INFO, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_INFO_REMOTE, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -963,7 +963,7 @@ ExitCode GuiRequests::getNameExcluded(const QString &name, bool excluded) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList) {
+ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate> &templateList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << def;
@@ -981,7 +981,7 @@ ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate
     return exitCode;
 }
 
-ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList) {
+ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplate> &templateList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << templateList;

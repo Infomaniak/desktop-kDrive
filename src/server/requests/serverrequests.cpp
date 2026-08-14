@@ -519,13 +519,13 @@ ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVe
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), user, userCreated, error, errorDescr);
 }
 
-ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
-                                     NodeInfo &nodeInfo, bool withPath) {
-    return getNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
+ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveId driveId, const std::string &nodeId,
+                                           NodeInfo &nodeInfo, const bool withPath) {
+    return getRemoteNodeInfo(userDbId, driveId, QString::fromStdString(nodeId), nodeInfo, withPath);
 }
 
-ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, NodeInfo &nodeInfo,
-                                     bool withPath /*= false*/) {
+ExitInfo ServerRequests::getRemoteNodeInfo(const UserDbId userDbId, const DriveId driveId, const QString &nodeId,
+                                           NodeInfo &nodeInfo, const bool withPath /*= false*/) {
     std::shared_ptr<GetFileInfoJob> job;
     try {
         job = std::make_shared<GetFileInfoJob>(userDbId, driveId, nodeId.toStdString());
@@ -556,7 +556,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
         return {ExitCode::BackError, exitCause};
     }
 
-    Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
+    const Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
     if (!dataObj) {
         LOG_WARN(Log::instance()->getLogger(), "GetFileInfoJob failed for userDbId=" << userDbId << " driveId=" << driveId
                                                                                      << " nodeId=" << nodeId.toStdString());
@@ -565,7 +565,7 @@ ExitInfo ServerRequests::getNodeInfo(const UserDbId userDbId, const DriveId driv
 
     nodeInfo.setNodeId(nodeId);
 
-    SyncTime modTime;
+    SyncTime modTime = 0;
     if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, modTime)) {
         return ExitCode::BackError;
     }
@@ -1034,7 +1034,7 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
 ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId driveId, const QString &nodeId, QString &path) {
     NodeInfo nodeInfo;
 
-    if (auto exitInfo = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
+    if (auto exitInfo = getRemoteNodeInfo(userDbId, driveId, nodeId, nodeInfo, true); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo: " << exitInfo);
         return exitInfo;
     }
@@ -1500,51 +1500,18 @@ ExitCode ServerRequests::getPrivateLinkUrl(const DriveDbId driveDbId, const QStr
     return exitCode;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplateInfo> &list) {
-    list.clear();
-    for (const ExclusionTemplate &exclusionTemplate: ExclusionTemplateCache::instance()->exclusionTemplates(def)) {
-        ExclusionTemplateInfo exclusionTemplateInfo;
-        ServerRequests::exclusionTemplateToExclusionTemplateInfo(exclusionTemplate, exclusionTemplateInfo);
-        list.push_back(std::move(exclusionTemplateInfo));
-    }
-
+ExitCode ServerRequests::getExclusionTemplateList(const bool def, std::vector<ExclusionTemplate> &list) {
+    list = ExclusionTemplateCache::instance()->exclusionTemplates(def);
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getExclusionTemplateList(const bool def, QList<ExclusionTemplateInfo> &list) {
-    list.clear();
-    std::vector<ExclusionTemplateInfo> stdVector;
-
-    if (const auto exitCode = getExclusionTemplateList(def, stdVector); exitCode != ExitCode::Ok) return exitCode;
-
-    for (auto &exclusionTemplateInfo: stdVector) {
-        list.append(std::move(exclusionTemplateInfo));
-    }
-
-    return ExitCode::Ok;
-}
-
-ExitInfo ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplateInfo> &list) {
-    std::vector<ExclusionTemplate> exclusionList;
-    for (const ExclusionTemplateInfo &exclusionTemplateInfo: list) {
-        ExclusionTemplate exclusionTemplate;
-        ServerRequests::exclusionTemplateInfoToExclusionTemplate(exclusionTemplateInfo, exclusionTemplate);
-        exclusionList.push_back(std::move(exclusionTemplate));
-    }
-
-    if (const auto exitCode = ExclusionTemplateCache::instance()->update(false, exclusionList); exitCode != ExitCode::Ok) {
+ExitInfo ServerRequests::setUserExclusionTemplateList(const std::vector<ExclusionTemplate> &list) {
+    if (const auto exitCode = ExclusionTemplateCache::instance()->update(false, list); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ExclusionTemplateCache::save");
         return exitCode;
     }
 
     return ExitCode::Ok;
-}
-
-ExitCode ServerRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &list) {
-    std::vector<ExclusionTemplateInfo> exclusionStdVector;
-    for (const auto &exclusionTemplateInfo: list) exclusionStdVector.push_back(exclusionTemplateInfo);
-
-    return setUserExclusionTemplateList(exclusionStdVector);
 }
 
 #if defined(KD_MACOS)
@@ -2276,20 +2243,6 @@ void ServerRequests::proxyConfigInfoToProxyConfig(const ProxyConfigInfo &proxyCo
             return;
         }
     }
-}
-
-void ServerRequests::exclusionTemplateToExclusionTemplateInfo(const ExclusionTemplate &exclusionTemplate,
-                                                              ExclusionTemplateInfo &exclusionTemplateInfo) {
-    exclusionTemplateInfo.setTempl(QString::fromStdString(exclusionTemplate.templ()));
-    exclusionTemplateInfo.setWarning(exclusionTemplate.warning());
-    exclusionTemplateInfo.setDef(exclusionTemplate.def());
-}
-
-void ServerRequests::exclusionTemplateInfoToExclusionTemplate(const ExclusionTemplateInfo &exclusionTemplateInfo,
-                                                              ExclusionTemplate &exclusionTemplate) {
-    exclusionTemplate.setTempl(exclusionTemplateInfo.templ().toStdString());
-    exclusionTemplate.setWarning(exclusionTemplateInfo.warning());
-    exclusionTemplate.setDef(exclusionTemplateInfo.def());
 }
 
 } // namespace KDC
