@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "getsituation.h"
+#include "situationcomparator.h"
 #include "initialsituationsetter.h"
 #include "operationsexecutor.h"
 #include "mocksyncpal.h"

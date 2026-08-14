@@ -30,7 +30,7 @@ set(testsyncengine_SRCS
         ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
         ../syncpal_test_helper/initialsituationsetter.h ../syncpal_test_helper/initialsituationsetter.cpp
         ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
-        ../syncpal_test_helper/getsituation.h ../syncpal_test_helper/getsituation.cpp
+        ../syncpal_test_helper/situationcomparator.h ../syncpal_test_helper/situationcomparator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs
