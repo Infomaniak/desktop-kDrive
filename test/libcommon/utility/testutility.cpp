@@ -992,11 +992,10 @@ void TestUtility::testFileSystemInfo() {
 
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
                    (fsType == fsType::EXT234 || fsType == "OVERLAYFS"));
-    CPPUNIT_ASSERT(
-            mountPoint == "/" ||
-            (testhelpers::isRunningOnCI() &&
-             mountPoint ==
-                     "/mnt/data")); // Linux Max CI special setup when running the extended tests workflow (cf. Linux MAX conf).
+
+    const bool mandatory = false;
+    const auto extendedTestsMountPoint = testhelpers::loadEnvVariable("KDRIVE_LINUX_CI_EXTENDED_TEST_MOUNT_POINT", mandatory);
+    CPPUNIT_ASSERT(mountPoint == "/" || (!extendedTestsMountPoint.empty() && mountPoint == extendedTestsMountPoint));
 
     // TODO: implement these tests on the CI.
     // External disk.
