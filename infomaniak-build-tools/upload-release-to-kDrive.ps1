@@ -236,39 +236,34 @@ function Upload-RecoveryUpdaterLink {
     )
 
     $ksuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$parentId/preview/unknown/$fileId"
-    $urlFileName = "kDriveRecoveryUpdater-$targetSubDir.url"
-    $linkDirPath = "kDriveRecoveryUpdater/$targetSubDir"
+    $urlFileName = "kDriveRecoveryUpdater-$fullVersion-$targetSubDir.url"
+    $linkDirPath = "kDriveRecoveryUpdater"
     if ($test) {
         $linkDirPath = "Test/$linkDirPath"
     }
 
     $shouldUpload = $true
+    $existingFileId = $null
 
     try {
         $listUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files?directory_path=$linkDirPath"
         $listResponse = Invoke-RestMethod -Method "GET" -Uri $listUri -Header $headers
 
         if ($listResponse.data) {
-            $existingFile = $listResponse.data | Where-Object { $_.name -eq $urlFileName } | Select-Object -First 1
-            if ($existingFile -and $existingFile.id) {
-                $downloadUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files/$($existingFile.id)/download"
-                $downloadResponse = Invoke-RestMethod -Method "GET" -Uri $downloadUri -Header $headers
-                $tempUrlPath = Join-Path $env:TEMP $urlFileName
-                if ($downloadResponse.data -and $downloadResponse.data.download_url) {
-                    Invoke-WebRequest -Uri $downloadResponse.data.download_url -OutFile $tempUrlPath
-                    $urlContent = Get-Content $tempUrlPath -Raw
-                    $versionLine = ($urlContent -split "`n" | Where-Object { $_ -match '^Version=' }) -replace '^Version=', ''
-                    if ($versionLine) {
-                        $versionLine = $versionLine.Trim()
-                        Write-Host "Existing recovery updater link points to version $versionLine, new version is $fullVersion"
-                        $cmp = Compare-Versions -versionA $fullVersion -versionB $versionLine
+            $existingFiles = $listResponse.data | Where-Object { $_.name -like "kDriveRecoveryUpdater-*-$targetSubDir.url" }
+            if ($existingFiles) {
+                foreach ($existingFile in $existingFiles) {
+                    $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$targetSubDir\.url")
+                    if ($versionMatch.Success) {
+                        $existingVersion = $versionMatch.Groups[1].Value
+                        Write-Host "Existing recovery updater link points to version $existingVersion, new version is $fullVersion"
+                        $cmp = Compare-Versions -versionA $fullVersion -versionB $existingVersion
                         if ($cmp -lt 0) {
-                            Write-Host "New version ($fullVersion) is lower than existing ($versionLine). Skipping link update." -f Yellow
+                            Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
                             $shouldUpload = $false
+                        } elseif ($cmp -ge 0 -and $existingFile.id) {
+                            $existingFileId = $existingFile.id
                         }
-                    }
-                    if (Test-Path $tempUrlPath) {
-                        Remove-Item $tempUrlPath -Force
                     }
                 }
             }
@@ -281,7 +276,19 @@ function Upload-RecoveryUpdaterLink {
         return
     }
 
-    $urlLines = @("[InternetShortcut]", "URL=$ksuiteUrl", "Version=$fullVersion")
+    if ($existingFileId) {
+        try {
+            $renameUri = "https://api.infomaniak.com/2/drive/$env:KDRIVE_ID/files/$existingFileId/rename"
+            $renameBody = @{ name = $urlFileName } | ConvertTo-Json
+            Write-Host "Renaming existing recovery updater link to $urlFileName"
+            Invoke-RestMethod -Method "POST" -Uri $renameUri -Header $headers -ContentType 'application/json' -Body $renameBody
+            Write-Host "Recovery updater link renamed => ✅" -f Green
+        } catch {
+            Write-Host "Warning: failed to rename recovery updater link -> $_" -f Yellow
+        }
+    }
+
+    $urlLines = @("[InternetShortcut]", "URL=$ksuiteUrl")
     $tempLinkPath = Join-Path $env:TEMP $urlFileName
     Set-Content -Path $tempLinkPath -Value $urlLines -Encoding UTF8
 
