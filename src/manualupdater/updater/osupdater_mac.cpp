@@ -89,7 +89,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     progressCallback(InstallStep::Verifying, QObject::tr("Verifying file integrity..."));
-    if (!versionInfo.checksum.empty() && !verifyFileChecksum(versionInfo, SyncPath(pkgPath.toStdString()), outMessage)) {
+    if (!verifyFileChecksum(versionInfo, pkgUrl.toStdString(), SyncPath(pkgPath.toStdString()), outMessage)) {
         return false;
     }
 
