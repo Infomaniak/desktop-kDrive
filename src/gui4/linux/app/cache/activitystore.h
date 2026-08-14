@@ -25,26 +25,11 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 namespace KDC {
-
-/** @brief Presentation status used by the Linux Activities UI. */
-enum class ActivityStatus : uint8_t {
-    Synchronized,
-    InProgress,
-    Failed,
-};
-
-/** @brief Origin of a synchronization activity as presented to the user. */
-enum class ActivitySource : uint8_t {
-    Unknown,
-    Computer,
-    Web,
-};
 
 /** @brief Process-local representation of one file synchronization activity. */
 struct ActivityEntry {
@@ -52,15 +37,13 @@ struct ActivityEntry {
         SyncDbId syncDbId{0};
         UniqueId operationId{0};
         NodeType nodeType{NodeType::Unknown};
-        QString path;
-        QString newPath;
+        SyncPath path;
+        SyncPath newPath;
         QString localNodeId;
         QString remoteNodeId;
         SyncDirection direction{SyncDirection::Unknown};
         SyncFileInstruction instruction{SyncFileInstruction::None};
-        SyncFileStatus rawStatus{SyncFileStatus::Unknown};
-        ActivityStatus status{ActivityStatus::Synchronized};
-        ActivitySource source{ActivitySource::Unknown};
+        SyncFileStatus status{SyncFileStatus::Unknown};
         int64_t size{0};
         int32_t progress{0};
         QDateTime receivedAtUtc;
@@ -70,7 +53,7 @@ struct ActivityEntry {
 /**
  * @brief Process-local, bounded history of file synchronization activities for Linux.
  *
- * The store normalizes server DTOs and retains at most maxActivitiesPerSync entries for each synchronization. It is
+ * The store retains validated server DTO data and at most maxActivitiesPerSync entries for each synchronization. It is
  * intentionally separate from AppCache's durable entity graph and must only be mutated from its QObject thread.
  */
 class ActivityStore final : public QObject {
@@ -126,10 +109,7 @@ class ActivityStore final : public QObject {
         void activitiesChanged(SyncDbId syncDbId);
 
     private:
-        [[nodiscard]] static std::optional<ActivityStatus> normalizeStatus(SyncFileStatus status);
-        [[nodiscard]] static ActivitySource normalizeSource(SyncDirection direction);
-        [[nodiscard]] ActivityEntry makeEntry(SyncDbId syncDbId, const SyncFileItemInfo &item, ActivityStatus status,
-                                              ActivitySource source, GenericId localId);
+        [[nodiscard]] ActivityEntry makeEntry(SyncDbId syncDbId, const SyncFileItemInfo &item, GenericId localId);
         static void enforceCapacity(std::vector<ActivityEntry> &entries);
 
         std::unordered_map<SyncDbId, std::vector<ActivityEntry>> _activitiesBySyncDbId;
