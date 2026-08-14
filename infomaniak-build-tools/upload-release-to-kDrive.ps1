@@ -187,7 +187,10 @@ function Upload-FilesToKDrive {
             Write-Host "\t\t => ✅" -f Green
 
             if ($response.data -and $response.data.id) {
-                $uploadedFileIds[$file] = $response.data.id
+                $uploadedFileIds[$file] = @{
+                    id = $response.data.id
+                    parentId = $response.data.parent_id
+                }
             }
         } catch {
             if ($isMandatory) {
@@ -227,11 +230,12 @@ function Compare-Versions {
 function Upload-RecoveryUpdaterLink {
     param (
         [int]$fileId,
+        [int]$parentId,
         [string]$targetSubDir,
         [string]$fullVersion
     )
 
-    $ksuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$fileId"
+    $ksuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$parentId/preview/unknown/$fileId"
     $urlFileName = "kDriveRecoveryUpdater-$targetSubDir.url"
     $linkDirPath = "kDriveRecoveryUpdater/$targetSubDir"
     if ($test) {
@@ -277,9 +281,9 @@ function Upload-RecoveryUpdaterLink {
         return
     }
 
-    $urlContent = "[InternetShortcut]`r`nURL=$ksuiteUrl`r`nVersion=$fullVersion"
+    $urlLines = @("[InternetShortcut]", "URL=$ksuiteUrl", "Version=$fullVersion")
     $tempLinkPath = Join-Path $env:TEMP $urlFileName
-    Set-Content -Path $tempLinkPath -Value $urlContent -NoNewline -Encoding UTF8
+    Set-Content -Path $tempLinkPath -Value $urlLines -Encoding UTF8
 
     try {
         $size = (Get-Item $tempLinkPath).length
@@ -313,7 +317,8 @@ if ($os -eq "win") {
 
     $recoveryFileName = "kDriveRecoveryUpdater-$version.exe"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
-        Upload-RecoveryUpdaterLink -fileId $uploadedIds[$recoveryFileName] -targetSubDir "windows" -fullVersion $version
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "windows" -fullVersion $version
     }
     Write-Host " - Windows Files - \n"
 }
@@ -336,7 +341,8 @@ if ($os -eq "macos") {
 
     $recoveryFileName = "kDriveRecoveryUpdater-$version.zip"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
-        Upload-RecoveryUpdaterLink -fileId $uploadedIds[$recoveryFileName] -targetSubDir "macos" -fullVersion $version
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "macos" -fullVersion $version
     }
     Write-Host " - macOS Files - \n"
 }
@@ -357,7 +363,8 @@ if ($os -eq "linux-amd") {
 
     $recoveryFileName = "kDriveRecoveryUpdater-$version-amd64.AppImage"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
-        Upload-RecoveryUpdaterLink -fileId $uploadedIds[$recoveryFileName] -targetSubDir "linux-amd" -fullVersion $version
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "linux-amd" -fullVersion $version
     }
     Write-Host " - Linux AMD64 Files - \n"
 }
@@ -378,7 +385,8 @@ if ($os -eq "linux-arm") {
 
     $recoveryFileName = "kDriveRecoveryUpdater-$version-arm64.AppImage"
     if ($uploadedIds.ContainsKey($recoveryFileName)) {
-        Upload-RecoveryUpdaterLink -fileId $uploadedIds[$recoveryFileName] -targetSubDir "linux-arm" -fullVersion $version
+        $fileInfo = $uploadedIds[$recoveryFileName]
+        Upload-RecoveryUpdaterLink -fileId $fileInfo.id -parentId $fileInfo.parentId -targetSubDir "linux-arm" -fullVersion $version
     }
     Write-Host " - Linux ARM64 Files - \n"
 }
