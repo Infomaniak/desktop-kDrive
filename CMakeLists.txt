@@ -108,7 +108,10 @@ include(GenerateExportHeader)
 add_definitions(
         -DQT_USE_QSTRINGBUILDER
         -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
-        -DQT_DEPRECATED_WARNINGS
+        # QT_WARN_DEPRECATED_UP_TO caps the Qt version for which deprecated annotations are emitted.
+        # Capped at 6.12.0 (0x060C00) to avoid Qt 6.13+ deprecation markers that GCC 11 cannot parse
+        # when they appear before [[nodiscard]] inside class definitions.
+        -DQT_WARN_DEPRECATED_UP_TO=0x060C00
 )
 
 if(APPLE)
