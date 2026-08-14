@@ -151,7 +151,7 @@ class QtConan(ConanFile):
         compiler = str(self.settings.compiler)
 
         # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
-        elif self.version in ("6.8.3", "6.10.1", "6.11.1"):
+        if self.version in ("6.8.3", "6.10.1", "6.11.1"):
             return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
         else:
             return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
