@@ -19,6 +19,7 @@
 #include "app/mainwindow/activitiescontroller.h"
 
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QFileInfo>
@@ -106,18 +107,6 @@ std::optional<SyncPath> safeRelativePath(const SyncPath &path) {
     return normalizedPath;
 }
 
-bool isContainedIn(const SyncPath &root, const SyncPath &candidate) {
-    const SyncPath normalizedRoot = root.lexically_normal();
-    const SyncPath normalizedCandidate = candidate.lexically_normal();
-    auto candidateIt = normalizedCandidate.begin();
-    for (auto rootIt = normalizedRoot.begin(); rootIt != normalizedRoot.end(); ++rootIt, ++candidateIt) {
-        if (candidateIt == normalizedCandidate.end() || *candidateIt != *rootIt) {
-            return false;
-        }
-    }
-    return true;
-}
-
 } // namespace
 
 ActivitiesController::ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
@@ -179,7 +168,8 @@ void ActivitiesController::openLocal(const QString &rowId) {
 
     const auto canonicalRootPath = QStr2Path(rootInfo.canonicalFilePath());
     const auto canonicalTargetPath = QStr2Path(targetInfo.canonicalFilePath());
-    if (canonicalRootPath.empty() || canonicalTargetPath.empty() || !isContainedIn(canonicalRootPath, canonicalTargetPath)) {
+    if (canonicalRootPath.empty() || canonicalTargetPath.empty() ||
+        !CommonUtility::isSubDir(canonicalRootPath, canonicalTargetPath)) {
         qCWarning(lcActivitiesController) << "Local activity target resolves outside the synchronization root"
                                           << "| rowId:" << rowId << "| target:" << Path2QStr(targetPath);
         emit actionFailed(rowId);
