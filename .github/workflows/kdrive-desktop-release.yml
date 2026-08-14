@@ -273,6 +273,7 @@ jobs:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -323,6 +324,7 @@ jobs:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -365,6 +367,7 @@ jobs:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
@@ -407,6 +410,7 @@ jobs:
         KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
         KDRIVE_ID: ${{ secrets.KDRIVE_ID }}
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
+        KDRIVE_ORGA_ID: ${{ secrets.KDRIVE_ORGA_ID }}
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
