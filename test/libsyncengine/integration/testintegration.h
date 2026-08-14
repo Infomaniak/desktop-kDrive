@@ -19,6 +19,7 @@
 #pragma once
 
 #include "syncpal/syncpal.h"
+#include "syncpal_test_helper/mocksyncpal.h"
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
@@ -39,9 +40,13 @@ typedef void (TestIntegration::*testFctPtr)();
 
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
-        //CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testSimpleComparison);
         CPPUNIT_TEST(testSimpleUpload);
+        CPPUNIT_TEST(testGlobalFramework);
         CPPUNIT_TEST(testNestedRemoteOperations);
+        CPPUNIT_TEST(testRemoteMoveDirectoryDescendantRekey);
+        CPPUNIT_TEST(testExecuteSyncUpToStep);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -62,8 +67,11 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testSimultaneousChanges();
         void testUploadBigFile();
         void testSimpleUpload();
+        void testSimpleComparison();
+        void testGlobalFramework();
         void testNestedRemoteOperations();
-        void testOperationsMetadata();
+        void testRemoteMoveDirectoryDescendantRekey();
+        void testExecuteSyncUpToStep();
 
         void inconsistencyTests();
 
@@ -148,7 +156,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         int64_t countItemsInRemoteDir(int64_t driveDbId, const NodeId &parentId) const;
 
         log4cplus::Logger _logger;
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<MockSyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
         int64_t _driveDbId = 0;

@@ -20,31 +20,40 @@
 #include "libcommon/utility/timerutility.h"
 #include "test_utility/timeouthelper.h"
 
-#include "syncpal/syncpal.h"
+#include "mocksyncpal.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "libcommonserver/log/log.h"
 
 namespace KDC {
 
-SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<SyncPal> syncPal) :
+SyncpalTestHelper::SyncpalTestHelper(const std::shared_ptr<MockSyncPal> syncPal) :
     _syncPal(syncPal),
     _setInitialSituation(syncPal),
-    _executeOperations(syncPal) {}
+    _executeOperations(syncPal),
+    _situationComparator(syncPal) {
+    (void) setUp();
+}
 
-void SyncpalTestHelper::setUp() {
-    _syncPal->start();
+SyncpalTestHelper::~SyncpalTestHelper() {
+    tearDown();
+}
+
+bool SyncpalTestHelper::setUp() {
+    return startSync() && executeSyncUntilEnd();
 }
 
 void SyncpalTestHelper::tearDown() {
     if (_syncPal) {
+        _syncPal->setMaxStep(SyncStep::None); // Make sure no cap set by executeSyncUpToStep() survives past this test.
         _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     }
 }
 
-void SyncpalTestHelper::setSyncpal(const std::shared_ptr<SyncPal> syncPal) {
+void SyncpalTestHelper::setSyncpal(const std::shared_ptr<MockSyncPal> syncPal) {
     _syncPal = syncPal;
     _setInitialSituation.setSyncpal(syncPal);
     _executeOperations.setSyncpal(syncPal);
+    _situationComparator.setSyncpal(syncPal);
 }
 
 bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
@@ -66,17 +75,21 @@ bool SyncpalTestHelper::setInitialSituation(const Situation &localSituation, con
     return executeSyncUntilEnd();
 }
 
-bool SyncpalTestHelper::getSituation(const Situation &, const Situation &) const {
-    return false;
+bool SyncpalTestHelper::matchesCurrentSituation(const Situation &localSituation, const Situation &remoteSituation) const {
+    if (!_syncPal) return false;
+
+    return _situationComparator.compareSituation(localSituation, remoteSituation);
 }
 
 bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime) const {
     if (!_syncPal) return false;
 
+    _syncPal->setMaxStep(SyncStep::None); // Remove any cap left by a previous executeSyncUpToStep() call.
     if (!_syncPal->isRunning()) _syncPal->start(); // Start the Syncpal if it is not already running
 
-    // Give a pending change a chance to be detected before checking for idleness below.
-    (void) waitForDetectedUpdate();
+    // Give a pending change a short grace period to be detected before checking for idleness below,
+    // so an already-idle sync isn't penalized by the full update timeout.
+    (void) waitForDetectedUpdate(std::chrono::milliseconds(200));
 
     const auto timeOutDuration = std::chrono::minutes(2);
     const TimerUtility timeoutTimer;
@@ -102,9 +115,15 @@ bool SyncpalTestHelper::executeSyncUntilEnd(const std::chrono::milliseconds minW
     }
 }
 
-bool SyncpalTestHelper::executeSyncUpToStep([[maybe_unused]] const int64_t targetStep,
-                                            [[maybe_unused]] const int64_t timeout) const {
-    return false;
+bool SyncpalTestHelper::executeSyncUpToStep(const SyncStep targetStep, const int64_t timeout) const {
+    if (!_syncPal) return false;
+
+    _syncPal->setMaxStep(targetStep);
+
+    // The cap is left in place on purpose: the sync stays frozen at `targetStep` until the caller either checks it
+    // or calls executeSyncUntilEnd(), which lifts the cap before waiting for the sync to reach Idle.
+    return TimeoutHelper::waitFor([this, targetStep]() { return _syncPal->step() == targetStep; },
+                                  std::chrono::milliseconds(timeout), std::chrono::milliseconds(50));
 }
 
 bool SyncpalTestHelper::waitForDetectedUpdate(const std::chrono::milliseconds timeout) const {
@@ -120,7 +139,27 @@ bool SyncpalTestHelper::waitForDetectedUpdate(const std::chrono::milliseconds ti
 }
 
 bool SyncpalTestHelper::pauseSync() const {
-    return false;
+    if (!_syncPal || !_syncPal->isRunning()) return false;
+
+    _syncPal->pause();
+
+    // Wait until pause actually takes effect (only happens once the sync reaches Idle), to avoid races.
+    return TimeoutHelper::waitFor([this]() { return _syncPal->isPaused(); }, std::chrono::milliseconds(10000),
+                                  std::chrono::milliseconds(50));
+}
+
+bool SyncpalTestHelper::unpauseSync() const {
+    if (!_syncPal || !_syncPal->isRunning()) return false;
+
+    _syncPal->unpause();
+    return true;
+}
+
+bool SyncpalTestHelper::startSync() const {
+    if (!_syncPal) return false;
+
+    _syncPal->start();
+    return true;
 }
 
 bool SyncpalTestHelper::stopSync() const {

@@ -169,6 +169,7 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseCreateOperation(const
 
     desc.size = obj->optValue<int64_t>(
             "size", desc.itemType == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
+    if (desc.size < 0) throw OperationsParserException("Create operation 'size' must be non-negative");
     return desc;
 }
 
@@ -184,6 +185,7 @@ OperationsExecutor::OperationDesc OperationsExecutor::parseEditOperation(const P
     validateRelativePath(desc.path, "path");
 
     desc.size = obj->optValue<int64_t>("newSize", 0);
+    if (desc.size < 0) throw OperationsParserException("Edit operation 'newSize' must be non-negative");
     return desc;
 }
 
@@ -392,6 +394,21 @@ void OperationsExecutor::applyRemoteMove(const OperationDesc &desc) {
     }
     (void) _batchRemoteIds.erase(desc.fromPath);
     _batchRemoteIds[desc.toPath] = itemId;
+
+    // Rekey any descendants still under the old prefix (no-op if fromPath is a file).
+    std::map<SyncPath, NodeId> rekeyed;
+    (void) std::erase_if(_batchRemoteIds, [&](const auto &entry) {
+        const auto &[path, id] = entry;
+        if (auto relative = path.lexically_relative(desc.fromPath);
+            !relative.empty() && relative.native().substr(0, 2) != Str2SyncName("..")) {
+            rekeyed[desc.toPath / relative] = id;
+            return true;
+        }
+        return false;
+    });
+    for (auto &[path, id]: rekeyed) {
+        _batchRemoteIds[path] = id;
+    }
 }
 
 } // namespace KDC

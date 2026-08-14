@@ -116,6 +116,9 @@ bool InitialSituationSetter::run(const SyncName &localJsonDescription, const Syn
 void InitialSituationSetter::generateInitialSituation(const Situation &localSituation, const Situation &remoteSituation) {
     if (!_syncPal) throw SituationGeneratorException("Invalid parameters!");
 
+    // Captured once and reused for every item on both sides (see _now's declaration for why).
+    _now = static_cast<SyncTime>(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+
     generateSituation(localSituation, ReplicaSide::Local);
     generateSituation(remoteSituation, ReplicaSide::Remote);
 }
@@ -169,6 +172,7 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::
         desc.name = Str2SyncName(nameStr);
         desc.size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
+        if (desc.size < 0) throw SituationGeneratorException("'size' must be non-negative");
         addItem(side, desc, parentId);
 
         if (type == NodeType::Directory && itemObj->isArray("content")) {
@@ -215,6 +219,7 @@ void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const SyncNam
     } else {
         testhelpers::generateTestFile(fullPath);
         if (desc.size > 0) testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
+        (void) IoHelper::setFileDates(fullPath, _now, _now, false);
     }
 }
 
@@ -259,15 +264,22 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
         const NodeId parentRemoteId = remoteParentId(parentId);
         if (desc.type == NodeType::Directory) {
             CreateDirJob job(nullptr, _syncPal->driveDbId(), parentRemoteId, desc.name);
-            (void) job.runSynchronously();
+            const ExitInfo exitInfo = job.runSynchronously();
+            if (!exitInfo) {
+                throw SituationGeneratorException("Failed to create remote directory '" + SyncName2Str(desc.name) +
+                                                   "': " + std::string(exitInfo));
+            }
             _remoteNodeIds[desc.id] = job.nodeId();
         } else {
             const SyncPath localFilePath = localFilePathForUpload(desc);
-            // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
-            // the current time is used.
-            const auto now = static_cast<SyncTime>(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
-            UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, now, now);
-            (void) job.runSynchronously();
+            // Use the same fixed timestamp as the local side (see _now) so both copies of the same logical
+            // item, as well as sibling items, share consistent creation/modification times.
+            UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, _now, _now);
+            const ExitInfo exitInfo = job.runSynchronously();
+            if (!exitInfo) {
+                throw SituationGeneratorException("Failed to upload remote file '" + SyncName2Str(desc.name) +
+                                                   "': " + std::string(exitInfo));
+            }
             _remoteNodeIds[desc.id] = job.nodeId();
         }
     } catch (const SituationGeneratorException &e) {

@@ -18,13 +18,14 @@
 
 #pragma once
 
+#include "situationcomparator.h"
 #include "initialsituationsetter.h"
 #include "operationsexecutor.h"
+#include "mocksyncpal.h"
 
 #include <memory>
 
 namespace KDC {
-class SyncPal;
 
 /**
  * @brief Single entry point for setting up and driving Syncpal-based tests: building an initial
@@ -37,41 +38,47 @@ class SyncPal;
 class SyncpalTestHelper {
     public:
         SyncpalTestHelper() = default;
-        explicit SyncpalTestHelper(std::shared_ptr<SyncPal> syncPal);
+        explicit SyncpalTestHelper(std::shared_ptr<MockSyncPal> syncPal);
+        ~SyncpalTestHelper();
 
-        // ---- High-level test driver API ----
-        void setUp();
-        void tearDown();
+        void setSyncpal(std::shared_ptr<MockSyncPal> syncPal);
 
-        void setSyncpal(std::shared_ptr<SyncPal> syncPal);
-
-        // Builds localSituation and remoteSituation independently (see
-        // InitialSituationSetter::generateInitialSituation) against the SyncPal passed to the constructor (or set
-        // via setSyncpal). localSituation and remoteSituation may differ.
-        // returns false if invalid
+        // Builds localSituation and remoteSituation independently against the SyncPal; they may differ. Returns false if invalid.
         bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
-        bool getSituation(const Situation &localSituation, const Situation &remoteSituation) const;
+
+        // Compares localSituation/remoteSituation against the real local/remote situations.
+        bool matchesCurrentSituation(const Situation &localSituation, const Situation &remoteSituation) const;
 
         bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
-        bool executeSyncUpToStep(const int64_t targetStep, const int64_t timeout) const;
+        bool executeSyncUpToStep(SyncStep targetStep, const int64_t timeout) const;
 
-        // Waits (polling) up to `timeout` for a real change to be detected by the observers. Returns false if
-        // nothing showed up within `timeout`.
+        // Waits (polling) up to `timeout` for a real change to be detected by the observers. Returns false if nothing showed up.
         bool waitForDetectedUpdate(std::chrono::milliseconds timeout = std::chrono::milliseconds(10000)) const;
 
+        // Pauses the running SyncPal, waiting until it actually reaches the paused state. Returns false if no SyncPal or not running.
         bool pauseSync() const;
+
+        // Resumes a previously paused SyncPal. Returns false if no SyncPal or not running.
+        bool unpauseSync() const;
+
+        // Starts the SyncPal. Returns false if no SyncPal.
+        bool startSync() const;
+
+        // Fully stops the SyncPal, keeping its Db. Returns false if no SyncPal.
         bool stopSync() const;
 
-        // Applies operations (see OperationsExecutor::execute) on the given side, against the
-        // SyncPal passed to the constructor (or set via setSyncpal).
-        // returns false if invalid
+        // Applies operations (see OperationsExecutor::execute) on the given side. Returns false if invalid.
         bool execute(ReplicaSide side, const Operations &operations);
 
     private:
-        std::shared_ptr<SyncPal> _syncPal;
+        bool setUp();
+        void tearDown();
+
+        std::shared_ptr<MockSyncPal> _syncPal;
 
         InitialSituationSetter _setInitialSituation;
         OperationsExecutor _executeOperations;
+        SituationComparator _situationComparator;
 };
 
 } // namespace KDC

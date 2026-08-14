@@ -44,12 +44,17 @@ class SyncPalWorker : public ISyncWorker {
         inline bool pauseAsked() const { return _pauseAsked; }
         inline bool unpauseAsked() const { return _unpauseAsked; }
         void unpause();
-        inline SyncStep step() const { return _step; }
+        inline SyncStep step() const { return _step.load(); }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
 
+        // If set to a value other than SyncStep::None, the sync loop will stop advancing past `step` (used by tests).
+        inline void setMaxStep(const SyncStep step) { _maxStep.store(step); }
+        inline SyncStep maxStep() const { return _maxStep.load(); }
+
     private:
-        SyncStep _step{SyncStep::Idle};
+        std::atomic<SyncStep> _step{SyncStep::Idle};
+        std::atomic<SyncStep> _maxStep{SyncStep::None};
         std::chrono::time_point<std::chrono::steady_clock> _pauseTime{std::chrono::time_point<std::chrono::steady_clock>()};
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
@@ -70,6 +75,7 @@ class SyncPalWorker : public ISyncWorker {
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
                            bool reset);
         SyncStep nextStep() const;
+        SyncStep computeNextStep() const;
         void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker);
         void stopWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void waitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);

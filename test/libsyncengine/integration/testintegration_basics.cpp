@@ -239,9 +239,69 @@ void TestIntegration::testUploadBigFile() {
     logStep("testUploadBigFile");
 }
 
+void TestIntegration::testSimpleComparison() {
+    SyncpalTestHelper testHelper(_syncPal);
+
+    const Situation situation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "AAA"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
+        ]
+    })")};
+
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situation, situation));
+
+    logStep("testSimpleComparison");
+}
+
 void TestIntegration::testSimpleUpload() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
+
+    const Situation startsituation{Str2SyncName(R"({
+        "content" : [
+            {"type" : "Directory", "name" : "A"}
+        ]
+    })")};
+
+    const Operations localoperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "File", "path": "A", "name": "B", "size" : 1234 }
+        ]
+    })")};
+
+    const Situation endsituation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "File", "name" : "B", "size" : 1234} ]
+            }
+        ]
+    })")};
+
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(startsituation, startsituation));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Local, localoperations));
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(endsituation, endsituation));
+
+    logStep("testSimpleUpload");
+}
+
+void TestIntegration::testGlobalFramework() {
+    SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
@@ -260,6 +320,8 @@ void TestIntegration::testSimpleUpload() {
     CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+    // Sanity-check the initial situation landed on the remote before touching anything.
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situation, situation));
 
     const Operations localoperations{Str2SyncName(R"({
         "operations": [
@@ -273,13 +335,19 @@ void TestIntegration::testSimpleUpload() {
     // need to wait for the SyncPal to detect it and upload it to the remote replica before checking below.
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
-    // Verify that the new file now exists on the remote replica...
-    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/BBB"));
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
-    // ...and that the deleted one is gone.
-    const auto remoteDeletedFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AA/AAA"));
-    CPPUNIT_ASSERT(!remoteDeletedFileInfo.isValid());
-
+    // AAA -> BBB under A/AA, same as `situation` otherwise.
+    const Situation situationAfterLocalOps{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "BBB"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "C", "size" : 1234}
+        ]
+    })")};
+    // Replaces the two manual getRemoteFileInfoByPath lookups below: confirms BBB exists remotely and AAA is gone.
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situationAfterLocalOps, situationAfterLocalOps));
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "C"));
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "CC"));
@@ -297,13 +365,25 @@ void TestIntegration::testSimpleUpload() {
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / "C"));
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "CC"));
 
-    testHelper.tearDown();
-    logStep("testSimpleUpload");
+    // C -> CC, same as `situationAfterLocalOps` otherwise. New check: confirms the rename landed remotely too,
+    // not just that the local replica picked something up.
+    const Situation finalSituation{Str2SyncName(R"({
+        "content" : [
+            {
+                "type" : "Directory",
+                "name" : "A",
+                "content" : [ {"type" : "Directory", "name" : "AA", "content" : [ {"type" : "File", "name" : "BBB"} ]} ]
+            },
+            {"type" : "Directory", "name" : "B"}, {"type" : "File", "name" : "CC", "size" : 1234}
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
+
+    logStep("testGlobalFramework");
 }
 
 void TestIntegration::testNestedRemoteOperations() {
     SyncpalTestHelper testHelper(_syncPal);
-    testHelper.setUp();
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
@@ -325,11 +405,81 @@ void TestIntegration::testNestedRemoteOperations() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "A" / "AAA"));
 
-    const auto remoteFileInfo = getRemoteFileInfoByPath(_driveDbId, _remoteSyncDir.id(), SyncPath("A/AAA"));
-    CPPUNIT_ASSERT(remoteFileInfo.isValid());
+    // Replaces the manual getRemoteFileInfoByPath lookup: confirms A/AAA exists remotely too.
+    const Situation finalSituation{Str2SyncName(R"({
+        "content": [
+            { "type": "Directory", "name": "A", "content": [ {"type": "File", "name": "AAA"} ] }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
 
-    testHelper.tearDown();
     logStep("testNestedRemoteOperations");
+}
+
+void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
+    SyncpalTestHelper testHelper(_syncPal);
+
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Start from an empty situation.
+    const Situation situation{Str2SyncName(R"({"content": []})")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+
+    // Single batch: create A, create A/f, move A -> B, then edit B/f. Resolving "B/f" for the Edit must rely
+    // on _batchRemoteIds rekeying A/f -> B/f done by the Move, since SyncDb hasn't been refreshed yet.
+    const Operations remoteOperations{Str2SyncName(R"({
+        "operations": [
+            { "type": "Create", "itemType": "Directory", "name": "A" },
+            { "type": "Create", "itemType": "File", "path": "A", "name": "f", "size": 111 },
+            { "type": "Move", "fromPath": "A", "toPath": "B" },
+            { "type": "Edit", "path": "B/f", "newSize": 222 }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOperations));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const Situation finalSituation{Str2SyncName(R"({
+        "content": [
+            { "type": "Directory", "name": "B", "content": [ {"type": "File", "name": "f", "size": 222} ] }
+        ]
+    })")};
+    CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(finalSituation, finalSituation));
+
+    logStep("testRemoteMoveDirectoryDescendantRekey");
+}
+
+void TestIntegration::testExecuteSyncUpToStep() {
+    SyncpalTestHelper testHelper(_syncPal);
+
+    // Start from an empty situation.
+    const Situation situation{Str2SyncName(R"({"content": []})")};
+    CPPUNIT_ASSERT(testHelper.setInitialSituation(situation, situation));
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    const std::vector stepsToTest = {
+            SyncStep::UpdateDetection1, SyncStep::UpdateDetection2, SyncStep::Reconciliation1,
+            SyncStep::Reconciliation2,  SyncStep::Reconciliation4,  SyncStep::Propagation1,
+            SyncStep::Propagation2,     SyncStep::Done,
+    };
+
+    for (const auto step: stepsToTest) {
+        // Generate a real local change so the sync actually has work to progress through.
+        // Replace this line with a call to std::format (C++20) when compilation issues are addressed on Linux.
+        const SyncPath filePath = _syncPal->localPath() / Poco::format("testExecuteSyncUpToStep_%d", static_cast<int64_t>(step));
+        testhelpers::generateOrEditTestFile(filePath);
+
+        CPPUNIT_ASSERT(testHelper.executeSyncUpToStep(step, 10000));
+
+        CPPUNIT_ASSERT_EQUAL(step, _syncPal->step());
+
+        // Wait a bit and make sure the sync stayed frozen at the requested step.
+        Utility::msleep(1000);
+        CPPUNIT_ASSERT_EQUAL(step, _syncPal->step());
+
+        CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+    }
+
+    logStep("testExecuteSyncUpToStep");
 }
 
 } // namespace KDC

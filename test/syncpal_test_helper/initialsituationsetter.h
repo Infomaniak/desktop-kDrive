@@ -169,6 +169,12 @@ class InitialSituationSetter {
         std::unordered_map<SyncName, NodeId, SyncNameHashFunction, std::equal_to<>>
                 _remoteNodeIds; // item id (lowercase) -> real remote NodeId
         std::optional<LocalTemporaryDirectory> _uploadScratchDir; // used only for remote-only file items
+
+        // Single timestamp captured once per generateInitialSituation call and reused for every local file's
+        // dates and every remote upload's creation/modification times. Using a fixed "now" instead of resampling
+        // the clock for each item avoids spurious modification-time mismatches (and resulting edit-edit
+        // conflicts) between the local and remote copy of the same logical item, or between sibling items.
+        SyncTime _now = 0;
 };
 
 } // namespace KDC
