@@ -41,10 +41,6 @@ class SyncpalTestHelper {
         explicit SyncpalTestHelper(std::shared_ptr<MockSyncPal> syncPal);
         ~SyncpalTestHelper();
 
-        // ---- High-level test driver API ----
-        bool setUp();
-        void tearDown();
-
         void setSyncpal(std::shared_ptr<MockSyncPal> syncPal);
 
         // Builds localSituation and remoteSituation independently against the SyncPal; they may differ. Returns false if invalid.
@@ -75,6 +71,9 @@ class SyncpalTestHelper {
         bool execute(ReplicaSide side, const Operations &operations);
 
     private:
+        bool setUp();
+        void tearDown();
+
         std::shared_ptr<MockSyncPal> _syncPal;
 
         InitialSituationSetter _setInitialSituation;
