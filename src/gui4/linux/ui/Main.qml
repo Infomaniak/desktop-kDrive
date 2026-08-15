@@ -28,6 +28,7 @@ IKShadowedWindow {
     id: mainWindow
 
     required property var appRouter
+    required property var activitiesController
     required property var homeController
     required property var mainSidebarController
     required property var onboardingSessionManager
