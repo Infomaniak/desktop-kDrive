@@ -82,6 +82,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                          "SyncSelectorModel is owned by MainSidebarController.");
     (void) qmlRegisterUncreatableType<HomeController>("kDrive.UI", 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<ActivityListModel>("kDrive.UI", 1, 0, "ActivityListModel",
+                                                         "ActivityListModel is owned by ActivitiesController.");
+    (void) qmlRegisterUncreatableType<ActivitiesController>("kDrive.UI", 1, 0, "ActivitiesController",
+                                                            "ActivitiesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
                                             QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
@@ -94,6 +98,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
+            {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
