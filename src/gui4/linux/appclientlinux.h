@@ -23,6 +23,7 @@
 #include "app/cache/cachepipeline.h"
 #include "app/cache/mainselectionstore.h"
 #include "app/cache/parametersstore.h"
+#include "app/mainwindow/activitiescontroller.h"
 #include "app/mainwindow/homecontroller.h"
 #include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/mainwindow/networkstatusobserver.h"
@@ -30,6 +31,7 @@
 #include "app/onboarding/onboardingsessionmanager.h"
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
+#include "app/services/activityservice.h"
 #include "app/services/driveservice.h"
 #include "app/services/parametersservice.h"
 #include "app/services/sentryservice.h"
@@ -59,7 +61,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
  * - IPC transport, server-signal dispatch, and the typed communication facade.
  * - AppCache, ActivityStore, ParametersStore, their live push pipeline, and the two-branch bootstrap population.
  * - Application services, action tracking, transient service events, and Sentry coordination.
- * - Main selection, navigation, sidebar, Home, and the ephemeral onboarding-session manager.
+ * - Main selection, navigation, sidebar, Home, Activities, and the ephemeral onboarding-session manager.
  * - Linux system tray, network observation, frameless-window integration, translations, and the QML runtime.
  *
  * Construction configures logging, translations, application identity, the system tray, signal connections, and the QML
@@ -127,6 +129,7 @@ class AppClientLinux : public QApplication {
         AppRouter _appRouter{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
+        ActivityService _activityService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SentryService _sentryService{_parametersService, _appCache, _parametersStore, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
@@ -139,6 +142,8 @@ class AppClientLinux : public QApplication {
         NetworkStatusObserver _networkStatusObserver{this};
         HomeController _homeController{
                 _appCache, _mainSelectionStore, _syncService, _appRouter, _systemTrayController, _networkStatusObserver, this};
+        ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
+                                                   _networkStatusObserver, _activityService, this};
         QTranslator _baseTranslator{this};
         QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
