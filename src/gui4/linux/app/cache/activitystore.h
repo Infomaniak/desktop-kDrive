@@ -87,6 +87,12 @@ class ActivityStore final : public QObject {
         [[nodiscard]] std::vector<ActivityEntry> activities(SyncDbId syncDbId) const;
 
         /**
+         * @brief Removes every in-progress activity owned by one synchronization.
+         * @param syncDbId Database identifier of the synchronization whose interrupted activities must be removed.
+         */
+        void removeInProgress(SyncDbId syncDbId);
+
+        /**
          * @brief Removes every retained activity owned by one synchronization.
          * @param syncDbId Database identifier of the synchronization to remove.
          */
