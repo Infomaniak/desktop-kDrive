@@ -32,6 +32,9 @@ class FileIconResolver final {
          * directories, which the view renders from its own asset. */
         [[nodiscard]] QString iconName(const QString &fileName, NodeType nodeType) const;
 
+        /** Drops the cached names. Call it when the resolved set is replaced wholesale, such as on a sync switch. */
+        void clear() const;
+
     private:
         mutable QHash<QString, QString> _iconNamesByFileName;
 };
