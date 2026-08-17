@@ -30,7 +30,9 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "requests/exclusiontemplatecache.h"
+#endif
 #include "test_classes/syncpaltest.h"
 #include "test_utility/testhelpers.h"
 
@@ -269,7 +271,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
-    std::filesystem::create_directories(localDirPath);
+    (void) std::filesystem::create_directories(localDirPath);
 
     class LocalDeleteJobMock : public SyncLocalDeleteJob {
         public:
@@ -342,6 +344,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 #endif
 }
 
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
 void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     class LocalDeleteJobMock : public SyncLocalDeleteJob {
         public:
@@ -362,7 +365,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
 
     _syncPal->setLocalPath(temporaryDirectory.path());
-    std::filesystem::create_directories(localDirPath);
+    (void) std::filesystem::create_directories(localDirPath);
 
     const bool liteSyncIsEnabled = true;
     LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
@@ -380,5 +383,6 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     CPPUNIT_ASSERT(deleteJob.hardDeleteDehydratedPlaceholders());
     CPPUNIT_ASSERT(!std::filesystem::exists(localDirPath / excludedDehydratedPlaceholderName));
 }
+#endif
 
 } // namespace KDC
