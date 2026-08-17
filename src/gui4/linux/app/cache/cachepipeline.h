@@ -57,6 +57,7 @@ class CachePipeline : public QObject {
         void connectDropPipeline();
         void connectLivePipeline();
         void routeActivity(SyncDbId syncDbId, const SyncFileItemInfo &item) const;
+        void reconcileInProgressActivities(SyncDbId syncDbId) const;
         void reconcileActivities() const;
         static void logDroppedPush(const char *signalName);
 
