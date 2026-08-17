@@ -43,11 +43,17 @@ int main(int argc, char *argv[]) {
         }
 
         switch (updaterData.initError()) {
-            case KDC::InitError::DbNotFound:
-                (void) QMessageBox::information(
-                        nullptr, QStringLiteral("No kDrive installation found"),
-                        QStringLiteral("No kDrive installation was found. Please use the regular kDrive installer instead."));
+            case KDC::InitError::DbNotFound: {
+                QString message;
+#ifdef Q_OS_LINUX
+                message = QStringLiteral(
+                        "No kDrive installation was found. Please download the AppImage from the official website.");
+#else
+                message = QStringLiteral("No kDrive installation was found. Please use the regular kDrive installer instead.");
+#endif
+                (void) QMessageBox::information(nullptr, QStringLiteral("No kDrive installation found"), message);
                 break;
+            }
             case KDC::InitError::DbOpenFailed:
                 (void) QMessageBox::critical(
                         nullptr, QStringLiteral("Cannot open database"),
