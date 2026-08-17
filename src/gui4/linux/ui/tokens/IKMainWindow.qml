@@ -29,7 +29,7 @@ QtObject {
     readonly property real syncSelectorTooltipMaxWidth: 180
     readonly property real syncSelectorTooltipPadding: IKSpacing.s8
     readonly property real syncSelectorTooltipRadius: IKRadius.r8
-    readonly property int syncSelectorTooltipDelay: 250
+    readonly property int tooltipDelay: 400
     readonly property real errorBadgeSize: 8
     readonly property real notificationBadgeMinSize: 20
     readonly property real syncSelectorPopupMaxHeight: 260
