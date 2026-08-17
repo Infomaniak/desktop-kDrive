@@ -9,8 +9,6 @@
 #include <fstream>
 #include <sstream>
 #include <array>
-#include <algorithm>
-#include <cctype>
 #include <Poco/SHA2Engine.h>
 
 #if defined(KD_MACOS)
@@ -33,9 +31,8 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
     std::string expectedChecksum;
     // Insert the suffix before any query string or fragment so signed/CDN URLs keep their sidecar resolvable.
     const auto suffixPos = fileUrl.find_first_of("?#");
-    const std::string sha256Url =
-            fileUrl.substr(0, suffixPos) + ".sha256" +
-            (suffixPos == std::string::npos ? std::string{} : fileUrl.substr(suffixPos));
+    const std::string sha256Url = fileUrl.substr(0, suffixPos) + ".sha256" +
+                                  (suffixPos == std::string::npos ? std::string{} : fileUrl.substr(suffixPos));
 
     if (const auto result = HttpDownloader::get(sha256Url, "text/plain, */*"); result.success && !result.body.empty()) {
         // The file contains either "hash" or "hash  filename" — take the first token.
@@ -63,10 +60,9 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
     }
 
     // 5. Compare case-insensitively.
-    if (actualChecksum.size() != expectedChecksum.size() ||
-        !std::equal(actualChecksum.begin(), actualChecksum.end(), expectedChecksum.begin(), [](char a, char b) {
-            return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b));
-        })) {
+    const std::string normalizedActualChecksum = CommonUtility::trim(CommonUtility::toLower(actualChecksum));
+    const std::string normalizedExpectedChecksum = CommonUtility::trim(CommonUtility::toLower(expectedChecksum));
+    if (normalizedActualChecksum != normalizedExpectedChecksum) {
         outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
         LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch for "
                                                          << CommonUtility::s2ws(filepath.string()) << L" — expected: "
