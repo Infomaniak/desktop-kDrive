@@ -153,7 +153,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         static bool isDisplayableError(const Error &error);
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
-        static ExitCode fixProxyConfig();
+        static void fixProxyConfig();
 
     private:
         friend class TestServerRequests;

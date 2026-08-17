@@ -371,11 +371,7 @@ void AppServer::init() {
     if (ParametersCache::instance()->parameters().proxyConfig().type() == ProxyType::Undefined) {
         // Migration issue?
         LOG_WARN(_logger, "Proxy type is undefined, fix it");
-        const ExitCode exitCode = ServerRequests::fixProxyConfig();
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in ServerRequests::fixProxyConfig: code=" << exitCode);
-            throw std::runtime_error("Unable to fix proxy type.");
-        }
+        ServerRequests::fixProxyConfig();
     }
 
     // Setup auto start

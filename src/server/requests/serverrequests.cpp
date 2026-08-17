@@ -1156,12 +1156,11 @@ ExitCode ServerRequests::createSync(const Sync &sync) {
 }
 
 
-ExitCode ServerRequests::fixProxyConfig() {
+void ServerRequests::fixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
     proxyConfig.setType(ProxyType::None);
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
     ParametersCache::instance()->save();
-    return ExitCode::Ok;
 }
 
 bool ServerRequests::isDisplayableError(const Error &error) {
