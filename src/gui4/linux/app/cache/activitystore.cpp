@@ -121,6 +121,20 @@ std::vector<ActivityEntry> ActivityStore::activities(const SyncDbId syncDbId) co
     return syncIt == _activitiesBySyncDbId.end() ? std::vector<ActivityEntry>{} : syncIt->second;
 }
 
+void ActivityStore::removeInProgress(const SyncDbId syncDbId) {
+    const auto syncIt = _activitiesBySyncDbId.find(syncDbId);
+    if (syncIt == _activitiesBySyncDbId.end()) {
+        return;
+    }
+
+    if (auto &entries = syncIt->second;
+        std::erase_if(entries, [](const ActivityEntry &entry) { return isInProgress(entry.status); }) == 0) {
+        return;
+    }
+
+    emit activitiesChanged(syncDbId);
+}
+
 void ActivityStore::removeSync(const SyncDbId syncDbId) {
     if (_activitiesBySyncDbId.erase(syncDbId) == 0) {
         return;
