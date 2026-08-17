@@ -2,13 +2,18 @@
 
 #include "libcommon/utility/types.h"
 
-#include <string>
 #include <Poco/Net/HTTPResponse.h>
+#include <stdexcept>
+#include <string>
 
 namespace KDC {
 
 class HttpDownloader {
     public:
+        struct TrustStoreError : std::runtime_error {
+                using std::runtime_error::runtime_error;
+        };
+
         struct Result {
                 bool success = false;
                 uint16_t statusCode = 0;
