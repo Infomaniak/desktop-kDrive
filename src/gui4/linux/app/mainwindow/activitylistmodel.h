@@ -21,6 +21,7 @@
 #include "app/cache/activitystore.h"
 #include "app/cache/appcache.h"
 #include "app/cache/mainselectionstore.h"
+#include "app/fileiconresolver.h"
 
 #include <QAbstractListModel>
 #include <QDateTime>
@@ -67,6 +68,8 @@ class ActivityListModel final : public QAbstractListModel {
         enum Role {
             RowIdRole = Qt::UserRole + 1,
             NameRole,
+            FileIconNameRole,
+            ActionTextRole,
             FolderRole,
             TimeTextRole,
             SizeTextRole,
@@ -74,6 +77,7 @@ class ActivityListModel final : public QAbstractListModel {
             StatusRole,
             SourceRole,
             InstructionRole,
+            IsDirectoryRole,
             ProgressRole,
             HasActiveErrorRole,
             ActiveErrorCountRole,
@@ -119,6 +123,8 @@ class ActivityListModel final : public QAbstractListModel {
                 GenericId activityLocalId{0};
                 SyncDbId syncDbId{0};
                 QString name;
+                QString fileIconName;
+                QString actionText;
                 QString folder;
                 QString timeText;
                 QString sizeText;
@@ -141,14 +147,15 @@ class ActivityListModel final : public QAbstractListModel {
 
         [[nodiscard]] std::vector<Row> buildProjection() const;
         [[nodiscard]] std::vector<Row> activityRows(SyncDbId syncDbId) const;
-        static void appendActiveErrors(SyncDbId syncDbId, const std::vector<Error> &errors, std::vector<Row> &rows);
-        static void appendActiveError(SyncDbId syncDbId, const Error &error, std::vector<Row> &rows);
-        [[nodiscard]] static Row makeActivityRow(SyncDbId syncDbId, const ActivityEntry &activity);
-        [[nodiscard]] static Row makeErrorRow(SyncDbId syncDbId, const Error &error);
+        void appendActiveErrors(SyncDbId syncDbId, const std::vector<Error> &errors, std::vector<Row> &rows) const;
+        void appendActiveError(SyncDbId syncDbId, const Error &error, std::vector<Row> &rows) const;
+        [[nodiscard]] Row makeActivityRow(SyncDbId syncDbId, const ActivityEntry &activity) const;
+        [[nodiscard]] Row makeErrorRow(SyncDbId syncDbId, const Error &error) const;
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
         void finalizeProjection(std::vector<Row> &rows) const;
         void resetProjection();
+        void scheduleProjectionReconciliation();
         void reconcileProjection();
         [[nodiscard]] bool removeMissingRows(const std::vector<Row> &nextRows);
         [[nodiscard]] bool applyProjectionRows(const std::vector<Row> &nextRows);
@@ -160,6 +167,8 @@ class ActivityListModel final : public QAbstractListModel {
         MainSelectionStore &_selectionStore;
         std::vector<Row> _rows;
         Filter _filter{Filter::MyActivityOnly};
+        FileIconResolver _fileIconResolver;
+        QTimer _projectionRefreshTimer;
         QTimer _relativeTimeTimer;
 };
 
