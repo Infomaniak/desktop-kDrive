@@ -195,29 +195,15 @@ Item {
                         id: advancedButtonHoverHandler
                     }
 
-                    ToolTip {
-                        id: advancedButtonTooltip
-
+                    IKToolTip {
                         visible: advancedButtonHoverHandler.hovered
                         delay: IKOnboarding.driveSelectionTooltipDelay
-                        timeout: -1
                         text: qsTr("Not available yet.")
                         padding: IKOnboarding.driveSelectionTooltipPadding
-
-                        contentItem: Text {
-                            width: Math.min(implicitWidth, IKOnboarding.driveSelectionTooltipMaxWidth)
-                            text: advancedButtonTooltip.text
-                            color: IKColors.onboardingTooltipText
-                            font.pixelSize: IKFonts.bodySize
-                            lineHeightMode: Text.FixedHeight
-                            lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
-                            wrapMode: Text.WordWrap
-                        }
-
-                        background: Rectangle {
-                            radius: IKOnboarding.driveSelectionTooltipRadius
-                            color: IKColors.onboardingTooltipSurface
-                        }
+                        maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
+                        foregroundColor: IKColors.onboardingTooltipText
+                        surfaceColor: IKColors.onboardingTooltipSurface
+                        textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
                     }
                 }
 
