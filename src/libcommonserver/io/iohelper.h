@@ -101,6 +101,7 @@ struct IoHelper {
         static std::string ioError2StdString(IoError ioError) noexcept;
 
         //! Get the item type of the item indicated by `path`.
+        //! Hardlinks are not supported
         /*!
           \param path is the file system path of the inspected item.
           \param itemType is the type of the item indicated by `path`.
@@ -344,6 +345,7 @@ struct IoHelper {
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
+        //! If the destination item is a link, remove it before copying.
         /*!
           \param sourcePath is the file system path of the item to copy.
           \param destinationPath is the file system path of the location to copy the item to.
@@ -351,7 +353,6 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise.
         */
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-
 
 #if defined(KD_MACOS)
         // From `man xattr`:
@@ -559,9 +560,11 @@ struct IoHelper {
                                   IoError &ioError)>
                 _checkIfPathExistsSensitive;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static std::function<bool(const SyncPath &path, NodeId &nodeId)> _getNodeId;
         static bool _checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool _getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept;
         static bool _unsuportedFSLogged;
 
     private:

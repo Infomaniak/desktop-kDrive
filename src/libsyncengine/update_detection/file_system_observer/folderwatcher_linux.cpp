@@ -43,18 +43,6 @@ SyncPath FolderWatcher_linux::makeSyncPath(const SyncPath &watchedFolderPath, co
 }
 
 void FolderWatcher_linux::startWatching() {
-    LOGW_DEBUG(_logger, L"Start watching folder " << Utility::formatSyncPath(_folder));
-
-    std::string fileSystemName;
-    if (const auto exitInfo = Utility::getFileSystemName(_parent->cacheDirectory(), fileSystemName); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in Utility::getFileSystemName: exitInfo=" << exitInfo);
-        setExitInfo(exitInfo);
-        return;
-    }
-
-    LOG_DEBUG(_logger, "File system format: " << fileSystemName);
-    LOG_DEBUG(_logger, "Free space on disk: " << Utility::getFreeDiskSpace(_folder) << " bytes.");
-
     _fileDescriptor = inotify_init();
     if (_fileDescriptor == -1) {
         LOG_WARN(_logger, "inotify_init() failed: " << strerror(errno));
@@ -279,14 +267,14 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
-            LOG_DEBUG(_logger, "Removed watch on" << itPath);
+            LOG_DEBUG(_logger, "Removed watch on " << itPath);
             continue;
         }
 
         ++it;
-        LOG_ERROR(_logger, "Error in inotify_rm_watch :" << errno);
+        LOG_ERROR(_logger, "Error in inotify_rm_watch: " << errno);
         sentry::Handler::captureMessage(sentry::Level::Error, "FolderWatcher_linux::removeFoldersBelow",
-                                        "Error in inotify_rm_watch :" + std::to_string(errno));
+                                        "Error in inotify_rm_watch: " + std::to_string(errno));
     }
 }
 

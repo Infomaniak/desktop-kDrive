@@ -1,0 +1,10 @@
+Path,Type
+$SYSROOT,BlackList
+$HOME,WhiteListSubFolder
+$HOME/Library,BlackList
+$HOME/.Trash,BlackList
+$HOME/.cache,BlackList
+$HOME/.dropbox,BlackList
+$HOME/.fseventsd,BlackList
+$HOME/.Spotlight-V100,BlackList
+/Volumes,WhiteListSubFolder

@@ -28,6 +28,7 @@
 #include <QJsonDocument>
 #include <QJsonParseError>
 #include <QJsonObject>
+#include <QThread>
 #include <QTimer>
 
 #include <fstream>
@@ -52,11 +53,7 @@ std::shared_ptr<OldCommServer> OldCommServer::instance(QObject *parent) {
 
 OldCommServer::OldCommServer(QObject *parent) :
     QObject(parent),
-    _requestWorkerThread(new QtLoggingThread()),
-    _requestWorker(new Worker()),
-    _tcpSocket(nullptr),
-    _buffer(QByteArray()),
-    _hasQuittedProperly(false) {
+    _requestWorker(new Worker()) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
@@ -88,8 +85,44 @@ OldCommServer::~OldCommServer() {
     _instance = nullptr;
 }
 
+void OldCommServer::stop() {
+    if (_stopping) {
+        return;
+    }
+
+    _stopping = true;
+
+    if (_tcpSocket) {
+        disconnect(_tcpSocket, nullptr, this, nullptr);
+        if (_tcpSocket->isOpen()) {
+            _tcpSocket->close();
+        }
+        _tcpSocket->deleteLater();
+        _tcpSocket = nullptr;
+    }
+
+    _tcpServer.close();
+    _buffer.clear();
+
+    // Break out of Worker::onStart, then quit and join the worker thread. Without this the thread outlives shutdown.
+    if (_requestWorker) {
+        _requestWorker->stop();
+    }
+    if (_requestWorkerThread) {
+        _requestWorkerThread->quit();
+        if (_requestWorkerThread == QThread::currentThread()) {
+            LOG_WARN(Log::instance()->getLogger(), "Skipping OldCommServer worker self-wait");
+        } else if (!_requestWorkerThread->wait(5000)) {
+            LOG_WARN(Log::instance()->getLogger(), "OldCommServer worker thread did not stop within timeout");
+        } else {
+            _requestWorkerThread = nullptr;
+            _requestWorker = nullptr;
+        }
+    }
+}
+
 void OldCommServer::sendReply(int id, const QByteArray &result) {
-    if (_tcpSocket && _tcpSocket->isOpen()) {
+    if (!_stopping && _tcpSocket && _tcpSocket->isOpen()) {
         _requestWorker->addReply(id, result);
     }
 }
@@ -100,7 +133,7 @@ bool OldCommServer::sendSignal(const SignalNum num, const QByteArray &params) {
 }
 
 bool OldCommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
-    if (_tcpSocket && _tcpSocket->isOpen()) {
+    if (!_stopping && _tcpSocket && _tcpSocket->isOpen()) {
         _requestWorker->addSignal(num, params, id);
         return true;
     }
@@ -108,6 +141,11 @@ bool OldCommServer::sendSignal(SignalNum num, const QByteArray &params, int &id)
 }
 
 void OldCommServer::start() {
+    if (_stopping) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Ignoring OldCommServer start request during shutdown");
+        return;
+    }
+
     // (Re)start tcp server
     if (_tcpServer.isListening()) {
         _tcpServer.close();
@@ -130,6 +168,10 @@ void OldCommServer::start() {
 }
 
 void OldCommServer::onNewConnection() {
+    if (_stopping) {
+        return;
+    }
+
     LOG_DEBUG(Log::instance()->getLogger(), "New connection");
 
     if (_tcpSocket) {
@@ -158,6 +200,10 @@ void OldCommServer::onBytesWritten(qint64 numBytes) {
 }
 
 void OldCommServer::onReadyRead() {
+    if (_stopping) {
+        return;
+    }
+
     while (_tcpSocket && _tcpSocket->bytesAvailable() > 0) {
         // Read from socket
         _buffer.append(_tcpSocket->readAll());
@@ -210,6 +256,10 @@ void OldCommServer::onReadyRead() {
 
 void OldCommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     QTcpSocket *socket = reinterpret_cast<QTcpSocket *>(sender());
+
+    if (_stopping) {
+        return;
+    }
 
     if (!_hasQuittedProperly) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -408,6 +458,7 @@ void Worker::onStart() {
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Worker ended");
+    emit finished();
 }
 
 } // namespace KDC

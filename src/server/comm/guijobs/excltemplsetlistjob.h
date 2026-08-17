@@ -20,7 +20,7 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/data/exclusiontemplate.h"
 
 namespace KDC {
 
@@ -33,7 +33,7 @@ class ExclTemplSetUserListJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
+        std::vector<ExclusionTemplate> _exclusionTemplateList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; }

@@ -20,14 +20,17 @@
 
 #include "parmslib.h"
 #include "parameters.h"
-#include "user.h"
-#include "account.h"
-#include "sync.h"
-#include "exclusiontemplate.h"
+#include "libcommon/data/user.h"
+#include "libcommon/data/account.h"
+#include "libcommon/data/sync.h"
+#include "libcommon/data/exclusiontemplate.h"
+
+#include "syncfolderrule.h"
+
 #if defined(KD_MACOS)
-#include "exclusionapp.h"
+#include "libcommon/data/exclusionapp.h"
 #endif
-#include "error.h"
+#include "libcommon/data/error.h"
 #include "migrationselectivesync.h"
 
 #include "libcommonserver/db/db.h"
@@ -92,6 +95,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateSync(const Sync &sync, bool &found);
         bool setSyncPaused(SyncDbId dbId, bool value, bool &found);
         bool setSyncHasFullyCompleted(SyncDbId dbId, bool value, bool &found);
+        bool setSyncToDelete(SyncDbId dbId, bool value, bool &found);
         bool deleteSync(SyncDbId dbId, bool &found);
         bool selectSync(SyncDbId dbId, Sync &sync, bool &found);
         bool selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found);
@@ -113,6 +117,13 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateUserExclusionTemplates(const std::vector<ExclusionTemplate> &exclusionTemplateList) {
             return updateAllExclusionTemplates(false, exclusionTemplateList);
         };
+
+
+        bool insertSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &constraintError);
+        bool updateSyncFolderRule(const SyncFolderRule &syncFolderRule, bool &found);
+        bool deleteSyncFolderRule(const SyncPath &syncPath, bool &found);
+        bool selectAllSyncFolderRules(std::vector<SyncFolderRule> &syncFolderRuleList);
+
 
 #if defined(KD_MACOS)
         bool insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError);
@@ -161,6 +172,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool createAppState();
         bool prepareAppState();
+        bool createSyncFolderRule();
 
         void fillSyncWithQueryResult(Sync &sync, const char *requestId);
 
@@ -169,6 +181,17 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool getDefaultExclusionTemplatesFromFile(const SyncPath &syncExcludeListPath,
                                                   std::vector<std::string> &fileDefaultExclusionTemplates);
         bool insertUserTemplateNormalizations(const std::string &fromVersion);
+
+        /**
+         * This function reads the sync folder rules from a .csv file and populates the provided vector with the rules.
+         * @param syncFolderRulesPath  The path to the .csv file containing the sync folder rules.
+         * @param fileSyncFolderRules  The vector to be populated with the sync folder rules.
+         * @return true if the sync folder rules are successfully read from the file, false otherwise
+         */
+        bool getSyncFolderRulesFromFile(const SyncPath &syncFolderRulesPath,
+                                        std::vector<SyncFolderRule> &fileSyncFolderRules) const;
+        bool updateSyncFolderRules();
+
 
 #if defined(KD_MACOS)
         bool updateExclusionApps();

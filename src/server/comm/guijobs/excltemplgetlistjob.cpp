@@ -38,7 +38,7 @@ ExitInfo ExclTemplGetListJob::deserializeInputParms() {
 }
 
 ExitInfo ExclTemplGetListJob::serializeOutputParms() {
-    writeParamValues(outParamsExclusionTemplateList, _exclusionTemplateList, info2DynamicVar<ExclusionTemplateInfo>);
+    writeParamValues(outParamsExclusionTemplateList, _exclusionTemplateList, info2DynamicVar<ExclusionTemplate>);
 
     return ExitCode::Ok;
 }
@@ -52,7 +52,7 @@ ExitInfo ExclTemplGetListJob::process() {
         return exitCode;
     }
 
-    ExclusionTemplateInfo::normalizeExclusionTemplateInfoList(_exclusionTemplateList);
+    ExclusionTemplate::normalizeList(_exclusionTemplateList);
 
     return ExitCode::Ok;
 }

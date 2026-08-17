@@ -4,6 +4,9 @@
             <Component>
                 <File Source="$(desktop-kDriveDir)/build-windows/install/bin/sync-exclude.lst" />
             </Component>
+            <Component>
+                <File Source="$(desktop-kDriveDir)/build-windows/install/bin/sync-folder-rules.csv" />
+            </Component>
         </ComponentGroup>
     </Fragment>
 </Wix>

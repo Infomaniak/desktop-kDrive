@@ -593,6 +593,7 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -601,7 +602,7 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
     }
     waitForSyncToBeIdle(std::source_location::current());
     {
@@ -638,6 +639,7 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -650,10 +652,10 @@ void TestIntegration::testNegativeModificationTime() {
         // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #else
-        // Setting both a negative creation and modification date is accepted.
+        // Setting a negative creation date is accepted.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
 #endif
-        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
     }
 
     logStep("testNegativeModificationTime");

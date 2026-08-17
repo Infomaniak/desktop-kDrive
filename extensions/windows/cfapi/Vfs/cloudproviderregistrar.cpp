@@ -19,8 +19,12 @@
 #include "cloudproviderregistrar.h"
 #include "..\Common\utilities.h"
 
-#include <winrt\windows.storage.provider.h>
-#include <winrt\windows.security.cryptography.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <winrt/Windows.Storage.h>
+#include <winrt/Windows.Storage.Provider.h>
+#include <winrt/Windows.Security.Cryptography.h>
+
 namespace winrt {
 using namespace Windows::Foundation;
 using namespace Windows::Storage;

@@ -32,16 +32,16 @@
 #include "comm/oldcommserver.h"
 #include "comm/commmanager.h"
 #include "syncpal/syncpal.h"
-#include "libparms/db/user.h"
-#include "libcommon/info/userinfo.h"
-#include "libcommon/info/accountinfo.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/user.h"
+#include "libcommon/data/account.h"
+#include "libcommon/data/sync.h"
 #include "libcommon/info/syncfileiteminfo.h"
 #include "libcommonserver/vfs/vfs.h"
 
 #include <QApplication>
 #include <QElapsedTimer>
 #include <QPointer>
+#include <memory>
 #include <QProcess>
 #include <QQueue>
 #include <QTimer>
@@ -128,14 +128,15 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool synthesisAsked() { return _synthesisAsked; }
         inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
+        inline qint64 runningServerPid() const { return _runningServerPid; }
 
         void showHelp();
         void showVersion();
         void clearSyncNodes();
-        void sendShowSettingsMsg();
-        void sendShowSynthesisMsg();
-        void sendRestartClientMsg();
-        void sendAuthorizationCode();
+        void sendShowSettingsMsg(qint64 pid = -1);
+        void sendShowSynthesisMsg(qint64 pid = -1);
+        void sendRestartClientMsg(qint64 pid = -1);
+        void sendAuthorizationCode(qint64 pid = -1);
         void handleClientDisconnection() { onClientDisconnectedReceived(); }
 
         void clearKeychainKeys();
@@ -162,10 +163,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         void updateSentryUser();
         void deleteDrive(DriveDbId driveDbId);
         void deleteSync(SyncDbId syncDbId);
+        void deleteSyncAsBackgroundTask(SyncDbId syncDbId);
         ExitCode clearErrors(SyncDbId syncDbId, bool autoResolved = false);
         // Check if the synchronization `sync` is registered in the sync database and
         // if the `sync` folder does not contain any other sync subfolder.
-        [[nodiscard]] ExitInfo checkIfSyncIsValid(const Sync &sync);
+        [[nodiscard]] ExitInfo checkIfSyncIsValid(const BaseSync &sync);
         //! Create and try to start the VFS plugin
         /*!
           \param sync is the sync whose VFS plugin must be initialized.
@@ -225,7 +227,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static bool useOldCommServer() {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
-            return true; // (KDRIVE_VERSION_MAJOR < 4);
+            return KDRIVE_VERSION_MAJOR < 4;
 #else
             return true;
 #endif
@@ -271,6 +273,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _settingsAsked{false};
         bool _synthesisAsked{false};
         QString _authorizationCodeStr;
+        qint64 _runningServerPid{-1};
         bool _clearKeychainKeysAsked{false};
         bool _vfsInstallationDone{false};
         bool _vfsActivationDone{false};
@@ -279,6 +282,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _noUpdate{false};
         bool _appStartPTraceStopped{false};
         bool _clientManuallyRestarted{false};
+#if defined(KD_LINUX)
+        std::unique_ptr<SharedTools::QtLocalPeer> _fallbackLocalPeer;
+#endif
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
@@ -334,12 +340,12 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo processMigratedSyncOnceConnected(UserDbId userDbId, DriveId driveId, Sync &sync,
                                                                 QSet<QString> &blackList, bool &syncUpdated);
 
-        virtual void sendUserAdded(const UserInfo &userInfo) const;
-        virtual void sendUserUpdated(const UserInfo &userInfo) const;
+        virtual void sendUserAdded(const User &userInfo) const;
+        virtual void sendUserUpdated(const User &userInfo) const;
         virtual void sendUserStatusChanged(UserDbId userDbId, bool connected, const QString &connexionError) const;
         virtual void sendUserRemoved(UserDbId userDbId) const;
-        virtual void sendAccountAdded(const AccountInfo &accountInfo) const;
-        virtual void sendAccountUpdated(const AccountInfo &accountInfo) const;
+        virtual void sendAccountAdded(const Account &accountInfo) const;
+        virtual void sendAccountUpdated(const Account &accountInfo) const;
         virtual void sendAccountRemoved(AccountDbId accountDbId) const;
         virtual void sendDriveAdded(const Drive &drive) const;
         virtual void sendDriveUpdated(const Drive &drive) const;
@@ -348,8 +354,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendDriveDeletionFailed(DriveDbId driveDbId) const;
         virtual void sendSyncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step,
                                           const SyncProgress &progress) const;
-        virtual void sendSyncAdded(const SyncInfo &syncInfo) const;
-        virtual void sendSyncUpdated(const SyncInfo &syncInfo) const;
+        virtual void sendSyncAdded(const Sync &sync) const;
+        virtual void sendSyncUpdated(const Sync &sync) const;
         virtual void sendSyncRemoved(SyncDbId syncDbId) const;
         virtual void sendSyncDeletionFailed(SyncDbId syncDbId) const;
         virtual void sendManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
@@ -361,7 +367,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendNodeFixConflictedFilesCompleted(SyncDbId syncDbId, qint64 nbErrors) const;
 
         void deleteAccount(AccountDbId accountDbId);
-        void sendErrorAdded(const ErrorInfo &errorInfo) const;
+        void sendErrorAdded(const Error &error) const;
         void sendErrorRemoved(int64_t dbId) const;
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item, bool notify);
         void sendGuiSignal(std::shared_ptr<AbstractGuiJob> signal) const;

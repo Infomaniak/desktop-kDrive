@@ -33,7 +33,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get right functions
         CPPUNIT_TEST(testLock);
         CPPUNIT_TEST(testReadOnly);
-        CPPUNIT_TEST(testPermissionsGiver);
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testCheckIfPathExists);
@@ -73,6 +72,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetDirectorySize);
         CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testIsPathOnMountedDisk);
+        CPPUNIT_TEST(testCopyFileOrDirectory);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -111,7 +111,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckSetAndGetRights();
         void testLock();
         void testReadOnly();
-        void testPermissionsGiver();
+        void testCopyFileOrDirectory();
 
     private:
         void testGetItemTypeSimpleCases();

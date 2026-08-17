@@ -126,14 +126,26 @@ std::string CommonUtility::osVersion() {
     return osVersion;
 }
 
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType.clear();
+    mountPoint.clear();
+
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(targetPath, ec);
+    if (ec) canonicalPath = std::filesystem::absolute(targetPath);
+
+    // FS type & mount point.
     struct statfs stat;
+    if (statfs(canonicalPath.native().c_str(), &stat) != 0) return false;
 
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
+    fsType = std::string(stat.f_fstypename);
+    if (fsType == "msdos") fsType = fsType::FAT;
 
-    return "UNIDENTIFIED";
+    mountPoint = SyncPath(stat.f_mntonname);
+    // if mountPoint is a firmlink, convert it to the display path.
+    if (mountPoint == "/System/Volumes/Data") mountPoint = "/";
+
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
@@ -155,6 +167,16 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     directoryPath /= "Logs";
     directoryPath /= APPLICATION_NAME; // On macOS, logs in "Logs" folder are stored in a subfolder named after the application
 
+    return ExitCode::Ok;
+}
+
+ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
+    NSString *homeDir = NSHomeDirectory();
+    if (!homeDir) {
+        return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+
+    directoryPath = SyncPath([homeDir UTF8String]);
     return ExitCode::Ok;
 }
 

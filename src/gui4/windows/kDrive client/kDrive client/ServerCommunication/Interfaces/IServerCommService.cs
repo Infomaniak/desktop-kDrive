@@ -22,7 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
+using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 
 namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {
@@ -82,7 +82,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool?> CanPathSupportLiteSync(string absoluteLocalPath, CancellationToken cancellationToken);
 
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
-        Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
+        Task<string?> GetGoodPathForNewSync(IDrive? drive, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken);
         Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
@@ -134,6 +134,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // App-related requests
         Task<bool> ActivateLoadInfo(CancellationToken cancellationToken);
         Task Exit(); // Notify the server that the application is exiting. No cancellation token is required as the app is closing.
+
+        // Stores the provided value for the given app state key on the server.
+        // Returns true on success, false on failure.
+        Task<bool> SetAppState(AppStateKey key, string value, CancellationToken cancellationToken);
+
+        // Retrieves the value stored for the given app state key from the server.
+        // Returns the value on success, or null on failure.
+        Task<string?> GetAppState(AppStateKey key, CancellationToken cancellationToken);
 
         // Error-related requests
         Task<bool> RefreshErrors(CancellationToken cancellationToken);

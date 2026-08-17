@@ -167,6 +167,7 @@ enum class ExitCause {
     MissingReplyData,
     BlackListPropagationError,
     FileSystemNotSupported,
+    SyncDeletionFailed,
     EnumEnd
 };
 
@@ -180,6 +181,8 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x020, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     ForbiddenCharOnlySpaces = 0x080, // The name contains only spaces (not supported by back end)
     ForbiddenCharEndWithSpace = 0x100, // The name ends with a space
+    InvalidTimestamp = 0x200, // The creation or modification time is invalid (ex: in the future)
+    EnumEnd = 0x1000
 };
 
 enum class Language {
@@ -341,6 +344,22 @@ enum class ConflictResolutionStrategy {
 enum class SyncConfiguration {
     Classic,
     Advanced,
+    EnumEnd
+};
+
+enum class AppStateKey {
+    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
+    LastServerSelfRestartDate = 0,
+    LastClientSelfRestartDate = 1,
+    LastSuccessfulLogUploadDate = 2, // Format: "month,day,year,hour,minute,second"
+    LastLogUploadArchivePath = 3,
+    LogUploadState = 4,
+    LogUploadPercent = 5,
+    LogUploadToken = 6,
+    AppUid = 7,
+    NoUpdate = 8,
+    ShowV4Onboarding = 9,
+    Unknown, // Only for initialization purpose, never use it in the database
     EnumEnd
 };
 

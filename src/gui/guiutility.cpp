@@ -20,6 +20,7 @@
 #include "appclient.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
+#include "guirequests.h"
 
 #include "libcommon/utility/utility.h"
 
@@ -563,7 +564,7 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     QString warningMsg;
     for (const auto &sync: syncInfoMap) {
         const QString syncFolderName = sync.second.name();
-        const SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
+        const SyncPath syncLocalPath = sync.second.localPath();
 
         if (syncLocalPath == directoryPath) {
             warn = true;
@@ -606,6 +607,32 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     if (warn) {
         CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, parent);
         msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+        return false;
+    }
+
+    return true;
+}
+
+bool GuiUtility::validateLocalFolderForNewSync(const QString &dirPath, QWidget *const parent) {
+    bool valid = false;
+    if (const auto exitCode = GuiRequests::isPathValidForNewSync(dirPath, SyncConfiguration::Advanced, valid);
+        exitCode != ExitCode::Ok) {
+        qCWarning(lcGuiUtility) << "Error in GuiRequests::isPathValidForNewSync";
+        CustomMessageBox msgBox(QMessageBox::Warning, QCoreApplication::translate("utility", "Failed to validate local folder"),
+                                QMessageBox::Ok, parent);
+        (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+        return false;
+    }
+
+    if (!valid) {
+        const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
+        CustomMessageBox msgBox(
+                QMessageBox::Warning,
+                QCoreApplication::translate("utility",
+                                            "Folder <b>%1</b> cannot be selected as sync folder. Please, select another folder.")
+                        .arg(selectedFolderName),
+                QMessageBox::Ok, parent);
+        (void) msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
         return false;
     }
 

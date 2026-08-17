@@ -243,6 +243,8 @@ std::string toString(const ExitCause e) {
             return "BlackListPropagationError";
         case ExitCause::FileSystemNotSupported:
             return "FileSystemNotSupported";
+        case ExitCause::SyncDeletionFailed:
+            return "SyncDeletionFailed";
         default:
             return noConversionStr;
     }
@@ -301,6 +303,8 @@ std::string toString(const InconsistencyType e) {
             return "ForbiddenCharOnlySpaces";
         case InconsistencyType::ForbiddenCharEndWithSpace:
             return "ForbiddenCharEndWithSpace";
+        case InconsistencyType::InvalidTimestamp:
+            return "InvalidTimestamp";
         default:
             return noConversionStr;
     }
@@ -661,6 +665,21 @@ std::string toString(const ExclusionTemplateComplexity e) {
     }
 }
 
+std::string toString(const SyncFolderRuleType e) {
+    switch (e) {
+        case SyncFolderRuleType::None:
+            return "None";
+        case SyncFolderRuleType::WhiteList:
+            return "WhiteList";
+        case SyncFolderRuleType::BlackList:
+            return "BlackList";
+        case SyncFolderRuleType::WhiteListSubFolder:
+            return "WhiteListSubFolder";
+        default:
+            return noConversionStr;
+    }
+}
+
 std::string toString(const LinkType e) {
     switch (e) {
         case LinkType::None:
@@ -741,6 +760,8 @@ std::string toString(const AppStateKey e) {
             return "AppUid";
         case AppStateKey::NoUpdate:
             return "NoUpdate";
+        case AppStateKey::ShowV4Onboarding:
+            return "ShowV4Onboarding";
         case AppStateKey::Unknown:
             return "Unknown";
         default:

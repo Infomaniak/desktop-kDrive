@@ -88,9 +88,9 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <CopyFileToFolders Include="..\..\..\..\version.json" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\..\..\..\version.json" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

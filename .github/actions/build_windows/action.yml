@@ -39,11 +39,6 @@ inputs:
     required: false
     default: 'false'
 
-outputs:
-  kDrive_version:
-    description: 'The version of the kDrive app built'
-    value: ${{ steps.set_version.outputs.kDrive_version }}
-
 runs:
     using: "composite"
     steps:
@@ -51,10 +46,6 @@ runs:
       - name: Load system Path into Github environment
         run : echo Path=%Path%>> %GITHUB_ENV%
         shell: cmd
-
-      - name: Restore extension packages
-        run : nuget restore extensions/windows/cfapi/kDriveExt.sln
-        shell: powershell
 
       - name: Import Windows certificate
         env:
@@ -66,34 +57,35 @@ runs:
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_KSP_CLIENT_CERT
             certutil -decode certificate/tempCert.txt certificate/ksp_client_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/ksp_client_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.ksp_client_cert_pass }}" -Force -AsPlainText)
+            Import-PfxCertificate -FilePath certificate/ksp_client_certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ inputs.ksp_client_cert_pass }}" -Force -AsPlainText)
             Write-Host "KSP client certificate imported successfully."
           } else {
             New-Item -ItemType directory -Path certificate
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT
             certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ inputs.debug_cert_pass }}" -Force -AsPlainText)
+            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ inputs.debug_cert_pass }}" -Force -AsPlainText)
             Write-Host "Debug certificate imported successfully."
           }
         shell: powershell
 
       - name: Digicert KSP - Set variables
         id: variables
+        if: ${{ inputs.use_ksp_cert == 'true' }}
+        shell: cmd
         run: |
-          if [ "${{ inputs.use_ksp_cert }}" = "true" ]; then
-            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-            echo "KEYPAIR_NAME=gt-standard-keypair" >> $GITHUB_OUTPUT
-            echo "CERTIFICATE_NAME=gt-certificate" >> $GITHUB_OUTPUT
-            echo "SM_HOST=${{ inputs.ksp_host }}" >> "$GITHUB_ENV"
-            echo "SM_API_KEY=${{ inputs.ksp_api_key }}" >> "$GITHUB_ENV"
-            echo "SM_CLIENT_CERT_FILE=${{ github.workspace }}/certificate/ksp_client_certificate.pfx" >> "$GITHUB_ENV"
-            echo "SM_CLIENT_CERT_PASSWORD=${{ inputs.ksp_client_cert_pass }}" >> "$GITHUB_ENV"
-            echo "C:\Program Files (x86)\Windows Kits\10\App Certification Kit" >> $GITHUB_PATH
-            echo "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools" >> $GITHUB_PATH
-            echo "C:\Program Files\DigiCert\DigiCert Keylocker Tools" >> $GITHUB_PATH
-          fi
-        shell: bash
+          >>"%GITHUB_OUTPUT%" echo version=%GITHUB_REF:refs/tags/v=%
+          >>"%GITHUB_OUTPUT%" echo KEYPAIR_NAME=gt-standard-keypair
+          >>"%GITHUB_OUTPUT%" echo CERTIFICATE_NAME=gt-certificate
+
+          >>"%GITHUB_ENV%" echo SM_HOST=${{ inputs.ksp_host }}
+          >>"%GITHUB_ENV%" echo SM_API_KEY=${{ inputs.ksp_api_key }}
+          >>"%GITHUB_ENV%" echo SM_CLIENT_CERT_FILE=${{ github.workspace }}\certificate\ksp_client_certificate.pfx
+          >>"%GITHUB_ENV%" echo SM_CLIENT_CERT_PASSWORD=${{ inputs.ksp_client_cert_pass }}
+
+          >>"%GITHUB_PATH%" echo C:\Program Files (x86)\Windows Kits\10\App Certification Kit
+          >>"%GITHUB_PATH%" echo C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools
+          >>"%GITHUB_PATH%" echo C:\Program Files\DigiCert\DigiCert Keylocker Tools
 
       - name: Digicert KSP - Setup SSM KSP on Windows latest
         run: |
@@ -110,7 +102,7 @@ runs:
             REM Verify the KSP
             certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
             REM Synchronize certificate
-            smctl windows certsync --store="system"
+            smctl windows certsync
           )
         shell: cmd
 
@@ -118,7 +110,11 @@ runs:
         id: build
         shell: powershell
         run: |
-          & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 `
+            -HostArch amd64 `
+            -SkipAutomaticLocation
+
 
           $thumbprint = "${{ inputs.debug_cert_thumbprint }}"
 
@@ -137,10 +133,10 @@ runs:
           if ("${{ inputs.release_build }}" -eq "true") {
 
             if ("${{ inputs.build_new_client }}" -eq "true") {
-              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload -newGui $true
+              & $script -thumbprint $thumbprint -ci -ext -clean remake -newGui $true # The new gui does not yet support msi generation, so we skip it for now
             }
             else {
-              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake -upload
+              & $script -thumbprint $thumbprint -ci -ext -msi -clean remake
             }
           }
           else {
@@ -150,11 +146,11 @@ runs:
       - name: Remove Windows certificate
         run: |
           if("${{ inputs.use_ksp_cert }}" -eq "true") {
-            Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
+            Get-ChildItem "Cert:\CurrentUser\My\${{ inputs.ksp_client_cert_thumbprint }}" | Remove-Item
             Remove-Item -path certificate -include ksp_client_certificate.pfx
             Write-Host "KSP client certificate removed successfully."
           } else {
-            Get-ChildItem "Cert:\LocalMachine\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
+            Get-ChildItem "Cert:\CurrentUser\My\${{ inputs.debug_cert_thumbprint }}" | Remove-Item
             Remove-Item -path certificate -include debug_certificate.pfx
             Write-Host "Debug certificate removed successfully."
           }
@@ -238,6 +234,7 @@ runs:
           mkdir uncached_dependencies
           $uncached = @(
               "sync-exclude.lst",
+              "sync-folder-rules.csv",
               "kDrive_vfs_win.dll",
               "KDContextMenu.dll",
               "KDOverlays.dll",
@@ -331,10 +328,16 @@ runs:
 
       - name : Create sentry client artifacts
         run: |
-          .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb
           mkdir ${{ github.workspace }}/build-windows/sentry-client-artifacts
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
-          Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
+
+          if ("${{ inputs.build_new_client }}" -eq "true") {
+            Write-Host "New client build - source are embedded in the pdb, skipping source bundle creation."
+            Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/client/kDrive.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
+          } else {
+            .\sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb
+            Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.src.zip -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.src.zip
+            Move-Item -Path ${{ github.workspace }}/build-windows/build/bin/kDrive_client.pdb -Destination ${{ github.workspace }}/build-windows/sentry-client-artifacts/kDrive_client.pdb
+          }
         shell: powershell
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 

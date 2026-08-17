@@ -26,7 +26,7 @@ namespace KDC {
 
 class TmpBlacklistManager {
     public:
-        struct TmpErrorInfo {
+        struct TmpError {
                 std::chrono::time_point<std::chrono::steady_clock> lastErrorTime = std::chrono::steady_clock::now();
                 SyncPath path;
         };
@@ -57,8 +57,8 @@ class TmpBlacklistManager {
             return side == ReplicaSide::Local ? SyncNodeType::TmpLocalBlacklist : SyncNodeType::TmpRemoteBlacklist;
         }
 
-        std::unordered_map<NodeId, TmpErrorInfo> _localErrors;
-        std::unordered_map<NodeId, TmpErrorInfo> _remoteErrors;
+        std::unordered_map<NodeId, TmpError> _localErrors;
+        std::unordered_map<NodeId, TmpError> _remoteErrors;
         std::shared_ptr<SyncPal> _syncPal;
 };
 

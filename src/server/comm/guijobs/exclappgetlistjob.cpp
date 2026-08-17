@@ -20,7 +20,6 @@
 #include "appserver.h"
 #include "requests/serverrequests.h"
 
-#include "libcommon/info/userinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
@@ -52,7 +51,7 @@ ExitInfo ExclAppGetListJob::deserializeInputParms() {
 }
 
 ExitInfo ExclAppGetListJob::serializeOutputParms() {
-    writeParamValues(outParamsApplicationList, _applicationList, info2DynamicVar<ExclusionAppInfo>);
+    writeParamValues(outParamsApplicationList, _applicationList, info2DynamicVar<ExclusionApp>);
 
     return ExitCode::Ok;
 }
