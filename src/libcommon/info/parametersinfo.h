@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "info/proxyconfiginfo.h"
+#include "data/proxyconfig.h"
 #include "utility/types.h"
 
 #include <Poco/Dynamic/Struct.h>
@@ -55,8 +55,8 @@ class ParametersInfo {
         inline bool extendedLog() const { return _extendedLog; }
         inline void setPurgeOldLogs(bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
         inline bool purgeOldLogs() const { return _purgeOldLogs; }
-        inline const ProxyConfigInfo &proxyConfigInfo() const { return _proxyConfigInfo; }
-        inline void setProxyConfigInfo(const ProxyConfigInfo &proxyConfigInfo) { _proxyConfigInfo = proxyConfigInfo; }
+        inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
+        inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
         inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
         inline bool darkTheme() const { return _darkTheme; }
         inline void setDialogGeometry(const QString &objectName, const QByteArray &saveGeometry) {
@@ -84,7 +84,7 @@ class ParametersInfo {
                    (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
                    (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
                    (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete()) &&
-                   (lhs.proxyConfigInfo() == rhs.proxyConfigInfo());
+                   (lhs.proxyConfig() == rhs.proxyConfig());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
@@ -103,7 +103,7 @@ class ParametersInfo {
         LogLevel _logLevel{LogLevel::Debug};
         bool _extendedLog{false};
         bool _purgeOldLogs{true};
-        ProxyConfigInfo _proxyConfigInfo;
+        ProxyConfig _proxyConfig;
         bool _darkTheme{false};
         DialogGeometry _dialogGeometry;
         int _maxAllowedCpu{50};

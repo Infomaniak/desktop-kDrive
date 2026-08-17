@@ -591,7 +591,7 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
             LOG_WARN(_logger, "Failed to write password token into keychain");
             return ExitCode::SystemError;
         }
-        proxyConfig.setToken(keychainKeyProxyPass);
+        proxyConfig.setKeychainKey(keychainKeyProxyPass);
     }
     return ExitCode::Ok;
 }

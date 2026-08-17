@@ -18,7 +18,11 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
+
+#include <Poco/Dynamic/Struct.h>
+
+#include <string>
 
 namespace KDC {
 
@@ -38,8 +42,24 @@ class ProxyConfig {
         inline void setNeedsAuth(bool needsAuth) { _needsAuth = needsAuth; }
         inline const std::string &user() const { return _user; }
         inline void setUser(const std::string &user) { _user = user; }
-        inline const std::string &token() const { return _token; }
-        inline void setToken(const std::string &token) { _token = token; }
+
+        inline const std::string &pwd() const { return _pwd; }
+        inline void setPwd(const std::string &pwd) { _pwd = pwd; }
+
+        inline const std::string &keychainKey() const { return _keychainKey; }
+        inline void setKeychainKey(const std::string &keychainKey) { _keychainKey = keychainKey; }
+
+        void toDynamicStruct(Poco::DynamicStruct &) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &);
+
+        bool operator==(const ProxyConfig &other) const {
+            return (_type == other._type) && (_hostName == other._hostName) && (_port == other._port) &&
+                   (_needsAuth == other._needsAuth) && (_user == other._user) && (_pwd == other._pwd) &&
+                   (_keychainKey == other._keychainKey);
+        }
+
+        friend QDataStream &operator>>(QDataStream &in, ProxyConfig &proxyConfig);
+        friend QDataStream &operator<<(QDataStream &out, const ProxyConfig &proxyConfig);
 
     private:
         ProxyType _type = ProxyType::None;
@@ -47,7 +67,8 @@ class ProxyConfig {
         int _port = 0;
         bool _needsAuth = false;
         std::string _user;
-        std::string _token;
+        std::string _pwd; // Password, stored in keystore
+        std::string _keychainKey; // Keystore key, stored in DB
 };
 
 } // namespace KDC

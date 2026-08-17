@@ -668,7 +668,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().port()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().user()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().keychainKey()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, false)); // useBigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.darkTheme()));
@@ -1486,7 +1486,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().port()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().needsAuth()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().user()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().token()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.proxyConfig().keychainKey()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, false)); // useBigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, 0)); // bigFolderSizeLimit : not used anymore
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.darkTheme()));

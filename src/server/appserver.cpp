@@ -832,11 +832,11 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     if (oldParametersInfo.proxyConfig().needsAuth()) {
         // Read pwd from keystore
         bool found = false;
-        if (!KeyChainManager::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().token(), pwd, found)) {
+        if (!KeyChainManager::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().keychainKey(), pwd, found)) {
             LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
         }
         if (!found) {
-            LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << oldParametersInfo.proxyConfig().token());
+            LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << oldParametersInfo.proxyConfig().keychainKey());
         }
     }
 
@@ -2222,11 +2222,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (parameters.proxyConfig().needsAuth()) {
                 // Read pwd from keystore
                 bool found;
-                if (!KeyChainManager::instance()->readDataFromKeystore(parameters.proxyConfig().token(), pwd, found)) {
+                if (!KeyChainManager::instance()->readDataFromKeystore(parameters.proxyConfig().keychainKey(), pwd, found)) {
                     LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
                 }
                 if (!found) {
-                    LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << parameters.proxyConfig().token());
+                    LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << parameters.proxyConfig().keychainKey());
                 }
             }
 

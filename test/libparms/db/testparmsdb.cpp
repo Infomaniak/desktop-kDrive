@@ -61,7 +61,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().port() == defaultParameters.proxyConfig().port());
     CPPUNIT_ASSERT(parameters.proxyConfig().needsAuth() == defaultParameters.proxyConfig().needsAuth());
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == defaultParameters.proxyConfig().user());
-    CPPUNIT_ASSERT(parameters.proxyConfig().token() == defaultParameters.proxyConfig().token());
+    CPPUNIT_ASSERT(parameters.proxyConfig().keychainKey() == defaultParameters.proxyConfig().keychainKey());
     CPPUNIT_ASSERT(parameters.darkTheme() == defaultParameters.darkTheme());
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
@@ -99,7 +99,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().port() == parameters2.proxyConfig().port());
     CPPUNIT_ASSERT(parameters.proxyConfig().needsAuth() == parameters2.proxyConfig().needsAuth());
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == parameters2.proxyConfig().user());
-    CPPUNIT_ASSERT(parameters.proxyConfig().token() == parameters2.proxyConfig().token());
+    CPPUNIT_ASSERT(parameters.proxyConfig().keychainKey() == parameters2.proxyConfig().keychainKey());
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
     CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
