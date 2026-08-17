@@ -33,13 +33,13 @@ class ProxyConfig {
                     const std::string &pwd = "");
 
         inline ProxyType type() const { return _type; }
-        inline void setType(ProxyType type) { _type = type; }
+        inline void setType(const ProxyType type) { _type = type; }
         inline const std::string &hostName() const { return _hostName; }
         inline void setHostName(const std::string &hostName) { _hostName = hostName; }
         inline int port() const { return _port; }
-        inline void setPort(int port) { _port = port; }
+        inline void setPort(const int port) { _port = port; }
         inline bool needsAuth() const { return _needsAuth; }
-        inline void setNeedsAuth(bool needsAuth) { _needsAuth = needsAuth; }
+        inline void setNeedsAuth(const bool needsAuth) { _needsAuth = needsAuth; }
         inline const std::string &user() const { return _user; }
         inline void setUser(const std::string &user) { _user = user; }
 
@@ -52,14 +52,26 @@ class ProxyConfig {
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
 
-        bool operator==(const ProxyConfig &other) const {
-            return (_type == other._type) && (_hostName == other._hostName) && (_port == other._port) &&
-                   (_needsAuth == other._needsAuth) && (_user == other._user) && (_pwd == other._pwd) &&
-                   (_keychainKey == other._keychainKey);
-        }
+        bool operator==(const ProxyConfig &other) const = default;
 
-        friend QDataStream &operator>>(QDataStream &in, ProxyConfig &proxyConfig);
-        friend QDataStream &operator<<(QDataStream &out, const ProxyConfig &proxyConfig);
+        /// TODO : to be removed once we moved to the new GUI ///
+        friend QDataStream &operator>>(QDataStream &in, ProxyConfig &proxyConfig) {
+            QString hostName;
+            QString user;
+            QString pwd;
+            in >> proxyConfig._type >> hostName >> proxyConfig._port >> proxyConfig._needsAuth >> user >> pwd;
+            proxyConfig._hostName = hostName.toStdString();
+            proxyConfig._user = user.toStdString();
+            proxyConfig._pwd = pwd.toStdString();
+            return in;
+        }
+        friend QDataStream &operator<<(QDataStream &out, const ProxyConfig &proxyConfig) {
+            out << proxyConfig._type << QString::fromStdString(proxyConfig._hostName) << proxyConfig._port
+                << proxyConfig._needsAuth << QString::fromStdString(proxyConfig._user)
+                << QString::fromStdString(proxyConfig._pwd);
+            return out;
+        }
+        /////////////////////////////////////////////////////////
 
     private:
         ProxyType _type = ProxyType::None;

@@ -56,19 +56,4 @@ void ProxyConfig::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, proxyConfigInfoPwd, _pwd);
 }
 
-QDataStream &operator>>(QDataStream &in, ProxyConfig &proxyConfig) {
-    QString hostName, user, pwd;
-    in >> proxyConfig._type >> hostName >> proxyConfig._port >> proxyConfig._needsAuth >> user >> pwd;
-    proxyConfig._hostName = hostName.toStdString();
-    proxyConfig._user = user.toStdString();
-    proxyConfig._pwd = pwd.toStdString();
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const ProxyConfig &proxyConfig) {
-    out << proxyConfig._type << QString::fromStdString(proxyConfig._hostName) << proxyConfig._port << proxyConfig._needsAuth
-        << QString::fromStdString(proxyConfig._user) << QString::fromStdString(proxyConfig._pwd);
-    return out;
-}
-
 } // namespace KDC
