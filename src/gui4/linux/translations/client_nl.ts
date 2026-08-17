@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: nl, Dutch; Flemish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
+ Exported at: Mon, 17 Aug 2026 14:29:20 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="nl"> 
     <context>
@@ -110,13 +110,13 @@
             <source>Moved to trash</source> 
             <translation>Verplaatst naar prullenbak</translation> 
         </message> 
+        <message id="activityInstructionRenameLabel"> 
+            <source>Renamed</source> 
+            <translation>Hernoemd</translation> 
+        </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
             <translation>Gewijzigd</translation> 
-        </message> 
-        <message id="activityInstructionUpdateMetadataLabel"> 
-            <source>Renamed</source> 
-            <translation>Hernoemd</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
