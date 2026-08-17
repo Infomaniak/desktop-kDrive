@@ -30,6 +30,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
+#include "requests/exclusiontemplatecache.h"
 #include "test_classes/syncpaltest.h"
 #include "test_utility/testhelpers.h"
 
@@ -339,6 +340,45 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(_localTempDir.path().filename());
 #endif
+}
+
+void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
+    class LocalDeleteJobMock : public SyncLocalDeleteJob {
+        public:
+            LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
+                               RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
+
+        protected:
+            bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
+                remoteItemRelativePath = NodeId{"1234"};
+
+                return true;
+            };
+    };
+
+    _syncPal->_syncInfo.targetPath = SyncPath{}; // Standard synchronisation.
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
+    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
+
+    _syncPal->setLocalPath(temporaryDirectory.path());
+    std::filesystem::create_directories(localDirPath);
+
+    const bool liteSyncIsEnabled = true;
+    LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
+    // The excluded dehydrated placeholder will be excluded from sync because of the pattern `_blacklisted_20220913_130102` found
+    // in its name.
+    const auto excludedDehydratedPlaceholderName = Str("dehydrated_placeholder_blacklisted_20220913_130102_666.txt");
+
+    std::ofstream ofs{localDirPath / excludedDehydratedPlaceholderName};
+    auto ioError = IoError::Success;
+    CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(localDirPath / excludedDehydratedPlaceholderName, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(localDirPath.filename() / excludedDehydratedPlaceholderName));
+
+    // Removes the excluded dehydrated placeholder from the local file system without error.
+    CPPUNIT_ASSERT(deleteJob.hardDeleteDehydratedPlaceholders());
+    CPPUNIT_ASSERT(!std::filesystem::exists(localDirPath / excludedDehydratedPlaceholderName));
 }
 
 } // namespace KDC
