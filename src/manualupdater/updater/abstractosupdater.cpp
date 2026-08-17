@@ -31,9 +31,13 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
                                            QString &outMessage) {
     // 1. Try fetching the .sha256 sidecar file.
     std::string expectedChecksum;
-    const std::string sha256Url = fileUrl + ".sha256";
+    // Insert the suffix before any query string or fragment so signed/CDN URLs keep their sidecar resolvable.
+    const auto suffixPos = fileUrl.find_first_of("?#");
+    const std::string sha256Url =
+            fileUrl.substr(0, suffixPos) + ".sha256" +
+            (suffixPos == std::string::npos ? std::string{} : fileUrl.substr(suffixPos));
 
-    if (const auto result = HttpDownloader::get(sha256Url); result.success && !result.body.empty()) {
+    if (const auto result = HttpDownloader::get(sha256Url, "text/plain, */*"); result.success && !result.body.empty()) {
         // The file contains either "hash" or "hash  filename" — take the first token.
         std::istringstream iss(result.body);
         iss >> expectedChecksum;

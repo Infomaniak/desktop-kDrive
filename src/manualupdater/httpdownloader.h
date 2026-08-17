@@ -21,7 +21,7 @@ class HttpDownloader {
                 std::string error;
         };
 
-        static Result get(const std::string &url);
+        static Result get(const std::string &url, const std::string &accept = "application/json");
         static Result downloadFile(const std::string &url, const SyncPath &destPath, int64_t timeoutSeconds = 1800);
         static bool fetchAppVersion(DistributionChannel channel, const std::string &appId, VersionInfo &outVersionInfo,
                                     std::string &outError);
