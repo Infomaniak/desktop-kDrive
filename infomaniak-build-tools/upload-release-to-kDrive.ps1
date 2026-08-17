@@ -249,11 +249,14 @@ function Upload-RecoveryUpdaterLink {
     $shouldUpload = $true
 
     try {
-        $listUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files?directory_path=$linkDirPath"
-        $listResponse = Invoke-RestMethod -Method "GET" -Uri $listUri -Header $headers
+        $searchUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files/search/default?query=kDriveRecoveryUpdater-&with=path&order_by=relevance"
+        $searchResponse = Invoke-RestMethod -Method "GET" -Uri $searchUri -Header $headers
 
-        if ($listResponse.data) {
-            $existingFiles = $listResponse.data | Where-Object { $_.name -like "kDriveRecoveryUpdater-*-$osName.url" }
+        if ($searchResponse.data) {
+            $existingFiles = $searchResponse.data | Where-Object {
+                $_.name -like "kDriveRecoveryUpdater-*-$osName.url" -and
+                $_.path -like "*$linkDirPath*"
+            }
             if ($existingFiles) {
                 foreach ($existingFile in $existingFiles) {
                     $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$osName\.url")
