@@ -23,6 +23,7 @@
 #include <QCoreApplication>
 #include <QLoggingCategory>
 #include <QLocale>
+#include <QSet>
 
 #include <algorithm>
 #include <chrono>
@@ -35,6 +36,7 @@ namespace {
 Q_LOGGING_CATEGORY(lcActivityListModel, "gui.v4.activitylistmodel", QtInfoMsg)
 
 constexpr auto relativeTimeRefreshInterval = std::chrono::minutes{1};
+constexpr auto projectionRefreshInterval = std::chrono::milliseconds{100};
 constexpr auto justNowThreshold = std::chrono::seconds{30};
 constexpr auto second = std::chrono::seconds{1};
 constexpr auto minute = std::chrono::minutes{1};
@@ -127,6 +129,34 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
     return ActivityListModel::Source::Unknown;
 }
 
+QString activityActionText(const ActivityEntry &activity) {
+    switch (activity.instruction) {
+        case SyncFileInstruction::Update:
+            return qtTrId("activityInstructionUpdateLabel");
+        case SyncFileInstruction::UpdateMetadata:
+            return qtTrId("activityInstructionUpdateMetadataLabel");
+        case SyncFileInstruction::Remove:
+            return qtTrId("activityInstructionRemoveLabel");
+        case SyncFileInstruction::Move: {
+            if (!activity.path.empty() && !activity.newPath.empty() &&
+                normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
+                return qtTrId("activityInstructionUpdateMetadataLabel");
+            }
+            return qtTrId("activityInstructionMoveLabel");
+        }
+        case SyncFileInstruction::Get:
+            return qtTrId("activityInstructionGetLabel");
+        case SyncFileInstruction::Put:
+            return qtTrId("activityInstructionPutLabel");
+        case SyncFileInstruction::Ignore:
+            return qtTrId("activityInstructionIgnoreLabel");
+        case SyncFileInstruction::None:
+        case SyncFileInstruction::EnumEnd:
+            return {};
+    }
+    return {};
+}
+
 } // namespace
 
 QString ActivityListModel::activityRowId(const GenericId localId) {
@@ -141,11 +171,19 @@ ActivityListModel::ActivityListModel(const ActivityStore &activityStore, const A
     _selectionStore(selectionStore) {
     (void) connect(&_activityStore, &ActivityStore::activitiesChanged, this, [this](const SyncDbId syncDbId) {
         if (syncDbId == static_cast<SyncDbId>(_selectionStore.currentSyncDbId())) {
-            reconcileProjection();
+            scheduleProjectionReconciliation();
         }
     });
-    (void) connect(&_appCache, &AppCache::syncErrorsChanged, this, &ActivityListModel::reconcileProjection);
-    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, &ActivityListModel::resetProjection);
+    (void) connect(&_appCache, &AppCache::syncErrorsChanged, this, &ActivityListModel::scheduleProjectionReconciliation);
+    (void) connect(&_selectionStore, &MainSelectionStore::currentSyncDbIdChanged, this, [this] {
+        // Keep the bounded icon cache scoped to the selected synchronization.
+        _fileIconResolver.clear();
+        resetProjection();
+    });
+
+    _projectionRefreshTimer.setInterval(projectionRefreshInterval);
+    _projectionRefreshTimer.setSingleShot(true);
+    (void) connect(&_projectionRefreshTimer, &QTimer::timeout, this, &ActivityListModel::reconcileProjection);
 
     _relativeTimeTimer.setInterval(relativeTimeRefreshInterval);
     (void) connect(&_relativeTimeTimer, &QTimer::timeout, this, &ActivityListModel::refreshRelativeTimes);
@@ -169,6 +207,10 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
         case NameRole:
         case Qt::DisplayRole:
             return row.name;
+        case FileIconNameRole:
+            return row.fileIconName;
+        case ActionTextRole:
+            return row.actionText;
         case FolderRole:
             return row.folder;
         case TimeTextRole:
@@ -183,6 +225,8 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return QVariant::fromValue(row.source);
         case InstructionRole:
             return static_cast<int32_t>(row.instruction);
+        case IsDirectoryRole:
+            return row.nodeType == NodeType::Directory;
         case ProgressRole:
             return row.progress;
         case HasActiveErrorRole:
@@ -198,6 +242,8 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
     return {
             {RowIdRole, "rowId"},
             {NameRole, "name"},
+            {FileIconNameRole, "fileIconName"},
+            {ActionTextRole, "actionText"},
             {FolderRole, "folder"},
             {TimeTextRole, "timeText"},
             {SizeTextRole, "sizeText"},
@@ -205,6 +251,7 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {StatusRole, "status"},
             {SourceRole, "source"},
             {InstructionRole, "instruction"},
+            {IsDirectoryRole, "isDirectory"},
             {ProgressRole, "progress"},
             {HasActiveErrorRole, "hasActiveError"},
             {ActiveErrorCountRole, "activeErrorCount"},
@@ -264,7 +311,8 @@ std::vector<ActivityListModel::Row> ActivityListModel::activityRows(const SyncDb
     return rows;
 }
 
-void ActivityListModel::appendActiveErrors(const SyncDbId syncDbId, const std::vector<Error> &errors, std::vector<Row> &rows) {
+void ActivityListModel::appendActiveErrors(const SyncDbId syncDbId, const std::vector<Error> &errors,
+                                           std::vector<Row> &rows) const {
     for (const auto &error: errors) {
         if (error.level() != ErrorLevel::Node) {
             continue;
@@ -273,7 +321,7 @@ void ActivityListModel::appendActiveErrors(const SyncDbId syncDbId, const std::v
     }
 }
 
-void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &error, std::vector<Row> &rows) {
+void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &error, std::vector<Row> &rows) const {
     if (auto *const matchingRow = findMatchingActivity(rows, error); matchingRow != nullptr) {
         matchingRow->activeErrorDbIds.push_back(error.dbId());
         return;
@@ -281,7 +329,7 @@ void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &
     rows.push_back(makeErrorRow(syncDbId, error));
 }
 
-ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity) {
+ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity) const {
     const SyncPath &currentPath =
             activity.instruction == SyncFileInstruction::Move && !activity.newPath.empty() ? activity.newPath : activity.path;
     const SyncPath relativePath = normalizedRelativePath(currentPath);
@@ -292,6 +340,8 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.activityLocalId = activity.localId;
     row.syncDbId = syncDbId;
     row.name = itemName(relativePath);
+    row.fileIconName = _fileIconResolver.iconName(row.name, activity.nodeType);
+    row.actionText = activityActionText(activity);
     row.folder = parentFolder(relativePath);
     row.timeText = formatRelativeTime(activity.receivedAtUtc);
     row.sizeText = formatSize(activity.nodeType, activity.size);
@@ -310,7 +360,7 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     return row;
 }
 
-ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, const Error &error) {
+ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, const Error &error) const {
     const SyncPath relativePath =
             normalizedRelativePath(error.destinationPath().empty() ? error.path() : error.destinationPath());
     const QDateTime timestampUtc = error.time() > 0 ? QDateTime::fromSecsSinceEpoch(error.time(), QTimeZone::UTC) : QDateTime{};
@@ -319,6 +369,7 @@ ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, 
     row.rowId = errorRowId(error.dbId());
     row.syncDbId = syncDbId;
     row.name = itemName(relativePath);
+    row.fileIconName = _fileIconResolver.iconName(row.name, error.nodeType());
     row.folder = parentFolder(relativePath);
     row.timeText = formatRelativeTime(timestampUtc);
     row.nodeType = error.nodeType();
@@ -335,7 +386,7 @@ ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row>
     Row *matchingRow = nullptr;
     MatchScore bestScore = noMatchScore;
     for (auto &row: rows) {
-        if (row.status != Status::Failed) {
+        if (row.status != Status::Failed && row.status != Status::InProgress) {
             continue;
         }
         if (const MatchScore score = errorMatchScore(row, error);
@@ -350,13 +401,21 @@ ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row>
 
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
     (void) std::erase_if(rows, [this](const Row &row) {
-        return row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
+        const bool resolvedFailure = row.status == Status::Failed && row.activeErrorDbIds.empty();
+        const bool filteredRemoteActivity =
+                row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
+        return resolvedFailure || filteredRemoteActivity;
     });
     (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {
         const bool lhsInProgress = lhs.status == Status::InProgress;
         const bool rhsInProgress = rhs.status == Status::InProgress;
         if (lhsInProgress != rhsInProgress) {
             return lhsInProgress;
+        }
+        const bool lhsHasActiveError = !lhs.activeErrorDbIds.empty();
+        const bool rhsHasActiveError = !rhs.activeErrorDbIds.empty();
+        if (lhsHasActiveError != rhsHasActiveError) {
+            return lhsHasActiveError;
         }
         if (lhs.timestampUtc != rhs.timestampUtc) {
             return lhs.timestampUtc > rhs.timestampUtc;
@@ -372,7 +431,8 @@ void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
  * Returns the strongest non-empty node identity shared by an activity row and an active node error.
  *
  * The comparisons mirror the server's `selectErrorByNodeInfo` lookup: local node id, remote node id, source path, then
- * destination path. A stronger match wins when several recent failed activities could represent the same error.
+ * destination path. A stronger match wins when several recent failed or in-progress activities could represent the same
+ * error.
  */
 ActivityListModel::MatchScore ActivityListModel::errorMatchScore(const Row &row, const Error &error) {
     if (!row.localNodeId.empty() && row.localNodeId == error.localNodeId()) {
@@ -391,6 +451,7 @@ ActivityListModel::MatchScore ActivityListModel::errorMatchScore(const Row &row,
 }
 
 void ActivityListModel::resetProjection() {
+    _projectionRefreshTimer.stop();
     auto nextRows = buildProjection();
     if (_rows == nextRows) {
         return;
@@ -399,6 +460,12 @@ void ActivityListModel::resetProjection() {
     _rows = std::move(nextRows);
     endResetModel();
     emit projectionChanged();
+}
+
+void ActivityListModel::scheduleProjectionReconciliation() {
+    if (!_projectionRefreshTimer.isActive()) {
+        _projectionRefreshTimer.start();
+    }
 }
 
 void ActivityListModel::reconcileProjection() {
@@ -411,12 +478,15 @@ void ActivityListModel::reconcileProjection() {
 }
 
 bool ActivityListModel::removeMissingRows(const std::vector<Row> &nextRows) {
+    QSet<QString> nextRowIds;
+    nextRowIds.reserve(static_cast<qsizetype>(nextRows.size()));
+    for (const auto &row: nextRows) {
+        (void) nextRowIds.insert(row.rowId);
+    }
+
     bool changed = false;
     for (qsizetype rowIndex = static_cast<qsizetype>(_rows.size()) - 1; rowIndex >= 0; --rowIndex) {
-        const auto rowExists = std::ranges::any_of(nextRows, [this, rowIndex](const Row &row) {
-            return row.rowId == _rows[static_cast<std::size_t>(rowIndex)].rowId;
-        });
-        if (rowExists) {
+        if (nextRowIds.contains(_rows[static_cast<std::size_t>(rowIndex)].rowId)) {
             continue;
         }
         beginRemoveRows({}, rowIndex, rowIndex);
@@ -482,10 +552,13 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
         }
     };
     addRoleIf(row.name != nextRow.name, NameRole);
+    addRoleIf(row.fileIconName != nextRow.fileIconName, FileIconNameRole);
+    addRoleIf(row.actionText != nextRow.actionText, ActionTextRole);
     addRoleIf(row.folder != nextRow.folder, FolderRole);
     addRoleIf(row.timeText != nextRow.timeText, TimeTextRole);
     addRoleIf(row.sizeText != nextRow.sizeText, SizeTextRole);
     addRoleIf(row.nodeType != nextRow.nodeType, NodeTypeRole);
+    addRoleIf(row.nodeType != nextRow.nodeType, IsDirectoryRole);
     addRoleIf(row.status != nextRow.status, StatusRole);
     addRoleIf(row.source != nextRow.source, SourceRole);
     addRoleIf(row.instruction != nextRow.instruction, InstructionRole);
