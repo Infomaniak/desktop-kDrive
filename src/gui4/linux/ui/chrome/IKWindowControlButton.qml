@@ -74,9 +74,10 @@ ToolButton {
         }
     }
 
-    ToolTip.visible: hovered
-    ToolTip.text: text
-    ToolTip.delay: 500
+    IKToolTip {
+        visible: root.hovered || root.activeFocus
+        text: root.text
+    }
 
     background: Rectangle {
         color: {
