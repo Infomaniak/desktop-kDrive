@@ -60,6 +60,7 @@ class ActivitiesController final : public QObject {
         [[nodiscard]] bool hasErrors() const { return _errorCount > 0; }
 
         Q_INVOKABLE void openLocal(const QString &rowId);
+        Q_INVOKABLE void openFolder(const QString &rowId);
         Q_INVOKABLE void openOnline(const QString &rowId);
         Q_INVOKABLE void copyShareLink(const QString &rowId);
         Q_INVOKABLE void requestFixErrors(const QString &rowId) const;
@@ -76,6 +77,7 @@ class ActivitiesController final : public QObject {
 
     private:
         void refreshPageState();
+        void openLocalPath(const QString &rowId, bool openDisplayedFolder);
         [[nodiscard]] std::optional<SyncContext> actionSyncContext(const ActivityListModel::ActionTarget &target,
                                                                    const QString &rowId) const;
 
