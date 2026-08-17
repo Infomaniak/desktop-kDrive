@@ -268,7 +268,7 @@ function Upload-RecoveryUpdaterLink {
                         if ($cmp -lt 0) {
                             Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
                             $shouldUpload = $false
-                        } elseif ($existingFile.id) {
+                        } elseif ($cmp -gt 0 -and $existingFile.id) {
                             $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
                         }
                     }
@@ -297,8 +297,8 @@ function Upload-RecoveryUpdaterLink {
 
         foreach ($oldFile in $filesToDelete) {
             try {
-                $deleteUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files/$($oldFile.id)"
-                Invoke-RestMethod -Method "DELETE" -Uri $deleteUri -Header $headers
+                $deleteUri = "https://api.infomaniak.com/2/drive/$env:KDRIVE_ID/files/$($oldFile.id)"
+                Invoke-RestMethod -Method "DELETE" -Uri $deleteUri -Header $headers -ContentType 'application/json'
                 Write-Host "Deleted older recovery updater link $($oldFile.name) (v$($oldFile.version)) => ✅" -f Green
             } catch {
                 Write-Host "Warning: failed to delete older recovery updater link $($oldFile.name) -> $_" -f Yellow
