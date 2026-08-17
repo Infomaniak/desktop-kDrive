@@ -2215,6 +2215,25 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Retrieve current settings
             const Parameters previousParameters = ParametersCache::instance()->parameters();
 
+            // Proxy parameters change propagation. Must be executed before "updateParameters" in order to save the new keychain
+            // key in DB.
+            if (!previousParameters.proxyConfig().needsAuth() && parametersInfo.proxyConfig().needsAuth()) {
+                // Proxy needs authentification now, generate keychain key and the save password to the keychain.
+                const auto keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
+                if (!KeyChainManager::instance()->writeData(keychainKey, parametersInfo.proxyConfig().pwd())) {
+                    LOG_WARN(_logger, "Failed to write password token into keychain"); // should throw??
+                }
+
+                auto proxyConfig = parametersInfo.proxyConfig();
+                proxyConfig.setKeychainKey(keychainKey);
+                parametersInfo.setProxyConfig(proxyConfig);
+            } else if (previousParameters.proxyConfig().needsAuth() && !parametersInfo.proxyConfig().needsAuth()) {
+                // Proxy does not need authentification anymore, remove the entry from the keychain key.
+                if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
+                    LOG_WARN(_logger, "Failed to remove proxy password from keychain");
+                }
+            }
+
             // Update parameters
             const ExitCode exitCode = ServerRequests::updateParameters(parametersInfo);
             if (exitCode != ExitCode::Ok) {
@@ -2234,24 +2253,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Language change propagation
             if (previousParameters.language() != parametersInfo.language()) {
                 CommonUtility::setupTranslations(this, parametersInfo.language());
-            }
-
-            // Proxy parameters change propagation
-            if (!previousParameters.proxyConfig().needsAuth() && parametersInfo.proxyConfig().needsAuth()) {
-                // Proxy needs authentification now, generate keychain key and the save password to the keychain.
-                const auto keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-                if (!KeyChainManager::instance()->writeData(keychainKey, parametersInfo.proxyConfig().pwd())) {
-                    LOG_WARN(_logger, "Failed to write password token into keychain"); // should throw??
-                }
-
-                auto proxyConfig = parametersInfo.proxyConfig();
-                proxyConfig.setKeychainKey(keychainKey);
-                parametersInfo.setProxyConfig(proxyConfig);
-            } else if (previousParameters.proxyConfig().needsAuth() && !parametersInfo.proxyConfig().needsAuth()) {
-                // Proxy does not need authentification anymore, remove the entry from the keychain key.
-                if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
-                    LOG_WARN(_logger, "Failed to remove proxy password from keychain");
-                }
             }
 
             resultStream << toInt(exitCode);
