@@ -229,8 +229,8 @@ function Compare-Versions {
 
 function Upload-RecoveryUpdaterLink {
     param (
-        [int]$fileId,
-        [int]$parentId,
+        [string]$fileId,
+        [string]$parentId,
         [string]$osName,
         [string]$fullVersion
     )
@@ -243,7 +243,6 @@ function Upload-RecoveryUpdaterLink {
     }
 
     $shouldUpload = $true
-    $existingFileId = $null
 
     try {
         $listUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files?directory_path=$linkDirPath"
@@ -261,31 +260,18 @@ function Upload-RecoveryUpdaterLink {
                         if ($cmp -lt 0) {
                             Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
                             $shouldUpload = $false
-                        } elseif ($cmp -ge 0 -and $existingFile.id) {
-                            $existingFileId = $existingFile.id
                         }
                     }
                 }
             }
         }
     } catch {
-        Write-Host "Warning: could not check existing recovery updater link -> $_" -f Yellow
+       Write-Host "Could not check existing recovery updater link; aborting link update -> $_" -f Red
+       return
     }
 
     if (-not $shouldUpload) {
         return
-    }
-
-    if ($existingFileId) {
-        try {
-            $renameUri = "https://api.infomaniak.com/2/drive/$env:KDRIVE_ID/files/$existingFileId/rename"
-            $renameBody = @{ name = $urlFileName } | ConvertTo-Json
-            Write-Host "Renaming existing recovery updater link to $urlFileName"
-            Invoke-RestMethod -Method "POST" -Uri $renameUri -Header $headers -ContentType 'application/json' -Body $renameBody
-            Write-Host "Recovery updater link renamed => ✅" -f Green
-        } catch {
-            Write-Host "Warning: failed to rename recovery updater link -> $_" -f Yellow
-        }
     }
 
     $urlLines = @("[InternetShortcut]", "URL=$ksuiteUrl")
