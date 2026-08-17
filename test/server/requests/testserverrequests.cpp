@@ -47,7 +47,7 @@ void TestServerRequests::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(_keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(_keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);

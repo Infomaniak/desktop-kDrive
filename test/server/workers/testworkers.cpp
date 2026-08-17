@@ -64,7 +64,7 @@ void TestWorkers::setUp() {
     // Insert api token into keystore
     std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
+    KeyChainManager::instance()->writeData(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);

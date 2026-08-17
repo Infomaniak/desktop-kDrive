@@ -154,7 +154,7 @@ bool SelfSignedCert::generateAndPublishServerCert(Pem &pem) {
     }
     if (!generate(pem, false)) return false;
 
-    if (!keychain->writeToken(std::string(certKeychainKey), pem.cert)) {
+    if (!keychain->writeData(std::string(certKeychainKey), pem.cert)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS certificate in the keychain");
         return false;
     }

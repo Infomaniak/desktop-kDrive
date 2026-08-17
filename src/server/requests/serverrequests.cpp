@@ -125,7 +125,7 @@ ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
         if (!KeyChainManager::instance()->isTesting()) {
             (void) DeleteTokenJob(apiToken).runSynchronously();
         }
-        (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
+        (void) KeyChainManager::instance()->deleteData(user.keychainKey());
     }
 
     // Delete user (and linked accounts/drives/syncs by cascade)
