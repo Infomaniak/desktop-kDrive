@@ -31,7 +31,9 @@ public extension FileTypeRepresentation {
     }
 
     init(utType: UTType) {
-        if utType.conforms(to: .archive) {
+        if utType.conforms(to: .svg) {
+            self = .image
+        } else if utType.conforms(to: .archive) {
             self = .archive
         } else if utType.conforms(to: .audio) {
             self = .audio
