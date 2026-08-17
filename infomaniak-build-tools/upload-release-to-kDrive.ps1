@@ -186,11 +186,15 @@ function Upload-FilesToKDrive {
             $response = Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
             Write-Host "\t\t => ✅" -f Green
 
-            if ($response.data -and $response.data.id) {
+            if ($response.data -and $response.data.id -and $response.data.parent_id) {
                 $uploadedFileIds[$file] = @{
                     id = $response.data.id
                     parentId = $response.data.parent_id
                 }
+            } else {
+                Write-Host "Upload succeeded but response is missing id/parent_id for $file -> $response" -f Red
+                Pop-Location
+                exit 1
             }
         } catch {
             if ($isMandatory) {
