@@ -28,7 +28,8 @@ namespace KDC {
 /** Resolves a local file name to the semantic file-icon asset used by the Linux v4 UI. */
 class FileIconResolver final {
     public:
-        /** Returns an icon asset name such as `file-image`, or `file` when no specialized icon matches. */
+        /** Returns an icon asset name such as `file-image`, `file` when no specialized icon matches, or `folder` for
+         * directories, which the view renders from its own asset. */
         [[nodiscard]] QString iconName(const QString &fileName, NodeType nodeType) const;
 
     private:
