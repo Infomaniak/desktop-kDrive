@@ -82,10 +82,14 @@ bool isPdfMimeType(const QString &mimeName) {
            mimeName == QStringLiteral("application/x-lzpdf");
 }
 
-bool isDiagramMimeType(const QString &mimeName, const QString &genericIconName) {
-    return genericIconName == QStringLiteral("x-office-presentation") || mimeName.contains(QStringLiteral("visio")) ||
-           mimeName.contains(QStringLiteral("jgraph")) || mimeName.contains(QStringLiteral("omnigraffle")) ||
-           mimeName.startsWith(QStringLiteral("application/x-dia")) ||
+bool isPresentationMimeType(const QString &mimeName, const QString &genericIconName) {
+    return genericIconName == QStringLiteral("x-office-presentation") ||
+           mimeName == QStringLiteral("application/vnd.apple.keynote");
+}
+
+bool isDiagramMimeType(const QString &mimeName) {
+    return mimeName.contains(QStringLiteral("visio")) || mimeName.contains(QStringLiteral("jgraph")) ||
+           mimeName.contains(QStringLiteral("omnigraffle")) || mimeName.startsWith(QStringLiteral("application/x-dia")) ||
            mimeName.startsWith(QStringLiteral("application/vnd.oasis.opendocument.graphics")) ||
            mimeName == QStringLiteral("application/vnd.sun.xml.draw") ||
            mimeName == QStringLiteral("application/vnd.sun.xml.draw.template") ||
@@ -134,7 +138,11 @@ QString iconNameForMimeType(const QMimeType &mimeType) {
         return QStringLiteral("file-pdf");
     }
 
-    if (isDiagramMimeType(mimeName, genericIconName)) {
+    if (isPresentationMimeType(mimeName, genericIconName)) {
+        return QStringLiteral("file-chart");
+    }
+
+    if (isDiagramMimeType(mimeName)) {
         return QStringLiteral("file-diagram");
     }
 
