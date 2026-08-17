@@ -131,8 +131,8 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
 
 QString activityActionText(const ActivityEntry &activity) {
     switch (activity.instruction) {
-        case SyncFileInstruction::UpdateMetadata: // We can't receive an UpdateMetadata on linux, reserved instruction for macOS
-                                                  // and Windows for the litesync.
+        case SyncFileInstruction::UpdateMetadata: // We shouldn't receive an UpdateMetadata on linux, reserved instruction for
+                                                  // macOS and Windows for the litesync. Here for possible future litesync linux implem.
         case SyncFileInstruction::Update:
             return qtTrId("activityInstructionUpdateLabel");
         case SyncFileInstruction::Remove:
