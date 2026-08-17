@@ -169,4 +169,8 @@ QtObject {
     readonly property color homePausedSurface: darkMode ? _p.brown950 : _p.orangePale
     readonly property color homeSyncingForeground: darkMode ? _p.kDriveLight : _p.blue600
     readonly property color homeSyncingSurface: darkMode ? _p.kDriveDark : _p.bluePale
+    readonly property color activitiesFilterSurface: surfaceSecondary
+    readonly property color activitiesFilterSelectedSurface: actionPrimary
+    readonly property color activitiesFilterSelectedText: actionOnPrimary
+    readonly property color activitiesDivider: surfaceTertiary
 }
