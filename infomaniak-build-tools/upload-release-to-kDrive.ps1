@@ -247,6 +247,7 @@ function Upload-RecoveryUpdaterLink {
     }
 
     $shouldUpload = $true
+    $filesToDelete = @()
 
     try {
         $searchUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files/search/default?query=kDriveRecoveryUpdater-&with=path&order_by=relevance"
@@ -267,6 +268,8 @@ function Upload-RecoveryUpdaterLink {
                         if ($cmp -lt 0) {
                             Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
                             $shouldUpload = $false
+                        } elseif ($existingFile.id) {
+                            $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
                         }
                     }
                 }
@@ -291,6 +294,16 @@ function Upload-RecoveryUpdaterLink {
         Write-Host "Uploading recovery updater link $urlFileName to kDrive at $uploadUri"
         Invoke-RestMethod -Method "POST" -Uri $uploadUri -Header $headers -ContentType 'application/octet-stream' -InFile $tempLinkPath
         Write-Host "Recovery updater link uploaded => ✅" -f Green
+
+        foreach ($oldFile in $filesToDelete) {
+            try {
+                $deleteUri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/files/$($oldFile.id)"
+                Invoke-RestMethod -Method "DELETE" -Uri $deleteUri -Header $headers
+                Write-Host "Deleted older recovery updater link $($oldFile.name) (v$($oldFile.version)) => ✅" -f Green
+            } catch {
+                Write-Host "Warning: failed to delete older recovery updater link $($oldFile.name) -> $_" -f Yellow
+            }
+        }
     } catch {
         Write-Host "Warning: failed to upload recovery updater link -> $_" -f Yellow
     } finally {
