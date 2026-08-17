@@ -94,9 +94,14 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
     }
 
     public var fileTypeRepresentation: FileTypeRepresentation {
+        if type == .directory {
+            return .folder
+        }
+
         guard let fileType else {
             return .unknown
         }
+
         return FileTypeRepresentation(utType: fileType)
     }
 
