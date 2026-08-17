@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: fr, French
  Exported by: Romain Galland
- Exported at: Thu, 13 Aug 2026 12:14:56 +0200 
+ Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="fr"> 
     <context>
@@ -1597,7 +1597,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</translati
         <message id="labelShortDay"> 
             <source>d</source> 
             <extracomment>Abbreviated unit for day used in relative timestamps (e.g., 3d ago).</extracomment> 
-            <translation>d</translation> 
+            <translation>j</translation> 
         </message> 
         <message id="labelShortHour"> 
             <source>h</source> 
