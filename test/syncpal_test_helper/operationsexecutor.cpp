@@ -295,6 +295,10 @@ void OperationsExecutor::applyLocalCreate(const OperationDesc &desc) const {
 
 void OperationsExecutor::applyLocalEdit(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
+    std::error_code ec;
+    if (!std::filesystem::is_regular_file(fullPath, ec) || ec) {
+        throw OperationsParserException("Edit operation: local file not found: " + desc.path.string());
+    }
     testhelpers::setTestFileSize(fullPath, static_cast<uint64_t>(desc.size));
 }
 
