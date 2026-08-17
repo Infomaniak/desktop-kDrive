@@ -68,7 +68,7 @@ std::unique_ptr<Poco::Net::HTTPSClientSession> createHttpsSession(const std::str
 
 } // namespace
 
-HttpDownloader::Result HttpDownloader::get(const std::string &url) {
+HttpDownloader::Result HttpDownloader::get(const std::string &url, const std::string &accept) {
     Result result;
     try {
         std::string path;
@@ -76,7 +76,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
         request.set("User-Agent", CommonUtility::userAgentString());
-        request.set("Accept", "application/json");
+        request.set("Accept", accept);
 
         (void) session->sendRequest(request);
 
