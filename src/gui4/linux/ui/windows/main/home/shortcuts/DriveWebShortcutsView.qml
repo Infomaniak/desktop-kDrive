@@ -85,27 +85,9 @@ Rectangle {
                     acceptedButtons: Qt.NoButton
                 }
 
-                ToolTip {
-                    id: driveNameTooltip
-
+                IKToolTip {
                     visible: driveNamePointer.containsMouse && driveNameLabel.truncated
-                    delay: IKMainWindow.syncSelectorTooltipDelay
-                    timeout: -1
                     text: root.controller.driveName
-                    padding: IKMainWindow.syncSelectorTooltipPadding
-
-                    contentItem: Text {
-                        width: Math.min(implicitWidth, IKMainWindow.syncSelectorTooltipMaxWidth)
-                        text: driveNameTooltip.text
-                        color: IKColors.tooltipText
-                        font.pixelSize: IKFonts.bodySize
-                        wrapMode: Text.WordWrap
-                    }
-
-                    background: Rectangle {
-                        radius: IKMainWindow.syncSelectorTooltipRadius
-                        color: IKColors.tooltipSurface
-                    }
                 }
             }
         }
