@@ -225,7 +225,12 @@ void InitialSituationSetter::insertLocalItem(const ItemDesc &desc, const SyncNam
 
 SyncPath InitialSituationSetter::localFilePathForUpload(const ItemDesc &desc) {
     if (const auto it = _localItemPaths.find(desc.id); it != _localItemPaths.end()) {
-        return _syncPal->localPath() / it->second;
+        const SyncPath localPath = _syncPal->localPath() / it->second;
+        std::error_code ec;
+        if (std::filesystem::is_regular_file(localPath, ec) &&
+            std::filesystem::file_size(localPath, ec) == static_cast<std::uintmax_t>(desc.size) && !ec) {
+            return localPath;
+        }
     }
 
     const SyncPath namePath(desc.name);
