@@ -74,8 +74,8 @@ jobs:
             & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
             -Arch amd64 `
             -HostArch amd64 `
-            -SkipAutomaticLocation      
-            
+            -SkipAutomaticLocation
+
             ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT_THUMBPRINT -ci -unitTests
         shell: powershell
 
@@ -185,6 +185,7 @@ jobs:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_LINUX }}
+      KDRIVE_LINUX_CI_EXTENDED_TEST_MOUNT_POINT: ${{ vars.KDRIVE_LINUX_CI_EXTENDED_TEST_MOUNT_POINT }}
       QT_QPA_PLATFORM: "offscreen"
     steps:
       - name: Checkout the code

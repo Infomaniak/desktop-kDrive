@@ -989,8 +989,14 @@ void TestUtility::testFileSystemInfo() {
     // /!\ Docker containers use overlayfs
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo("/", fsType, mountPoint) &&
                    (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
+
     CPPUNIT_ASSERT(CommonUtility::fileSystemInfo(std::filesystem::weakly_canonical("."), fsType, mountPoint) &&
-                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS") && mountPoint == "/");
+                   (fsType == fsType::EXT234 || fsType == "OVERLAYFS"));
+
+    const bool mandatory = false;
+    const auto extendedTestsMountPoint = testhelpers::loadEnvVariable("KDRIVE_LINUX_CI_EXTENDED_TEST_MOUNT_POINT", mandatory);
+    CPPUNIT_ASSERT(mountPoint == "/" || (!extendedTestsMountPoint.empty() && mountPoint == extendedTestsMountPoint));
+
     // TODO: implement these tests on the CI.
     // External disk.
     /*
