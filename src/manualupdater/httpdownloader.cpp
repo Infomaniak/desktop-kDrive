@@ -48,7 +48,7 @@ Poco::Net::Context::Ptr createSslContext() {
 
     if (!TrustStoreHelper::loadSystemCAs(context->sslContext())) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to load system CAs, peer verification may fail");
-        throw std::runtime_error("Failed to load system certificate store, cannot verify server identity");
+        throw HttpDownloader::TrustStoreError("Failed to load system certificate store, cannot verify server identity");
     }
     return context;
 }
