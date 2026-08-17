@@ -20,7 +20,7 @@ ToolTip {
     property color surfaceColor: IKColors.tooltipSurface
     property real textLineHeight: 0
 
-    delay: IKMainWindow.syncSelectorTooltipDelay
+    delay: IKMainWindow.tooltipDelay
     timeout: -1
     padding: IKMainWindow.syncSelectorTooltipPadding
 
