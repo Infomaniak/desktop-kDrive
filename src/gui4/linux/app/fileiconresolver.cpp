@@ -30,22 +30,22 @@ namespace {
 constexpr qsizetype maxCacheEntries = 1024;
 
 QString iconNameForKnownExtension(const QString &fileName) {
-    static const QSet<QString> audioExtensions{QStringLiteral("m3u"), QStringLiteral("m3u8")};
-    static const QSet<QString> diagramExtensions{
+    static const QSet audioExtensions{QStringLiteral("m3u"), QStringLiteral("m3u8")};
+    static const QSet diagramExtensions{
             QStringLiteral("dot"),
             QStringLiteral("fig"),
             QStringLiteral("graffle"),
             QStringLiteral("jgraph"),
     };
-    static const QSet<QString> fontExtensions{QStringLiteral("otf"), QStringLiteral("pcf")};
-    static const QSet<QString> codeExtensions{
+    static const QSet fontExtensions{QStringLiteral("otf"), QStringLiteral("pcf")};
+    static const QSet codeExtensions{
             QStringLiteral("asm"), QStringLiteral("bash"), QStringLiteral("cjs"),         QStringLiteral("jsx"),
             QStringLiteral("kts"), QStringLiteral("make"), QStringLiteral("pyw"),         QStringLiteral("rs"),
             QStringLiteral("s"),   QStringLiteral("sql"),  QStringLiteral("swift"),       QStringLiteral("ts"),
             QStringLiteral("tsx"), QStringLiteral("zsh"),  QStringLiteral("webmanifest"),
     };
-    static const QSet<QString> modelExtensions{QStringLiteral("obj"), QStringLiteral("step"), QStringLiteral("stp")};
-    static const QSet<QString> textFileNames{
+    static const QSet modelExtensions{QStringLiteral("obj"), QStringLiteral("step"), QStringLiteral("stp")};
+    static const QSet textFileNames{
             QStringLiteral("changelog"),
             QStringLiteral("licence"),
             QStringLiteral("license"),
@@ -203,7 +203,7 @@ QString FileIconResolver::iconName(const QString &fileName, const NodeType nodeT
     if (_iconNamesByFileName.size() >= maxCacheEntries) {
         _iconNamesByFileName.clear();
     }
-    _iconNamesByFileName.insert(fileName, iconName);
+    (void) _iconNamesByFileName.insert(fileName, iconName);
     return iconName;
 }
 
