@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: nb, Norwegian Bokmål
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
+ Exported at: Thu, 13 Aug 2026 12:14:56 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="nb"> 
     <context>
@@ -89,6 +89,34 @@
         <message id="activitiesTypeMyActivity"> 
             <source>My activity only</source> 
             <translation>Bare min aktivitet</translation> 
+        </message> 
+        <message id="activityInstructionGetLabel"> 
+            <source>Imported</source> 
+            <translation>Importert</translation> 
+        </message> 
+        <message id="activityInstructionIgnoreLabel"> 
+            <source>Ignored</source> 
+            <translation>Ignorert</translation> 
+        </message> 
+        <message id="activityInstructionMoveLabel"> 
+            <source>Moved</source> 
+            <translation>Flyttet</translation> 
+        </message> 
+        <message id="activityInstructionPutLabel"> 
+            <source>Added</source> 
+            <translation>Lagt til</translation> 
+        </message> 
+        <message id="activityInstructionRemoveLabel"> 
+            <source>Moved to trash</source> 
+            <translation>Flyttet til papirkurven</translation> 
+        </message> 
+        <message id="activityInstructionUpdateLabel"> 
+            <source>Modified</source> 
+            <translation>Endret</translation> 
+        </message> 
+        <message id="activityInstructionUpdateMetadataLabel"> 
+            <source>Renamed</source> 
+            <translation>Omdøpt</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
@@ -227,6 +255,10 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</translation>
             <source>Close</source> 
             <translation>Lukk</translation> 
         </message> 
+        <message id="buttonCloseDoNotAskAgain"> 
+            <source>Close and don’t ask again</source> 
+            <translation>Lukk og ikke spør igjen</translation> 
+        </message> 
         <message id="buttonCloseKDrive"> 
             <source>Close kDrive</source> 
             <extracomment>Button to quit the kDrive application entirely.</extracomment> 
@@ -318,7 +350,7 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</translation>
         </message> 
         <message id="buttonKDriveOnline"> 
             <source>kDrive online</source> 
-            <translation>kDrive på nett</translation> 
+            <translation>kDrive online</translation> 
         </message> 
         <message id="buttonKeepAccount"> 
             <source>Keep account</source> 
@@ -394,6 +426,10 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</translation>
         <message id="buttonOpenSyncSettings"> 
             <source>Open sync settings</source> 
             <translation>Åpne synkroniseringsinnstillinger</translation> 
+        </message> 
+        <message id="buttonOpenTrash"> 
+            <source>Open the Recycle Bin</source> 
+            <translation>Åpne papirkurven</translation> 
         </message> 
         <message id="buttonPause"> 
             <source>Pause</source> 
@@ -777,6 +813,14 @@ Logg inn igjen med riktig e-postadresse %1</translation>
             <source>kDrive is waking up</source> 
             <translation>kDrive våkner opp</translation> 
         </message> 
+        <message id="enableBackgroundActivityDescription"> 
+            <source>kDrive must remain active in your Mac’s settings to update your files.</source> 
+            <translation>kDrive må være aktivert i innstillingene på Mac-en din for at filene dine skal oppdateres.</translation> 
+        </message> 
+        <message id="enableBackgroundActivityTitle"> 
+            <source>Reactivate kDrive to continue</source> 
+            <translation>Aktiver kDrive på nytt for å fortsette</translation> 
+        </message> 
         <message id="enableDebugLogDescription"> 
             <source>Record diagnostic information on my computer.</source> 
             <translation>Registrer diagnostisk informasjon på datamaskinen min.</translation> 
@@ -790,10 +834,8 @@ Logg inn igjen med riktig e-postadresse %1</translation>
             <translation>Skriv inn passordet ditt</translation> 
         </message> 
         <message id="errCaseDescription"> 
-            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive Windows application. Rename one of the %2 folders in kDrive online to synchronize it on your PC.
-</source> 
-            <translation>Det finnes allerede en annen %1 i denne mappen med et navn som bare skiller seg fra navnet med store og små bokstaver. Denne typen navn støttes ikke av kDrive Windows-applikasjonen. Gi nytt navn til en av %2-mappene fra kDrive online, slik at du kan synkronisere den på PC-en din.
-</translation> 
+            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %2 in kDrive online to synchronize it on your device.</source> 
+            <translation>Det finnes allerede en annen %1 i denne mappen med et navn som bare skiller seg fra navnet med store og små bokstaver. Denne typen navn støttes ikke av kDrive Windows-applikasjonen. Gi nytt navn til en av %2-mappene fra kDrive online, slik at du kan synkronisere den på PC-en din.</translation> 
         </message> 
         <message id="errCaseTitle"> 
             <source>Case-sensitive name conflict</source> 
@@ -1202,6 +1244,14 @@ open macOS Preferences to enable them.</source>
             <source>Connection to kDrive interrupted</source> 
             <translation>Tilkobling til kDrive avbrutt</translation> 
         </message> 
+        <message id="instructionEnableBackgroundActivity"> 
+            <source>In "Background App Refresh", enable kDrive</source> 
+            <translation>Aktiver kDrive under «Oppdatering av bakgrunnsapper»</translation> 
+        </message> 
+        <message id="instructionEnableBackgroundActivityArgument"> 
+            <source>Background App Refresh</source> 
+            <translation>Oppdatering av apper i bakgrunnen</translation> 
+        </message> 
         <message id="instructionEnableKDrive"> 
             <source>Activate kDrive.app</source> 
             <translation>Aktiver kDrive.app</translation> 
@@ -1222,6 +1272,14 @@ open macOS Preferences to enable them.</source>
             <source>You must activate authorizations before continuing</source> 
             <translation>Du må aktivere tillatelser før du fortsetter</translation> 
         </message> 
+        <message id="instructionOpenLoginItems"> 
+            <source>Select Login Items &amp; Extensions</source> 
+            <translation>Velg påloggingselementer og utvidelser</translation> 
+        </message> 
+        <message id="instructionOpenLoginItemsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Påloggingselementer og utvidelser</translation> 
+        </message> 
         <message id="instructionOpenPrivacySecurity"> 
             <source>Go to Privacy &amp; Security &gt; Full disk access</source> 
             <translation>Gå til Personvern og sikkerhet &gt; Full disktilgang</translation> 
@@ -1235,14 +1293,26 @@ open macOS Preferences to enable them.</source>
             <translation>Personvern og sikkerhet</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensions"> 
-            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
-            <translation>Velg Åpne og utvidelser &gt; Sikkerhetsutvidelser</translation> 
+            <source>Select Login Items &amp; Extensions &gt; Endpoint Security Extensions</source> 
+            <translation>Velg «Påloggingselementer og utvidelser» &gt; «Utvidelser for endepunktsikkerhet»</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensionsArgument"> 
+            <source>Endpoint Security Extensions</source> 
+            <translation>Utvidelser for endepunktsikkerhet</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsArgumentLegacy"> 
             <source>Security extensions</source> 
             <translation>Sikkerhetsutvidelser</translation> 
         </message> 
+        <message id="instructionOpenSecurityExtensionsLegacy"> 
+            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
+            <translation>Velg Åpne og utvidelser &gt; Sikkerhetsutvidelser</translation> 
+        </message> 
         <message id="instructionOpenSecurityExtensionsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Påloggingselementer og utvidelser</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsLinkLegacy"> 
             <source>Open &amp; Extensions</source> 
             <translation>Åpne og utvidelser</translation> 
         </message> 
@@ -1253,10 +1323,6 @@ open macOS Preferences to enable them.</source>
         <message id="instructionOpenSystemSettingsLink"> 
             <source>System Settings</source> 
             <translation>Systeminnstillinger</translation> 
-        </message> 
-        <message id="instructionRestartIfNecessary"> 
-            <source>Restart the application if required</source> 
-            <translation>Start programmet på nytt hvis påkrevd</translation> 
         </message> 
         <message id="itemUnavailableBrowserFallback"> 
             <source>This item is not available on this device.
@@ -1320,6 +1386,10 @@ Det vil åpnes i nettleseren din.</translation>
         <message id="labelChooseConflictVersionIndividual"> 
             <source>For each file, select the version to keep.</source> 
             <translation>For hver fil, velg versjonen som skal beholdes.</translation> 
+        </message> 
+        <message id="labelComputerLocation"> 
+            <source>Location on computer</source> 
+            <translation>Plassering på datamaskinen</translation> 
         </message> 
         <message id="labelConflictDialogQuestion"> 
             <source>Which version do you want to keep?</source> 
@@ -1507,6 +1577,10 @@ Nyttig hvis du vet at det viktige arbeidet er på nett på kDrive.</translation>
         <message id="labelRemoteAccessRightsModifiedTip"> 
             <source>The folder may have been moved to another disk and then returned to its original location.</source> 
             <translation>Mappen kan ha blitt flyttet til en annen disk og deretter returnert til sin opprinnelige plassering.</translation> 
+        </message> 
+        <message id="labelRemoteLocation"> 
+            <source>Location on kDrive</source> 
+            <translation>Plassering på kDrive</translation> 
         </message> 
         <message id="labelRestoreToOriginalLocation"> 
             <source>Restore it to its original location.</source> 
@@ -1726,6 +1800,32 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
             <source>%1 version conflicts detected</source> 
             <translation>%1 versjonskonflikt(er) oppdaget</translation> 
         </message> 
+        <message id="manyDeleteDialogHardLimitContent"> 
+            <source>Synchronization is paused to prevent accidental deletion.
+What would you like to do?</source> 
+            <translation>Synkroniseringen er satt på pause for å unngå utilsiktet sletting.
+Hva vil du gjøre?</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitPrimary"> 
+            <source>Restore the files</source> 
+            <translation>Gjenopprette filene</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitSecondary"> 
+            <source>Delete online as well</source> 
+            <translation>Slett også på nettet</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitContent"> 
+            <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
+            <translation>Disse filene kan fortsatt gjenopprettes fra papirkurven i kDrive.</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitDoNotShowAgain"> 
+            <source>Don’t show this warning again</source> 
+            <translation>Ikke vis denne advarselen igjen</translation> 
+        </message> 
+        <message id="manyDeleteDialogTitle"> 
+            <source>%1 items deleted from your folder</source> 
+            <translation>%1 elementer er slettet fra mappen din</translation> 
+        </message> 
         <message id="matomoDescription"> 
             <source>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.
 
@@ -1795,8 +1895,8 @@ Analyse av disse dataene lar teamet vårt kontinuerlig forbedre programmets gren
             <translation>Den valgte mappen må være tom for at synkroniseringen skal fungere korrekt.</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionDescription"> 
-            <source>Choose the folders to sync on this computer:</source> 
-            <translation>Velg mappene som skal synkroniseres på denne datamaskinen:</translation> 
+            <source>Select the folders to sync on this computer:</source> 
+            <translation>Velg mappene du vil synkronisere på denne datamaskinen:</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionTitle"> 
             <source>Synced folders</source> 
@@ -1947,6 +2047,18 @@ Vennligst vent noen øyeblikk.</translation>
         <message id="onboardingSynchronizationInProgressTitle"> 
             <source>Sync in progress…</source> 
             <translation>Synkronisering pågår…</translation> 
+        </message> 
+        <message id="onboardingV4Faq"> 
+            <source>Explore the app</source> 
+            <translation>Oppdag appen</translation> 
+        </message> 
+        <message id="onboardingV4Subtitle"> 
+            <source>Keep track of your syncs more easily.</source> 
+            <translation>Få enklere oversikt over synkroniseringene dine.</translation> 
+        </message> 
+        <message id="onboardingV4Title"> 
+            <source>Your new kDrive app is here!</source> 
+            <translation>Den nye kDrive-appen er her!</translation> 
         </message> 
         <message id="openKDriveAtStartupSetting"> 
             <source>Open kDrive when the computer starts</source> 
