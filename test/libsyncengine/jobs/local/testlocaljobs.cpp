@@ -373,7 +373,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     // in its name.
     const auto excludedDehydratedPlaceholderName = Str("dehydrated_placeholder_blacklisted_20220913_130102_666.txt");
 
-    std::ofstream ofs{localDirPath / excludedDehydratedPlaceholderName};
+    { std::ofstream ofs(localDirPath / excludedDehydratedPlaceholderName); }
     auto ioError = IoError::Success;
     CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(localDirPath / excludedDehydratedPlaceholderName, ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
