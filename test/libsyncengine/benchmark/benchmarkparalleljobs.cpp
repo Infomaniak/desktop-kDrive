@@ -28,7 +28,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "network/proxy.h"
 
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
@@ -69,13 +68,6 @@ void BenchmarkParallelJobs::setUp() {
     int driveId = atoi(_testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 }
 
 void BenchmarkParallelJobs::tearDown() {

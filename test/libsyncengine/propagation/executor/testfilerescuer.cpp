@@ -20,7 +20,6 @@
 #include "db/parmsdb.h"
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
-#include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -61,12 +60,6 @@ void TestFileRescuer::setUp() {
     const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);

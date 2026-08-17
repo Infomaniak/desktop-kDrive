@@ -74,7 +74,6 @@
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/network/proxy.h"
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -377,11 +376,6 @@ void AppServer::init() {
             LOG_WARN(_logger, "Error in ServerRequests::fixProxyConfig: code=" << exitCode);
             throw std::runtime_error("Unable to fix proxy type.");
         }
-    }
-
-    if (!setupProxy()) {
-        LOG_WARN(_logger, "Error in AppServer::setupProxy");
-        throw std::runtime_error("Unable to initialize proxy.");
     }
 
     // Setup auto start
@@ -866,17 +860,6 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     if (oldParametersInfo.language() != newParametersInfo.language()) {
         Language language = newParametersInfo.language();
         QTimer::singleShot(100, this, [this, language]() { CommonUtility::setupTranslations(this, language); });
-    }
-
-    // Propagate ProxyConfig change
-    if (oldParametersInfo.proxyConfig().type() != newParametersInfo.proxyConfigInfo().type() ||
-        oldParametersInfo.proxyConfig().hostName() != newParametersInfo.proxyConfigInfo().hostName().toStdString() ||
-        oldParametersInfo.proxyConfig().port() != newParametersInfo.proxyConfigInfo().port() ||
-        oldParametersInfo.proxyConfig().needsAuth() != newParametersInfo.proxyConfigInfo().needsAuth() ||
-        oldParametersInfo.proxyConfig().user() != newParametersInfo.proxyConfigInfo().user().toStdString() ||
-        pwd != newParametersInfo.proxyConfigInfo().pwd().toStdString()) {
-        // Note: The parameters cache has been updated with the parameters new values.
-        Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
     }
 
     // Propagate autostart change
@@ -2268,16 +2251,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 CommonUtility::setupTranslations(this, parametersInfo.language());
             }
 
-            // ProxyConfig change propagation
-            if (parameters.proxyConfig().type() != parametersInfo.proxyConfigInfo().type() ||
-                parameters.proxyConfig().hostName() != parametersInfo.proxyConfigInfo().hostName().toStdString() ||
-                parameters.proxyConfig().port() != parametersInfo.proxyConfigInfo().port() ||
-                parameters.proxyConfig().needsAuth() != parametersInfo.proxyConfigInfo().needsAuth() ||
-                parameters.proxyConfig().user() != parametersInfo.proxyConfigInfo().user().toStdString() ||
-                pwd != parametersInfo.proxyConfigInfo().pwd().toStdString()) {
-                Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
-            }
-
             resultStream << toInt(exitCode);
             break;
         }
@@ -3583,10 +3556,6 @@ void AppServer::logUsefulInformation() {
     }
 
     LOG_INFO(_logger, "********************");
-}
-
-bool AppServer::setupProxy() noexcept {
-    return Proxy::instance(ParametersCache::instance()->parameters().proxyConfig()) != nullptr;
 }
 
 std::filesystem::path AppServer::makeDbName() {

@@ -24,7 +24,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
-#include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 
@@ -73,12 +72,6 @@ void TestExecutorWorker::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(_mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);

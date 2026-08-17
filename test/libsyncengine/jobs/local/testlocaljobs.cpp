@@ -28,7 +28,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "requests/exclusiontemplatecache.h"
@@ -43,7 +42,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath){};
+            SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -96,12 +95,6 @@ void KDC::TestLocalJobs::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 
     _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
@@ -277,7 +270,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }

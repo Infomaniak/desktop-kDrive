@@ -25,7 +25,6 @@
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 
@@ -73,12 +72,6 @@ void TestSyncPal::setUp() {
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(vfs, sync.dbId(), KDRIVE_VERSION_STRING);

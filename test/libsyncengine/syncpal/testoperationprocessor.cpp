@@ -24,7 +24,6 @@
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -71,13 +70,6 @@ void TestOperationProcessor::setUp() {
     const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                          KDRIVE_VERSION_STRING);

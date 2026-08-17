@@ -22,7 +22,6 @@
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 
-#include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -96,12 +95,6 @@ void TestWorkers::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     // Create VFS instance
     VfsSetupParams vfsSetupParams;

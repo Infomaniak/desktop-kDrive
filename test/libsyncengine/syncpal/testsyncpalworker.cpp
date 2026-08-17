@@ -23,7 +23,6 @@
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
 #include "libsyncengine/requests/syncnodecache.h"
@@ -77,12 +76,6 @@ void TestSyncPalWorker::setUp() {
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
     _testEnded = false;
 }
 

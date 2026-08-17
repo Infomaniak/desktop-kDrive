@@ -21,7 +21,6 @@
 #include "jobs/network/kDrive_API/apitranslator.h"
 
 #include "jobs/syncjobmanager.h"
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
@@ -68,13 +67,6 @@ void TestApiTranslator::setUp() {
     _driveId = atoi(testVariables.driveId.c_str());
     Drive drive(static_cast<int>(_driveDbId), static_cast<int>(_driveId), account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 }
 
 void TestApiTranslator::tearDown() {

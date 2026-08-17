@@ -83,7 +83,8 @@ class ParametersInfo {
                    (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
                    (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
                    (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
-                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete());
+                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete()) &&
+                   (lhs.proxyConfigInfo() == rhs.proxyConfigInfo());
         }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
