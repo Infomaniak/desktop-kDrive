@@ -63,6 +63,7 @@ struct ActivitiesTable: View {
                         format: .node(driveFolderName: context.synchro.localPath.lastPathComponent)
                     )
                     .underline()
+                    .lineLimit(1)
                 }
                 .buttonStyle(.borderless)
                 .tint(ColorToken.Text.tertiary.asColor)
