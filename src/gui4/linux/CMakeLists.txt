@@ -22,6 +22,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/appconstants.h
         app/applicationidentity.cpp
         app/applicationidentity.h
+        app/fileiconresolver.cpp
+        app/fileiconresolver.h
         app/cache/activitystore.cpp
         app/cache/activitystore.h
         app/cache/appcache.cpp
