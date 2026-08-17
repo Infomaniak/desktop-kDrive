@@ -131,16 +131,16 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
 
 QString activityActionText(const ActivityEntry &activity) {
     switch (activity.instruction) {
+        case SyncFileInstruction::UpdateMetadata: // We can't receive an UpdateMetadata on linux, reserved instruction for macOS
+                                                  // and Windows for the litesync.
         case SyncFileInstruction::Update:
             return qtTrId("activityInstructionUpdateLabel");
-        case SyncFileInstruction::UpdateMetadata:
-            return qtTrId("activityInstructionUpdateMetadataLabel");
         case SyncFileInstruction::Remove:
             return qtTrId("activityInstructionRemoveLabel");
         case SyncFileInstruction::Move: {
             if (!activity.path.empty() && !activity.newPath.empty() &&
                 normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
-                return qtTrId("activityInstructionUpdateMetadataLabel");
+                return qtTrId("activityInstructionRenameLabel");
             }
             return qtTrId("activityInstructionMoveLabel");
         }
