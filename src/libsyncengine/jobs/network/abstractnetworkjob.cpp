@@ -358,7 +358,7 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
                            static_cast<Poco::UInt16>(ParametersCache::instance()->parameters().proxyConfig().port()));
         if (ParametersCache::instance()->parameters().proxyConfig().needsAuth()) {
             _session->setProxyCredentials(ParametersCache::instance()->parameters().proxyConfig().user(),
-                                          ParametersCache::instance()->parameters().proxyConfig().keychainKey());
+                                          ParametersCache::instance()->parameters().proxyConfig().pwd());
         }
     }
 }

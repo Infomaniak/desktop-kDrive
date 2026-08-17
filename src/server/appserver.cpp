@@ -828,7 +828,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     if (oldParametersInfo.proxyConfig().needsAuth()) {
         // Read pwd from keystore
         bool found = false;
-        if (!KeyChainManager::instance()->readDataFromKeystore(oldParametersInfo.proxyConfig().keychainKey(), pwd, found)) {
+        if (!KeyChainManager::instance()->readData(oldParametersInfo.proxyConfig().keychainKey(), pwd, found)) {
             LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
         }
         if (!found) {
@@ -2213,18 +2213,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> parametersInfo;
 
             // Retrieve current settings
-            const Parameters parameters = ParametersCache::instance()->parameters();
-            std::string pwd;
-            if (parameters.proxyConfig().needsAuth()) {
-                // Read pwd from keystore
-                bool found;
-                if (!KeyChainManager::instance()->readDataFromKeystore(parameters.proxyConfig().keychainKey(), pwd, found)) {
-                    LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
-                }
-                if (!found) {
-                    LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << parameters.proxyConfig().keychainKey());
-                }
-            }
+            const Parameters previousParameters = ParametersCache::instance()->parameters();
 
             // Update parameters
             const ExitCode exitCode = ServerRequests::updateParameters(parametersInfo);
@@ -2234,7 +2223,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // extendedLog change propagation
-            if (parameters.extendedLog() != parametersInfo.extendedLog()) {
+            if (previousParameters.extendedLog() != parametersInfo.extendedLog()) {
                 logExtendedLogActivationMessage(parametersInfo.extendedLog());
                 const std::scoped_lock lock(vfsMapMutex);
                 for (const auto &[_, vfs]: vfsMap) {
@@ -2243,8 +2232,26 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // Language change propagation
-            if (parameters.language() != parametersInfo.language()) {
+            if (previousParameters.language() != parametersInfo.language()) {
                 CommonUtility::setupTranslations(this, parametersInfo.language());
+            }
+
+            // Proxy parameters change propagation
+            if (!previousParameters.proxyConfig().needsAuth() && parametersInfo.proxyConfig().needsAuth()) {
+                // Proxy needs authentification now, generate keychain key and the save password to the keychain.
+                const auto keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
+                if (!KeyChainManager::instance()->writeData(keychainKey, parametersInfo.proxyConfig().pwd())) {
+                    LOG_WARN(_logger, "Failed to write password token into keychain"); // should throw??
+                }
+
+                auto proxyConfig = parametersInfo.proxyConfig();
+                proxyConfig.setKeychainKey(keychainKey);
+                parametersInfo.setProxyConfig(proxyConfig);
+            } else if (previousParameters.proxyConfig().needsAuth() && !parametersInfo.proxyConfig().needsAuth()) {
+                // Proxy does not need authentification anymore, remove the entry from the keychain key.
+                if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
+                    LOG_WARN(_logger, "Failed to remove proxy password from keychain");
+                }
             }
 
             resultStream << toInt(exitCode);
@@ -3877,7 +3884,7 @@ void AppServer::clearKeychainKeys() {
     }
 
     for (const auto &user: userList) {
-        KeyChainManager::instance()->deleteToken(user.keychainKey());
+        KeyChainManager::instance()->deleteData(user.keychainKey());
     }
 }
 

@@ -17,6 +17,8 @@
  */
 
 #include "parameterscache.h"
+
+#include "keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 #include "libcommonserver/log/log.h"
@@ -72,6 +74,20 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
         assert(false);
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
         throw std::runtime_error("Failed to read parameters");
+    }
+
+    // Load proxy password
+    if (_parameters.proxyConfig().needsAuth()) {
+        std::string pwd;
+        if (!KeyChainManager::instance()->readData(_parameters.proxyConfig().keychainKey(), pwd, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Failed to read proxy password from keychain");
+            throw std::runtime_error("Failed to read proxy password from keychain");
+        }
+        if (!found) {
+            assert(false);
+            LOG_WARN(Log::instance()->getLogger(), "Proxy password not found");
+            throw std::runtime_error("Failed to read proxy password from keychain");
+        }
     }
 }
 
