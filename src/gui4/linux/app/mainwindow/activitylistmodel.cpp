@@ -131,27 +131,29 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
 
 QString activityActionText(const ActivityEntry &activity) {
     switch (activity.instruction) {
-        case SyncFileInstruction::UpdateMetadata: // We shouldn't receive an UpdateMetadata on linux, reserved instruction for
-                                                  // macOS and Windows for the litesync. Here for possible future litesync linux implem.
-        case SyncFileInstruction::Update:
+        using enum SyncFileInstruction;
+
+        case UpdateMetadata: // We shouldn't receive an UpdateMetadata on linux, reserved instruction for macOS and Windows for
+                             // the litesync. Here for possible future litesync linux implem.
+        case Update:
             return qtTrId("activityInstructionUpdateLabel");
-        case SyncFileInstruction::Remove:
+        case Remove:
             return qtTrId("activityInstructionRemoveLabel");
-        case SyncFileInstruction::Move: {
+        case Move: {
             if (!activity.path.empty() && !activity.newPath.empty() &&
                 normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
                 return qtTrId("activityInstructionRenameLabel");
             }
             return qtTrId("activityInstructionMoveLabel");
         }
-        case SyncFileInstruction::Get:
+        case Get:
             return qtTrId("activityInstructionGetLabel");
-        case SyncFileInstruction::Put:
+        case Put:
             return qtTrId("activityInstructionPutLabel");
-        case SyncFileInstruction::Ignore:
+        case Ignore:
             return qtTrId("activityInstructionIgnoreLabel");
-        case SyncFileInstruction::None:
-        case SyncFileInstruction::EnumEnd:
+        case None:
+        case EnumEnd:
             return {};
     }
     return {};
