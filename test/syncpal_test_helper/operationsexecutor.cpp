@@ -403,8 +403,8 @@ void OperationsExecutor::applyRemoteMove(const OperationDesc &desc) {
     std::map<SyncPath, NodeId> rekeyed;
     (void) std::erase_if(_batchRemoteIds, [&](const auto &entry) {
         const auto &[path, id] = entry;
-        if (auto relative = path.lexically_relative(desc.fromPath);
-            !relative.empty() && relative.native().substr(0, 2) != Str2SyncName("..")) {
+        if (const auto relative = path.lexically_relative(desc.fromPath);
+            !relative.empty() && *relative.begin() != Str2SyncName("..")) {
             rekeyed[desc.toPath / relative] = id;
             return true;
         }
