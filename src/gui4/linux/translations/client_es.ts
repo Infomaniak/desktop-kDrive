@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: es, Spanish
  Exported by: Romain Galland
- Exported at: Thu, 13 Aug 2026 12:14:56 +0200 
+ Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="es"> 
     <context>
