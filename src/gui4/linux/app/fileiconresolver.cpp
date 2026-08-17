@@ -31,7 +31,9 @@ namespace KDC {
 
 namespace {
 
-constexpr qsizetype maxCacheEntries = 1024;
+// Safety net only. Callers drop the cache when the resolved set is replaced, so entries stay scoped to a single
+// projection, that is one sync's activities plus its active errors.
+constexpr qsizetype maxCacheEntries = 4096;
 
 /* Narrow overrides for names the shared MIME database does not resolve, or resolves too generically. */
 QString iconNameForFileName(const QString &fileName) {
@@ -211,6 +213,10 @@ QString FileIconResolver::iconName(const QString &fileName, const NodeType nodeT
     }
     (void) _iconNamesByFileName.insert(fileName, iconName);
     return iconName;
+}
+
+void FileIconResolver::clear() const {
+    _iconNamesByFileName.clear();
 }
 
 } // namespace KDC
