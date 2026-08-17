@@ -49,6 +49,12 @@ final class DriveCellView: NSView {
         }
     }
 
+    var showsDisabledAppearance = true {
+        didSet {
+            updateEnabledState(isEnabled)
+        }
+    }
+
     private var color: NSColor {
         return drive.nsColor ?? ColorToken.Drive.defaultColor.asNSColor
     }
@@ -146,12 +152,12 @@ final class DriveCellView: NSView {
     private func updateEnabledState(_ isEnabled: Bool) {
         checkbox.isEnabled = isEnabled
 
-        let alphaValue = isEnabled ? 1.0 : 0.5
+        let alphaValue = (isEnabled || !showsDisabledAppearance) ? 1.0 : 0.5
         checkbox.alphaValue = alphaValue
         driveIcon.alphaValue = alphaValue
         labelsStackView.alphaValue = alphaValue
 
-        toolTip = isEnabled ? nil : KDriveLocalizable.onboardingAlreadySyncedDriveTooltip
+        toolTip = (isEnabled || !showsDisabledAppearance) ? nil : KDriveLocalizable.onboardingAlreadySyncedDriveTooltip
     }
 
     override func mouseDown(with event: NSEvent) {

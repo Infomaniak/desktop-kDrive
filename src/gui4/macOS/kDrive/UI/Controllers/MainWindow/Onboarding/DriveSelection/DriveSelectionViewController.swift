@@ -181,6 +181,7 @@ extension DriveSelectionViewController {
             if !isSynchronized {
                 drivesListView.cells[singleDrive.id]?.state = .on
                 drivesListView.cells[singleDrive.id]?.isEnabled = false
+                drivesListView.cells[singleDrive.id]?.showsDisabledAppearance = false
                 viewModel.selectDrive(singleDrive)
             }
         }
