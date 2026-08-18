@@ -256,14 +256,13 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
-    - `ui/windows/main/`: main-window shell, temporary tab placeholders, and feature families grouped under `activities/`,
-      `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
+    - `ui/windows/main/`: main-window shell, remaining temporary tab placeholders, and feature families grouped under
+      `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
       versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no
       onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
-    - `ui/windows/main/activities/`: selected-sync Activities presentation components, including the filter controls,
-      empty state, table, rows, and source/status presentation. Time, size, and status columns have fixed widths; only
-      the name/folder boundary is draggable. They consume `ActivitiesController` and `ActivityListModel`; they must
-      not call IPC or own activity history.
+    - `ui/windows/main/activities/`: selected-sync Activities page, filter popup, table rows, source/status presentation,
+      and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is draggable. It
+      consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
