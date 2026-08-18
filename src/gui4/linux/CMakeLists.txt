@@ -151,7 +151,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKDriveSyncSelectorItem.qml
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
-        ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
