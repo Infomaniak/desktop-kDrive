@@ -260,8 +260,9 @@
       `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
       versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no
       onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
-    - `ui/windows/main/activities/`: selected-sync Activities presentation components. They consume
-      `ActivitiesController` and `ActivityListModel`; they must not call IPC or own activity history.
+    - `ui/windows/main/activities/`: selected-sync Activities presentation components, including the filter controls,
+      empty state, resizable table, rows, and source/status presentation. They consume `ActivitiesController` and
+      `ActivityListModel`; they must not call IPC or own activity history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
