@@ -86,7 +86,7 @@ extension UISynchroFileInstruction {
         case .Update:
             self = .update
         case .UpdateMetadata:
-            self = .renamed
+            self = .update
         case .Remove:
             self = .remove
         case .Move:

@@ -87,15 +87,15 @@ struct UISynchroNodeTests {
         #expect(node.progress == 100)
     }
 
-    @Test("Update metadata maps to renamed")
+    @Test("Update metadata maps to update")
     func updateMetadataMapsToRenamed() {
         let node = makeSynchroNode(
             instruction: .UpdateMetadata,
-            path: "/folder/old-name.txt",
-            newPath: "/folder/new-name.txt"
+            path: "/folder/name.txt",
+            newPath: "/folder/name.txt"
         )
 
-        #expect(UISynchroNode(synchroNode: node).instruction == .renamed)
+        #expect(UISynchroNode(synchroNode: node).instruction == .update)
     }
 
     @Test("Move within the same parent maps to renamed")
