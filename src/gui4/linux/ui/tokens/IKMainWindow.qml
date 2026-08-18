@@ -40,10 +40,13 @@ QtObject {
     readonly property real homeDriveNameMaxHeight: 40
     readonly property real homeShortcutHeight: 34
     readonly property real homeShortcutExternalIconSpacing: IKSpacing.s16
-    // Fixed canvas so the Home layout does not shift when the status visual changes. The animations size themselves
-    // from their generated implicit size; only the hand-exported setup illustration needs explicit dimensions.
+    // Fixed canvas so the Home layout does not shift when the status visual changes.
     readonly property real homeStatusVisualWidth: 228
     readonly property real homeStatusVisualHeight: 131
+    readonly property real homeStatusAnimationWidth: 178
+    readonly property real homeStatusAnimationHeight: 131
+    readonly property real homeStatusOfflineAnimationWidth: 227
+    readonly property real homeStatusOfflineAnimationHeight: 90
     readonly property real homeStatusSetupImageWidth: 126
     readonly property real homeStatusSetupImageHeight: 121
     readonly property real toolbarIconButtonSize: 36
