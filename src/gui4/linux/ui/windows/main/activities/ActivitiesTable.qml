@@ -20,83 +20,24 @@ Item {
     required property var model
     required property var controller
 
-    property var columnRatios: [
-        IKActivities.nameColumnRatio,
-        IKActivities.folderColumnRatio,
-        IKActivities.timeColumnRatio,
-        IKActivities.sizeColumnRatio,
-        IKActivities.statusColumnRatio
-    ]
+    property real nameFolderRatio: IKActivities.nameColumnRatio / (IKActivities.nameColumnRatio + IKActivities.folderColumnRatio)
 
-    readonly property var minimumColumnWidths: [
-        IKActivities.nameColumnMinWidth,
-        IKActivities.folderColumnMinWidth,
-        IKActivities.timeColumnMinWidth,
-        IKActivities.sizeColumnMinWidth,
-        IKActivities.statusColumnMinWidth
-    ]
-    readonly property var columnWidths: resolveColumnWidths(width)
-    readonly property real nameColumnWidth: columnWidths[0]
-    readonly property real folderColumnWidth: columnWidths[1]
-    readonly property real timeColumnWidth: columnWidths[2]
-    readonly property real sizeColumnWidth: columnWidths[3]
-    readonly property real statusColumnWidth: columnWidths[4]
+    readonly property real fixedColumnsWidth: IKActivities.timeColumnWidth + IKActivities.sizeColumnWidth + IKActivities.statusColumnWidth
+    readonly property real flexibleWidth: Math.max(IKActivities.nameColumnMinWidth + IKActivities.folderColumnMinWidth, width - fixedColumnsWidth)
+    readonly property real nameColumnWidth: Math.max(IKActivities.nameColumnMinWidth, Math.min(flexibleWidth - IKActivities.folderColumnMinWidth, flexibleWidth * nameFolderRatio))
+    readonly property real folderColumnWidth: flexibleWidth - nameColumnWidth
+    readonly property real timeColumnWidth: IKActivities.timeColumnWidth
+    readonly property real sizeColumnWidth: IKActivities.sizeColumnWidth
+    readonly property real statusColumnWidth: IKActivities.statusColumnWidth
     readonly property real contentWidth: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
 
-    function resolveColumnWidths(availableWidth) {
-        const ratios = root.columnRatios;
-        const minimumWidths = root.minimumColumnWidths;
-        const widths = new Array(ratios.length).fill(0);
-        const flexible = new Array(ratios.length).fill(true);
-        let remainingWidth = Math.max(0, availableWidth);
-        let remainingRatio = ratios.reduce((sum, ratio) => sum + Math.max(0, ratio), 0);
-        let minimumApplied = true;
-
-        while (minimumApplied) {
-            minimumApplied = false;
-            for (let index = 0; index < widths.length; ++index) {
-                if (!flexible[index]) {
-                    continue;
-                }
-                const ratio = Math.max(0, ratios[index]);
-                const proportionalWidth = remainingRatio > 0 ? remainingWidth * ratio / remainingRatio : 0;
-                if (proportionalWidth >= minimumWidths[index]) {
-                    continue;
-                }
-                widths[index] = minimumWidths[index];
-                flexible[index] = false;
-                remainingWidth -= minimumWidths[index];
-                remainingRatio -= ratio;
-                minimumApplied = true;
-            }
-        }
-
-        for (let index = 0; index < widths.length; ++index) {
-            if (flexible[index]) {
-                widths[index] = remainingWidth * ratios[index] / remainingRatio;
-            }
-        }
-        return widths;
-    }
-
-    function resizeBoundary(boundaryIndex, requestedDelta) {
-        if (boundaryIndex < 0 || boundaryIndex >= root.columnWidths.length - 1 || root.width <= 0) {
+    function resizeNameBoundary(requestedDelta) {
+        if (root.flexibleWidth <= 0) {
             return;
         }
-        const widths = root.columnWidths.slice();
-        const leftIndex = boundaryIndex;
-        const rightIndex = boundaryIndex + 1;
-        const minimumDelta = root.minimumColumnWidths[leftIndex] - widths[leftIndex];
-        const maximumDelta = widths[rightIndex] - root.minimumColumnWidths[rightIndex];
-        const delta = Math.max(minimumDelta, Math.min(maximumDelta, requestedDelta));
-        if (Math.abs(delta) < 0.001) {
-            return;
-        }
-        widths[leftIndex] += delta;
-        widths[rightIndex] -= delta;
-
-        const totalWidth = widths.reduce((sum, width) => sum + width, 0);
-        root.columnRatios = widths.map(width => width / totalWidth);
+        const target = root.nameColumnWidth + requestedDelta;
+        const clamped = Math.max(IKActivities.nameColumnMinWidth, Math.min(root.flexibleWidth - IKActivities.folderColumnMinWidth, target));
+        root.nameFolderRatio = clamped / root.flexibleWidth;
     }
 
     clip: true
@@ -109,7 +50,7 @@ Item {
         timeColumnWidth: root.timeColumnWidth
         sizeColumnWidth: root.sizeColumnWidth
         statusColumnWidth: root.statusColumnWidth
-        onBoundaryDragged: (boundaryIndex, delta) => root.resizeBoundary(boundaryIndex, delta)
+        onResizeRequested: delta => root.resizeNameBoundary(delta)
     }
 
     ListView {
