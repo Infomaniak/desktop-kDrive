@@ -159,6 +159,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivitiesEmptyState.qml
         ui/windows/main/activities/ActivitiesFilterMenu.qml
         ui/windows/main/activities/ActivitiesHeader.qml
+        ui/windows/main/activities/ActivitiesTable.qml
+        ui/windows/main/activities/ActivitiesTableHeader.qml
         ui/windows/main/activities/ActivityFileIcon.qml
         ui/windows/main/activities/ActivityProgressRing.qml
         ui/windows/main/activities/ActivityRow.qml
