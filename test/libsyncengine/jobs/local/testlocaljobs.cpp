@@ -296,24 +296,23 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
     _syncPal->setLocalPath(temporaryDirectory.path());
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled, NodeId{});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{});
 
         CPPUNIT_ASSERT(!deleteJob.canRun()); // Empty node ID.
     }
 
     // Local and remote item paths are different: can run
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
 
         CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
     // Local and remote item paths are the same: cannot run
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled,
-                                     RemoteNodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, RemoteNodeId{"1234"});
 
-        deleteJob.setRemoteItemRelativePath(SyncPath{_localTempDir.path().filename()});
+        deleteJob.setRemoteItemRelativePath(SyncPath{localDirPath.filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
@@ -321,26 +320,26 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     // Advanced synchronisation, local and remote item paths are the same: cannot run
     _syncPal->_syncInfo.targetPath = "/";
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
-        deleteJob.setRemoteItemRelativePath(SyncPath{_localTempDir.path().filename()});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
+        deleteJob.setRemoteItemRelativePath(SyncPath{localDirPath.filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
     // Advanced synchronisation, local and remote item paths are different: can run
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
         deleteJob.setRemoteItemRelativePath(SyncPath{"tmp_dir_diff"});
 
         CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
 
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / _localTempDir.path().filename()));
+        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / localDirPath.filename()));
     }
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    testhelpers::eraseFromTrash(_localTempDir.path().filename());
+    testhelpers::eraseFromTrash(localDirPath.filename());
 #endif
 }
 
