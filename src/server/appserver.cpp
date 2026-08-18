@@ -839,7 +839,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &pa
             keychainKey = previousParameters.proxyConfig().keychainKey();
         }
         if (!KeyChainManager::instance()->writeData(keychainKey, newParametersInfo.proxyConfig().pwd())) {
-            LOG_WARN(_logger, "Failed to write password token into keychain"); // should throw??
+            LOG_WARN(_logger, "Failed to write password token into keychain");
         }
 
         auto proxyConfig = newParametersInfo.proxyConfig();
