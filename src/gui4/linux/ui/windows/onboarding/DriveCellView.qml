@@ -141,53 +141,25 @@ Item {
         }
     }
 
-    ToolTip {
-        id: longDriveNameTooltip
-
+    IKToolTip {
         visible: root.cellEnabled && cellMouseArea.containsMouse && root.driveNameContainsMouse() && driveNameText.truncated
         delay: IKOnboarding.driveSelectionTooltipDelay
-        timeout: -1
         text: root.driveName
         padding: IKOnboarding.driveSelectionTooltipPadding
-
-        contentItem: Text {
-            width: Math.min(implicitWidth, IKOnboarding.driveSelectionTooltipMaxWidth)
-            text: longDriveNameTooltip.text
-            color: IKColors.onboardingTooltipText
-            font.pixelSize: IKFonts.bodySize
-            lineHeightMode: Text.FixedHeight
-            lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
-            wrapMode: Text.WordWrap
-        }
-
-        background: Rectangle {
-            radius: IKOnboarding.driveSelectionTooltipRadius
-            color: IKColors.onboardingTooltipSurface
-        }
+        maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
+        foregroundColor: IKColors.onboardingTooltipText
+        surfaceColor: IKColors.onboardingTooltipSurface
+        textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
     }
 
-    ToolTip {
-        id: disabledCellTooltip
-
+    IKToolTip {
         visible: !root.cellEnabled && cellMouseArea.containsMouse && root.disabledTooltip.length > 0
         delay: IKOnboarding.driveSelectionTooltipDelay
-        timeout: -1
         text: root.disabledTooltip
         padding: IKOnboarding.driveSelectionTooltipPadding
-
-        contentItem: Text {
-            width: Math.min(implicitWidth, IKOnboarding.driveSelectionTooltipMaxWidth)
-            text: disabledCellTooltip.text
-            color: IKColors.onboardingTooltipText
-            font.pixelSize: IKFonts.bodySize
-            lineHeightMode: Text.FixedHeight
-            lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
-            wrapMode: Text.WordWrap
-        }
-
-        background: Rectangle {
-            radius: IKOnboarding.driveSelectionTooltipRadius
-            color: IKColors.onboardingTooltipSurface
-        }
+        maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
+        foregroundColor: IKColors.onboardingTooltipText
+        surfaceColor: IKColors.onboardingTooltipSurface
+        textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
     }
 }
