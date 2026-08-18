@@ -25,8 +25,10 @@
 
 #include <QAbstractListModel>
 #include <QDateTime>
+#include <QFont>
 #include <QList>
 #include <QString>
+#include <QStringList>
 #include <QTimer>
 
 #include <cstdint>
@@ -43,6 +45,8 @@ namespace KDC {
  */
 class ActivityListModel final : public QAbstractListModel {
         Q_OBJECT
+        Q_PROPERTY(QStringList timeTextSamples READ timeTextSamples CONSTANT)
+        Q_PROPERTY(QStringList sizeTextSamples READ sizeTextSamples CONSTANT)
 
     public:
         enum class Filter : uint8_t {
@@ -97,6 +101,19 @@ class ActivityListModel final : public QAbstractListModel {
 
         /** Returns the stable model row identifier for an activity. */
         [[nodiscard]] static QString activityRowId(GenericId localId);
+
+        /**
+         * Widest strings the time and size columns can ever render in the active locale.
+         *
+         * Both columns are fixed-width, so the view sizes them from these samples instead of a hard-coded constant that
+         * would truncate in the languages with the longest wordings. The values are the real per-tier maxima, not
+         * estimates. Constant because translations are installed once at startup and never swapped at runtime.
+         */
+        [[nodiscard]] static QStringList timeTextSamples();
+        [[nodiscard]] static QStringList sizeTextSamples();
+
+        /** Widest advance width of @p texts rendered with @p font. */
+        [[nodiscard]] Q_INVOKABLE static qreal maxTextWidth(const QStringList &texts, const QFont &font);
 
         [[nodiscard]] int rowCount(const QModelIndex &parent = QModelIndex()) const override;
         [[nodiscard]] QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
