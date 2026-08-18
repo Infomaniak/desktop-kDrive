@@ -77,14 +77,14 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
         return ExitCode::SystemError;
     }
 
-    LOG_DEBUG(_logger, "KeyChainManager.writeToken");
+    LOG_DEBUG(_logger, "KeyChainManager.writeData");
     if (!KeyChainManager::instance()->writeData(_keychainKey, _apiToken.rawData())) {
         LOG_WARN(_logger, "Failed to write authentification token into keychain");
         _error = std::string("Failed to write authentification token into keychain");
         _errorDescr = std::string();
         return ExitCode::SystemError;
     }
-    LOG_DEBUG(_logger, "KeyChainManager.writeToken done");
+    LOG_DEBUG(_logger, "KeyChainManager.writeData done");
 
     return ExitCode::Ok;
 }
