@@ -246,7 +246,6 @@ function Upload-RecoveryUpdaterLink {
         $linkDirPath = "Test/$linkDirPath"
     }
 
-    $shouldUpload = $true
     $filesToDelete = @()
 
     try {
@@ -266,7 +265,7 @@ function Upload-RecoveryUpdaterLink {
                     $cmp = Compare-Versions -versionA $fullVersion -versionB $existingVersion
                     if ($cmp -lt 0) {
                         Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
-                        $shouldUpload = $false
+                        return
                     } elseif ($cmp -gt 0 -and $existingFile.id) {
                         $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
                     } elseif ($cmp -gt 0) {
@@ -278,10 +277,6 @@ function Upload-RecoveryUpdaterLink {
     } catch {
        Write-Host "Could not check existing recovery updater link; aborting link update -> $_" -f Red
        return
-    }
-
-    if (-not $shouldUpload) {
-        return
     }
 
     $urlLines = @("[InternetShortcut]", "URL=$kSuiteUrl")
