@@ -20,12 +20,21 @@ Item {
     required property var model
     required property var controller
 
-    property real nameColumnRatio: IKActivities.nameColumnRatio
-    property real folderColumnRatio: IKActivities.folderColumnRatio
-    property real timeColumnRatio: IKActivities.timeColumnRatio
-    property real sizeColumnRatio: IKActivities.sizeColumnRatio
-    property real statusColumnRatio: IKActivities.statusColumnRatio
+    property var columnRatios: [
+        IKActivities.nameColumnRatio,
+        IKActivities.folderColumnRatio,
+        IKActivities.timeColumnRatio,
+        IKActivities.sizeColumnRatio,
+        IKActivities.statusColumnRatio
+    ]
 
+    readonly property var minimumColumnWidths: [
+        IKActivities.nameColumnMinWidth,
+        IKActivities.folderColumnMinWidth,
+        IKActivities.timeColumnMinWidth,
+        IKActivities.sizeColumnMinWidth,
+        IKActivities.statusColumnMinWidth
+    ]
     readonly property var columnWidths: resolveColumnWidths(width)
     readonly property real nameColumnWidth: columnWidths[0]
     readonly property real folderColumnWidth: columnWidths[1]
