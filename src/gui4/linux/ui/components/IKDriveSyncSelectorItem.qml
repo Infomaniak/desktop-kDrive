@@ -225,26 +225,8 @@ Button {
         cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
     }
 
-    ToolTip {
-        id: truncatedTextTooltip
-
+    IKToolTip {
         visible: root.truncatedText.length > 0
-        delay: IKMainWindow.syncSelectorTooltipDelay
-        timeout: -1
         text: root.truncatedText
-        padding: IKMainWindow.syncSelectorTooltipPadding
-
-        contentItem: Text {
-            width: Math.min(implicitWidth, IKMainWindow.syncSelectorTooltipMaxWidth)
-            text: truncatedTextTooltip.text
-            color: IKColors.tooltipText
-            font.pixelSize: IKFonts.bodySize
-            wrapMode: Text.WordWrap
-        }
-
-        background: Rectangle {
-            radius: IKMainWindow.syncSelectorTooltipRadius
-            color: IKColors.tooltipSurface
-        }
     }
 }
