@@ -230,6 +230,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/filter-my-activity.svg
         ui/assets/main/activities/source-computer.svg
         ui/assets/main/activities/source-web.svg
+        ui/assets/main/activities/status-error.svg
         ui/assets/main/activities/status-synchronized-outline.svg
         ui/assets/main/chevron-down.svg
         ui/assets/main/folder.svg
