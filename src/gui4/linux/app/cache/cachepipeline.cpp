@@ -28,6 +28,12 @@ namespace KDC {
 namespace {
 Q_LOGGING_CATEGORY(lcCachePipeline, "gui.v4.cachepipeline", QtInfoMsg)
 
+/**
+ *
+ * @param status the SyncStatus to evaluate
+ * @return true if the status is one of the states that prevents in-progress activities from being routed to the ActivityStore,
+ * false otherwise.
+ */
 bool preventsInProgressActivities(const SyncStatus status) {
     return status == SyncStatus::Idle || status == SyncStatus::Paused || status == SyncStatus::Stopped ||
            status == SyncStatus::Error;
