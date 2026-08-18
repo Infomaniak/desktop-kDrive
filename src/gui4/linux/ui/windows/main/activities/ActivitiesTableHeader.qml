@@ -22,7 +22,7 @@ Item {
     required property real sizeColumnWidth
     required property real statusColumnWidth
 
-    signal boundaryDragged(int boundaryIndex, real delta)
+    signal resizeRequested(real delta)
 
     width: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
     height: IKActivities.tableHeaderHeight
@@ -42,22 +42,19 @@ Item {
             width: root.nameColumnWidth
             text: qsTrId("labelName")
             leftPadding: IKSpacing.s32 + IKSpacing.s8
-            boundaryIndex: 0
+            resizable: true
         }
         HeaderCell {
             width: root.folderColumnWidth
             text: qsTrId("labelFolder")
-            boundaryIndex: 1
         }
         HeaderCell {
             width: root.timeColumnWidth
             text: qsTrId("labelTime")
-            boundaryIndex: 2
         }
         HeaderCell {
             width: root.sizeColumnWidth
             text: qsTrId("labelSize")
-            boundaryIndex: 3
         }
         HeaderCell {
             width: root.statusColumnWidth
@@ -70,7 +67,7 @@ Item {
 
         required property string text
         property real leftPadding: IKActivities.secondaryCellPadding
-        property int boundaryIndex: -1
+        property bool resizable: false
         height: root.height
 
         Rectangle {
@@ -105,7 +102,7 @@ Item {
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             width: IKActivities.columnResizeHandleWidth
-            visible: cell.boundaryIndex >= 0
+            visible: cell.resizable
             cursorShape: Qt.SplitHCursor
             preventStealing: true
             onPressed: mouse => previousX = resizeHandle.mapToItem(root, mouse.x, 0).x
@@ -116,7 +113,7 @@ Item {
                 const currentX = resizeHandle.mapToItem(root, mouse.x, 0).x;
                 const delta = currentX - previousX;
                 previousX = currentX;
-                root.boundaryDragged(cell.boundaryIndex, delta);
+                root.resizeRequested(delta);
             }
         }
     }
