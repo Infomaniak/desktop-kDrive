@@ -270,6 +270,8 @@ function Upload-RecoveryUpdaterLink {
                             $shouldUpload = $false
                         } elseif ($cmp -gt 0 -and $existingFile.id) {
                             $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
+                        } elseif ($cmp -gt 0) {
+                            Write-Host "Warning: cannot delete older recovery updater link $($existingFile.name) (v$existingVersion) - missing file id" -f Yellow
                         }
                     }
                 }
