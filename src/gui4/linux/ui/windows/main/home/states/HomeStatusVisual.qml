@@ -33,6 +33,12 @@ Item {
         id: statusAnimationLoader
 
         anchors.centerIn: parent
+        width: root.status === HomeController.Offline
+               ? IKMainWindow.homeStatusOfflineAnimationWidth
+               : IKMainWindow.homeStatusAnimationWidth
+        height: root.status === HomeController.Offline
+                ? IKMainWindow.homeStatusOfflineAnimationHeight
+                : IKMainWindow.homeStatusAnimationHeight
         active: statusAnimationLoader.sourceComponent !== null
         sourceComponent: {
             switch (root.status) {
