@@ -22,6 +22,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/appconstants.h
         app/applicationidentity.cpp
         app/applicationidentity.h
+        app/fileiconresolver.cpp
+        app/fileiconresolver.h
         app/cache/activitystore.cpp
         app/cache/activitystore.h
         app/cache/appcache.cpp
@@ -146,6 +148,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKLoadingSpinner.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
+        ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
         ui/windows/main/ActivitiesPlaceholder.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
@@ -191,6 +194,39 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities.svg
+        ui/assets/main/activities/empty.svg
+        ui/assets/main/activities/empty-dark.svg
+        ui/assets/main/activities/file-3d.svg
+        ui/assets/main/activities/file-3d-dark.svg
+        ui/assets/main/activities/file.svg
+        ui/assets/main/activities/file-dark.svg
+        ui/assets/main/activities/file-audio.svg
+        ui/assets/main/activities/file-audio-dark.svg
+        ui/assets/main/activities/file-chart.svg
+        ui/assets/main/activities/file-chart-dark.svg
+        ui/assets/main/activities/file-code.svg
+        ui/assets/main/activities/file-code-dark.svg
+        ui/assets/main/activities/file-diagram.svg
+        ui/assets/main/activities/file-diagram-dark.svg
+        ui/assets/main/activities/file-font.svg
+        ui/assets/main/activities/file-font-dark.svg
+        ui/assets/main/activities/file-grid.svg
+        ui/assets/main/activities/file-grid-dark.svg
+        ui/assets/main/activities/file-image.svg
+        ui/assets/main/activities/file-image-dark.svg
+        ui/assets/main/activities/file-pdf.svg
+        ui/assets/main/activities/file-pdf-dark.svg
+        ui/assets/main/activities/file-text.svg
+        ui/assets/main/activities/file-text-dark.svg
+        ui/assets/main/activities/file-video.svg
+        ui/assets/main/activities/file-video-dark.svg
+        ui/assets/main/activities/file-zip.svg
+        ui/assets/main/activities/file-zip-dark.svg
+        ui/assets/main/activities/filter-user.svg
+        ui/assets/main/activities/filter-users.svg
+        ui/assets/main/activities/source-computer.svg
+        ui/assets/main/activities/source-web.svg
+        ui/assets/main/activities/status-synchronized-outline.svg
         ui/assets/main/chevron-down.svg
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
