@@ -21,6 +21,7 @@
 #include "libcommon/utility/types.h"
 
 #include <QCoreApplication>
+#include <QFontMetricsF>
 #include <QLoggingCategory>
 #include <QLocale>
 #include <QSet>
@@ -167,6 +168,43 @@ QString activityActionText(const ActivityEntry &activity) {
 }
 
 } // namespace
+
+QStringList ActivityListModel::timeTextSamples() {
+    // Upper bound of every branch of formatRelativeTime(): the last value before each threshold rolls over.
+    QStringList samples{qtTrId("labelJustNow"), formatAgo(minute - second, second, "labelShortSecond"),
+                        formatAgo(hour - minute, minute, "labelShortMinute"),
+                        formatAgo(day - hour, hour, "labelShortHour"),
+                        formatAgo(relativeDateThreshold - day, day, "labelShortDay")};
+
+    // Past the relative threshold the cell shows a short date, whose width varies by month in locales that abbreviate
+    // it, so every month is a candidate. Day 28 exists in all of them and is two digits wide.
+    const QLocale locale;
+    for (int month = 1; month <= 12; ++month) {
+        samples << locale.toString(QDate{2026, month, 28}, QLocale::ShortFormat);
+    }
+    return samples;
+}
+
+QStringList ActivityListModel::sizeTextSamples() {
+    // Widest value of each unit tier, capped at terabytes: drive quotas make larger files unreachable, and the Windows
+    // client stops there too.
+    QStringList samples{formatSize(NodeType::File, 999)};
+    int64_t unit = 1000;
+    for (int tier = 0; tier < 4; ++tier) {
+        samples << formatSize(NodeType::File, static_cast<int64_t>(999.9 * static_cast<double>(unit)));
+        unit *= 1000;
+    }
+    return samples;
+}
+
+qreal ActivityListModel::maxTextWidth(const QStringList &texts, const QFont &font) {
+    const QFontMetricsF metrics{font};
+    qreal widest = 0;
+    for (const QString &text: texts) {
+        widest = std::max(widest, metrics.horizontalAdvance(text));
+    }
+    return widest;
+}
 
 QString ActivityListModel::activityRowId(const GenericId localId) {
     return QStringLiteral("activity:%1").arg(static_cast<qlonglong>(localId));
