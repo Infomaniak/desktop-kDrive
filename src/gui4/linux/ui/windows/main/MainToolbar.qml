@@ -140,9 +140,10 @@ Rectangle {
             border.color: buttonRoot.visualFocus ? IKColors.accentPrimary : IKColors.surfaceTertiary
         }
 
-        ToolTip.visible: buttonRoot.hovered || buttonRoot.activeFocus
-        ToolTip.text: buttonRoot.tooltipText
-        ToolTip.delay: 500
+        IKToolTip {
+            visible: buttonRoot.hovered || buttonRoot.activeFocus
+            text: buttonRoot.tooltipText
+        }
     }
 
     component GroupedIconButton: ToolButton {
@@ -170,9 +171,10 @@ Rectangle {
             border.color: IKColors.accentPrimary
         }
 
-        ToolTip.visible: groupedButton.hovered || groupedButton.activeFocus
-        ToolTip.text: groupedButton.text
-        ToolTip.delay: 500
+        IKToolTip {
+            visible: groupedButton.hovered || groupedButton.activeFocus
+            text: groupedButton.text
+        }
     }
 
     component FutureGroupedIconButton: Item {
@@ -209,9 +211,10 @@ Rectangle {
             }
         }
 
-        ToolTip.visible: settingsButton.hovered || settingsButton.activeFocus
-        ToolTip.text: qsTrId("comingSoon")
-        ToolTip.delay: 500
+        IKToolTip {
+            visible: settingsButton.hovered || settingsButton.activeFocus
+            text: qsTrId("comingSoon")
+        }
     }
 
 }
