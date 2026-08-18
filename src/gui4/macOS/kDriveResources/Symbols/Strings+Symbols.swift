@@ -61,7 +61,7 @@ public enum KDriveLocalizable {
   /// loco:6a69c12889ab5f0cf60a7aa2
   public static let activityInstructionUpdateLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateLabel", fallback: "Modified")
   /// loco:6a69c6c526f8c2be820035a4
-  public static let activityInstructionUpdateMetadataLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateMetadataLabel", fallback: "Renamed")
+  public static let activityInstructionRenameLabel = KDriveLocalizable.tr("Localizable", "activityInstructionRenameLabel", fallback: "Renamed")
   /// loco:69b422369e32a806170ba3c2
   public static let addAdvancedSyncDialogTitle = KDriveLocalizable.tr("Localizable", "addAdvancedSyncDialogTitle", fallback: "Sync a folder with kDrive")
   /// loco:69b422a8be3506a1a305ba12

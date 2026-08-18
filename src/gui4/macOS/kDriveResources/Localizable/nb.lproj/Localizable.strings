@@ -67,11 +67,11 @@
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Flyttet til papirkurven";
 
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionRenameLabel" = "Omdøpt";
+
 /* loco:6a69c12889ab5f0cf60a7aa2 */
 "activityInstructionUpdateLabel" = "Endret";
-
-/* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Omdøpt";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synkroniser en mappe med kDrive";
@@ -218,7 +218,7 @@
 "buttonKDriveIsActivated" = "Jeg har aktivert kDrive";
 
 /* loco:695e58701870be5cd709d2a2 */
-"buttonKDriveOnline" = "kDrive på nett";
+"buttonKDriveOnline" = "kDrive online";
 
 /* loco:698c6b43a4de4c85ae0ef552 */
 "buttonKeepAccount" = "Behold konto";
@@ -1596,6 +1596,3 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Vis kildekode";
-
-/* loco:69314d1a739c205c410aa087 */
-"instructionRestartIfNecessary" = "Start programmet på nytt hvis påkrevd";
