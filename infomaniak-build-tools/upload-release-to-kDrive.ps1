@@ -239,7 +239,7 @@ function Upload-RecoveryUpdaterLink {
         [string]$fullVersion
     )
 
-    $ksuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$parentId/preview/unknown/$fileId"
+    $kSuiteUrl = "https://ksuite.infomaniak.com/$env:KDRIVE_ORGA_ID/kdrive/app/drive/$env:KDRIVE_ID/files/$parentId/preview/unknown/$fileId"
     $urlFileName = "kDriveRecoveryUpdater-$fullVersion-$osName.url"
     $linkDirPath = "kDriveRecoveryUpdater"
     if ($test) {
@@ -284,7 +284,7 @@ function Upload-RecoveryUpdaterLink {
         return
     }
 
-    $urlLines = @("[InternetShortcut]", "URL=$ksuiteUrl")
+    $urlLines = @("[InternetShortcut]", "URL=$kSuiteUrl")
     $tempLinkPath = Join-Path $env:TEMP $urlFileName
     Set-Content -Path $tempLinkPath -Value $urlLines -Encoding UTF8
 
