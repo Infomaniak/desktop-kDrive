@@ -86,7 +86,7 @@ extension UISynchroFileInstruction {
         case .Update:
             self = .update
         case .UpdateMetadata:
-            self = .updateMetadata
+            self = .renamed
         case .Remove:
             self = .remove
         case .Move:
@@ -112,20 +112,28 @@ extension UISynchroFileInstruction {
 
 public extension UISynchroNode {
     init(synchroNode: SynchroNode) {
+        let localPath = URL(fileURLWithPath: synchroNode.path)
         var updatedLocalPath: URL?
         if !synchroNode.newPath.isEmpty {
             updatedLocalPath = URL(fileURLWithPath: synchroNode.newPath)
+        }
+
+        var instruction = UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction)
+        if instruction == .move,
+           let updatedLocalPath,
+           localPath.deletingLastPathComponent() == updatedLocalPath.deletingLastPathComponent() {
+            instruction = .renamed
         }
 
         self.init(
             id: synchroNode.operationId,
             remoteID: synchroNode.remoteNodeId,
             type: UINodeType(synchroNodeType: synchroNode.type),
-            path: URL(fileURLWithPath: synchroNode.path),
+            path: localPath,
             updatedPath: updatedLocalPath,
             direction: UISynchroDirection(syncDirection: synchroNode.direction),
             status: UISynchroFileStatus(syncFileStatus: synchroNode.status),
-            instruction: UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction),
+            instruction: instruction,
             size: synchroNode.size,
             progress: Int(synchroNode.progress),
             syncDate: synchroNode.date

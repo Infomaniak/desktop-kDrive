@@ -17,6 +17,7 @@
  */
 
 import Foundation
+@testable import kDriveCore
 @testable import kDriveCoreUI
 import Testing
 
@@ -34,6 +35,31 @@ struct UISynchroNodeTests {
             size: 1024,
             progress: progress,
             syncDate: Date()
+        )
+    }
+
+    private func makeSynchroNode(
+        instruction: KDC.SyncFileInstruction,
+        path: String,
+        newPath: String
+    ) -> SynchroNode {
+        SynchroNode(
+            operationId: 1,
+            type: .File,
+            path: path,
+            newPath: newPath,
+            localNodeId: "local-id",
+            remoteNodeId: "remote-id",
+            direction: .Up,
+            instruction: instruction,
+            status: .Success,
+            conflict: .None,
+            inconsistency: .None,
+            cancelType: .None,
+            date: Date(),
+            size: 1024,
+            progress: 100,
+            error: ""
         )
     }
 
@@ -59,5 +85,38 @@ struct UISynchroNodeTests {
     func progressClampsPositiveExtreme() {
         let node = makeNode(progress: Int.max)
         #expect(node.progress == 100)
+    }
+
+    @Test("Update metadata maps to renamed")
+    func updateMetadataMapsToRenamed() {
+        let node = makeSynchroNode(
+            instruction: .UpdateMetadata,
+            path: "/folder/old-name.txt",
+            newPath: "/folder/new-name.txt"
+        )
+
+        #expect(UISynchroNode(synchroNode: node).instruction == .renamed)
+    }
+
+    @Test("Move within the same parent maps to renamed")
+    func sameParentMoveMapsToRenamed() {
+        let node = makeSynchroNode(
+            instruction: .Move,
+            path: "/folder/old-name.txt",
+            newPath: "/folder/new-name.txt"
+        )
+
+        #expect(UISynchroNode(synchroNode: node).instruction == .renamed)
+    }
+
+    @Test("Move to a different parent remains move")
+    func differentParentMoveRemainsMove() {
+        let node = makeSynchroNode(
+            instruction: .Move,
+            path: "/origin/file.txt",
+            newPath: "/destination/file.txt"
+        )
+
+        #expect(UISynchroNode(synchroNode: node).instruction == .move)
     }
 }
