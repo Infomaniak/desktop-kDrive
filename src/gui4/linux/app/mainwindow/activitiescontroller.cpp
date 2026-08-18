@@ -142,10 +142,18 @@ void ActivitiesController::setFilter(const ActivityListModel::Filter filter) {
     _model.setFilter(filter);
 }
 
+/**
+ * Opens the file or folder represented by the activity target, or the parent folder if the target is a file.
+ * @param rowId the stable model row identifier for the activity or error
+ */
 void ActivitiesController::openLocal(const QString &rowId) {
     openLocalPath(rowId, false);
 }
 
+/**
+ * Opens the parent folder of the activity target.
+ * @param rowId the stable model row identifier for the activity or error
+ */
 void ActivitiesController::openFolder(const QString &rowId) {
     openLocalPath(rowId, true);
 }
