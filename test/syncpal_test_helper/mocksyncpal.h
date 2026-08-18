@@ -26,13 +26,46 @@ namespace KDC {
 /**
  * @brief Test-only SyncPal subclass exposing test hooks that must not live on the production SyncPal API.
  */
+
+class MockSyncPalWorker : public SyncPalWorker {
+    public:
+        using SyncPalWorker::SyncPalWorker;
+
+        // If set to a value other than SyncStep::None, the sync loop will stop advancing past `step` (used by tests).
+        void setMaxStep(const SyncStep step) { _maxStep.store(step); }
+        SyncStep maxStep() const { return _maxStep.load(); }
+
+    protected:
+        SyncStep nextStep() const override {
+            // If a max step was set (used by tests to stop the sync at a given step), freeze once it is reached.
+            const SyncStep step = _step;
+            if (const SyncStep maxStep = _maxStep; maxStep != SyncStep::None && step == maxStep) {
+                return step;
+            }
+            return SyncPalWorker::nextStep();
+        }
+
+    private:
+        std::atomic<SyncStep> _maxStep{SyncStep::None};
+};
+
 class MockSyncPal : public SyncPal {
     public:
         using SyncPal::SyncPal;
 
         // Test-only: stops the sync loop from advancing past `step` (SyncStep::None removes the cap).
         void setMaxStep(const SyncStep step) {
-            if (_syncPalWorker) _syncPalWorker->setMaxStep(step);
+            if (_syncPalWorker) {
+                const auto mocked = std::dynamic_pointer_cast<MockSyncPalWorker>(_syncPalWorker);
+                if (mocked) mocked->setMaxStep(step);
+            }
+        }
+
+    protected:
+        void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0)) override {
+            SyncPal::createWorkers(startDelay);
+            // Override the SyncPalWorker with a mock version that allows test-only hooks.
+            _syncPalWorker = std::make_shared<MockSyncPalWorker>(shared_from_this(), "Main", "MAIN", startDelay);
         }
 };
 
