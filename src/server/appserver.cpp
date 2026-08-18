@@ -821,18 +821,34 @@ void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled)
     LOG_INFO(_logger, msg);
 }
 
-ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &newParametersInfo) {
+ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &parametersInfo) {
+    auto newParametersInfo = parametersInfo;
+
     // Retrieve current settings
-    const Parameters oldParametersInfo = ParametersCache::instance()->parameters();
-    std::string pwd;
-    if (oldParametersInfo.proxyConfig().needsAuth()) {
-        // Read pwd from keystore
-        bool found = false;
-        if (!KeyChainManager::instance()->readData(oldParametersInfo.proxyConfig().keychainKey(), pwd, found)) {
-            LOG_WARN(_logger, "Failed to read proxy pwd from keychain");
+    const Parameters previousParameters = ParametersCache::instance()->parameters();
+
+    // Proxy parameters change propagation. Must be executed before "updateParameters" in order to save the new keychain
+    // key in DB.
+    if (newParametersInfo.proxyConfig().needsAuth()) {
+        std::string keychainKey;
+        if (!previousParameters.proxyConfig().needsAuth()) {
+            // Proxy needs authentification now, generate keychain key and save password to the keychain.
+            keychainKey = Utility::computeMd5Hash(std::to_string(std::time(nullptr)));
+        } else {
+            // Proxy already needed authentification, keep the same keychain key and update the password in the keychain.
+            keychainKey = previousParameters.proxyConfig().keychainKey();
         }
-        if (!found) {
-            LOG_DEBUG(_logger, "Proxy pwd not found for keychainKey=" << oldParametersInfo.proxyConfig().keychainKey());
+        if (!KeyChainManager::instance()->writeData(keychainKey, newParametersInfo.proxyConfig().pwd())) {
+            LOG_WARN(_logger, "Failed to write password token into keychain"); // should throw??
+        }
+
+        auto proxyConfig = newParametersInfo.proxyConfig();
+        proxyConfig.setKeychainKey(keychainKey);
+        newParametersInfo.setProxyConfig(proxyConfig);
+    } else if (previousParameters.proxyConfig().needsAuth() && !newParametersInfo.proxyConfig().needsAuth()) {
+        // Proxy does not need authentification anymore, remove the entry from the keychain key.
+        if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
+            LOG_WARN(_logger, "Failed to remove proxy password from keychain");
         }
     }
 
@@ -844,7 +860,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     }
 
     // Propagate extendedLog change
-    if (oldParametersInfo.extendedLog() != newParametersInfo.extendedLog()) {
+    if (previousParameters.extendedLog() != newParametersInfo.extendedLog()) {
         logExtendedLogActivationMessage(newParametersInfo.extendedLog());
         const std::scoped_lock lock(vfsMapMutex);
         for (const auto &[_, vfs]: vfsMap) {
@@ -853,20 +869,20 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &ne
     }
 
     // Propagate language change
-    if (oldParametersInfo.language() != newParametersInfo.language()) {
-        Language language = newParametersInfo.language();
+    if (previousParameters.language() != newParametersInfo.language()) {
+        const auto language = newParametersInfo.language();
         QTimer::singleShot(100, this, [this, language]() { CommonUtility::setupTranslations(this, language); });
     }
 
     // Propagate autostart change
-    if (oldParametersInfo.autoStart() != newParametersInfo.autoStart()) {
+    if (previousParameters.autoStart() != newParametersInfo.autoStart()) {
         auto *theme = Theme::instance();
         (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), newParametersInfo.autoStart());
     }
 
     // Propagate Sentry activation change
     if (KDRIVE_VERSION_MAJOR >= 4) {
-        if (oldParametersInfo.sentryEnabled() != newParametersInfo.sentryEnabled()) {
+        if (previousParameters.sentryEnabled() != newParametersInfo.sentryEnabled()) {
             sentry::Handler::instance()->setIsSentryActivated(newParametersInfo.sentryEnabled());
         }
     }
@@ -2212,50 +2228,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> parametersInfo;
 
-            // Retrieve current settings
-            const Parameters previousParameters = ParametersCache::instance()->parameters();
+            const auto exitInfo = updateParametersAndPropagateChanges(parametersInfo);
 
-            // Proxy parameters change propagation. Must be executed before "updateParameters" in order to save the new keychain
-            // key in DB.
-            if (!previousParameters.proxyConfig().needsAuth() && parametersInfo.proxyConfig().needsAuth()) {
-                // Proxy needs authentification now, generate keychain key and the save password to the keychain.
-                const auto keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-                if (!KeyChainManager::instance()->writeData(keychainKey, parametersInfo.proxyConfig().pwd())) {
-                    LOG_WARN(_logger, "Failed to write password token into keychain"); // should throw??
-                }
-
-                auto proxyConfig = parametersInfo.proxyConfig();
-                proxyConfig.setKeychainKey(keychainKey);
-                parametersInfo.setProxyConfig(proxyConfig);
-            } else if (previousParameters.proxyConfig().needsAuth() && !parametersInfo.proxyConfig().needsAuth()) {
-                // Proxy does not need authentification anymore, remove the entry from the keychain key.
-                if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
-                    LOG_WARN(_logger, "Failed to remove proxy password from keychain");
-                }
-            }
-
-            // Update parameters
-            const ExitCode exitCode = ServerRequests::updateParameters(parametersInfo);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::updateParameters");
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-            }
-
-            // extendedLog change propagation
-            if (previousParameters.extendedLog() != parametersInfo.extendedLog()) {
-                logExtendedLogActivationMessage(parametersInfo.extendedLog());
-                const std::scoped_lock lock(vfsMapMutex);
-                for (const auto &[_, vfs]: vfsMap) {
-                    vfs->setExtendedLog(parametersInfo.extendedLog());
-                }
-            }
-
-            // Language change propagation
-            if (previousParameters.language() != parametersInfo.language()) {
-                CommonUtility::setupTranslations(this, parametersInfo.language());
-            }
-
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {

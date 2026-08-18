@@ -1566,7 +1566,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     int port = 0;
     bool needsAuth = false;
     std::string user;
-    std::string token;
+    std::string keychainKey;
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     proxyType = static_cast<ProxyType>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, hostName));
@@ -1574,8 +1574,10 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     needsAuth = static_cast<bool>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, user));
-    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, token));
-    parameters.setProxyConfig(ProxyConfig(proxyType, hostName, port, needsAuth, user, token));
+    LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, keychainKey));
+    auto proxyConfig = ProxyConfig(proxyType, hostName, port, needsAuth, user);
+    proxyConfig.setKeychainKey(keychainKey);
+    parameters.setProxyConfig(proxyConfig);
 
     // 15: useBigFolderSizeLimit : not used anymore
     index++;

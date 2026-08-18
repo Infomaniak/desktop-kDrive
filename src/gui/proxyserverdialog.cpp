@@ -324,10 +324,7 @@ void ProxyServerDialog::onSaveButtonTriggered(const bool checked) {
         }
     }
 
-    ProxyConfig proxyConfig(_proxyConfig.type(), _proxyConfig.hostName(), _proxyConfig.port(), _proxyConfig.needsAuth(),
-                            _proxyConfig.user(), _proxyConfig.pwd());
-
-    ParametersCache::instance()->parametersInfo().setProxyConfig(proxyConfig);
+    ParametersCache::instance()->parametersInfo().setProxyConfig(_proxyConfig);
     (void) ParametersCache::instance()->saveParametersInfo();
 
     accept();

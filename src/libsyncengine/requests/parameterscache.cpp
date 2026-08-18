@@ -88,6 +88,9 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
             LOG_WARN(Log::instance()->getLogger(), "Proxy password not found");
             throw std::runtime_error("Failed to read proxy password from keychain");
         }
+        auto proxyConfig = _parameters.proxyConfig();
+        proxyConfig.setPwd(pwd);
+        _parameters.setProxyConfig(proxyConfig);
     }
 }
 
