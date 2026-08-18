@@ -160,6 +160,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivitiesFilterMenu.qml
         ui/windows/main/activities/ActivitiesHeader.qml
         ui/windows/main/activities/ActivitySourceIcon.qml
+        ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/home/HomeErrorBanner.qml
         ui/windows/main/home/HomeGreeting.qml
         ui/windows/main/home/HomeStatusPanel.qml
