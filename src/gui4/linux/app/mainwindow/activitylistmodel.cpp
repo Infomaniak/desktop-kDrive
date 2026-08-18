@@ -464,6 +464,10 @@ void ActivityListModel::resetProjection() {
     emit projectionChanged();
 }
 
+/**
+ * Schedules a projection reconciliation to run after a short delay, allowing multiple activity or error changes to be
+ * batched together. If a reconciliation is already scheduled, this call has no effect.
+ */
 void ActivityListModel::scheduleProjectionReconciliation() {
     if (!_projectionRefreshTimer.isActive()) {
         _projectionRefreshTimer.start();
