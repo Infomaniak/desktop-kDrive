@@ -44,12 +44,12 @@ Item {
     readonly property real contentWidth: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
 
     function resolveColumnWidths(availableWidth) {
-        const minimumWidths = [IKActivities.nameColumnMinWidth, IKActivities.folderColumnMinWidth, IKActivities.timeColumnMinWidth, IKActivities.sizeColumnMinWidth, IKActivities.statusColumnMinWidth];
-        const ratios = [root.nameColumnRatio, root.folderColumnRatio, root.timeColumnRatio, root.sizeColumnRatio, root.statusColumnRatio];
-        const widths = [0, 0, 0, 0, 0];
-        const flexible = [true, true, true, true, true];
-        let remainingWidth = availableWidth;
-        let remainingRatio = 1;
+        const ratios = root.columnRatios;
+        const minimumWidths = root.minimumColumnWidths;
+        const widths = new Array(ratios.length).fill(0);
+        const flexible = new Array(ratios.length).fill(true);
+        let remainingWidth = Math.max(0, availableWidth);
+        let remainingRatio = ratios.reduce((sum, ratio) => sum + Math.max(0, ratio), 0);
         let minimumApplied = true;
 
         while (minimumApplied) {
@@ -58,14 +58,15 @@ Item {
                 if (!flexible[index]) {
                     continue;
                 }
-                const proportionalWidth = remainingRatio > 0 ? remainingWidth * ratios[index] / remainingRatio : 0;
+                const ratio = Math.max(0, ratios[index]);
+                const proportionalWidth = remainingRatio > 0 ? remainingWidth * ratio / remainingRatio : 0;
                 if (proportionalWidth >= minimumWidths[index]) {
                     continue;
                 }
                 widths[index] = minimumWidths[index];
                 flexible[index] = false;
                 remainingWidth -= minimumWidths[index];
-                remainingRatio -= ratios[index];
+                remainingRatio -= ratio;
                 minimumApplied = true;
             }
         }
