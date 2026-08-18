@@ -65,7 +65,14 @@ QString formatSize(const NodeType nodeType, const int64_t size) {
     if (nodeType == NodeType::Directory || size < 0) {
         return {};
     }
-    return QLocale().formattedDataSize(size);
+    const QLocale locale;
+    QString formatted = locale.formattedDataSize(size, 1, QLocale::DataSizeSIFormat);
+    // Drop the decimal part when it is zero, to match the macOS and Windows clients.
+    const QString trailingZero = locale.decimalPoint() + locale.zeroDigit();
+    if (const auto index = formatted.indexOf(trailingZero); index >= 0) {
+        formatted.remove(index, trailingZero.size());
+    }
+    return formatted;
 }
 
 QString formatAgo(const std::chrono::seconds elapsed, const std::chrono::seconds unit, const char *const unitTranslationId) {
