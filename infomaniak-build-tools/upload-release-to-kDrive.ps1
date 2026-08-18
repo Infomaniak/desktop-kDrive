@@ -258,21 +258,19 @@ function Upload-RecoveryUpdaterLink {
                 $_.name -like "kDriveRecoveryUpdater-*-$osName.url" -and
                 $_.path -like "*$linkDirPath*"
             }
-            if ($existingFiles) {
-                foreach ($existingFile in $existingFiles) {
-                    $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$osName\.url")
-                    if ($versionMatch.Success) {
-                        $existingVersion = $versionMatch.Groups[1].Value
-                        Write-Host "Existing recovery updater link points to version $existingVersion, new version is $fullVersion"
-                        $cmp = Compare-Versions -versionA $fullVersion -versionB $existingVersion
-                        if ($cmp -lt 0) {
-                            Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
-                            $shouldUpload = $false
-                        } elseif ($cmp -gt 0 -and $existingFile.id) {
-                            $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
-                        } elseif ($cmp -gt 0) {
-                            Write-Host "Warning: cannot delete older recovery updater link $($existingFile.name) (v$existingVersion) - missing file id" -f Yellow
-                        }
+            foreach ($existingFile in $existingFiles) {
+                $versionMatch = [regex]::Match($existingFile.name, "kDriveRecoveryUpdater-(.+)-$osName\.url")
+                if ($versionMatch.Success) {
+                    $existingVersion = $versionMatch.Groups[1].Value
+                    Write-Host "Existing recovery updater link points to version $existingVersion, new version is $fullVersion"
+                    $cmp = Compare-Versions -versionA $fullVersion -versionB $existingVersion
+                    if ($cmp -lt 0) {
+                        Write-Host "New version ($fullVersion) is lower than existing ($existingVersion). Skipping link update." -f Yellow
+                        $shouldUpload = $false
+                    } elseif ($cmp -gt 0 -and $existingFile.id) {
+                        $filesToDelete += [pscustomobject]@{ id = $existingFile.id; version = $existingVersion; name = $existingFile.name }
+                    } elseif ($cmp -gt 0) {
+                        Write-Host "Warning: cannot delete older recovery updater link $($existingFile.name) (v$existingVersion) - missing file id" -f Yellow
                     }
                 }
             }
