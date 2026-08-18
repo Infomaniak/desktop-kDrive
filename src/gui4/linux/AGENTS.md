@@ -409,6 +409,10 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
+- Size a fixed-width column from its content, never from a hard-coded constant. The model exposes the widest strings the
+  column can render in the active locale (`ActivityListModel::timeTextSamples`, `sizeTextSamples`) and measures them
+  with `maxTextWidth(texts, font)`; the view takes the max with the header label, measured separately via `TextMetrics`
+  because the header elides too. A constant tuned on one language truncates in the ones with longer wordings.
 
 ## Change Playbooks
 
