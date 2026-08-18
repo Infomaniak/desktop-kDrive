@@ -317,12 +317,12 @@ void WindowDecorationController::updateWindowDecoration(QWindow *const window, c
         window->installEventFilter(this);
         // The hash keeps a raw pointer, so drop the entry with the window rather than leaving a dangling key that a
         // later window could reuse.
-        connect(window, &QObject::destroyed, this, [this, window] { _decorationRequests.remove(window); });
+        (void) connect(window, &QObject::destroyed, this, [this, window] { (void) _decorationRequests.remove(window); });
     }
 
     const DecorationRequest request{
             .customFrameEnabled = customFrameEnabled, .frameMargin = frameMargin, .resizeHandleThickness = resizeHandleThickness};
-    _decorationRequests.insert(window, request);
+    (void) _decorationRequests.insert(window, request);
     applyDecoration(window, request);
 }
 

@@ -59,7 +59,7 @@ class WindowDecorationController final : public QObject {
         Q_INVOKABLE void updateWindowDecoration(QWindow *window, bool customFrameEnabled, qreal frameMargin,
                                                 qreal resizeHandleThickness);
 
-    protected:
+    private:
         /**
          * Replays the last decoration request whenever a tracked window becomes exposed.
          *
@@ -73,7 +73,6 @@ class WindowDecorationController final : public QObject {
          */
         bool eventFilter(QObject *watched, QEvent *event) override;
 
-    private:
         struct DecorationRequest {
                 bool customFrameEnabled = false;
                 qreal frameMargin = 0;
