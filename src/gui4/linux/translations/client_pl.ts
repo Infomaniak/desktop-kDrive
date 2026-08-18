@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: pl, Polish
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
+ Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="pl"> 
     <context>
@@ -89,6 +89,34 @@
         <message id="activitiesTypeMyActivity"> 
             <source>My activity only</source> 
             <translation>Tylko moja aktywność</translation> 
+        </message> 
+        <message id="activityInstructionGetLabel"> 
+            <source>Imported</source> 
+            <translation>Zaimportowany</translation> 
+        </message> 
+        <message id="activityInstructionIgnoreLabel"> 
+            <source>Ignored</source> 
+            <translation>Zignorowane</translation> 
+        </message> 
+        <message id="activityInstructionMoveLabel"> 
+            <source>Moved</source> 
+            <translation>Przeniesiono</translation> 
+        </message> 
+        <message id="activityInstructionPutLabel"> 
+            <source>Added</source> 
+            <translation>Dodano</translation> 
+        </message> 
+        <message id="activityInstructionRemoveLabel"> 
+            <source>Moved to trash</source> 
+            <translation>Przeniesiono do kosza</translation> 
+        </message> 
+        <message id="activityInstructionUpdateLabel"> 
+            <source>Modified</source> 
+            <translation>Zmodyfikowany</translation> 
+        </message> 
+        <message id="activityInstructionUpdateMetadataLabel"> 
+            <source>Renamed</source> 
+            <translation>Zmieniono nazwę</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
@@ -226,6 +254,10 @@ Możesz je otwierać w dowolnym momencie, nawet bez połączenia z Internetem.</
         <message id="buttonClose"> 
             <source>Close</source> 
             <translation>Zamknij</translation> 
+        </message> 
+        <message id="buttonCloseDoNotAskAgain"> 
+            <source>Close and don’t ask again</source> 
+            <translation>Zamknij i nie pytaj więcej</translation> 
         </message> 
         <message id="buttonCloseKDrive"> 
             <source>Close kDrive</source> 
@@ -394,6 +426,10 @@ Możesz je otwierać w dowolnym momencie, nawet bez połączenia z Internetem.</
         <message id="buttonOpenSyncSettings"> 
             <source>Open sync settings</source> 
             <translation>Otwórz ustawienia synchronizacji</translation> 
+        </message> 
+        <message id="buttonOpenTrash"> 
+            <source>Open the Recycle Bin</source> 
+            <translation>Otwórz kosz</translation> 
         </message> 
         <message id="buttonPause"> 
             <source>Pause</source> 
@@ -779,6 +815,14 @@ Zaloguj się ponownie przy użyciu właściwego adresu e-mail %1</translation>
             <source>kDrive is waking up</source> 
             <translation>kDrive się wybudza</translation> 
         </message> 
+        <message id="enableBackgroundActivityDescription"> 
+            <source>kDrive must remain active in your Mac’s settings to update your files.</source> 
+            <translation>Aby pliki były aktualizowane, aplikacja kDrive musi pozostać aktywna w ustawieniach komputera Mac.</translation> 
+        </message> 
+        <message id="enableBackgroundActivityTitle"> 
+            <source>Reactivate kDrive to continue</source> 
+            <translation>Aby kontynuować, należy ponownie uruchomić kDrive</translation> 
+        </message> 
         <message id="enableDebugLogDescription"> 
             <source>Record diagnostic information on my computer.</source> 
             <translation>Zapisuj informacje diagnostyczne na moim komputerze.</translation> 
@@ -792,10 +836,8 @@ Zaloguj się ponownie przy użyciu właściwego adresu e-mail %1</translation>
             <translation>Wprowadź hasło</translation> 
         </message> 
         <message id="errCaseDescription"> 
-            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive Windows application. Rename one of the %2 folders in kDrive online to synchronize it on your PC.
-</source> 
-            <translation>W tym folderze istnieje już inny %1, którego nazwa różni się tylko wielkimi/małymi literami. Ten typ nazwy nie jest obsługiwany przez aplikację kDrive Windows. Zmień nazwę jednego z folderów %2 z aplikacji kDrive online, aby móc go zsynchronizować na komputerze.
-</translation> 
+            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %2 in kDrive online to synchronize it on your device.</source> 
+            <translation>W tym folderze istnieje już inny %1, którego nazwa różni się tylko wielkimi/małymi literami. Ten typ nazwy nie jest obsługiwany przez aplikację kDrive Windows. Zmień nazwę jednego z folderów %2 z aplikacji kDrive online, aby móc go zsynchronizować na komputerze.</translation> 
         </message> 
         <message id="errCaseTitle"> 
             <source>Case-sensitive name conflict</source> 
@@ -1206,6 +1248,14 @@ otwórz Preferencje macOS, aby je włączyć.</translation>
             <source>Connection to kDrive interrupted</source> 
             <translation>Połączenie z kDrive zostało przerwane</translation> 
         </message> 
+        <message id="instructionEnableBackgroundActivity"> 
+            <source>In "Background App Refresh", enable kDrive</source> 
+            <translation>W sekcji „Odświeżanie aplikacji w tle” włącz kDrive</translation> 
+        </message> 
+        <message id="instructionEnableBackgroundActivityArgument"> 
+            <source>Background App Refresh</source> 
+            <translation>Odświeżanie aplikacji w tle</translation> 
+        </message> 
         <message id="instructionEnableKDrive"> 
             <source>Activate kDrive.app</source> 
             <translation>Aktywuj kDrive.app</translation> 
@@ -1226,6 +1276,14 @@ otwórz Preferencje macOS, aby je włączyć.</translation>
             <source>You must activate authorizations before continuing</source> 
             <translation>Przed kontynuowaniem musisz aktywować autoryzacje</translation> 
         </message> 
+        <message id="instructionOpenLoginItems"> 
+            <source>Select Login Items &amp; Extensions</source> 
+            <translation>Wybierz elementy logowania i rozszerzenia</translation> 
+        </message> 
+        <message id="instructionOpenLoginItemsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Elementy logowania i rozszerzenia</translation> 
+        </message> 
         <message id="instructionOpenPrivacySecurity"> 
             <source>Go to Privacy &amp; Security &gt; Full disk access</source> 
             <translation>Przejdź do Prywatność i bezpieczeństwo &gt; Pełny dostęp do dysku</translation> 
@@ -1239,14 +1297,26 @@ otwórz Preferencje macOS, aby je włączyć.</translation>
             <translation>Prywatność i bezpieczeństwo</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensions"> 
-            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
-            <translation>Wybierz Otwieranie i rozszerzenia &gt; Rozszerzenia bezpieczeństwa</translation> 
+            <source>Select Login Items &amp; Extensions &gt; Endpoint Security Extensions</source> 
+            <translation>Wybierz opcję „Elementy logowania i rozszerzenia” &gt; „Rozszerzenia zabezpieczeń punktów końcowych”</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensionsArgument"> 
+            <source>Endpoint Security Extensions</source> 
+            <translation>Rozszerzenia zabezpieczeń punktów końcowych</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsArgumentLegacy"> 
             <source>Security extensions</source> 
             <translation>Rozszerzenia bezpieczeństwa</translation> 
         </message> 
+        <message id="instructionOpenSecurityExtensionsLegacy"> 
+            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
+            <translation>Wybierz Otwieranie i rozszerzenia &gt; Rozszerzenia bezpieczeństwa</translation> 
+        </message> 
         <message id="instructionOpenSecurityExtensionsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Elementy logowania i rozszerzenia</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsLinkLegacy"> 
             <source>Open &amp; Extensions</source> 
             <translation>Otwieranie i rozszerzenia</translation> 
         </message> 
@@ -1257,10 +1327,6 @@ otwórz Preferencje macOS, aby je włączyć.</translation>
         <message id="instructionOpenSystemSettingsLink"> 
             <source>System Settings</source> 
             <translation>Ustawienia systemowe</translation> 
-        </message> 
-        <message id="instructionRestartIfNecessary"> 
-            <source>Restart the application if required</source> 
-            <translation>Uruchom ponownie aplikację, jeśli wymagane</translation> 
         </message> 
         <message id="itemUnavailableBrowserFallback"> 
             <source>This item is not available on this device.
@@ -1324,6 +1390,10 @@ Otworzy się w Twojej przeglądarce.</translation>
         <message id="labelChooseConflictVersionIndividual"> 
             <source>For each file, select the version to keep.</source> 
             <translation>Dla każdego pliku wybierz wersję do zachowania.</translation> 
+        </message> 
+        <message id="labelComputerLocation"> 
+            <source>Location on computer</source> 
+            <translation>Lokalizacja na komputerze</translation> 
         </message> 
         <message id="labelConflictDialogQuestion"> 
             <source>Which version do you want to keep?</source> 
@@ -1511,6 +1581,10 @@ Przydatne, gdy wiesz, że ważna praca jest online w kDrive.</translation>
         <message id="labelRemoteAccessRightsModifiedTip"> 
             <source>The folder may have been moved to another disk and then returned to its original location.</source> 
             <translation>Folder mógł zostać przeniesiony na inny dysk, a następnie zwrócony do pierwotnej lokalizacji.</translation> 
+        </message> 
+        <message id="labelRemoteLocation"> 
+            <source>Location on kDrive</source> 
+            <translation>Lokalizacja na kDrive</translation> 
         </message> 
         <message id="labelRestoreToOriginalLocation"> 
             <source>Restore it to its original location.</source> 
@@ -1730,6 +1804,32 @@ Sprawdź i zmień nazwy plików zawierających nietypowe znaki, a następnie spr
             <source>%1 version conflicts detected</source> 
             <translation>Wykryto %1 konfliktów wersji</translation> 
         </message> 
+        <message id="manyDeleteDialogHardLimitContent"> 
+            <source>Synchronization is paused to prevent accidental deletion.
+What would you like to do?</source> 
+            <translation>Synchronizacja została wstrzymana, aby zapobiec przypadkowemu usunięciu danych.
+Co chcesz zrobić?</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitPrimary"> 
+            <source>Restore the files</source> 
+            <translation>Przywróć pliki</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitSecondary"> 
+            <source>Delete online as well</source> 
+            <translation>Usuń również online</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitContent"> 
+            <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
+            <translation>Pliki te można odzyskać z kosza w kDrive.</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitDoNotShowAgain"> 
+            <source>Don’t show this warning again</source> 
+            <translation>Nie pokazuj już tego ostrzeżenia</translation> 
+        </message> 
+        <message id="manyDeleteDialogTitle"> 
+            <source>%1 items deleted from your folder</source> 
+            <translation>%1 elementów usuniętych z Twojego folderu</translation> 
+        </message> 
         <message id="matomoDescription"> 
             <source>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.
 
@@ -1799,7 +1899,7 @@ Analiza tych danych pozwala naszemu zespołowi na ciągłe ulepszanie interfejsu
             <translation>Wybrany folder musi być pusty, aby synchronizacja działała prawidłowo.</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionDescription"> 
-            <source>Choose the folders to sync on this computer:</source> 
+            <source>Select the folders to sync on this computer:</source> 
             <translation>Wybierz foldery do synchronizacji na tym komputerze:</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionTitle"> 
@@ -1951,6 +2051,18 @@ Prosimy o chwilę cierpliwości.</translation>
         <message id="onboardingSynchronizationInProgressTitle"> 
             <source>Sync in progress…</source> 
             <translation>Synchronizacja w toku…</translation> 
+        </message> 
+        <message id="onboardingV4Faq"> 
+            <source>Explore the app</source> 
+            <translation>Poznaj aplikację</translation> 
+        </message> 
+        <message id="onboardingV4Subtitle"> 
+            <source>Keep track of your syncs more easily.</source> 
+            <translation>Śledź swoje synchronizacje w prostszy sposób.</translation> 
+        </message> 
+        <message id="onboardingV4Title"> 
+            <source>Your new kDrive app is here!</source> 
+            <translation>Nowa aplikacja kDrive jest już dostępna!</translation> 
         </message> 
         <message id="openKDriveAtStartupSetting"> 
             <source>Open kDrive when the computer starts</source> 
