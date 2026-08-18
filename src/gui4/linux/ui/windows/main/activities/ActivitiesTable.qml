@@ -83,21 +83,20 @@ Item {
         if (boundaryIndex < 0 || boundaryIndex >= root.columnWidths.length - 1 || root.width <= 0) {
             return;
         }
-        const minimumWidths = [IKActivities.nameColumnMinWidth, IKActivities.folderColumnMinWidth, IKActivities.timeColumnMinWidth, IKActivities.sizeColumnMinWidth, IKActivities.statusColumnMinWidth];
         const widths = root.columnWidths.slice();
         const leftIndex = boundaryIndex;
         const rightIndex = boundaryIndex + 1;
-        const minimumDelta = minimumWidths[leftIndex] - widths[leftIndex];
-        const maximumDelta = widths[rightIndex] - minimumWidths[rightIndex];
+        const minimumDelta = root.minimumColumnWidths[leftIndex] - widths[leftIndex];
+        const maximumDelta = widths[rightIndex] - root.minimumColumnWidths[rightIndex];
         const delta = Math.max(minimumDelta, Math.min(maximumDelta, requestedDelta));
+        if (Math.abs(delta) < 0.001) {
+            return;
+        }
         widths[leftIndex] += delta;
         widths[rightIndex] -= delta;
 
-        root.nameColumnRatio = widths[0] / root.width;
-        root.folderColumnRatio = widths[1] / root.width;
-        root.timeColumnRatio = widths[2] / root.width;
-        root.sizeColumnRatio = widths[3] / root.width;
-        root.statusColumnRatio = widths[4] / root.width;
+        const totalWidth = widths.reduce((sum, width) => sum + width, 0);
+        root.columnRatios = widths.map(width => width / totalWidth);
     }
 
     clip: true
