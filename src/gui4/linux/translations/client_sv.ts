@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: sv, Swedish
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
+ Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="sv"> 
     <context>
@@ -89,6 +89,34 @@
         <message id="activitiesTypeMyActivity"> 
             <source>My activity only</source> 
             <translation>Endast min aktivitet</translation> 
+        </message> 
+        <message id="activityInstructionGetLabel"> 
+            <source>Imported</source> 
+            <translation>Importerad</translation> 
+        </message> 
+        <message id="activityInstructionIgnoreLabel"> 
+            <source>Ignored</source> 
+            <translation>Ignorerad</translation> 
+        </message> 
+        <message id="activityInstructionMoveLabel"> 
+            <source>Moved</source> 
+            <translation>Flyttad</translation> 
+        </message> 
+        <message id="activityInstructionPutLabel"> 
+            <source>Added</source> 
+            <translation>Tillagd</translation> 
+        </message> 
+        <message id="activityInstructionRemoveLabel"> 
+            <source>Moved to trash</source> 
+            <translation>Flyttad till papperskorgen</translation> 
+        </message> 
+        <message id="activityInstructionUpdateLabel"> 
+            <source>Modified</source> 
+            <translation>Ändrad</translation> 
+        </message> 
+        <message id="activityInstructionUpdateMetadataLabel"> 
+            <source>Renamed</source> 
+            <translation>Bytt namn</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
@@ -226,6 +254,10 @@ Du kan öppna dem när som helst, även utan internetanslutning.</translation>
         <message id="buttonClose"> 
             <source>Close</source> 
             <translation>Stäng</translation> 
+        </message> 
+        <message id="buttonCloseDoNotAskAgain"> 
+            <source>Close and don’t ask again</source> 
+            <translation>Stäng och fråga inte igen</translation> 
         </message> 
         <message id="buttonCloseKDrive"> 
             <source>Close kDrive</source> 
@@ -394,6 +426,10 @@ Du kan öppna dem när som helst, även utan internetanslutning.</translation>
         <message id="buttonOpenSyncSettings"> 
             <source>Open sync settings</source> 
             <translation>Öppna synkroniseringsinstillningar</translation> 
+        </message> 
+        <message id="buttonOpenTrash"> 
+            <source>Open the Recycle Bin</source> 
+            <translation>Öppna papperskorgen</translation> 
         </message> 
         <message id="buttonPause"> 
             <source>Pause</source> 
@@ -777,6 +813,14 @@ Logga in igen med rätt e-postadress %1</translation>
             <source>kDrive is waking up</source> 
             <translation>kDrive vaknar</translation> 
         </message> 
+        <message id="enableBackgroundActivityDescription"> 
+            <source>kDrive must remain active in your Mac’s settings to update your files.</source> 
+            <translation>kDrive måste vara aktiverat i inställningarna på din Mac för att dina filer ska kunna uppdateras.</translation> 
+        </message> 
+        <message id="enableBackgroundActivityTitle"> 
+            <source>Reactivate kDrive to continue</source> 
+            <translation>Aktivera kDrive igen för att fortsätta</translation> 
+        </message> 
         <message id="enableDebugLogDescription"> 
             <source>Record diagnostic information on my computer.</source> 
             <translation>Spela in diagnostisk information på min dator.</translation> 
@@ -790,10 +834,8 @@ Logga in igen med rätt e-postadress %1</translation>
             <translation>Ange ditt lösenord</translation> 
         </message> 
         <message id="errCaseDescription"> 
-            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive Windows application. Rename one of the %2 folders in kDrive online to synchronize it on your PC.
-</source> 
-            <translation>En annan %1 vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %2-mapparna från kDrive online så att du kan synkronisera den på din dator.
-</translation> 
+            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %2 in kDrive online to synchronize it on your device.</source> 
+            <translation>En annan %1 vars namn endast skiljer sig åt i versaler/ gemener finns redan i den här mappen. Denna typ av namn stöds inte av Windows-programmet kDrive. Byt namn på en av %2-mapparna från kDrive online så att du kan synkronisera den på din dator.</translation> 
         </message> 
         <message id="errCaseTitle"> 
             <source>Case-sensitive name conflict</source> 
@@ -1202,6 +1244,14 @@ open macOS Preferences to enable them.</source>
             <source>Connection to kDrive interrupted</source> 
             <translation>Anslutning till kDrive avbruten</translation> 
         </message> 
+        <message id="instructionEnableBackgroundActivity"> 
+            <source>In "Background App Refresh", enable kDrive</source> 
+            <translation>Aktivera kDrive under ”Uppdatering av appar i bakgrunden”</translation> 
+        </message> 
+        <message id="instructionEnableBackgroundActivityArgument"> 
+            <source>Background App Refresh</source> 
+            <translation>Uppdatering av appar i bakgrunden</translation> 
+        </message> 
         <message id="instructionEnableKDrive"> 
             <source>Activate kDrive.app</source> 
             <translation>Aktivera kDrive.app</translation> 
@@ -1222,6 +1272,14 @@ open macOS Preferences to enable them.</source>
             <source>You must activate authorizations before continuing</source> 
             <translation>Du måste aktivera behörigheter innan du fortsätter</translation> 
         </message> 
+        <message id="instructionOpenLoginItems"> 
+            <source>Select Login Items &amp; Extensions</source> 
+            <translation>Välj inloggningsobjekt och tillägg</translation> 
+        </message> 
+        <message id="instructionOpenLoginItemsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Inloggningsobjekt och tillägg</translation> 
+        </message> 
         <message id="instructionOpenPrivacySecurity"> 
             <source>Go to Privacy &amp; Security &gt; Full disk access</source> 
             <translation>Gå till Integritet och säkerhet &gt; Fullständig diskåtkomst</translation> 
@@ -1235,14 +1293,26 @@ open macOS Preferences to enable them.</source>
             <translation>Integritet och säkerhet</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensions"> 
-            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
-            <translation>Välj Öppna och tillägg &gt; Säkerhetstillägg</translation> 
+            <source>Select Login Items &amp; Extensions &gt; Endpoint Security Extensions</source> 
+            <translation>Välj Inloggningsobjekt och tillägg &gt; Tillägg för Endpoint Security</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensionsArgument"> 
+            <source>Endpoint Security Extensions</source> 
+            <translation>Tillägg för slutpunktssäkerhet</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsArgumentLegacy"> 
             <source>Security extensions</source> 
             <translation>Säkerhetstillägg</translation> 
         </message> 
+        <message id="instructionOpenSecurityExtensionsLegacy"> 
+            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
+            <translation>Välj Öppna och tillägg &gt; Säkerhetstillägg</translation> 
+        </message> 
         <message id="instructionOpenSecurityExtensionsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Inloggningsobjekt och tillägg</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsLinkLegacy"> 
             <source>Open &amp; Extensions</source> 
             <translation>Öppna och tillägg</translation> 
         </message> 
@@ -1253,10 +1323,6 @@ open macOS Preferences to enable them.</source>
         <message id="instructionOpenSystemSettingsLink"> 
             <source>System Settings</source> 
             <translation>Systeminställningar</translation> 
-        </message> 
-        <message id="instructionRestartIfNecessary"> 
-            <source>Restart the application if required</source> 
-            <translation>Starta om programmet om det krävs</translation> 
         </message> 
         <message id="itemUnavailableBrowserFallback"> 
             <source>This item is not available on this device.
@@ -1320,6 +1386,10 @@ Det öppnas i din webbläsare.</translation>
         <message id="labelChooseConflictVersionIndividual"> 
             <source>For each file, select the version to keep.</source> 
             <translation>Välj för varje fil vilken version som ska behållas.</translation> 
+        </message> 
+        <message id="labelComputerLocation"> 
+            <source>Location on computer</source> 
+            <translation>Plats på datorn</translation> 
         </message> 
         <message id="labelConflictDialogQuestion"> 
             <source>Which version do you want to keep?</source> 
@@ -1507,6 +1577,10 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</translat
         <message id="labelRemoteAccessRightsModifiedTip"> 
             <source>The folder may have been moved to another disk and then returned to its original location.</source> 
             <translation>Mappen kanske har flyttats till en annan disk och sedan återställts till sin ursprungliga plats.</translation> 
+        </message> 
+        <message id="labelRemoteLocation"> 
+            <source>Location on kDrive</source> 
+            <translation>Plats på kDrive</translation> 
         </message> 
         <message id="labelRestoreToOriginalLocation"> 
             <source>Restore it to its original location.</source> 
@@ -1726,6 +1800,32 @@ Kontrollera och byt namn på filer som innehåller ovanliga tecken och försök 
             <source>%1 version conflicts detected</source> 
             <translation>%1 versionskonflikt(er) hittades</translation> 
         </message> 
+        <message id="manyDeleteDialogHardLimitContent"> 
+            <source>Synchronization is paused to prevent accidental deletion.
+What would you like to do?</source> 
+            <translation>Synkroniseringen är pausad för att förhindra att data raderas av misstag.
+Vad vill du göra?</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitPrimary"> 
+            <source>Restore the files</source> 
+            <translation>Återställa filerna</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitSecondary"> 
+            <source>Delete online as well</source> 
+            <translation>Ta bort även online</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitContent"> 
+            <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
+            <translation>Dessa filer går fortfarande att återställa från kDrives papperskorg.</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitDoNotShowAgain"> 
+            <source>Don’t show this warning again</source> 
+            <translation>Visa inte denna varning igen</translation> 
+        </message> 
+        <message id="manyDeleteDialogTitle"> 
+            <source>%1 items deleted from your folder</source> 
+            <translation>%1 objekt har tagits bort från din mapp</translation> 
+        </message> 
         <message id="matomoDescription"> 
             <source>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.
 
@@ -1795,8 +1895,8 @@ Analys av dessa data gör det möjligt för vårt team att kontinuerligt förbä
             <translation>Den valda mappen måste vara tom för att synkroniseringen ska fungera korrekt.</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionDescription"> 
-            <source>Choose the folders to sync on this computer:</source> 
-            <translation>Välj mapparna att synkronisera på den här datorn:</translation> 
+            <source>Select the folders to sync on this computer:</source> 
+            <translation>Välj de mappar som ska synkroniseras på den här datorn:</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionTitle"> 
             <source>Synced folders</source> 
@@ -1947,6 +2047,18 @@ Vänta ett ögonblick.</translation>
         <message id="onboardingSynchronizationInProgressTitle"> 
             <source>Sync in progress…</source> 
             <translation>Synkronisering pågår…</translation> 
+        </message> 
+        <message id="onboardingV4Faq"> 
+            <source>Explore the app</source> 
+            <translation>Upptäck appen</translation> 
+        </message> 
+        <message id="onboardingV4Subtitle"> 
+            <source>Keep track of your syncs more easily.</source> 
+            <translation>Håll koll på dina synkroniseringar på ett enklare sätt.</translation> 
+        </message> 
+        <message id="onboardingV4Title"> 
+            <source>Your new kDrive app is here!</source> 
+            <translation>Er nya kDrive-app är här!</translation> 
         </message> 
         <message id="openKDriveAtStartupSetting"> 
             <source>Open kDrive when the computer starts</source> 

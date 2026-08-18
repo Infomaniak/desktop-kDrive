@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: fi, Finnish
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
+ Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="fi"> 
     <context>
@@ -89,6 +89,34 @@
         <message id="activitiesTypeMyActivity"> 
             <source>My activity only</source> 
             <translation>Vain oma toimintani</translation> 
+        </message> 
+        <message id="activityInstructionGetLabel"> 
+            <source>Imported</source> 
+            <translation>Tuotu</translation> 
+        </message> 
+        <message id="activityInstructionIgnoreLabel"> 
+            <source>Ignored</source> 
+            <translation>Ohitettu</translation> 
+        </message> 
+        <message id="activityInstructionMoveLabel"> 
+            <source>Moved</source> 
+            <translation>Siirretty</translation> 
+        </message> 
+        <message id="activityInstructionPutLabel"> 
+            <source>Added</source> 
+            <translation>Lisätty</translation> 
+        </message> 
+        <message id="activityInstructionRemoveLabel"> 
+            <source>Moved to trash</source> 
+            <translation>Siirretty roskakoriin</translation> 
+        </message> 
+        <message id="activityInstructionUpdateLabel"> 
+            <source>Modified</source> 
+            <translation>Muokattu</translation> 
+        </message> 
+        <message id="activityInstructionUpdateMetadataLabel"> 
+            <source>Renamed</source> 
+            <translation>Nimetty uudelleen</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
@@ -226,6 +254,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
         <message id="buttonClose"> 
             <source>Close</source> 
             <translation>Sulje</translation> 
+        </message> 
+        <message id="buttonCloseDoNotAskAgain"> 
+            <source>Close and don’t ask again</source> 
+            <translation>Sulje ja älä kysy uudelleen</translation> 
         </message> 
         <message id="buttonCloseKDrive"> 
             <source>Close kDrive</source> 
@@ -394,6 +426,10 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</translation>
         <message id="buttonOpenSyncSettings"> 
             <source>Open sync settings</source> 
             <translation>Avaa synkronointiasetukset</translation> 
+        </message> 
+        <message id="buttonOpenTrash"> 
+            <source>Open the Recycle Bin</source> 
+            <translation>Avaa roskakori</translation> 
         </message> 
         <message id="buttonPause"> 
             <source>Pause</source> 
@@ -777,6 +813,14 @@ Kirjaudu uudelleen sisään oikealla sähköpostiosoitteella %1</translation>
             <source>kDrive is waking up</source> 
             <translation>kDrive herää</translation> 
         </message> 
+        <message id="enableBackgroundActivityDescription"> 
+            <source>kDrive must remain active in your Mac’s settings to update your files.</source> 
+            <translation>kDrive:n on oltava käytössä Macin asetuksissa, jotta tiedostosi päivittyvät.</translation> 
+        </message> 
+        <message id="enableBackgroundActivityTitle"> 
+            <source>Reactivate kDrive to continue</source> 
+            <translation>Käynnistä kDrive uudelleen jatkaaksesi</translation> 
+        </message> 
         <message id="enableDebugLogDescription"> 
             <source>Record diagnostic information on my computer.</source> 
             <translation>Tallenna diagnostiikkatiedot tietokoneelleni.</translation> 
@@ -790,10 +834,8 @@ Kirjaudu uudelleen sisään oikealla sähköpostiosoitteella %1</translation>
             <translation>Syötä salasanasi</translation> 
         </message> 
         <message id="errCaseDescription"> 
-            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive Windows application. Rename one of the %2 folders in kDrive online to synchronize it on your PC.
-</source> 
-            <translation>Tässä kansiossa on jo toinen %1, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %2-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.
-</translation> 
+            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %2 in kDrive online to synchronize it on your device.</source> 
+            <translation>Tässä kansiossa on jo toinen %1, jonka nimi eroaa vain isojen ja pienten kirjainten osalta. Tämäntyyppistä nimeä ei tueta kDrive Windows -sovelluksessa. Nimeä yksi %2-kansioista uudelleen kDrive online -ohjelmassa, jotta voit synkronoida sen tietokoneellasi.</translation> 
         </message> 
         <message id="errCaseTitle"> 
             <source>Case-sensitive name conflict</source> 
@@ -1202,6 +1244,14 @@ avaa macOS-asetukset ottaaksesi ne käyttöön.</translation>
             <source>Connection to kDrive interrupted</source> 
             <translation>Yhteys kDriveen keskeytyi</translation> 
         </message> 
+        <message id="instructionEnableBackgroundActivity"> 
+            <source>In "Background App Refresh", enable kDrive</source> 
+            <translation>Ota kDrive käyttöön kohdassa ”Taustasovellusten päivitys”</translation> 
+        </message> 
+        <message id="instructionEnableBackgroundActivityArgument"> 
+            <source>Background App Refresh</source> 
+            <translation>Sovellusten taustapäivitys</translation> 
+        </message> 
         <message id="instructionEnableKDrive"> 
             <source>Activate kDrive.app</source> 
             <translation>Aktivoi kDrive.app</translation> 
@@ -1222,6 +1272,14 @@ avaa macOS-asetukset ottaaksesi ne käyttöön.</translation>
             <source>You must activate authorizations before continuing</source> 
             <translation>Luvat on aktivoitava ennen jatkamista</translation> 
         </message> 
+        <message id="instructionOpenLoginItems"> 
+            <source>Select Login Items &amp; Extensions</source> 
+            <translation>Valitse kirjautumiskohteet ja laajennukset</translation> 
+        </message> 
+        <message id="instructionOpenLoginItemsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Kirjautumiskohteet ja laajennukset</translation> 
+        </message> 
         <message id="instructionOpenPrivacySecurity"> 
             <source>Go to Privacy &amp; Security &gt; Full disk access</source> 
             <translation>Siirry kohtaan Yksityisyys ja turvallisuus &gt; Täysi levykäyttö</translation> 
@@ -1235,14 +1293,26 @@ avaa macOS-asetukset ottaaksesi ne käyttöön.</translation>
             <translation>Yksityisyys ja turvallisuus</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensions"> 
-            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
-            <translation>Valitse Avaaminen ja laajennukset &gt; Suojauslaajennukset</translation> 
+            <source>Select Login Items &amp; Extensions &gt; Endpoint Security Extensions</source> 
+            <translation>Valitse Kirjautumiskohteet ja laajennukset &gt; Endpoint Security -laajennukset</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensionsArgument"> 
+            <source>Endpoint Security Extensions</source> 
+            <translation>Päätelaitteiden tietoturvan laajennukset</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsArgumentLegacy"> 
             <source>Security extensions</source> 
             <translation>Suojauslaajennukset</translation> 
         </message> 
+        <message id="instructionOpenSecurityExtensionsLegacy"> 
+            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
+            <translation>Valitse Avaaminen ja laajennukset &gt; Suojauslaajennukset</translation> 
+        </message> 
         <message id="instructionOpenSecurityExtensionsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Kirjautumiskohteet ja laajennukset</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsLinkLegacy"> 
             <source>Open &amp; Extensions</source> 
             <translation>Avaaminen ja laajennukset</translation> 
         </message> 
@@ -1253,10 +1323,6 @@ avaa macOS-asetukset ottaaksesi ne käyttöön.</translation>
         <message id="instructionOpenSystemSettingsLink"> 
             <source>System Settings</source> 
             <translation>Järjestelmäasetukset</translation> 
-        </message> 
-        <message id="instructionRestartIfNecessary"> 
-            <source>Restart the application if required</source> 
-            <translation>Käynnistä sovellus uudelleen tarvittaessa</translation> 
         </message> 
         <message id="itemUnavailableBrowserFallback"> 
             <source>This item is not available on this device.
@@ -1320,6 +1386,10 @@ Se avautuu selaimessasi.</translation>
         <message id="labelChooseConflictVersionIndividual"> 
             <source>For each file, select the version to keep.</source> 
             <translation>Valitse kullekin tiedostolle säilytettävä versio.</translation> 
+        </message> 
+        <message id="labelComputerLocation"> 
+            <source>Location on computer</source> 
+            <translation>Sijainti tietokoneella</translation> 
         </message> 
         <message id="labelConflictDialogQuestion"> 
             <source>Which version do you want to keep?</source> 
@@ -1507,6 +1577,10 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</translatio
         <message id="labelRemoteAccessRightsModifiedTip"> 
             <source>The folder may have been moved to another disk and then returned to its original location.</source> 
             <translation>Kansio on ehkä siirretty toiselle levylle ja palautettu sitten takaisin alkuperäiseen sijaintiinsa.</translation> 
+        </message> 
+        <message id="labelRemoteLocation"> 
+            <source>Location on kDrive</source> 
+            <translation>Sijainti kDrivessa</translation> 
         </message> 
         <message id="labelRestoreToOriginalLocation"> 
             <source>Restore it to its original location.</source> 
@@ -1726,6 +1800,32 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
             <source>%1 version conflicts detected</source> 
             <translation>%1 versioristiriitaa havaittu</translation> 
         </message> 
+        <message id="manyDeleteDialogHardLimitContent"> 
+            <source>Synchronization is paused to prevent accidental deletion.
+What would you like to do?</source> 
+            <translation>Synkronointi on keskeytetty, jotta vältetään tahaton poisto.
+Mitä haluat tehdä?</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitPrimary"> 
+            <source>Restore the files</source> 
+            <translation>Tiedostojen palauttaminen</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitSecondary"> 
+            <source>Delete online as well</source> 
+            <translation>Poista myös verkosta</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitContent"> 
+            <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
+            <translation>Nämä tiedostot ovat edelleen palautettavissa kDrive-roskakorista.</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitDoNotShowAgain"> 
+            <source>Don’t show this warning again</source> 
+            <translation>Älä näytä tätä varoitusta enää</translation> 
+        </message> 
+        <message id="manyDeleteDialogTitle"> 
+            <source>%1 items deleted from your folder</source> 
+            <translation>%1 kohdetta on poistettu kansiostasi</translation> 
+        </message> 
         <message id="matomoDescription"> 
             <source>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.
 
@@ -1795,7 +1895,7 @@ Näiden tietojen analysointi antaa tiimillemme mahdollisuuden jatkuvasti paranta
             <translation>Valitun kansion on oltava tyhjä, jotta synkronointi toimii oikein.</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionDescription"> 
-            <source>Choose the folders to sync on this computer:</source> 
+            <source>Select the folders to sync on this computer:</source> 
             <translation>Valitse tällä tietokoneella synkronoitavat kansiot:</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionTitle"> 
@@ -1947,6 +2047,18 @@ Odota hetki.</translation>
         <message id="onboardingSynchronizationInProgressTitle"> 
             <source>Sync in progress…</source> 
             <translation>Synkronointi käynnissä…</translation> 
+        </message> 
+        <message id="onboardingV4Faq"> 
+            <source>Explore the app</source> 
+            <translation>Tutustu sovellukseen</translation> 
+        </message> 
+        <message id="onboardingV4Subtitle"> 
+            <source>Keep track of your syncs more easily.</source> 
+            <translation>Seuraa synkronointiasi entistä helpommin.</translation> 
+        </message> 
+        <message id="onboardingV4Title"> 
+            <source>Your new kDrive app is here!</source> 
+            <translation>Uusi kDrive-sovelluksesi on nyt saatavilla!</translation> 
         </message> 
         <message id="openKDriveAtStartupSetting"> 
             <source>Open kDrive when the computer starts</source> 

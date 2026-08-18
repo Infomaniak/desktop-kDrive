@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: el, Greek
  Exported by: Romain Galland
- Exported at: Thu, 09 Jul 2026 14:09:03 +0200 
+ Exported at: Mon, 17 Aug 2026 11:05:11 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="el"> 
     <context>
@@ -89,6 +89,34 @@
         <message id="activitiesTypeMyActivity"> 
             <source>My activity only</source> 
             <translation>Μόνο η δική μου δραστηριότητα</translation> 
+        </message> 
+        <message id="activityInstructionGetLabel"> 
+            <source>Imported</source> 
+            <translation>Εισήχθη</translation> 
+        </message> 
+        <message id="activityInstructionIgnoreLabel"> 
+            <source>Ignored</source> 
+            <translation>Αγνοημένος</translation> 
+        </message> 
+        <message id="activityInstructionMoveLabel"> 
+            <source>Moved</source> 
+            <translation>Μετακινήθηκε</translation> 
+        </message> 
+        <message id="activityInstructionPutLabel"> 
+            <source>Added</source> 
+            <translation>Προστέθηκε</translation> 
+        </message> 
+        <message id="activityInstructionRemoveLabel"> 
+            <source>Moved to trash</source> 
+            <translation>Μετακινήθηκε στα απορρίμματα</translation> 
+        </message> 
+        <message id="activityInstructionUpdateLabel"> 
+            <source>Modified</source> 
+            <translation>Τροποποιημένο</translation> 
+        </message> 
+        <message id="activityInstructionUpdateMetadataLabel"> 
+            <source>Renamed</source> 
+            <translation>Μετονομάστηκε</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
@@ -226,6 +254,10 @@ You can open them at any time, even without an internet connection.</source>
         <message id="buttonClose"> 
             <source>Close</source> 
             <translation>Κλείσιμο</translation> 
+        </message> 
+        <message id="buttonCloseDoNotAskAgain"> 
+            <source>Close and don’t ask again</source> 
+            <translation>Κλείσιμο και να μην ερωτηθεί ξανά</translation> 
         </message> 
         <message id="buttonCloseKDrive"> 
             <source>Close kDrive</source> 
@@ -394,6 +426,10 @@ You can open them at any time, even without an internet connection.</source>
         <message id="buttonOpenSyncSettings"> 
             <source>Open sync settings</source> 
             <translation>Άνοιγμα ρυθμίσεων συγχρονισμού</translation> 
+        </message> 
+        <message id="buttonOpenTrash"> 
+            <source>Open the Recycle Bin</source> 
+            <translation>Άνοιγμα του κάδου απορριμμάτων</translation> 
         </message> 
         <message id="buttonPause"> 
             <source>Pause</source> 
@@ -777,6 +813,14 @@ Please sign in again with the correct email address %1</source>
             <source>kDrive is waking up</source> 
             <translation>Το kDrive αφυπνίζεται</translation> 
         </message> 
+        <message id="enableBackgroundActivityDescription"> 
+            <source>kDrive must remain active in your Mac’s settings to update your files.</source> 
+            <translation>Το kDrive πρέπει να παραμείνει ενεργό στις ρυθμίσεις του Mac σας για να ενημερώνονται τα αρχεία σας.</translation> 
+        </message> 
+        <message id="enableBackgroundActivityTitle"> 
+            <source>Reactivate kDrive to continue</source> 
+            <translation>Επανενεργοποιήστε το kDrive για να συνεχίσετε</translation> 
+        </message> 
         <message id="enableDebugLogDescription"> 
             <source>Record diagnostic information on my computer.</source> 
             <translation>Καταγραφή διαγνωστικών πληροφοριών στον υπολογιστή μου.</translation> 
@@ -790,10 +834,8 @@ Please sign in again with the correct email address %1</source>
             <translation>Εισαγάγετε τον κωδικό πρόσβασής σας</translation> 
         </message> 
         <message id="errCaseDescription"> 
-            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive Windows application. Rename one of the %2 folders in kDrive online to synchronize it on your PC.
-</source> 
-            <translation>Ένα άλλο %1 του οποίου το όνομα διαφέρει μόνο στα κεφαλαία/μικρά γράμματα υπάρχει ήδη σε αυτόν το φάκελο. Αυτός ο τύπος ονόματος δεν υποστηρίζεται από την εφαρμογή kDrive Windows. Μετονομάστε έναν από τους φακέλους %2 από το kDrive online, ώστε να μπορείτε να τον συγχρονίσετε στον υπολογιστή σας.
-</translation> 
+            <source>Another %1 with a name differing only in upper/lower case already exists in this folder. This type of name is not supported by the kDrive application. Rename one of the %2 in kDrive online to synchronize it on your device.</source> 
+            <translation>Ένα άλλο %1 του οποίου το όνομα διαφέρει μόνο στα κεφαλαία/μικρά γράμματα υπάρχει ήδη σε αυτόν το φάκελο. Αυτός ο τύπος ονόματος δεν υποστηρίζεται από την εφαρμογή kDrive Windows. Μετονομάστε έναν από τους φακέλους %2 από το kDrive online, ώστε να μπορείτε να τον συγχρονίσετε στον υπολογιστή σας.</translation> 
         </message> 
         <message id="errCaseTitle"> 
             <source>Case-sensitive name conflict</source> 
@@ -1202,6 +1244,14 @@ open macOS Preferences to enable them.</source>
             <source>Connection to kDrive interrupted</source> 
             <translation>Διακόπηκε η σύνδεση με το kDrive</translation> 
         </message> 
+        <message id="instructionEnableBackgroundActivity"> 
+            <source>In "Background App Refresh", enable kDrive</source> 
+            <translation>Στην επιλογή «Ανανέωση εφαρμογών στο παρασκήνιο», ενεργοποιήστε το kDrive</translation> 
+        </message> 
+        <message id="instructionEnableBackgroundActivityArgument"> 
+            <source>Background App Refresh</source> 
+            <translation>Ανανέωση εφαρμογών στο παρασκήνιο</translation> 
+        </message> 
         <message id="instructionEnableKDrive"> 
             <source>Activate kDrive.app</source> 
             <translation>Ενεργοποιήστε το kDrive.app</translation> 
@@ -1222,6 +1272,14 @@ open macOS Preferences to enable them.</source>
             <source>You must activate authorizations before continuing</source> 
             <translation>Πρέπει να ενεργοποιήσετε τις εξουσιοδοτήσεις πριν συνεχίσετε</translation> 
         </message> 
+        <message id="instructionOpenLoginItems"> 
+            <source>Select Login Items &amp; Extensions</source> 
+            <translation>Επιλογή στοιχείων σύνδεσης και επεκτάσεων</translation> 
+        </message> 
+        <message id="instructionOpenLoginItemsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Στοιχεία σύνδεσης &amp; Επεκτάσεις</translation> 
+        </message> 
         <message id="instructionOpenPrivacySecurity"> 
             <source>Go to Privacy &amp; Security &gt; Full disk access</source> 
             <translation>Μεταβείτε στο Απόρρητο και ασφάλεια &gt; Πλήρης πρόσβαση στον δίσκο</translation> 
@@ -1235,14 +1293,26 @@ open macOS Preferences to enable them.</source>
             <translation>Απόρρητο και ασφάλεια</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensions"> 
-            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
-            <translation>Επιλέξτε Άνοιγμα και επεκτάσεις &gt; Επεκτάσεις ασφαλείας</translation> 
+            <source>Select Login Items &amp; Extensions &gt; Endpoint Security Extensions</source> 
+            <translation>Επιλέξτε «Στοιχεία σύνδεσης &amp; Επεκτάσεις» &gt; «Επεκτάσεις ασφάλειας τερματικών συσκευών»</translation> 
         </message> 
         <message id="instructionOpenSecurityExtensionsArgument"> 
+            <source>Endpoint Security Extensions</source> 
+            <translation>Επεκτάσεις ασφάλειας τερματικών συσκευών</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsArgumentLegacy"> 
             <source>Security extensions</source> 
             <translation>Επεκτάσεις ασφαλείας</translation> 
         </message> 
+        <message id="instructionOpenSecurityExtensionsLegacy"> 
+            <source>Select Open &amp; Extensions &gt; Security extensions</source> 
+            <translation>Επιλέξτε Άνοιγμα και επεκτάσεις &gt; Επεκτάσεις ασφαλείας</translation> 
+        </message> 
         <message id="instructionOpenSecurityExtensionsLink"> 
+            <source>Login Items &amp; Extensions</source> 
+            <translation>Στοιχεία σύνδεσης &amp; Επεκτάσεις</translation> 
+        </message> 
+        <message id="instructionOpenSecurityExtensionsLinkLegacy"> 
             <source>Open &amp; Extensions</source> 
             <translation>Άνοιγμα και επεκτάσεις</translation> 
         </message> 
@@ -1253,10 +1323,6 @@ open macOS Preferences to enable them.</source>
         <message id="instructionOpenSystemSettingsLink"> 
             <source>System Settings</source> 
             <translation>Ρυθμίσεις συστήματος</translation> 
-        </message> 
-        <message id="instructionRestartIfNecessary"> 
-            <source>Restart the application if required</source> 
-            <translation>Επανεκκινήστε την εφαρμογή εάν απαιτείται</translation> 
         </message> 
         <message id="itemUnavailableBrowserFallback"> 
             <source>This item is not available on this device.
@@ -1320,6 +1386,10 @@ It will open in your browser.</source>
         <message id="labelChooseConflictVersionIndividual"> 
             <source>For each file, select the version to keep.</source> 
             <translation>Για κάθε αρχείο, επιλέξτε την έκδοση που θέλετε να διατηρήσετε.</translation> 
+        </message> 
+        <message id="labelComputerLocation"> 
+            <source>Location on computer</source> 
+            <translation>Τοποθεσία στον υπολογιστή</translation> 
         </message> 
         <message id="labelConflictDialogQuestion"> 
             <source>Which version do you want to keep?</source> 
@@ -1507,6 +1577,10 @@ Useful if you know the important work is online on kDrive.</source>
         <message id="labelRemoteAccessRightsModifiedTip"> 
             <source>The folder may have been moved to another disk and then returned to its original location.</source> 
             <translation>Ο φάκελος μπορεί να έχει μεταφερθεί σε άλλον δίσκο και στη συνέχεια να επιστράφηκε στην αρχική του τοποθεσία.</translation> 
+        </message> 
+        <message id="labelRemoteLocation"> 
+            <source>Location on kDrive</source> 
+            <translation>Τοποθεσία στο kDrive</translation> 
         </message> 
         <message id="labelRestoreToOriginalLocation"> 
             <source>Restore it to its original location.</source> 
@@ -1726,6 +1800,32 @@ Please check and rename files containing unusual characters, then try again.</so
             <source>%1 version conflicts detected</source> 
             <translation>%1 συγκρούσεις εκδόσεων εντοπίστηκαν</translation> 
         </message> 
+        <message id="manyDeleteDialogHardLimitContent"> 
+            <source>Synchronization is paused to prevent accidental deletion.
+What would you like to do?</source> 
+            <translation>Ο συγχρονισμός έχει τεθεί σε παύση για να αποφευχθεί η ακούσια διαγραφή.
+Τι θέλετε να κάνετε;</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitPrimary"> 
+            <source>Restore the files</source> 
+            <translation>Επαναφορά αρχείων</translation> 
+        </message> 
+        <message id="manyDeleteDialogHardLimitSecondary"> 
+            <source>Delete online as well</source> 
+            <translation>Διαγραφή και από το διαδίκτυο</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitContent"> 
+            <source>These files can still be recovered from the kDrive Recycle Bin.</source> 
+            <translation>Αυτά τα αρχεία παραμένουν διαθέσιμα για ανάκτηση στον κάδο απορριμμάτων του kDrive.</translation> 
+        </message> 
+        <message id="manyDeleteDialogSoftLimitDoNotShowAgain"> 
+            <source>Don’t show this warning again</source> 
+            <translation>Να μην εμφανίζεται πλέον αυτή η προειδοποίηση</translation> 
+        </message> 
+        <message id="manyDeleteDialogTitle"> 
+            <source>%1 items deleted from your folder</source> 
+            <translation>%1 στοιχεία που διαγράφηκαν από το φάκελό σας</translation> 
+        </message> 
         <message id="matomoDescription"> 
             <source>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.
 
@@ -1795,8 +1895,8 @@ Analyzing this data allows our team to continuously improve the application’s 
             <translation>Ο επιλεγμένος φάκελος πρέπει να είναι κενός για να λειτουργεί σωστά ο συγχρονισμός.</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionDescription"> 
-            <source>Choose the folders to sync on this computer:</source> 
-            <translation>Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή:</translation> 
+            <source>Select the folders to sync on this computer:</source> 
+            <translation>Επιλέξτε τους φακέλους που θέλετε να συγχρονίσετε σε αυτόν τον υπολογιστή:</translation> 
         </message> 
         <message id="onboardingAdvancedSettingsDriveExclusionTitle"> 
             <source>Synced folders</source> 
@@ -1947,6 +2047,18 @@ Please wait a few moments.</source>
         <message id="onboardingSynchronizationInProgressTitle"> 
             <source>Sync in progress…</source> 
             <translation>Συγχρονισμός σε εξέλιξη…</translation> 
+        </message> 
+        <message id="onboardingV4Faq"> 
+            <source>Explore the app</source> 
+            <translation>Ανακαλύψτε την εφαρμογή</translation> 
+        </message> 
+        <message id="onboardingV4Subtitle"> 
+            <source>Keep track of your syncs more easily.</source> 
+            <translation>Παρακολουθήστε τους συγχρονισμούς σας πιο εύκολα.</translation> 
+        </message> 
+        <message id="onboardingV4Title"> 
+            <source>Your new kDrive app is here!</source> 
+            <translation>Η νέα σας εφαρμογή kDrive είναι εδώ!</translation> 
         </message> 
         <message id="openKDriveAtStartupSetting"> 
             <source>Open kDrive when the computer starts</source> 
