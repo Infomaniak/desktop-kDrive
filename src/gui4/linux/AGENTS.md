@@ -72,6 +72,8 @@
 - Render the future main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
   and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
   so both outer circles remain identical.
+- Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
+  do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
 - For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
 - Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
