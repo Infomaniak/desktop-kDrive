@@ -266,11 +266,16 @@ void SocketCommServer::close() {
 
         // Close the established channels here rather than leaving it to ~SocketCommServer: the peer is waiting for this
         // shutdown to quit, and the destructor only runs at the very end of the server cleanup.
+        // Copy the list first: close() blocks on the channel's socket mutex, which a pending receiveBytes() can hold for
+        // up to channelReceiveTimeoutSec, and _channelsMutex must not be held that long.
+        // create a copy to avoid hold the lock for up to channelReceiveTimeoutSec
+        std::list<std::shared_ptr<AbstractCommChannel>> channels;
         {
             const std::scoped_lock lock(_channelsMutex);
-            for (const auto &channel: _channels) {
-                channel->close();
-            }
+            channels = _channels;
+        }
+        for (const auto &channel: channels) {
+            channel->close();
         }
 
         LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
