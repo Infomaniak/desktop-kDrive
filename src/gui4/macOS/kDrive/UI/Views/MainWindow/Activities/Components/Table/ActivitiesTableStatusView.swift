@@ -108,7 +108,12 @@ struct ActivitiesTableStatusView: View {
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             StatusIndicatorView(indicator: direction)
-            StatusIndicatorView(indicator: status)
+
+            if status == .inProgress, let progress = context.node.progress {
+                ProgressIndicatorView(progress: progress)
+            } else {
+                StatusIndicatorView(indicator: status)
+            }
 
             if shouldDisplayOptionButton {
                 Menu {

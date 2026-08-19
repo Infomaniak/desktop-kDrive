@@ -25,6 +25,17 @@ protocol StatusIndicator: Sendable, Equatable {
     var color: Color { get }
 }
 
+struct ProgressIndicatorView: View {
+    let progress: Int
+
+    var body: some View {
+        ProgressView(value: Double(progress), total: 100)
+            .progressViewStyle(.circular)
+            .controlSize(.mini)
+            .help("\(progress)%")
+    }
+}
+
 struct StatusIndicatorView: View {
     let indicator: any StatusIndicator
 
