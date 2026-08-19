@@ -51,6 +51,13 @@ class IpcClient : public QObject {
         [[nodiscard]] bool isConnected() const { return _socket->state() == QAbstractSocket::ConnectedState; }
         void sendRequest(RequestNum num, const Poco::DynamicStruct &params = {}, ResponseCallback callback = nullptr);
 
+        /**
+         * Declares that the server is about to close the connection as part of a shutdown.
+         * Until then, losing the connection is fatal; afterwards it is the expected end of the session and only
+         * disconnected() is emitted.
+         */
+        void expectDisconnection() { _disconnectionExpected = true; }
+
     signals:
         void connected();
         void disconnected();
@@ -82,6 +89,7 @@ class IpcClient : public QObject {
         int32_t _nextId{0};
         QHash<int32_t, ResponseCallback> _pendingCallbacks;
         bool _hasConnectedOnce{false};
+        bool _disconnectionExpected{false};
         uint32_t _initialConnectionAttemptCount{0};
         quint16 _configuredPort{0};
         QSslCertificate _pinnedCert;
