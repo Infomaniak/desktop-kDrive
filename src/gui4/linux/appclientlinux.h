@@ -110,7 +110,8 @@ class AppClientLinux : public QApplication {
         void handleBootstrapCompletion();
         void refreshUpdaterState();
         void updateLoggerMinLevel() const;
-        void requestQuit() const;
+        void requestQuit();
+        void quitOnServerDisconnection();
         void openMainWindow();
         void openOnboardingFromHome();
         void handleConfiguredSyncsChanged();
@@ -152,6 +153,7 @@ class AppClientLinux : public QApplication {
         bool _mainWindowDismissedDuringBootstrap{false};
         bool _preferSetupHomeWhenUnconfigured{false};
         bool _hadConfiguredSync{false};
+        bool _quitPending{false};
 };
 
 } // namespace KDC
