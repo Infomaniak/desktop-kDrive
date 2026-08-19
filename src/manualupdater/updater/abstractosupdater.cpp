@@ -25,8 +25,7 @@ std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
     return std::make_unique<OSUpdater>();
 }
 
-bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const std::string &fileUrl, const SyncPath &filepath,
-                                           QString &outMessage) {
+bool AbstractOsUpdater::verifyFileChecksum(const std::string &fileUrl, const SyncPath &filepath, QString &outMessage) {
     // 1. Try fetching the .sha256 sidecar file.
     std::string expectedChecksum;
     // Insert the suffix before any query string or fragment so signed/CDN URLs keep their sidecar resolvable.
@@ -40,26 +39,21 @@ bool AbstractOsUpdater::verifyFileChecksum(const VersionInfo &versionInfo, const
         iss >> expectedChecksum;
     }
 
-    // 2. Fall back to the API-provided checksum.
-    if (expectedChecksum.empty()) {
-        expectedChecksum = versionInfo.checksum;
-    }
-
-    // 3. If still empty, skip verification.
+    // 2. If still empty, skip verification.
     if (expectedChecksum.empty()) {
         LOGW_INFO(Log::instance()->getLogger(),
                   L"No checksum available for verification, skipping: " << CommonUtility::s2ws(fileUrl));
         return true;
     }
 
-    // 4. Compute the local file's SHA-256.
+    // 3. Compute the local file's SHA-256.
     std::string actualChecksum;
     if (!computeFileChecksum(filepath, actualChecksum)) {
         outMessage = QObject::tr("Failed to compute file checksum.");
         return false;
     }
 
-    // 5. Compare case-insensitively.
+    // 4. Compare case-insensitively.
     const std::string normalizedActualChecksum = CommonUtility::trim(CommonUtility::toLower(actualChecksum));
     const std::string normalizedExpectedChecksum = CommonUtility::trim(CommonUtility::toLower(expectedChecksum));
     if (normalizedActualChecksum != normalizedExpectedChecksum) {

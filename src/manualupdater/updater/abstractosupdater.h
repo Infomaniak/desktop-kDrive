@@ -33,8 +33,7 @@ class AbstractOsUpdater {
                              const std::function<void(InstallStep, const QString &)> &progressCallback, QString &outMessage) = 0;
 
     protected:
-        [[nodiscard]] static bool verifyFileChecksum(const VersionInfo &versionInfo, const std::string &fileUrl,
-                                                     const SyncPath &filepath, QString &outMessage);
+        [[nodiscard]] static bool verifyFileChecksum(const std::string &fileUrl, const SyncPath &filepath, QString &outMessage);
         [[nodiscard]] static bool computeFileChecksum(const SyncPath &filepath, std::string &outChecksum);
         [[nodiscard]] static bool createDownloadDirectory(SyncPath &outDir);
 };
