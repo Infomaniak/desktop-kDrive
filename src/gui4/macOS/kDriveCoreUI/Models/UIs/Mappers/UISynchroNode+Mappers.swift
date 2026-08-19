@@ -127,7 +127,7 @@ public extension UISynchroNode {
             status: UISynchroFileStatus(syncFileStatus: synchroNode.status),
             instruction: UISynchroFileInstruction(syncFileInstruction: synchroNode.instruction),
             size: synchroNode.size,
-            progress: synchroNode.progress,
+            progress: Int(synchroNode.progress),
             syncDate: synchroNode.date
         )
     }
