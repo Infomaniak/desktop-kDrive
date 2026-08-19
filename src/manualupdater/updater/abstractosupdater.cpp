@@ -39,11 +39,12 @@ bool AbstractOsUpdater::verifyFileChecksum(const std::string &fileUrl, const Syn
         iss >> expectedChecksum;
     }
 
-    // 2. If still empty, skip verification.
+    // 2. If still empty, abort verification.
     if (expectedChecksum.empty()) {
-        LOGW_INFO(Log::instance()->getLogger(),
-                  L"No checksum available for verification, skipping: " << CommonUtility::s2ws(fileUrl));
-        return true;
+        outMessage = QObject::tr("No checksum available for verification.");
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"No checksum available for verification, aborting: " << CommonUtility::s2ws(fileUrl));
+        return false;
     }
 
     // 3. Compute the local file's SHA-256.
