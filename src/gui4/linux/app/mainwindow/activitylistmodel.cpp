@@ -449,9 +449,9 @@ ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row>
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
     (void) std::erase_if(rows, [this](const Row &row) {
         const bool resolvedFailure = row.status == Status::Failed && row.activeErrorDbIds.empty();
-        const bool filteredRemoteActivity =
+        const bool filteredOutRemoteActivity =
                 row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
-        return resolvedFailure || filteredRemoteActivity;
+        return resolvedFailure || filteredOutRemoteActivity;
     });
     (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {
         const bool lhsInProgress = lhs.status == Status::InProgress;
