@@ -522,14 +522,14 @@ void ActivityListModel::scheduleProjectionReconciliation() {
 
 void ActivityListModel::reconcileProjection() {
     const auto nextRows = buildProjection();
-    bool changed = removeMissingRows(nextRows);
+    bool changed = removeStaleRows(nextRows);
     changed = applyProjectionRows(nextRows) || changed;
     if (changed) {
         emit projectionChanged();
     }
 }
 
-bool ActivityListModel::removeMissingRows(const std::vector<Row> &nextRows) {
+bool ActivityListModel::removeStaleRows(const std::vector<Row> &nextRows) {
     QSet<QString> nextRowIds;
     nextRowIds.reserve(static_cast<qsizetype>(nextRows.size()));
     for (const auto &row: nextRows) {
