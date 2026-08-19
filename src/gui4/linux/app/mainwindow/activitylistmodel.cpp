@@ -20,16 +20,14 @@
 
 #include "libcommon/utility/types.h"
 
-#include <QCoreApplication>
 #include <QFontMetricsF>
-#include <QLoggingCategory>
 #include <QLocale>
+#include <QLoggingCategory>
 #include <QSet>
 
 #include <algorithm>
 #include <chrono>
 #include <qtimezone.h>
-#include <ranges>
 
 namespace KDC {
 
@@ -171,10 +169,13 @@ QString activityActionText(const ActivityEntry &activity) {
 
 QStringList ActivityListModel::timeTextSamples() {
     // Upper bound of every branch of formatRelativeTime(): the last value before each threshold rolls over.
-    QStringList samples{qtTrId("labelJustNow"), formatAgo(minute - second, second, "labelShortSecond"),
-                        formatAgo(hour - minute, minute, "labelShortMinute"),
-                        formatAgo(day - hour, hour, "labelShortHour"),
-                        formatAgo(relativeDateThreshold - day, day, "labelShortDay")};
+    QStringList samples{
+            qtTrId("labelJustNow"),
+            formatAgo(minute - second, second, "labelShortSecond"),
+            formatAgo(hour - minute, minute, "labelShortMinute"),
+            formatAgo(day - hour, hour, "labelShortHour"),
+            formatAgo(relativeDateThreshold - day, day, "labelShortDay"),
+    };
 
     // Past the relative threshold the cell shows a short date, whose width varies by month in locales that abbreviate
     // it, so every month is a candidate. Day 28 exists in all of them and is two digits wide.
