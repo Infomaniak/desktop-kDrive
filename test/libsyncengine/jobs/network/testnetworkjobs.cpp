@@ -48,6 +48,7 @@
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
@@ -139,7 +140,7 @@ void TestNetworkJobs::setUp() {
     _apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -190,6 +191,8 @@ void TestNetworkJobs::tearDown() {
     SyncJobManagerSingleton::clear();
     IoHelperTestUtilities::resetFunctions();
     TestBase::stop();
+
+    DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
 }
 
 
@@ -482,6 +485,26 @@ void TestNetworkJobs::testDownload() {
                             DownloadJob::DateTimePolicy::ApplyDateTime);
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
         }
+
+#if defined(KD_WINDOWS)
+        // Download again but local file is now hidden
+        IoHelper::setFileHidden(localDestFilePath, true);
+        {
+            modificationTimeIn += std::chrono::minutes(1);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+
+            // Check that the file is still hidden
+            bool isHidden = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfIsHiddenFile(localDestFilePath, isHidden, ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+            CPPUNIT_ASSERT(isHidden);
+        }
+#endif
     }
 
     // Cross Device Link
@@ -544,12 +567,8 @@ void TestNetworkJobs::testDownload() {
         IoHelperTestUtilities::resetFunctions();
     }
 
-    if (testhelpers::isRunningOnCI() && testhelpers::isExtendedTest(false)) {
-        // Not Enough disk space (Only run on CI because it requires a small partition to be set up)
-        const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
-        if (smallPartitionPath.empty()) return;
-
-        // Not Enough disk space
+    // Not Enough disk space (simulated by injecting a tiny free disk space)
+    {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const SyncPath local9MoFilePath = temporaryDirectory.path() / "9Mo.txt";
         const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDownload");
@@ -563,21 +582,17 @@ void TestNetworkJobs::testDownload() {
         (void) uploadJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob.exitInfo().code());
 
-        CPPUNIT_ASSERT(!smallPartitionPath.empty());
-        IoError ioError = IoError::Unknown;
-        bool exist = false;
-        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::checkIfPathExists(smallPartitionPath, exist, ioError,
-                                                                              IoHelper::PathCheckOption::Insensitive));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
+        const LocalTemporaryDirectory destDirectory("dest");
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(destDirectory.path());
 
-        const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
+        // Simulate a disk with only 8Mo of free space, whatever the path.
+        DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &) -> int64_t { return 8 * 1000000; };
 
         // Not Enough disk space (destination dir)
         {
-            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
+            // Trying to download a file with size 9Mo on a disk with only 8Mo free should fail with SystemError,
             // NotEnoughDiskSpace.
-            const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
+            const SyncPath localDestFilePath = destDirectory.path() / "9Mo.txt";
             DownloadJob downloadJob(
                     nullptr, cacheDirectory,
                     DownloadJob::FileDownloadInfo{_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false},
@@ -585,10 +600,11 @@ void TestNetworkJobs::testDownload() {
 
             (void) downloadJob.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
-            CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-                                                     std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
+            CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
         }
+
+        // Restore the default free disk space function.
+        DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) { return Utility::getFreeDiskSpace(path); };
     }
 
     // Empty file
@@ -788,27 +804,33 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadHasEnoughSpace() {
-    if (!testhelpers::isRunningOnCI() || !testhelpers::isExtendedTest(false)) return;
+    const LocalTemporaryDirectory temporaryDirectory("tmp");
+    const auto &logger = Log::instance()->getLogger();
 
-    // Only run on CI because it requires a small partition to be set up)
-    const SyncPath smallPartitionPath = testhelpers::TestVariables().local8MoPartitionPath;
-    if (smallPartitionPath.empty()) return;
+    // Save the default free disk space function to restore it at the end.
+    const auto defaultFreeDiskSpaceFn = DownloadJob::_getFreeDiskSpaceFn;
+
+    // Simulate a disk with only 8Mo of free space for the small partition path.
+    const SyncPath smallPartitionPath = temporaryDirectory.path() / "small";
+    const auto simulatedFreeSpace = [&smallPartitionPath](const SyncPath &path) {
+        return path == smallPartitionPath ? 8 * 1000000 : Utility::getFreeDiskSpace(path);
+    };
+    DownloadJob::_getFreeDiskSpaceFn = simulatedFreeSpace;
 
     // Enough disk space on both paths
-    const LocalTemporaryDirectory temporaryDirectory("tmp");
-    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000,
-                                               Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(DownloadJob::hasEnoughPlace(temporaryDirectory.path(), temporaryDirectory.path(), 9000000, logger));
 
     // Enough disk space on destination path, but not on tmp path
-    CPPUNIT_ASSERT(
-            !DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(temporaryDirectory.path(), smallPartitionPath, 9000000, logger));
 
     // Enough disk space on tmp path, but not on destination path
-    CPPUNIT_ASSERT(
-            !DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, temporaryDirectory.path(), 9000000, logger));
 
     // Not enough disk space on both paths
-    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, Log::instance()->getLogger()));
+    CPPUNIT_ASSERT(!DownloadJob::hasEnoughPlace(smallPartitionPath, smallPartitionPath, 9000000, logger));
+
+    // Restore the default free disk space function.
+    DownloadJob::_getFreeDiskSpaceFn = defaultFreeDiskSpaceFn;
 }
 
 void TestNetworkJobs::testSearch() {
@@ -1814,12 +1836,17 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken){};
+                _apiToken(apiToken) {};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
             }
-            ApiToken loadApiToken() override { return _apiToken; }
+
+            // /!\ The base class constructor will not call this override.
+            // This method can only be called after the derived class constructor has completed.
+            ApiToken loadApiToken() override {
+                return _apiToken;
+            }
 
         private:
             ApiToken _apiToken;
@@ -1834,8 +1861,11 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     // With refresh token
     {
         _apiToken.setRefreshToken("123");
+        GetInfoUserJobMock jobUpdateCache(_userDbId, _apiToken);
+        (void) jobUpdateCache.runSynchronously(); // Run once just to update the refresh token in cache.
+        CPPUNIT_ASSERT_EQUAL(0, jobUpdateCache.trials());
+
         GetInfoUserJobMock job(_userDbId, _apiToken);
-        (void) job.runSynchronously(); // Run once just to update the refresh token in cache.
         const auto exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
         CPPUNIT_ASSERT_EQUAL(0, job.trials());
@@ -1845,24 +1875,34 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
 void TestNetworkJobs::testGetInfoDriveOn401Error() {
     class GetInfoDriveJobMock final : public GetInfoDriveJob {
         public:
-            explicit GetInfoDriveJobMock(const DriveDbId driveDbId, const ApiToken &apiToken) :
-                GetInfoDriveJob(driveDbId),
-                _apiToken(apiToken) {}
+            explicit GetInfoDriveJobMock(const DriveDbId driveDbId) :
+                GetInfoDriveJob(driveDbId) {}
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
             }
-            ApiToken loadApiToken() override { return _apiToken; }
-
-        private:
-            ApiToken _apiToken;
     };
 
-    GetInfoDriveJobMock job(_driveDbId, _apiToken);
-    const auto exitInfo = job.runSynchronously();
+    GetInfoDriveJobMock jobWithToken(_driveDbId);
+    const auto exitInfo = jobWithToken.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
-    CPPUNIT_ASSERT_EQUAL(ExitCause::DriveAccessError, exitInfo.cause());
-    CPPUNIT_ASSERT_EQUAL(0, job.trials());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfo), ExitInfo(ExitCode::BackError, ExitCause::DriveAccessError), exitInfo);
+    AbstractTokenNetworkJob::clearCache();
+
+    // Clear the keychain key to test when there is no token in db/cache.
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(_userDbId, user, found));
+    CPPUNIT_ASSERT(found);
+    user.setKeychainKey({});
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(0, jobWithToken.trials());
+
+    GetInfoDriveJobMock jobWithoutToken(_driveDbId);
+    const auto exitInfoWithoutToken = jobWithoutToken.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfoWithoutToken), ExitCode::InvalidToken, exitInfoWithoutToken.code());
+    CPPUNIT_ASSERT_EQUAL(0, jobWithoutToken.trials());
 }
 
 void TestNetworkJobs::testExists() {

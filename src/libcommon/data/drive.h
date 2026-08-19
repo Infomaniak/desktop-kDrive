@@ -1,0 +1,150 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "info/maintenanceinfo.h"
+#include "libcommon/info/packinfo.h"
+
+#include "utility/types.h"
+
+#include <QColor>
+#include <string>
+
+#include <log4cplus/logger.h>
+
+namespace KDC {
+
+class Drive {
+    public:
+        Drive() = default;
+        Drive(DriveDbId dbId, DriveId driveId, AccountDbId accountDbId, const std::string &name = std::string(), int64_t size = 0,
+              const std::string &color = std::string(), bool notifications = true, bool admin = true);
+
+        void setDbId(const DriveDbId dbId) { _dbId = dbId; }
+        [[nodiscard]] DriveDbId dbId() const { return _dbId; }
+        void setDriveId(DriveId driveId) { _driveId = driveId; }
+        [[nodiscard]] DriveId driveId() const { return _driveId; }
+        void setAccountDbId(const AccountDbId accountDbId) { _accountDbId = accountDbId; }
+        [[nodiscard]] AccountDbId accountDbId() const { return _accountDbId; }
+        void setName(const std::string &newDriveName) { _name = newDriveName; }
+        [[nodiscard]] const std::string &name() const { return _name; }
+        void setSize(const int64_t newSize) { _size = newSize; }
+        [[nodiscard]] int64_t size() const { return _size; }
+        [[nodiscard]] const std::string &color() const { return _color; }
+        void setColor(const std::string &color) { _color = color; }
+        [[nodiscard]] bool notifications() const { return _notifications; }
+        void setNotifications(const bool newNotifications) { _notifications = newNotifications; }
+        [[nodiscard]] bool admin() const { return _admin; }
+        void setAdmin(const bool admin) { _admin = admin; }
+
+        [[nodiscard]] const MaintenanceInfo &maintenanceInfo() const { return _maintenanceInfo; }
+        void setMaintenanceInfo(const MaintenanceInfo &info) { _maintenanceInfo = info; }
+
+        [[nodiscard]] bool locked() const { return _locked; }
+        void setLocked(const bool newLocked) { _locked = newLocked; }
+        [[nodiscard]] int64_t usedSize() const { return _usedSize; }
+        void setUsedSize(const int64_t newUsedSize) { _usedSize = newUsedSize; }
+        [[nodiscard]] bool accessDenied() const { return _accessDenied; }
+        void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
+
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+        void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
+
+        /// TODO : to be removed once we moved to the new GUI ///
+        friend void operator>>(QDataStream &in, Drive &drive) {
+            qint64 dbId{0};
+            qint64 id{0};
+            qint64 accountDbId{0};
+            QString name;
+            QColor color;
+            bool notifications{false};
+            bool admin{false};
+            bool maintenance{false};
+            bool locked{false};
+            bool accessDenied{false};
+
+            in >> dbId >> id >> accountDbId >> name >> color >> notifications >> admin >> maintenance >> locked >> accessDenied;
+
+            drive.setDbId(static_cast<DriveDbId>(dbId));
+            drive.setDriveId(static_cast<DriveId>(id));
+            drive.setAccountDbId(static_cast<AccountDbId>(accountDbId));
+            drive.setName(name.toStdString());
+            drive.setColor(color.name().toStdString());
+            drive.setNotifications(notifications);
+            drive.setAdmin(admin);
+            MaintenanceInfo maintenanceInfo;
+            maintenanceInfo.setInMaintenance(maintenance);
+            drive.setMaintenanceInfo(maintenanceInfo);
+            drive.setLocked(locked);
+            drive.setAccessDenied(accessDenied);
+        }
+        friend QDataStream &operator<<(QDataStream &out, const Drive &drive) {
+            out << static_cast<qint64>(drive.dbId()) << static_cast<qint64>(drive.driveId())
+                << static_cast<qint64>(drive.accountDbId()) << QString::fromStdString(drive.name())
+                << QColor(QString::fromStdString(drive.color())) << drive.notifications() << drive.admin()
+                << drive.maintenanceInfo().inMaintenance() << drive.locked() << drive.accessDenied();
+            return out;
+        }
+
+        friend void operator>>(QDataStream &in, QList<Drive> &list) {
+            qint64 count = 0;
+            in >> count;
+            for (qint64 i = 0; i < count; i++) {
+                Drive info;
+                in >> info;
+                list.push_back(info);
+            }
+        }
+        friend QDataStream &operator<<(QDataStream &out, const QList<Drive> &list) {
+            const auto count = static_cast<qint64>(list.size());
+            out << count;
+            for (qint64 i = 0; i < count; i++) {
+                out << list[static_cast<qsizetype>(i)];
+            }
+            return out;
+        }
+        /////////////////////////////////////////////////////////
+
+        bool operator==(const Drive &other) const = default;
+
+    private:
+        DriveDbId _dbId{0};
+        DriveId _driveId{0};
+        AccountDbId _accountDbId{0};
+        std::string _name;
+        int64_t _size{0};
+        std::string _color; // #RRGGBB format
+        bool _notifications{true};
+        bool _admin{false};
+
+        // Non DB attributes
+        MaintenanceInfo _maintenanceInfo;
+        bool _locked{false};
+        int64_t _usedSize{0};
+        bool _accessDenied{false};
+
+        PackInfo _packInfo;
+};
+
+using DriveList = std::vector<Drive>;
+
+} // namespace KDC

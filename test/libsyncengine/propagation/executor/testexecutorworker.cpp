@@ -22,6 +22,7 @@
 #include "io/filestat.h"
 #include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
@@ -48,7 +49,7 @@ void TestExecutorWorker::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -578,7 +579,7 @@ void TestExecutorWorker::testInitSyncFileItem() {
                                        _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
         CPPUNIT_ASSERT(remoteNode->setParentNode(remoteParentNode));
-        CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNode));
+        CPPUNIT_ASSERT(remoteParentNode->insertChild(remoteNode));
 
         // Local move from parent_dir/test_file.txt to /test_file.txt
         localNode->setMoveOriginInfos({"parent_dir/test_file.txt", localParentNode->id().value()});

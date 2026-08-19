@@ -25,7 +25,7 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
 
-#include "libparms/db/sync.h"
+#include "libcommon/data/sync.h"
 #include "libparms/db/parmsdb.h"
 
 #include <queue>
@@ -313,7 +313,8 @@ SyncDb::SyncDb(const std::string &dbPath, const std::string &targetNodeId) :
         throw std::runtime_error("Cannot open DB!");
     }
 
-    LOG_INFO(_logger, "SyncDb initialization done: dbPath=" << dbPath << " targetNodeId=" << targetNodeId);
+    LOGW_INFO(_logger, L"SyncDb initialization done with DB " << Utility::formatSyncPath(dbPath) << L" targetNodeId="
+                                                              << CommonUtility::s2ws(targetNodeId));
 }
 
 bool SyncDb::create(bool &retry) {

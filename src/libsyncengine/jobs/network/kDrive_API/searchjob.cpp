@@ -56,6 +56,7 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
         return;
     }
 
+    _syncVfsMode = sync.virtualFileMode();
     _syncRootPath = sync.localPath();
 }
 
@@ -90,10 +91,52 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("with", "path");
 }
 
-ExitInfo SearchJob::handleResponse(std::istream &is) {
-    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
-        return exitInfo;
+
+ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties &localProperties) const {
+    localProperties.path = itemPath;
+
+    if (_syncRootPath.empty()) return ExitCode::Ok; // If sync root path is not set, skip local properties check.
+
+    if (localProperties.path.native().starts_with(privateFolder)) {
+        localProperties.path = localProperties.path.native().substr(
+                std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
+    } else if (localProperties.path.native().starts_with(sharedFolder)) {
+        localProperties.path = localProperties.path.native().substr(
+                std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
     }
+
+    if (localProperties.path.native().starts_with(Str("/")) || localProperties.path.native().starts_with(Str("\\"))) {
+        localProperties.path = localProperties.path.relative_path();
+    }
+
+    const SyncPath absolutePath = _syncRootPath / localProperties.path;
+
+    if (_syncVfsMode == VirtualFileMode::Off) {
+        if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
+                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+        localProperties.isHydrated = localProperties.isAvailableLocally;
+    } else {
+        IoError ioError = IoError::Success;
+        bool isDehydrated = false;
+        if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
+            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
+            LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        } else {
+            localProperties.isAvailableLocally = true;
+            localProperties.isHydrated = !isDehydrated;
+        }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo SearchJob::handleResponse(std::istream &is) {
+    if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
+
     if (!jsonRes()) {
         LOG_WARN(_logger, "Invalid JSON object");
         return {ExitCode::BackError, ExitCause::MissingReplyData};
@@ -111,9 +154,12 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         LOG_WARN(_logger, "Missing data array for search string:" << _searchString);
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
+
+    ExitInfo exitInfo = ExitCode::Ok;
+
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto obj = it->extract<Poco::JSON::Object::Ptr>();
-        NodeId nodeId;
+        RemoteNodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
@@ -142,33 +188,15 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        bool isAvailableLocally = false;
+        LocalProperties localProperties;
+        const auto itemExitInfo = getLocalProperties(path, localProperties);
+        (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File,
+                                           localProperties.path, modifiedTime, size, localProperties.isAvailableLocally,
+                                           localProperties.isHydrated);
 
-        if (!_syncRootPath.empty()) {
-            if (path.native().starts_with(privateFolder)) {
-                path = path.native().substr(
-                        std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
-            } else if (path.native().starts_with(sharedFolder)) {
-                path = path.native().substr(std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
-            }
-
-            if (path.native().starts_with(Str("/")) || path.native().starts_with(Str("\\"))) {
-                path = path.relative_path();
-            }
-
-            SyncPath absolutePath = _syncRootPath / path;
-            IoError ioError = IoError::Success;
-            if (bool res = IoHelper::checkIfPathExists(absolutePath, isAvailableLocally, ioError,
-                                                       IoHelper::PathCheckOption::Insensitive);
-                !res) {
-                LOGW_WARN(_logger,
-                          L"IoHelper::checkIfPathExists failed for " << Utility::formatSyncPath(path) << L", error: " << ioError);
-            }
-        }
-
-        (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File, path, modifiedTime,
-                                           size, isAvailableLocally);
+        if (!itemExitInfo) exitInfo = itemExitInfo; // Stores only the last error for the final return value.
     }
-    return ExitCode::Ok;
+
+    return exitInfo;
 }
 } // namespace KDC

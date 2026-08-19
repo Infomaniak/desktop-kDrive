@@ -56,11 +56,14 @@ ExitInfo SyncAddJob::deserializeInputParms() {
 
 ExitInfo SyncAddJob::process() {
     // Add sync in DB
-    SyncInfo syncInfo;
-    AccountInfo accountInfo;
-    DriveInfo driveInfo;
-    if (const auto exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
-                                                      serverFolderNodeId(), liteSync(), accountInfo, driveInfo, syncInfo);
+    Sync sync;
+    Account account;
+    Drive drive;
+    bool accountAdded = false;
+    bool driveAdded = false;
+    if (const auto exitInfo =
+                ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
+                                        serverFolderNodeId(), liteSync(), account, drive, sync, accountAdded, driveAdded);
         !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                    << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
@@ -71,20 +74,20 @@ ExitInfo SyncAddJob::process() {
         return exitInfo;
     }
 
-    if (accountInfo.dbId() != 0) {
-        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(accountInfo);
+    if (accountAdded) {
+        auto signalAccountAddedJob = std::make_shared<SignalAccountAddedJob>(account);
         _commManager->sendGuiSignal(signalAccountAddedJob);
     }
 
-    if (driveInfo.dbId() != 0) {
-        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(driveInfo);
+    if (driveAdded) {
+        auto signalDriveAddedJob = std::make_shared<SignalDriveAddedJob>(drive);
         _commManager->sendGuiSignal(signalDriveAddedJob);
     }
 
-    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(syncInfo);
+    auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(sync);
     _commManager->sendGuiSignal(signalSyncAddedJob);
 
-    return AbstractSyncAddJob::process(syncInfo);
+    return AbstractSyncAddJob::process(sync);
 }
 
 } // namespace KDC

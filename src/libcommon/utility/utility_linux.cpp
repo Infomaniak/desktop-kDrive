@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/vfs.h>
 #include <pwd.h>
+#include <libmount/libmount.h>
 
 #include "utility/types.h"
 
@@ -32,29 +33,11 @@
 
 namespace KDC {
 
-static std::string homeDirectoryStr() {
-    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) return homeDir;
-
-    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
-    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
-    struct passwd pwd;
-    struct passwd *result = nullptr;
-    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (bufsize == -1) bufsize = 16384;
-    if (std::vector<char> buf(static_cast<size_t>(bufsize));
-        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
-        return std::string(result->pw_dir);
-    }
-    return {};
-}
-
 SyncPath CommonUtility::getGenericAppSupportDir() {
-    const auto homeDir = homeDirectoryStr();
-    if (homeDir.empty()) return {};
+    SyncPath homeDir;
+    if (const auto exitInfo = homeDirectoryPath(homeDir); !exitInfo) return {};
 
-    SyncPath homePath(homeDir);
-    std::string appSupportName(".config");
-    SyncPath appSupportPath(homePath / appSupportName);
+    SyncPath appSupportPath(homeDir / ".config");
 
     std::error_code ec;
     if (!std::filesystem::exists(appSupportPath, ec)) {
@@ -128,64 +111,72 @@ std::string CommonUtility::distributionName() {
     return distributionName;
 }
 
-namespace {
-#ifndef EXFAT_SUPER_MAGIC
-#define EXFAT_SUPER_MAGIC 0x2011BAB0
-#endif
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType.clear();
+    mountPoint.clear();
 
-constexpr auto exFat = "exFAT";
-constexpr auto ext234 = "EXT2/3/4";
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(targetPath, ec);
+    if (ec) canonicalPath = std::filesystem::absolute(targetPath);
 
-std::string formatFsName(const std::string &prettyName, const __fsword_t fType) {
-    std::stringstream stream;
-    stream << std::hex << fType;
-    return prettyName + " | 0x" + stream.str();
-}
-} // namespace
-
-bool CommonUtility::isEXT234(const SyncPath &targetPath) {
-    return contains(getRootFsType(targetPath), ext234);
-}
-
-std::string CommonUtility::exFAT() {
-    return formatFsName(exFat, EXFAT_SUPER_MAGIC);
-}
-
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    // FS type
     struct statfs stat;
-
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        switch (stat.f_type) {
-            case EXFAT_SUPER_MAGIC:
-                return exFAT();
-            case 0x137du:
-                return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51u:
-                return formatFsName("EXT2", stat.f_type);
-            case 0xef53u: // EXT_SUPER_MAGIC
-                return formatFsName(ext234, stat.f_type);
-            case 0xbad1deau:
-            case 0xa501fcf5u:
-            case 0x58465342u:
-                return formatFsName("XFS", stat.f_type);
-            case 0x9123683eu:
-            case 0x73727279u:
-                return formatFsName("BTRFS", stat.f_type);
-            case 0xf15fu:
-                return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244u:
-                return formatFsName("HFS", stat.f_type);
-            case 0x5346544eu:
-                return formatFsName("NTFS", stat.f_type);
-            case 0x858458f6u:
-                return formatFsName("RAMFS", stat.f_type);
-            default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
-                                    stat.f_type);
-        }
+    if (statfs(canonicalPath.native().c_str(), &stat) != 0) {
+        return false;
     }
 
-    return "UNIDENTIFIED";
+    switch (stat.f_type) {
+        case 0xef53u: // EXT2_SUPER_MAGIC, EXT3_SUPER_MAGIC, EXT4_SUPER_MAGIC
+            fsType = fsType::EXT234;
+            break;
+        case 0x5346544eu: // NTFS_SB_MAGIC
+            fsType = fsType::NTFS;
+            break;
+        case 0x2011bab0u: // EXFAT_SUPER_MAGIC
+            fsType = fsType::EXFAT;
+            break;
+        case 0x4d44u: // MSDOS_SUPER_MAGIC
+            fsType = fsType::FAT;
+            break;
+        case 0x4244u: // HFS_SUPER_MAGIC
+            fsType = fsType::HFS;
+            break;
+        case 0x65735546u: // FUSE_SUPER_MAGIC
+            fsType = "FUSE";
+            break;
+        case 0x517bu: // SMB_SUPER_MAGIC
+        case 0xfe534d42u: // SMB2_MAGIC_NUMBER
+            fsType = "SMBFS";
+            break;
+        case 0x6969u: // NFS_SUPER_MAGIC
+            fsType = "NFS";
+            break;
+        case 0x794c7630u: // OVERLAYFS_SUPER_MAGIC
+            fsType = "OVERLAYFS";
+            break;
+        default:
+            // See corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html
+            fsType = std::to_string(stat.f_type);
+    }
+
+    // Mount point
+    libmnt_cache *cache = mnt_new_cache();
+    libmnt_table *table = mnt_new_table();
+    mnt_table_set_cache(table, cache);
+    if (mnt_table_parse_file(table, "/proc/self/mountinfo") == 0) {
+        libmnt_fs *fs = mnt_table_find_mountpoint(table, canonicalPath.native().c_str(), MNT_ITER_BACKWARD);
+        if (fs) {
+            std::string mp = mnt_fs_get_target(fs);
+            mountPoint = SyncPath(mp);
+        }
+    }
+    mnt_free_table(table);
+    mnt_free_cache(cache);
+
+    // If no matching mount point found, fallback to the root directory
+    if (mountPoint.empty()) mountPoint = "/";
+
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
@@ -196,9 +187,8 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
         directoryPath = xdgStateHomePath;
     } else {
-        const auto homeDir = homeDirectoryStr();
-        if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
-        directoryPath = SyncPath(homeDir) / ".local" / "state";
+        if (const auto exitInfo = homeDirectoryPath(directoryPath); !exitInfo) return exitInfo;
+        directoryPath /= ".local/state";
     }
 
     directoryPath /= Str2SyncName(APPLICATION_NAME);
@@ -222,6 +212,27 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     }
 
     return ExitCode::Ok;
+}
+
+ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
+    if (const auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) {
+        directoryPath = SyncPath(homeDir);
+        return ExitCode::Ok;
+    }
+
+    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
+    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
+    struct passwd pwd;
+    struct passwd *result = nullptr;
+    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1) bufsize = 16384;
+    if (std::vector<char> buf(static_cast<size_t>(bufsize));
+        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
+        directoryPath = SyncPath(std::string(result->pw_dir));
+        return ExitCode::Ok;
+    }
+
+    return {ExitCode::SystemError, ExitCause::NotFound};
 }
 
 } // namespace KDC

@@ -20,12 +20,16 @@
 #include "config.h"
 #include "jobs/network/networkjobsparams.h"
 
+#include <Poco/Net/HTTPRequest.h>
+
 namespace KDC {
 
 GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob(const std::string &username, const std::string &password) :
     AbstractLoginJob(),
     _username(username),
-    _password(password) {}
+    _password(password) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+}
 
 ExitInfo GetTokenFromAppPasswordJob::setData() {
     Poco::URI uri;

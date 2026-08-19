@@ -95,68 +95,84 @@ void TestPlatformInconsistencyCheckerWorker::testIsNameTooLong() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _syncPal->cacheDirectory()->path(cacheDirectoryPath).code());
+
+    std::string fsType;
+    std::string fallbackFSType = CommonUtility::fileSystemType(_syncPal->localPath(), fsType);
+
     SyncName allowedName = Str("test-test");
     bool hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         allowedName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, allowedName, hasForbiddenChars));
     CPPUNIT_ASSERT(!hasForbiddenChars);
 
     SyncName forbiddenName = Str("test/test");
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
-    hasForbiddenChars = false;
-
 #if defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(fsType::NTFS, fallbackFSType);
+
     forbiddenName = Str("test\\test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test:test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test*test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test?test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test\"test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test<test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test>test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test|test");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test\ntest");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test ");
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(!hasForbiddenChars);
 
     bool endsWithForbiddenSpace = false;
@@ -164,15 +180,18 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
                                                          forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
     CPPUNIT_ASSERT(endsWithForbiddenSpace);
 #elif defined(KD_LINUX)
+    CPPUNIT_ASSERT_EQUAL(fsType::EXT234, fallbackFSType);
+
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
     hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameHasForbiddenChars(
-                                                         forbiddenName, _syncPal->cacheDirectory(), hasForbiddenChars));
+                                                         fallbackFSType, forbiddenName, hasForbiddenChars));
     CPPUNIT_ASSERT(hasForbiddenChars);
 
     forbiddenName = Str("test ");
     bool endsWithForbiddenSpace = false;
+    hasForbiddenChars = false;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), PlatformInconsistencyCheckerUtility::checkIfNameEndsWithForbiddenSpace(
                                                          forbiddenName, _syncPal->cacheDirectory(), endsWithForbiddenSpace));
     CPPUNIT_ASSERT(!endsWithForbiddenSpace);
@@ -208,8 +227,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
     const auto nodeUpper = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::Create, "A", 0, 0,
                                                   12345, parentNode);
 
-    CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
-    CPPUNIT_ASSERT(parentNode->insertChildren(nodeUpper));
+    CPPUNIT_ASSERT(parentNode->insertChild(nodeLower));
+    CPPUNIT_ASSERT(parentNode->insertChild(nodeUpper));
 
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(parentNode);
 
@@ -250,8 +269,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
             std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::None, "rA", 0, 0,
                                    12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNodeLower));
-    CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNodeUpper));
+    CPPUNIT_ASSERT(remoteParentNode->insertChild(remoteNodeLower));
+    CPPUNIT_ASSERT(remoteParentNode->insertChild(remoteNodeUpper));
 
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteNodeLower);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteNodeUpper);
@@ -263,8 +282,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     const auto localNodeUpper = std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Local, Str("A"), NodeType::File,
                                                        OperationType::None, "lA", 0, 0, 12345, localParentNode);
 
-    CPPUNIT_ASSERT(localParentNode->insertChildren(localNodeLower));
-    CPPUNIT_ASSERT(localParentNode->insertChildren(localNodeUpper));
+    CPPUNIT_ASSERT(localParentNode->insertChild(localNodeLower));
+    CPPUNIT_ASSERT(localParentNode->insertChild(localNodeUpper));
 
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localNodeLower);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localNodeUpper);
@@ -289,9 +308,9 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
     const auto nodeUpper = std::make_shared<Node>(ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::Create, "A", 0, 0,
                                                   12345, parentNode);
 
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(parentNode));
-    CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
-    CPPUNIT_ASSERT(parentNode->insertChildren(nodeUpper));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChild(parentNode));
+    CPPUNIT_ASSERT(parentNode->insertChild(nodeLower));
+    CPPUNIT_ASSERT(parentNode->insertChild(nodeUpper));
 
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(parentNode);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeLower);
@@ -393,13 +412,13 @@ void TestPlatformInconsistencyCheckerWorker::initUpdateTree(ReplicaSide side) {
                                               OperationType::None, "BNode", 0, 0, 12345, testNode2);
 
 
-    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChildren(testNode));
-    CPPUNIT_ASSERT(testNode->insertChildren(aNode));
-    CPPUNIT_ASSERT(testNode->insertChildren(ANode));
-    CPPUNIT_ASSERT(testNode->insertChildren(longNameANode));
-    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChildren(testNode2));
-    CPPUNIT_ASSERT(testNode2->insertChildren(bNode));
-    CPPUNIT_ASSERT(testNode2->insertChildren(BNode));
+    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChild(testNode));
+    CPPUNIT_ASSERT(testNode->insertChild(aNode));
+    CPPUNIT_ASSERT(testNode->insertChild(ANode));
+    CPPUNIT_ASSERT(testNode->insertChild(longNameANode));
+    CPPUNIT_ASSERT(_syncPal->updateTree(side)->rootNode()->insertChild(testNode2));
+    CPPUNIT_ASSERT(testNode2->insertChild(bNode));
+    CPPUNIT_ASSERT(testNode2->insertChild(BNode));
 
     _syncPal->updateTree(side)->insertNode(testNode);
     _syncPal->updateTree(side)->insertNode(aNode);

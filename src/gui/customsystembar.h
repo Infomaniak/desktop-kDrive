@@ -29,11 +29,15 @@ class CustomSystemBar : public QWidget {
     public:
         explicit CustomSystemBar(bool popup, QWidget *parent = nullptr);
 
+        void showExitButton(bool show);
+
     signals:
         void exit();
 
     private:
-        bool _popup;
+        bool _popup{false};
+
+        CustomToolButton *_exitButton = nullptr;
 
         void mousePressEvent(QMouseEvent *event) override;
         bool event(QEvent *event) override;

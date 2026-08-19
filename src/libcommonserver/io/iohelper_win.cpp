@@ -172,7 +172,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
     return dWordError2ioError(static_cast<DWORD>(error), logger());
 }
 
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+bool IoHelper::_getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept {
     if (path == path.root_path()) {
         return getRootNodeId(path, nodeId);
     }

@@ -1,18 +1,20 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "utility.h"
 #include "utility_base.h"
@@ -26,6 +28,7 @@
 #include <string>
 #include <stdio.h>
 #include <rpcdce.h>
+#include <iostream>
 
 #include <QLibrary>
 #include <QFile>
@@ -163,28 +166,30 @@ std::string CommonUtility::osVersion() {
     return osVersion;
 }
 
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
-    TCHAR szFileSystemName[MAX_PATH + 1];
+bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsType, SyncPath &mountPoint) {
+    fsType.clear();
+    mountPoint.clear();
+
+    // FS type & mount point
+    TCHAR szFileSystemName[MAX_PATH + 1] = {0};
     DWORD dwMaxFileNameLength = 0;
     DWORD dwFileSystemFlags = 0;
 
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
+    if (GetVolumeInformation(targetPath.root_path().native().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, ARRAYSIZE(szFileSystemName)) == 0) {
+        // This usually happens when the path is invalid (external drive/network not connected).
         DWORD dwError = GetLastError();
         std::wstringstream message;
-        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
+        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_path()) << L" ("
                 << utility_base::getErrorMessage(dwError) << L")";
         sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
+        return false;
     }
 
+    fsType = ws2s(szFileSystemName);
+    mountPoint = targetPath.root_path();
 
-    return "UNIDENTIFIED";
+    return true;
 }
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
@@ -198,6 +203,20 @@ ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     directoryPath /= logDirName;
 
     return ExitCode::Ok;
+}
+
+ExitInfo CommonUtility::homeDirectoryPath(SyncPath &directoryPath) noexcept {
+    PWSTR path = nullptr;
+    if (const HRESULT hr = SHGetKnownFolderPath(FOLDERID_Profile, KF_FLAG_NO_ALIAS, nullptr, &path); SUCCEEDED(hr) && path) {
+        directoryPath = path;
+        CoTaskMemFree(path);
+        return ExitCode::Ok;
+    }
+    if (path) {
+        CoTaskMemFree(path);
+    }
+
+    return {ExitCode::SystemError, ExitCause::Unknown};
 }
 
 } // namespace KDC

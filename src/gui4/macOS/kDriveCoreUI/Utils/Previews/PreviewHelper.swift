@@ -137,8 +137,8 @@ public enum PreviewHelper {
         syncDate: .now.addingTimeInterval(-3600)
     )
 
-    public static func blockingErrorFor(syncError: BlockingSynchroError, isDriveAdmin: Bool) -> UIBlockingError {
-        return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
+    public static func blockingErrorFor(syncError: BlockingSynchroError) -> UIBlockingError {
+        return UIBlockingError(uiDrive: drive1, uiSynchro: synchro, error: syncError)
     }
 
     public static let synchroError = SynchroError(
@@ -156,5 +156,14 @@ public enum PreviewHelper {
             exitCode: .Unknown,
             exitCause: .Unknown
         )
+    )
+
+    public static let versionInfo = VersionInfo(
+        channel: KDC.DistributionChannel.Beta,
+        tag: "3.8.4",
+        buildVersion: 2,
+        buildMinOsVersion: "26",
+        downloadUrl: "",
+        checksum: ""
     )
 }

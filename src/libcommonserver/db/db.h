@@ -53,11 +53,11 @@ class COMMONSERVER_EXPORT Db {
         bool queryExec(const std::string &id, int &errId, std::string &error);
         bool queryExecAndGetRowId(const std::string &id, int64_t &rowId, int &errId, std::string &error);
         bool queryNext(const std::string &id, bool &hasData);
-        bool queryIntValue(const std::string &id, int index, int &value) const;
-        bool queryInt64Value(const std::string &id, int index, int64_t &value) const;
-        bool queryDoubleValue(const std::string &id, int index, double &value) const;
-        bool queryStringValue(const std::string &id, int index, std::string &value) const;
-        bool querySyncNameValue(const std::string &id, int index, SyncName &value) const;
+        bool queryIntValue(const std::string &id, int index, int &value, int defaultValue = 0) const;
+        bool queryInt64Value(const std::string &id, int index, int64_t &value, int64_t defaultValue = 0) const;
+        bool queryDoubleValue(const std::string &id, int index, double &value, double defaultValue = 0) const;
+        bool queryStringValue(const std::string &id, int index, std::string &value, const std::string &defaultValue = {}) const;
+        bool querySyncNameValue(const std::string &id, int index, SyncName &value, const SyncName &defaultValue = {}) const;
         bool queryBlobValue(const std::string &id, int index, std::shared_ptr<std::vector<char>> &value) const;
         bool queryIsNullValue(const std::string &id, int index, bool &ok);
         void queryFree(const std::string &id);
@@ -80,6 +80,9 @@ class COMMONSERVER_EXPORT Db {
         bool columnExists(const std::string &tableName, const std::string &columnName, bool &exist);
 
         [[nodiscard]] bool versionUpdated() const { return _versionUpdated; }
+
+        bool selectVersion(std::string &version, bool &found);
+
 
     protected:
         void startTransaction();
@@ -108,7 +111,6 @@ class COMMONSERVER_EXPORT Db {
     private:
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);
-        bool selectVersion(std::string &version, bool &found);
 
         friend class TestDb;
 };

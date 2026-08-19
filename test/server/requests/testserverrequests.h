@@ -26,7 +26,9 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFixProxyConfig);
         CPPUNIT_TEST(testGetPublicLink);
         CPPUNIT_TEST(testFindGoodPathForNewSync);
+        CPPUNIT_TEST(testIsPathValidForNewSync);
         CPPUNIT_TEST(testDeleteUser);
+        CPPUNIT_TEST(testDeleteUserNotFound);
         CPPUNIT_TEST(testDeleteAccount);
         CPPUNIT_TEST(testDeleteDrive);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemInvalidPath);
@@ -34,6 +36,27 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFolderContainsNonExcludedItemOnlyExcludedFiles);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemWithNonExcludedFile);
         CPPUNIT_TEST(testFolderContainsNonExcludedItemMixed);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_expandsHomeDirVariable);
+#if defined(KD_WINDOWS)
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_windowsExternalDriveAllowed);
+#elif defined(KD_MACOS)
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_macExternalVolumeAllowed);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_macVolumesRootDenied);
+#elif defined(KD_LINUX)
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_linuxExternalDriveAllowed);
+        CPPUNIT_TEST(isSyncFolderAllowedByRules_linuxMediaRootDenied);
+#endif
+
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -43,7 +66,9 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void testFixProxyConfig();
         void testGetPublicLink();
         void testFindGoodPathForNewSync();
+        void testIsPathValidForNewSync();
         void testDeleteUser();
+        void testDeleteUserNotFound();
         void testDeleteAccount();
         void testDeleteDrive();
         void testFolderContainsNonExcludedItemInvalidPath();
@@ -52,8 +77,30 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
         void testFolderContainsNonExcludedItemWithNonExcludedFile();
         void testFolderContainsNonExcludedItemMixed();
 
+        void isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist();
+        void isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule();
+        void isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule();
+        void isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule();
+        void isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule();
+        void isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule();
+        void isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule();
+        void isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule();
+        void isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule();
+        void isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent();
+        void isSyncFolderAllowedByRules_expandsHomeDirVariable();
+#if defined(KD_WINDOWS)
+        void isSyncFolderAllowedByRules_windowsExternalDriveAllowed();
+#elif defined(KD_MACOS)
+        void isSyncFolderAllowedByRules_macExternalVolumeAllowed();
+        void isSyncFolderAllowedByRules_macVolumesRootDenied();
+#elif defined(KD_LINUX)
+        void isSyncFolderAllowedByRules_linuxExternalDriveAllowed();
+        void isSyncFolderAllowedByRules_linuxMediaRootDenied();
+#endif
+
     private:
         int _driveDbId{0};
+        std::string _keychainKey{"123"};
         LocalTemporaryDirectory _localTempDir{"testServerRequests"};
 };
 

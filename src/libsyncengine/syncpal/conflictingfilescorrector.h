@@ -20,7 +20,7 @@
 
 #include "jobs/abstractpropagatorjob.h"
 #include "syncpal/syncpal.h"
-#include "db/error.h"
+#include "libcommon/data/error.h"
 
 #include <vector>
 

@@ -24,6 +24,8 @@
 #include "libcommonserver/vfs/vfs.h"
 #include "libcommonserver/io/cachedirectory.h"
 
+#include <functional>
+
 namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {

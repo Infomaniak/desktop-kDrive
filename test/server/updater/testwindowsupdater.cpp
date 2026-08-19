@@ -23,7 +23,10 @@
 #include "requests/parameterscache.h"
 #include "io/iohelper.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/directdownloadjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
@@ -45,7 +48,7 @@ void TestWindowsUpdater::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
@@ -132,7 +135,7 @@ void TestWindowsUpdater::testOnUpdateFound() {
 
 void TestWindowsUpdater::testIsSignatureValid() {
     // Empty path.
-    CPPUNIT_ASSERT(!DigitalSignatureChecker_win({}).isSignatureValid());
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win("").isSignatureValid());
     // Path to non-existing file.
     CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath("A/B/C")).isSignatureValid());
     // Path to existing file but not signed.
@@ -150,6 +153,51 @@ void TestWindowsUpdater::testIsSignatureValid() {
                         DownloadJob::DateTimePolicy::ApplyDateTime);
         (void) job.runSynchronously();
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
+    }
+}
+
+void TestWindowsUpdater::testIsSignatureValidExtended() {
+    if (!testhelpers::isExtendedTest()) return;
+
+    static const std::string appUid("1234567890");
+    static const std::vector<DistributionChannel> channels = {DistributionChannel::Internal, DistributionChannel::Beta,
+                                                              DistributionChannel::Prod};
+
+    User user;
+    bool found = false;
+    (void) ParmsDb::instance()->selectUser(1, user, found);
+    CPPUNIT_ASSERT(found);
+    const std::vector<UserId> userIdList = {user.userId()};
+
+    const LocalTemporaryDirectory tmpDir("TestWindowsUpdater");
+
+    // Fetch the download link of each channel, keeping only distinct URLs to avoid downloading the same version twice.
+    std::map<std::string, DistributionChannel, std::less<>> downloadUrls;
+    for (const auto channel: channels) {
+        GetAppVersionJob job(channel, appUid, userIdList);
+        (void) job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+
+        const auto &versionInfo = job.versionInfo();
+        CPPUNIT_ASSERT(versionInfo.isValid());
+        CPPUNIT_ASSERT(!versionInfo.downloadUrl.empty());
+
+        (void) downloadUrls.try_emplace(versionInfo.downloadUrl, channel);
+    }
+
+    // Download each distinct version and check its digital signature.
+    int8_t index = 0;
+    for (const auto &[downloadUrl, channel]: downloadUrls) {
+        const auto installerPath = tmpDir.path() / ("installer-" + std::to_string(index++) + ".exe");
+
+        DirectDownloadJob downloadJob(installerPath, downloadUrl);
+        (void) downloadJob.runSynchronously();
+        CPPUNIT_ASSERT(!downloadJob.hasHttpError());
+        CPPUNIT_ASSERT(std::filesystem::exists(installerPath));
+
+        CPPUNIT_ASSERT_MESSAGE(
+                "Digital signature is invalid for installer: " + toString(channel) + " - " + installerPath.string(),
+                DigitalSignatureChecker_win(SyncPath(installerPath)).isSignatureValid());
     }
 }
 

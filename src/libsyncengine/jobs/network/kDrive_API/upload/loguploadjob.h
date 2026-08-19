@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "db/error.h"
+#include "libcommon/data/error.h"
 #include "jobs/syncjob.h"
 
 #include <chrono>

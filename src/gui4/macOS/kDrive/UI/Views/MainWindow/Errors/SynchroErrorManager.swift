@@ -26,6 +26,8 @@ final class SynchroErrorManager: ObservableObject {
     @Published var isShowingActivateOfflineSynchroSheet: SynchroError?
     @Published var isShowingLocalAccessSheet: SynchroError?
     @Published var isShowingResolutionTipsSheet: ExplanationsSheetType?
+    @Published var isShowingVersionSelectorSheet: ConflictsToResolve?
+    @Published var isShowingGenericError = false
 
     enum ExplanationsSheetType: Identifiable, Sendable {
         var id: String {
@@ -50,14 +52,30 @@ final class SynchroErrorManager: ObservableObject {
     // MARK: - Manage sync
 
     func refreshErrors(_ error: SynchroError) async {
-        _ = try? await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
+        do {
+            _ = try await ErrorJobs().refreshSyncErrors(syncDbId: Int32(error.metadata.synchroDbId))
+        } catch {
+            isShowingGenericError = true
+        }
     }
 
     func tryToRestartSynchro(_ error: SynchroError) async {
-        try? await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+        do {
+            try await SyncJobs().startSync(syncDbId: Int32(error.metadata.synchroDbId))
+        } catch {
+            isShowingGenericError = true
+        }
     }
 
     // MARK: - Open URLs
+
+    func openWebPageDrive(_ error: SynchroError) async {
+        guard let drive = await getDrive(error) else {
+            return
+        }
+
+        NSWorkspace.shared.open(URLConstants.kDrive(for: Int(drive.driveId)))
+    }
 
     func openFolder(_ error: SynchroError) {
         let url = URL(fileURLWithPath: error.metadata.path)
@@ -106,7 +124,7 @@ final class SynchroErrorManager: ObservableObject {
 
     func navigateToLoginPage() {
         @InjectService var router: MainWindowRouter
-        router.navigate(to: .onboarding())
+        router.navigate(to: .onboarding(nil, nil, .login))
     }
 
     func navigateToSynchroCreation() {
@@ -151,8 +169,14 @@ final class SynchroErrorManager: ObservableObject {
 
     // MARK: - Misc
 
-    func handleConflict() {
-        // TODO: Will be done in a next PR
+    func handleConflicts(_ errors: [SynchroError]) {
+        if errors.count <= 1, let error = errors.first {
+            isShowingVersionSelectorSheet = ConflictsToResolve(errors: [error])
+        } else {
+            @InjectService var router: MainViewRouter
+            router.setCurrentTabIfNecessary(.activities)
+            router.append(.quickConflictsResolution(errors))
+        }
     }
 
     func renameItem(_ error: SynchroError) async {

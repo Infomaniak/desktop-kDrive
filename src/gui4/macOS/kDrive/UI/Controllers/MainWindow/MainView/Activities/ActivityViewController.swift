@@ -17,11 +17,13 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 final class ActivitiesViewController: TitledViewController<ActivitiesView> {
     init() {
-        super.init(toolbarTitle: SidebarItem.activities.title, contentView: ActivitiesView())
+        @InjectService var router: MainViewRouter
+        super.init(toolbarTitle: SidebarItem.activities.title, navigableRouter: router, contentView: ActivitiesView())
     }
 }

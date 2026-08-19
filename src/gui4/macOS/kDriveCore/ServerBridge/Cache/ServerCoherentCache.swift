@@ -23,6 +23,7 @@ import OrderedCollections
 
 public protocol CoherentCacheObservable: Sendable {
     var usersPublisher: AnyPublisher<IndexedUsers, Never> { get }
+    var serverErrorsPublisher: AnyPublisher<IndexedErrors, Never> { get }
 }
 
 /// This cache must track 1:1 the server, can only be purged on server restart
@@ -303,6 +304,16 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
         drive.synchros[synchro.dbId] = synchro
         try updateDrive(drive: drive)
+    }
+
+    public func vfsConversionCompleted(synchroDbId: Int32) throws {
+        guard var synchro = getSynchro(synchroDbId: synchroDbId) else {
+            throw CacheError.synchroNotFound(synchroDbId)
+        }
+
+        synchro.isUpdatingVfsMode = false
+
+        try updateSynchro(synchro)
     }
 
     // MARK: - SynchroContexts

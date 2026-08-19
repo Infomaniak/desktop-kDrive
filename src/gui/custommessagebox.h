@@ -43,15 +43,21 @@ class CustomMessageBox : public CustomDialog {
         void addButton(const QString &text, QMessageBox::StandardButton button);
         void setDefaultButton(QMessageBox::StandardButton buttonType);
 
+        bool isChecked() const { return _checkBox->isChecked(); }
+        void setCheckboxVisible(const bool visible) { _checkBox->setVisible(visible); }
+        void setCheckBoxText(const QString &text) { _checkBox->setText(text); }
+
     private:
-        QMessageBox::Icon _icon;
-        QLabel *_warningLabel;
-        QLabel *_textLabel;
-        QLabel *_iconLabel;
-        QHBoxLayout *_buttonsHBox;
+        QMessageBox::Icon _icon{QMessageBox::NoIcon};
+        QLabel *_warningLabel{nullptr};
+        QLabel *_textLabel{nullptr};
+        QLabel *_iconLabel{nullptr};
+        QHBoxLayout *_buttonsHBox{nullptr};
         QColor _backgroundColor;
         QSize _iconSize;
-        int _buttonCount;
+        int _buttonCount{0};
+        CustomCheckBox *_checkBox{nullptr};
+        QString _checkBoxText;
 
         inline QSize iconSize() const { return _iconSize; }
         inline void setIconSize(const QSize &size) {

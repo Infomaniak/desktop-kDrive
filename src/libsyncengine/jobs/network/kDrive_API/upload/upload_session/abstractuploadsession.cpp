@@ -128,7 +128,8 @@ void AbstractUploadSession::uploadChunkCallback(const UniqueId jobId) {
     const auto jobInfo = _ongoingChunkJobs.extract(jobId);
     if (!jobInfo.empty() && jobInfo.mapped()) {
         if (jobInfo.mapped()->hasHttpError() || !jobInfo.mapped()->exitInfo()) {
-            LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()));
+            LOGW_WARN(_logger, L"Failed to upload chunk " << jobInfo.mapped()->chunkNb() << L" of file "
+                                                          << Path2WStr(_filePath.filename()));
             _jobExecutionError = true;
             _chunkJobExitInfo = jobInfo.mapped()->exitInfo();
         }

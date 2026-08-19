@@ -29,9 +29,12 @@
 #include "libparms/db/parmsdb.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/mockkeychainstorage.h"
+#include "requests/syncfolderallowedchecker.h"
 
 #include "test_utility/remotetemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+#include "theme/theme.h"
 
 namespace KDC {
 
@@ -43,9 +46,8 @@ void TestServerRequests::setUp() {
     ApiToken apiToken;
     apiToken.setAccessToken(testVariables.apiToken);
 
-    const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
+    (void) KeyChainManager::instance()->writeToken(_keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -53,7 +55,7 @@ void TestServerRequests::setUp() {
 
     // Insert user, account & drive
     const int userId(atoi(testVariables.userId.c_str()));
-    const User user(1, userId, keychainKey);
+    const User user(1, userId, _keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
     const int accountId(atoi(testVariables.accountId.c_str()));
@@ -99,74 +101,107 @@ void TestServerRequests::testGetPublicLink() {
 }
 
 void TestServerRequests::testFindGoodPathForNewSync() {
-    SyncPath localTempDirPath;
-    {
-        LocalTemporaryDirectory localTempDir("testFindGoodPathForNewSync");
-        localTempDirPath = localTempDir.path();
-        const SyncPath defaultPath = localTempDirPath / APPLICATION_NAME;
+    SyncPath homePath;
+    (void) CommonUtility::homeDirectoryPath(homePath);
+    const SyncName driveName(Str("dummyDriveName"));
+    const SyncPath defaultPath = homePath / (Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName);
 
-        // Check with a valid path
-        SyncPath returnedPath;
-        std::string error;
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
-        CPPUNIT_ASSERT_EQUAL(defaultPath, returnedPath);
-        CPPUNIT_ASSERT(error.empty());
-
-        // Check with an existing path
-        IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
-        CPPUNIT_ASSERT(!returnedPath.empty());
-        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-        CPPUNIT_ASSERT(error.empty());
-
-        // check an already synced & existing path
-        const Sync sync(1, _driveDbId, defaultPath, NodeId(), SyncPath(), NodeId());
-        (void) ParmsDb::instance()->insertSync(sync);
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
-        CPPUNIT_ASSERT(!returnedPath.empty());
-        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-        CPPUNIT_ASSERT(error.empty());
-
-        // Check an already synced but non-existing path
-        CPPUNIT_ASSERT(IoHelper::deleteItem(defaultPath, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                             ServerRequests::findGoodPathForNewSync(defaultPath, returnedPath, error));
-        CPPUNIT_ASSERT(!returnedPath.empty());
-        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-        CPPUNIT_ASSERT(error.empty());
-
-        // check with an already synced parent path
-        const SyncPath childPath = defaultPath / "childFolder";
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::InvalidSync, ExitCause::SyncDirNestingError),
-                             ServerRequests::findGoodPathForNewSync(childPath, returnedPath, error));
-        CPPUNIT_ASSERT(returnedPath.empty());
-        CPPUNIT_ASSERT(!error.empty());
-
-        // Check with an existing path containing an already synced child
-        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                             ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
-        CPPUNIT_ASSERT(!returnedPath.empty());
-        CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
-        CPPUNIT_ASSERT(error.empty());
-    }
-
-    // Check with a non-existing path containing an already synced child
     SyncPath returnedPath;
     std::string error;
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                         ServerRequests::findGoodPathForNewSync(localTempDirPath, returnedPath, error));
-    CPPUNIT_ASSERT(!returnedPath.empty());
-    CPPUNIT_ASSERT(returnedPath.filename().string().find('2') != std::string::npos);
+                         ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
+    CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
     CPPUNIT_ASSERT(error.empty());
+
+    // Check again but returnedPath already exists
+    const auto previousPath = returnedPath;
+    LocalTemporaryDirectoryFromAbsolutePath localTempDir(previousPath,
+                                                         LocalTemporaryDirectoryFromAbsolutePath::RecursiveMode::Recursive);
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
+    CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
+    CPPUNIT_ASSERT(error.empty());
+    CPPUNIT_ASSERT(previousPath != returnedPath);
+}
+
+static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
+    bool constraintError = false;
+    const bool ok = ParmsDb::instance()->insertSyncFolderRule(SyncFolderRule(path, type), constraintError);
+    CPPUNIT_ASSERT_MESSAGE("insertSyncFolderRule failed", ok && !constraintError);
+}
+
+static void clearRules() {
+    std::vector<SyncFolderRule> rules;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncFolderRules(rules));
+    for (const auto &rule: rules) {
+        bool found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSyncFolderRule(rule.syncPath(), found));
+        CPPUNIT_ASSERT(found);
+    }
+}
+
+
+void TestServerRequests::testIsPathValidForNewSync() {
+    LocalTemporaryDirectory localTempDir("testIsPathValidForNewSync");
+    const SyncPath basePath = localTempDir.path();
+    const SyncPath defaultPath = basePath / APPLICATION_NAME;
+    insertRule(defaultPath, SyncFolderRuleType::WhiteList);
+
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::createDirectory(defaultPath, false, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    // Existing and empty folder is valid in classic mode.
+    bool isValid = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(isValid);
+
+    // Existing and non-empty folder with a regular file is invalid in classic mode.
+    testhelpers::generateTestFile(defaultPath / "regular_file.txt");
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
+
+    // Folder containing only excluded files remains valid.
+    CPPUNIT_ASSERT(IoHelper::deleteItem(defaultPath / "regular_file.txt", ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    testhelpers::generateTestFile(defaultPath / "excluded_file~");
+    isValid = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(isValid);
+
+    // In advanced mode, non-empty folders are accepted.
+    testhelpers::generateTestFile(defaultPath / "advanced_regular_file.txt");
+    isValid = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Advanced, isValid));
+    CPPUNIT_ASSERT(isValid);
+
+    // A path already used by an existing sync is rejected.
+    const Sync sync(1, _driveDbId, defaultPath, NodeId(), SyncPath(), NodeId());
+    (void) ParmsDb::instance()->insertSync(sync);
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(defaultPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
+
+    // A child folder of an existing sync is also rejected.
+    const SyncPath childPath = defaultPath / "childFolder";
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(childPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
+
+    // A parent folder of an existing sync is also rejected.
+    const SyncPath parentPath = defaultPath.parent_path();
+    isValid = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::isPathValidForNewSync(parentPath, SyncConfiguration::Classic, isValid));
+    CPPUNIT_ASSERT(!isValid);
 }
 
 void TestServerRequests::testDeleteUser() {
@@ -174,6 +209,11 @@ void TestServerRequests::testDeleteUser() {
     AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteUser(1));
+
+    ApiToken apiToken;
+    bool keychainFound = false;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readApiToken(_keychainKey, apiToken, keychainFound));
+    CPPUNIT_ASSERT(!keychainFound);
 
     // Check that user/account/drive have been removed from db
     User user;
@@ -192,6 +232,37 @@ void TestServerRequests::testDeleteUser() {
     // Check that user and drive have been removed from cache
     CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_userToApiKeyMap.contains(1));
     CPPUNIT_ASSERT(!AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
+}
+
+void TestServerRequests::testDeleteUserNotFound() {
+    AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
+    AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::DataError, ExitCause::DbEntryNotFound), ServerRequests::deleteUser(42));
+
+    ApiToken apiToken;
+    bool keychainFound = false;
+    CPPUNIT_ASSERT(KeyChainManager::instance()->readApiToken(_keychainKey, apiToken, keychainFound));
+    CPPUNIT_ASSERT(keychainFound);
+
+    // Check that the existing user/account/drive are still present in db.
+
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(1, user, found));
+    CPPUNIT_ASSERT(found);
+
+    Account account;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAccount(1, account, found));
+    CPPUNIT_ASSERT(found);
+
+    Drive drive;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(1, drive, found));
+    CPPUNIT_ASSERT(found);
+
+    // Check that the caches were not cleared by the failed deletion.
+    CPPUNIT_ASSERT(AbstractTokenNetworkJob::_userToApiKeyMap.contains(1));
+    CPPUNIT_ASSERT(AbstractTokenNetworkJob::_driveToApiKeyMap.contains(1));
 }
 
 void TestServerRequests::testDeleteAccount() {
@@ -276,5 +347,246 @@ void TestServerRequests::testFolderContainsNonExcludedItemMixed() {
                          ServerRequests::folderContainsNonExcludedItem(dir.path(), containsNonExcludedFile));
     CPPUNIT_ASSERT(containsNonExcludedFile);
 }
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsAnyPathWhenNoRulesExist() {
+    clearRules();
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/some/arbitrary/path", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsPathNotMatchingAnyRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/opt/someapp/data", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsPathMatchingWhiteListRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListRule() {
+    clearRules();
+    insertRule("/home/user/Documents", SyncFolderRuleType::WhiteList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents/Projects", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesPathMatchingBlackListRule() {
+    clearRules();
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/.cache", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesSubfolderOfBlackListRule() {
+    clearRules();
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/.cache/thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_allowsSubfolderOfWhiteListSubFolderRule() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_deniesExactPathOfWhiteListSubFolderRule() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+
+void TestServerRequests::isSyncFolderAllowedByRules_deeperRuleWinsOverShallowerRule() {
+    clearRules();
+    // Parent whitelists /home/user, but a deeper blacklist blocks /home/user/.cache
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/home/user/.cache", SyncFolderRuleType::BlackList);
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/.cache/thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_blackListSubfolderInsideWhiteListSubFolderParent() {
+    clearRules();
+    insertRule("/home/user", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/home/user/.local/share/Trash", SyncFolderRuleType::BlackList);
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/home/user/Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         SyncFolderAllowedChecker::check("/home/user/.local/share/Trash/OldDocuments", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_expandsHomeDirVariable() {
+    clearRules();
+    // Insert rule using $HOME variable, mirroring what sync-folder-rules-linux.csv does
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("$HOME/.cache", SyncFolderRuleType::BlackList);
+
+    const SyncPath homeDir = QStr2Path(QDir::homePath());
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(homeDir / "Documents", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(homeDir / ".cache" / "thumbnails", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(homeDir, allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+#if defined(KD_WINDOWS)
+void TestServerRequests::isSyncFolderAllowedByRules_windowsExternalDriveAllowed() {
+    clearRules();
+    // Mirror the real sync-folder-rules-win.csv:
+    //   $SYSROOT      -> BlackList
+    //   $HOME         -> WhiteListSubFolder
+    //   $HOME/AppData -> BlackList
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("$HOME/AppData", SyncFolderRuleType::BlackList);
+
+    // A path on a different drive (e.g. a USB key mounted on E:) does not match any rule.
+    // It should be allowed by default (no matching rule → allowed).
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("E:\\MySyncFolder", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // A subfolder on E: should also be allowed.
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("E:\\MySyncFolder\\SubDir", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // The system drive itself (e.g. C:) should be denied (BlackList via $SYSROOT).
+    const SyncPath homeDir = QStr2Path(QDir::homePath());
+    const SyncPath sysRoot = homeDir.root_path();
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(sysRoot, allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    // A folder directly under the system drive (e.g. C:\MySync) should be denied
+    // because $SYSROOT (BlackList) is the deepest matching rule.
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check(sysRoot / "MySync", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+#elif defined(KD_MACOS)
+void TestServerRequests::isSyncFolderAllowedByRules_macExternalVolumeAllowed() {
+    clearRules();
+    // Mirror the real sync-folder-rules-osx.csv:
+    //   $SYSROOT  -> BlackList
+    //   $HOME     -> WhiteListSubFolder
+    //   /Volumes  -> WhiteListSubFolder
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/Volumes", SyncFolderRuleType::WhiteListSubFolder);
+
+    // A sync folder on an external volume mounted under /Volumes should be allowed
+    // (it is a subfolder of the /Volumes WhiteListSubFolder rule).
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/Volumes/MyUSBDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // The volume root itself (e.g. /Volumes/MyUSBDrive) should also be allowed
+    // (it is still a subfolder of /Volumes, not an exact match of /Volumes).
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/Volumes/MyUSBDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_macVolumesRootDenied() {
+    clearRules();
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("/Volumes", SyncFolderRuleType::WhiteListSubFolder);
+
+    // /Volumes itself should be denied (exact match of WhiteListSubFolder rule).
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/Volumes", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+#elif defined(KD_LINUX)
+void TestServerRequests::isSyncFolderAllowedByRules_linuxExternalDriveAllowed() {
+    clearRules();
+    // Mirror the real sync-folder-rules-linux.csv:
+    //   $SYSROOT  -> BlackList
+    //   $HOME     -> WhiteListSubFolder
+    //   /media    -> WhiteListSubFolder
+    //   /run/media-> WhiteListSubFolder
+    //   /mnt      -> WhiteListSubFolder
+    insertRule("$SYSROOT", SyncFolderRuleType::BlackList);
+    insertRule("$HOME", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/run/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/mnt", SyncFolderRuleType::WhiteListSubFolder);
+
+    // /media/<username>/<drivename>/kDrive should be allowed
+    // (subfolder of /media WhiteListSubFolder, deeper than $SYSROOT BlackList).
+    bool allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/media/username/MyUSBDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // /run/media/<username>/<drivename>/kDrive should be allowed
+    // (subfolder of /run/media WhiteListSubFolder, deeper than $SYSROOT BlackList).
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         SyncFolderAllowedChecker::check("/run/media/username/MyUSBDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // /mnt/<drivename>/kDrive should be allowed
+    // (subfolder of /mnt WhiteListSubFolder, deeper than $SYSROOT BlackList).
+    allowed = false;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/mnt/MyDrive/kDrive", allowed));
+    CPPUNIT_ASSERT(allowed);
+
+    // The system root "/" should be denied ($SYSROOT BlackList).
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+
+void TestServerRequests::isSyncFolderAllowedByRules_linuxMediaRootDenied() {
+    clearRules();
+    insertRule("/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/run/media", SyncFolderRuleType::WhiteListSubFolder);
+    insertRule("/mnt", SyncFolderRuleType::WhiteListSubFolder);
+
+    // /media itself should be denied (exact match of WhiteListSubFolder rule).
+    bool allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/media", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    // /run/media itself should be denied (exact match of WhiteListSubFolder rule).
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/run/media", allowed));
+    CPPUNIT_ASSERT(!allowed);
+
+    // /mnt itself should be denied (exact match of WhiteListSubFolder rule).
+    allowed = true;
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), SyncFolderAllowedChecker::check("/mnt", allowed));
+    CPPUNIT_ASSERT(!allowed);
+}
+#endif
+
 
 } // namespace KDC

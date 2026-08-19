@@ -56,29 +56,30 @@ class AppClient : public SharedTools::QtSingleApplication {
 
     signals:
         // User signals
-        void userAdded(const UserInfo &userInfo);
-        void userUpdated(const UserInfo &userInfo);
+        void userAdded(const User &user);
+        void userUpdated(const User &user);
         void userStatusChanged(UserDbId userDbId, bool connected, QString connexionError);
         void userRemoved(UserDbId userDbId);
         // Account signals
-        void accountAdded(const AccountInfo &accountInfo);
-        void accountUpdated(const AccountInfo &accountInfo);
+        void accountAdded(const Account &account);
+        void accountUpdated(const Account &account);
         void accountRemoved(AccountDbId accountDbId);
         // Drive signals
-        void driveAdded(const DriveInfo &driveInfo);
-        void driveUpdated(const DriveInfo &driveInfo);
+        void driveAdded(const Drive &drive);
+        void driveUpdated(const Drive &drive);
         void driveQuotaUpdated(DriveDbId driveDbId, qint64 total, qint64 used);
         void driveRemoved(DriveDbId driveDbId);
         void driveDeletionFailed(DriveDbId driveDbId);
         // Sync signals
-        void syncAdded(const SyncInfo &syncInfo);
-        void syncUpdated(const SyncInfo &syncInfo);
+        void syncAdded(const BaseSync &syncInfo);
+        void syncUpdated(const BaseSync &syncInfo);
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                               int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
         void vfsConversionCompleted(SyncDbId syncDbId);
         void syncDeletionFailed(SyncDbId syncDbId);
+        void tooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
         // Node signals
         void folderSizeCompleted(QString nodeId, qint64 size);
         void fixConflictingFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);

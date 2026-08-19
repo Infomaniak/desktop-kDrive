@@ -20,7 +20,7 @@
 
 #include "abstractfileitemwidget.h"
 
-#include "libcommon/info/errorinfo.h"
+#include "libcommon/data/error.h"
 
 #include <QWidget>
 
@@ -32,7 +32,7 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         Q_OBJECT
 
     public:
-        explicit GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg, const ErrorInfo &errorInfo,
+        explicit GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg, const Error &error,
                                         QWidget *parent = nullptr);
 
         void init() override;
@@ -44,7 +44,7 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         [[nodiscard]] bool openInWebview() const;
 
         std::shared_ptr<ClientGui> _gui;
-        ErrorInfo _errorInfo;
+        Error _error;
         const QString _errorMsg;
 };
 

@@ -19,6 +19,8 @@
 #include "testguicommchannel.h"
 
 #include "../testcommhelpers.h"
+#include "comm/guijobs/signalsyncnotifymanydeletesjob.h"
+#include "comm/guijobs/syncacknowledgemanydeletesjob.h"
 
 #include "comm/guijobs/syncinfolistjob.h"
 #include "comm/guijobs/syncofflinefilessizejob.h"
@@ -29,6 +31,7 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
+#include "utility/jsonparserutility.h"
 
 namespace KDC {
 
@@ -79,9 +82,13 @@ void TestGuiCommChannel::testSyncInfoListJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncInfoListJob = std::dynamic_pointer_cast<SyncInfoListJob>(job);
 
-        const SyncInfo si1(1, 1, "/Users/test/kDrive1", "", "", true, VirtualFileMode::Win, "");
-        const SyncInfo si2(2, 1, "/Users/test/kDrive2", "folder1", "999", false, VirtualFileMode::Off,
-                           "{645FF040-5081-101B-9F08-00AA002F954E}");
+        Sync si1(1, 1, "/Users/test/kDrive1", "", "");
+        si1.setSupportVfs(true);
+        si1.setVirtualFileMode(VirtualFileMode::Win);
+        Sync si2(2, 1, "/Users/test/kDrive2", "123", "folder1", "999");
+        si2.setSupportVfs(false);
+        si2.setVirtualFileMode(VirtualFileMode::Off);
+        si2.setNavigationPaneClsid("{645FF040-5081-101B-9F08-00AA002F954E}");
 
         syncInfoListJob->_syncInfoList = {si1, si2};
     };
@@ -271,8 +278,8 @@ void TestGuiCommChannel::testSyncAddJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAddJob = std::dynamic_pointer_cast<SyncAddJob>(job);
 
-        syncAddJob->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                          "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAddJob->sync() = Sync(1, 1, "/Users/test/kDrive1", "", "test", "999", false, true, VirtualFileMode::Win, false, "",
+                                  false, "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -337,8 +344,8 @@ void TestGuiCommChannel::testSyncAdd2Job() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto syncAdd2Job = std::dynamic_pointer_cast<SyncAdd2Job>(job);
 
-        syncAdd2Job->syncInfo() = SyncInfo(1, 1, "/Users/test/kDrive1", "test", "999", true, VirtualFileMode::Win,
-                                           "{645FF040-5081-101B-9F08-00AA002F954E}");
+        syncAdd2Job->sync() = Sync(1, 1, "/Users/test/kDrive1", "", "test", "999", false, true, VirtualFileMode::Win, false, "",
+                                   false, "{645FF040-5081-101B-9F08-00AA002F954E}");
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -623,6 +630,78 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
         auto syncOfflineFilesSizeJob = std::dynamic_pointer_cast<SyncOfflineFilesSizeJob>(job);
         CPPUNIT_ASSERT(syncOfflineFilesSizeJob);
         syncOfflineFilesSizeJob->_size = 10;
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
+    const SyncDbId syncDbId = 1;
+    const TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::HardLimit;
+    const uint64_t nbFiles = 12345;
+    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, nbFiles);
+
+    checkSignalCommonMethods(job, SignalNum::SYNC_NOTIFY_MANY_DELETES);
+
+    if (!job.serializeGenericOutputParms(ExitCode::Ok)) {
+        CPPUNIT_ASSERT(false);
+    }
+
+    const auto jsonObj =
+            Poco::JSON::Parser{}.parse(CommonUtility::commString2Str(job._outputParamsStr)).extract<Poco::JSON::Object::Ptr>();
+    const auto paramsObj = JsonParserUtility::extractJsonObject(jsonObj, "params");
+    SyncDbId syncDbIdOut = 0;
+    (void) JsonParserUtility::extractValue(paramsObj, "syncDbId", syncDbIdOut);
+    CPPUNIT_ASSERT_EQUAL(static_cast<SyncDbId>(1), syncDbIdOut);
+    auto notificationTypeOut = 0;
+    (void) JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
+    CPPUNIT_ASSERT_EQUAL(TooManyDeletesNotificationType::HardLimit,
+                         static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
+    uint64_t nbFilesOut = 0;
+    (void) JsonParserUtility::extractValue(paramsObj, "nbFiles", nbFilesOut);
+    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);
+}
+
+void TestGuiCommChannel::testAcknowledgeManyDeletes() {
+    // Query
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 1);
+    (void) queryParamsObj.set("userChoice", toInt(TooManyDeletesUserChoice::Revert));
+    (void) queryObj.set("params", queryParamsObj);
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer
+    Poco::JSON::Object answerObj;
+    (void) answerObj.set("cause", 0);
+    (void) answerObj.set("code", 0);
+    (void) answerObj.set("id", 1);
+
+    Poco::JSON::Object paramsObj;
+    (void) answerObj.set("params", paramsObj);
+
+    Poco::JSON::Object answerObjWithNumAndType = answerObj;
+    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
+
+    // Job expected answer
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        auto syncAcknowledgeManyDeletesJob = std::dynamic_pointer_cast<SyncAcknowledgeManyDeletesJob>(job);
+        CPPUNIT_ASSERT(syncAcknowledgeManyDeletesJob);
+        CPPUNIT_ASSERT_EQUAL(static_cast<SyncDbId>(1), syncAcknowledgeManyDeletesJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(TooManyDeletesUserChoice::Revert, syncAcknowledgeManyDeletesJob->_userChoice);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

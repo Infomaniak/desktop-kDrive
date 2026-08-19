@@ -226,21 +226,6 @@ enum class ActionType {
     EnumEnd
 };
 
-enum class AppStateKey {
-    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
-    LastServerSelfRestartDate,
-    LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, // Format: "month,day,year,hour,minute,second"
-    LastLogUploadArchivePath,
-    LogUploadState,
-    LogUploadPercent,
-    LogUploadToken,
-    AppUid,
-    NoUpdate,
-    Unknown, // Only for initialization purpose
-    EnumEnd
-};
-
 enum class AppType {
     None,
     Server,
@@ -266,6 +251,14 @@ enum class ExclusionTemplateComplexity {
     Complex,
     EnumEnd
 };
+
+enum class SyncFolderRuleType {
+    None,
+    BlackList,
+    WhiteList,
+    WhiteListSubFolder
+};
+
 
 enum class IoError {
     Success = 0,
@@ -487,6 +480,7 @@ std::string toString(ConflictType e);
 std::string toString(ConflictResolutionStrategy e);
 std::string toString(ErrorLevel e);
 std::string toString(ExclusionTemplateComplexity e);
+std::string toString(SyncFolderRuleType e);
 std::string toString(ExitCode e);
 std::string toString(ExitCause e);
 std::string toString(InconsistencyType e);
@@ -519,6 +513,8 @@ std::string toString(VirtualFileMode e);
 std::string toString(SyncConfiguration e);
 std::string toString(const std::source_location &e);
 std::string toString(Scope e);
+std::string toString(TooManyDeletesNotificationType e);
+std::string toString(TooManyDeletesUserChoice e);
 
 inline ReplicaSide otherSide(const ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;

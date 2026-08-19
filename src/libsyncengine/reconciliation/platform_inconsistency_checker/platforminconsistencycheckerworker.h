@@ -32,11 +32,12 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
 
     private:
         ExitCode checkTree(ReplicaSide side);
-        ExitCode checkRemoteTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath);
+        ExitCode checkRemoteTree(const std::string &fsType, std::shared_ptr<Node> remoteNode, const SyncPath &parentPath);
         ExitCode checkLocalTree(std::shared_ptr<Node> localNode, const SyncPath &parentPath);
 
         void blacklistNode(std::shared_ptr<Node> node, const InconsistencyType inconsistencyType);
-        ExitInfo checkIfPathAndNameAreValid(std::shared_ptr<Node> remoteNode, bool &pathAndNameAreValid);
+        ExitInfo checkIfPathAndNameAreValid(const std::string &fsType, std::shared_ptr<Node> remoteNode,
+                                            bool &pathAndNameAreValid);
         void checkNameClashAgainstSiblings(const std::shared_ptr<Node> remoteParentNode);
 
         bool pathChanged(std::shared_ptr<Node> node) const;

@@ -14,7 +14,7 @@ runs:
     steps:
       - name: Load cached dependencies
         id: cache
-        uses: herve-er/local-cache@v2
+        uses: herve-er/local-cache@v3
         with:
           path: build-macos/client/cache
           base: ${{ github.workspace }}/../local-cache
@@ -22,8 +22,7 @@ runs:
           clean-key: true
 
       - name: Clean the log directory
-        if  : contains(env.logdir_path, 'kDrive-logdir')
-        run : rm -rf ${{ env.logdir_path }}/* || true
+        run : rm -rf $HOME/Library/Logs/kDrive/*
         shell: bash
         continue-on-error: true
 
@@ -64,18 +63,13 @@ runs:
               ./infomaniak-build-tools/run-test.sh ./build-macos/client/bin/ ${{ inputs.test_name }}
         shell: bash
 
-      - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
-        if  : success() || failure()
-        shell: bash
-
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-logs-${{ inputs.test_name }}
-          path: ${{ env.logdir_path }}/*
+          path: ~/Library/Logs/kDrive/*
           retention-days: 1
-        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+        if: always()
 
       - name: Clean up
         run : rm -rf ${{ github.workspace }}/build-macos/client/bin/*

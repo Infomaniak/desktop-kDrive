@@ -24,6 +24,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/truststorehelper.h"
 #include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -33,15 +34,15 @@
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/AutoPtr.h>
 #include <Poco/SharedPtr.h>
-#include <Poco/InflatingStream.h>
 #include <Poco/Error.h>
 
-#include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <atomic>
 #include <functional>
 #include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
+#include "kDrive_API/upload/upload_session/uploadsessionchunkjob.h"
+#include "kDrive_API/upload/uploadjob.h"
 
 #define BUF_SIZE 1024
 
@@ -62,9 +63,19 @@ AbstractNetworkJob::AbstractNetworkJob() :
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
-                _context =
-                        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+                // VERIFY_STRICT enables peer certificate verification.
+                // loadDefaultCAs is false because the bundled OpenSSL build does not ship a CA
+                // bundle; instead we load the platform-native trust store below.
+                _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
+                                                  Poco::Net::Context::VERIFY_STRICT, 9, false);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+                // Load the platform-native trust store (macOS keychain / Windows cert store /
+                // Linux ca-certificates) into the underlying OpenSSL SSL_CTX.
+                if (TrustStoreHelper::loadSystemCAs(_context->sslContext())) {
+                    break;
+                }
+                LOG_ERROR(_logger, "Failed to load system CAs, peer verification may fail");
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
@@ -119,7 +130,7 @@ void AbstractNetworkJob::logRequestInfo(const Poco::Net::HTTPRequest &req) {
 
     for (const auto &[headerKey, headerValue]: req) {
         if (headerKey == "Authorization") {
-            LOG_DEBUG(_logger, "Authorization: Bearer *****");
+            LOG_DEBUG(_logger, "Authorization: Bearer ???");
             continue;
         }
         if (headerKey == "User-Agent") {
@@ -556,8 +567,10 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
 
             if (exitInfo.code() == ExitCode::Ok) return exitInfo;
 
-            if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
-                disableRetry();
+
+            if (bool shouldRetryOnError500 = false;
+                exitInfo.cause() == ExitCause::Unknown && isError500(httpResponse().getStatus(), shouldRetryOnError500)) {
+                if (!shouldRetryOnError500) disableRetry();
                 exitInfo.setCause(ExitCause::Http5xx);
             } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
@@ -568,6 +581,31 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     }
 
     return ExitCode::Ok;
+}
+
+bool AbstractNetworkJob::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode, bool &shouldRetry) {
+    shouldRetry = false;
+    switch (httpErrorCode) {
+        case Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY:
+            // Retry only if the job is an uploadSessionChunckJob, as 502 error can be due to a GATEWAY error which can be caused
+            // by poor network connexion dropping during the upload of a big file. In this case, retrying can help to complete the
+            // upload.
+            shouldRetry = dynamic_cast<UploadSessionChunkJob *>(this) != nullptr;
+            return true;
+        case Poco::Net::HTTPResponse::HTTP_GATEWAY_TIMEOUT:
+        case Poco::Net::HTTPResponse::HTTP_INSUFFICIENT_STORAGE:
+        case Poco::Net::HTTPResponse::HTTP_LOOP_DETECTED:
+        case Poco::Net::HTTPResponse::HTTP_NOT_EXTENDED:
+        case Poco::Net::HTTPResponse::HTTP_VARIANT_ALSO_NEGOTIATES:
+        case Poco::Net::HTTPResponse::HTTP_NOT_IMPLEMENTED:
+        case Poco::Net::HTTPResponse::HTTP_SERVICE_UNAVAILABLE:
+        case Poco::Net::HTTPResponse::HTTP_VERSION_NOT_SUPPORTED:
+        case Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR:
+        case Poco::Net::HTTPResponse::HTTP_NETWORK_AUTHENTICATION_REQUIRED:
+            return true;
+        default:
+            return false;
+    }
 }
 
 ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::URI &uri) {

@@ -6,7 +6,7 @@ endif()
 
 find_package(Qt6 REQUIRED Core)
 find_package(SQLite3 3.53.0 REQUIRED)
-find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
+find_package(Poco 1.13.3 REQUIRED Foundation Net Crypto JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(xxHash 0.8.2 REQUIRED)
 
@@ -24,6 +24,8 @@ add_definitions(-D_UNICODE)
 set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
+    utility/selfsignedcert.h utility/selfsignedcert.cpp
+    utility/truststorehelper.h
     utility/stateholder.h
     utility/jsonparserutility.h
     # Db
@@ -41,13 +43,13 @@ set(libcommonserver_SRCS
     # Io
     io/filestat.h
     io/iohelper.h io/iohelper.cpp
-    io/permissionsgiver.h io/permissionsgiver.cpp
     io/cachedirectory.h io/cachedirectory.cpp
     # Log
     log/log.h log/log.cpp
     log/customrollingfileappender.h log/customrollingfileappender.cpp
     # Keychain manager
     keychainmanager/apitoken.h keychainmanager/apitoken.cpp
+    keychainmanager/keychainstorage.h keychainmanager/keychainstorage.cpp
     keychainmanager/keychainmanager.h keychainmanager/keychainmanager.cpp
 )
 
@@ -57,11 +59,15 @@ if(APPLE)
 
     list(APPEND libcommonserver_SRCS utility/utility_mac.cpp utility/utility_mac.mm)
     set_property(SOURCE utility/utility_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_mac.mm)
+    set_property(SOURCE utility/truststorehelper_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
 elseif(WIN32)
     list(APPEND libcommonserver_SRCS io/iohelper_win.h io/iohelper_win.cpp utility/utility_win.cpp)
     list(APPEND libcommonserver_SRCS utility/digitalsignaturechecker_win.h utility/digitalsignaturechecker_win.cpp)
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_win.cpp)
 else()
     list(APPEND libcommonserver_SRCS io/iohelper_linux.cpp utility/utility_linux.cpp)
+    list(APPEND libcommonserver_SRCS utility/truststorehelper_linux.cpp)
 endif()
 
 # Target
@@ -134,21 +140,25 @@ endif()
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
     SQLite::SQLite3
-    Poco::Foundation Poco::Net Poco::JSON Poco::Util
+    Poco::Foundation Poco::Net Poco::Crypto Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
     xxHash::xxhash)
 
 if(WIN32)
     target_link_libraries(${libcommonserver_NAME}
-        Secur32)
+        Secur32
+        Wintrust
+        Crypt32)
 elseif(APPLE)
     # utility_mac.mm
     find_library(FOUNDATION_LIBRARY NAMES Foundation)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(APPKIT_LIBRARY NAMES AppKit)
+    find_library(SECURITY_LIBRARY NAMES Security)
 
     target_link_libraries(${libcommonserver_NAME}
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
-        ${APPKIT_LIBRARY})
+        ${APPKIT_LIBRARY}
+        ${SECURITY_LIBRARY})
 endif()

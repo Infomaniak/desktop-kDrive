@@ -30,6 +30,17 @@ class DrivesListView: NSView {
         return stackView
     }()
 
+    private lazy var scrollView: NSScrollView = {
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
+        scrollView.borderType = .noBorder
+        scrollView.drawsBackground = false
+        return scrollView
+    }()
+
     private(set) var cells = [Int: DriveCellView]()
 
     var selectedDrives = Set<UIAvailableDrive>() {
@@ -62,18 +73,29 @@ class DrivesListView: NSView {
         titleLabel.font = NSFont.Tokens.subheadline
         titleLabel.textColor = ColorToken.Text.tertiary.asNSColor
 
-        let stackView = NSStackView(views: [titleLabel, drivesStackView])
+        scrollView.documentView = drivesStackView
+
+        let stackView = NSStackView(views: [titleLabel, scrollView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.orientation = .vertical
         stackView.alignment = .leading
         stackView.spacing = AppPadding.padding12
         addSubview(stackView)
 
+        let preferredScrollViewHeight: CGFloat = 120
+
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
             stackView.topAnchor.constraint(equalTo: topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            stackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            scrollView.heightAnchor.constraint(equalToConstant: preferredScrollViewHeight),
+
+            drivesStackView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            drivesStackView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor),
+            drivesStackView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor),
+            drivesStackView.widthAnchor.constraint(equalTo: scrollView.contentView.widthAnchor)
         ])
     }
 
@@ -96,6 +118,23 @@ class DrivesListView: NSView {
                 cell.state = .off
             }
         }
+
+        scrollToTop()
+    }
+
+    private func scrollToTop() {
+        guard let documentView = scrollView.documentView else { return }
+
+        layoutSubtreeIfNeeded()
+        documentView.layoutSubtreeIfNeeded()
+
+        let yPosition = documentView.isFlipped
+            ? 0
+            : max(0, documentView.bounds.height - scrollView.contentView.bounds.height)
+
+        let topPoint = NSPoint(x: 0, y: yPosition)
+        scrollView.contentView.scroll(to: topPoint)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
     }
 
     private func updateSelectedCells(newValue: Set<UIAvailableDrive>, oldValue: Set<UIAvailableDrive>) {

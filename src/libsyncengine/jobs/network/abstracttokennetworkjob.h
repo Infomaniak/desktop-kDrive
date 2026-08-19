@@ -22,8 +22,8 @@
 #include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
-#include "libparms/db/account.h"
-#include "libparms/db/drive.h"
+#include "libcommon/data/account.h"
+#include "libcommon/data/drive.h"
 
 #include <unordered_map>
 
@@ -49,7 +49,6 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         /// @throw std::runtime_error
         /// @throw DbError
         /// @throw DataError
-        /// @throw TokenError
         /// @throw InvalidArgumentError
         AbstractTokenNetworkJob(ApiType apiType, UserDbId userDbId, UserId userId, DriveDbId driveDbId, DriveId driveId,
                                 bool returnJson = true);
@@ -61,6 +60,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         static void updateLoginByUserDbId(const Login &login, UserDbId userDbId);
 
+        static void clearCacheForUserDbId(UserDbId userDbId);
         static void clearCache();
 
         ExitInfo refreshToken();
@@ -110,6 +110,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
+        ExitInfo handleDriveUnauthorizedResponse();
         ExitInfo handleUserUnauthorizedResponse();
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 

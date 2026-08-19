@@ -19,7 +19,7 @@
 #pragma once
 
 #include "gui/userselectionwidget.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 
 #include <QListWidget>
 #include <QIcon>
@@ -44,7 +44,7 @@ class AddDriveListWidget : public QWidget {
         void setDrivesData();
         void setUsersData();
         inline void setUserDbId(const UserDbId userDbId) { _userDbId = userDbId; }
-        inline DriveAvailableInfo driveInfo() { return _driveInfo; }
+        inline DriveAvailable driveInfo() { return _driveInfo; }
         inline bool isAddUserClicked() const { return _addUserClicked; }
         inline void setAddUserClicked(bool addUserClicked) { _addUserClicked = addUserClicked; }
     signals:
@@ -56,7 +56,7 @@ class AddDriveListWidget : public QWidget {
         std::shared_ptr<ClientGui> _gui;
         UserDbId _userDbId{0};
         bool _withoutDrives;
-        DriveAvailableInfo _driveInfo;
+        DriveAvailable _driveInfo;
         bool _addUserClicked;
 
         QLabel *_logoTextIconLabel;

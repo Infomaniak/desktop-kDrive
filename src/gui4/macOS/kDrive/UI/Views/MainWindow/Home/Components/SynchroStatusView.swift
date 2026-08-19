@@ -26,11 +26,11 @@ import SwiftUI
 extension HomeState {
     var animation: ThemedAnimation {
         switch self {
-        case .loading, .synchroIsUpToDate:
+        case .synchroIsUpToDate:
             return .kDriveCheckmark
         case .synchroIsPaused:
             return .cloudPause
-        case .synchroIsRunning:
+        case .synchroIsRunning, .loading:
             return .cloudSync
         case .offline:
             return .offline
@@ -85,13 +85,26 @@ extension HomeState {
 }
 
 struct SynchroStatusView: View {
+    @State private var isConvertingSynchro = false
+    @State private var isShowingGenericError = false
+
     let state: HomeState
     let synchroDbId: UISynchro.ID?
+
+    private var buttonIsEnabled: Bool {
+        switch state {
+        case .synchroIsPaused:
+            return !isConvertingSynchro
+        default:
+            return true
+        }
+    }
 
     var body: some View {
         VStack(spacing: AppPadding.padding32) {
             ThemedLottieView(animation: state.animation, loopMode: state.animationLoopMode)
                 .opacity(state.isRedacted ? 0 : 1)
+                .accessibilityHidden(state.isRedacted)
                 .overlay {
                     if state.isRedacted {
                         redactedAnimation
@@ -105,19 +118,22 @@ struct SynchroStatusView: View {
                 Text(state.description)
                     .font(.Tokens.body)
 
-                if let buttonTitle = state.buttonTitle {
-                    Button(buttonTitle) {
-                        didTapStateButton(for: state)
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(.tint)
+                Button(state.buttonTitle ?? "") {
+                    didTapStateButton(for: state)
                 }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.tint)
+                .opacity(state.buttonTitle == nil ? 0 : 1)
+                .accessibilityHidden(state.buttonTitle == nil)
+                .allowsHitTesting(state.buttonTitle != nil)
+                .disabled(!buttonIsEnabled)
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
             .frame(maxWidth: 300)
         }
         .redacted(reason: state.isRedacted ? .placeholder : [])
+        .id(state)
         .padding(AppPadding.padding16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
@@ -134,12 +150,15 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
+        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     /// We use a random image to serve as a redacted view
     private var redactedAnimation: some View {
         KDriveResources.checkmark.swiftUIImage
             .resizable()
+            .redacted(reason: .placeholder)
     }
 
     private func didTapStateButton(for state: HomeState) {
@@ -162,6 +181,7 @@ struct SynchroStatusView: View {
                 try await SyncJobs().startSync(syncDbId: Int32(synchroDbId))
             } catch {
                 IKLogger.general.error("Failed to resume synchro: \(error)")
+                isShowingGenericError = true
             }
         }
     }

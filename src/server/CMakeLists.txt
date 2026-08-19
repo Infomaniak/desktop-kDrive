@@ -5,7 +5,7 @@ else()
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.13.3 REQUIRED XML)
+find_package(Poco 1.13.3 REQUIRED XML Net NetSSL Crypto)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -77,6 +77,7 @@ set(server_SRCS
     comm/guijobs/syncgetprivatelinkurljob.h comm/guijobs/syncgetprivatelinkurljob.cpp
     comm/guijobs/synctriggerprogressupdatejob.h comm/guijobs/synctriggerprogressupdatejob.cpp
     comm/guijobs/syncsetsupportsvirtualfilesjob.h comm/guijobs/syncsetsupportsvirtualfilesjob.cpp
+    comm/guijobs/syncacknowledgemanydeletesjob.h comm/guijobs/syncacknowledgemanydeletesjob.cpp
 
     comm/guijobs/blacklistednodelistjob.h comm/guijobs/blacklistednodelistjob.cpp
     comm/guijobs/blacklistednodesetlistjob.h comm/guijobs/blacklistednodesetlistjob.cpp
@@ -87,7 +88,7 @@ set(server_SRCS
     comm/guijobs/nodecreatemissingfoldersjob.h comm/guijobs/nodecreatemissingfoldersjob.cpp
     comm/guijobs/nodeconflictinfojob.h comm/guijobs/nodeconflictinfojob.cpp
 
-    comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+        comm/guijobs/errorlistjob.h comm/guijobs/errorlistjob.cpp
     comm/guijobs/errordeletejob.h comm/guijobs/errordeletejob.cpp
     comm/guijobs/errorsyncrefreshjob.h comm/guijobs/errorsyncrefreshjob.cpp
     comm/guijobs/abstracterrorresolveconflictsjob.h comm/guijobs/abstracterrorresolveconflictsjob.cpp
@@ -133,6 +134,7 @@ set(server_SRCS
     comm/guijobs/signalsyncprogressinfojob.h comm/guijobs/signalsyncprogressinfojob.cpp
     comm/guijobs/signalsynccompleteditemjob.h comm/guijobs/signalsynccompleteditemjob.cpp
     comm/guijobs/signalsyncupdatedjob.h comm/guijobs/signalsyncupdatedjob.cpp
+    comm/guijobs/signalsyncnotifymanydeletesjob.h comm/guijobs/signalsyncnotifymanydeletesjob.cpp
     comm/guijobs/signalerroraddedjob.h comm/guijobs/signalerroraddedjob.cpp
     comm/guijobs/signalerrorremovedjob.h comm/guijobs/signalerrorremovedjob.cpp
     comm/guijobs/signalupdatershowdialogjob.h comm/guijobs/signalupdatershowdialogjob.cpp
@@ -145,6 +147,7 @@ set(server_SRCS
 
     migration/migrationparams.h migration/migrationparams.cpp
     requests/serverrequests.h requests/serverrequests.cpp
+    requests/syncfolderallowedchecker.h requests/syncfolderallowedchecker.cpp
     requests/offlinefilessizeestimator.h requests/offlinefilessizeestimator.cpp
     app_resources.rc
 )
@@ -194,10 +197,13 @@ elseif(WIN32)
     list(APPEND server_SRCS navigationpanehelper.h navigationpanehelper.cpp)
     list(APPEND server_SRCS ../common/utility_win.cpp)
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/securecontextsingleton.h comm/securecontextsingleton.cpp)
     list(APPEND server_SRCS comm/pipecommserver.h comm/pipecommserver.cpp)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS comm/securecontextsingleton.h comm/securecontextsingleton.cpp)
+    list(APPEND server_SRCS runningprocessinfo_linux.h runningprocessinfo_linux.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
@@ -272,6 +278,10 @@ else()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
 
+if(WIN32 AND TARGET "${APPLICATION_EXECUTABLE}_vfs_win")
+    add_dependencies(${APPLICATION_EXECUTABLE} "${APPLICATION_EXECUTABLE}_vfs_win")
+endif()
+
 # Precompiled headers
 if(UNIX AND NOT APPLE)
     set(PC_HEADER_FILES
@@ -330,6 +340,9 @@ target_link_libraries(updater
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Svg
+    Poco::Net
+    Poco::NetSSL
+    Poco::Crypto
     sentry::sentry
     updater)
 

@@ -297,7 +297,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Ο πελάτης kDrive εκτελείται ήδη!</translation>
     </message>
     <message>
-        <location filename="../src/gui/appclient.cpp" line="713"/>
+        <location filename="../src/gui/appclient.cpp" line="724"/>
         <source>The user %1 is not connected. Please log in again.</source>
         <translation>Ο χρήστης %1 δεν είναι συνδεδεμένος. Παρακαλώ συνδεθείτε ξανά.</translation>
     </message>
@@ -305,12 +305,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1690"/>
+        <location filename="../src/server/appserver.cpp" line="1691"/>
         <source>Share link copied to clipboard</source>
         <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3835"/>
+        <location filename="../src/server/appserver.cpp" line="3848"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
@@ -318,13 +318,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3837"/>
+        <location filename="../src/server/appserver.cpp" line="3850"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3842"/>
+        <location filename="../src/server/appserver.cpp" line="3855"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
@@ -332,13 +332,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3844"/>
+        <location filename="../src/server/appserver.cpp" line="3857"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3849"/>
+        <location filename="../src/server/appserver.cpp" line="3862"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
@@ -346,13 +346,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3851"/>
+        <location filename="../src/server/appserver.cpp" line="3864"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3856"/>
+        <location filename="../src/server/appserver.cpp" line="3869"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
@@ -360,12 +360,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3859"/>
+        <location filename="../src/server/appserver.cpp" line="3872"/>
         <source>%1 has been moved to %2.</source>
         <translation>Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3867"/>
+        <location filename="../src/server/appserver.cpp" line="3880"/>
         <source>Sync Activity</source>
         <translation>Δραστηριότητα συγχρονισμού</translation>
     </message>
@@ -454,112 +454,127 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::ClientGui</name>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="116"/>
+        <location filename="../src/gui/clientgui.cpp" line="117"/>
         <source>Unable to initialize kDrive client</source>
         <translation>Δεν είναι δυνατή η αρχικοποίηση του πελάτη kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="189"/>
+        <location filename="../src/gui/clientgui.cpp" line="190"/>
         <source>Failed to fix conflict(s) on %1 item(s) in sync folder: %2</source>
         <translation>Αποτυχία επίλυσης %1 σύγκρουση(ων) σε φάκελο συγχρονισμού: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="242"/>
+        <location filename="../src/gui/clientgui.cpp" line="243"/>
         <source>Please sign in</source>
         <translation>Παρακαλώ συνδεθείτε</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="255"/>
+        <location filename="../src/gui/clientgui.cpp" line="256"/>
         <source>Synchronization is paused</source>
         <translation>Ο συγχρονισμός έχει τεθεί σε παύση</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="292"/>
+        <location filename="../src/gui/clientgui.cpp" line="293"/>
         <source>Folder %1: %2</source>
         <translation>Φάκελος %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="298"/>
+        <location filename="../src/gui/clientgui.cpp" line="299"/>
         <source>There are no sync folders configured.</source>
         <translation>Δεν έχουν διαμορφωθεί φάκελοι συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="673"/>
+        <location filename="../src/gui/clientgui.cpp" line="674"/>
         <source>Undefined State.</source>
         <translation>Απροσδιόριστη κατάσταση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="676"/>
+        <location filename="../src/gui/clientgui.cpp" line="677"/>
         <source>Waiting to start syncing.</source>
         <translation>Αναμονή έναρξης συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="679"/>
+        <location filename="../src/gui/clientgui.cpp" line="680"/>
         <source>Sync is running.</source>
         <translation>Ο συγχρονισμός εκτελείται.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="683"/>
+        <location filename="../src/gui/clientgui.cpp" line="684"/>
         <source>Sync was successful, unresolved conflicts.</source>
         <translation>Ο συγχρονισμός ήταν επιτυχής, με μη επιλυμένες συγκρούσεις.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="685"/>
+        <location filename="../src/gui/clientgui.cpp" line="686"/>
         <source>Last Sync was successful.</source>
         <translation>Ο τελευταίος συγχρονισμός ήταν επιτυχής.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="692"/>
+        <location filename="../src/gui/clientgui.cpp" line="693"/>
         <source>User Abort.</source>
         <translation>Ακύρωση από τον χρήστη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="696"/>
+        <location filename="../src/gui/clientgui.cpp" line="697"/>
         <source>Sync is paused.</source>
         <translation>Ο συγχρονισμός είναι σε παύση.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="705"/>
+        <location filename="../src/gui/clientgui.cpp" line="706"/>
         <source>%1 (Sync is paused)</source>
         <translation>%1 (Ο συγχρονισμός είναι σε παύση)</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="849"/>
+        <location filename="../src/gui/clientgui.cpp" line="850"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1257"/>
+        <location filename="../src/gui/clientgui.cpp" line="1250"/>
         <source>Do you really want to remove the synchronizations of the account &lt;i&gt;%1&lt;/i&gt; ?&lt;br&gt;&lt;b&gt;Note:&lt;/b&gt; This will &lt;b&gt;not&lt;/b&gt; delete any files.</source>
         <translation>Θέλετε πραγματικά να καταργήσετε τους συγχρονισμούς του λογαριασμού &lt;i&gt;%1&lt;/i&gt;;&lt;br&gt;&lt;b&gt;Σημείωση:&lt;/b&gt; Αυτό &lt;b&gt;δεν&lt;/b&gt; θα διαγράψει κανένα αρχείο.</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1261"/>
+        <location filename="../src/gui/clientgui.cpp" line="1254"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
         <translation>ΚΑΤΑΡΓΗΣΗ ΟΛΩΝ ΤΩΝ ΣΥΓΧΡΟΝΙΣΜΩΝ</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1262"/>
+        <location filename="../src/gui/clientgui.cpp" line="1255"/>
         <source>CANCEL</source>
         <translation>ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1422"/>
+        <location filename="../src/gui/clientgui.cpp" line="1382"/>
+        <source>%1 items have been deleted from your from your local sync folder &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. To avoid unintended deletions the synchronization have been paused.&lt;br&gt;Do you want to propagate those deletion to your kDrive?</source>
+        <translation>%1 στοιχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%2&quot; href=&quot;file:///%3&quot;&gt;%3&lt;/a&gt;. Για να αποφευχθούν ακούσιες διαγραφές, ο συγχρονισμός έχει τεθεί σε παύση.&lt;br&gt;Θέλετε να μεταφέρετε αυτές τις διαγραφές στο kDrive σας;</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1420"/>
+        <source>Several files have been deleted from your local sync folder &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Deleted files can be found in kDrive&apos;s &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;trash&lt;/a&gt;.</source>
+        <translation>Αρκετά αρχεία διαγράφηκαν από τον τοπικό φάκελο συγχρονισμού σας &lt;a style=&quot;%1&quot; href=&quot;file:///%2&quot;&gt;%2&lt;/a&gt;. Τα διαγραμμένα αρχεία βρίσκονται στον &lt;a style=&quot;%1&quot; href=&quot;%3&quot;&gt;κάδο ανακύκλωσης&lt;/a&gt; του kDrive.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1426"/>
+        <source>Don&apos;t show again</source>
+        <translation>Να μην εμφανίζεται ξανά</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/clientgui.cpp" line="1508"/>
         <source>Synthesis</source>
         <translation>Σύνοψη</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1423"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Preferences</source>
         <translation>Προτιμήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1424"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Quit</source>
         <translation>Έξοδος</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1590"/>
+        <location filename="../src/gui/clientgui.cpp" line="1676"/>
         <source>Failed to start synchronizations!</source>
         <translation>Αποτυχία εκκίνησης συγχρονισμών!</translation>
     </message>
@@ -696,22 +711,22 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::CustomMessageBox</name>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="100"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="105"/>
         <source>OK</source>
         <translation>ΟΚ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="110"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="115"/>
         <source>CANCEL</source>
         <translation>ΑΚΥΡΩΣΗ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="120"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="125"/>
         <source>YES</source>
         <translation>ΝΑΙ</translation>
     </message>
     <message>
-        <location filename="../src/gui/custommessagebox.cpp" line="130"/>
+        <location filename="../src/gui/custommessagebox.cpp" line="135"/>
         <source>NO</source>
         <translation>ΟΧΙ</translation>
     </message>
@@ -1899,7 +1914,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Synchronization error.</source>
         <translation>Σφάλμα συγχρονισμού.</translation>
     </message>
@@ -1915,38 +1930,43 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Δεν είναι δυνατή η δημιουργία του αρχείου «%1», καθώς δεν υποστηρίζεται από το σύστημα αρχείων σας.&lt;br&gt;Έχει εξαιρεθεί από τον συγχρονισμό.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
         <source>System error.</source>
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="828"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="843"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε τεχνικό σφάλμα.&lt;br&gt;Εκκαθαρίστε το ιστορικό και αν το σφάλμα επιμείνει, επικοινωνήστε με την υποστήριξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1085"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1099"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Μεταφορά ολοκληρώθηκε!&lt;br&gt;Χρησιμοποιήστε τον αναγνωριστικό &lt;b&gt;%1&lt;/b&gt; σε αναφορές σφαλμάτων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1100"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Αποτυχία μεταφοράς!
 Χρησιμοποιήστε τον ακόλουθο σύνδεσμο για να στείλετε τα αρχεία καταγραφής: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1121"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
@@ -2813,47 +2833,47 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="490"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="524"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2109"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2120"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2144"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2125"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2149"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2130"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2154"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2160"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2184"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2168"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2192"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2176"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2200"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
@@ -2861,7 +2881,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="133"/>
+        <location filename="../src/server/appserver.cpp" line="134"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>Η εφαρμογή kDrive θα κλείσει λόγω κρίσιμου σφάλματος.</translation>
     </message>

@@ -206,6 +206,7 @@ function move_dependencies() {
 
   # Move sync exclude to right location
   cp /src/sync-exclude-linux.lst ./usr/bin/sync-exclude.lst
+  cp /src/sync-folder-rules-linux.csv ./usr/bin/sync-folder-rules.csv
   rm -rf ./etc
 
   cp ./usr/share/icons/hicolor/512x512/apps/kdrive-win.png . # Workaround for linuxeployqt bug, FIXME

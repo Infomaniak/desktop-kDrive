@@ -26,6 +26,7 @@
 #include "jobs/local/localcopyjob.h"
 #include "keychainmanager/apitoken.h"
 #include "keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
@@ -68,7 +69,7 @@ void KDC::TestLocalJobs::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
@@ -185,16 +186,17 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath.filename() / testDirName / "tmp_picture.jpg"));
     CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath.filename() / testDirName / "dehydrated_placeholder.jpg"));
 #else
-    if (testhelpers::hasTrashInfo()) {
-        if (!testhelpers::isInTrash(copyDirPath)) {
-            std::cout << "\n The item " << copyDirPath << " was not found in trash." << std::endl;
-            testhelpers::showTrashInfo();
-        }
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
 
-        CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath));
-        CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath / testDirName / "tmp_picture.jpg"));
-        CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath / testDirName / "dehydrated_placeholder.jpg"));
+    if (!testhelpers::isInTrash(copyDirPath)) {
+        std::cout << "\n The item " << copyDirPath << " was not found in trash." << std::endl;
+        testhelpers::showTrashInfo();
     }
+
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath));
+    CPPUNIT_ASSERT(testhelpers::isInTrash(copyDirPath / testDirName / "tmp_picture.jpg"));
+    CPPUNIT_ASSERT(!testhelpers::isInTrash(copyDirPath / testDirName / "dehydrated_placeholder.jpg"));
+
 #endif
 #if defined(KD_MACOS) || defined(KD_LINUX)
     testhelpers::eraseFromTrash(copyDirPath.filename());

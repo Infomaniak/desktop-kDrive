@@ -135,15 +135,18 @@ bool Node::hasInvalidEvents() const {
     return res;
 }
 
-std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nodeId /*= ""*/) {
+std::shared_ptr<Node> Node::findChild(const SyncName &name, const NodeId &nodeId /*= ""*/) {
+    // First we search by id if it is not empty
     if (!nodeId.empty()) {
-        auto res = findChildrenById(nodeId);
-        if (res) {
+        if (auto res = findChildById(nodeId); res) {
             return res;
         }
     }
 
+    // If this search does not succeed then we search by name
     for (auto &node: _childrenById) {
+        // We want to find a tmp node since the search by id gave nothing
+        if (!nodeId.empty() && !node.second->isTmp()) continue;
         if (node.second->name() == name) {
             return node.second;
         }
@@ -152,7 +155,7 @@ std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nod
     return nullptr;
 }
 
-std::shared_ptr<Node> Node::findChildrenById(const NodeId &nodeId) {
+std::shared_ptr<Node> Node::findChildById(const NodeId &nodeId) {
     auto it = _childrenById.find(nodeId);
     if (it != _childrenById.end()) {
         return it->second;
@@ -160,7 +163,7 @@ std::shared_ptr<Node> Node::findChildrenById(const NodeId &nodeId) {
     return nullptr;
 }
 
-bool Node::insertChildren(std::shared_ptr<Node> child) {
+bool Node::insertChild(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return false;
     }
@@ -170,7 +173,7 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
         while (tmpNode->parentNode() != nullptr) {
             if (child == tmpNode) {
                 assert(false);
-                sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChildren", "Child is an ancestor");
+                sentry::Handler::captureMessage(sentry::Level::Warning, "Node::insertChild", "Child is an ancestor");
                 return false;
             }
 
@@ -193,14 +196,14 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
     return true;
 }
 
-size_t Node::deleteChildren(std::shared_ptr<Node> child) {
+size_t Node::deleteChild(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return 0;
     }
-    return deleteChildren(*child->id());
+    return deleteChild(*child->id());
 }
 
-size_t Node::deleteChildren(const NodeId &childId) {
+size_t Node::deleteChild(const NodeId &childId) {
     return _childrenById.erase(childId);
 }
 

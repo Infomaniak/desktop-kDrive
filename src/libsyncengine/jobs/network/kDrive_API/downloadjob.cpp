@@ -21,7 +21,6 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/io/permissionsgiver.h"
 
 #include "libcommon/utility/utility.h"
 
@@ -44,6 +43,10 @@ namespace KDC {
 #define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
 #define READ_RETRIES_NETWORK_LOST 100
+
+std::function<int64_t(const SyncPath &)> DownloadJob::_getFreeDiskSpaceFn = [](const SyncPath &path) {
+    return Utility::getFreeDiskSpace(path);
+};
 
 DownloadJob::DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
                          const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy) :
@@ -280,8 +283,8 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
             } else if (_isHydrated) {
                 // Replace file by tmp one
-                if (!moveTmpFile()) {
-                    LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatSyncPath(_tmpPath));
+                if (const auto exitInfo = moveTmpFile(); !exitInfo) {
+                    LOGW_WARN(_logger, L"Failed to replace file by tmp one: " << Utility::formatExitInfo(_tmpPath, exitInfo));
                     writeError = true;
                 }
 
@@ -398,32 +401,28 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else if (ioError == IoError::InvalidArgument) {
+                LOGW_WARN(_logger, L"Invalid target for symlink: " << Utility::formatSyncPath(_fileDownloadInfo.localpath)
+                                                                   << L" -> " << Utility::formatSyncPath(targetPath));
+                return {ExitCode::SystemError, ExitCause::OperationCanceled};
             } else {
-                return ExitCode::SystemError;
+                return {ExitCode::SystemError, ExitCause::OperationCanceled};
             }
         }
     } else if (mimeType == mimeTypeHardlink) {
-        // Unreachable code
-        const auto targetPath = Str2Path(data);
-        if (targetPath == _fileDownloadInfo.localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {};
-        }
-
-        LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                        << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-
-        std::error_code ec;
-        std::filesystem::create_hard_link(targetPath, _fileDownloadInfo.localpath, ec);
-        if (ec) {
-            LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath) << L", "
-                                                                     << Utility::formatSyncPath(_fileDownloadInfo.localpath)
-                                                                     << L", " << Utility::formatStdError(ec));
-            return {};
-        }
+        // For safety, cannot happen (Mime Type forbidden on the drive)
+        LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+
+        if (!CommonUtility::isNTFS(_fileDownloadInfo.localpath)) {
+            // Junctions are supported only on NTFS systems
+            LOGW_WARN(_logger, L"Filesystem is not NTFS, junctions are not supported: "
+                                       << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+            return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
+        }
 
         IoError ioError = IoError::Success;
         if (!IoHelper::createJunction(data, _fileDownloadInfo.localpath, ioError)) {
@@ -435,7 +434,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             } else {
-                return ExitCode::SystemError;
+                return {ExitCode::SystemError, ExitCause::OperationCanceled};
             }
         }
 #endif
@@ -471,7 +470,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                                       L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                             return {ExitCode::SystemError, ExitCause::FileAccessError};
                         } else {
-                            return ExitCode::SystemError;
+                            return {ExitCode::SystemError, ExitCause::OperationCanceled};
                         }
                     }
 
@@ -487,7 +486,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                                       L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
                             return {ExitCode::SystemError, ExitCause::FileAccessError};
                         } else {
-                            return ExitCode::SystemError;
+                            return {ExitCode::SystemError, ExitCause::OperationCanceled};
                         }
                     }
 
@@ -510,12 +509,12 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             }
 
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
-        return {};
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     }
 
     return ExitCode::Ok;
@@ -531,9 +530,42 @@ bool DownloadJob::removeTmpFile() {
     return true;
 }
 
+#if defined(KD_WINDOWS)
+namespace {
+class HiddenStatusHolder {
+    public:
+        HiddenStatusHolder(const HiddenStatusHolder &) = delete;
+        explicit HiddenStatusHolder(const SyncPath &path) :
+            _path(path) {
+            bool isHidden = false;
+            if (auto ioError = IoError::Unknown;
+                !IoHelper::checkIfIsHiddenFile(_path, false, isHidden, ioError) || ioError != IoError::Success) {
+                return; // This is best effort
+            }
+            if (isHidden) {
+                IoHelper::setFileHidden(_path, false);
+                _isActive = true;
+            }
+        }
+        ~HiddenStatusHolder() {
+            if (_isActive) {
+                IoHelper::setFileHidden(_path, true);
+            }
+        }
+
+        HiddenStatusHolder &operator=(const HiddenStatusHolder &other) = delete;
+
+    private:
+        SyncPath _path;
+        bool _isActive{false};
+};
+} // namespace
+#endif
+
 ExitInfo DownloadJob::moveTmpFile() {
     // Move downloaded file from tmp directory to sync directory
 #if defined(KD_WINDOWS)
+    HiddenStatusHolder hiddenStatusHolder(_fileDownloadInfo.localpath);
     bool retry = true;
     int counter = 50;
     while (retry) {
@@ -543,14 +575,8 @@ ExitInfo DownloadJob::moveTmpFile() {
         bool error = false;
         bool accessDeniedError = false;
         bool crossDeviceLinkError = false;
-#if defined(KD_WINDOWS)
-        bool sharingViolationError = false;
-#endif
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
-            // Make sure we are allowed to propagate the change
-            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
-
             // Move file
             IoError ioError = IoError::Success;
             (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
@@ -561,32 +587,25 @@ ExitInfo DownloadJob::moveTmpFile() {
                                                                       << L", err='" << Utility::formatIoError(ioError) << L"'");
                 error = true;
                 accessDeniedError = ioError == IoError::AccessDenied;
-                // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated as IoError::AccessDenied
             }
         }
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
-            // Make sure we are allowed to propagate the change
-            PermissionsGiver _(_fileDownloadInfo.localpath.parent_path(), _logger);
-
             // Copy file content (i.e. when the target exists, do not change its node id).
-            std::error_code ec;
-            std::filesystem::copy(_tmpPath, _fileDownloadInfo.localpath, std::filesystem::copy_options::overwrite_existing, ec);
-            if (ec) {
-                LOGW_WARN(_logger, L"Failed to copy downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
-                                                                      << Utility::formatSyncPath(_fileDownloadInfo.localpath)
-                                                                      << L", err='" << Utility::formatStdError(ec) << L"'");
+            IoError ioError = IoError::Success;
+            if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localpath, ioError)) {
+                LOGW_WARN(_logger, L"Failed to copy downloaded file " << Path2WStr(_tmpPath) << L" to "
+                                                                      << Path2WStr(_fileDownloadInfo.localpath) << L", error="
+                                                                      << Utility::formatIoError(ioError));
                 error = true;
-                accessDeniedError = IoHelper::stdError2ioError(ec.value()) == IoError::AccessDenied;
-#if defined(KD_WINDOWS)
-                sharingViolationError = ec.value() == ERROR_SHARING_VIOLATION; // In this case, we will try again
-#endif
+                accessDeniedError = ioError == IoError::AccessDenied;
             }
         }
 
         if (error) {
+            if (accessDeniedError) {
 #if defined(KD_WINDOWS)
-            if (sharingViolationError) {
+                // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated into IoError::AccessDenied
                 if (counter) {
                     // Retry
                     retry = true;
@@ -598,11 +617,9 @@ ExitInfo DownloadJob::moveTmpFile() {
                 } else {
                     return {};
                 }
-            }
-#endif
-
-            if (accessDeniedError) {
+#else
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
+#endif
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
@@ -637,8 +654,8 @@ ExitInfo DownloadJob::moveTmpFile() {
 
 bool DownloadJob::hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                  log4cplus::Logger logger) {
-    auto tmpDirSize = Utility::getFreeDiskSpace(tmpDirPath);
-    auto destDirSize = Utility::getFreeDiskSpace(destDirPath);
+    auto tmpDirSize = _getFreeDiskSpaceFn(tmpDirPath);
+    auto destDirSize = _getFreeDiskSpaceFn(destDirPath);
 
     if (const auto &freeBytes = std::min(tmpDirSize, destDirSize); freeBytes >= 0) {
         const auto totalNeededSpace = neededPlace + Utility::freeDiskSpaceLimit();

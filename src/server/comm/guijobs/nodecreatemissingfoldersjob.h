@@ -19,7 +19,6 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/driveinfo.h"
 
 namespace KDC {
 

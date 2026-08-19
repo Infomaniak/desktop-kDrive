@@ -18,7 +18,7 @@
 
 import Foundation
 
-public struct SynchroError: Error, Identifiable, Sendable {
+public struct SynchroError: Error, Identifiable, Sendable, Equatable {
     public var id: Int {
         return metadata.dbId
     }
@@ -29,6 +29,10 @@ public struct SynchroError: Error, Identifiable, Sendable {
     public init(kind: SynchroErrorKind, metadata: SynchroErrorMetadata) {
         self.kind = kind
         self.metadata = metadata
+    }
+
+    public static func == (lhs: SynchroError, rhs: SynchroError) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 

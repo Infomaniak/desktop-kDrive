@@ -16,15 +16,30 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import SwiftUI
 
 struct BlockingErrorView: View {
+    @State private var isConvertingSynchro = false
+    @State private var isShowingGenericError = false
+
     let blockingError: UIBlockingError
 
-    init(blockingError: UIBlockingError) {
-        self.blockingError = blockingError
+    private var buttonIsEnabled: Bool {
+        switch blockingError.error {
+        case .notRenew:
+            if !blockingError.drive.isAdmin {
+                return !isConvertingSynchro
+            } else {
+                return true
+            }
+        case .wakingUp, .maintenance, .accessDenied:
+            return !isConvertingSynchro
+        default:
+            return true
+        }
     }
 
     var body: some View {
@@ -58,43 +73,54 @@ struct BlockingErrorView: View {
             if let actionTitle = blockingError.actionTitle {
                 Button(actionTitle, action: handleAction)
                     .buttonStyle(.borderedProminent)
+                    .disabled(!buttonIsEnabled)
             }
         }
         .padding(AppPadding.padding32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ColorToken.Surface.primary.asColor,
-                    in: .rect(cornerRadius: AppRadius.radius16))
+        .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
+        .observingSynchroConversion(synchroDbId: blockingError.synchro.dbId, isConverting: $isConvertingSynchro)
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func handleAction() {
-        /* TODO: Implement action handling
-         switch blockingError.error {
-         case .asleep:
+        switch blockingError.error {
+        case .asleep:
+            NSWorkspace.shared.open(URLConstants.kDrive(for: blockingError.drive.driveId))
+        case .notRenew:
+            if blockingError.drive.isAdmin {
+                @InjectService var nodeURLGenerator: NodeURLGenerator
+                let shopURL = nodeURLGenerator.shopURL(forDriveId: Int(blockingError.drive.driveId))
+                NSWorkspace.shared.open(shopURL)
+            } else {
+                restartSynchro()
+            }
+        case .wakingUp, .maintenance, .accessDenied:
+            restartSynchro()
+        case .loggingError:
+            @InjectService var router: MainWindowRouter
+            router.navigate(to: .onboarding(nil, nil, .login))
+        }
+    }
 
-         case .wakingUp:
-
-         case .notRenew:
-
-         case .maintenance:
-
-         case .accessDenied:
-
-         case .loggingError:
-
-         }
-          */
+    private func restartSynchro() {
+        Task {
+            do {
+                try await SyncJobs().startSync(syncDbId: Int32(blockingError.synchro.dbId))
+            } catch {
+                isShowingGenericError = true
+            }
+        }
     }
 }
 
 #Preview {
     VStack {
         ForEach(BlockingSynchroError.allCases, id: \.self) { error in
-            BlockingErrorView(
-                blockingError: PreviewHelper.blockingErrorFor(syncError: error, isDriveAdmin: true)
-            )
-            .frame(minWidth: 512)
-            .fixedSize(horizontal: false, vertical: true)
+            BlockingErrorView(blockingError: PreviewHelper.blockingErrorFor(syncError: error))
+                .frame(minWidth: 512)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }

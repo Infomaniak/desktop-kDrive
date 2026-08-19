@@ -19,7 +19,7 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/driveavailableinfo.h"
+#include "libcommon/data/driveavailable.h"
 
 namespace KDC {
 
@@ -33,7 +33,7 @@ class UserAvailableDrivesJob : public AbstractGuiJob {
         int _userDbId;
 
         // Output parameters
-        std::vector<DriveAvailableInfo> _driveAvailableInfoList;
+        std::vector<DriveAvailable> _driveAvailableList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

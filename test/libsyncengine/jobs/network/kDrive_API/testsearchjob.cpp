@@ -18,6 +18,10 @@
 
 #include "testsearchjob.h"
 
+#include "test_utility/testhelpers.h"
+
+#include <fstream>
+
 #include "version.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/abstracttokennetworkjob.h"
@@ -25,6 +29,7 @@
 #include "libcommonserver/utility/utility.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "mocks/mockkeychainstorage.h"
 #include "keychainmanager/apitoken.h"
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -52,7 +57,7 @@ void TestSearchJob::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up TestSearchJob");
 
     // Init in-memory keychain (testing mode, no real OS keychain used)
-    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
 
     ApiToken apiToken;
     apiToken.setAccessToken("dummy_access_token");
@@ -69,8 +74,22 @@ void TestSearchJob::setUp() {
     Account account(1, 67890, user.dbId(), "test_account");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    Drive drive(static_cast<int>(_driveDbId), 99999, account.dbId(), "test_drive", 0, std::string());
+    Drive drive(_driveDbId, 99999, account.dbId(), "test_drive", 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
+
+    auto syncWithVfsOn = Sync(_syncWithVfsOnDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath{});
+    auto syncWithVfsOff = Sync(_syncWithVfsOffDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath{});
+#if defined(KD_MACOS)
+    syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Mac);
+#elif defined(KD_WINDOWS)
+    syncWithVfsOn.setVirtualFileMode(VirtualFileMode::Win);
+#endif
+    syncWithVfsOff.setVirtualFileMode(VirtualFileMode::Off);
+
+    syncWithVfsOn.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
+    syncWithVfsOff.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
+    (void) ParmsDb::instance()->insertSync(syncWithVfsOn);
+    (void) ParmsDb::instance()->insertSync(syncWithVfsOff);
 }
 
 void TestSearchJob::tearDown() {
@@ -148,7 +167,7 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
         const auto results = job.searchResults();
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-        CPPUNIT_ASSERT_EQUAL(true, results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(results.front().isAvailableLocally());
     }
 
     {
@@ -160,8 +179,61 @@ void TestSearchJob::testHandleResponseIsAvailableLocally() {
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
         const auto results = job.searchResults();
         CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-        CPPUNIT_ASSERT_EQUAL(false, results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+        CPPUNIT_ASSERT(!results.front().isHydrated());
     }
 }
 
+void TestSearchJob::testHandleResponseIsHydratedWithVfsOff() {
+    // Create an actual file.
+    // SearchInfo::isAvailableLocally() and SearchInfo::isHydrated() should be true for it.
+    const SyncPath hydratedFile = _localTempDir.path() / "hydrated_file.txt";
+    { std::ofstream ofs(hydratedFile); }
+    SearchJob job(_driveDbId, _syncWithVfsOffDbId, "doc");
+    const std::string json = makeSearchResponseJson("/Private/hydrated_file.txt");
+    std::istringstream is(json);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+    const auto results = job.searchResults();
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+    CPPUNIT_ASSERT(results.front().isAvailableLocally());
+    CPPUNIT_ASSERT(results.front().isHydrated());
+}
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+void TestSearchJob::testHandleResponseIsHydratedWithVfsOn() {
+    // Create an actual file with hydrated status.
+    // SearchInfo::isHydrated() should be true.
+    {
+        const SyncPath hydratedFile = _localTempDir.path() / "hydrated_file.txt";
+        { std::ofstream ofs(hydratedFile); }
+        auto ioError = IoError::Success;
+        CPPUNIT_ASSERT(testhelpers::setHydratedPlaceholderStatus(hydratedFile, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        SearchJob job(_driveDbId, _syncWithVfsOnDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/hydrated_file.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(results.front().isHydrated());
+    }
+
+    // Create an actual file with a dehydrated status.
+    // SearchInfo::isHydrated() be should false.
+    {
+        const SyncPath dehydratedFile = _localTempDir.path() / "dehydrated_file.txt";
+        { std::ofstream ofs(dehydratedFile); }
+        auto ioError = IoError::Success;
+        CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(dehydratedFile, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        SearchJob job(_driveDbId, _syncWithVfsOnDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/dehydrated_file.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isHydrated());
+    }
+}
+#endif
 } // namespace KDC

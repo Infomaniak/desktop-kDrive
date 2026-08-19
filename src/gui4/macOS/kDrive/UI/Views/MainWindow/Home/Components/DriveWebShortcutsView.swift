@@ -66,10 +66,19 @@ struct DriveWebShortcutsView: View {
     }
 
     var body: some View {
-        VStack(spacing: AppPadding.padding16) {
-            UserAndDriveView(avatar: avatar, driveColor: drive?.color)
-                .help(KDriveLocalizable.helpKDriveName(drive?.name ?? ""))
-                .padding(.top, AppPadding.padding8)
+        VStack(spacing: AppPadding.padding24) {
+            VStack(spacing: AppPadding.padding8) {
+                UserAndDriveView(avatar: avatar, driveColor: drive?.color)
+                    .help(KDriveLocalizable.helpKDriveName(drive?.name ?? ""))
+                    .padding(.top, AppPadding.padding8)
+
+                if let driveName = drive?.name {
+                    Text(driveName)
+                        .font(.Tokens.bodyEmphasized)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                }
+            }
 
             VStack(spacing: AppPadding.padding8) {
                 ForEach(topFolders) { folder in

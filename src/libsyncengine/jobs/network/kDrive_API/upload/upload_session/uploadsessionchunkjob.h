@@ -35,6 +35,7 @@ class UploadSessionChunkJob : public AbstractUploadSessionJob {
         const std::string &chunkHash() const { return _chunkHash; }
         UniqueId sessionJobId() const { return _sessionJobId; }
         uint64_t chunkSize() const { return _chunkSize; }
+        uint64_t chunkNb() const { return _chunkNb; }
 
     private:
         std::string getSpecificUrl() override;

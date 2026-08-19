@@ -56,6 +56,26 @@ IoError nsError2ioError(NSError *nsError) noexcept {
     }
 }
 
+std::wstring formatCFError(const SyncPath &path, CFErrorRef error) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"', CF err='";
+
+    if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
+        const char *utf8Description = [(__bridge NSString *) errorDescription UTF8String];
+        if (utf8Description) {
+            ss << CommonUtility::s2ws(std::string(utf8Description));
+        } else {
+            ss << L"<unavailable (non-UTF8)>";
+        }
+        CFRelease(errorDescription);
+    } else {
+        ss << L"<unavailable>";
+    }
+
+    ss << L"'";
+    return ss.str();
+}
+
 bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept {
     isAlias = false;
     ioError = IoError::Success;
@@ -109,11 +129,13 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     if (!ret) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            CFRelease(error);
             if (ioError != IoError::Unknown) {
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
+                CFRelease(error);
                 return true;
             } else {
-                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << formatCFError(aliasPath, error));
+                CFRelease(error);
                 return false;
             }
         }
@@ -141,18 +163,12 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
             if (ioError != IoError::Unknown) {
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
                 CFRelease(error);
-
                 return true;
             } else {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-                if (CFStringRef errorDescription = CFErrorCopyDescription(error); errorDescription) {
-                    const auto errorDescriptionStdString = std::string([(__bridge NSString *) errorDescription UTF8String]);
-                    LOGW_WARN(logger(), L"Native CF Error description: " << CommonUtility::s2ws(errorDescriptionStdString));
-                    CFRelease(errorDescription);
-                }
+                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << formatCFError(aliasPath, error));
                 CFRelease(error);
-
                 return false;
             }
         }
@@ -330,7 +346,25 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
     if (status.type() != std::filesystem::file_type::symlink) {
         const auto canonicalPath = std::filesystem::canonical(path, ec); // canonical does follow symlinks.
         if (!ec) {
-            exists = canonicalPath.filename() == filename;
+            if (CommonUtility::isAPFS(path) || CommonUtility::isHFS(path)) {
+                // On an APFS or HFS+ partition, it is not possible to have duplicates except for encoding, so we compare the
+                // normalized names. This is necessary with MS Office files because when they are saved, a Move or Edit event is
+                // generated with the NFD-normalized name but the file retains its original encoding.
+                SyncName normalizedFileName1;
+                SyncName normalizedFileName2;
+                if (!CommonUtility::normalizedSyncName(canonicalPath.filename().native(), normalizedFileName1,
+                                                       UnicodeNormalization::NFD) ||
+                    !CommonUtility::normalizedSyncName(filename.native(), normalizedFileName2, UnicodeNormalization::NFD)) {
+                    LOGW_WARN(logger(), L"Failed to NFD-normalize " << Utility::formatSyncPath(canonicalPath.filename())
+                                                                    << L" and " << Utility::formatSyncPath(filename));
+                    // Fallback to direct comparison if normalization fails
+                    exists = canonicalPath.filename() == filename;
+                } else {
+                    exists = normalizedFileName1 == normalizedFileName2;
+                }
+            } else {
+                exists = canonicalPath.filename() == filename;
+            }
         }
     } else {
         // Inefficient method used only for symlinks

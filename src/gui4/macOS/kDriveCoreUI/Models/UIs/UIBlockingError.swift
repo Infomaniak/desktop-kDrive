@@ -28,6 +28,7 @@ public struct UIBlockingError: Sendable, Equatable {
     public let isLoading: Bool
 
     public let drive: UIDrive
+    public let synchro: UISynchro
 
     public let badgeIcon: Image
     public let badgeBackgroundColor: Color
@@ -35,8 +36,10 @@ public struct UIBlockingError: Sendable, Equatable {
 
     public let error: BlockingSynchroError
 
-    public init(uiDrive: UIDrive, isDriveAdmin: Bool, error: BlockingSynchroError) {
+    public init(uiDrive: UIDrive, uiSynchro: UISynchro, error: BlockingSynchroError) {
         drive = uiDrive
+        synchro = uiSynchro
+
         self.error = error
 
         switch error {
@@ -51,13 +54,13 @@ public struct UIBlockingError: Sendable, Equatable {
         case .wakingUp:
             title = KDriveLocalizable.driveWakingUpErrorTitle
             subtitle = KDriveLocalizable.driveWakingUpErrorDescription
-            actionTitle = nil
+            actionTitle = KDriveLocalizable.buttonRefresh
             isLoading = true
             badgeIcon = KDriveResources.sun.swiftUIImage
             badgeBackgroundColor = ColorToken.Status.Light.security.asColor
             badgeColor = ColorToken.Status.Medium.security.asColor
         case .notRenew:
-            if isDriveAdmin {
+            if drive.isAdmin {
                 subtitle = KDriveLocalizable.driveLockedAdminErrorDescription
                 actionTitle = KDriveLocalizable.buttonUpdateSubscription
             } else {
@@ -96,11 +99,11 @@ public struct UIBlockingError: Sendable, Equatable {
         }
     }
 
-    public init?(drive: Drive, error: BlockingSynchroError?) {
+    public init?(drive: Drive, synchro: Synchro, error: BlockingSynchroError?) {
         guard let error else {
             return nil
         }
 
-        self.init(uiDrive: UIDrive(drive: drive), isDriveAdmin: drive.admin, error: error)
+        self.init(uiDrive: UIDrive(drive: drive), uiSynchro: UISynchro(synchro: synchro), error: error)
     }
 }

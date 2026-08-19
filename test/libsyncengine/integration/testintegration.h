@@ -40,11 +40,9 @@ typedef void (TestIntegration::*testFctPtr)();
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
         CPPUNIT_TEST(testAll);
-#if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
         CPPUNIT_TEST(testNodeIdReuseFalsePositive);
-#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -100,13 +98,24 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                 MockIoHelperFileStat() {
                     IoHelper::_getFileStat = [this](const std::filesystem::path &path, FileStat *fileStat, IoError &ioError) {
                         const bool res = IoHelper::_getFileStatFn(path, fileStat, ioError);
-                        if (ioError == IoError::Success && _pathNodeIdMap.contains(path.lexically_normal())) {
+                        if (ioError == IoError::Success && _pathNodeIdMap.contains(path.lexically_normal()))
                             fileStat->inode = _pathNodeIdMap.at(path.lexically_normal());
-                        }
+
+                        return res;
+                    };
+
+                    IoHelper::_getNodeId = [this](const std::filesystem::path &path, NodeId &nodeId) {
+                        const bool res = IoHelper::_getNodeIdFn(path, nodeId);
+                        if (res && _pathNodeIdMap.contains(path.lexically_normal()))
+                            nodeId = std::to_string(_pathNodeIdMap.at(path.lexically_normal()));
+
                         return res;
                     };
                 }
-                ~MockIoHelperFileStat() { IoHelper::_getFileStat = IoHelper::_getFileStatFn; }
+                ~MockIoHelperFileStat() {
+                    IoHelper::_getFileStat = IoHelper::_getFileStatFn;
+                    IoHelper::_getNodeId = IoHelper::_getNodeIdFn;
+                }
                 void setPathWithFakeInode(const SyncPath &path, const uint64_t &inode) {
                     _pathNodeIdMap[path.lexically_normal()] = inode;
                 };
@@ -115,12 +124,11 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                 std::map<SyncPath, uint64_t> _pathNodeIdMap;
         };
 
-#if defined(KD_LINUX)
         void testNodeIdReuseFile2DirAndDir2File();
         void testNodeIdReuseFile2File();
         void testNodeIdReuseFalsePositive();
         void nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) const;
-#endif
+
         void waitForSyncToBeIdle(const std::source_location &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         void logStep(const std::string &str);

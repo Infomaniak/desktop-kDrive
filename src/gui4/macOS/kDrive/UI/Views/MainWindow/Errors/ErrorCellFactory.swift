@@ -56,7 +56,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.conflictErrorTitle,
                 description: KDriveLocalizable.conflictErrorDescription,
-                action: .init(title: KDriveLocalizable.conflictErrorAction) { manager.handleConflict() }
+                action: .init(title: KDriveLocalizable.conflictErrorAction) { manager.handleConflicts([error]) }
             )
         case .createCancel:
             return makeCell(
@@ -180,7 +180,7 @@ struct ErrorCellFactory {
                 error: error,
                 title: KDriveLocalizable.driveAsleepErrorTitle,
                 description: KDriveLocalizable.backErrorDriveAsleepDescription,
-                action: .init(title: KDriveLocalizable.buttonWakeUp) { await manager.tryToRestartSynchro(error) }
+                action: .init(title: KDriveLocalizable.buttonWakeUp) { await manager.openWebPageDrive(error) }
             )
         case .backErrorDriveMaintenance:
             return makeCell(
