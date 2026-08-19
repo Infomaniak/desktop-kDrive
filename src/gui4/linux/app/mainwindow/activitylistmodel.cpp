@@ -71,7 +71,7 @@ QString formatSize(const NodeType nodeType, const int64_t size) {
     // Drop the decimal part when it is zero, to match the macOS and Windows clients.
     const QString trailingZero = locale.decimalPoint() + locale.zeroDigit();
     if (const auto index = formatted.indexOf(trailingZero); index >= 0) {
-        formatted.remove(index, trailingZero.size());
+        (void) formatted.remove(index, trailingZero.size());
     }
     return formatted;
 }
@@ -178,8 +178,8 @@ QStringList ActivityListModel::timeTextSamples() {
 
     // Past the relative threshold the cell shows a short date, whose width varies by month in locales that abbreviate
     // it, so every month is a candidate. Day 28 exists in all of them and is two digits wide.
-    const QLocale locale;
-    for (int month = 1; month <= 12; ++month) {
+    for (uint8_t month = 1; month <= 12; ++month) {
+        const QLocale locale;
         samples << locale.toString(QDate{2026, month, 28}, QLocale::ShortFormat);
     }
     return samples;
@@ -190,7 +190,7 @@ QStringList ActivityListModel::sizeTextSamples() {
     // client stops there too.
     QStringList samples{formatSize(NodeType::File, 999)};
     int64_t unit = 1000;
-    for (int tier = 0; tier < 4; ++tier) {
+    for (uint8_t tier = 0; tier < 4; ++tier) {
         samples << formatSize(NodeType::File, static_cast<int64_t>(999.9 * static_cast<double>(unit)));
         unit *= 1000;
     }
