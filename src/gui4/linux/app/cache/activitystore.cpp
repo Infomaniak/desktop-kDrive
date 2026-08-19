@@ -117,17 +117,17 @@ void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item
 }
 
 std::vector<ActivityEntry> ActivityStore::activities(const SyncDbId syncDbId) const {
-    const auto syncIt = _activitiesBySyncDbId.find(syncDbId);
-    return syncIt == _activitiesBySyncDbId.end() ? std::vector<ActivityEntry>{} : syncIt->second;
+    const auto activitiesIt = _activitiesBySyncDbId.find(syncDbId);
+    return activitiesIt == _activitiesBySyncDbId.end() ? std::vector<ActivityEntry>{} : activitiesIt->second;
 }
 
 void ActivityStore::removeInProgress(const SyncDbId syncDbId) {
-    const auto syncIt = _activitiesBySyncDbId.find(syncDbId);
-    if (syncIt == _activitiesBySyncDbId.end()) {
+    const auto activitiesIt = _activitiesBySyncDbId.find(syncDbId);
+    if (activitiesIt == _activitiesBySyncDbId.end()) {
         return;
     }
 
-    if (auto &entries = syncIt->second;
+    if (auto &entries = activitiesIt->second;
         std::erase_if(entries, [](const ActivityEntry &entry) { return isInProgress(entry.status); }) == 0) {
         return;
     }
@@ -144,14 +144,14 @@ void ActivityStore::removeSync(const SyncDbId syncDbId) {
 
 void ActivityStore::retainSyncs(const std::unordered_set<SyncDbId> &syncDbIds) {
     std::vector<SyncDbId> removedSyncDbIds;
-    for (auto syncIt = _activitiesBySyncDbId.begin(); syncIt != _activitiesBySyncDbId.end();) {
-        if (syncDbIds.contains(syncIt->first)) {
-            ++syncIt;
+    for (auto activitiesIt = _activitiesBySyncDbId.begin(); activitiesIt != _activitiesBySyncDbId.end();) {
+        if (syncDbIds.contains(activitiesIt->first)) {
+            ++activitiesIt;
             continue;
         }
 
-        removedSyncDbIds.push_back(syncIt->first);
-        syncIt = _activitiesBySyncDbId.erase(syncIt);
+        removedSyncDbIds.push_back(activitiesIt->first);
+        activitiesIt = _activitiesBySyncDbId.erase(activitiesIt);
     }
 
     for (const SyncDbId syncDbId: removedSyncDbIds) {
