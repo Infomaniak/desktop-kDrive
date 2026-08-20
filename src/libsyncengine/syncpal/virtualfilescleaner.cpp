@@ -107,9 +107,9 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             if (const bool entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus); entryShouldBeKeptOnDisk) {
                 // Keep file on file system.
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
-                                                                      << L" is either a folder, a hydrated placeholder or a "
-                                                                         L"file that is not synchronized yet. Keep it.");
+                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item with " << Utility::formatSyncPath(absolutePath)
+                                                                           << L" is either a folder, a hydrated placeholder or a "
+                                                                              L"file that is not synchronized yet. Keeping it.");
                 }
             } else { // Remove file from file system.
                 if (ParametersCache::isExtendedLogEnabled()) {
