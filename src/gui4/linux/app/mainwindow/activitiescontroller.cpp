@@ -129,8 +129,16 @@ ActivitiesController::ActivitiesController(const ActivityStore &activityStore, c
                    &ActivitiesController::refreshPageState);
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this,
                    &ActivitiesController::refreshPageState);
+    (void) connect(&_activityService, &ActivityService::shareLinkCopyPendingChanged, this,
+                   &ActivitiesController::shareLinkCopyPendingChanged);
+    (void) connect(&_activityService, &ActivityService::shareLinkCopyStarted, this, [this](const GenericId activityLocalId) {
+        emit shareLinkCopyStarted(ActivityListModel::activityRowId(activityLocalId));
+    });
     (void) connect(&_activityService, &ActivityService::shareLinkCopied, this, [this](const GenericId activityLocalId) {
         emit shareLinkCopied(ActivityListModel::activityRowId(activityLocalId));
+    });
+    (void) connect(&_activityService, &ActivityService::shareLinkCopyFailed, this, [this](const GenericId activityLocalId) {
+        emit shareLinkCopyFailed(ActivityListModel::activityRowId(activityLocalId));
     });
     (void) connect(&_activityService, &ActivityService::actionFailed, this, [this](const GenericId activityLocalId) {
         emit actionFailed(ActivityListModel::activityRowId(activityLocalId));
@@ -233,11 +241,13 @@ void ActivitiesController::copyShareLink(const QString &rowId) {
     const auto target = _model.actionTarget(rowId);
     if (!target.has_value() || target->remoteNodeId.empty()) {
         qCWarning(lcActivitiesController) << "Share-link activity action rejected for unavailable node | rowId:" << rowId;
+        emit shareLinkCopyFailed(rowId);
         emit actionFailed(rowId);
         return;
     }
     const auto context = actionSyncContext(*target, rowId);
     if (!context.has_value()) {
+        emit shareLinkCopyFailed(rowId);
         emit actionFailed(rowId);
         return;
     }
