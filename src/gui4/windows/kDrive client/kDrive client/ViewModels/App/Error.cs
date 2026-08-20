@@ -94,6 +94,11 @@ namespace Infomaniak.kDrive.ViewModels
             _autoResolved = errorInfo.AutoResolved ?? _autoResolved;
         }
 
+        public override string ToString()
+        {
+            return $"Error: DbId={DbId}, Timestamp={Timestamp}, ErrorLevel={ErrorLevel}, ExitCode={ExitCode}, ExitCause={ExitCause}, NodeType={NodeType}, Path={Path}, DestinationPath={DestinationPath}, LocalNodeId={LocalNodeId}, RemoteNodeId={RemoteNodeId}, ConflictType={ConflictType}, InconsistencyType={InconsistencyType}, CancelType={CancelType}, AutoResolved={AutoResolved}";
+        }
+
         public DbId DbId
         {
             get => _DbId;
