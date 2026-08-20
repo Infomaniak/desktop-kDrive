@@ -367,7 +367,7 @@ void ProxyServerDialog::onProxyTypeComboBoxActivated(const int index) {
 
 void ProxyServerDialog::onPortTextEdited(const QString &text) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "portInput");
-    _proxyConfig.setPort(text.toInt());
+    _proxyConfig.setPort(static_cast<Port>(text.toInt()));
     setNeedToSave(true);
 }
 
