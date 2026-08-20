@@ -47,8 +47,8 @@ QtObject {
     readonly property real actionMenuIconSlotSize: 16
     readonly property real actionMenuSeparatorHeight: 11
     readonly property real progressStrokeWidth: 2
-    readonly property real emptyIllustrationWidth: 183
-    readonly property real emptyIllustrationHeight: 120.094
+    readonly property real noActivityIllustrationWidth: 183
+    readonly property real noActivityIllustrationHeight: 120.094
     readonly property real emptyContentSpacing: IKSpacing.s32
     readonly property real emptyTextSpacing: IKSpacing.s8
     readonly property real emptyTitleSize: 15
