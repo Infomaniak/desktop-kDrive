@@ -151,12 +151,12 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKDriveSyncSelectorItem.qml
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
+        ui/components/IKErrorBanner.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
         ui/windows/main/StoragePlaceholder.qml
         ui/windows/main/activities/ActivitiesEmptyState.qml
-        ui/windows/main/activities/ActivitiesErrorBanner.qml
         ui/windows/main/activities/ActivitiesFilterMenu.qml
         ui/windows/main/activities/ActivitiesHeader.qml
         ui/windows/main/activities/ActivitiesTable.qml
@@ -168,7 +168,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivityRow.qml
         ui/windows/main/activities/ActivitySourceIcon.qml
         ui/windows/main/activities/ActivityStatusIcon.qml
-        ui/windows/main/home/HomeErrorBanner.qml
         ui/windows/main/home/HomeGreeting.qml
         ui/windows/main/home/HomeStatusPanel.qml
         ui/windows/main/home/HomeView.qml

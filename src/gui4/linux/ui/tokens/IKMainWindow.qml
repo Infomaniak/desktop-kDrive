@@ -36,8 +36,8 @@ QtObject {
     readonly property real sidebarNotificationMinHeight: 40
     readonly property real sidebarNotificationIconSize: 14
     readonly property int sidebarNotificationDuration: 5000
-    readonly property real homeErrorBannerHeight: 72
-    readonly property real homeErrorActionButtonHeight: 24
+    readonly property real errorBannerHeight: 64
+    readonly property real errorBannerActionButtonHeight: 24
     readonly property real homeAvatarSize: 44
     readonly property real homeDriveNameMaxWidth: 140
     readonly property real homeDriveNameMaxHeight: 40
