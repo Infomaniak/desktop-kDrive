@@ -29,6 +29,7 @@ namespace {
 constexpr char serviceKeyActivity[] = "activity";
 constexpr char actionOpenOnline[] = "openOnline";
 constexpr char actionCopyShareLink[] = "copyShareLink";
+constexpr KDC::ServiceActionTracker::ScopeId globalShareLinkScope = 0;
 
 bool isSupportedWebUrl(const QUrl &url) {
     return url.isValid() && !url.isEmpty() && !url.host().isEmpty() &&
@@ -65,10 +66,22 @@ ActivityService::ActivityService(CommService &commService, ServiceActionTracker 
                            emit loadingChanged();
                        }
                    });
+    (void) connect(
+            &_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
+            [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
+                   const ServiceActionTracker::ScopeId scopeId, const bool) {
+                if (serviceKey == serviceKeyActivity && actionKey == actionCopyShareLink && scopeId == globalShareLinkScope) {
+                    emit shareLinkCopyPendingChanged();
+                }
+            });
 }
 
 bool ActivityService::loading() const {
     return _serviceActionTracker.isServicePending(serviceKeyActivity);
+}
+
+bool ActivityService::shareLinkCopyPending() const {
+    return _serviceActionTracker.isActionPending(serviceKeyActivity, actionCopyShareLink, globalShareLinkScope);
 }
 
 void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
@@ -92,12 +105,14 @@ void ActivityService::openOnline(const GenericId activityLocalId, const DriveDbI
 
 void ActivityService::copyShareLink(const GenericId activityLocalId, const DriveDbId driveDbId, const NodeId &remoteNodeId) {
     if (!validateActivityTarget(actionCopyShareLink, activityLocalId, driveDbId, remoteNodeId)) {
+        emit shareLinkCopyFailed(activityLocalId);
         emit actionFailed(activityLocalId);
         return;
     }
-    if (!beginAction(actionCopyShareLink, activityLocalId)) {
+    if (!beginAction(actionCopyShareLink, globalShareLinkScope)) {
         return;
     }
+    emit shareLinkCopyStarted(activityLocalId);
 
     const QPointer<ActivityService> guard{this};
     _commService.requestSyncGetPublicLinkUrl(driveDbId, remoteNodeId,
@@ -131,9 +146,10 @@ void ActivityService::handlePrivateLinkUrl(const ExitInfo &exitInfo, const QStri
 }
 
 void ActivityService::handlePublicLinkUrl(const ExitInfo &exitInfo, const QString &urlText, const GenericId activityLocalId) {
-    endAction(actionCopyShareLink, activityLocalId);
+    endAction(actionCopyShareLink, globalShareLinkScope);
     if (!exitInfo) {
         notifyRequestFailure(exitInfo, RequestNum::SYNC_GETPUBLICLINKURL, activityLocalId);
+        emit shareLinkCopyFailed(activityLocalId);
         return;
     }
 
@@ -141,6 +157,7 @@ void ActivityService::handlePublicLinkUrl(const ExitInfo &exitInfo, const QStrin
     if (!isSupportedWebUrl(url)) {
         qCWarning(lcActivityService) << "Public activity URL is empty or invalid"
                                      << "| activityLocalId:" << activityLocalId;
+        emit shareLinkCopyFailed(activityLocalId);
         emit actionFailed(activityLocalId);
         return;
     }
@@ -148,6 +165,7 @@ void ActivityService::handlePublicLinkUrl(const ExitInfo &exitInfo, const QStrin
     if (clipboard == nullptr) {
         qCWarning(lcActivityService) << "Clipboard unavailable for activity share link"
                                      << "| activityLocalId:" << activityLocalId;
+        emit shareLinkCopyFailed(activityLocalId);
         emit actionFailed(activityLocalId);
         return;
     }
@@ -155,18 +173,20 @@ void ActivityService::handlePublicLinkUrl(const ExitInfo &exitInfo, const QStrin
     emit shareLinkCopied(activityLocalId);
 }
 
-bool ActivityService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const GenericId activityLocalId) const {
-    if (_serviceActionTracker.isActionPending(serviceKeyActivity, actionKey, activityLocalId)) {
+bool ActivityService::beginAction(const ServiceActionTracker::ActionKey &actionKey,
+                                  const ServiceActionTracker::ScopeId scopeId) const {
+    if (_serviceActionTracker.isActionPending(serviceKeyActivity, actionKey, scopeId)) {
         qCDebug(lcActivityService) << "Duplicate activity action ignored"
-                                   << "| action:" << actionKey << "| activityLocalId:" << activityLocalId;
+                                   << "| action:" << actionKey << "| scopeId:" << scopeId;
         return false;
     }
-    _serviceActionTracker.beginAction(serviceKeyActivity, actionKey, activityLocalId);
+    _serviceActionTracker.beginAction(serviceKeyActivity, actionKey, scopeId);
     return true;
 }
 
-void ActivityService::endAction(const ServiceActionTracker::ActionKey &actionKey, const GenericId activityLocalId) const {
-    _serviceActionTracker.endAction(serviceKeyActivity, actionKey, activityLocalId);
+void ActivityService::endAction(const ServiceActionTracker::ActionKey &actionKey,
+                                const ServiceActionTracker::ScopeId scopeId) const {
+    _serviceActionTracker.endAction(serviceKeyActivity, actionKey, scopeId);
 }
 
 void ActivityService::notifyRequestFailure(const ExitInfo &exitInfo, const RequestNum requestNum,
