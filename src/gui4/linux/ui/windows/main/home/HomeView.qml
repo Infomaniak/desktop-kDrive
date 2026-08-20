@@ -41,11 +41,12 @@ Item {
             controller: root.controller
             visible: root.controller.status !== HomeController.SetupRequired && root.controller.status !== HomeController.Loading
         }
-        HomeErrorBanner {
+        IKErrorBanner {
             Layout.fillWidth: true
             Layout.preferredHeight: visible ? implicitHeight : 0
-            controller: root.controller
+            errorCount: root.controller.errorCount
             visible: root.controller.errorCount > 0
+            onActionTriggered: root.controller.showActivities()
         }
         Row {
             id: panelsRow
