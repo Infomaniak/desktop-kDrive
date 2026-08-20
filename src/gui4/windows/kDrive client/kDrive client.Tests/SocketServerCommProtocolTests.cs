@@ -87,7 +87,7 @@ public class TcpServerCommClientTests
     }
 
     [Fact]
-    public async Task InitConnection_Fails_AndExposesNoStream_WhenPinnedCertificateMismatches()
+    public async Task InitConnection_Fails_AndExposesNoStream_WhenServerCertificateMismatches()
     {
         string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();

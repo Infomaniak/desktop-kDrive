@@ -4,7 +4,7 @@ namespace Infomaniak.kDrive.Tests;
 
 /// <summary>
 /// Test double for <see cref="IKeychainStore"/> that always returns a fixed PEM value, used to
-/// simulate a pinned certificate that does not match the one the server actually presents.
+/// simulate a server certificate that does not match the one the server actually presents.
 /// </summary>
 internal sealed class StaticPemKeychainStore(string pem) : IKeychainStore
 {

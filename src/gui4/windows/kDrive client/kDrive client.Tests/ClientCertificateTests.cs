@@ -22,7 +22,7 @@ public class ClientCertificateTests
     public async Task BuildClientCertificate_ReturnsCertificateUsableForMutualTls_ForValidPem()
     {
         await using var server = new FakeSocketServer();
-        using var pinnedCertificate = X509Certificate2.CreateFromPem(server.CertificatePem);
+        using var serverCertificate = X509Certificate2.CreateFromPem(server.CertificatePem);
         using X509Certificate2? built = SecureSocketConnection.BuildClientCertificate(
             server.ClientCertificatePem, server.ClientPrivateKeyPem);
 
@@ -34,7 +34,7 @@ public class ClientCertificateTests
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         using var stream = await SecureSocketConnection.ConnectAsync(
-            "127.0.0.1", server.Port, pinnedCertificate, built, cts.Token);
+            "127.0.0.1", server.Port, serverCertificate, built, cts.Token);
         Assert.True(stream.IsAuthenticated);
         await server.WaitForClientAsync();
     }

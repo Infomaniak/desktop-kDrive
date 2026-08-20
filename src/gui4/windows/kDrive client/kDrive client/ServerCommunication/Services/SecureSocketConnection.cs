@@ -39,13 +39,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         /// <summary>
         /// Opens a TCP connection to <paramref name="host"/>:<paramref name="port"/> and performs
-        /// the TLS client handshake, validating the server against the <paramref name="pinnedCertificate"/>
+        /// the TLS client handshake, validating the server against the <paramref name="serverCertificate"/>
         /// and presenting <paramref name="clientCertificate"/> so the server can authenticate the client.
         /// </summary>
         /// <returns>
         /// The authenticated <see cref="SslStream"/> used to read and write application data.
         /// </returns>
-        public static async Task<SslStream> ConnectAsync(string host, int port, X509Certificate2 pinnedCertificate, X509Certificate2 clientCertificate, CancellationToken cancellationToken)
+        public static async Task<SslStream> ConnectAsync(string host, int port, X509Certificate2 serverCertificate, X509Certificate2 clientCertificate, CancellationToken cancellationToken)
         {
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             try
@@ -61,7 +61,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
                     ClientCertificates = new X509CertificateCollection { clientCertificate },
                     RemoteCertificateValidationCallback =
-                        (sender, certificate, chain, errors) => ValidateServerCertificate(certificate, pinnedCertificate)
+                        (sender, certificate, chain, errors) => ValidateServerCertificate(certificate, serverCertificate)
                 };
 
                 await sslStream.AuthenticateAsClientAsync(options, cancellationToken).ConfigureAwait(false);
@@ -109,12 +109,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         /// <summary>
-        /// Validates the certificate presented by the server against the pinned certificate.
+        /// Validates the certificate presented by the server against the server certificate.
         /// Since the certificate is self-signed there is no CA chain to trust; instead we require
         /// the presented certificate to be byte-for-byte identical to the one the server published
         /// in the keychain.
         /// </summary>
-        private static bool ValidateServerCertificate(X509Certificate? presentedCertificate, X509Certificate2 pinnedCertificate)
+        private static bool ValidateServerCertificate(X509Certificate? presentedCertificate, X509Certificate2 serverCertificate)
         {
             if (presentedCertificate is null)
             {
@@ -123,10 +123,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             using var presented = new X509Certificate2(presentedCertificate);
-            bool matches = presented.RawData.SequenceEqual(pinnedCertificate.RawData);
+            bool matches = presented.RawData.SequenceEqual(serverCertificate.RawData);
             if (!matches)
             {
-                Logger.Log(Logger.Level.Error, "TLS validation failed: server certificate does not match the pinned certificate.");
+                Logger.Log(Logger.Level.Error, "TLS validation failed: server certificate does not match the server certificate.");
             }
             return matches;
         }

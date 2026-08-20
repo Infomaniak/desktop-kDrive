@@ -267,7 +267,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
     /// <summary>
     /// Creates a PEM-encoded certificate that is unrelated to the one this server presents,
-    /// allowing tests to simulate a mismatched pinned certificate.
+    /// allowing tests to simulate a mismatched server certificate.
     /// </summary>
     public static string CreateUnrelatedCertificatePem()
     {

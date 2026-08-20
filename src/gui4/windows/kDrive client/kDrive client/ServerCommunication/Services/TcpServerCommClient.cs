@@ -143,7 +143,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private X509Certificate2? LoadPinnedCertificate()
+        private X509Certificate2? LoadServerCertificate()
         {
             string? pem = _keychainStore.ReadSecret(_certKeychainKey);
             if (string.IsNullOrEmpty(pem))
@@ -158,7 +158,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse pinned TLS certificate from keychain: {ex.Message}");
+                Logger.Log(Logger.Level.Error, $"Failed to parse server TLS certificate from keychain: {ex.Message}");
                 return null;
             }
         }
@@ -204,8 +204,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #endif
                     }
 
-                    X509Certificate2? pinnedCertificate = LoadPinnedCertificate();
-                    if (pinnedCertificate is null)
+                    X509Certificate2? serverCertificate = LoadServerCertificate();
+                    if (serverCertificate is null)
                     {
                         // The server may not have published its certificate yet; retry.
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
@@ -217,17 +217,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         // The server may not have published the client certificate/key yet, or the
                         // material is incomplete; the server requires it, so retry until it is available.
-                        pinnedCertificate.Dispose();
+                        serverCertificate.Dispose();
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
                     DisposeConnection();
-                    using (pinnedCertificate)
+                    using (serverCertificate)
                     using (clientCertificate)
                     {
-                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
+                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, serverCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
                     }
                     Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
