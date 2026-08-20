@@ -21,7 +21,7 @@ import Foundation
 import Testing
 
 struct UISynchroNodeTests {
-    private func makeNode(progress: Int32) -> UISynchroNode {
+    private func makeNode(progress: Int) -> UISynchroNode {
         UISynchroNode(
             id: 1,
             remoteID: "remote-id",
