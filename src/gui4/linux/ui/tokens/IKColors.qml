@@ -182,6 +182,7 @@ QtObject {
     readonly property color activitiesProgressTrack: surfaceTertiary
     readonly property color activitiesActionMenuSurface: surfaceSecondary
     readonly property color activitiesActionMenuHover: surfaceTertiary
+    readonly property color activitiesErrorBannerSurface: homeErrorBannerSurface
     readonly property color sidebarNotificationSurface: surfacePrimary
     readonly property color sidebarNotificationBorder: surfaceTertiary
 }
