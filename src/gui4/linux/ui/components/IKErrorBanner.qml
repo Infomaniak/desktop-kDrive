@@ -6,6 +6,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 pragma ComponentBehavior: Bound
@@ -14,14 +22,18 @@ import QtQuick
 import QtQuick.Controls
 import kDrive.UI
 
+// Synchronization error banner shared by Home and Activities. The owning view supplies the height its screen
+// specifies and handles `actionTriggered`; the banner itself never reads a controller.
 Rectangle {
     id: root
 
-    required property var controller
+    required property int errorCount
 
-    implicitHeight: IKActivities.errorBannerHeight
+    signal actionTriggered
+
+    implicitHeight: IKMainWindow.errorBannerHeight
     radius: IKRadius.r12
-    color: IKColors.activitiesErrorBannerSurface
+    color: IKColors.errorBannerSurface
 
     Row {
         anchors.fill: parent
@@ -35,7 +47,7 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: qsTrId("informationBlockSynchroErrorTitle", root.controller.errorCount)
+                text: qsTrId("informationBlockSynchroErrorTitle", root.errorCount)
                 textFormat: Text.StyledText
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.bodySize
@@ -55,10 +67,10 @@ Rectangle {
             id: fixButton
 
             anchors.verticalCenter: parent.verticalCenter
-            implicitHeight: IKMainWindow.homeErrorActionButtonHeight
+            implicitHeight: IKMainWindow.errorBannerActionButtonHeight
             text: qsTrId("buttonFixErrors")
             focusPolicy: Qt.StrongFocus
-            onClicked: root.controller.requestFixAllErrors()
+            onClicked: root.actionTriggered()
 
             contentItem: Text {
                 text: fixButton.text
@@ -71,7 +83,7 @@ Rectangle {
             }
 
             background: Rectangle {
-                implicitHeight: IKMainWindow.homeErrorActionButtonHeight
+                implicitHeight: IKMainWindow.errorBannerActionButtonHeight
                 radius: IKRadius.r6
                 color: IKColors.actionPrimary
             }
