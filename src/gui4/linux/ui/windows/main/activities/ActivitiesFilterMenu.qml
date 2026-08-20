@@ -6,6 +6,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 pragma ComponentBehavior: Bound
@@ -77,7 +85,7 @@ Popup {
             required property int index
 
             readonly property bool selected: root.controller.filter === modelData.filter
-            readonly property color foregroundColor: selected ? IKColors.activitiesFilterSelectedText : IKColors.textPrimary
+            readonly property color surfaceColor: hovered || down || visualFocus ? IKColors.surfaceTertiary : "transparent"
 
             width: optionsList.width
             height: IKActivities.filterMenuOptionHeight
@@ -98,14 +106,14 @@ Popup {
                     width: IKActivities.filterIconSize
                     height: IKActivities.filterIconSize
                     source: option.modelData.icon
-                    color: option.foregroundColor
+                    color: IKColors.textPrimary
                 }
 
                 Text {
                     width: Math.max(0, parent.width - x)
                     anchors.verticalCenter: parent.verticalCenter
                     text: option.modelData.label
-                    color: option.foregroundColor
+                    color: IKColors.textPrimary
                     font.pixelSize: IKFonts.bodySize
                     font.weight: IKFonts.emphasized
                     elide: Text.ElideRight
@@ -114,7 +122,7 @@ Popup {
 
             background: Rectangle {
                 radius: IKRadius.r8
-                color: option.selected ? IKColors.activitiesFilterSelectedSurface : option.hovered || option.visualFocus ? IKColors.surfaceTertiary : "transparent"
+                color: option.surfaceColor
                 border.width: option.visualFocus ? 2 : 0
                 border.color: IKColors.accentPrimary
             }

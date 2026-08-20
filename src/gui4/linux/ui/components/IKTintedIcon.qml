@@ -30,9 +30,9 @@ Item {
 
         anchors.fill: parent
         source: root.source
+        sourceSize.width: Math.ceil(width * Math.max(3, Screen.devicePixelRatio))
         fillMode: Image.PreserveAspectFit
         smooth: true
-        mipmap: true
         visible: false
     }
 
