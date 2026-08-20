@@ -1158,7 +1158,11 @@ ExitCode ServerRequests::createSync(const Sync &sync) {
 
 void ServerRequests::fixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
-    proxyConfig.setType(ProxyType::None);
+    const auto previousKeychainKey = proxyConfig.keychainKey();
+    proxyConfig.clear();
+    if (!previousKeychainKey.empty()) {
+        (void) KeyChainManager::instance()->deleteData(previousKeychainKey);
+    }
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
     ParametersCache::instance()->save();
 }

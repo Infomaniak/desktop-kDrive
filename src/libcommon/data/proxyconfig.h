@@ -32,22 +32,24 @@ class ProxyConfig {
         ProxyConfig(ProxyType type, const std::string &hostName, int port, bool needsAuth, const std::string &user = "",
                     const std::string &pwd = "");
 
-        inline ProxyType type() const { return _type; }
-        inline void setType(const ProxyType type) { _type = type; }
-        inline const std::string &hostName() const { return _hostName; }
-        inline void setHostName(const std::string &hostName) { _hostName = hostName; }
-        inline int port() const { return _port; }
-        inline void setPort(const int port) { _port = port; }
-        inline bool needsAuth() const { return _needsAuth; }
-        inline void setNeedsAuth(const bool needsAuth) { _needsAuth = needsAuth; }
-        inline const std::string &user() const { return _user; }
-        inline void setUser(const std::string &user) { _user = user; }
+        ProxyType type() const { return _type; }
+        void setType(const ProxyType type) { _type = type; }
+        const std::string &hostName() const { return _hostName; }
+        void setHostName(const std::string &hostName) { _hostName = hostName; }
+        int port() const { return _port; }
+        void setPort(const int port) { _port = port; }
+        bool needsAuth() const { return _needsAuth; }
+        void setNeedsAuth(const bool needsAuth) { _needsAuth = needsAuth; }
+        const std::string &user() const { return _user; }
+        void setUser(const std::string &user) { _user = user; }
 
-        inline const std::string &pwd() const { return _pwd; }
-        inline void setPwd(const std::string &pwd) { _pwd = pwd; }
+        const std::string &pwd() const { return _pwd; }
+        void setPwd(const std::string &pwd) { _pwd = pwd; }
 
-        inline const std::string &keychainKey() const { return _keychainKey; }
-        inline void setKeychainKey(const std::string &keychainKey) { _keychainKey = keychainKey; }
+        const std::string &keychainKey() const { return _keychainKey; }
+        void setKeychainKey(const std::string &keychainKey) { _keychainKey = keychainKey; }
+
+        void clear();
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);

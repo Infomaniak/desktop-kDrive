@@ -38,6 +38,16 @@ ProxyConfig::ProxyConfig(const ProxyType type, const std::string &hostName, cons
     _user(user),
     _pwd(pwd) {}
 
+void ProxyConfig::clear() {
+    _type = ProxyType::None;
+    _hostName.clear();
+    _port = 0;
+    _needsAuth = false;
+    _user.clear();
+    _pwd.clear();
+    _keychainKey.clear();
+}
+
 void ProxyConfig::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoType, _type);
     CommonUtility::writeValueToStruct(dstruct, proxyConfigInfoHostName, _hostName);
