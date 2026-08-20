@@ -48,6 +48,11 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcAppClientLinux, "gui.v4.app", QtInfoMsg)
 
+namespace {
+// Upper bound on how long the client waits for the server to close the IPC connection before quitting on its own.
+constexpr int32_t serverDisconnectionTimeoutMs = 5000;
+} // namespace
+
 AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
@@ -188,8 +193,13 @@ void AppClientLinux::setupIpcConnection() {
 }
 
 void AppClientLinux::handleIpcDisconnection() {
-    // Normal UTILITY_QUIT paths stop the application before the server closes the socket. This cleanup therefore runs only
-    // when an established IPC connection is lost unexpectedly.
+    if (_quitPending) {
+        // The server closed the socket because it is shutting down, as awaited by quitOnServerDisconnection(). Resetting
+        // the UI and the caches at this point would only make the closing application flicker.
+        return;
+    }
+
+    // This cleanup therefore runs only when an established IPC connection is lost unexpectedly.
     _systemTrayController.setProductStateInitialized(false);
     _appRouter.hideMainWindow();
     _appCache.clearAll();
@@ -245,7 +255,7 @@ void AppClientLinux::updateLoggerMinLevel() const {
                              << QString::fromStdString(toString(parametersInfo->logLevel()));
 }
 
-void AppClientLinux::requestQuit() const {
+void AppClientLinux::requestQuit() {
     qCInfo(lcAppClientLinux) << "Quit requested from system tray";
     if (!_ipcClient.isConnected()) {
         qCWarning(lcAppClientLinux) << "IPC is not connected, quitting application directly";
@@ -253,11 +263,42 @@ void AppClientLinux::requestQuit() const {
         return;
     }
 
-    _serverCommService.requestQuit([](const auto &exitInfo) {
+    _serverCommService.requestQuit([this](const auto &exitInfo) {
         if (!exitInfo) {
-            qCWarning(lcAppClientLinux) << "Server quit request failed";
+            qCWarning(lcAppClientLinux) << "Server quit request failed, quitting application directly";
+            quit();
+            return;
         }
+
+        quitOnServerDisconnection();
+    });
+}
+
+/**
+ * Keeps the application alive until the server closes the IPC connection during its own shutdown.
+ * Tearing the socket down from here instead would leave the server reading a connection dropped mid-TLS-session and
+ * logging shutdown errors. Quits anyway after serverDisconnectionTimeoutMs if the server never closes.
+ */
+void AppClientLinux::quitOnServerDisconnection() {
+    if (_quitPending) {
+        return;
+    }
+    _quitPending = true;
+
+    if (!_ipcClient.isConnected()) {
         quit();
+        return;
+    }
+
+    _ipcClient.expectDisconnection();
+    (void) connect(&_ipcClient, &IpcClient::disconnected, this, [] {
+        qCInfo(lcAppClientLinux) << "Server closed the IPC connection, quitting";
+        QCoreApplication::quit();
+    });
+    QTimer::singleShot(serverDisconnectionTimeoutMs, this, [] {
+        qCWarning(lcAppClientLinux) << "Server did not close the IPC connection within" << serverDisconnectionTimeoutMs
+                                    << "ms, quitting anyway";
+        QCoreApplication::quit();
     });
 }
 
