@@ -30,11 +30,12 @@ Item {
             controller: root.controller
         }
 
-        ActivitiesErrorBanner {
+        IKErrorBanner {
             Layout.fillWidth: true
-            Layout.preferredHeight: implicitHeight
+            Layout.preferredHeight: visible ? implicitHeight : 0
+            errorCount: root.controller.errorCount
             visible: root.controller.hasErrors
-            controller: root.controller
+            onActionTriggered: root.controller.requestFixAllErrors()
         }
 
         Item {

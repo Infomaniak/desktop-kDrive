@@ -68,7 +68,7 @@
   accessory must remain independent presentation inputs rather than a screen-specific state enum.
 - Route orange error dots progressively in the main sidebar: selected-sync errors appear on Activities, unselected-sync
   errors appear on the closed selector, and per-sync dots appear inside the open selector. Normal activity has no dot.
-- Keep the Home error banner surface visibly distinct from the Home background in both themes.
+- Keep the shared error banner surface visibly distinct from the page background in both themes.
 - Match the Figma main-toolbar Pause/Resume and Settings group: one subtly outlined 68 x 36 capsule with 4 px padding
   and spacing, containing two independent 28 x 28 circular hover surfaces.
 - Use the same resting surface for the main-toolbar Support and Pause/Settings controls, and the same stronger hover
@@ -276,10 +276,10 @@
       `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
       versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no
       onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
-    - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, error banner, table rows,
-      source/status presentation, and empty state. Time, size, and status columns have fixed widths; only the name/folder
-      boundary is draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own
-      activity history.
+    - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
+      presentation, and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is
+      draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
+      history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
