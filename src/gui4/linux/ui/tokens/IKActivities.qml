@@ -38,6 +38,7 @@ QtObject {
     readonly property real actionMenuItemHeight: 24
     readonly property real actionMenuIconSlotSize: 16
     readonly property real actionMenuSeparatorHeight: 11
+    readonly property real errorBannerHeight: 64
     readonly property real progressStrokeWidth: 2
     readonly property real emptyIllustrationWidth: 183
     readonly property real emptyIllustrationHeight: 120.094
