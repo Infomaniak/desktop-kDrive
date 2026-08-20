@@ -180,4 +180,8 @@ QtObject {
     readonly property color activitiesStatusSyncing: statusMediumSecurity
     readonly property color activitiesStatusError: statusMediumWarning
     readonly property color activitiesProgressTrack: surfaceTertiary
+    readonly property color activitiesActionMenuSurface: surfaceSecondary
+    readonly property color activitiesActionMenuHover: surfaceTertiary
+    readonly property color sidebarNotificationSurface: surfacePrimary
+    readonly property color sidebarNotificationBorder: surfaceTertiary
 }
