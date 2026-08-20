@@ -26,6 +26,7 @@ Item {
     id: root
 
     required property var appRouter
+    required property var activitiesController
     required property var homeController
     required property var mainSidebarController
 
@@ -64,9 +65,10 @@ Item {
                     sourceComponent: homeViewComponent
                 }
 
-                ActivitiesPlaceholder {
+                Loader {
                     anchors.fill: parent
-                    visible: root.currentTab === root.tabActivities
+                    active: root.currentTab === root.tabActivities && root.windowVisible
+                    sourceComponent: activitiesViewComponent
                 }
 
                 StoragePlaceholder {
@@ -87,6 +89,14 @@ Item {
 
         HomeView {
             controller: root.homeController
+        }
+    }
+
+    Component {
+        id: activitiesViewComponent
+
+        ActivitiesView {
+            controller: root.activitiesController
         }
     }
 }
