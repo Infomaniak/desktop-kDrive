@@ -75,17 +75,7 @@ class ParametersInfo {
         [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
         void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
 
-        friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) {
-            return (lhs.language() == rhs.language()) && (lhs.monoIcons() == rhs.monoIcons()) &&
-                   (lhs.autoStart() == rhs.autoStart()) && (lhs.moveToTrash() == rhs.moveToTrash()) &&
-                   (lhs.notificationsDisabled() == rhs.notificationsDisabled()) && (lhs.useLog() == rhs.useLog()) &&
-                   (lhs.logLevel() == rhs.logLevel()) && (lhs.extendedLog() == rhs.extendedLog()) &&
-                   (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
-                   (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
-                   (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
-                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete()) &&
-                   (lhs.proxyConfig() == rhs.proxyConfig());
-friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) = default;
+        friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) = default;
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
