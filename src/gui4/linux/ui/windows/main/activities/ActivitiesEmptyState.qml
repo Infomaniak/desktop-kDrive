@@ -28,8 +28,8 @@ Item {
 
         Image {
             anchors.horizontalCenter: parent.horizontalCenter
-            width: IKActivities.emptyIllustrationWidth
-            height: IKActivities.emptyIllustrationHeight
+            width: IKActivities.noActivityIllustrationWidth
+            height: IKActivities.noActivityIllustrationHeight
             source: ThemeMode.isDark ? "qrc:/assets/main/activities/empty-dark.svg" : "qrc:/assets/main/activities/empty.svg"
             fillMode: Image.PreserveAspectFit
             sourceSize.width: width
