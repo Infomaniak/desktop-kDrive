@@ -30,6 +30,13 @@ Item {
             controller: root.controller
         }
 
+        ActivitiesErrorBanner {
+            Layout.fillWidth: true
+            Layout.preferredHeight: implicitHeight
+            visible: root.controller.hasErrors
+            controller: root.controller
+        }
+
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
