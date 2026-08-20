@@ -224,9 +224,10 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
             const auto relativeLocalPath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
 
             if (const auto exitInfo = deleteFromDB(relativeLocalPath);
-                exitInfo == ExitInfo{ExitCode::DataError, ExitCause::DbEntryNotFound} &&
-                ExclusionTemplateCache::instance()->isExcluded(relativeLocalPath)) {
-                continue; // The item was already removed from the DB because it is excluded, so we can ignore this error.
+                exitInfo == ExitInfo{ExitCode::DataError, ExitCause::DbEntryNotFound}) {
+                LOG_IF_FAIL(ExclusionTemplateCache::instance()->isExcluded(relativeLocalPath));
+                continue; // The item was already removed from the DB because it is excluded, so we can
+                          // ignore this error.
             } else if (!exitInfo)
                 return exitInfo;
         }
