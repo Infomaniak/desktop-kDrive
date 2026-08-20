@@ -19,6 +19,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Layouts
 import kDrive.UI
 
 Rectangle {
@@ -30,21 +31,22 @@ Rectangle {
     readonly property int tabActivities: AppRouter.Activities
     readonly property int tabHome: AppRouter.Home
     readonly property int tabStorage: AppRouter.Storage
+    readonly property alias notification: sidebarNotification
 
     color: IKColors.surfaceSecondary
 
-    Column {
+    ColumnLayout {
         anchors.fill: parent
         anchors.margins: IKSpacing.s16
         spacing: IKSpacing.s16
 
         SyncSelectorView {
             controller: root.controller
-            width: parent.width
+            Layout.fillWidth: true
         }
         Column {
+            Layout.fillWidth: true
             spacing: IKSpacing.s4
-            width: parent.width
 
             IKSidebarItem {
                 iconSource: "qrc:/assets/main/house.svg"
@@ -80,6 +82,17 @@ Rectangle {
 
                 onTriggered: root.controller.openCurrentSyncFolder()
             }
+        }
+
+        Item {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
+
+        SidebarNotification {
+            id: sidebarNotification
+
+            Layout.fillWidth: true
         }
     }
 }
