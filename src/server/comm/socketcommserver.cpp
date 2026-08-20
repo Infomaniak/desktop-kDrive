@@ -19,7 +19,9 @@
 #include "securecontextsingleton.h"
 #include "socketcommserver.h"
 
+#include "libcommon/comm.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 
 namespace KDC {
@@ -364,6 +366,15 @@ void SocketCommServer::execute() {
                 LOG_WARN(Log::instance()->getLogger(), "Exception in SecureStreamSocket::close: " << ex.displayText());
             }
             continue;
+        }
+
+        // All TLS material in the keychain (server cert, client cert, client private key) has been
+        // consumed: the handshake verified the client, and the client already pinned the server cert
+        // before connecting. Erase them to avoid leaving sensitive material accessible.
+        if (const auto keychain = KeyChainManager::instance()) {
+            (void) keychain->deleteToken(std::string(certKeychainKey));
+            (void) keychain->deleteToken(std::string(clientCertKeychainKey));
+            (void) keychain->deleteToken(std::string(clientKeyKeychainKey));
         }
 
         // Keep a bounded receive timeout for the channel's lifetime: SSL_read() must never park on
