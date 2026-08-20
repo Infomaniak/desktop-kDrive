@@ -36,23 +36,29 @@ namespace KDC {
 class ActivityService final : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
+        Q_PROPERTY(bool shareLinkCopyPending READ shareLinkCopyPending NOTIFY shareLinkCopyPendingChanged)
 
     public:
         explicit ActivityService(CommService &commService, ServiceActionTracker &serviceActionTracker,
                                  ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
 
         [[nodiscard]] bool loading() const;
+        [[nodiscard]] bool shareLinkCopyPending() const;
         void openOnline(GenericId activityLocalId, DriveDbId driveDbId, const NodeId &remoteNodeId);
         void copyShareLink(GenericId activityLocalId, DriveDbId driveDbId, const NodeId &remoteNodeId);
 
     signals:
         void loadingChanged();
+        void shareLinkCopyPendingChanged();
+        void shareLinkCopyStarted(GenericId activityLocalId);
         void shareLinkCopied(GenericId activityLocalId);
+        void shareLinkCopyFailed(GenericId activityLocalId);
         void actionFailed(GenericId activityLocalId);
 
     private:
-        [[nodiscard]] bool beginAction(const ServiceActionTracker::ActionKey &actionKey, GenericId activityLocalId) const;
-        void endAction(const ServiceActionTracker::ActionKey &actionKey, GenericId activityLocalId) const;
+        [[nodiscard]] bool beginAction(const ServiceActionTracker::ActionKey &actionKey,
+                                       ServiceActionTracker::ScopeId scopeId) const;
+        void endAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum, GenericId activityLocalId);
 
         void handlePrivateLinkUrl(const ExitInfo &exitInfo, const QString &urlText, GenericId activityLocalId);
