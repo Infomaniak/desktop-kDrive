@@ -54,6 +54,7 @@ class SocketCommChannel : public AbstractCommChannel {
 
     private:
         std::atomic<bool> _isClosing{false};
+        std::atomic<bool> _closed{false};
         std::atomic<bool> _pendingRead{false};
         std::unique_ptr<StdLoggingThread> _callbackThread{nullptr};
         Poco::Net::StreamSocket _socket;
