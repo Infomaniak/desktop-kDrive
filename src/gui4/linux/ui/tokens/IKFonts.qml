@@ -31,5 +31,6 @@ QtObject {
 
     // Weights
     readonly property int regular: Font.Normal
+    readonly property int medium: Font.Medium
     readonly property int emphasized: Font.DemiBold
 }

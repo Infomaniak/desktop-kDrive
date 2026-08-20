@@ -118,6 +118,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKWindow.qml
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
+        ui/tokens/IKActivities.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKWaiting.qml
@@ -155,6 +156,16 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
         ui/windows/main/StoragePlaceholder.qml
+        ui/windows/main/activities/ActivitiesEmptyState.qml
+        ui/windows/main/activities/ActivitiesFilterMenu.qml
+        ui/windows/main/activities/ActivitiesHeader.qml
+        ui/windows/main/activities/ActivitiesTable.qml
+        ui/windows/main/activities/ActivitiesTableHeader.qml
+        ui/windows/main/activities/ActivityFileIcon.qml
+        ui/windows/main/activities/ActivityProgressRing.qml
+        ui/windows/main/activities/ActivityRow.qml
+        ui/windows/main/activities/ActivitySourceIcon.qml
+        ui/windows/main/activities/ActivityStatusIcon.qml
         ui/windows/main/home/HomeErrorBanner.qml
         ui/windows/main/home/HomeGreeting.qml
         ui/windows/main/home/HomeStatusPanel.qml
@@ -222,10 +233,11 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/file-video-dark.svg
         ui/assets/main/activities/file-zip.svg
         ui/assets/main/activities/file-zip-dark.svg
-        ui/assets/main/activities/filter-user.svg
-        ui/assets/main/activities/filter-users.svg
+        ui/assets/main/activities/filter-all-activities.svg
+        ui/assets/main/activities/filter-my-activity.svg
         ui/assets/main/activities/source-computer.svg
         ui/assets/main/activities/source-web.svg
+        ui/assets/main/activities/status-error.svg
         ui/assets/main/activities/status-synchronized-outline.svg
         ui/assets/main/chevron-down.svg
         ui/assets/main/folder.svg
