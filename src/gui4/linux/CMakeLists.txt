@@ -162,6 +162,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/activities/ActivitiesTableHeader.qml
         ui/windows/main/activities/ActivitiesView.qml
         ui/windows/main/activities/ActivityFileIcon.qml
+        ui/windows/main/activities/ActivityOptionsMenu.qml
         ui/windows/main/activities/ActivityProgressRing.qml
         ui/windows/main/activities/ActivityRow.qml
         ui/windows/main/activities/ActivitySourceIcon.qml
@@ -181,6 +182,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/home/states/HomeSyncingState.qml
         ui/windows/main/home/states/HomeUpToDateState.qml
         ui/windows/main/sidebar/SidebarHeaderView.qml
+        ui/windows/main/sidebar/SidebarNotification.qml
         ui/windows/main/sidebar/SidebarView.qml
         ui/windows/main/sidebar/SyncSelectorView.qml
         ${GUI_GENERATED_QML_FILES}
@@ -235,6 +237,11 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/file-zip-dark.svg
         ui/assets/main/activities/filter-all-activities.svg
         ui/assets/main/activities/filter-my-activity.svg
+        ui/assets/main/activities/dots-vertical.svg
+        ui/assets/main/activities/fix-errors.svg
+        ui/assets/main/activities/open-local.svg
+        ui/assets/main/activities/open-online.svg
+        ui/assets/main/activities/share.svg
         ui/assets/main/activities/source-computer.svg
         ui/assets/main/activities/source-web.svg
         ui/assets/main/activities/status-error.svg
