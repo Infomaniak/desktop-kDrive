@@ -520,7 +520,7 @@ void TestSyncPal::testWipeVirtualFiles() {
 
     // Simulate an activated Vfs and the item is a folder: the item should be kept.
     const SyncPath localFolderPath = _localTempDir.path() / "folder";
-    std::filesystem::create_directory(localFolderPath, ec);
+    CPPUNIT_ASSERT(std::filesystem::create_directory(localFolderPath, ec));
     CPPUNIT_ASSERT(!ec);
     vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
         vfsStatus.isPlaceholder = true;
