@@ -1563,7 +1563,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     auto proxyType = ProxyType::Undefined;
     std::string hostName;
-    Port port = 0;
+    int port = 0;
     bool needsAuth = false;
     std::string user;
     std::string keychainKey;
@@ -1575,7 +1575,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
     needsAuth = static_cast<bool>(intResult);
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, user));
     LOG_IF_FAIL(queryStringValue(SELECT_PARAMETERS_REQUEST_ID, index++, keychainKey));
-    auto proxyConfig = ProxyConfig(proxyType, hostName, port, needsAuth, user);
+    auto proxyConfig = ProxyConfig(proxyType, hostName, static_cast<Port>(port), needsAuth, user);
     proxyConfig.setKeychainKey(keychainKey);
     parameters.setProxyConfig(proxyConfig);
 
