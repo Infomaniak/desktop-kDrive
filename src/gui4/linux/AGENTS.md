@@ -16,6 +16,8 @@
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Do not add links to `.md` files that are not versioned in git.
 - Never launch a build unless explicitly asked by the user.
+- For the Activities PR stack, preparing a PR means isolating and staging its changes only. Leave commit, push, and PR
+  creation to the user unless they explicitly ask Codex to publish them.
 - Treat native Wayland as the default Linux runtime on current Ubuntu/GNOME systems. XCB/XWayland is a compatibility
   path, not the primary platform; window-shell changes must cover both paths explicitly.
 - Keep the Linux frameless header and custom shadow on native Wayland without depending on `Qt6::GuiPrivate`. Accept
@@ -37,6 +39,8 @@
   adapters must observe and query that shared state instead of maintaining private copies.
 - Design feature storage and presentation contracts for their intended final lifecycle. A temporarily unavailable UI or
   action may remain inactive, but must not make the underlying model discard state needed by the completed feature.
+- For the bounded Activities projection, prefer the score-based linear error matcher over rebuilding temporary identity
+  indexes unless profiling demonstrates that matching is a bottleneck.
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
@@ -76,6 +80,10 @@
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
 - For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
+- On Activities, a retry in progress for an actively errored node shares the same projected row, and displayed Folder
+  values open that exact folder even when the activity target no longer exists.
+- On Activities, keep actual in-progress transfers above failed and synchronized rows; surface active errors separately
+  without displacing transfers that are still running.
 - Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
   files under `test/gui4/linux/` until the user explicitly reopens that scope.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
@@ -125,6 +133,8 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
+- `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
+  semantic document-icon asset names consumed by QML views.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
   tray availability, and main QML window show/hide behavior.
@@ -153,8 +163,9 @@
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
   updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for the
-  same node, preserves distinct anonymous operations, and bounds retention to 500 entries per synchronization. It stays
-  separate from the durable `AppCache` graph and is not exposed directly to QML.
+  same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct anonymous
+  operations, and bounds retention to 500 entries per synchronization. It stays separate from the durable `AppCache`
+  graph and is not exposed directly to QML.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
     - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
       violations.
@@ -174,11 +185,12 @@
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
-  active node errors. It maps server status and direction to the QML-facing presentation enums. Active errors remain
-  visible even when their recent activity has been evicted.
+  active node errors. It omits failed activities after their active error is resolved, maps server status and direction to
+  the QML-facing presentation enums, keeps actual in-progress rows first, coalesces bursty cache invalidations, and keeps
+  active errors visible even when their recent activity has been evicted.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
-  presentation, including the local title-state resolver, validates local paths, and delegates asynchronous link actions
-  to `ActivityService`.
+  presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
+  locations, and delegates asynchronous link actions to `ActivityService`.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`.
