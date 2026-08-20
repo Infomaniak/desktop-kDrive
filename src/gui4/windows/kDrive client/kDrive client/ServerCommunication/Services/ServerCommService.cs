@@ -1986,7 +1986,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             else
             {
-                Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+                Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
             }
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
