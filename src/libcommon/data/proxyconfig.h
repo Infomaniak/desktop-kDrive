@@ -32,21 +32,21 @@ class ProxyConfig {
         ProxyConfig(ProxyType type, const std::string &hostName, int port, bool needsAuth, const std::string &user = "",
                     const std::string &pwd = "");
 
-        ProxyType type() const { return _type; }
+        [[nodiscard]] ProxyType type() const { return _type; }
         void setType(const ProxyType type) { _type = type; }
-        const std::string &hostName() const { return _hostName; }
+        [[nodiscard]] const std::string &hostName() const { return _hostName; }
         void setHostName(const std::string &hostName) { _hostName = hostName; }
-        int port() const { return _port; }
+        [[nodiscard]] int port() const { return _port; }
         void setPort(const int port) { _port = port; }
-        bool needsAuth() const { return _needsAuth; }
+        [[nodiscard]] bool needsAuth() const { return _needsAuth; }
         void setNeedsAuth(const bool needsAuth) { _needsAuth = needsAuth; }
-        const std::string &user() const { return _user; }
+        [[nodiscard]] const std::string &user() const { return _user; }
         void setUser(const std::string &user) { _user = user; }
 
-        const std::string &pwd() const { return _pwd; }
+        [[nodiscard]] const std::string &pwd() const { return _pwd; }
         void setPwd(const std::string &pwd) { _pwd = pwd; }
 
-        const std::string &keychainKey() const { return _keychainKey; }
+        [[nodiscard]] const std::string &keychainKey() const { return _keychainKey; }
         void setKeychainKey(const std::string &keychainKey) { _keychainKey = keychainKey; }
 
         void clear();
