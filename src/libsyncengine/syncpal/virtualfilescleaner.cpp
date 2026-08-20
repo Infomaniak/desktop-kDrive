@@ -52,7 +52,17 @@ namespace {
 bool hasFileType(const std::filesystem::directory_entry &entry) {
     return entry.is_symlink() || (!entry.is_directory());
 }
+
+bool shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry, const VfsStatus &vfsStatus) {
+    if (!hasFileType(entry)) return true; // Folders are kept on disk.
+    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) return true; // Hydrated placeholders are kept on disk.
+    if (!vfsStatus.isPlaceholder) return true; // Non-placeholder files are kept on disk.
+
+    return false;
+}
+
 } // namespace
+
 
 bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
     bool directoryIterationException = false;
@@ -94,15 +104,14 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
                 return false;
             }
 
-            if (const bool dirItemHasFileType = hasFileType(entry);
-                dirItemHasFileType && vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
-                // Keep this file in file system
+            if (const bool entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus); entryShouldBeKeptOnDisk) {
+                // Keep file on file system.
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << Utility::formatSyncPath(absolutePath)
-                                                                      << L" is a hydrated placeholder, keep it");
+                                                                      << L" is either a folder, a hydrated placeholder or a "
+                                                                         L"file that is not synchronized yet. Keep it.");
                 }
-            } else if (dirItemHasFileType) { // Keep folders
-                // Remove file from file system
+            } else { // Remove file from file system.
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
                                                                                << L" from file system");
