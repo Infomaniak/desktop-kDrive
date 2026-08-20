@@ -134,8 +134,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private static bool CheckJobResultAndLogIfError(CommData? data, JsonObject? jobInput = null, [CallerMemberName] string callerName = "")
+        private static bool CheckJobResultAndLogIfError(CommData? data, CancellationToken cancellationToken, JsonObject? jobInput = null, [CallerMemberName] string callerName = "")
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Logger.Log(Logger.Level.Info, $"Job cancelled at {callerName} with input {jobInput}.");
+                return false;
+            }
+
             if (data is null)
             {
                 Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, CommData is null.");
