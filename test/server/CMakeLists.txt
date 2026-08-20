@@ -128,6 +128,7 @@ set(server_SRCS
     ${server_srcs_path}/requests/syncfolderallowedchecker.h ${server_srcs_path}/requests/syncfolderallowedchecker.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
     ${server_srcs_path}/updater/versionretriever.h ${server_srcs_path}/updater/versionretriever.cpp
+    ${server_srcs_path}/updater/checksumverifier.h ${server_srcs_path}/updater/checksumverifier.cpp
     ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
     ${server_srcs_path}/app_resources.rc
 )
