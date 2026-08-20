@@ -115,6 +115,9 @@ void WindowsUpdater::downloadUpdate() noexcept {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to to remove existing installer " << Utility::formatSyncPath(filepath));
     }
 
+    // Clear any cached checksum from a previous attempt so the sidecar is re-fetched.
+    _expectedChecksum.clear();
+
     const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
     job->setAdditionalCallback(callback);
@@ -197,26 +200,34 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
 }
 
 bool WindowsUpdater::verifyInstallerChecksum(const SyncPath &filepath) {
-    const auto fetcher = [](const std::string &sha256Url) -> std::string {
-        SyncPath tmpDirPath;
-        if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) return "";
-        const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
+    ChecksumVerifier::Sha256Fetcher fetcher;
+    if (_expectedChecksum.empty()) {
+        // First call: download the .sha256 sidecar and cache the result.
+        fetcher = [this](const std::string &sha256Url) -> std::string {
+            SyncPath tmpDirPath;
+            if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) return "";
+            const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
 
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(sha256FilePath, ioError);
+            auto ioError = IoError::Success;
+            (void) IoHelper::deleteItem(sha256FilePath, ioError);
 
-        DirectDownloadJob job(sha256FilePath, sha256Url);
-        (void) job.runSynchronously();
+            DirectDownloadJob job(sha256FilePath, sha256Url);
+            (void) job.runSynchronously();
 
-        if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) return "";
+            if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) return "";
 
-        std::ifstream file(sha256FilePath);
-        if (!file) return "";
+            std::ifstream file(sha256FilePath);
+            if (!file) return "";
 
-        std::string checksum;
-        file >> checksum;
-        return checksum;
-    };
+            std::string checksum;
+            file >> checksum;
+            _expectedChecksum = checksum;
+            return checksum;
+        };
+    } else {
+        // Subsequent calls (e.g. startInstaller): reuse the cached checksum, no network I/O.
+        fetcher = [this]([[maybe_unused]] const std::string &url) { return _expectedChecksum; };
+    }
 
     return ChecksumVerifier::verifyFileChecksum(filepath, versionInfo().downloadUrl, fetcher);
 }

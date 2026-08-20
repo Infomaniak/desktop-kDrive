@@ -74,6 +74,10 @@ class WindowsUpdater : public AbstractUpdater {
 
         bool _autoUpdate{false};
 
+        // Cached from the .sha256 sidecar file on first verification. Avoids re-downloading the sidecar
+        // when the checksum is re-verified in startInstaller() after a successful downloadFinished().
+        std::string _expectedChecksum;
+
         friend class TestWindowsUpdater;
 };
 
