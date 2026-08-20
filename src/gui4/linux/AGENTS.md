@@ -80,6 +80,8 @@
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
 - For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
+- Keep Activities geometry in `IKActivities` and Activities-specific colors in the T3 section of `IKColors`. Store exact
+  exported Figma assets under `ui/assets/main/activities/`; never reference temporary Figma URLs from QML.
 - On Activities, a retry in progress for an actively errored node shares the same projected row, and displayed Folder
   values open that exact folder even when the activity target no longer exists.
 - On Activities, keep actual in-progress transfers above failed and synchronized rows; surface active errors separately
@@ -254,10 +256,14 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
-    - `ui/windows/main/`: main-window shell, temporary tab placeholders, and feature families grouped under `home/` and
-      `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and versioned
-      generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no onboarding
-      session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
+    - `ui/windows/main/`: main-window shell, temporary tab placeholders, and feature families grouped under `activities/`,
+      `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
+      versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no
+      onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
+    - `ui/windows/main/activities/`: selected-sync Activities presentation components, including the filter controls,
+      empty state, table, rows, and source/status presentation. Time, size, and status columns have fixed widths; only
+      the name/folder boundary is draggable. They consume `ActivitiesController` and `ActivityListModel`; they must
+      not call IPC or own activity history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
@@ -403,6 +409,10 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Do not introduce raw `int` when fixed-width types are appropriate (`int32_t`, `uint8_t`, ...).
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
+- Size a fixed-width column from its content, never from a hard-coded constant. The model exposes the widest strings the
+  column can render in the active locale (`ActivityListModel::timeTextSamples`, `sizeTextSamples`) and measures them
+  with `maxTextWidth(texts, font)`; the view takes the max with the header label, measured separately via `TextMetrics`
+  because the header elides too. A constant tuned on one language truncates in the ones with longer wordings.
 
 ## Change Playbooks
 
