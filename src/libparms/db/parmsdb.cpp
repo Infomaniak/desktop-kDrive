@@ -1563,7 +1563,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     auto proxyType = ProxyType::Undefined;
     std::string hostName;
-    int port = 0;
+    Port port = 0;
     bool needsAuth = false;
     std::string user;
     std::string keychainKey;

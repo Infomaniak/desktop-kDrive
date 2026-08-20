@@ -29,7 +29,7 @@ static const auto proxyConfigInfoNeedsAuth = "needsAuth";
 static const auto proxyConfigInfoUser = "user";
 static const auto proxyConfigInfoPwd = "pwd";
 
-ProxyConfig::ProxyConfig(const ProxyType type, const std::string &hostName, const int port, const bool needsAuth,
+ProxyConfig::ProxyConfig(const ProxyType type, const std::string &hostName, const Port port, const bool needsAuth,
                          const std::string &user, const std::string &pwd) :
     _type(type),
     _hostName(hostName),
