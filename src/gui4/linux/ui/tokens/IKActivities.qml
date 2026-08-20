@@ -32,6 +32,12 @@ QtObject {
     readonly property real fileIconSize: 16
     readonly property real activityIconSize: 16
     readonly property real sourceIconSize: 14
+    readonly property real optionsButtonSize: 24
+    readonly property real optionsIconSize: 14
+    readonly property real actionMenuWidth: 250
+    readonly property real actionMenuItemHeight: 24
+    readonly property real actionMenuIconSlotSize: 16
+    readonly property real actionMenuSeparatorHeight: 11
     readonly property real progressStrokeWidth: 2
     readonly property real emptyIllustrationWidth: 183
     readonly property real emptyIllustrationHeight: 120.094
