@@ -281,6 +281,8 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return !row.activeErrorDbIds.empty();
         case ActiveErrorCountRole:
             return static_cast<qint32>(row.activeErrorDbIds.size());
+        case AvailableActionsRole:
+            return availableActions(row).toInt();
         default:
             return {};
     }
@@ -303,6 +305,7 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {ProgressRole, "progress"},
             {HasActiveErrorRole, "hasActiveError"},
             {ActiveErrorCountRole, "activeErrorCount"},
+            {AvailableActionsRole, "availableActions"},
     };
 }
 
@@ -445,6 +448,19 @@ ActivityListModel::Row *ActivityListModel::findMatchingActivity(std::vector<Row>
         }
     }
     return matchingRow;
+}
+
+ActivityListModel::AvailableActions ActivityListModel::availableActions(const Row &row) {
+    AvailableActions actions = NoAvailableAction;
+    if (row.status == Status::Synchronized && row.instruction != SyncFileInstruction::Remove) {
+        actions |= OpenLocalAction;
+        actions |= OpenOnlineAction;
+        actions |= CopyShareLinkAction;
+    }
+    if (row.status == Status::Failed && !row.activeErrorDbIds.empty()) {
+        actions |= FixErrorsAction;
+    }
+    return actions;
 }
 
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
@@ -617,6 +633,7 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
     addRoleIf(row.progress != nextRow.progress, ProgressRole);
     addRoleIf(row.activeErrorDbIds.empty() != nextRow.activeErrorDbIds.empty(), HasActiveErrorRole);
     addRoleIf(row.activeErrorDbIds.size() != nextRow.activeErrorDbIds.size(), ActiveErrorCountRole);
+    addRoleIf(availableActions(row) != availableActions(nextRow), AvailableActionsRole);
 
     row = nextRow;
     if (!changedRoles.empty()) {

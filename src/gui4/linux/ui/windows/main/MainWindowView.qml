@@ -42,6 +42,8 @@ Item {
         anchors.fill: parent
 
         SidebarView {
+            id: sidebarView
+
             width: root.sidebarWidth
             height: parent.height
             appRouter: root.appRouter
@@ -81,6 +83,22 @@ Item {
                     visible: root.currentTab === root.tabBlockingError
                 }
             }
+        }
+    }
+
+    Connections {
+        target: root.activitiesController
+
+        function onShareLinkCopyStarted(rowId) {
+            sidebarView.notification.showLoading(qsTrId("creatingShareLink"));
+        }
+
+        function onShareLinkCopied(rowId) {
+            sidebarView.notification.showSuccess(qsTrId("linkCopiedToClipboardTitle"));
+        }
+
+        function onShareLinkCopyFailed(rowId) {
+            sidebarView.notification.showError(qsTrId("failedToCreateShareLinkError"));
         }
     }
 

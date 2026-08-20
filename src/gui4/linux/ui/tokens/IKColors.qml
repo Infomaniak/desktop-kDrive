@@ -159,10 +159,10 @@ QtObject {
     // -------------------------------------------------------------------------
 
     readonly property color driveDefaultColor: _p.infomaniak
+    readonly property color errorBannerSurface: darkMode ? _p.blue950 : _p.blue100
     readonly property color homeIdleBadgeForeground: darkMode ? _p.green400 : _p.green600
     readonly property color homeIdleBadgeSurface: darkMode ? _p.green950 : _p.green100
     readonly property color homeIdleIllustrationStroke: darkMode ? _p.kDriveLight : _p.blue600
-    readonly property color homeErrorBannerSurface: darkMode ? _p.blue950 : _p.blue100
     readonly property color homeOfflineForeground: darkMode ? _p.kDriveLight : _p.blue600
     readonly property color homeOfflineSurface: darkMode ? _p.kDriveDark : _p.bluePale
     readonly property color homePausedForeground: darkMode ? _p.orange400 : _p.orangeDeep
@@ -170,8 +170,6 @@ QtObject {
     readonly property color homeSyncingForeground: darkMode ? _p.kDriveLight : _p.blue600
     readonly property color homeSyncingSurface: darkMode ? _p.kDriveDark : _p.bluePale
     readonly property color activitiesFilterSurface: surfaceSecondary
-    readonly property color activitiesFilterSelectedSurface: actionPrimary
-    readonly property color activitiesFilterSelectedText: actionOnPrimary
     readonly property color activitiesRowAlternateSurface: surfaceSecondary
     readonly property color activitiesDivider: surfaceTertiary
     readonly property color activitiesFileIcon: textTertiary
@@ -180,4 +178,8 @@ QtObject {
     readonly property color activitiesStatusSyncing: statusMediumSecurity
     readonly property color activitiesStatusError: statusMediumWarning
     readonly property color activitiesProgressTrack: surfaceTertiary
+    readonly property color activitiesActionMenuSurface: surfaceSecondary
+    readonly property color activitiesActionMenuHover: surfaceTertiary
+    readonly property color sidebarNotificationSurface: surfacePrimary
+    readonly property color sidebarNotificationBorder: surfaceTertiary
 }

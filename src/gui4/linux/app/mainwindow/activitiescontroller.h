@@ -44,6 +44,7 @@ class ActivitiesController final : public QObject {
         Q_PROPERTY(bool hasActivities READ hasActivities NOTIFY hasActivitiesChanged)
         Q_PROPERTY(qint32 errorCount READ errorCount NOTIFY errorCountChanged)
         Q_PROPERTY(bool hasErrors READ hasErrors NOTIFY errorCountChanged)
+        Q_PROPERTY(bool shareLinkCopyPending READ shareLinkCopyPending NOTIFY shareLinkCopyPendingChanged)
 
     public:
         explicit ActivitiesController(const ActivityStore &activityStore, const AppCache &appCache,
@@ -58,6 +59,7 @@ class ActivitiesController final : public QObject {
         [[nodiscard]] bool hasActivities() const { return _hasActivities; }
         [[nodiscard]] qint32 errorCount() const { return _errorCount; }
         [[nodiscard]] bool hasErrors() const { return _errorCount > 0; }
+        [[nodiscard]] bool shareLinkCopyPending() const { return _activityService.shareLinkCopyPending(); }
 
         Q_INVOKABLE void openLocal(const QString &rowId);
         Q_INVOKABLE void openFolder(const QString &rowId);
@@ -72,7 +74,10 @@ class ActivitiesController final : public QObject {
         void loadingChanged();
         void hasActivitiesChanged();
         void errorCountChanged();
+        void shareLinkCopyPendingChanged();
+        void shareLinkCopyStarted(const QString &rowId);
         void shareLinkCopied(const QString &rowId);
+        void shareLinkCopyFailed(const QString &rowId);
         void actionFailed(const QString &rowId);
 
     private:

@@ -6,6 +6,14 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 pragma ComponentBehavior: Bound
@@ -27,7 +35,7 @@ Item {
     // label counts too, since it elides the same way, and it is the binding constraint for size and status.
     readonly property real timeContentWidth: Math.max(root.model.maxTextWidth(root.model.timeTextSamples, cellFont.font), timeHeaderMetrics.advanceWidth)
     readonly property real sizeContentWidth: Math.max(root.model.maxTextWidth(root.model.sizeTextSamples, cellFont.font), sizeHeaderMetrics.advanceWidth)
-    readonly property real statusContentWidth: Math.max(IKActivities.sourceIconSize + IKSpacing.s8 + IKActivities.activityIconSize, statusHeaderMetrics.advanceWidth)
+    readonly property real statusContentWidth: Math.max(IKActivities.sourceIconSize + 2 * IKSpacing.s8 + IKActivities.activityIconSize + IKActivities.optionsButtonSize, statusHeaderMetrics.advanceWidth)
 
     readonly property real fixedColumnsWidth: timeColumnWidth + sizeColumnWidth + statusColumnWidth
     readonly property real flexibleWidth: Math.max(IKActivities.nameColumnMinWidth + IKActivities.folderColumnMinWidth, width - fixedColumnsWidth)
@@ -112,6 +120,8 @@ Item {
             timeColumnWidth: root.timeColumnWidth
             sizeColumnWidth: root.sizeColumnWidth
             statusColumnWidth: root.statusColumnWidth
+            menuViewport: listView
+            viewportOffset: listView.contentY
             controller: root.controller
         }
 
