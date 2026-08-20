@@ -66,6 +66,8 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         // Returns true if the execute() loop should break.
         bool checkAndClearUpdateDelay(ExitInfo &exitInfo);
 
+        ExitInfo localChangesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes);
+
         std::chrono::steady_clock::time_point _needUpdateTimerStart = std::chrono::steady_clock::now();
         bool _useExtendedDelay = false;
 

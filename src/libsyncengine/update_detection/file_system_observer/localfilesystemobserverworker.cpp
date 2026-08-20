@@ -109,17 +109,10 @@ ExitInfo LocalFileSystemObserverWorker::handleDeleteOp(const SyncPath &absoluteP
     return ExitCode::Ok;
 }
 
-ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) {
+ExitInfo LocalFileSystemObserverWorker::localChangesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) {
     const std::scoped_lock lock(_recursiveMutex);
 
-    // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
-    // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
-    // be considered by the OS as move while must be considered by the synchronizer as Create.
-    if (!_liveSnapshot.isValid()) {
-        // Snapshot generation is ongoing, queue the events and process them later
-        _pendingFileEvents.insert(_pendingFileEvents.end(), changes.begin(), changes.end());
-        return ExitCode::Ok;
-    }
+    if (!_liveSnapshot.isValid()) return ExitCode::Ok;
 
     auto tmpChanges = changes;
     for (auto changeIt = tmpChanges.begin(); changeIt != tmpChanges.end(); ++changeIt) {
@@ -298,10 +291,10 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
         if (const bool itemExistsInSnapshot = _liveSnapshot.exists(nodeId); !itemExistsInSnapshot) {
             if (opTypeFromOS == OperationType::Delete) {
-                // The node ID of the deleted item is different from `nodeId`. The latter is the identifier of an item with the
-                // same path as the deleted item and that exists on the file system at the time of the last check. This situation
-                // happens for instance if a file is deleted while another file with the same path is created shortly
-                // afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
+                // The node ID of the deleted item is different from `nodeId`. The latter is the identifier of an item with
+                // the same path as the deleted item and that exists on the file system at the time of the last check. This
+                // situation happens for instance if a file is deleted while another file with the same path is created
+                // shortly afterward. Typically, editors of the MS suite (xlsx, docx) or Adobe suite (pdf) perform a
                 // Delete-followed-by-Create operation during a single edit.
                 NodeId itemId;
                 if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, itemId); !exitInfo) {
@@ -330,9 +323,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
             NodeId previousItemId;
             if (const auto exitInfo = _liveSnapshot.getItemId(relativePath, previousItemId); exitInfo) {
-                // If an item with the same path already exists, remove it from snapshot because its ID might have changed (i.e.
-                // the file has been downloaded in the tmp folder then moved to override the existing one). The item will be
-                // inserted below anyway.
+                // If an item with the same path already exists, remove it from snapshot because its ID might have changed
+                // (i.e. the file has been downloaded in the tmp folder then moved to override the existing one). The item
+                // will be inserted below anyway.
                 if (!previousItemId.empty()) {
                     if (!_liveSnapshot.removeItem(previousItemId)) {
                         LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath) << L" ("
@@ -379,7 +372,8 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
 
             if (nodeType == NodeType::Directory) {
                 // A new directory must be explored
-                // NB: When a directory is moved while staying inside the sync directory, it is deleted & added to the snapshot
+                // NB: When a directory is moved while staying inside the sync directory, it is deleted & added to the
+                // snapshot
                 if (absolutePath.native().length() > CommonUtility::maxPathLength()) {
                     LOGW_SYNCPAL_WARN(_logger, L"Ignore item: " << Utility::formatSyncPath(absolutePath) << L" because size > "
                                                                 << CommonUtility::maxPathLength());
@@ -442,9 +436,9 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
                     return ExitCode::DbError;
                 }
                 if (found) {
-                    // The update operation can lead to the replacement of an existing item in the snapshot (for example when a
-                    // file is replaced by another one with the same name). If the removed item is still in the DB, we raise a
-                    // Move operation to force the update of the snapshot.
+                    // The update operation can lead to the replacement of an existing item in the snapshot (for example when
+                    // a file is replaced by another one with the same name). If the removed item is still in the DB, we raise
+                    // a Move operation to force the update of the snapshot.
                     LOGW_SYNCPAL_DEBUG(_logger, L"Raise a Move operation for item: "
                                                         << Utility::formatSyncPath(removedPath) << L" ("
                                                         << CommonUtility::s2ws(removedNodeId) << L")");
@@ -459,6 +453,22 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
     }
 
     return ExitCode::Ok;
+}
+
+
+ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) {
+    const std::scoped_lock lock(_recursiveMutex);
+
+    // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
+    // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it
+    // will be considered by the OS as move while must be considered by the synchronizer as Create.
+    if (!_liveSnapshot.isValid()) {
+        // Snapshot generation is ongoing, queue the events and process them later
+        _pendingFileEvents.insert(_pendingFileEvents.end(), changes.begin(), changes.end());
+        return ExitCode::Ok;
+    }
+
+    return localChangesDetected(changes);
 }
 
 void LocalFileSystemObserverWorker::forceUpdate() {
@@ -578,7 +588,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     const std::scoped_lock lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        if (const auto exitInfo = changesDetected(_pendingFileEvents); !exitInfo) {
+        if (const auto exitInfo = localChangesDetected(_pendingFileEvents); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
         }
