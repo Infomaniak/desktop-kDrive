@@ -19,6 +19,7 @@
 #include "testsyncpal.h"
 #include "syncpal/tmpblacklistmanager.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
@@ -79,8 +80,8 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    auto vfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
+    _syncPal = std::make_shared<SyncPal>(vfs, sync.dbId(), KDRIVE_VERSION_STRING);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->createSharedObjects();
     _syncPal->createWorkers();
@@ -484,19 +485,62 @@ bool TestSyncPal::check_case_6_4() {
 }
 
 void TestSyncPal::testWipeVirtualFiles() {
-#if !defined(KD_LINUX)
-    const SyncPath placeholderPath = _localTempDir.path() / "dehydrated_placeholder.txt";
-    {
-        std::ofstream placeholder{placeholderPath};
-        auto ioError = IoError::Success;
-        testhelpers::setDehydratedPlaceholderStatus(placeholderPath, ioError);
-    }
-#endif
+    auto vfsMock = std::dynamic_pointer_cast<MockVfs<VfsOff>>(_syncPal->vfs());
+
+    const SyncPath localFilePath = _localTempDir.path() / "file.txt";
+    { std::ofstream localFile{localFilePath}; }
+
+    // Vfs is OFF: the file should be kept.
     CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
-#if !defined(KD_LINUX)
     std::error_code ec;
-    CPPUNIT_ASSERT(!std::filesystem::exists(placeholderPath, ec));
+    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath, ec));
     CPPUNIT_ASSERT(!ec);
-#endif
+
+    // Simulate an activated Vfs and the file is a hydrated placeholder: the file should be kept.
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = true;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the file is not a placeholder: the file should be kept.
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = false;
+        vfsStatus.isHydrated = false;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the item is a folder: the item should be kept.
+    const SyncPath localFolderPath = _localTempDir.path() / "folder";
+    std::filesystem::create_directory(localFolderPath, ec);
+    CPPUNIT_ASSERT(!ec);
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(std::filesystem::exists(localFolderPath, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Simulate an activated Vfs and the file is not a dehydrated placeholder: the file should be wiped.
+    vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
+        vfsStatus.isPlaceholder = true;
+        vfsStatus.isHydrated = false;
+
+        return ExitCode::Ok;
+    });
+    CPPUNIT_ASSERT(_syncPal->wipeVirtualFiles());
+    CPPUNIT_ASSERT(!std::filesystem::exists(localFilePath, ec));
+    CPPUNIT_ASSERT(!ec);
 }
 } // namespace KDC
