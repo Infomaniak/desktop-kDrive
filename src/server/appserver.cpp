@@ -846,7 +846,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &pa
         auto proxyConfig = newParametersInfo.proxyConfig();
         proxyConfig.setKeychainKey(keychainKey);
         newParametersInfo.setProxyConfig(proxyConfig);
-    } else if (previousParameters.proxyConfig().needsAuth() && !newParametersInfo.proxyConfig().needsAuth()) {
+    } else if (previousParameters.proxyConfig().needsAuth()) {
         // Proxy does not need authentification anymore, remove the entry from the keychain key.
         if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
             LOG_WARN(_logger, "Failed to remove proxy password from keychain");
