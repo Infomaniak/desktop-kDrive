@@ -15,6 +15,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
     private readonly CancellationTokenSource _acceptCts = new();
     private readonly Task<(Socket Socket, SslStream Stream)> _acceptTask;
     private readonly X509Certificate2 _serverCertificate;
+    private readonly X509Certificate2 _clientCertificate;
     private Socket? _client;
     private SslStream? _clientStream;
 
@@ -26,9 +27,24 @@ internal sealed class FakeSocketServer : IAsyncDisposable
     /// </summary>
     public string CertificatePem => _serverCertificate.ExportCertificatePem();
 
+    /// <summary>
+    /// PEM-encoded client certificate the fake server expects the client to present. Tests feed this
+    /// (and <see cref="ClientPrivateKeyPem"/>) to the client's keychain store so the client can present
+    /// it during the handshake, mirroring the real deployment where the server publishes the client
+    /// certificate/key to the keychain.
+    /// </summary>
+    public string ClientCertificatePem => _clientCertificate.ExportCertificatePem();
+
+    /// <summary>
+    /// PEM-encoded (PKCS#1) private key associated with <see cref="ClientCertificatePem"/>, matching the
+    /// format the real server writes to the keychain.
+    /// </summary>
+    public string ClientPrivateKeyPem => _clientCertificate.GetRSAPrivateKey()!.ExportRSAPrivateKeyPem();
+
     public FakeSocketServer()
     {
         _serverCertificate = CreateSelfSignedCertificate();
+        _clientCertificate = CreateSelfSignedCertificate();
         _listener = new TcpListener(IPAddress.Loopback, 0);
         _listener.Start();
         Port = ((IPEndPoint)_listener.LocalEndpoint).Port;
@@ -41,6 +57,8 @@ internal sealed class FakeSocketServer : IAsyncDisposable
     /// <c>InitConnection</c>); otherwise both sides block and the client handshake never
     /// completes. Doing it here means the handshake progresses as soon as the client connects,
     /// without the test needing to first await <see cref="WaitForClientAsync"/>.
+    /// The server requires and validates the client certificate, mirroring the real server's
+    /// mutual-TLS requirement.
     /// </summary>
     private async Task<(Socket Socket, SslStream Stream)> AcceptAndAuthenticateAsync(CancellationToken cancellationToken)
     {
@@ -52,10 +70,26 @@ internal sealed class FakeSocketServer : IAsyncDisposable
         {
             ServerCertificate = _serverCertificate,
             EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
-            ClientCertificateRequired = false
+            ClientCertificateRequired = true,
+            RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => ValidateClientCertificate(certificate)
         }, cancellationToken).ConfigureAwait(false);
 
         return (socket, stream);
+    }
+
+    /// <summary>
+    /// Validates the certificate presented by the client against the one this server published,
+    /// requiring a byte-for-byte match just like the real server that trusts only that certificate.
+    /// </summary>
+    private bool ValidateClientCertificate(X509Certificate? presentedCertificate)
+    {
+        if (presentedCertificate is null)
+        {
+            return false;
+        }
+
+        using var presented = new X509Certificate2(presentedCertificate);
+        return presented.RawData.SequenceEqual(_clientCertificate.RawData);
     }
 
     public async Task WriteCommFileAsync(string commFilePath)
@@ -66,9 +100,12 @@ internal sealed class FakeSocketServer : IAsyncDisposable
             Directory.CreateDirectory(dir);
         }
 
-        // Publish the certificate alongside the port, emulating the server publishing it to the
-        // keychain. FakeKeychainStore reads it back so the client can pin/validate it.
+        // Publish the certificates alongside the port, emulating the server publishing them to the
+        // keychain. FakeKeychainStore reads them back so the client can pin the server certificate and
+        // present the client certificate during the handshake.
         await File.WriteAllTextAsync(CertificateFilePath(commFilePath), CertificatePem);
+        await File.WriteAllTextAsync(ClientCertificateFilePath(commFilePath), ClientCertificatePem);
+        await File.WriteAllTextAsync(ClientKeyFilePath(commFilePath), ClientPrivateKeyPem);
         await File.WriteAllTextAsync(commFilePath, Port.ToString());
     }
 
@@ -77,6 +114,18 @@ internal sealed class FakeSocketServer : IAsyncDisposable
     /// server certificate associated with a given .comm file.
     /// </summary>
     public static string CertificateFilePath(string commFilePath) => commFilePath + ".cert";
+
+    /// <summary>
+    /// Convention shared with <c>FakeKeychainStore</c> for the companion file holding the
+    /// client certificate the server expects.
+    /// </summary>
+    public static string ClientCertificateFilePath(string commFilePath) => commFilePath + ".clientcert";
+
+    /// <summary>
+    /// Convention shared with <c>FakeKeychainStore</c> for the companion file holding the
+    /// client private key associated with the client certificate.
+    /// </summary>
+    public static string ClientKeyFilePath(string commFilePath) => commFilePath + ".clientkey";
 
     public async Task<Socket> WaitForClientAsync(TimeSpan? timeout = null)
     {
@@ -218,7 +267,7 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
     /// <summary>
     /// Creates a PEM-encoded certificate that is unrelated to the one this server presents,
-    /// allowing tests to simulate a mismatched pinned certificate.
+    /// allowing tests to simulate a mismatched server certificate.
     /// </summary>
     public static string CreateUnrelatedCertificatePem()
     {
@@ -293,5 +342,6 @@ internal sealed class FakeSocketServer : IAsyncDisposable
 
         _acceptCts.Dispose();
         _serverCertificate.Dispose();
+        _clientCertificate.Dispose();
     }
 }
