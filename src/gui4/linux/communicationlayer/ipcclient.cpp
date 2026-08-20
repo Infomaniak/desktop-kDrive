@@ -253,13 +253,21 @@ void IpcClient::onConnected() {
 /**
  * Handles socket disconnection.
  * Before the first successful connection: schedules a reconnection retry (server may not be ready yet).
- * After the first successful connection: considered fatal — emits disconnected() and calls exit(EXIT_FAILURE).
+ * During a shutdown (see expectDisconnection()): the expected end of the session, only disconnected() is emitted.
+ * Otherwise: considered fatal — emits disconnected() and calls exit(EXIT_FAILURE).
  */
 void IpcClient::onDisconnected() {
     if (!_hasConnectedOnce) {
         scheduleInitialConnectionRetry("Socket disconnected before the first successful connection");
         return;
     }
+
+    if (_disconnectionExpected) {
+        qCInfo(lcIpcClient) << "Socket closed by the server during shutdown";
+        emit disconnected();
+        return;
+    }
+
     qCWarning(lcIpcClient) << "Socket disconnected";
     emit disconnected();
     SentryService::reportFatalAndExit("IPC disconnected after connection", "Socket disconnected after initial connection.");
@@ -268,12 +276,24 @@ void IpcClient::onDisconnected() {
 /**
  * Handles socket errors.
  * Before the first successful connection: schedules a retry (e.g. server not started yet, port not bound).
- * After the first successful connection: considered fatal — logs the error and calls exit(EXIT_FAILURE).
+ * During a shutdown (see expectDisconnection()): the server closing the TLS session surfaces as
+ * RemoteHostClosedError, which is the awaited outcome and not an error.
+ * Otherwise: considered fatal — logs the error and calls exit(EXIT_FAILURE).
  * @param socketError The socket error code (see QAbstractSocket::SocketError).
  */
 void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) {
     if (!_hasConnectedOnce) {
         scheduleInitialConnectionRetry(QString("Socket error %1 - %2").arg(toInt(socketError)).arg(_socket->errorString()));
+        return;
+    }
+
+    if (_disconnectionExpected) {
+        // The server closing the TLS session surfaces as RemoteHostClosedError twice, once for the TLS layer and once for
+        // the underlying socket. onDisconnected() already traces the closure, only an unexpected error is worth a line.
+        if (socketError != QAbstractSocket::RemoteHostClosedError) {
+            qCWarning(lcIpcClient) << "Socket error while waiting for the server to close:" << socketError << "-"
+                                   << _socket->errorString();
+        }
         return;
     }
 

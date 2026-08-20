@@ -82,8 +82,7 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
         return 0;
     } catch (Poco::Exception &ex) {
         LOG_ERROR(Log::instance()->getLogger(), "Exception in StreamSocket::receiveBytes: " << ex.displayText());
-        _isClosing = true;
-        lostConnectionCbk();
+        if (!_isClosing.exchange(true)) lostConnectionCbk();
         close();
         _pendingRead = false;
         return 0;
@@ -92,8 +91,9 @@ uint64_t SocketCommChannel::readData(CommChar *data, uint64_t maxlen) {
     if (lenReceived <= 0) {
         LOG_DEBUG(Log::instance()->getLogger(),
                   (lenReceived == 0 ? "Socket connection closed by peer" : "Socket connection error"));
-        _isClosing = true;
-        lostConnectionCbk();
+        // Only report a lost connection when the channel was still open: a read racing with a deliberate close()
+        // reaches this point too.
+        if (!_isClosing.exchange(true)) lostConnectionCbk();
         close();
         _pendingRead = false;
         return 0;
@@ -109,6 +109,13 @@ uint64_t SocketCommChannel::writeData(const CommChar *data, uint64_t len) {
     if (len > std::numeric_limits<int>::max() / sizeof(CommChar)) {
 #pragma pop_macro("max")
         LOG_ERROR(Log::instance()->getLogger(), "Socket writeData error: data length too large");
+        return 0;
+    }
+
+    if (_isClosing) {
+        // The channel is being torn down (server stopping or connection lost): the socket is already shut down, sending
+        // would only raise an exception.
+        LOG_DEBUG(Log::instance()->getLogger(), "Channel is closing, outgoing data discarded");
         return 0;
     }
 
@@ -151,6 +158,8 @@ void SocketCommChannel::callbackHandler() {
             break;
         }
 
+        if (_isClosing) break; // Closed while polling: this is a deliberate shutdown, not a lost connection
+
         _pendingRead = true;
         readyReadCbk();
         while (!_isClosing && _pendingRead) { // Wait until readData is called before polling again
@@ -190,6 +199,11 @@ bool SocketCommChannel::isReadable() const {
 }
 
 void SocketCommChannel::close() {
+    _isClosing = true;
+    // The lost-connection path and ~SocketCommChannel both close the channel: shutdown() must run only once, a second
+    // one always throws on an already closed TLS session.
+    if (_closed.exchange(true)) return;
+
     try {
         std::lock_guard lock(_socketMutex);
         _socket.shutdown();
@@ -248,6 +262,18 @@ void SocketCommServer::close() {
 
         if (_serverSocketThread && _serverSocketThread->joinable()) {
             _serverSocketThread->join();
+        }
+
+        // Close here and not in ~SocketCommServer: the peer linux waits for this shutdown to quit, and the destructor only
+        // runs at the end of the cleanup. Copy the list first, close() can block on the channel's socket mutex.
+        // windows peer doesn't wait for the server to quit.
+        std::list<std::shared_ptr<AbstractCommChannel>> channels;
+        {
+            const std::scoped_lock lock(_channelsMutex);
+            channels = _channels;
+        }
+        for (const auto &channel: channels) {
+            channel->close();
         }
 
         LOG_DEBUG(Log::instance()->getLogger(), name() << " stopped");
