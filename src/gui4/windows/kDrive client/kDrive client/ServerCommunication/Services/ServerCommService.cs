@@ -134,29 +134,29 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private static bool CheckJobResultAndLogIfError(CommData? data, CancellationToken cancellationToken, JsonObject? jobInput = null, [CallerMemberName] string callerName = "")
+        private static bool CheckJobResultAndLogIfError(CommData? data, CancellationToken cancellationToken, [CallerMemberName] string callerName = "")
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.Log(Logger.Level.Info, $"Job cancelled at {callerName} with input {jobInput}.");
+                Logger.Log(Logger.Level.Info, $"Job cancelled at {callerName}.");
                 return false;
             }
 
             if (data is null)
             {
-                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, CommData is null.");
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName}, CommData is null.");
                 return false;
             }
 
             if (data.Params is null)
             {
-                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, Params is null.");
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName}, Params is null.");
                 return false;
             }
 
             if (data.Code != ExitCode.Ok)
             {
-                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName} with input {jobInput}, exit code: {data.Code}, exit cause: {data.Cause}.");
+                Logger.Log(Logger.Level.Error, $"Job result check failed at {callerName}, exit code: {data.Code}, exit cause: {data.Cause}.");
                 return false;
             }
             return true;
@@ -184,7 +184,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.LOGIN_REQUESTTOKEN, parms, cancellationToken).ConfigureAwait(false);
 
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.UserDbId))
@@ -226,7 +226,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_INFOLIST, [], cancellationToken).ConfigureAwait(false);
 
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, []))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.UserInfoList))
@@ -288,7 +288,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             }
 
-            return CheckJobResultAndLogIfError(commData, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(commData, cancellationToken);
         }
 
         public async Task<bool> RefreshAccounts(CancellationToken cancellationToken)
@@ -415,7 +415,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.UserDbId] = userDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.USER_AVAILABLEDRIVES, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.DriveAvailableInfoList))
@@ -577,7 +577,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.BlackList] = JsonSerializer.SerializeToNode(newSync.ExcludedNodeIds, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ADD, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.SyncInfo))
@@ -615,7 +615,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_SETSUPPORTSVIRTUALFILES, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return false;
 
             return true;
@@ -643,7 +643,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             }
 
-            if (!CheckJobResultAndLogIfError(commData, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(commData, cancellationToken))
                 return false;
 
             // Rely on signal to remove the sync from the model
@@ -667,7 +667,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_START, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
             {
                 sync.SyncStatus = previousStatus;
                 return false;
@@ -693,7 +693,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_STOP, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
             {
                 sync.SyncStatus = previousStatus;
                 return false;
@@ -709,7 +709,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_BESTVFSAVAILABLEMODE, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.BestMode))
@@ -733,7 +733,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_FINDGOODPATHFORNEWSYNC, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.GoodPath) || !HasRequiredParam(data, JsonKeys.ErrorMessage))
@@ -765,7 +765,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.IsValid))
@@ -796,7 +796,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.DRIVE_SEARCH, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.SearchInfoList))
@@ -847,7 +847,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_OFFLINE_FILES_SIZE, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.Size))
@@ -873,7 +873,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.WithPath] = true
             };
             CommData data = await _getSubFolderQueue.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.NodeSubFolderInfoList))
@@ -908,7 +908,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.WithPath] = true
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_INFO, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return new GetNodeInfoResult(data.Cause, null);
 
             if (!HasRequiredParam(data, JsonKeys.NodeInfo))
@@ -938,7 +938,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
             };
             CommData data = await _getFolderSizeQueue.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.FolderSize))
@@ -961,7 +961,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId,
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_LIST, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.NodeIdList))
@@ -989,7 +989,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeIdList] = JsonSerializer.SerializeToNode(idList, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() } })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.BLACKLISTED_NODE_SETLIST, parms, cancellationToken).ConfigureAwait(false);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
@@ -1006,7 +1006,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CREATEMISSINGFOLDERS, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.NodeId))
@@ -1032,7 +1032,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId)
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_GETPUBLICLINKURL, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.LinkUrl))
@@ -1067,7 +1067,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.ReplicaSide] = (int)replicaSide
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_CONFLICT_INFO, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.NodeConflictInfo))
@@ -1179,7 +1179,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.UpdateChannel] = (int)channel
             };
             CommData data2 = await _commClient.SendRequestAsync(RequestNum.UPDATER_VERSION_INFO, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data2, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data2, cancellationToken))
                 return false;
 
             if (!HasRequiredParam(data2, JsonKeys.VersionInfo))
@@ -1212,7 +1212,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.IncludeArchivedLogs] = includeArchivedLogs
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SEND_LOG_TO_SUPPORT, parms, cancellationToken);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<bool> CancelLogUpload(CancellationToken cancellationToken)
@@ -1259,7 +1259,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Value] = Utility.ToBase64String(value)
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SET_APPSTATE, parms, cancellationToken);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<string?> GetAppState(AppStateKey key, CancellationToken cancellationToken)
@@ -1269,7 +1269,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Key] = (int)key
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return null;
 
             if (!HasRequiredParam(data, JsonKeys.Value))
@@ -1314,7 +1314,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             CommData data = await _commClient.SendRequestAsync(RequestNum.PARAMETERS_UPDATE, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return false;
 
             return true;
@@ -1331,7 +1331,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     [JsonKeys.Default] = def
                 };
                 CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_GETLIST, parms, cancellationToken).ConfigureAwait(false);
-                if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+                if (!CheckJobResultAndLogIfError(data, cancellationToken))
                     return null;
 
                 if (!HasRequiredParam(data, JsonKeys.ExclusionTemplatesList))
@@ -1363,7 +1363,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.ExclusionTemplatesList] = JsonSerializer.SerializeToNode(templates, new JsonSerializerOptions { Converters = { new Base64StringJsonConverter() }, PropertyNamingPolicy = JsonNamingPolicy.CamelCase })
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.EXCLTEMPL_SETUSERLIST, parms, cancellationToken).ConfigureAwait(false);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<bool> RefreshErrors(CancellationToken cancellationToken)
@@ -1373,7 +1373,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Limit] = _maxErrorLimit
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken).ConfigureAwait(false);
-            if (!CheckJobResultAndLogIfError(data, cancellationToken, parms))
+            if (!CheckJobResultAndLogIfError(data, cancellationToken))
                 return false;
 
             if (!HasRequiredParam(data, JsonKeys.ErrorInfoList))
@@ -1442,7 +1442,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Info, $"Error with DbId {errorDbId} cannot be deleted as it is kept by the server.");
                 return false;
             }
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<bool> RefreshSyncErrors(DbId syncDbId, CancellationToken cancellationToken)
@@ -1452,7 +1452,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.SyncDbId] = syncDbId
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_SYNC_REFRESH, parms, cancellationToken).ConfigureAwait(false);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
@@ -1463,7 +1463,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.KeepRemoteErrorDbIdList] = JsonSerializer.SerializeToNode(keepRemoteErrorDbIds)
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS, parms, cancellationToken).ConfigureAwait(false);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         public async Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken)
@@ -1474,7 +1474,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.Strategy] = (int)strategy
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_RESOLVE_CONFLICTS_QUICK, parms, cancellationToken).ConfigureAwait(false);
-            return CheckJobResultAndLogIfError(data, cancellationToken, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         // Signals
