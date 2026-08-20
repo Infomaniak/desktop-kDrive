@@ -85,7 +85,7 @@ class ParametersInfo {
                    (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
                    (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete()) &&
                    (lhs.proxyConfig() == rhs.proxyConfig());
-        }
+friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) = default;
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
