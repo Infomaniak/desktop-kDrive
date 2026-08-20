@@ -68,7 +68,7 @@
   accessory must remain independent presentation inputs rather than a screen-specific state enum.
 - Route orange error dots progressively in the main sidebar: selected-sync errors appear on Activities, unselected-sync
   errors appear on the closed selector, and per-sync dots appear inside the open selector. Normal activity has no dot.
-- Keep the Home error banner surface visibly distinct from the Home background in both themes.
+- Keep the shared error banner surface visibly distinct from the page background in both themes.
 - Match the Figma main-toolbar Pause/Resume and Settings group: one subtly outlined 68 x 36 capsule with 4 px padding
   and spacing, containing two independent 28 x 28 circular hover surfaces.
 - Use the same resting surface for the main-toolbar Support and Pause/Settings controls, and the same stronger hover
@@ -82,10 +82,25 @@
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
 - Keep Activities geometry in `IKActivities` and Activities-specific colors in the T3 section of `IKColors`. Store exact
   exported Figma assets under `ui/assets/main/activities/`; never reference temporary Figma URLs from QML.
+- Preserve the visual aspect ratio of Activities menu icons and center differently sized glyphs in a fixed slot. Add a
+  small safety area to SVG view boxes whose paths touch or exceed their bounds, since Qt SVG clips that antialiasing even
+  when the asset declares `overflow="visible"`.
+- Rasterize small tintable SVG sources at no less than 3x their logical size before applying `MultiEffect`, while
+  constraining only one `sourceSize` dimension so Qt retains the SVG aspect ratio. Do not enable mipmapping for these
+  icons. Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the
+  direct content item's geometry.
+- Close an Activities row action menu when its delegate moves vertically. A popup must not follow a row displaced by
+  incoming activities, sorting, or filtering because it can become detached from the viewport and obscure another row.
+- Keep an Activities row action menu entirely inside the visible list viewport. Prefer opening it below its row, flip it
+  above when there is insufficient room, and clamp the result when neither side provides its full height.
 - On Activities, a retry in progress for an actively errored node shares the same projected row, and displayed Folder
   values open that exact folder even when the activity target no longer exists.
 - On Activities, keep actual in-progress transfers above failed and synchronized rows; surface active errors separately
   without displacing transfers that are still running.
+- Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
+  revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
+- Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
+  component generic, non-modal, and independent from the activity row lifetime.
 - Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
   files under `test/gui4/linux/` until the user explicitly reopens that scope.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
@@ -192,7 +207,8 @@
   active errors visible even when their recent activity has been evicted.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
-  locations, and delegates asynchronous link actions to `ActivityService`.
+  locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
+  transient feedback independent from projected row lifetime.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`.
@@ -260,9 +276,10 @@
       `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
       versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no
       onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
-    - `ui/windows/main/activities/`: selected-sync Activities page, filter popup, table rows, source/status presentation,
-      and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is draggable. It
-      consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity history.
+    - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
+      presentation, and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is
+      draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
+      history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
