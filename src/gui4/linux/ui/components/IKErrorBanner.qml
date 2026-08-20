@@ -22,14 +22,18 @@ import QtQuick
 import QtQuick.Controls
 import kDrive.UI
 
+// Synchronization error banner shared by Home and Activities. The owning view supplies the height its screen
+// specifies and handles `actionTriggered`; the banner itself never reads a controller.
 Rectangle {
     id: root
 
-    required property var controller
+    required property int errorCount
 
-    implicitHeight: IKMainWindow.homeErrorBannerHeight
+    signal actionTriggered
+
+    implicitHeight: IKMainWindow.errorBannerHeight
     radius: IKRadius.r12
-    color: IKColors.homeErrorBannerSurface
+    color: IKColors.errorBannerSurface
 
     Row {
         anchors.fill: parent
@@ -43,7 +47,7 @@ Rectangle {
 
             Text {
                 width: parent.width
-                text: qsTrId("informationBlockSynchroErrorTitle", root.controller.errorCount)
+                text: qsTrId("informationBlockSynchroErrorTitle", root.errorCount)
                 textFormat: Text.StyledText
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.bodySize
@@ -63,10 +67,10 @@ Rectangle {
             id: fixButton
 
             anchors.verticalCenter: parent.verticalCenter
-            implicitHeight: IKMainWindow.homeErrorActionButtonHeight
+            implicitHeight: IKMainWindow.errorBannerActionButtonHeight
             text: qsTrId("buttonFixErrors")
             focusPolicy: Qt.StrongFocus
-            onClicked: root.controller.showActivities()
+            onClicked: root.actionTriggered()
 
             contentItem: Text {
                 text: fixButton.text
@@ -79,7 +83,7 @@ Rectangle {
             }
 
             background: Rectangle {
-                implicitHeight: IKMainWindow.homeErrorActionButtonHeight
+                implicitHeight: IKMainWindow.errorBannerActionButtonHeight
                 radius: IKRadius.r6
                 color: IKColors.actionPrimary
             }
