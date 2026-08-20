@@ -49,21 +49,21 @@ struct UISynchroNodeTests {
         #expect(node.progress == 100)
     }
 
-    @Test("Progress preserves boundary values", arguments: [Int32(0), 50, 100])
-    func progressPreservesBoundaryValues(value: Int32) {
+    @Test("Progress preserves boundary values", arguments: [0, 50, 100])
+    func progressPreservesBoundaryValues(value: Int) {
         let node = makeNode(progress: value)
         #expect(node.progress == value)
     }
 
     @Test("Progress clamps negative extreme")
     func progressClampsNegativeExtreme() {
-        let node = makeNode(progress: Int32.min)
+        let node = makeNode(progress: Int.min)
         #expect(node.progress == 0)
     }
 
     @Test("Progress clamps positive extreme")
     func progressClampsPositiveExtreme() {
-        let node = makeNode(progress: Int32.max)
+        let node = makeNode(progress: Int.max)
         #expect(node.progress == 100)
     }
 }
