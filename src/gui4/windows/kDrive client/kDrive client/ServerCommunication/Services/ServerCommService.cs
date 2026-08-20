@@ -214,7 +214,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         Logger.Log(Logger.Level.Info, $"AddOrRelogUser: User with DbId {userDbId} already exists in the application.");
                         return;
                     }
-                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                    await Task.Delay(100, cancellationToken);
                     --maxRetries;
                 } while (!cancellationToken.IsCancellationRequested && maxRetries > 0);
                 Logger.Log(Logger.Level.Error, $"AddOrRelogUser: Timeout waiting for user with DbId {userDbId} to be added to the application.");
@@ -590,7 +590,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task<bool> SetSyncType(DbId syncDbId, SyncType type, CancellationToken cancellationToken)
         {
             Sync? sync = null;
-            await Utility.RunOnUIThread(() => _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId));
+            await Utility.RunOnUIThread(() => sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbId));
             if (sync is null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with DbId {syncDbId} not found in model.");
@@ -1984,34 +1984,36 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from {signalData[JsonKeys.ErrorInfo]}.");
                 return;
             }
-
-            if (errorInfo.Level == ErrorLevel.Server)
+            await Utility.RunOnUIThread(async () =>
             {
-                lock (_errorLock)
+                if (errorInfo.Level == ErrorLevel.Server)
                 {
-                    ++_errorCount;
-                }
-                Error error = new(errorInfo);
-                await Utility.RunOnUIThread(async () => await _viewModel.AddErrorAsync(error).ConfigureAwait(false));
+                    lock (_errorLock)
+                    {
+                        ++_errorCount;
+                    }
+                    Error error = new(errorInfo);
+                    await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
 
-                return;
-            }
-
-            var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-            if (sync is not null)
-            {
-                Error error = new(sync, errorInfo);
-                lock (_errorLock)
-                {
-                    ++_errorCount;
+                    return;
                 }
 
-                await Utility.RunOnUIThread(async () => await _viewModel.AddErrorAsync(error).ConfigureAwait(false));
-            }
-            else
-            {
-                Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
-            }
+                var sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+                if (sync is not null)
+                {
+                    Error error = new(sync, errorInfo);
+                    lock (_errorLock)
+                    {
+                        ++_errorCount;
+                    }
+
+                   await _viewModel.AddErrorAsync(error);
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
+                }
+            });
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
