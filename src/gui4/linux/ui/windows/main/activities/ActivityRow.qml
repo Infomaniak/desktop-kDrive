@@ -11,6 +11,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Controls
 import kDrive.UI
 
 Item {
@@ -23,6 +24,8 @@ Item {
     required property real timeColumnWidth
     required property real sizeColumnWidth
     required property real statusColumnWidth
+    required property Item menuViewport
+    required property real viewportOffset
     required property var controller
 
     readonly property string rowId: rowModel.rowId
@@ -36,9 +39,29 @@ Item {
     readonly property int source: rowModel.source
     readonly property int status: rowModel.status
     readonly property int progress: rowModel.progress
+    readonly property int availableActions: rowModel.availableActions
+
+    function dismissOptionsMenu() {
+        if (optionsMenu && optionsMenu.opened) {
+            optionsMenu.close();
+        }
+    }
+
+    function openOptionsMenu() {
+        const rowPosition = root.mapToItem(root.menuViewport, 0, 0);
+        const maximumMenuY = Math.max(0, root.menuViewport.height - optionsMenu.height);
+        const menuYBelow = rowPosition.y + root.height;
+        const menuYAbove = rowPosition.y - optionsMenu.height;
+        const menuYInViewport = menuYBelow <= maximumMenuY ? menuYBelow : Math.max(0, menuYAbove);
+        optionsMenu.y = Math.min(menuYInViewport, maximumMenuY) - rowPosition.y;
+        optionsMenu.open();
+    }
 
     width: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
     height: IKActivities.rowHeight
+    onRowIdChanged: dismissOptionsMenu()
+    onViewportOffsetChanged: dismissOptionsMenu()
+    onYChanged: dismissOptionsMenu()
 
     Rectangle {
         anchors.fill: parent
@@ -164,18 +187,68 @@ Item {
             Row {
                 anchors.left: parent.left
                 anchors.leftMargin: IKActivities.secondaryCellPadding
+                anchors.right: parent.right
+                anchors.rightMargin: IKActivities.secondaryCellPadding
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: IKSpacing.s8
 
                 ActivitySourceIcon {
+                    anchors.verticalCenter: parent.verticalCenter
                     sourceType: root.source
                 }
                 ActivityStatusIcon {
+                    anchors.verticalCenter: parent.verticalCenter
                     status: root.status
                     progress: root.progress
                 }
+
+                Item {
+                    width: Math.max(0, parent.width - x - optionsButton.width)
+                    height: 1
+                }
+
+                ToolButton {
+                    id: optionsButton
+
+                    visible: root.availableActions !== ActivityListModel.NoAvailableAction
+                    width: visible ? IKActivities.optionsButtonSize : 0
+                    height: IKActivities.optionsButtonSize
+                    focusPolicy: visible ? Qt.StrongFocus : Qt.NoFocus
+                    hoverEnabled: visible
+                    onClicked: root.openOptionsMenu()
+
+                    contentItem: Item {
+                        IKTintedIcon {
+                            anchors.centerIn: parent
+                            width: IKActivities.optionsIconSize
+                            height: IKActivities.optionsIconSize
+                            source: "qrc:/assets/main/activities/dots-vertical.svg"
+                            color: IKColors.textPrimary
+                        }
+                    }
+
+                    background: Rectangle {
+                        radius: IKRadius.r6
+                        color: optionsButton.hovered || optionsButton.down ? IKColors.activitiesActionMenuHover : "transparent"
+                        border.width: optionsButton.visualFocus ? 2 : 0
+                        border.color: IKColors.accentPrimary
+                    }
+
+                    Accessible.name: qsTrId("buttonShowOption") + ": " + root.name
+                }
             }
         }
+    }
+
+    ActivityOptionsMenu {
+        id: optionsMenu
+
+        x: Math.max(0, root.width - width)
+        y: root.height
+        controller: root.controller
+        rowId: root.rowId
+        availableActions: root.availableActions
+        returnFocusItem: optionsButton
     }
 
     component SecondaryCell: Item {
