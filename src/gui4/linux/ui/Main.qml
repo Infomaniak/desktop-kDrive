@@ -170,6 +170,7 @@ IKShadowedWindow {
         id: mainWindowComponent
 
         MainWindowView {
+            activitiesController: mainWindow.activitiesController
             appRouter: mainWindow.appRouter
             homeController: mainWindow.homeController
             mainSidebarController: mainWindow.mainSidebarController
