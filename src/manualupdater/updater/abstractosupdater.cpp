@@ -1,15 +1,13 @@
 #include "abstractosupdater.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/checksumverifier.h"
 #include "libcommon/utility/utility.h"
 #include "manualupdater/httpdownloader.h"
 
 #include <QObject>
-
-#include <fstream>
+#include <filesystem>
 #include <sstream>
-#include <array>
-#include <Poco/SHA2Engine.h>
 
 #if defined(KD_MACOS)
 #include "osupdater_mac.h"
@@ -25,72 +23,24 @@ std::unique_ptr<AbstractOsUpdater> createOsUpdater() {
     return std::make_unique<OSUpdater>();
 }
 
-bool AbstractOsUpdater::verifyFileChecksum(const std::string &fileUrl, const SyncPath &filepath, QString &outMessage) {
-    // 1. Try fetching the .sha256 sidecar file.
-    std::string expectedChecksum;
-    // Insert the suffix before any query string or fragment so signed/CDN URLs keep their sidecar resolvable.
-    const auto suffixPos = fileUrl.find_first_of("?#");
-    const std::string sha256Url = fileUrl.substr(0, suffixPos) + ".sha256" +
-                                  (suffixPos == std::string::npos ? std::string{} : fileUrl.substr(suffixPos));
-
-    if (const auto result = HttpDownloader::get(sha256Url, "text/plain, */*"); result.success && !result.body.empty()) {
-        // The file contains either "hash" or "hash  filename" — take the first token.
+bool AbstractOsUpdater::verifyChecksum(const SyncPath &filepath, const std::string &downloadUrl, QString &outMessage) {
+    const auto fetcher = [](const std::string &url) -> std::string {
+        const auto result = HttpDownloader::get(url, "text/plain, */*");
+        if (!result.success || result.body.empty()) return {};
         std::istringstream iss(result.body);
-        iss >> expectedChecksum;
-    }
-
-    // 2. If still empty, abort verification.
-    if (expectedChecksum.empty()) {
-        outMessage = QObject::tr("No checksum available for verification.");
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"No checksum available for verification, aborting: " << CommonUtility::s2ws(fileUrl));
-        return false;
-    }
-
-    // 3. Compute the local file's SHA-256.
-    std::string actualChecksum;
-    if (!computeFileChecksum(filepath, actualChecksum)) {
-        outMessage = QObject::tr("Failed to compute file checksum.");
-        return false;
-    }
-
-    // 4. Compare case-insensitively.
-    const std::string normalizedActualChecksum = CommonUtility::trim(CommonUtility::toLower(actualChecksum));
-    const std::string normalizedExpectedChecksum = CommonUtility::trim(CommonUtility::toLower(expectedChecksum));
-    if (normalizedActualChecksum != normalizedExpectedChecksum) {
-        outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
-        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch for "
-                                                         << CommonUtility::s2ws(filepath.string()) << L" — expected: "
-                                                         << CommonUtility::s2ws(expectedChecksum) << L" actual: "
-                                                         << CommonUtility::s2ws(actualChecksum));
-        return false;
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"Checksum verified for " << CommonUtility::s2ws(filepath.string()));
-    return true;
-}
-
-bool AbstractOsUpdater::computeFileChecksum(const SyncPath &filepath, std::string &outChecksum) {
-    outChecksum.clear();
-    std::ifstream file(filepath, std::ios::binary);
-    if (!file) {
-        return false;
-    }
-
-    Poco::SHA2Engine sha256(Poco::SHA2Engine::ALGORITHM::SHA_256);
-    std::array<char, 8192> buffer{};
-    while (file.read(buffer.data(), buffer.size()) || file.gcount() > 0) {
-        sha256.update(buffer.data(), static_cast<std::size_t>(file.gcount()));
-    }
-
-    if (file.bad()) {
-        return false;
-    }
-
-    try {
-        outChecksum = Poco::DigestEngine::digestToHex(sha256.digest());
-    } catch (...) {
-        outChecksum.clear(); // Clear again: assignment may have thrown mid-write
+        std::string checksum;
+        iss >> checksum;
+        return checksum;
+    };
+    std::string error;
+    if (!ChecksumVerifier::verifyFileChecksum(filepath, downloadUrl, fetcher, &error)) {
+        if (error == "sha256FileUnavailable") {
+            outMessage = QObject::tr("No checksum available for verification.");
+        } else if (error == "computeFailed") {
+            outMessage = QObject::tr("Failed to compute file checksum.");
+        } else {
+            outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
+        }
         return false;
     }
     return true;

@@ -19,7 +19,6 @@
 #pragma once
 
 #include "abstractupdater.h"
-#include "checksumverifier.h"
 
 namespace KDC {
 
@@ -60,6 +59,14 @@ class WindowsUpdater : public AbstractUpdater {
         virtual bool verifyDigitalSignature(const SyncPath &filepath);
 
         /**
+         * Verify the checksum of the downloaded installer against the `.sha256` sidecar file.
+         * The expected checksum is fetched at download time from the sidecar file — this is mandatory and blocking.
+         * @param filepath Path to the downloaded installer.
+         * @return true if the checksum is valid.
+         */
+        virtual bool verifyInstallerChecksum(const SyncPath &filepath);
+
+        /**
          * @brief Attempt to re-download the installer. Fails if already attempted.
          * @param filepath Path to the installer file.
          */
@@ -67,7 +74,6 @@ class WindowsUpdater : public AbstractUpdater {
 
         bool _autoUpdate{false};
 
-        std::shared_ptr<ChecksumVerifier> _checksumVerifier{std::make_shared<ChecksumVerifier>()};
         friend class TestWindowsUpdater;
 };
 

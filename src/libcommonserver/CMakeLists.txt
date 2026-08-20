@@ -24,6 +24,7 @@ add_definitions(-D_UNICODE)
 set(libcommonserver_SRCS
     # Utility
     utility/utility.h utility/utility.cpp
+    utility/checksumverifier.h utility/checksumverifier.cpp
     utility/selfsignedcert.h utility/selfsignedcert.cpp
     utility/truststorehelper.h
     utility/stateholder.h

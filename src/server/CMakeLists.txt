@@ -156,7 +156,6 @@ set(updater_SRCS
     updater/abstractupdater.h updater/abstractupdater.cpp
     updater/updatemanager.h updater/updatemanager.cpp
     updater/versionretriever.h updater/versionretriever.cpp
-    updater/checksumverifier.h updater/checksumverifier.cpp
 )
 
 if(APPLE OR WIN32)

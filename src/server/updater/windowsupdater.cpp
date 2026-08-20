@@ -28,7 +28,11 @@
 #include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
+#include "libcommonserver/utility/checksumverifier.h"
 #include "utility/digitalsignaturechecker_win.h"
+
+#include <fstream>
+#include <sstream>
 
 namespace KDC {
 
@@ -52,7 +56,7 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
-        if (!_checksumVerifier->verifyFileChecksum(filepath, versionInfo().downloadUrl)) {
+        if (!verifyInstallerChecksum(filepath)) {
             retryDownload(filepath);
             return;
         }
@@ -80,7 +84,7 @@ void WindowsUpdater::startInstaller() {
         retryDownload(filepath);
         return;
     }
-    if (!_checksumVerifier->verifyFileChecksum(filepath, versionInfo().downloadUrl)) {
+    if (!verifyInstallerChecksum(filepath)) {
         retryDownload(filepath);
         return;
     }
@@ -152,7 +156,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    if (!_checksumVerifier->verifyFileChecksum(filepath, versionInfo().downloadUrl)) {
+    if (!verifyInstallerChecksum(filepath)) {
         retryDownload(filepath);
         return;
     }
@@ -190,6 +194,31 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
     DirectDownloadJob job(downloadUrl);
     (void) job.runSynchronously();
     return job.httpResponse().getContentLength();
+}
+
+bool WindowsUpdater::verifyInstallerChecksum(const SyncPath &filepath) {
+    const auto fetcher = [](const std::string &sha256Url) -> std::string {
+        SyncPath tmpDirPath;
+        if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) return "";
+        const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
+
+        auto ioError = IoError::Success;
+        (void) IoHelper::deleteItem(sha256FilePath, ioError);
+
+        DirectDownloadJob job(sha256FilePath, sha256Url);
+        (void) job.runSynchronously();
+
+        if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) return "";
+
+        std::ifstream file(sha256FilePath);
+        if (!file) return "";
+
+        std::string checksum;
+        file >> checksum;
+        return checksum;
+    };
+
+    return ChecksumVerifier::verifyFileChecksum(filepath, versionInfo().downloadUrl, fetcher);
 }
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {

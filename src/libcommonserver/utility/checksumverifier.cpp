@@ -18,9 +18,9 @@
 
 #include "checksumverifier.h"
 
-#include "log/log.h"
-#include "io/iohelper.h"
-#include "jobs/network/directdownloadjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <Poco/SHA2Engine.h>
@@ -37,41 +37,8 @@ std::string ChecksumVerifier::buildSha256Url(const std::string &downloadUrl) {
            (suffixPos == std::string::npos ? std::string{} : downloadUrl.substr(suffixPos));
 }
 
-bool ChecksumVerifier::downloadSha256File(const std::string &sha256Url, std::string &outChecksum) {
-    outChecksum.clear();
-
-    // Download the sidecar file to a temporary path, then read the first token.
-    SyncPath tmpDirPath;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Could not retrieve temp directory for SHA-256 sidecar download.");
-        return false;
-    }
-    const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
-
-    // Remove any stale file from a previous attempt.
-    auto ioError = IoError::Success;
-    (void) IoHelper::deleteItem(sha256FilePath, ioError);
-
-    DirectDownloadJob job(sha256FilePath, sha256Url);
-    (void) job.runSynchronously();
-
-    if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to download SHA-256 sidecar from " << CommonUtility::s2ws(sha256Url));
-        return false;
-    }
-
-    std::ifstream file(sha256FilePath);
-    if (!file) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Could not open downloaded SHA-256 sidecar file.");
-        return false;
-    }
-
-    // The file contains either "hash" or "hash  filename" — take only the first whitespace-delimited token.
-    file >> outChecksum;
-    return !outChecksum.empty();
-}
-
-bool ChecksumVerifier::verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl) {
+bool ChecksumVerifier::verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl,
+                                          const Sha256Fetcher &fetcher, std::string *outError) {
     auto cleanupAndFail = [&](const std::string &reason) {
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(filepath, ioError);
@@ -88,14 +55,16 @@ bool ChecksumVerifier::verifyFileChecksum(const SyncPath &filepath, const std::s
                                         "Checksum verification failed: " + reason);
 
         LOGW_ERROR(Log::instance()->getLogger(), L"Checksum verification failed: " << CommonUtility::s2ws(reason));
+        if (outError) *outError = reason;
         return false;
     };
 
-    // Derive the .sha256 sidecar URL and download the expected checksum — this is now mandatory.
+    // Derive the .sha256 sidecar URL and fetch the expected checksum — this is mandatory.
     const std::string sha256Url = buildSha256Url(downloadUrl);
 
     std::string expectedChecksum;
-    if (!downloadSha256File(sha256Url, expectedChecksum) || expectedChecksum.empty()) {
+    if (fetcher) expectedChecksum = fetcher(sha256Url);
+    if (expectedChecksum.empty()) {
         LOGW_ERROR(Log::instance()->getLogger(),
                    L"SHA-256 sidecar file unavailable or empty for " << CommonUtility::s2ws(downloadUrl));
         return cleanupAndFail("sha256FileUnavailable");

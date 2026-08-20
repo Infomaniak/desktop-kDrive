@@ -18,39 +18,54 @@
 
 #pragma once
 
-#include "utility/types.h"
+#include "libcommon/utility/types.h"
 
+#include <functional>
 #include <string>
 
 namespace KDC {
 
 /**
- * @brief Verifies the integrity of a downloaded installer by comparing its SHA-256 checksum
- *        against the expected value fetched from a `.sha256` sidecar file.
+ * @brief Static helper class for verifying the integrity of downloaded installer files via SHA-256
+ *        checksums fetched from `.sha256` sidecar files.
  *
- * The checksum verification is mandatory and blocking: if the sidecar file is missing,
- * empty, or the computed checksum does not match, the installer file is deleted and the
- * update is prevented.
+ * The checksum verification is mandatory and blocking: if the sidecar file is missing, empty, or the
+ * computed checksum does not match, the installer file is deleted and the update is prevented.
+ *
+ * The download mechanism is injected as a lambda (`Sha256Fetcher`) so that callers can use their own
+ * HTTP client (e.g. `DirectDownloadJob` in the server, `HttpDownloader` in the recovery updater).
  */
 class ChecksumVerifier {
     public:
-        ChecksumVerifier() = default;
-        virtual ~ChecksumVerifier() = default;
+        /**
+         * @brief Lambda type for downloading the `.sha256` sidecar file content.
+         *
+         * The implementation should download the file at `url`, extract the first whitespace-delimited
+         * token (the checksum), and return it. Return an empty string on failure.
+         *
+         * @param url The URL of the `.sha256` sidecar file.
+         * @return The expected checksum (hex string), or an empty string on failure.
+         */
+        using Sha256Fetcher = std::function<std::string(const std::string &url)>;
 
         /**
          * @brief Verify the checksum of the downloaded installer against the `.sha256` sidecar file.
          *
-         * Derives the sidecar URL from `downloadUrl` by inserting `.sha256` before any query string
-         * or fragment, downloads it, computes the local file's SHA-256, and compares.
+         * Derives the sidecar URL from `downloadUrl`, fetches it via `fetcher`, computes the local
+         * file's SHA-256, and compares.
          *
          * On failure the installer file is deleted, a Sentry event is captured, and `false` is returned.
          *
          * @param filepath    Path to the downloaded installer file.
          * @param downloadUrl The original download URL of the installer (used to derive the `.sha256` sidecar URL).
-         * @return true if the checksum is valid; false if the sidecar file is unavailable, empty, or the checksum
-         *         does not match.
+         * @param fetcher     Lambda that downloads the `.sha256` sidecar file and returns the expected checksum.
+         * @param outError    Optional. If provided, filled with a specific error message on failure
+         *                    ("sha256FileUnavailable", "computeFailed", or "mismatch").
+         * @return true if the checksum is valid; false if the sidecar file is unavailable, empty, or the
+         *         checksum does not match.
          */
-        bool verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl);
+        static bool verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl, const Sha256Fetcher &fetcher,
+                                       std::string *outError = nullptr);
 
         /**
          * @brief Compute the SHA-256 checksum of a file.
@@ -59,18 +74,6 @@ class ChecksumVerifier {
          */
         static std::string computeFileChecksum(const SyncPath &filepath);
 
-    private:
-        /**
-         * @brief Download the `.sha256` sidecar file and extract the expected checksum (first whitespace-delimited
-         *        token of the file content).
-         *
-         * Virtual so that tests can override it without hitting the network.
-         *
-         * @param sha256Url   URL of the `.sha256` sidecar file.
-         * @param outChecksum The expected checksum (hex string) if download succeeded.
-         * @return true if the file was downloaded successfully and contained a non-empty checksum.
-         */
-        virtual bool downloadSha256File(const std::string &sha256Url, std::string &outChecksum);
         /**
          * @brief Derive the `.sha256` sidecar URL from the installer download URL.
          *
