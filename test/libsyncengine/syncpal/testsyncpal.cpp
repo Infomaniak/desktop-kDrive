@@ -532,7 +532,8 @@ void TestSyncPal::testWipeVirtualFiles() {
     CPPUNIT_ASSERT(std::filesystem::exists(localFolderPath, ec));
     CPPUNIT_ASSERT(!ec);
 
-    // Simulate an activated Vfs and the file is not a dehydrated placeholder: the file should be wiped.
+    // Simulate an activated Vfs and the file is a dehydrated placeholder: the file should be wiped.
+    { std::ofstream localFile{localFilePath}; }
     vfsMock->setMockStatus([](const SyncPath &, VfsStatus &vfsStatus) {
         vfsStatus.isPlaceholder = true;
         vfsStatus.isHydrated = false;
