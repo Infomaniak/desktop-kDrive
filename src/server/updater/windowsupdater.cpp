@@ -226,7 +226,7 @@ bool WindowsUpdater::verifyInstallerChecksum(const SyncPath &filepath) {
         };
     } else {
         // Subsequent calls (e.g. startInstaller): reuse the cached checksum, no network I/O.
-        fetcher = [this]([[maybe_unused]] const std::string &url) { return _expectedChecksum; };
+        fetcher = [this](const std::string &) { return _expectedChecksum; };
     }
 
     return ChecksumVerifier::verifyFileChecksum(filepath, versionInfo().downloadUrl, fetcher);

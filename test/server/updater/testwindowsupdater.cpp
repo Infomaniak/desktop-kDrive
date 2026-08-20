@@ -214,7 +214,7 @@ void TestWindowsUpdater::testIsChecksumValid() {
 
     // Case 1: sha256 sidecar download fails -> update must be blocked.
     {
-        const ChecksumVerifier::Sha256Fetcher failingFetcher = []([[maybe_unused]] const std::string &url) { return std::string{}; };
+        const ChecksumVerifier::Sha256Fetcher failingFetcher = [](const std::string &) { return std::string{}; };
         CPPUNIT_ASSERT(!ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", failingFetcher));
     }
 
@@ -223,7 +223,7 @@ void TestWindowsUpdater::testIsChecksumValid() {
         (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        const ChecksumVerifier::Sha256Fetcher emptyFetcher = []([[maybe_unused]] const std::string &url) { return std::string{""}; };
+        const ChecksumVerifier::Sha256Fetcher emptyFetcher = [](const std::string &) { return std::string{""}; };
         CPPUNIT_ASSERT(!ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", emptyFetcher));
     }
 
@@ -233,7 +233,7 @@ void TestWindowsUpdater::testIsChecksumValid() {
         (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        const ChecksumVerifier::Sha256Fetcher validFetcher = [&](const std::string &url) { return validChecksumValue; };
+        const ChecksumVerifier::Sha256Fetcher validFetcher = [&](const std::string &) { return validChecksumValue; };
         CPPUNIT_ASSERT(ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", validFetcher));
         CPPUNIT_ASSERT(std::filesystem::exists(installerPath));
     }
@@ -243,7 +243,7 @@ void TestWindowsUpdater::testIsChecksumValid() {
         (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        const ChecksumVerifier::Sha256Fetcher invalidFetcher = [&](const std::string &url) { return invalidChecksumValue; };
+        const ChecksumVerifier::Sha256Fetcher invalidFetcher = [&](const std::string &) { return invalidChecksumValue; };
         CPPUNIT_ASSERT(!ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", invalidFetcher));
         CPPUNIT_ASSERT(!std::filesystem::exists(installerPath));
     }
