@@ -169,4 +169,15 @@ QtObject {
     readonly property color homePausedSurface: darkMode ? _p.brown950 : _p.orangePale
     readonly property color homeSyncingForeground: darkMode ? _p.kDriveLight : _p.blue600
     readonly property color homeSyncingSurface: darkMode ? _p.kDriveDark : _p.bluePale
+    readonly property color activitiesFilterSurface: surfaceSecondary
+    readonly property color activitiesFilterSelectedSurface: actionPrimary
+    readonly property color activitiesFilterSelectedText: actionOnPrimary
+    readonly property color activitiesRowAlternateSurface: surfaceSecondary
+    readonly property color activitiesDivider: surfaceTertiary
+    readonly property color activitiesFileIcon: textTertiary
+    readonly property color activitiesSourceIcon: textTertiary
+    readonly property color activitiesStatusSynchronized: statusMediumSuccess
+    readonly property color activitiesStatusSyncing: statusMediumSecurity
+    readonly property color activitiesStatusError: statusMediumWarning
+    readonly property color activitiesProgressTrack: surfaceTertiary
 }
