@@ -26,6 +26,7 @@
 #include <QAbstractListModel>
 #include <QDateTime>
 #include <QFont>
+#include <QFlags>
 #include <QList>
 #include <QString>
 #include <QStringList>
@@ -69,6 +70,17 @@ class ActivityListModel final : public QAbstractListModel {
         };
         Q_ENUM(Source)
 
+        enum AvailableActionFlag : uint8_t {
+            NoAvailableAction = 0,
+            OpenLocalAction = 1 << 0,
+            OpenOnlineAction = 1 << 1,
+            CopyShareLinkAction = 1 << 2,
+            FixErrorsAction = 1 << 3,
+        };
+        Q_ENUM(AvailableActionFlag)
+        Q_DECLARE_FLAGS(AvailableActions, AvailableActionFlag)
+        Q_FLAG(AvailableActions)
+
         enum Role {
             RowIdRole = Qt::UserRole + 1,
             NameRole,
@@ -85,6 +97,7 @@ class ActivityListModel final : public QAbstractListModel {
             ProgressRole,
             HasActiveErrorRole,
             ActiveErrorCountRole,
+            AvailableActionsRole,
         };
         Q_ENUM(Role)
 
@@ -170,6 +183,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] Row makeErrorRow(SyncDbId syncDbId, const Error &error) const;
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
+        [[nodiscard]] static AvailableActions availableActions(const Row &row);
         void finalizeProjection(std::vector<Row> &rows) const;
         void resetProjection();
         void scheduleProjectionReconciliation();
@@ -188,5 +202,7 @@ class ActivityListModel final : public QAbstractListModel {
         QTimer _projectionRefreshTimer;
         QTimer _relativeTimeTimer;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ActivityListModel::AvailableActions)
 
 } // namespace KDC
