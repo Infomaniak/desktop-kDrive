@@ -58,7 +58,7 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
-        if (!verifyFileChecksum(filepath)) {
+        if (!verifyFileChecksum(filepath, versionInfo().downloadUrl)) {
             retryDownload(filepath);
             return;
         }
@@ -86,7 +86,7 @@ void WindowsUpdater::startInstaller() {
         retryDownload(filepath);
         return;
     }
-    if (!verifyFileChecksum(filepath)) {
+    if (!verifyFileChecksum(filepath, versionInfo().downloadUrl)) {
         retryDownload(filepath);
         return;
     }
@@ -158,7 +158,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    if (!verifyFileChecksum(filepath)) {
+    if (!verifyFileChecksum(filepath, versionInfo().downloadUrl)) {
         retryDownload(filepath);
         return;
     }
@@ -198,9 +198,7 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
     return job.httpResponse().getContentLength();
 }
 
-bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
-    const std::string expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo().checksum));
-
+bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl) {
     auto cleanupAndFail = [&](const std::string &reason) {
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(filepath, ioError);
@@ -220,11 +218,19 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
         return false;
     };
 
-    // Skip if API doesn't provide checksum
-    if (expectedChecksum.empty()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Checksum not available from API. Skipping verification.");
-        return true;
+    // Derive the .sha256 sidecar URL (insert suffix before any query string or fragment).
+    const auto suffixPos = downloadUrl.find_first_of("?#");
+    const std::string sha256Url = downloadUrl.substr(0, suffixPos) + ".sha256" +
+                                  (suffixPos == std::string::npos ? std::string{} : downloadUrl.substr(suffixPos));
+
+    // Download the .sha256 sidecar file; this is now mandatory.
+    std::string expectedChecksum;
+    if (!downloadSha256File(sha256Url, expectedChecksum) || expectedChecksum.empty()) {
+        LOGW_ERROR(Log::instance()->getLogger(),
+                   L"SHA-256 sidecar file unavailable or empty for " << CommonUtility::s2ws(downloadUrl));
+        return cleanupAndFail("sha256FileUnavailable");
     }
+    expectedChecksum = CommonUtility::trim(CommonUtility::toLower(expectedChecksum));
 
     // Compute actual checksum
     const std::string actualChecksum = CommonUtility::trim(CommonUtility::toLower(computeFileChecksum(filepath)));
@@ -233,7 +239,7 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
         return cleanupAndFail("computeFailed");
     }
 
-    // verify checksum
+    // Verify checksum
     if (actualChecksum != expectedChecksum) {
         LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
                                                                                   << L", Got: "
@@ -243,6 +249,40 @@ bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
 
     LOGW_INFO(Log::instance()->getLogger(), L"Checksum verification passed.");
     return true;
+}
+
+bool WindowsUpdater::downloadSha256File(const std::string &sha256Url, std::string &outChecksum) {
+    outChecksum.clear();
+
+    // Download the sidecar file to a temporary path, then read the first token.
+    SyncPath tmpDirPath;
+    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Could not retrieve temp directory for SHA-256 sidecar download.");
+        return false;
+    }
+    const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
+
+    // Remove any stale file from a previous attempt.
+    auto ioError = IoError::Success;
+    (void) IoHelper::deleteItem(sha256FilePath, ioError);
+
+    DirectDownloadJob job(sha256FilePath, sha256Url);
+    (void) job.runSynchronously();
+
+    if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to download SHA-256 sidecar from " << CommonUtility::s2ws(sha256Url));
+        return false;
+    }
+
+    std::ifstream file(sha256FilePath);
+    if (!file) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Could not open downloaded SHA-256 sidecar file.");
+        return false;
+    }
+
+    // The file contains either "hash" or "hash  filename" — take only the first whitespace-delimited token.
+    file >> outChecksum;
+    return !outChecksum.empty();
 }
 
 std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {

@@ -610,7 +610,9 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         uint64_t buildVersion{0}; // Build number. Should be > 0.
         std::string downloadUrl; // URL to download the version
-        std::string checksum; // Verify if the downloaded file is correct, and not corrupted. Uses a SHA-256
+        /// @deprecated The checksum is no longer verified from the API response. It is fetched at download time from
+        /// the .sha256 sidecar file. Kept for backward-compatible QDataStream serialisation only.
+        std::string checksum;
         std::string minOsVersion; // Optional. Minimum supported version of the OS. Examples: 26.3.1, 22.04, 10.0.26200, ...
         std::string minAppVersion; // Optional. Minimum supported version of the application. Example: 3.6.4
 

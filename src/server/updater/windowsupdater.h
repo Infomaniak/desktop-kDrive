@@ -53,10 +53,20 @@ class WindowsUpdater : public AbstractUpdater {
 
         /**
          * Check the checksum of the downloaded installer. Delete the file if the checksum is not valid.
+         * The expected checksum is fetched from a .sha256 sidecar file at the given downloadUrl.
          * @param filepath Path to the downloaded installer.
+         * @param downloadUrl The original download URL of the installer (used to derive the .sha256 sidecar URL).
          * @return true if the checksum is valid.
          */
-        bool verifyFileChecksum(const SyncPath &filepath);
+        bool verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl);
+
+        /**
+         * Download the .sha256 sidecar file and extract the expected checksum (first token of the file content).
+         * @param sha256Url URL of the .sha256 sidecar file.
+         * @param outChecksum The expected checksum (hex string) if download succeeded.
+         * @return true if the file was downloaded successfully and contained a non-empty checksum.
+         */
+        virtual bool downloadSha256File(const std::string &sha256Url, std::string &outChecksum);
 
         /**
          * Compute the checksum of the downloaded installer.
