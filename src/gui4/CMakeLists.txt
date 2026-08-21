@@ -44,4 +44,25 @@ if(WIN32)
     )
 elseif(APPLE)
     include(${CMAKE_CURRENT_SOURCE_DIR}/macOS/CMakeLists.txt)
+
+    if(BUILD_KDRIVE_OSX_BUNDLE)
+        # we must add MACOSX_BUNDLE only if building a bundle
+        set(QM_DIR ${KDRIVE_OSX_BUNDLE}/Contents/Resources/Translations)
+        install(FILES ${client_I18N} DESTINATION ${QM_DIR})
+        get_target_property(_qmake Qt6::qmake LOCATION)
+        execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
+                OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        file(GLOB qt_I18N ${QT_TRANSLATIONS_DIR}/qt_??.qm ${QT_TRANSLATIONS_DIR}/qt_??_??.qm)
+        install(FILES ${qt_I18N} DESTINATION ${QM_DIR})
+        file(GLOB qtbase_I18N ${QT_TRANSLATIONS_DIR}/qtbase_??.qm ${QT_TRANSLATIONS_DIR}/qt_??_??.qm)
+        install(FILES ${qtbase_I18N} DESTINATION ${QM_DIR})
+        foreach(LPROJ_DIR in ${TRANSLATIONS})
+            string(REPLACE "${CMAKE_SOURCE_DIR}/translations/client_" "\${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/" LPROJ_DIR ${LPROJ_DIR})
+            string(REPLACE ".ts" ".lproj" LPROJ_DIR ${LPROJ_DIR})
+            install(CODE "file(MAKE_DIRECTORY ${LPROJ_DIR})")
+        endforeach()
+        install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
+    endif()
 endif()
