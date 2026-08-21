@@ -44,8 +44,8 @@ if(NOT BUILD_LIBRARIES_ONLY)
     set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/client")
     if(WIN32 OR APPLE)
         if(BUILD_GUI)
-            add_subdirectory(gui4)
-            # Generate Qt translations (still needed for server components)
+            # Generate translations before entering gui4 so client_I18N is available
+            # in src/gui4/CMakeLists.txt install rules (macOS bundle).
             if(Qt6LinguistTools_FOUND)
                 qt6_add_translation(client_I18N ${TRANSLATIONS})
                 # Create a custom target to ensure translations are built
@@ -54,6 +54,8 @@ if(NOT BUILD_LIBRARIES_ONLY)
             else()
                 message(FATAL_ERROR "Qt6LinguistTools not found. Translations will not be generated.")
             endif()
+
+            add_subdirectory(gui4)
         else()
             # delete the client build directory if GUI is disabled to avoid confusion
             file(REMOVE_RECURSE "${CLIENT_DEST}")
