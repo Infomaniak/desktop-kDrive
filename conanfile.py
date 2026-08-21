@@ -1,4 +1,6 @@
 import os
+import shutil
+import subprocess
 import textwrap
 
 from conan import ConanFile
@@ -104,6 +106,49 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             self.settings.os.version = "10.15"
 
+    def _set_linux_package_runpath(self, package_name):
+        """
+        Set $ORIGIN as RUNPATH on shared libraries owned by a Conan package.
+
+        Resolving symlinks before patching both avoids modifying the same ELF
+        several times and guarantees that no file outside the package folder
+        can be changed.
+        """
+        patchelf = shutil.which("patchelf")
+        if not patchelf:
+            raise ConanInvalidConfiguration("patchelf is required to set Linux dependency RUNPATHs")
+
+        dependency = self.dependencies[package_name]
+        package_folder = os.path.realpath(dependency.package_folder)
+        library_folder = os.path.join(package_folder, "lib")
+        if not os.path.isdir(library_folder):
+            raise ConanInvalidConfiguration(
+                f"Library directory for {package_name} does not exist: {library_folder}"
+            )
+
+        patched_libraries = set()
+        for filename in os.listdir(library_folder):
+            if not (filename.endswith(".so") or ".so." in filename):
+                continue
+
+            library_path = os.path.realpath(os.path.join(library_folder, filename))
+            if os.path.commonpath([package_folder, library_path]) != package_folder:
+                self.output.warning(
+                    f"Skipping {filename}: its target is outside the {package_name} package folder"
+                )
+                continue
+            if not os.path.isfile(library_path) or library_path in patched_libraries:
+                continue
+
+            subprocess.run(
+                [patchelf, "--set-rpath", "$ORIGIN", library_path],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            patched_libraries.add(library_path)
+            self.output.info(f"Set RUNPATH to $ORIGIN for {library_path}")
+
     def generate(self):
         """
         Generate the CMake toolchain file.
@@ -124,6 +169,10 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = self.settings.os.version
+
+        if self.settings.os == "Linux":
+            self._set_linux_package_runpath("openssl")
+            self._set_linux_package_runpath("poco")
 
         tc.generate()
 
