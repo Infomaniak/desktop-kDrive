@@ -816,9 +816,9 @@ void CommService::requestCheckCommStatus(const VoidCallback &callback) const {
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
-void CommService::requestFindGoodPathForNewSync(const SyncPath &basePath, const GoodPathCallback &callback) const {
+void CommService::requestFindGoodPathForNewSync(const SyncName &driveName, const GoodPathCallback &callback) const {
     Poco::DynamicStruct params;
-    CommonUtility::writeValueToStruct(params, msgParamBasePath, CommonUtility::syncPath2CommString(basePath));
+    CommonUtility::writeValueToStruct(params, msgParamDriveName, driveName);
     _ipcClient.sendRequest(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                GoodPathResult pathResult;
