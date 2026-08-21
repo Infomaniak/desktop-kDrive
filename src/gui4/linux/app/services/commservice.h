@@ -213,7 +213,7 @@ class CommService : public QObject {
 
         // --- Utility ---
         void requestCheckCommStatus(const VoidCallback &callback) const;
-        void requestFindGoodPathForNewSync(const SyncPath &basePath, const GoodPathCallback &callback) const;
+        void requestFindGoodPathForNewSync(const SyncName &driveName, const GoodPathCallback &callback) const;
         void requestIsPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfiguration,
                                           const BoolCallback &callback) const;
         void requestGetAppState(AppStateKey key, const AppStateCallback &callback) const;
