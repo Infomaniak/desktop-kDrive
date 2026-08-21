@@ -59,7 +59,6 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         void handleCreationFailure(bool cacheReconciliationRequired = false);
         void handleCacheReconciliationCompleted();
         void handleCacheReconciliationFailed();
-        [[nodiscard]] QString defaultLocalPath(const QString &driveName) const;
 
         OnboardingFlowController &_flowController;
         OnboardingState &_onboardingState;
