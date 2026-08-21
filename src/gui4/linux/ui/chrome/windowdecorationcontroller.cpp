@@ -19,6 +19,7 @@
 #include "windowdecorationcontroller.h"
 
 #include <QByteArray>
+#include <QEvent>
 #include <QGuiApplication>
 #include <QRegion>
 #include <QWindow>
@@ -31,6 +32,9 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/shape.h>
 #include <xcb/xcb.h>
+// Xlib defines Expose as the numeric X11 event type, which would rewrite QEvent::Expose into a numeric constant. The
+// X11 spelling is unused here, so drop it rather than qualifying every Qt enumerator that collides with it.
+#undef Expose
 #endif
 
 namespace KDC {
@@ -292,20 +296,45 @@ bool WindowDecorationController::customShadowsSupported() const {
     return _customShadowsSupported;
 }
 
+void WindowDecorationController::applyDecoration(QWindow *const window, const DecorationRequest &request) {
+    // Keep the resize handles interactive by excluding only the outer part of the shadow margin. A maximized window
+    // passes a zero frameMargin, so clamping the subtraction restores the full-window input region.
+    const auto interactiveMargin = qMax<int32_t>(0, qRound(request.frameMargin - request.resizeHandleThickness));
+    const auto interactiveWidth = qMax<int32_t>(0, window->width() - (2 * interactiveMargin));
+    const auto interactiveHeight = qMax<int32_t>(0, window->height() - (2 * interactiveMargin));
+    const QRect inputRect{interactiveMargin, interactiveMargin, interactiveWidth, interactiveHeight};
+    applyInputRegion(window, inputRect, request.customFrameEnabled);
+    applyFrameExtents(window, request.customFrameEnabled, request.frameMargin);
+}
+
 void WindowDecorationController::updateWindowDecoration(QWindow *const window, const bool customFrameEnabled,
                                                         const qreal frameMargin, const qreal resizeHandleThickness) {
     if (window == nullptr) {
         return;
     }
 
-    // Keep the resize handles interactive by excluding only the outer part of the shadow margin. A maximized window
-    // passes a zero frameMargin, so clamping the subtraction restores the full-window input region.
-    const auto interactiveMargin = qMax<int32_t>(0, qRound(frameMargin - resizeHandleThickness));
-    const auto interactiveWidth = qMax<int32_t>(0, window->width() - (2 * interactiveMargin));
-    const auto interactiveHeight = qMax<int32_t>(0, window->height() - (2 * interactiveMargin));
-    const QRect inputRect{interactiveMargin, interactiveMargin, interactiveWidth, interactiveHeight};
-    applyInputRegion(window, inputRect, customFrameEnabled);
-    applyFrameExtents(window, customFrameEnabled, frameMargin);
+    if (!_decorationRequests.contains(window)) {
+        window->installEventFilter(this);
+        // The hash keeps a raw pointer, so drop the entry with the window rather than leaving a dangling key that a
+        // later window could reuse.
+        (void) connect(window, &QObject::destroyed, this, [this, window] { (void) _decorationRequests.remove(window); });
+    }
+
+    const DecorationRequest request{
+            .customFrameEnabled = customFrameEnabled, .frameMargin = frameMargin, .resizeHandleThickness = resizeHandleThickness};
+    (void) _decorationRequests.insert(window, request);
+    applyDecoration(window, request);
+}
+
+bool WindowDecorationController::eventFilter(QObject *const watched, QEvent *const event) {
+    if (event->type() == QEvent::Expose) {
+        if (auto *const window = qobject_cast<QWindow *>(watched); window != nullptr && window->isExposed()) {
+            if (const auto request = _decorationRequests.constFind(window); request != _decorationRequests.cend()) {
+                applyDecoration(window, *request);
+            }
+        }
+    }
+    return QObject::eventFilter(watched, event);
 }
 
 } // namespace KDC
