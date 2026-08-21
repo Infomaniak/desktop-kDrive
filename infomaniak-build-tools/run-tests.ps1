@@ -26,10 +26,18 @@ if ($conanRun) {
 }
 
 # Set QT_PLUGIN_PATH so Qt can find the offscreen platform plugin
+# find_conan_dep.ps1 returns the Qt package "bin" directory; strip it to get the package root
+# (mirrors build-drive.ps1 which uses -replace '\\bin$', '')
 $qtDir = & "$PSScriptRoot\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "build-windows"
 if ($qtDir) {
+    $qtDir = $qtDir -replace '\\bin$', ''
     $env:QT_PLUGIN_PATH = "$qtDir\plugins"
     Write-Host "QT_PLUGIN_PATH set to: $env:QT_PLUGIN_PATH"
+    # find_conan_dep.ps1 deactivates the Conan environment; re-source it so Qt
+    # and other dependency DLLs are on PATH when the test executables run
+    if ($conanRun) {
+        & $conanRun.FullName *> $null
+    }
 } else {
     Write-Host "Warning: Could not locate Qt package, QT_PLUGIN_PATH not set." -ForegroundColor Yellow
 }
