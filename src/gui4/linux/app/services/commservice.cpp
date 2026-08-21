@@ -590,7 +590,7 @@ void CommService::requestNodeInfo(const UserDbId userDbId, const DriveId driveId
     CommonUtility::writeValueToStruct(params, msgParamDriveId, driveId);
     CommonUtility::writeValueToStruct(params, msgParamNodeId, nodeId);
     CommonUtility::writeValueToStruct(params, msgParamWithPath, withPath);
-    _ipcClient.sendRequest(RequestNum::NODE_INFO, params,
+    _ipcClient.sendRequest(RequestNum::NODE_INFO_REMOTE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                NodeInfo info;
                                if (exitInfo) {
@@ -747,16 +747,16 @@ void CommService::requestExclTemplGetList(const bool defaultTemplates, const Exc
     CommonUtility::writeValueToStruct(params, msgParamDefault, defaultTemplates);
     _ipcClient.sendRequest(RequestNum::EXCLTEMPL_GETLIST, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               std::vector<ExclusionTemplateInfo> list;
+                               std::vector<ExclusionTemplate> list;
                                if (exitInfo) {
                                    CommonUtility::readValuesFromStruct(result, msgParamExclusionTemplateList, list,
-                                                                       dynamicVar2Struct<ExclusionTemplateInfo>);
+                                                                       dynamicVar2Struct<ExclusionTemplate>);
                                }
                                callback(exitInfo, list);
                            });
 }
 
-void CommService::requestExclTemplSetList(const std::vector<ExclusionTemplateInfo> &templateList,
+void CommService::requestExclTemplSetList(const std::vector<ExclusionTemplate> &templateList,
                                           const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     Poco::Dynamic::Array arr;
