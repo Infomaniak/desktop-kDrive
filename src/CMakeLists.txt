@@ -42,7 +42,7 @@ if(NOT BUILD_LIBRARIES_ONLY)
     endif()
 
     set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/client")
-    if(WIN32)
+    if(WIN32 OR APPLE)
         if(BUILD_GUI)
             add_subdirectory(gui4)
             # Generate Qt translations (still needed for server components)
