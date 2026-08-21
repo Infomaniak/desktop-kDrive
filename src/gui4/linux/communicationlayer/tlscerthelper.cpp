@@ -70,7 +70,7 @@ bool TLSCertHelper::readServerCertificate(QSslCertificate &certificate) {
         qCWarning(lcCertHelper) << "Failed to parse certificate PEM from keychain";
         return false;
     }
-    qCInfo(lcCertHelper) << "Certificate loaded from keychain";
+    qCInfo(lcCertHelper) << "Server ertificate loaded from keychain";
     return true;
 }
 
