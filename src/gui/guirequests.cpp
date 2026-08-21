@@ -483,7 +483,7 @@ ExitCode GuiRequests::isPathValidForNewSync(const QString &path, const SyncConfi
     if (!CommClient::instance()->execute(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params, results)) {
         qCWarning(lcGuiRequests) << "isPathValidForNewSync: execute FAILED (timeout or comm error) for path=" << path
                                  << ", RequestNum=" << RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC
-                                 << ", timeout=" << COMM_SHORT_TIMEOUT << "ms";
+                                 << ", timeout=" << commShortTimeout << "ms";
         return ExitCode::SystemError;
     }
 
