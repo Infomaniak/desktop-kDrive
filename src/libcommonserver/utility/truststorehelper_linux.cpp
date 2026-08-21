@@ -27,6 +27,7 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
+#include <cstdlib>
 #include <unistd.h>
 
 namespace KDC {
@@ -45,12 +46,35 @@ long certCount(const SSL_CTX *ctx) {
     return objs ? sk_X509_OBJECT_num(objs) : 0;
 }
 
+// Try to load a CA bundle file and verify at least one cert was parsed.
+// Returns true on success, false otherwise (cleans any partial load).
+bool tryLoadBundleFile(SSL_CTX *ctx, const char *path) {
+    if (!path || path[0] == '\0' || access(path, R_OK) != 0) {
+        return false;
+    }
+    if (SSL_CTX_load_verify_locations(ctx, path, nullptr) == 1 && certCount(ctx) > 0) {
+        return true;
+    }
+    return false;
+}
+
+// Try to load from a hashed cert directory and verify at least one cert was parsed.
+bool tryLoadBundleDir(SSL_CTX *ctx, const char *path) {
+    if (!path || path[0] == '\0' || access(path, R_OK) != 0) {
+        return false;
+    }
+    if (SSL_CTX_load_verify_locations(ctx, nullptr, path) == 1 && certCount(ctx) > 0) {
+        return true;
+    }
+    return false;
+}
+
 // Well-known distro CA bundle paths (Debian/Ubuntu/Arch, RHEL/Fedora, SUSE, Alpine/musl).
 constexpr const char *knownCaBundles[] = {
-        "/etc/ssl/certs/ca-certificates.crt",
-        "/etc/pki/tls/certs/ca-bundle.crt",
-        "/etc/ssl/ca-bundle.pem",
-        "/etc/ssl/cert.pem",
+    "/etc/ssl/certs/ca-certificates.crt",
+    "/etc/pki/tls/certs/ca-bundle.crt",
+    "/etc/ssl/ca-bundle.pem",
+    "/etc/ssl/cert.pem",
 };
 
 } // namespace
@@ -61,45 +85,59 @@ bool TrustStoreHelper::loadSystemCAs(SSL_CTX *ctx) {
         return false;
     }
 
-    // Primary: compiled-in OpenSSL default paths.  X509_get_default_cert_file/dir()
-    // resolve SSL_CERT_FILE / SSL_CERT_DIR env vars first, then fall back to
-    // OPENSSLDIR (compiled as "/etc/ssl" on the Conan Center package).
-    // We use load_verify_locations() instead of set_default_verify_paths() so
-    // that certs are actually parsed immediately and we can verify the count.
+    // Primary: SSL_CERT_FILE / SSL_CERT_DIR env vars (if set), then compiled-in
+    // OPENSSLDIR defaults ("/etc/ssl" on the Conan Center package).
+    // X509_get_default_cert_file() returns only the compiled-in path; it does
+    // NOT resolve env vars (unlike set_default_verify_paths which does). So we
+    // check the env vars ourselves using the standard OpenSSL env var names.
+
+    // 1a. SSL_CERT_FILE env var override (highest priority)
+    if (const char *envFile = getenv(X509_get_default_cert_file_env())) {
+        if (tryLoadBundleFile(ctx, envFile)) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from SSL_CERT_FILE=" << envFile);
+            return true;
+        }
+        LOG_WARN(Log::instance()->getLogger(), "SSL_CERT_FILE=" << envFile << " set but no usable certificates loaded, continuing");
+    }
+
+    // 1b. SSL_CERT_DIR env var override
+    if (const char *envDir = getenv(X509_get_default_cert_dir_env())) {
+        if (tryLoadBundleDir(ctx, envDir)) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from SSL_CERT_DIR=" << envDir);
+            return true;
+        }
+        LOG_WARN(Log::instance()->getLogger(), "SSL_CERT_DIR=" << envDir << " set but no usable certificates loaded, continuing");
+    }
+
+    // 1c. Compiled-in OPENSSLDIR default file (works on Ubuntu/Debian/Arch)
     if (const char *defaultFile = X509_get_default_cert_file()) {
-        if (access(defaultFile, R_OK) == 0 && SSL_CTX_load_verify_locations(ctx, defaultFile, nullptr) == 1 &&
-            certCount(ctx) > 0) {
+        if (tryLoadBundleFile(ctx, defaultFile)) {
             LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from default path " << defaultFile);
             return true;
         }
     }
+
+    // 1d. Compiled-in OPENSSLDIR default directory
     if (const char *defaultDir = X509_get_default_cert_dir()) {
-        if (access(defaultDir, R_OK) == 0 && SSL_CTX_load_verify_locations(ctx, nullptr, defaultDir) == 1 && certCount(ctx) > 0) {
+        if (tryLoadBundleDir(ctx, defaultDir)) {
             LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from default directory " << defaultDir);
             return true;
         }
     }
 
-    // Fallback: probe well-known distro paths for systems where the compiled-in
+    // 2. Fallback: probe well-known distro paths for systems where the compiled-in
     // OPENSSLDIR doesn't match reality (RHEL/Fedora, SUSE, musl/Alpine).
     for (const char *path: knownCaBundles) {
-        if (access(path, R_OK) != 0) {
-            continue;
-        }
-
-        if (SSL_CTX_load_verify_locations(ctx, path, nullptr) == 1 && certCount(ctx) > 0) {
+        if (tryLoadBundleFile(ctx, path)) {
             LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from " << path);
             return true;
         }
-
-        LOG_WARN(Log::instance()->getLogger(),
-                 "SSL_CTX_load_verify_locations produced no usable certificates for " << path << ", trying next candidate");
     }
 
     LOG_ERROR(Log::instance()->getLogger(), "Failed to load system CA certificates from any known path or default");
     sentry::Handler::captureMessage(sentry::Level::Error, "TrustStoreHelper::loadSystemCAs",
-                                    "Failed to load system CA certificates on Linux (no usable CA bundle found via "
-                                    "OpenSSL default paths or known distro paths)");
+                                   "Failed to load system CA certificates on Linux (no usable CA bundle found via "
+                                   "SSL_CERT_FILE/SSL_CERT_DIR env vars, OpenSSL default paths, or known distro paths)");
     return false;
 }
 
