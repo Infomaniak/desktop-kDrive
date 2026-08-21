@@ -25,8 +25,8 @@
 #include "app/services/commservice.h"
 #include "app/services/serviceeventbus.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
-#include <QDir>
 #include <QLoggingCategory>
 #include <QPointer>
 
@@ -95,11 +95,12 @@ void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDr
         return;
     }
 
-    const auto basePath = defaultLocalPath(QString::fromStdString(availableDrive->name()));
+    const auto driveName = availableDrive->name();
     qCInfo(lcOnboardingSyncCreationCoordinator)
-            << "Requesting onboarding sync path | driveId:" << key.driveId << "/ basePath:" << basePath;
+            << "Requesting onboarding sync path | driveId:" << key.driveId
+            << "/ driveName:" << QString::fromStdString(driveName);
     const QPointer<OnboardingSyncCreationCoordinator> self(this);
-    _commService.requestFindGoodPathForNewSync(QStr2Path(basePath),
+    _commService.requestFindGoodPathForNewSync(CommonUtility::str2CommString(driveName),
                                                [self, key](const ExitInfo &exitInfo, const GoodPathResult &result) {
                                                    if (!self) {
                                                        return;
@@ -242,17 +243,6 @@ void OnboardingSyncCreationCoordinator::handleCacheReconciliationFailed() {
     _cacheReconciliationPending = false;
     qCWarning(lcOnboardingSyncCreationCoordinator) << "Cache reconciliation failed after onboarding SYNC_ADD failure";
     _flowController.failSynchronization();
-}
-
-QString OnboardingSyncCreationCoordinator::defaultLocalPath(const QString &driveName) const {
-    auto normalizedName = driveName.trimmed();
-    if (normalizedName.startsWith(QStringLiteral("kDrive"), Qt::CaseInsensitive)) {
-        (void) normalizedName.remove(0, QStringLiteral("kDrive").size());
-        normalizedName = normalizedName.trimmed();
-    }
-
-    const auto folderName = normalizedName.isEmpty() ? QStringLiteral("kDrive") : QStringLiteral("kDrive %1").arg(normalizedName);
-    return QDir(QDir::homePath()).filePath(folderName);
 }
 
 } // namespace KDC
