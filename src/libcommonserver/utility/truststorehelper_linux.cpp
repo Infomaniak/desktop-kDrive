@@ -58,15 +58,14 @@ bool tryLoadBundleFile(SSL_CTX *ctx, const char *path) {
     return false;
 }
 
-// Try to load from a hashed cert directory and verify at least one cert was parsed.
+// Try to load from a hashed cert directory.  Unlike file loads, certs in a
+// CApath directory are loaded lazily at handshake time, so certCount() is
+// always 0 here — we can only trust the return value of load_verify_locations.
 bool tryLoadBundleDir(SSL_CTX *ctx, const char *path) {
     if (!path || path[0] == '\0' || access(path, R_OK) != 0) {
         return false;
     }
-    if (SSL_CTX_load_verify_locations(ctx, nullptr, path) == 1 && certCount(ctx) > 0) {
-        return true;
-    }
-    return false;
+    return SSL_CTX_load_verify_locations(ctx, nullptr, path) == 1;
 }
 
 // Well-known distro CA bundle paths (Debian/Ubuntu/Arch, RHEL/Fedora, SUSE, Alpine/musl).
@@ -117,7 +116,7 @@ bool TrustStoreHelper::loadSystemCAs(SSL_CTX *ctx) {
         }
     }
 
-    // 1d. Compiled-in OPENSSLDIR default directory
+    // 1d. Compiled-in OPENSSLDIR default directory (hashed symlink dir, loaded lazily)
     if (const char *defaultDir = X509_get_default_cert_dir()) {
         if (tryLoadBundleDir(ctx, defaultDir)) {
             LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from default directory " << defaultDir);
