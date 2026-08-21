@@ -104,8 +104,8 @@ struct GuiRequests {
         static ExitCode syncStop(SyncDbId syncDbId); // !!! Use commAverageTimeout !!!
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
-        static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode checkCommStatus(); // !!! Use commLongTimeout !!!
+        static ExitCode deleteDrive(DriveDbId driveDbId); // !!! Use commLongTimeout !!!
         static ExitCode searchItemInDrive(DriveDbId driveDbId, const QString &searchString, QList<SearchInfo> &list,
                                           bool &hasMore,
                                           QString &cursor); // !!! Use commLongTimeout !!!
