@@ -143,7 +143,14 @@ class KDriveDesktop(ConanFile):
         version_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "version.json")
         with open(version_file, "r") as f:
             data = json.load(f)
-        v = data["Version"]
+        # version.json holds one entry per platform, keyed as in VERSION.cmake.
+        if self.settings.os == "Windows":
+            os_key = "Windows"
+        elif self.settings.os == "Macos":
+            os_key = "macOS"
+        else:
+            os_key = "Linux"
+        v = data["Versions"][os_key]
         return v["major"], v["minor"], v["patch"], v["build"]
 
     def requirements(self):
