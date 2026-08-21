@@ -24,10 +24,10 @@
 #include "libcommon/data/account.h"
 #include "libcommon/data/drive.h"
 #include "libcommon/data/driveavailable.h"
+#include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/sync.h"
 #include "libcommon/data/user.h"
 #include "libcommon/data/error.h"
-#include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/nodeconflictinfo.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/info/searchinfo.h"
@@ -122,7 +122,7 @@ class CommService : public QObject {
         using FolderSizeCallback = std::function<void(const ExitInfo &, int64_t)>;
         using ParametersInfoCallback = std::function<void(const ExitInfo &, const ParametersInfo &)>;
         using ErrorListCallback = std::function<void(const ExitInfo &, const std::vector<Error> &)>;
-        using ExclusionTemplateListCallback = std::function<void(const ExitInfo &, const std::vector<ExclusionTemplateInfo> &)>;
+        using ExclusionTemplateListCallback = std::function<void(const ExitInfo &, const std::vector<ExclusionTemplate> &)>;
         using UpdateStateCallback = std::function<void(const ExitInfo &, UpdateState)>;
         using VersionInfoCallback = std::function<void(const ExitInfo &, const VersionInfo &)>;
         using NodeIdCallback = std::function<void(const ExitInfo &, const NodeId &)>;
@@ -204,7 +204,7 @@ class CommService : public QObject {
 
         // --- Exclusion templates ---
         void requestExclTemplGetList(bool defaultTemplates, const ExclusionTemplateListCallback &callback) const;
-        void requestExclTemplSetList(const std::vector<ExclusionTemplateInfo> &templateList, const VoidCallback &callback) const;
+        void requestExclTemplSetList(const std::vector<ExclusionTemplate> &templateList, const VoidCallback &callback) const;
         void requestExclTemplGetExcluded(const QString &name, const BoolCallback &callback) const;
 
         // --- Updater ---
