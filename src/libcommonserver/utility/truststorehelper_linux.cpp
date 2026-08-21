@@ -27,7 +27,9 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
+#include <array>
 #include <cstdlib>
+#include <cstdint>
 #include <unistd.h>
 
 namespace KDC {
@@ -37,7 +39,7 @@ namespace {
 // Returns the number of certificate objects in the ctx's trust store.
 // Useful to confirm that load_verify_locations() actually loaded something,
 // since it can return 1 on an empty or malformed bundle file.
-long certCount(const SSL_CTX *ctx) {
+int64_t certCount(const SSL_CTX *ctx) {
     const X509_STORE *store = SSL_CTX_get_cert_store(ctx);
     if (!store) {
         return 0;
@@ -69,7 +71,7 @@ bool tryLoadBundleDir(SSL_CTX *ctx, const char *path) {
 }
 
 // Well-known distro CA bundle paths (Debian/Ubuntu/Arch, RHEL/Fedora, SUSE, Alpine/musl).
-constexpr const char *knownCaBundles[] = {
+constexpr std::array knownCaBundles = {
     "/etc/ssl/certs/ca-certificates.crt",
     "/etc/pki/tls/certs/ca-bundle.crt",
     "/etc/ssl/ca-bundle.pem",
