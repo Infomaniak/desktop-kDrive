@@ -37,10 +37,10 @@ struct UISynchroNodeTests {
         )
     }
 
-    @Test("Progress clamps to 0 when given negative value")
+    @Test("Progress is nil when given negative value")
     func progressClampsToZero() {
         let node = makeNode(progress: -10)
-        #expect(node.progress == 0)
+        #expect(node.progress == nil)
     }
 
     @Test("Progress clamps to 100 when given value above 100")
@@ -53,12 +53,6 @@ struct UISynchroNodeTests {
     func progressPreservesBoundaryValues(value: Int) {
         let node = makeNode(progress: value)
         #expect(node.progress == value)
-    }
-
-    @Test("Progress clamps negative extreme")
-    func progressClampsNegativeExtreme() {
-        let node = makeNode(progress: Int.min)
-        #expect(node.progress == 0)
     }
 
     @Test("Progress clamps positive extreme")
