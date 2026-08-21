@@ -30,6 +30,9 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "network/proxy.h"
 #include "requests/parameterscache.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#include "requests/exclusiontemplatecache.h"
+#endif
 #include "test_classes/syncpaltest.h"
 #include "test_utility/testhelpers.h"
 
@@ -268,7 +271,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
     const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
-    std::filesystem::create_directories(localDirPath);
+    (void) std::filesystem::create_directories(localDirPath);
 
     class LocalDeleteJobMock : public SyncLocalDeleteJob {
         public:
@@ -293,24 +296,23 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
 
     _syncPal->setLocalPath(temporaryDirectory.path());
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled, NodeId{});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{});
 
         CPPUNIT_ASSERT(!deleteJob.canRun()); // Empty node ID.
     }
 
     // Local and remote item paths are different: can run
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
 
         CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
     // Local and remote item paths are the same: cannot run
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled,
-                                     RemoteNodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, RemoteNodeId{"1234"});
 
-        deleteJob.setRemoteItemRelativePath(SyncPath{_localTempDir.path().filename()});
+        deleteJob.setRemoteItemRelativePath(SyncPath{localDirPath.filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
@@ -318,27 +320,68 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     // Advanced synchronisation, local and remote item paths are the same: cannot run
     _syncPal->_syncInfo.targetPath = "/";
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, false, NodeId{"1234"});
-        deleteJob.setRemoteItemRelativePath(SyncPath{_localTempDir.path().filename()});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
+        deleteJob.setRemoteItemRelativePath(SyncPath{localDirPath.filename()});
 
         CPPUNIT_ASSERT(!deleteJob.checkIfRemoteFileHasBeenMoved());
     }
 
     // Advanced synchronisation, local and remote item paths are different: can run
     {
-        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{_localTempDir.path().filename()}, liteSyncIsEnabled, NodeId{"1234"});
+        LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
         deleteJob.setRemoteItemRelativePath(SyncPath{"tmp_dir_diff"});
 
         CPPUNIT_ASSERT(deleteJob.checkIfRemoteFileHasBeenMoved());
 
         deleteJob.runSynchronously();
 
-        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / _localTempDir.path().filename()));
+        CPPUNIT_ASSERT(!std::filesystem::exists(temporaryDirectory.path() / localDirPath.filename()));
     }
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
-    testhelpers::eraseFromTrash(_localTempDir.path().filename());
+    testhelpers::eraseFromTrash(localDirPath.filename());
 #endif
 }
+
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
+    class LocalDeleteJobMock : public SyncLocalDeleteJob {
+        public:
+            LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
+                               RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
+
+        protected:
+            bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
+                remoteItemRelativePath = NodeId{"1234"};
+
+                return true;
+            };
+    };
+
+    _syncPal->_syncInfo.targetPath = SyncPath{}; // Standard synchronisation.
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalDeleteJob");
+    const SyncPath localDirPath = temporaryDirectory.path() / _localTempDir.path().filename();
+
+    _syncPal->setLocalPath(temporaryDirectory.path());
+    (void) std::filesystem::create_directories(localDirPath);
+
+    const bool liteSyncIsEnabled = true;
+    LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{"1234"});
+    // The excluded dehydrated placeholder will be excluded from sync because of the pattern `_blacklisted_20220913_130102` found
+    // in its name.
+    const auto excludedDehydratedPlaceholderName = Str("dehydrated_placeholder_blacklisted_20220913_130102_666.txt");
+
+    { std::ofstream ofs(localDirPath / excludedDehydratedPlaceholderName); }
+    auto ioError = IoError::Success;
+    CPPUNIT_ASSERT(testhelpers::setDehydratedPlaceholderStatus(localDirPath / excludedDehydratedPlaceholderName, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded(localDirPath.filename() / excludedDehydratedPlaceholderName));
+
+    // Removes the excluded dehydrated placeholder from the local file system without error.
+    CPPUNIT_ASSERT(deleteJob.hardDeleteDehydratedPlaceholders());
+    CPPUNIT_ASSERT(!std::filesystem::exists(localDirPath / excludedDehydratedPlaceholderName));
+}
+#endif
 
 } // namespace KDC

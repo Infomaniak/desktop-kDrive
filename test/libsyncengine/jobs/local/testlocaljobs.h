@@ -32,6 +32,9 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testLocalJobs);
         CPPUNIT_TEST(testLocalDeleteJob);
         CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        CPPUNIT_TEST(testDeleteExcludedDehydratedPlaceholderJob);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,6 +45,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         void testLocalJobs();
         void testLocalDeleteJob();
         void testDeleteFilesWithDuplicateNames();
+        void testDeleteExcludedDehydratedPlaceholderJob();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
