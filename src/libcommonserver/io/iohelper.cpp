@@ -719,7 +719,7 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
     }
 }
 
-IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum) noexcept {
+IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
     using enum IoError;
     checksum.clear();
 
@@ -731,16 +731,23 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum) n
 
 #if defined(KD_MACOS)
         bool isAlias = false;
-        IoError aliasError = Success;
-        if (!IoHelper::_checkIfAlias(path, isAlias, aliasError)) return aliasError;
+        if (auto aliasError = Success; !IoHelper::_checkIfAlias(path, isAlias, aliasError)) return aliasError;
         if (isAlias) return InvalidArgument;
 #endif
+
+        bool chunked = true;
+        if (chunkSize == 0) {
+            // Get file size to determine the chunk size
+            uint64_t fileSize = 0;
+            if (auto ioError = IoError::Unknown; !getFileSize(path, fileSize, ioError)) return ioError;
+            chunkSize = static_cast<size_t>(fileSize);
+            chunked = false;
+        }
 
         IoError openError = Success;
         std::ifstream ifs;
         if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
-        constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
         std::vector<char> buffer(chunkSize);
 
         XXH3_state_t *state = XXH3_createState();
@@ -769,7 +776,7 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum) n
         XXH64_hash_t hash = XXH3_64bits_digest(state);
         XXH3_freeState(state);
 
-        checksum = "xxh3:" + Utility::xxHashToStr(hash);
+        checksum = (chunked ? "N:xxh3:" : "xxh3:") + Utility::xxHashToStr(hash);
         return Success;
     } catch (const std::bad_alloc &) {
         LOGW_WARN(logger(), L"Memory allocation failed in getFileChecksum");
