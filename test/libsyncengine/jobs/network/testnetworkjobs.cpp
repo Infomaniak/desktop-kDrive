@@ -1320,6 +1320,29 @@ void TestNetworkJobs::testUpload() {
     CPPUNIT_ASSERT_LESS(modificationTimeIn.count(), modificationTimeOut);
 }
 
+class MockUploadJob : public UploadJob {
+    public:
+        MockUploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &localFilePath,
+                      const SyncName &remoteFileName, const NodeId &remoteParentId, const SyncTime creationTime,
+                      const SyncTime modificationTime) :
+            UploadJob(vfs, driveDbId, localFilePath, remoteFileName, remoteParentId, creationTime, modificationTime) {}
+
+        MockUploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &localFilePath,
+                      const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
+            UploadJob(vfs, driveDbId, localFilePath, fileId, modificationTime, remoteSize) {}
+
+        bool uploadPerformed() const { return _uploadPerformed; }
+
+    protected:
+        ExitInfo handleResponse(std::istream &is) override {
+            _uploadPerformed = true;
+            return UploadJob::handleResponse(is);
+        }
+
+    private:
+        bool _uploadPerformed = false;
+};
+
 void TestNetworkJobs::testUploadChecksumMismatch() {
     // Upload a file, then modify its content and re-upload using the EDIT constructor.
     // The hash will differ, so the job must perform a real upload and return a valid node ID.
@@ -1337,11 +1360,11 @@ void TestNetworkJobs::testUploadChecksumMismatch() {
     NodeId nodeId;
     int64_t uploadedSize = 0;
     {
-        UploadJob createJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
-                            creationTime, modificationTime);
+        MockUploadJob createJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                                creationTime, modificationTime);
         const ExitInfo exitInfo = createJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
-        // CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.shouldUpload()); // TODO: reactivate this
+        CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.uploadPerformed());
         nodeId = createJob.nodeId();
         uploadedSize = createJob.size();
     }
@@ -1352,11 +1375,10 @@ void TestNetworkJobs::testUploadChecksumMismatch() {
 
     // EDIT upload — checksum mismatch expected → must upload
     {
-        UploadJob editJob(nullptr, _driveDbId, localFilePath, nodeId, newModificationTime, uploadedSize);
+        MockUploadJob editJob(nullptr, _driveDbId, localFilePath, nodeId, newModificationTime, uploadedSize);
         const ExitInfo exitInfo = editJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
-        // CPPUNIT_ASSERT_MESSAGE("Hash mismatch: a real upload must have occurred", editJob.shouldUpload());  // TODO: reactivate
-        // this
+        CPPUNIT_ASSERT_MESSAGE("Hash mismatch: a real upload should have occurred", editJob.uploadPerformed());
         CPPUNIT_ASSERT_EQUAL(newModificationTime, editJob.modificationTime());
     }
 }
@@ -1378,11 +1400,11 @@ void TestNetworkJobs::testUploadChecksumMatch() {
     NodeId nodeId;
     int64_t uploadedSize = 0;
     {
-        UploadJob createJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
-                            creationTime, modificationTime);
+        MockUploadJob createJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                                creationTime, modificationTime);
         const ExitInfo exitInfo = createJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
-        // CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.shouldUpload()); // TODO: reactivate this
+        CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.uploadPerformed());
         nodeId = createJob.nodeId();
         uploadedSize = createJob.size();
     }
@@ -1390,11 +1412,11 @@ void TestNetworkJobs::testUploadChecksumMatch() {
     // EDIT upload — same file content
     const SyncTime newModificationTime = modificationTime + 10;
     {
-        UploadJob editJob(nullptr, _driveDbId, localFilePath, nodeId, newModificationTime, uploadedSize);
+        MockUploadJob editJob(nullptr, _driveDbId, localFilePath, nodeId, newModificationTime, uploadedSize);
         const ExitInfo exitInfo = editJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
         // No real upload: hash matched, only the modification date was updated
-        // CPPUNIT_ASSERT_MESSAGE("Hash match: upload must have been skipped", !editJob.shouldUpload()); // TODO: reactivate this
+        CPPUNIT_ASSERT_MESSAGE("Hash match: upload must have been skipped", !editJob.uploadPerformed());
         // The modification time must reflect the server-confirmed value via PostFileModificationDateJob
         CPPUNIT_ASSERT_EQUAL(newModificationTime, editJob.modificationTime());
     }
