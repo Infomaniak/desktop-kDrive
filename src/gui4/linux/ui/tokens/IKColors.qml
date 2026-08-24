@@ -32,6 +32,7 @@ QtObject {
         readonly property color white20: Qt.rgba(1, 1, 1, 0.20)
         readonly property color white25: Qt.rgba(1, 1, 1, 0.25)
         readonly property color transparent: Qt.rgba(1, 1, 1, 0)
+        readonly property color neutralBlack05: Qt.rgba(0.10, 0.10, 0.10, 0.05)
         readonly property color neutralBlack35: Qt.rgba(0.10, 0.10, 0.10, 0.35)
 
         // Blue
@@ -60,6 +61,13 @@ QtObject {
         readonly property color gray500: "#484E5B"
         readonly property color gray600: "#9F9F9F"
         readonly property color gray950: "#0A0C0F"
+
+        // Purple
+        readonly property color violet500: "#9C26B0"
+        readonly property color violetLight: "#F19DFF"
+
+        // Product surfaces
+        readonly property color cloud500: "#BA68C8"
 
         // Red
         readonly property color red500: "#E33D4E"
@@ -183,6 +191,14 @@ QtObject {
     readonly property color activitiesProgressTrack: surfaceTertiary
     readonly property color activitiesActionMenuSurface: surfaceSecondary
     readonly property color activitiesActionMenuHover: surfaceTertiary
+    readonly property color storageSurface: surfaceSecondary
+    readonly property color storageDivider: darkMode ? _p.neutralBlue600 : _p.neutralBlack05
+    readonly property color storageBarSync: darkMode ? _p.kDriveLight : _p.kDrive500
+    readonly property color storageLegendSync: darkMode ? _p.kDriveLight : _p.infomaniak
+    readonly property color storageBarOther: darkMode ? _p.violetLight : _p.violet500
+    readonly property color storageLegendOther: darkMode ? _p.violetLight : _p.cloud500
+    readonly property color storageFree: darkMode ? _p.gray400 : _p.gray600
+    readonly property color storageBarSeparator: darkMode ? _p.neutralBlue700 : _p.gray100
     readonly property color sidebarNotificationSurface: surfacePrimary
     readonly property color sidebarNotificationBorder: surfaceTertiary
     readonly property color modalSurface: onboardingSurfacePrimary
