@@ -62,7 +62,7 @@ void TestSearchJob::setUp() {
     ApiToken apiToken;
     apiToken.setAccessToken("dummy_access_token");
     const std::string keychainKey("test_search_job_key");
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Init ParmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
