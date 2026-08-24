@@ -868,7 +868,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                 job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
                                                            absoluteLocalFilePath, syncOp->correspondingNode()->id().value_or(""),
                                                            syncOp->affectedNode()->modificationTime().value_or(0),
-                                                           uploadSessionParallelJobs);
+                                                           uploadSessionParallelJobs, syncOp->correspondingNode()->size());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;
