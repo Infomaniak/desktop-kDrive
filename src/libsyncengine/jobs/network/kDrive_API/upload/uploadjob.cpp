@@ -1,17 +1,20 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-/// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "uploadjob.h"
 
@@ -101,21 +104,21 @@ ExitInfo UploadJob::canRun() {
 ExitInfo UploadJob::resolveUploadNeed() {
     _shouldUpload = true;
     if (_remoteSize < 0) {
-        LOGW_WARN(_logger,
-                  L"UploadJob::resolveUploadNeed: failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath));
+        LOGW_WARN(_logger, L"UploadJob::resolveUploadNeed: remote size unknown for " << Utility::formatSyncPath(_absoluteFilePath)
+                                                                                     << L". Proceeding with upload.");
         return ExitCode::Ok; // Non-fatal: fall through to upload
     }
     CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, _remoteSize);
-    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
-        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
+    if (const auto exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding with upload.");
         return exitInfo; // Non-fatal for the caller: fall through to upload
     }
     _shouldUpload = !hashJob.hashMatch();
 
     if (!_shouldUpload) {
         LOGW_DEBUG(_logger, L"Changing last modified date without uploading: hash match");
-        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
-            LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+        if (const auto exitInfo = applyFileDates(); !exitInfo) {
+            LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding with upload.");
             _shouldUpload = true;
             return exitInfo;
         }
