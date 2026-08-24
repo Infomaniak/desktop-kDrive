@@ -169,8 +169,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
-        ui/windows/main/StoragePlaceholder.qml
+        ui/windows/main/storage/StorageErrorState.qml
         ui/windows/main/storage/StorageUsageCard.qml
+        ui/windows/main/storage/StorageView.qml
         ui/windows/main/activities/ActivitiesEmptyState.qml
         ui/windows/main/activities/ActivitiesFilterMenu.qml
         ui/windows/main/activities/ActivitiesHeader.qml
