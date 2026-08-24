@@ -28,6 +28,10 @@ Q_LOGGING_CATEGORY(lcStorageController, "gui.v4.storagecontroller", QtInfoMsg)
 
 namespace KDC {
 
+namespace {
+constexpr int32_t minimumRetryIndicatorDurationMs = 300;
+}
+
 StorageController::StorageController(MainSelectionStore &selectionStore, QObject *const parent) :
     QObject(parent),
     _selectionStore(selectionStore) {
@@ -38,6 +42,14 @@ StorageController::StorageController(MainSelectionStore &selectionStore, QObject
     (void) connect(&_selectionStore, &MainSelectionStore::currentSyncStatusChanged, this,
                    &StorageController::handleSyncStatusChanged);
     (void) connect(&_scanWatcher, &QFutureWatcher<StorageScanResult>::finished, this, &StorageController::handleScanFinished);
+    _minimumRetryTimer.setInterval(minimumRetryIndicatorDurationMs);
+    _minimumRetryTimer.setSingleShot(true);
+    (void) connect(&_minimumRetryTimer, &QTimer::timeout, this, [this] {
+        if (_retryCompletionPending) {
+            _retryCompletionPending = false;
+            handleScanFinished();
+        }
+    });
     refreshSelectedContext();
 }
 
@@ -99,10 +111,10 @@ void StorageController::setViewActive(const bool active) {
 }
 
 void StorageController::retry() {
-    if (!_viewActive || _selectedSyncDbId == 0) {
+    if (!_viewActive || _selectedSyncDbId == 0 || _retrying || _scanWatcher.isRunning()) {
         return;
     }
-    startScan();
+    startScan(ScanTrigger::Retry);
 }
 
 void StorageController::refreshSelectedContext() {
@@ -172,19 +184,24 @@ void StorageController::presentSnapshot(const StorageSnapshot &snapshot) {
     emit storageChanged();
 }
 
-void StorageController::startScan() {
+void StorageController::startScan(const ScanTrigger trigger) {
     if (!_viewActive || _selectedSyncDbId == 0 || _selectedSyncRoot.empty()) {
         return;
     }
 
     cancelScan();
+    if (trigger == ScanTrigger::Retry) {
+        setRetrying(true);
+        _minimumRetryTimer.start();
+    }
 
     const SyncDbId requestedSyncDbId = _selectedSyncDbId;
     const SyncPath requestedSyncRoot = _selectedSyncRoot;
     _scanCancellation = std::make_shared<std::atomic_bool>(false);
     const auto cancellation = _scanCancellation;
     qCInfo(lcStorageController) << "Starting local Storage scan | syncDbId:" << requestedSyncDbId
-                                << "| root:" << Path2QStr(requestedSyncRoot);
+                                << "| root:" << Path2QStr(requestedSyncRoot)
+                                << "| trigger:" << (trigger == ScanTrigger::Retry ? "retry" : "automatic");
     (void) _scanWatcher.setProperty("syncDbId", QVariant::fromValue<qint64>(requestedSyncDbId));
     (void) _scanWatcher.setProperty("syncRoot", Path2QStr(requestedSyncRoot));
     _scanWatcher.setFuture(QtConcurrent::run([requestedSyncRoot, cancellation] {
@@ -193,12 +210,19 @@ void StorageController::startScan() {
 }
 
 void StorageController::cancelScan() {
+    _minimumRetryTimer.stop();
+    _retryCompletionPending = false;
+    setRetrying(false);
     if (_scanCancellation) {
         _scanCancellation->store(true, std::memory_order_relaxed);
         _scanCancellation.reset();
     }
 }
 
+/**
+ * Applies the current scan result, deferring a fast retry result until the retry indicator has been visible for its
+ * minimum duration.
+ */
 void StorageController::handleScanFinished() {
     const auto result = _scanWatcher.result();
     const auto requestedSyncDbId = static_cast<SyncDbId>(_scanWatcher.property("syncDbId").toLongLong());
@@ -207,6 +231,13 @@ void StorageController::handleScanFinished() {
         result.error == StorageScanError::Canceled) {
         return;
     }
+    if (_retrying && _minimumRetryTimer.isActive()) {
+        _retryCompletionPending = true;
+        return;
+    }
+
+    _retryCompletionPending = false;
+    setRetrying(false);
 
     if (result.succeeded()) {
         _cache[requestedSyncDbId] = CachedSnapshot{.syncRoot = requestedSyncRoot, .snapshot = *result.snapshot};
@@ -230,6 +261,15 @@ void StorageController::handleScanFinished() {
 
 void StorageController::setState(const State state) {
     _state = state;
+}
+
+void StorageController::setRetrying(const bool retrying) {
+    if (_retrying == retrying) {
+        return;
+    }
+
+    _retrying = retrying;
+    emit retryingChanged();
 }
 
 std::optional<SyncStatus> StorageController::currentStatus() const {
