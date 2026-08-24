@@ -124,6 +124,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
+        ui/tokens/IKStorage.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -269,6 +270,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/home/status-setup-drawer.svg
         ui/assets/main/home/trash.svg
         ui/assets/main/storage.svg
+        ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
