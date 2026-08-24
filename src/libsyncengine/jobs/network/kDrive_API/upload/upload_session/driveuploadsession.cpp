@@ -39,14 +39,17 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
-                                       const SyncTime modificationTime, const uint64_t nbParallelThread) :
+                                       const SyncTime modificationTime, const uint64_t nbParallelThread,
+                                       const int64_t remoteSize /*= -1*/) :
     DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
     _fileId = fileId;
+    _remoteSize = remoteSize;
 
     // Retrieve creation date from the local file
     FileStat fileStat;
-    auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
     }
@@ -63,25 +66,22 @@ DriveUploadSession::~DriveUploadSession() {
 
 ExitInfo DriveUploadSession::resolveUploadNeed() {
     _shouldUpload = true;
-    FileStat fileStat;
-
-    if (auto ioError = IoError::Success;
-        !IoHelper::getFileStat(getFilePath(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
-        ioError != IoError::Success) {
-        LOGW_WARN(getLogger(), L"CheckHashMatchJob: failed to get file size for " << Utility::formatSyncPath(getFilePath()));
+    if (_remoteSize < 0) {
+        LOGW_WARN(getLogger(), L"UploadJob::resolveUploadNeed: remote size unknown for " << Utility::formatSyncPath(getFilePath())
+                                                                                         << L". Proceeding with upload.");
         return ExitCode::Ok; // Non-fatal: fall through to upload
     }
-    CheckHashMatchJob hashJob(_driveDbId, getFilePath(), _fileId, fileStat.size);
-    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
-        LOGW_DEBUG(getLogger(), L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
+    CheckHashMatchJob hashJob(_driveDbId, getFilePath(), _fileId, _remoteSize);
+    if (const auto exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOGW_DEBUG(getLogger(), L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding with upload.");
         return exitInfo; // Non-fatal for the caller: fall through to upload
     }
     _shouldUpload = !hashJob.hashMatch();
 
     if (!_shouldUpload) {
         LOGW_DEBUG(getLogger(), L"Changing last modified date without uploading: hash match");
-        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
-            LOGW_DEBUG(getLogger(), L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
+        if (const auto exitInfo = applyFileDates(); !exitInfo) {
+            LOGW_DEBUG(getLogger(), L"applyFileDates failed: " << exitInfo << L" Proceeding with upload.");
             return exitInfo;
         }
     }

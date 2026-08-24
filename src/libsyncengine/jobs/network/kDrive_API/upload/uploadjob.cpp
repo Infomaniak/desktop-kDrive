@@ -55,8 +55,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 
     // Retrieve creation date from the local file
     FileStat fileStat;
-    auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
     }

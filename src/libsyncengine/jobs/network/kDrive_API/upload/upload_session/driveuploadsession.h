@@ -35,7 +35,8 @@ class DriveUploadSession : public AbstractUploadSession {
                            SyncTime creationTime, SyncTime modificationTime, uint64_t nbParallelThread);
         // Using file ID, for file edition only.
         DriveUploadSession(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, std::shared_ptr<SyncDb> syncDb,
-                           const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime, uint64_t nbParallelThread);
+                           const SyncPath &filepath, const NodeId &fileId, SyncTime modificationTime, uint64_t nbParallelThread,
+                           int64_t remoteSize = -1);
         ~DriveUploadSession() override;
 
         const NodeId &nodeId() const { return _nodeId; }
@@ -77,6 +78,7 @@ class DriveUploadSession : public AbstractUploadSession {
         int64_t _sizeOut = 0;
 
         bool _shouldUpload = true;
+        int64_t _remoteSize = -1;
         bool _isHydrated = false;
 
         const std::shared_ptr<Vfs> _vfs;
