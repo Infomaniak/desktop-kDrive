@@ -53,6 +53,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/homestateresolver.h
         app/mainwindow/networkstatusobserver.cpp
         app/mainwindow/networkstatusobserver.h
+        app/mainwindow/storagecontroller.cpp
+        app/mainwindow/storagecontroller.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
