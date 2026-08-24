@@ -28,7 +28,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 #include "requests/exclusiontemplatecache.h"
@@ -73,7 +72,7 @@ void KDC::TestLocalJobs::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -96,12 +95,6 @@ void KDC::TestLocalJobs::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, 1);
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 
     _syncPal = std::make_shared<SyncPalTest>(1, KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();

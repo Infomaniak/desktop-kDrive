@@ -49,7 +49,7 @@ KeyChainManager::KeyChainManager(const std::shared_ptr<IKeyChainStorage> storage
 
 bool KeyChainManager::writeDummyTest() {
     // First, we check that we can write into the keychain
-    if (!writeToken(dummyKeychainKey, dummyData)) {
+    if (!writeData(dummyKeychainKey, dummyData)) {
         std::string error = "Test writing into the keychain failed. Token not refreshed.";
         LOG_WARN(Log::instance()->getLogger(), error);
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeDummyTest", error);
@@ -60,20 +60,20 @@ bool KeyChainManager::writeDummyTest() {
 }
 
 void KeyChainManager::clearDummyTest() {
-    (void) deleteToken(dummyKeychainKey);
+    (void) deleteData(dummyKeychainKey);
 }
 
-bool KeyChainManager::writeToken(const std::string &keychainKey, const std::string &rawData) {
+bool KeyChainManager::writeData(const std::string &keychainKey, const std::string &rawData) {
     return _storage->writePassword(keychainKey, rawData);
 }
 
-bool KeyChainManager::readDataFromKeystore(const std::string &keychainKey, std::string &data, bool &found) {
+bool KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
     return _storage->readPassword(keychainKey, data, found);
 }
 
 bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
     std::string token;
-    const bool returnValue = readDataFromKeystore(keychainKey, token, found);
+    const bool returnValue = readData(keychainKey, token, found);
     if (returnValue && found) {
         apiToken = ApiToken(token);
     }
@@ -81,7 +81,7 @@ bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &api
     return returnValue;
 }
 
-bool KeyChainManager::deleteToken(const std::string &keychainKey) {
+bool KeyChainManager::deleteData(const std::string &keychainKey) {
     return _storage->deletePassword(keychainKey);
 }
 
