@@ -55,7 +55,6 @@ class UploadJob : public AbstractTokenNetworkJob {
         void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override;
         std::string contentType() override;
-        ExitInfo applyFileDates();
 
         ExitInfo readFile();
         ExitInfo readLink();

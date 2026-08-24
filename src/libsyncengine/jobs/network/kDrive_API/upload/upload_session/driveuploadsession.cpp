@@ -19,8 +19,7 @@
 #include "driveuploadsession.h"
 
 #include "io/filestat.h"
-#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
-#include "jobs/network/kDrive_API/upload/uploadneedresolver.h"
+#include "jobs/network/kDrive_API/upload/uploadhelpers.h"
 #include "utility/utility.h"
 
 namespace KDC {
@@ -68,33 +67,18 @@ DriveUploadSession::~DriveUploadSession() {
 
 ExitInfo DriveUploadSession::runJob() noexcept {
     if (!_fileId.empty()) {
-        const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize,
-                                                   [this] { return applyFileDates(); });
+        const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize, _creationTimeIn,
+                                                   _modificationTimeIn);
+        if (result.applyFileDatesResult) {
+            _nodeId = result.applyFileDatesResult->nodeId;
+            _creationTimeOut = result.applyFileDatesResult->creationTime;
+            _modificationTimeOut = result.applyFileDatesResult->modificationTime;
+            _sizeOut = result.applyFileDatesResult->size;
+        }
         if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
         LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
     }
     return AbstractUploadSession::runJob();
-}
-
-ExitInfo DriveUploadSession::applyFileDates() {
-    PostFileModificationDateJob postJob(_driveDbId, _fileId, _modificationTimeIn);
-    if (const auto exitInfo = postJob.runSynchronously(); !exitInfo) {
-        LOGW_DEBUG(getLogger(), L"PostFileModificationDateJob failed: " << exitInfo);
-        return exitInfo;
-    }
-
-    uint64_t fileSize = 0;
-    if (auto ioError = IoError::Success; !IoHelper::getFileSize(getFilePath(), fileSize, ioError)) {
-        LOGW_WARN(getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatIoError(getFilePath(), ioError));
-    } else if (ioError != IoError::Success) {
-        LOGW_WARN(getLogger(), L"Unable to read file size for " << Utility::formatIoError(getFilePath(), ioError));
-    }
-
-    _nodeId = _fileId;
-    _modificationTimeOut = postJob.lastModifiedAt();
-    _creationTimeOut = _creationTimeIn;
-    _sizeOut = static_cast<int64_t>(fileSize);
-    return ExitCode::Ok;
 }
 
 ExitInfo DriveUploadSession::runJobInit() {

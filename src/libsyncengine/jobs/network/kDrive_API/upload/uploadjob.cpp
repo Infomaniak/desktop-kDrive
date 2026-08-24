@@ -18,10 +18,9 @@
 
 #include "uploadjob.h"
 
-#include "uploadneedresolver.h"
+#include "uploadhelpers.h"
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
-#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/jsonparserutility.h"
@@ -105,34 +104,18 @@ ExitInfo UploadJob::canRun() {
 
 ExitInfo UploadJob::runJob() noexcept {
     if (!_fileId.empty()) {
-        const auto result = KDC::resolveUploadNeed(_logger, driveDbId(), _absoluteFilePath, _fileId, _remoteSize,
-                                                   [this] { return applyFileDates(); });
+        const auto result = KDC::resolveUploadNeed(_logger, driveDbId(), _absoluteFilePath, _fileId, _remoteSize, _creationTimeIn,
+                                                   _modificationTimeIn);
+        if (result.applyFileDatesResult) {
+            _nodeIdOut = result.applyFileDatesResult->nodeId;
+            _creationTimeOut = result.applyFileDatesResult->creationTime;
+            _modificationTimeOut = result.applyFileDatesResult->modificationTime;
+            _sizeOut = result.applyFileDatesResult->size;
+        }
         if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
         LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
     }
     return AbstractTokenNetworkJob::runJob();
-}
-
-ExitInfo UploadJob::applyFileDates() {
-    PostFileModificationDateJob postJob(driveDbId(), _fileId, _modificationTimeIn);
-    const ExitInfo exitInfo = postJob.runSynchronously();
-    if (!exitInfo) {
-        LOGW_DEBUG(_logger, L"PostFileModificationDateJob failed: " << exitInfo);
-        return exitInfo;
-    }
-    IoError ioError = IoError::Success;
-    uint64_t fileSize = 0;
-    if (!IoHelper::getFileSize(_absoluteFilePath, fileSize, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_absoluteFilePath, ioError));
-    } else if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatIoError(_absoluteFilePath, ioError));
-    }
-
-    _nodeIdOut = _fileId;
-    _modificationTimeOut = postJob.lastModifiedAt();
-    _creationTimeOut = _creationTimeIn;
-    _sizeOut = static_cast<int64_t>(fileSize);
-    return ExitCode::Ok;
 }
 
 ExitInfo UploadJob::handleResponse(std::istream &is) {

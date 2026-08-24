@@ -57,7 +57,6 @@ class DriveUploadSession : public AbstractUploadSession {
 
     private:
         ExitInfo runJob() noexcept override;
-        ExitInfo applyFileDates();
         DriveDbId _driveDbId = 0;
         std::shared_ptr<SyncDb> _syncDb;
 
