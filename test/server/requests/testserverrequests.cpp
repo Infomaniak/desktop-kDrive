@@ -47,7 +47,7 @@ void TestServerRequests::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(_keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(_keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -82,7 +82,7 @@ void TestServerRequests::testFixProxyConfig() {
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
     ParametersCache::instance()->save();
 
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::fixProxyConfig());
+    ServerRequests::fixProxyConfig();
 
     CPPUNIT_ASSERT_EQUAL(ProxyType::None, ParametersCache::instance()->parameters().proxyConfig().type());
 }
