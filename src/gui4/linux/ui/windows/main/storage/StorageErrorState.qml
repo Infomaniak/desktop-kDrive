@@ -77,12 +77,10 @@ Item {
                 id: retryButton
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                height: IKStorage.retryHeight
-                padding: 0
                 text: qsTrId("buttonRetry")
+                flat: true
+                focusPolicy: Qt.StrongFocus
 
-                background: Item {
-                }
                 contentItem: Text {
                     color: IKColors.actionPrimary
                     font.pixelSize: IKFonts.bodySize

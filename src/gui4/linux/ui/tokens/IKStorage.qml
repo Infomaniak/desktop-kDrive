@@ -36,7 +36,6 @@ QtObject {
     readonly property real errorTextMaxWidth: 440
     readonly property real errorTitleSize: 15
     readonly property real errorLineHeight: 20
-    readonly property real retryHeight: 20
     readonly property real loadingSpinnerSize: 16
     readonly property real loadingPlaceholderWidth: 64
     readonly property real loadingPlaceholderHeight: 12
