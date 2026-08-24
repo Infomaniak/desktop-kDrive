@@ -19,6 +19,8 @@
 #include "driveuploadsession.h"
 
 #include "io/filestat.h"
+#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
+#include "jobs/network/kDrive_API/upload/uploadneedresolver.h"
 #include "utility/utility.h"
 
 namespace KDC {
@@ -64,30 +66,6 @@ DriveUploadSession::~DriveUploadSession() {
     }
 }
 
-ExitInfo DriveUploadSession::resolveUploadNeed() {
-    _shouldUpload = true;
-    if (_remoteSize < 0) {
-        LOGW_WARN(getLogger(), L"UploadJob::resolveUploadNeed: remote size unknown for " << Utility::formatSyncPath(getFilePath())
-                                                                                         << L". Proceeding with upload.");
-        return ExitCode::Ok; // Non-fatal: fall through to upload
-    }
-    CheckHashMatchJob hashJob(_driveDbId, getFilePath(), _fileId, _remoteSize);
-    if (const auto exitInfo = hashJob.runSynchronously(); !exitInfo) {
-        LOGW_DEBUG(getLogger(), L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding with upload.");
-        return exitInfo; // Non-fatal for the caller: fall through to upload
-    }
-    _shouldUpload = !hashJob.hashMatch();
-
-    if (!_shouldUpload) {
-        LOGW_DEBUG(getLogger(), L"Changing last modified date without uploading: hash match");
-        if (const auto exitInfo = applyFileDates(); !exitInfo) {
-            LOGW_DEBUG(getLogger(), L"applyFileDates failed: " << exitInfo << L" Proceeding with upload.");
-            return exitInfo;
-        }
-    }
-    return ExitCode::Ok;
-}
-
 void DriveUploadSession::computeHydrationStatus() {
     VfsStatus vfsStatus;
     if (_vfs) (void) _vfs->status(getFilePath(), vfsStatus);
@@ -98,9 +76,10 @@ ExitInfo DriveUploadSession::runJob() noexcept {
     if (!_fileId.empty() && _vfs) {
         computeHydrationStatus();
         if (_isHydrated) {
-            const ExitInfo exitInfo = resolveUploadNeed();
-            if (!_shouldUpload && exitInfo) return ExitCode::Ok;
-            LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << exitInfo);
+            const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize,
+                                                       [this] { return applyFileDates(); });
+            if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
+            LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
         }
     }
     return AbstractUploadSession::runJob();

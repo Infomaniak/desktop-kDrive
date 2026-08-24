@@ -19,8 +19,6 @@
 #pragma once
 
 #include "abstractuploadsession.h"
-#include "jobs/network/kDrive_API/checkhashmatchjob.h"
-#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
 
 #include "utility/types.h"
 #include "db/syncdb.h"
@@ -60,7 +58,6 @@ class DriveUploadSession : public AbstractUploadSession {
     private:
         ExitInfo runJob() noexcept override;
         void computeHydrationStatus();
-        ExitInfo resolveUploadNeed();
         ExitInfo applyFileDates();
         DriveDbId _driveDbId = 0;
         std::shared_ptr<SyncDb> _syncDb;

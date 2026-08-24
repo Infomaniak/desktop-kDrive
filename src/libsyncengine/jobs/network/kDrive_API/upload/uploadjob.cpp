@@ -18,12 +18,14 @@
 
 #include "uploadjob.h"
 
+#include "uploadneedresolver.h"
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
+#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
 
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <fstream>
 #include <Poco/Net/HTTPRequest.h>
@@ -101,36 +103,12 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo UploadJob::resolveUploadNeed() {
-    _shouldUpload = true;
-    if (_remoteSize < 0) {
-        LOGW_WARN(_logger, L"UploadJob::resolveUploadNeed: remote size unknown for " << Utility::formatSyncPath(_absoluteFilePath)
-                                                                                     << L". Proceeding with upload.");
-        return ExitCode::Ok; // Non-fatal: fall through to upload
-    }
-    CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, _remoteSize);
-    if (const auto exitInfo = hashJob.runSynchronously(); !exitInfo) {
-        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding with upload.");
-        return exitInfo; // Non-fatal for the caller: fall through to upload
-    }
-    _shouldUpload = !hashJob.hashMatch();
-
-    if (!_shouldUpload) {
-        LOGW_DEBUG(_logger, L"Changing last modified date without uploading: hash match");
-        if (const auto exitInfo = applyFileDates(); !exitInfo) {
-            LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding with upload.");
-            _shouldUpload = true;
-            return exitInfo;
-        }
-    }
-    return ExitCode::Ok;
-}
-
 ExitInfo UploadJob::runJob() noexcept {
     if (!_fileId.empty()) {
-        const ExitInfo exitInfo = resolveUploadNeed();
-        if (!_shouldUpload && exitInfo) return ExitCode::Ok;
-        LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
+        const auto result = KDC::resolveUploadNeed(_logger, driveDbId(), _absoluteFilePath, _fileId, _remoteSize,
+                                                   [this] { return applyFileDates(); });
+        if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
     }
     return AbstractTokenNetworkJob::runJob();
 }
