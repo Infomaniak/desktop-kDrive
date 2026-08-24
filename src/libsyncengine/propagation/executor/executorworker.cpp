@@ -646,12 +646,11 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             if (filesize > bigFileThreshold) {
                 try {
                     const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
-                    job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
-                                                               absoluteLocalFilePath, syncOp->affectedNode()->name(),
-                                                               newCorrespondingParentNode->id().value_or(""),
-                                                               syncOp->affectedNode()->createdAt().value_or(0),
-                                                               syncOp->affectedNode()->modificationTime().value_or(0),
-                                                               isLiteSyncActivated(), uploadSessionParallelJobs);
+                    job = std::make_shared<DriveUploadSession>(
+                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
+                            syncOp->affectedNode()->name(), newCorrespondingParentNode->id().value_or(""),
+                            syncOp->affectedNode()->createdAt().value_or(0),
+                            syncOp->affectedNode()->modificationTime().value_or(0), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
@@ -869,7 +868,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                 job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
                                                            absoluteLocalFilePath, syncOp->correspondingNode()->id().value_or(""),
                                                            syncOp->affectedNode()->modificationTime().value_or(0),
-                                                           isLiteSyncActivated(), uploadSessionParallelJobs);
+                                                           uploadSessionParallelJobs);
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;

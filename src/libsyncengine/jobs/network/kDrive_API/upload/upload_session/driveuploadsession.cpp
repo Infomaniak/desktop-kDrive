@@ -26,8 +26,7 @@ namespace KDC {
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
                                        const NodeId &remoteParentDirId, const SyncTime creationTime,
-                                       const SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread) :
+                                       const SyncTime modificationTime, const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
@@ -35,16 +34,13 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
     _modificationTimeIn(modificationTime),
     _remoteParentDirId(remoteParentDirId),
     _vfs(vfs) {
-    (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
-                                       const SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
-                       nbParallelThread) {
+                                       const SyncTime modificationTime, const uint64_t nbParallelThread) :
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
     _fileId = fileId;
 
     // Retrieve creation date from the local file
@@ -68,8 +64,9 @@ DriveUploadSession::~DriveUploadSession() {
 ExitInfo DriveUploadSession::resolveUploadNeed() {
     _shouldUpload = true;
     FileStat fileStat;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(getFilePath(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+
+    if (auto ioError = IoError::Success;
+        !IoHelper::getFileStat(getFilePath(), &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(getLogger(), L"CheckHashMatchJob: failed to get file size for " << Utility::formatSyncPath(getFilePath()));
         return ExitCode::Ok; // Non-fatal: fall through to upload
@@ -111,14 +108,17 @@ ExitInfo DriveUploadSession::runJob() noexcept {
 
 ExitInfo DriveUploadSession::applyFileDates() {
     PostFileModificationDateJob postJob(_driveDbId, _fileId, _modificationTimeIn);
-    const ExitInfo exitInfo = postJob.runSynchronously();
-    if (!exitInfo) {
+    if (const auto exitInfo = postJob.runSynchronously(); !exitInfo) {
         LOGW_DEBUG(getLogger(), L"PostFileModificationDateJob failed: " << exitInfo);
         return exitInfo;
     }
-    IoError ioError = IoError::Success;
+
     uint64_t fileSize = 0;
-    IoHelper::getFileSize(getFilePath(), fileSize, ioError);
+    if (auto ioError = IoError::Success; !IoHelper::getFileSize(getFilePath(), fileSize, ioError)) {
+        LOGW_WARN(getLogger(), L"Error in IoHelper::getFileSize for " << Utility::formatIoError(getFilePath(), ioError));
+    } else if (ioError != IoError::Success) {
+        LOGW_WARN(getLogger(), L"Unable to read file size for " << Utility::formatIoError(getFilePath(), ioError));
+    }
 
     _nodeId = _fileId;
     _modificationTimeOut = postJob.lastModifiedAt();
