@@ -15,6 +15,7 @@
 
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Do not add links to `.md` files that are not versioned in git.
+- Use Swiss German orthography for German Linux v4 translations: write `ss` instead of `ß`.
 - Never launch a build unless explicitly asked by the user.
 - For the Activities PR stack, preparing a PR means isolating and staging its changes only. Leave commit, push, and PR
   creation to the user unless they explicitly ask Codex to publish them.
@@ -29,6 +30,8 @@
 - Do not duplicate method documentation between headers and implementation files. Document public API contracts in
   headers, private helpers in `.cpp` files, and keep implementation-specific comments next to the relevant code.
 - Do not introduce raw `int` in new code when a fixed-width type fits (`uint8_t`, `int32_t`, ...).
+- In new Linux v4 C++ code, import `Qt::StringLiterals` in the implementation and use `u"..."_s` instead of
+  `QStringLiteral(...)`.
 - Use the domain aliases from `libcommon/utility/types.h` whenever they match the represented concept. Keep `int` and Qt
   numeric types when required by an overridden Qt API or a QML boundary, and make that constraint explicit when unclear.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
@@ -103,6 +106,17 @@
   component generic, non-modal, and independent from the activity row lifetime.
 - Automated tests for the current Activities milestone are deferred. Do not add an Activities-specific test target or
   files under `test/gui4/linux/` until the user explicitly reopens that scope.
+- Keep Linux Storage usage local to the GUI: use `QStorageInfo`/Qt filesystem tools where they expose the required
+  semantics, supplement them with POSIX metadata only for device identity and allocated blocks, never descend onto a
+  different `st_dev`, and count sparse files by their physically allocated blocks rather than logical size.
+- Disable the Activities and Storage sidebar entries when no selected synchronization root exists; the unconfigured
+  route remains on Home.
+- Let Storage inherit the shared main-page surface, and use the same card surface as Home Quick Access. Keep the 12 px
+  clipped card radius, 24 px horizontal page margins, and 32 px top margin.
+- Mask the complete Storage graph with one rounded shape instead of rounding individual segments: `Rectangle.clip` is
+  rectangular in Qt Quick, and segment-level rounding breaks when the leading segment is zero or subpixel-sized.
+- Keep the synchronization and other-files Storage segments visible with a nominal 1% minimum, but let free space reach
+  a true zero width. Normalize the displayed widths inside the single rounded graph mask.
 - Main-sidebar selection changes only the row background; it must not recolor the icon or increase the label weight.
 - Keep shared color primitives aligned with the macOS design-token assets; notably, `NeutralBlue200` is `#DCE3F0` and
   `NeutralBlue600` is `#1F242E`.
