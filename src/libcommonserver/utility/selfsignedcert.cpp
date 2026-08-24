@@ -170,11 +170,11 @@ bool SelfSignedCert::generateAndPublishClientCert(Pem &pem) {
     }
     if (!generate(pem, true)) return false;
 
-    if (!keychain->writeToken(std::string(clientCertKeychainKey), pem.cert)) {
+    if (!keychain->writeData(std::string(clientCertKeychainKey), pem.cert)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS client certificate in the keychain");
         return false;
     }
-    if (!keychain->writeToken(std::string(clientKeyKeychainKey), pem.key)) {
+    if (!keychain->writeData(std::string(clientKeyKeychainKey), pem.key)) {
         LOG_ERROR(Log::instance()->getLogger(), "Failed to store the TLS client private key in the keychain");
         return false;
     }
