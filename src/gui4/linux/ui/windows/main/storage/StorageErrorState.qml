@@ -73,23 +73,37 @@ Item {
                 width: parent.width
                 wrapMode: Text.WordWrap
             }
-            Button {
-                id: retryButton
-
+            Item {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTrId("buttonRetry")
-                flat: true
-                focusPolicy: Qt.StrongFocus
+                height: retryButton.implicitHeight
+                width: retryButton.implicitWidth
 
-                contentItem: Text {
-                    color: IKColors.actionPrimary
-                    font.pixelSize: IKFonts.bodySize
-                    horizontalAlignment: Text.AlignHCenter
-                    text: retryButton.text
-                    verticalAlignment: Text.AlignVCenter
+                Button {
+                    id: retryButton
+
+                    anchors.fill: parent
+                    flat: true
+                    focusPolicy: Qt.StrongFocus
+                    text: qsTrId("buttonRetry")
+                    visible: !root.controller.retrying
+
+                    contentItem: Text {
+                        color: IKColors.actionPrimary
+                        font.pixelSize: IKFonts.bodySize
+                        horizontalAlignment: Text.AlignHCenter
+                        text: retryButton.text
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    onClicked: root.controller.retry()
                 }
-
-                onClicked: root.controller.retry()
+                IKLoadingSpinner {
+                    Accessible.name: qsTrId("storageLoadingHint")
+                    anchors.centerIn: parent
+                    height: IKStorage.loadingSpinnerSize
+                    visible: root.controller.retrying
+                    width: IKStorage.loadingSpinnerSize
+                }
             }
         }
     }
