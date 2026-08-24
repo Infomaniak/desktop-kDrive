@@ -5,7 +5,8 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
+find_package(Qt6 6.11 REQUIRED COMPONENTS
+        Core Concurrent Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
@@ -55,6 +56,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/networkstatusobserver.h
         app/mainwindow/storagecontroller.cpp
         app/mainwindow/storagecontroller.h
+        app/mainwindow/storagescanner.cpp
+        app/mainwindow/storagescanner.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
@@ -322,6 +325,7 @@ qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
 
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Core
+        Qt6::Concurrent
         Qt6::Gui
         Qt6::Network
         Qt6::Qml
