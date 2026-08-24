@@ -78,7 +78,6 @@ class UploadJob : public AbstractTokenNetworkJob {
         SyncPath _linkTarget;
         NodeType _targetType = NodeType::File;
 
-        bool _shouldUpload = true;
         int64_t _remoteSize = -1;
 
         const std::shared_ptr<Vfs> _vfs;

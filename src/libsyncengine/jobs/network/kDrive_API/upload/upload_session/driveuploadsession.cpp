@@ -66,21 +66,12 @@ DriveUploadSession::~DriveUploadSession() {
     }
 }
 
-void DriveUploadSession::computeHydrationStatus() {
-    VfsStatus vfsStatus;
-    if (_vfs) (void) _vfs->status(getFilePath(), vfsStatus);
-    _isHydrated = !_vfs || vfsStatus.isHydrated;
-}
-
 ExitInfo DriveUploadSession::runJob() noexcept {
-    if (!_fileId.empty() && _vfs) {
-        computeHydrationStatus();
-        if (_isHydrated) {
-            const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize,
-                                                       [this] { return applyFileDates(); });
-            if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
-            LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
-        }
+    if (!_fileId.empty()) {
+        const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize,
+                                                   [this] { return applyFileDates(); });
+        if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
     }
     return AbstractUploadSession::runJob();
 }

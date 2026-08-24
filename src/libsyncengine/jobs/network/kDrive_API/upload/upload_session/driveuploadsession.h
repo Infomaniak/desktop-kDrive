@@ -57,7 +57,6 @@ class DriveUploadSession : public AbstractUploadSession {
 
     private:
         ExitInfo runJob() noexcept override;
-        void computeHydrationStatus();
         ExitInfo applyFileDates();
         DriveDbId _driveDbId = 0;
         std::shared_ptr<SyncDb> _syncDb;
@@ -74,9 +73,7 @@ class DriveUploadSession : public AbstractUploadSession {
         SyncTime _modificationTimeOut = 0;
         int64_t _sizeOut = 0;
 
-        bool _shouldUpload = true;
         int64_t _remoteSize = -1;
-        bool _isHydrated = false;
 
         const std::shared_ptr<Vfs> _vfs;
 };
