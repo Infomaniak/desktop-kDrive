@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: en, English
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:19 +0200 
+ Exported at: Mon, 24 Aug 2026 10:21:44 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en"> 
     <context>
@@ -1726,6 +1726,14 @@ Useful if you know the important work is online on kDrive.</translation>
         <message id="linkCopiedToClipboardTitle"> 
             <source>Link copied to clipboard</source> 
             <translation>Link copied to clipboard</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Storage location unavailable</translation> 
         </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 

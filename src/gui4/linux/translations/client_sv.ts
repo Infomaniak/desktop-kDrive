@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: sv, Swedish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:20 +0200 
+ Exported at: Mon, 24 Aug 2026 10:21:44 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="sv"> 
     <context>
@@ -1726,6 +1726,14 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</translat
         <message id="linkCopiedToClipboardTitle"> 
             <source>Link copied to clipboard</source> 
             <translation>Länk kopierad till urklipp</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive kan inte komma åt lagringsplatsen för den här synkroniseringen. Se till att enheten är ansluten och olåst och kontrollera sedan att kDrive har behörighet att komma åt den.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Lagringsplatsen är inte tillgänglig</translation> 
         </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
