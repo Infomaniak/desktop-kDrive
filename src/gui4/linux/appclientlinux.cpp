@@ -93,6 +93,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                             "ActivitiesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<ManyDeletesController>("kDrive.UI", 1, 0, "ManyDeletesController",
                                                              "ManyDeletesController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<StorageController>("kDrive.UI", 1, 0, "StorageController",
+                                                         "StorageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
                                             QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
@@ -107,6 +109,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
             {QStringLiteral("manyDeletesController"), QVariant::fromValue<QObject *>(&_manyDeletesController)},
+            {QStringLiteral("storageController"), QVariant::fromValue<QObject *>(&_storageController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
