@@ -762,7 +762,8 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
 
         std::streamsize readBytes(0);
         while ((readBytes = ifs.read(buffer.data(), static_cast<std::streamsize>(buffer.size())).gcount()) > 0) {
-            if (XXH3_64bits_update(state, buffer.data(), static_cast<size_t>(readBytes)) == XXH_ERROR) {
+            const auto chunkHash = Utility::computeXxHash(buffer.data(), static_cast<size_t>(readBytes));
+            if (XXH3_64bits_update(state, chunkHash.data(), chunkHash.length()) == XXH_ERROR) {
                 XXH3_freeState(state);
                 return Unknown;
             }
