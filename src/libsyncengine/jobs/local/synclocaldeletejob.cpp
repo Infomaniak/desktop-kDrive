@@ -20,6 +20,7 @@
 
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
+#include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/io/iohelper.h"
@@ -185,7 +186,7 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
-        LOGW_ERROR(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_DEBUG(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(relativeLocalPath));
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
@@ -218,12 +219,17 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if ((entry.is_symlink() || entry.is_regular_file()) && isFileDehydrated(entry.path(), _logger)) {
-            auto exitInfo = hardDelete(entry.path());
-            if (!exitInfo) return exitInfo;
+            if (const auto exitInfo = hardDelete(entry.path()); !exitInfo) return exitInfo;
 
             const auto relativeLocalPath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
-            exitInfo = deleteFromDB(relativeLocalPath);
-            if (!exitInfo) return exitInfo;
+
+            if (const auto exitInfo = deleteFromDB(relativeLocalPath);
+                exitInfo == ExitInfo{ExitCode::DataError, ExitCause::DbEntryNotFound}) {
+                LOG_IF_FAIL(ExclusionTemplateCache::instance()->isExcluded(relativeLocalPath));
+                continue; // The item was already removed from the DB because it is excluded, so we can
+                          // ignore this error.
+            } else if (!exitInfo)
+                return exitInfo;
         }
     }
 

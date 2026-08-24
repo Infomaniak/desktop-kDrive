@@ -681,6 +681,94 @@ function Create-MSI-Package {
 	Write-Host "MSI package created."
 }
 
+function Package-RecoveryUpdater {
+    param (
+        [string] $buildPath,
+        [string] $contentPath,
+        [string] $thumbprint
+    )
+
+    $updaterExe = "$buildPath/bin/kDriveRecoveryUpdater.exe"
+    if (-not (Test-Path $updaterExe)) {
+        Write-Host "kDriveRecoveryUpdater.exe not found at '$updaterExe', skipping recovery updater packaging." -f Yellow
+        return
+    }
+
+    Write-Host "Packaging recovery updater ..." -f Cyan
+
+    $stagingDir = "$buildPath/updater-sfx"
+    if (Test-Path $stagingDir) { Remove-Item -Recurse -Force $stagingDir }
+    New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+
+    Copy-Item $updaterExe -Destination "$stagingDir/kDriveRecoveryUpdater.exe"
+
+    # Run windeployqt to bundle Qt dependencies
+    $windeployqt = "$env:QTDIR\bin\windeployqt.exe"
+    if (Test-Path $windeployqt) {
+        & $windeployqt "$stagingDir/kDriveRecoveryUpdater.exe"
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "windeployqt failed for recovery updater." -f Red
+            exit $LASTEXITCODE
+        }
+    } else {
+        Write-Host "windeployqt not found at '$windeployqt', skipping Qt deployment." -f Yellow
+    }
+
+    # Copy Poco and other Conan dependencies
+    $find_dep_script = "$repositoryRootPath/infomaniak-build-tools/conan/find_conan_dep.ps1"
+    $packages = @(
+        @{ Name = "xxhash";    Dlls = @("xxhash") },
+        @{ Name = "log4cplus"; Dlls = @("log4cplus") },
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
+        @{ Name = "sentry";    Dlls = @("sentry") },
+        @{ Name = "poco";      Dlls = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
+    )
+    foreach ($pkg in $packages) {
+        $depArgs = @{ Package = $pkg.Name; BuildDir = $buildPath }
+        $binFolder = & $find_dep_script @depArgs
+        foreach ($dll in $pkg.Dlls) {
+            $dllPath = "$binFolder/$dll.dll"
+            if (-not (Test-Path $dllPath)) {
+                Write-Host "Missing DLL: $dll.dll" -ForegroundColor Red
+                exit 1
+            }
+            Copy-Item $dllPath -Destination $stagingDir
+        }
+    }
+
+    # Sign the updater executable
+    Sign-File -FilePath "$stagingDir/kDriveRecoveryUpdater.exe" -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
+
+    # Create NSIS installer
+    $version = Get-Version -IncludeBuildVersion $true
+    $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
+    $nsiTemplate = "$repositoryRootPath/infomaniak-build-tools/windows/recovery-updater.nsi"
+    $nsiFile = "$buildPath/recovery-updater.nsi"
+    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $false
+
+    $nsiContent = Get-Content $nsiTemplate -Raw
+    $nsiContent = $nsiContent -replace '@{output}', ($sfxExe -replace '/', '\')
+    $nsiContent = $nsiContent -replace '@{staging}', ($stagingDir -replace '/', '\')
+    $nsiContent = $nsiContent -replace '@{icon}', ($iconPath -replace '/', '\')
+    $nsiContent = $nsiContent -replace '@{version}', $version
+    Set-Content -Path $nsiFile -Value $nsiContent -Encoding UTF8
+
+    & makensis $nsiFile
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to build recovery updater NSIS installer." -f Red
+        exit $LASTEXITCODE
+    }
+
+    # Sign the final executable
+    Sign-File -FilePath $sfxExe -Thumbprint $thumbprint -Description "kDriveRecoveryUpdater"
+
+    # Clean up temporary files
+    Remove-Item -Recurse -Force $stagingDir -ErrorAction SilentlyContinue
+    Remove-Item -Force $nsiFile -ErrorAction SilentlyContinue
+
+    Write-Host "Recovery updater installer created: $sfxExe" -f Green
+}
+
 #################################################################################################
 #                                                                                               #
 #                                           COMMANDS                                            #
@@ -891,6 +979,21 @@ if ($msi) {
     Create-MSI-Package -RepositoryRootPath $repositoryRootPath -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+        exit $LASTEXITCODE
+    }
+}
+
+
+#################################################################################################
+#                                                                                               #
+#                                RECOVERY UPdater PACKAGING                                     #
+#                                                                                               #
+#################################################################################################
+
+if ($ci) {
+    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE
     }
 }

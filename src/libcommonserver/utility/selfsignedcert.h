@@ -35,10 +35,16 @@ class COMMONSERVER_EXPORT SelfSignedCert {
         /// Must run before the port is published, otherwise a GUI starting in between would pin
         /// the previous certificate.
         /// @return true on success, false otherwise.
-        static bool generateAndPublish(Pem &pem);
+        static bool generateAndPublishServerCert(Pem &pem);
+
+        /// Generate a fresh client certificate/key pair and publish both to the keychain,
+        /// so that the GUI can present the certificate during the TLS handshake. The private
+        /// key is stored in the keychain (same user, same machine).
+        /// @return true on success, false otherwise.
+        static bool generateAndPublishClientCert(Pem &pem);
 
     private:
-        static bool generate(Pem &pem);
+        static bool generate(Pem &pem, bool isClientCert = false);
 };
 
 } // namespace KDC

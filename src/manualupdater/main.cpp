@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "updaterdata.h"
+#include "appkiller.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 #include <QApplication>
+#include <QMessageBox>
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -24,12 +26,54 @@ int main(int argc, char *argv[]) {
         LOG_INFO(Log::instance()->getLogger(), "kDrive Recovery Updater started");
     }
 
+    {
+        using namespace KDC;
+        if (QString killMsg; !killRunningApp(killMsg)) {
+            LOGW_ERROR(Log::instance()->getLogger(), L"Failed to stop kDrive: " << killMsg.toStdWString());
+            (void) QMessageBox::critical(nullptr, QStringLiteral("Cannot stop kDrive"), killMsg);
+            return 1;
+        }
+    }
+
     KDC::UpdaterData updaterData;
     if (!updaterData.initialize()) {
         {
             using namespace KDC; // same as above
             LOG_ERROR(Log::instance()->getLogger(), "Failed to initialize updater data");
         }
+
+        switch (updaterData.initError()) {
+            case KDC::InitError::DbNotFound: {
+                QString message;
+#ifdef Q_OS_LINUX
+                message = QStringLiteral(
+                        "No kDrive installation was found. Please download the AppImage from the official website.");
+#else
+                message = QStringLiteral("No kDrive installation was found. Please use the regular kDrive installer instead.");
+#endif
+                (void) QMessageBox::information(nullptr, QStringLiteral("No kDrive installation found"), message);
+                break;
+            }
+            case KDC::InitError::DbOpenFailed:
+                (void) QMessageBox::critical(
+                        nullptr, QStringLiteral("Cannot open database"),
+                        QStringLiteral("Cannot open the kDrive database. kDrive might still be running — try force "
+                                       "quitting it, then relaunch this tool."));
+                break;
+            case KDC::InitError::VersionReadFailed:
+                (void) QMessageBox::critical(
+                        nullptr, QStringLiteral("Database read error"),
+                        QStringLiteral("Error reading from the kDrive database (could not retrieve the installed version)."));
+                break;
+            case KDC::InitError::AppUidReadFailed:
+                (void) QMessageBox::critical(
+                        nullptr, QStringLiteral("Database read error"),
+                        QStringLiteral("Error reading from the kDrive database (could not retrieve the app UID)."));
+                break;
+            case KDC::InitError::None:
+                break;
+        }
+
         return 1;
     }
 
