@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
     KDC::CommonUtility::initAppImageEnvironment();
 
-    if (QLockFile lockFile(QString::fromStdString((KDC::CommonUtility::getAppSupportDir() / "kdrive-client.lock").string()));
-        !lockFile.tryLock()) {
+    QLockFile lockFile(QString::fromStdString((KDC::CommonUtility::getAppSupportDir() / "kdrive-client.lock").string()));
+    if (!lockFile.tryLock()) {
         qWarning("kDrive client is already running.");
         return EXIT_FAILURE;
     }
