@@ -107,7 +107,7 @@ class KDriveDesktop(ConanFile):
 
     def _set_linux_package_runpath(self, package_name):
         """
-        Set $ORIGIN as RUNPATH on shared libraries owned by a Conan package.
+        Set RUNPATH to $ORIGIN on shared libraries owned by a Conan package.
 
         Resolving symlinks before patching both avoids modifying the same ELF
         several times and guarantees that no file outside the package folder
