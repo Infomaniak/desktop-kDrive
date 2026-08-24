@@ -34,8 +34,6 @@ set(libcommonserver_SRCS
     db/db.h db/db.cpp
     db/dbdefs.h
     # Network
-    network/proxy.h network/proxy.cpp
-    network/proxyconfig.h network/proxyconfig.cpp
     # VFS
     vfs/vfs.h vfs/vfs.cpp
     vfs/workerinfo.h vfs/vfsworker.h

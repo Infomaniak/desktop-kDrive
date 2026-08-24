@@ -302,7 +302,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void parseOptions(const QStringList &options);
         bool initLogging() noexcept;
         void logUsefulInformation();
-        bool setupProxy() noexcept;
         void handleCrashRecovery(bool &shouldQuit); // Sets `shouldQuit` with true if the crash recovery is successful, false if
                                                     // the application should exit.
         bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);

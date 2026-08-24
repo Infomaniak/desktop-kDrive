@@ -37,7 +37,7 @@ Poco::Net::Context::Ptr TestSocketComm::createClientContext() {
     static const auto readKeychainEntry = [](const char *key) -> std::string {
         bool found = false;
         std::string pem;
-        CPPUNIT_ASSERT(KeyChainManager::instance()->readDataFromKeystore(std::string(key), pem, found));
+        CPPUNIT_ASSERT(KeyChainManager::instance()->readData(std::string(key), pem, found));
         CPPUNIT_ASSERT(found);
         return pem;
     };
