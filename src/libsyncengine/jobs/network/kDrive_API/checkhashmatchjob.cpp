@@ -129,6 +129,9 @@ ExitInfo CheckHashMatchJob::handleResponse(std::istream &is) {
     if (!JsonParserUtility::extractValue(dataObj, hashKey, _remoteHash))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+    LOGW_INFO(_logger, L"Local hash:  " << CommonUtility::s2ws(_localHash) << L", remote hash: "
+                                        << CommonUtility::s2ws(_remoteHash) << L" for " << Utility::formatSyncPath(_filePath));
+
     if (_localHash != _remoteHash) return ExitCode::Ok;
     _hashMatch = true;
     return ExitCode::Ok;
