@@ -77,11 +77,6 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
                                                        << L", remote size = " << _remoteSize << L", skipping hash check");
         return ExitCode::Ok;
     }
-    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
-        LOGW_DEBUG(_logger, L"Failed to get remote hash for " << Utility::formatSyncPath(_filePath) << L", skipping hash check: "
-                                                              << exitInfo);
-        return exitInfo;
-    }
 
     const IoError checksumIoError = IoHelper::getFileChecksum(_filePath, _localHash);
     if (checksumIoError == IoError::NoSuchFileOrDirectory) {
@@ -105,8 +100,11 @@ ExitInfo CheckHashMatchJob::runJob() noexcept {
         return ExitCode::SystemError;
     }
 
-    if (_localHash != _remoteHash) return ExitCode::Ok;
-    _hashMatch = true;
+    if (const ExitInfo exitInfo = AbstractTokenNetworkJob::runJob(); !exitInfo) {
+        LOGW_DEBUG(_logger, L"Failed to get remote hash for " << Utility::formatSyncPath(_filePath) << L", skipping hash check: "
+                                                              << exitInfo);
+        return exitInfo;
+    }
     return ExitCode::Ok;
 }
 
@@ -131,6 +129,8 @@ ExitInfo CheckHashMatchJob::handleResponse(std::istream &is) {
     if (!JsonParserUtility::extractValue(dataObj, hashKey, _remoteHash))
         return {ExitCode::BackError, ExitCause::MissingReplyData};
 
+    if (_localHash != _remoteHash) return ExitCode::Ok;
+    _hashMatch = true;
     return ExitCode::Ok;
 }
 

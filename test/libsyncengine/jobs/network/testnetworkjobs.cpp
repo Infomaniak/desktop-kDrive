@@ -1328,6 +1328,92 @@ void TestNetworkJobs::testUpload() {
     CPPUNIT_ASSERT_LESS(modificationTimeIn.count(), modificationTimeOut);
 }
 
+void TestNetworkJobs::testUploadChecksumMismatch() {
+    // Upload a file, then modify its content and re-upload using the EDIT constructor.
+    // The hash will differ, so the job must perform a real upload and return a valid node ID.
+    const LocalTemporaryDirectory localTmpDir("testUploadChecksumMismatch");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadChecksumMismatch");
+
+    const SyncPath localFilePath = localTmpDir.path() / "test_checksum_mismatch.txt";
+    testhelpers::generateOrEditTestFile(localFilePath);
+
+    const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+    const SyncTime creationTime = std::chrono::duration_cast<std::chrono::seconds>(epochNow).count();
+    const SyncTime modificationTime = creationTime;
+
+    // Initial upload (CREATE)
+    NodeId nodeId;
+    int64_t uploadedSize = 0;
+    {
+        UploadJob createJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            creationTime, modificationTime);
+        const ExitInfo exitInfo = createJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+        CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.shouldUpload());
+        nodeId = createJob.nodeId();
+        uploadedSize = createJob.size();
+    }
+
+    // Modify the local file content so the hash no longer matches the remote
+    testhelpers::generateOrEditTestFile(localFilePath);
+    const SyncTime newModificationTime = modificationTime + 10;
+
+    // EDIT upload — checksum mismatch expected → must upload
+    {
+        UploadJob editJob(nullptr, _driveDbId, localFilePath, nodeId, newModificationTime, uploadedSize);
+        const ExitInfo exitInfo = editJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+        CPPUNIT_ASSERT_MESSAGE("Hash mismatch: a real upload must have occurred", editJob.shouldUpload());
+        CPPUNIT_ASSERT_EQUAL(newModificationTime, editJob.modificationTime());
+    }
+}
+
+void TestNetworkJobs::testUploadChecksumMatch() {
+    // Upload a file, then re-upload the same content with a different modification time.
+    // The hash matches, so the job must skip the upload and only update the modification date.
+    const LocalTemporaryDirectory localTmpDir("testUploadChecksumMatch");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadChecksumMatch");
+
+    const SyncPath localFilePath = localTmpDir.path() / "test_checksum_match.txt";
+    testhelpers::generateOrEditTestFile(localFilePath);
+
+    const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+    const SyncTime creationTime = std::chrono::duration_cast<std::chrono::seconds>(epochNow).count();
+    const SyncTime modificationTime = creationTime;
+
+    // Initial upload (CREATE)
+    NodeId nodeId;
+    int64_t uploadedSize = 0;
+    {
+        UploadJob createJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            creationTime, modificationTime);
+        const ExitInfo exitInfo = createJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+        CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.shouldUpload());
+        nodeId = createJob.nodeId();
+        uploadedSize = createJob.size();
+    }
+
+    // EDIT upload — same file content
+    const SyncTime newModificationTime = modificationTime + 10;
+    {
+        UploadJob editJob(nullptr, _driveDbId, localFilePath, nodeId, newModificationTime, uploadedSize);
+        const ExitInfo exitInfo = editJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+        // No real upload: hash matched, only the modification date was updated
+        CPPUNIT_ASSERT_MESSAGE("Hash match: upload must have been skipped", !editJob.shouldUpload());
+        // The modification time must reflect the server-confirmed value via PostFileModificationDateJob
+        CPPUNIT_ASSERT_EQUAL(newModificationTime, editJob.modificationTime());
+    }
+
+    // Verify server-side modification time
+    {
+        GetFileInfoJob verifyJob(_driveDbId, nodeId);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
+        CPPUNIT_ASSERT_EQUAL(newModificationTime, verifyJob.modificationTime());
+    }
+}
+
 void TestNetworkJobs::testDriveUploadSessionWithSizeMismatchError() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionWithSizeMismatchError");
 

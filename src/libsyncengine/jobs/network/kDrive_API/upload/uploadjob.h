@@ -17,6 +17,8 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
+#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/vfs/vfs.h"
@@ -35,23 +37,27 @@ class UploadJob : public AbstractTokenNetworkJob {
                   const NodeId &remoteParentDirId, SyncTime creationTime, SyncTime modificationTime);
         // Using file ID, for file edition only.
         UploadJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                  SyncTime modificationTime);
+                  SyncTime modificationTime, int64_t remoteSize = -1);
         ~UploadJob() override;
 
         const NodeId &nodeId() const { return _nodeIdOut; }
         SyncTime creationTime() const { return _creationTimeOut; }
         SyncTime modificationTime() const { return _modificationTimeOut; }
         int64_t size() const { return _sizeOut; }
+        bool shouldUpload() const { return _shouldUpload; }
 
     protected:
         ExitInfo canRun() override;
         ExitInfo handleResponse(std::istream &is) override;
 
     private:
+        ExitInfo runJob() noexcept override;
+        ExitInfo resolveUploadNeed();
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &) override;
         ExitInfo setData() override;
         std::string contentType() override;
+        ExitInfo applyFileDates();
 
         ExitInfo readFile();
         ExitInfo readLink();
@@ -72,6 +78,9 @@ class UploadJob : public AbstractTokenNetworkJob {
         LinkType _linkType = LinkType::None;
         SyncPath _linkTarget;
         NodeType _targetType = NodeType::File;
+
+        bool _shouldUpload = true;
+        int64_t _remoteSize = -1;
 
         const std::shared_ptr<Vfs> _vfs;
 };
