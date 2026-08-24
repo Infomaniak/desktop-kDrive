@@ -25,6 +25,7 @@
 #include <QLoggingCategory>
 #include <QObject>
 #include <QString>
+#include <QTimer>
 
 #include <atomic>
 #include <cstdint>
@@ -47,6 +48,7 @@ namespace KDC {
 class StorageController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(State state READ state NOTIFY storageChanged)
+        Q_PROPERTY(bool retrying READ retrying NOTIFY retryingChanged)
         Q_PROPERTY(QString volumeName READ volumeName NOTIFY storageChanged)
         Q_PROPERTY(QString usageText READ usageText NOTIFY storageChanged)
         Q_PROPERTY(QString syncSizeText READ syncSizeText NOTIFY storageChanged)
@@ -68,6 +70,7 @@ class StorageController final : public QObject {
         ~StorageController() override;
 
         [[nodiscard]] State state() const { return _state; }
+        [[nodiscard]] bool retrying() const { return _retrying; }
         [[nodiscard]] QString volumeName() const;
         [[nodiscard]] QString usageText() const;
         [[nodiscard]] QString syncSizeText() const;
@@ -81,8 +84,14 @@ class StorageController final : public QObject {
 
     signals:
         void storageChanged();
+        void retryingChanged();
 
     private:
+        enum class ScanTrigger : uint8_t {
+            Automatic = 0,
+            Retry,
+        };
+
         struct CachedSnapshot {
                 SyncPath syncRoot;
                 StorageSnapshot snapshot;
@@ -92,10 +101,11 @@ class StorageController final : public QObject {
         void handleSyncStatusChanged();
         void presentSelectedCache();
         void presentSnapshot(const StorageSnapshot &snapshot);
-        void startScan();
+        void startScan(ScanTrigger trigger = ScanTrigger::Automatic);
         void cancelScan();
         void handleScanFinished();
         void setState(State state);
+        void setRetrying(bool retrying);
         [[nodiscard]] std::optional<SyncStatus> currentStatus() const;
         [[nodiscard]] uint64_t usedBytes() const;
         [[nodiscard]] uint64_t otherBytes() const;
@@ -105,6 +115,7 @@ class StorageController final : public QObject {
 
         MainSelectionStore &_selectionStore;
         QFutureWatcher<StorageScanResult> _scanWatcher;
+        QTimer _minimumRetryTimer;
         std::shared_ptr<std::atomic_bool> _scanCancellation;
         std::unordered_map<SyncDbId, CachedSnapshot> _cache;
         std::unordered_set<SyncDbId> _dirtySyncs;
@@ -114,6 +125,8 @@ class StorageController final : public QObject {
         SyncPath _selectedSyncRoot;
         State _state{State::Loading};
         bool _viewActive{false};
+        bool _retrying{false};
+        bool _retryCompletionPending{false};
 };
 
 } // namespace KDC
