@@ -45,6 +45,7 @@ class MainSidebarController final : public QObject {
         Q_PROPERTY(QString currentSubtitle READ currentSubtitle NOTIFY currentContextChanged)
         Q_PROPERTY(QColor currentDriveColor READ currentDriveColor NOTIFY currentContextChanged)
         Q_PROPERTY(bool currentHasWarning READ currentHasWarning NOTIFY currentContextChanged)
+        Q_PROPERTY(bool hasCurrentSyncRoot READ hasCurrentSyncRoot NOTIFY currentContextChanged)
         Q_PROPERTY(bool canOpenCurrentSyncFolder READ canOpenCurrentSyncFolder NOTIFY currentContextChanged)
         Q_PROPERTY(qint32 currentErrorCount READ currentErrorCount NOTIFY currentContextChanged)
         Q_PROPERTY(qint32 unselectedErrorCount READ unselectedErrorCount NOTIFY unselectedErrorCountChanged)
@@ -60,6 +61,7 @@ class MainSidebarController final : public QObject {
         [[nodiscard]] QString currentSubtitle() const;
         [[nodiscard]] QColor currentDriveColor() const;
         [[nodiscard]] bool currentHasWarning() const;
+        [[nodiscard]] bool hasCurrentSyncRoot() const;
         [[nodiscard]] bool canOpenCurrentSyncFolder() const;
         [[nodiscard]] qint32 currentErrorCount() const;
         [[nodiscard]] qint32 unselectedErrorCount() const;
