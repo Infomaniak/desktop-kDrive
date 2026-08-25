@@ -667,7 +667,6 @@ struct VersionInfo {
             versionInfo.tag = tmpTag.toStdString();
             versionInfo.buildVersion = tmpBuildVersion;
             versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
-            versionInfo.checksum = tmpChecksum.toStdString();
             versionInfo.minOsVersion = tmpBuildMinOsVersion.toStdString();
             versionInfo.minAppVersion = tmpBuildMinAppVersion.toStdString();
 
@@ -677,8 +676,7 @@ struct VersionInfo {
         friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
             out << versionInfo.channel << QString::fromStdString(versionInfo.tag)
                 << static_cast<quint64>(versionInfo.buildVersion) << QString::fromStdString(versionInfo.downloadUrl)
-                << QString::fromStdString(versionInfo.checksum) << QString::fromStdString(versionInfo.minOsVersion)
-                << QString::fromStdString(versionInfo.minAppVersion);
+                << QString::fromStdString(versionInfo.minOsVersion) << QString::fromStdString(versionInfo.minAppVersion);
             return out;
         }
 };
