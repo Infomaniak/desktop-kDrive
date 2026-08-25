@@ -32,14 +32,8 @@ bool AbstractOsUpdater::verifyChecksum(const SyncPath &filepath, const std::stri
         iss >> checksum;
         return checksum;
     };
-    if (std::string error; !ChecksumVerifier::verifyFileChecksum(filepath, downloadUrl, fetcher, &error)) {
-        if (error == "sha256FileUnavailable") {
-            outMessage = QObject::tr("No checksum available for verification.");
-        } else if (error == "computeFailed") {
-            outMessage = QObject::tr("Failed to compute file checksum.");
-        } else {
-            outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
-        }
+    if (const std::string error; !ChecksumVerifier::verifyFileChecksum(filepath, downloadUrl, fetcher)) {
+        outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
         return false;
     }
     return true;
