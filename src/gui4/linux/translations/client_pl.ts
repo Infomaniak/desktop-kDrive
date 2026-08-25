@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: pl, Polish
  Exported by: Romain Galland
- Exported at: Mon, 24 Aug 2026 10:21:44 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="pl"> 
     <context>
@@ -2270,6 +2270,11 @@ odblokowany i dostępny z Twojego komputera.</translation>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synchronizacja</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Ten komputer</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 
