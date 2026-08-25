@@ -38,16 +38,16 @@ std::string ChecksumVerifier::buildSha256Url(const std::string &downloadUrl) {
 }
 
 bool ChecksumVerifier::verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl,
-                                          const Sha256Fetcher &fetcher, std::string *outError) {
+                                          const Sha256Fetcher &fetcher) {
     auto cleanupAndFail = [&](const std::string &reason) {
         auto ioError = IoError::Success;
         (void) IoHelper::deleteItem(filepath, ioError);
         if (ioError == IoError::Success) {
             LOGW_INFO(Log::instance()->getLogger(), L"corrupted file at " << Utility::formatSyncPath(filepath) << L" deleted");
         } else {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"couldn't reach corrupted file at " << Utility::formatSyncPath(filepath) << L" : IOError state "
-                              << static_cast<int>(ioError));
+            LOGW_WARN(Log::instance()->getLogger(), L"couldn't reach corrupted file at " << Utility::formatSyncPath(filepath)
+                                                                                         << L" : IOError state "
+                                                                                         << static_cast<int>(ioError));
         }
 
         // Send to Sentry
@@ -55,7 +55,6 @@ bool ChecksumVerifier::verifyFileChecksum(const SyncPath &filepath, const std::s
                                         "Checksum verification failed: " + reason);
 
         LOGW_ERROR(Log::instance()->getLogger(), L"Checksum verification failed: " << CommonUtility::s2ws(reason));
-        if (outError) *outError = reason;
         return false;
     };
 
@@ -80,9 +79,9 @@ bool ChecksumVerifier::verifyFileChecksum(const SyncPath &filepath, const std::s
 
     // Verify checksum
     if (actualChecksum != expectedChecksum) {
-        LOGW_ERROR(Log::instance()->getLogger(),
-                   L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum) << L", Got: "
-                           << CommonUtility::s2ws(actualChecksum));
+        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
+                                                                                  << L", Got: "
+                                                                                  << CommonUtility::s2ws(actualChecksum));
         return cleanupAndFail("mismatch");
     }
 
