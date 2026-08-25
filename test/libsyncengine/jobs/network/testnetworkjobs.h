@@ -55,10 +55,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
         CPPUNIT_TEST(testUploadAborted);
-        CPPUNIT_TEST(testUploadChecksumMismatch);
-        CPPUNIT_TEST(testUploadChecksumMatch);
-        CPPUNIT_TEST(testUploadSessionChecksumMismatch);
-        CPPUNIT_TEST(testUploadSessionChecksumMatch);
+        CPPUNIT_TEST(testUploadChecksum);
+        CPPUNIT_TEST(testUploadSessionChecksum);
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
@@ -106,10 +104,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDuplicateRenameMove();
         void testRename();
         void testUpload();
-        void testUploadChecksumMismatch();
-        void testUploadChecksumMatch();
-        void testUploadSessionChecksumMismatch();
-        void testUploadSessionChecksumMatch();
+        void testUploadChecksum();
+        void testUploadSessionChecksum();
         void testUploadAborted();
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
