@@ -353,11 +353,11 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::SYNC_COMPLETEDITEM: {
             qint64 syncDbId = 0;
-            SyncFileItem itemInfo;
+            SyncFileItem syncFileItem;
             paramsStream >> syncDbId;
-            paramsStream >> itemInfo;
+            paramsStream >> syncFileItem;
 
-            emit itemCompleted(syncDbId, itemInfo);
+            emit itemCompleted(syncDbId, syncFileItem);
             break;
         }
         case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {

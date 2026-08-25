@@ -81,7 +81,7 @@ class SynthesisPopover : public QDialog {
     public slots:
         void onConfigRefreshed();
         void onUpdateProgress(SyncDbId syncDbId);
-        void onItemCompleted(SyncDbId syncDbId, const SyncFileItem &itemInfo);
+        void onItemCompleted(SyncDbId syncDbId, const SyncFileItem &syncFileItem);
         void onDriveQuotaUpdated(DriveDbId driveDbId);
         void onRefreshErrorList(DriveDbId driveDbId);
         void onAppVersionLocked(bool currentVersionLocked);

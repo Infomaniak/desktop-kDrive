@@ -25,12 +25,12 @@ namespace KDC {
 
 class SignalSyncCompletedItemJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncCompletedItemJob(int syncDbId, const SyncFileItem &itemInfo);
+        explicit SignalSyncCompletedItemJob(SyncDbId syncDbId, const SyncFileItem &syncFileItem);
 
     private:
         // Output parameters
-        int _syncDbId = -1;
-        SyncFileItem _itemInfo;
+        SyncDbId _syncDbId = -1;
+        SyncFileItem _syncFileItem;
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }
         ExitInfo serializeOutputParms() override;

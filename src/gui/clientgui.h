@@ -93,7 +93,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void driveQuotaUpdated(DriveDbId driveDbId);
         void updateProgress(SyncDbId syncDbId);
         void syncFinished(SyncDbId syncDbId);
-        void itemCompleted(SyncDbId syncDbId, const SyncFileItem &itemInfo);
+        void itemCompleted(SyncDbId syncDbId, const SyncFileItem &syncFileItem);
         void vfsConversionCompleted(SyncDbId syncDbId);
         void errorAdded(SyncDbId syncDbId);
         void appVersionLocked(bool currentVersionLocked);
