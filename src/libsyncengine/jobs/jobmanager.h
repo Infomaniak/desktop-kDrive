@@ -66,7 +66,10 @@ class JobManager {
         const JobManagerData &data() const { return _data; }
 
     protected:
-        uint64_t availableThreadsInPool() const { return static_cast<uint64_t>(_threadPool.available()); }
+        uint64_t availableThreadsInPool() const {
+            const auto availableThreads = _threadPool.available();
+            return availableThreads > 0 ? static_cast<uint64_t>(availableThreads) : 0;
+        }
         virtual bool canRunJob(const std::shared_ptr<AbstractJob> job) const;
 
     private:
