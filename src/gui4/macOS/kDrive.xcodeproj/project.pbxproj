@@ -25,7 +25,6 @@
 		F96700A52E95352C00EDD4D7 /* kDriveResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F96701502E953CF600EDD4D7 /* kDriveResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F967009E2E95352C00EDD4D7 /* kDriveResources.framework */; };
 		F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F967FC8B2E8BC9FE00EDD4D7 /* Lottie */; };
-		F97269782E98F1CE002EA08D /* InfomaniakLogin in Frameworks */ = {isa = PBXBuildFile; productRef = F97269772E98F1CE002EA08D /* InfomaniakLogin */; };
 		F97590BC2ECC7A8A002CC428 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = F97590BB2ECC7A8A002CC428 /* Sentry */; };
 		F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805BD2E97E3AF00BC146C /* InfomaniakDI */; };
 		F97805C32E97E3F900BC146C /* InfomaniakDI in Frameworks */ = {isa = PBXBuildFile; productRef = F97805C22E97E3F900BC146C /* InfomaniakDI */; };
@@ -314,7 +313,6 @@
 				F97805BE2E97E3AF00BC146C /* InfomaniakDI in Frameworks */,
 				37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */,
 				F96700A42E95352C00EDD4D7 /* kDriveResources.framework in Frameworks */,
-				F97269782E98F1CE002EA08D /* InfomaniakLogin in Frameworks */,
 				37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */,
 				F967FC8C2E8BC9FE00EDD4D7 /* Lottie in Frameworks */,
 			);
@@ -451,7 +449,6 @@
 			packageProductDependencies = (
 				F967FC8B2E8BC9FE00EDD4D7 /* Lottie */,
 				F97805BD2E97E3AF00BC146C /* InfomaniakDI */,
-				F97269772E98F1CE002EA08D /* InfomaniakLogin */,
 			);
 			productName = kDrive;
 			productReference = 37A1C4262E546A5200596DBB /* kDrive.app */;
@@ -612,7 +609,6 @@
 			packageReferences = (
 				F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				F97805BC2E97E3AF00BC146C /* XCRemoteSwiftPackageReference "ios-dependency-injection" */,
-				F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */,
 				7AFF54E02EC34ACE00904C5C /* XCRemoteSwiftPackageReference "swift-concurrency" */,
 				F97590BA2ECC7A8A002CC428 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				7A97962A2F0EB51100E36DDE /* XCRemoteSwiftPackageReference "swift-collections" */,
@@ -1379,14 +1375,6 @@
 				minimumVersion = 2.0.6;
 			};
 		};
-		F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Infomaniak/ios-login.git";
-			requirement = {
-				branch = "chore/swift-5.10";
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1424,11 +1412,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F967FC8A2E8BC9FE00EDD4D7 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
-		};
-		F97269772E98F1CE002EA08D /* InfomaniakLogin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F97805BF2E97E3C500BC146C /* XCRemoteSwiftPackageReference "ios-login" */;
-			productName = InfomaniakLogin;
 		};
 		F97590BB2ECC7A8A002CC428 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
