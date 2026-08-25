@@ -564,13 +564,12 @@ void MigrationParams::migrateGeometry(std::shared_ptr<std::vector<char>> &geomet
 }
 
 ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
-    QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
+    const QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
 
-    QString host = settings.value(QString(proxyHostC)).toString();
-    bool needsAuth = settings.value(QString(proxyNeedsAuthC)).toBool();
-    int port = settings.value(QString(proxyPortC)).toInt();
-    int pTypeInt = settings.value(QString(proxyTypeC)).toInt();
-    ProxyType pType = intToProxyType(pTypeInt);
+    const QString host = settings.value(QString(proxyHostC)).toString();
+    const bool needsAuth = settings.value(QString(proxyNeedsAuthC)).toBool();
+    const Port port = settings.value(QString(proxyPortC)).toInt();
+    ProxyType pType = intToProxyType(settings.value(QString(proxyTypeC)).toInt());
 
     // SOCKS5 is not supported
     if (pType == ProxyType::Socks5) {
@@ -580,18 +579,18 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
     proxyConfig = ProxyConfig(pType, host.toStdString(), port, needsAuth);
 
     if (needsAuth) {
-        QString user = settings.value(QString(proxyUserC)).toString();
+        const QString user = settings.value(QString(proxyUserC)).toString();
 
-        QByteArray passByteArray = settings.value(QString(proxyPassC)).toByteArray();
-        std::string pwd(QString::fromUtf8(QByteArray::fromBase64(passByteArray)).toStdString());
+        const QByteArray passByteArray = settings.value(QString(proxyPassC)).toByteArray();
+        const std::string pwd(QString::fromUtf8(QByteArray::fromBase64(passByteArray)).toStdString());
         proxyConfig.setUser(user.toStdString());
 
-        std::string keychainKeyProxyPass(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-        if (!KeyChainManager::instance()->writeToken(keychainKeyProxyPass, pwd)) {
+        const std::string keychainKeyProxyPass(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
+        if (!KeyChainManager::instance()->writeData(keychainKeyProxyPass, pwd)) {
             LOG_WARN(_logger, "Failed to write password token into keychain");
             return ExitCode::SystemError;
         }
-        proxyConfig.setToken(keychainKeyProxyPass);
+        proxyConfig.setKeychainKey(keychainKeyProxyPass);
     }
     return ExitCode::Ok;
 }
@@ -755,7 +754,7 @@ ExitCode MigrationParams::setToken(User &user, const std::string &appPassword) {
     ExitCode tokenGetExitCode = getTokenFromAppPassword(user.email(), appPassword, apiToken);
     if (tokenGetExitCode == ExitCode::Ok) {
         std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-        if (KeyChainManager::instance()->writeToken(keychainKey, apiToken.rawData())) {
+        if (KeyChainManager::instance()->writeData(keychainKey, apiToken.rawData())) {
             // Update userInfo
             user.setKeychainKey(keychainKey);
             found = false;

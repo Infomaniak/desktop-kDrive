@@ -26,7 +26,6 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 
 #include "libcommon/utility/utility.h"
@@ -58,7 +57,7 @@ void TestSyncJobManagerSingleton::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -75,13 +74,6 @@ void TestSyncJobManagerSingleton::setUp() {
     const int driveId = atoi(testVariables.driveId.c_str());
     const Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 
     // Setup parameters cache in test mode
     (void) ParametersCache::instance(true);
