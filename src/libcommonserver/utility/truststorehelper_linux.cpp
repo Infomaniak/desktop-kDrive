@@ -72,10 +72,16 @@ bool tryLoadBundleDir(SSL_CTX *ctx, const char *path) {
 
 // Well-known distro CA bundle paths (Debian/Ubuntu/Arch, RHEL/Fedora, SUSE, Alpine/musl).
 constexpr std::array knownCaBundles = {
-    "/etc/ssl/certs/ca-certificates.crt",
-    "/etc/pki/tls/certs/ca-bundle.crt",
-    "/etc/ssl/ca-bundle.pem",
-    "/etc/ssl/cert.pem",
+        "/etc/ssl/certs/ca-certificates.crt",
+        "/etc/pki/tls/certs/ca-bundle.crt",
+        "/etc/ssl/ca-bundle.pem",
+        "/etc/ssl/cert.pem",
+};
+
+// Well-known hashed CApath directories (loaded lazily; cannot be cert-count verified).
+constexpr std::array knownCaDirs = {
+        "/etc/ssl/certs",
+        "/etc/pki/tls/certs",
 };
 
 } // namespace
@@ -98,7 +104,8 @@ bool TrustStoreHelper::loadSystemCAs(SSL_CTX *ctx) {
             LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from SSL_CERT_FILE=" << envFile);
             return true;
         }
-        LOG_WARN(Log::instance()->getLogger(), "SSL_CERT_FILE=" << envFile << " set but no usable certificates loaded, continuing");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "SSL_CERT_FILE=" << envFile << " set but no usable certificates loaded, continuing");
     }
 
     // 1b. SSL_CERT_DIR env var override
@@ -135,10 +142,18 @@ bool TrustStoreHelper::loadSystemCAs(SSL_CTX *ctx) {
         }
     }
 
+    // 3. Last resort: probe well-known hashed CApath directories.
+    for (const char *path: knownCaDirs) {
+        if (tryLoadBundleDir(ctx, path)) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Loaded system CA certificates from directory " << path);
+            return true;
+        }
+    }
+
     LOG_ERROR(Log::instance()->getLogger(), "Failed to load system CA certificates from any known path or default");
     sentry::Handler::captureMessage(sentry::Level::Error, "TrustStoreHelper::loadSystemCAs",
-                                   "Failed to load system CA certificates on Linux (no usable CA bundle found via "
-                                   "SSL_CERT_FILE/SSL_CERT_DIR env vars, OpenSSL default paths, or known distro paths)");
+                                    "Failed to load system CA certificates on Linux (no usable CA bundle found via "
+                                    "SSL_CERT_FILE/SSL_CERT_DIR env vars, OpenSSL default paths, or known distro paths)");
     return false;
 }
 
