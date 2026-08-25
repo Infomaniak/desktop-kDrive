@@ -37,6 +37,13 @@
 
 namespace KDC {
 
+namespace {
+class LateCallbackJob final : public SyncJob {
+    public:
+        ExitInfo runJob() override { return ExitCode::Ok; }
+};
+} // namespace
+
 void TestExecutorWorker::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
@@ -392,6 +399,23 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t2.join();
     t3.join();
     t4.join(); // Wait for all threads to finish.
+}
+
+void TestExecutorWorker::testLateJobCallbacksAfterStop() {
+    const auto job = std::make_shared<LateCallbackJob>();
+    _executorWorker->setJobCallbacks(job);
+    job->setMainCallback([]([[maybe_unused]] const UniqueId jobId) {});
+
+    const std::weak_ptr<ExecutorWorker> weakExecutor = _executorWorker;
+    _executorWorker.reset();
+    _syncPal->clearProgressInfo();
+
+    CPPUNIT_ASSERT(weakExecutor.expired());
+    CPPUNIT_ASSERT(!_syncPal->setProgress(SyncPath("late-callback"), 1));
+
+    // Both callbacks used to retain raw pointers into state released by SyncPal::stop().
+    job->setProgress(1);
+    CPPUNIT_ASSERT(job->runSynchronously());
 }
 
 void TestExecutorWorker::testPropagateConflictToDbAndTree() {
