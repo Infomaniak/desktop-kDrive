@@ -79,17 +79,22 @@ void logFilesystemError(const char *operation, const SyncPath &path, const int e
                                 << "| error:" << QString::fromLocal8Bit(errorMessage.c_str()) << "| errno:" << errorNumber;
 }
 
+[[nodiscard]] QString titleWithDevice(const QString &title, const QString &device) {
+    return device.isEmpty() || device == title ? title : u"%1 (%2)"_s.arg(title, device);
+}
+
 [[nodiscard]] QString volumeName(const QStorageInfo &storage) {
-    QString label = storage.displayName();
-    if (label.isEmpty()) {
-        label = storage.name();
+    const QString label = storage.name();
+    const QString device = QDir::toNativeSeparators(QString::fromLocal8Bit(storage.device()));
+    if (!label.isEmpty()) {
+        return titleWithDevice(label, device);
     }
 
-    const QString device = QDir::toNativeSeparators(QString::fromLocal8Bit(storage.device()));
-    if (label.isEmpty()) {
-        return device.isEmpty() ? QDir::toNativeSeparators(storage.rootPath()) : device;
+    if (storage.isRoot()) {
+        return qtTrId("storageThisComputer");
     }
-    return device.isEmpty() || device == label ? label : u"%1 (%2)"_s.arg(label, device);
+
+    return titleWithDevice(QDir::toNativeSeparators(storage.rootPath()), device);
 }
 
 void addAllocatedBytes(const struct stat &fileStat, uint64_t &total) {
