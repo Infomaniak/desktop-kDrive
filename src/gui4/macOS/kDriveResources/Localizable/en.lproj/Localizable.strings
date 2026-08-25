@@ -67,11 +67,11 @@
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Moved to trash";
 
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionRenameLabel" = "Renamed";
+
 /* loco:6a69c12889ab5f0cf60a7aa2 */
 "activityInstructionUpdateLabel" = "Modified";
-
-/* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Renamed";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Sync a folder with kDrive";
@@ -1596,6 +1596,3 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "View source code";
-
-/* loco:69314d1a739c205c410aa087 */
-"instructionRestartIfNecessary" = "Restart the application if required";

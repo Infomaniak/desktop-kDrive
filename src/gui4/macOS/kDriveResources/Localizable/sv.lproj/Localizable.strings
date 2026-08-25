@@ -67,11 +67,11 @@
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Flyttad till papperskorgen";
 
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionRenameLabel" = "Bytt namn";
+
 /* loco:6a69c12889ab5f0cf60a7aa2 */
 "activityInstructionUpdateLabel" = "Ändrad";
-
-/* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Bytt namn";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synkronisera en mapp med kDrive";
@@ -1596,6 +1596,3 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Visa källkod";
-
-/* loco:69314d1a739c205c410aa087 */
-"instructionRestartIfNecessary" = "Starta om programmet om det krävs";

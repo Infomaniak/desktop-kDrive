@@ -39,7 +39,7 @@ public enum UISynchroFileStatus: Sendable {
 
 public enum UISynchroFileInstruction: Sendable {
     case update
-    case updateMetadata
+    case renamed
     case remove
     case move
     case get
@@ -50,8 +50,8 @@ public enum UISynchroFileInstruction: Sendable {
         switch self {
         case .update:
             return KDriveLocalizable.activityInstructionUpdateLabel
-        case .updateMetadata:
-            return KDriveLocalizable.activityInstructionUpdateMetadataLabel
+        case .renamed:
+            return KDriveLocalizable.activityInstructionRenameLabel
         case .remove:
             return KDriveLocalizable.activityInstructionRemoveLabel
         case .move:

@@ -67,11 +67,11 @@
 /* loco:6a69b981afdcf4fa19044503 */
 "activityInstructionRemoveLabel" = "Przeniesiono do kosza";
 
+/* loco:6a69c6c526f8c2be820035a4 */
+"activityInstructionRenameLabel" = "Zmieniono nazwę";
+
 /* loco:6a69c12889ab5f0cf60a7aa2 */
 "activityInstructionUpdateLabel" = "Zmodyfikowany";
-
-/* loco:6a69c6c526f8c2be820035a4 */
-"activityInstructionUpdateMetadataLabel" = "Zmieniono nazwę";
 
 /* loco:69b422369e32a806170ba3c2 */
 "addAdvancedSyncDialogTitle" = "Synchronizuj folder z kDrive";
@@ -1596,6 +1596,3 @@
 
 /* loco:698b1713c1e8210103081e12 */
 "viewSourceCode" = "Wyświetl kod źródłowy";
-
-/* loco:69314d1a739c205c410aa087 */
-"instructionRestartIfNecessary" = "Uruchom ponownie aplikację, jeśli wymagane";
