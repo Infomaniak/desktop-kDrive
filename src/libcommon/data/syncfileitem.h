@@ -40,64 +40,98 @@ class SyncFileItem {
                      ConflictType conflict, int64_t size);
 
         inline NodeType type() const { return _type; }
-        inline void setType(NodeType newType) { _type = newType; }
+        inline void setType(const NodeType newType) { _type = newType; }
         inline const SyncPath &path() const { return _path; }
         inline void setPath(const SyncPath &newPath) { _path = newPath; }
         inline std::optional<SyncPath> newPath() const { return _newPath; }
-        inline void setNewPath(std::optional<SyncPath> newNewPath) { _newPath = newNewPath; }
+        inline void setNewPath(const std::optional<SyncPath> newNewPath) { _newPath = newNewPath; }
         inline std::optional<NodeId> localNodeId() const { return _localNodeId; }
-        inline void setLocalNodeId(std::optional<NodeId> newLocalNodeId) { _localNodeId = newLocalNodeId; }
+        inline void setLocalNodeId(const std::optional<NodeId> newLocalNodeId) { _localNodeId = newLocalNodeId; }
         inline std::optional<NodeId> remoteNodeId() const { return _remoteNodeId; }
-        inline void setRemoteNodeId(std::optional<NodeId> newRemoteNodeId) { _remoteNodeId = newRemoteNodeId; }
+        inline void setRemoteNodeId(const std::optional<NodeId> newRemoteNodeId) { _remoteNodeId = newRemoteNodeId; }
         inline SyncDirection direction() const { return _direction; }
-        inline void setDirection(SyncDirection newDirection) { _direction = newDirection; }
+        inline void setDirection(const SyncDirection newDirection) { _direction = newDirection; }
         inline SyncFileInstruction instruction() const { return _instruction; }
-        inline void setInstruction(SyncFileInstruction newInstruction) { _instruction = newInstruction; }
+        inline void setInstruction(const SyncFileInstruction newInstruction) { _instruction = newInstruction; }
         inline SyncFileStatus status() const { return _status; }
-        inline void setStatus(SyncFileStatus newStatus) { _status = newStatus; }
+        inline void setStatus(const SyncFileStatus newStatus) { _status = newStatus; }
         inline ConflictType conflict() const { return _conflict; }
-        inline void setConflict(ConflictType newConflict) { _conflict = newConflict; }
+        inline void setConflict(const ConflictType newConflict) { _conflict = newConflict; }
         inline InconsistencyType inconsistency() const { return _inconsistency; }
-        inline void setInconsistency(InconsistencyType newInconsistency) { _inconsistency = newInconsistency; }
+        inline void setInconsistency(const InconsistencyType newInconsistency) { _inconsistency = newInconsistency; }
         inline CancelType cancelType() const { return _cancelType; }
-        inline void setCancelType(CancelType newCancelType) { _cancelType = newCancelType; }
+        inline void setCancelType(const CancelType newCancelType) { _cancelType = newCancelType; }
         inline std::string error() const { return _error; }
         inline void setError(const std::string &error) { _error = error; }
         inline int64_t size() const { return _size; }
-        inline void setSize(int64_t newSize) { _size = newSize; }
+        inline void setSize(const int64_t newSize) { _size = newSize; }
         inline int progress() const { return _progress; }
         inline void setProgress(const int16_t newProgress) { _progress = newProgress; }
         inline UniqueId operationId() const { return _operationId; }
         inline void setOperationId(const UniqueId newOperationId) { _operationId = newOperationId; }
         inline SyncTime modTime() const { return _modTime; }
-        inline void setModTime(SyncTime newModTime) { _modTime = newModTime; }
+        inline void setModTime(const SyncTime newModTime) { _modTime = newModTime; }
         inline SyncTime creationTime() const { return _creationTime; }
-        inline void setCreationTime(SyncTime newCreationTime) { _creationTime = newCreationTime; }
+        inline void setCreationTime(const SyncTime newCreationTime) { _creationTime = newCreationTime; }
         inline bool dehydrated() const { return _dehydrated; }
-        inline void setDehydrated(bool newDehydrated) { _dehydrated = newDehydrated; }
+        inline void setDehydrated(const bool newDehydrated) { _dehydrated = newDehydrated; }
         inline SyncTime timestamp() const { return _timestamp; }
-        inline void setTimestamp(SyncTime newTimestamp) { _timestamp = newTimestamp; }
+        inline void setTimestamp(const SyncTime newTimestamp) { _timestamp = newTimestamp; }
 
         inline bool isDirectory() const { return _type == NodeType::Directory; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 
-        friend QDataStream &operator>>(QDataStream &in, SyncFileItem &info);
-        friend QDataStream &operator<<(QDataStream &out, const SyncFileItem &info);
+        /// TODO : to be removed once we moved to the new GUI ///
+        friend QDataStream &operator>>(QDataStream &in, SyncFileItem &info) {
+            QString path;
+            QString newPath;
+            QString localNodeId;
+            QString remoteNodeId;
 
-        friend QDataStream &operator>>(QDataStream &in, QList<SyncFileItem> &list);
-        friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItem> &list);
+            in >> info._type >> path >> newPath >> localNodeId >> remoteNodeId >> info._direction >> info._instruction >>
+                    info._status >> info._conflict >> info._inconsistency >> info._cancelType;
 
-        // TODO : "default" does not work with gcc version used to build the Linux package. Use it once support to Ubuntu 20.04
-        // has been dropped: bool operator==(const SyncFileItem &) const = default;
-        bool operator==(const SyncFileItem &other) const {
-            return _type == other._type && _path == other._path && _newPath == other._newPath &&
-                   _localNodeId == other._localNodeId && _remoteNodeId == other._remoteNodeId && _direction == other._direction &&
-                   _instruction == other._instruction && _status == other._status && _conflict == other._conflict &&
-                   _inconsistency == other._inconsistency && _cancelType == other._cancelType && _error == other._error &&
-                   _size == other._size && _progress == other._progress && _modTime == other._modTime &&
-                   _creationTime == other._creationTime && _dehydrated == other._dehydrated && _timestamp == other._timestamp;
+            info._path = QStr2Path(path);
+            info._newPath = newPath.isEmpty() ? std::nullopt : std::optional<SyncPath>(QStr2Path(newPath));
+            info._localNodeId = localNodeId.isEmpty() ? std::nullopt : std::optional<NodeId>(localNodeId.toStdString());
+            info._remoteNodeId = remoteNodeId.isEmpty() ? std::nullopt : std::optional<NodeId>(remoteNodeId.toStdString());
+
+            return in;
         }
+        friend QDataStream &operator<<(QDataStream &out, const SyncFileItem &info) {
+            out << info._type << Path2QStr(info._path)
+                << (info._newPath.has_value() ? Path2QStr(info._newPath.value()) : QString())
+                << (info._localNodeId.has_value() ? QString::fromStdString(info._localNodeId.value()) : QString())
+                << (info._remoteNodeId.has_value() ? QString::fromStdString(info._remoteNodeId.value()) : QString())
+                << info._direction << info._instruction << info._status << info._conflict << info._inconsistency
+                << info._cancelType;
+
+            return out;
+        }
+
+        friend QDataStream &operator>>(QDataStream &in, QList<SyncFileItem> &list) {
+            qint64 count = 0;
+            in >> count;
+            for (qint64 i = 0; i < count; i++) {
+                SyncFileItem syncFileItem;
+                in >> syncFileItem;
+                list.push_back(syncFileItem);
+            }
+            return in;
+        }
+        friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItem> &list) {
+            const auto count = static_cast<qint64>(list.size());
+            out << count;
+            for (qint64 i = 0; i < count; i++) {
+                const SyncFileItem syncFileItem = list[i];
+                out << syncFileItem;
+            }
+            return out;
+        }
+        /////////////////////////////////////////////////////////
+
+        bool operator==(const SyncFileItem &other) const = default;
 
     private:
         NodeType _type{NodeType::Unknown};
