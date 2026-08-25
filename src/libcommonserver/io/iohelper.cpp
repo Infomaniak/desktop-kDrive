@@ -735,13 +735,10 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
         if (isAlias) return InvalidArgument;
 #endif
 
-        bool chunked = true;
-        if (chunkSize == 0) {
-            // Get file size to determine the chunk size
-            uint64_t fileSize = 0;
-            if (auto ioError = IoError::Unknown; !getFileSize(path, fileSize, ioError)) return ioError;
-            chunkSize = static_cast<size_t>(fileSize);
-            chunked = false;
+        const bool chunked = chunkSize != 0;
+        if (!chunked) {
+            constexpr size_t defaultBufferSize = 8 * 1024 * 1024;
+            chunkSize = defaultBufferSize;
         }
 
         IoError openError = Success;
@@ -781,7 +778,7 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
             return Unknown;
         }
 
-        XXH64_hash_t hash = XXH3_64bits_digest(state);
+        const XXH64_hash_t hash = XXH3_64bits_digest(state);
         (void) XXH3_freeState(state);
 
         checksum = (chunked ? "N:xxh3:" : "xxh3:") + Utility::xxHashToStr(hash);
