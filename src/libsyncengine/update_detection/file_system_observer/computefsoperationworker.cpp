@@ -267,7 +267,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         // Exits if the item is excluded.
         if (checkTemplate && ExclusionTemplateCache::instance()->isExcluded(dbPath)) return ExitCode::Ok;
 
-        // Exits if the item is temporary blacklisted
+        // Exits if the item is temporarily blacklisted.
         if (_syncPal->isTmpBlacklisted(dbPath, side)) return ExitCode::Ok;
 
         // Delete operation
