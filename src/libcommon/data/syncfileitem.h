@@ -30,7 +30,7 @@ namespace KDC {
 
 class SyncFileItem {
     public:
-        SyncFileItem();
+        SyncFileItem() = default;
         SyncFileItem(NodeType type, const SyncPath &path, const std::optional<SyncPath> &newPath,
                      const std::optional<NodeId> &localNodeId, const std::optional<NodeId> &remoteNodeId, SyncDirection direction,
                      SyncFileInstruction instruction, SyncFileStatus status, ConflictType conflict,
