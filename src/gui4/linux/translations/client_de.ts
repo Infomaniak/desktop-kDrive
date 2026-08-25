@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: de, German
  Exported by: Romain Galland
- Exported at: Mon, 24 Aug 2026 10:21:44 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="de"> 
     <context>
@@ -2265,6 +2265,11 @@ entsperrt ist und von Ihrem Computer aus darauf zugegriffen werden kann.</transl
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synchronisierung</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Dieser Computer</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 
