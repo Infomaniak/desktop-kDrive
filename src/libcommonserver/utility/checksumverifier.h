@@ -64,8 +64,7 @@ class ChecksumVerifier {
          * @return true if the checksum is valid; false if the sidecar file is unavailable, empty, or the
          *         checksum does not match.
          */
-        static bool verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl, const Sha256Fetcher &fetcher,
-                                       std::string *outError = nullptr);
+        static bool verifyFileChecksum(const SyncPath &filepath, const std::string &downloadUrl, const Sha256Fetcher &fetcher);
 
         /**
          * @brief Compute the SHA-256 checksum of a file.
