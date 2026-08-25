@@ -111,8 +111,8 @@ void JobManager::run() noexcept {
         }
 
         auto availableThreads = availableThreadsInPool();
-        // Always keep 1 thread available for jobs with highest priority
-        while (availableThreads > 1 && !_stop && _data.hasQueuedJob()) {
+        // Always keep threads available for jobs with highest priority
+        while (availableThreads > highPriorityCapacity() && !_stop && _data.hasQueuedJob()) {
             const auto [job, priority] = _data.pop();
             if (canRunJob(job)) {
                 startJob(job, priority);
@@ -165,14 +165,6 @@ void JobManager::addToPendingJobs(const std::shared_ptr<AbstractJob> job, const 
         return;
     }
     LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
-}
-
-int JobManager::availableThreadsInPool() const {
-    try {
-        return _threadPool.available();
-    } catch (Poco::Exception &) {
-        return 0;
-    }
 }
 
 bool JobManager::canRunJob(const std::shared_ptr<AbstractJob>) const {
