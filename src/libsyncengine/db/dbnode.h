@@ -80,6 +80,7 @@ class DbNode {
         }
         inline void setType(NodeType newNodeType) { _type = newNodeType; }
         inline void setSize(int64_t newSize) { _size = newSize; }
+        inline void setChecksum(std::optional<std::string> newChecksum) { _checksum = newChecksum; }
         inline void setStatus(SyncFileStatus status) { _status = status; }
         inline void setSyncing(bool syncing) { _syncing = syncing; }
 

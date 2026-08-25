@@ -636,6 +636,7 @@ void TestSyncDb::testNodesTemplate(SyncDb &db, T &testObj) {
     nodeFile6.setNameRemote(nodeFile6.nameRemote() + Str("new"));
     nodeFile6.setLastModifiedLocal(nodeFile6.lastModifiedLocal().value() + 10);
     nodeFile6.setLastModifiedRemote(nodeFile6.lastModifiedRemote().value() + 100);
+    nodeFile6.setChecksum(nodeFile6.checksum().value() + "new");
     CPPUNIT_ASSERT(db.updateNode(nodeFile6, found) && found);
 
     SyncName name;

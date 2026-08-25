@@ -1883,6 +1883,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
     dbNode.setLastModifiedLocal(newLastModificationTime);
     dbNode.setLastModifiedRemote(newLastModificationTime);
     dbNode.setSize(size);
+    dbNode.setChecksum(""); // TODO : change it once we start using content checksum
     if (syncOp->omit()) {
         dbNode.setStatus(SyncFileStatus::Success);
     }

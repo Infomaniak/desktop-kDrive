@@ -1266,6 +1266,7 @@ bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &
     } else {
         dbNode.setLastModifiedRemote(lastModified);
     }
+    dbNode.setChecksum(checksum);
     dbNode.setStatus(status);
     dbNode.setSyncing(syncing);
 
@@ -1486,6 +1487,7 @@ bool SyncDb::node(DbNodeId dbNodeId, DbNode &dbNode, bool &found) {
     dbNode.setLastModifiedRemote(lastModifiedDrive);
     dbNode.setType(type);
     dbNode.setSize(size);
+    dbNode.setChecksum(checksum);
     dbNode.setStatus(status);
     dbNode.setSyncing(syncing);
 
@@ -2441,6 +2443,7 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
         dbNode.setSize(size);
         dbNode.setLastModifiedLocal(lastModifiedLocal);
         dbNode.setLastModifiedRemote(lastModifiedDrive);
+        dbNode.setChecksum(checksum);
         dbNode.setStatus(status);
         dbNode.setSyncing(syncing);
 
