@@ -175,7 +175,7 @@ void SyncPalWorker::checkForMassDeletions() const {
     }
 }
 
-ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int trial) {
+ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
     LOG_DEBUG(_logger, "Ensure Blacklist is propagated (trial " << trial + 1 << ")");
 
     if (trial) {
@@ -216,7 +216,8 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int trial) {
         return exitInfo;
     }
 
-    std::erase_if(blacklistedNodes, [&tmpBlacklistedNodes](const auto &value) { return tmpBlacklistedNodes.contains(value); });
+    (void) std::erase_if(blacklistedNodes,
+                         [&tmpBlacklistedNodes](const auto &value) { return tmpBlacklistedNodes.contains(value); });
 
     // Check if any of the blacklisted nodes are still in the db.
     std::function<ExitInfo(const NodeSet &, bool &)> areBlacklistedNodesStillInDb = [this](const NodeSet &nodes, bool &found) {
