@@ -1741,19 +1741,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             });
         }
-        public Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
+        public async Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
-                return Task.CompletedTask;
+                return;
             }
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncStatus))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncStatus} not found in parameters.");
-                return Task.CompletedTask;
+                return;
             }
 
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
@@ -1762,22 +1762,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (syncDbID is null)
             {
                 Logger.Log(Logger.Level.Error, "syncDbID is null.");
-                return Task.CompletedTask;
+                return;
             }
             if (syncStatus is null)
             {
                 Logger.Log(Logger.Level.Error, "syncStatus is null.");
-                return Task.CompletedTask;
+                return;
             }
 
-            Sync? updatedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
+            Sync? updatedSync = null;
+            await Utility.RunOnUIThread(() => updatedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID));
             if (updatedSync == null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
-                return Task.CompletedTask;
+                return;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
-            return Task.CompletedTask;
+            return;
         }
 
         public async Task HandleSyncCompletedItem(object? sender, SignalEventArgs args)
@@ -2007,7 +2008,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         ++_errorCount;
                     }
 
-                   await _viewModel.AddErrorAsync(error);
+                    await _viewModel.AddErrorAsync(error);
                 }
                 else
                 {
