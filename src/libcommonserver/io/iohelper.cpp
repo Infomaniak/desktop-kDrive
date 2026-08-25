@@ -756,26 +756,33 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
         }
 
         if (XXH3_64bits_reset(state) == XXH_ERROR) {
-            XXH3_freeState(state);
+            (void) XXH3_freeState(state);
             return Unknown;
         }
 
         std::streamsize readBytes(0);
         while ((readBytes = ifs.read(buffer.data(), static_cast<std::streamsize>(buffer.size())).gcount()) > 0) {
-            const auto chunkHash = Utility::computeXxHash(buffer.data(), static_cast<size_t>(readBytes));
-            if (XXH3_64bits_update(state, chunkHash.data(), chunkHash.length()) == XXH_ERROR) {
-                XXH3_freeState(state);
-                return Unknown;
+            if (chunked) {
+                const auto chunkHash = Utility::computeXxHash(buffer.data(), static_cast<size_t>(readBytes));
+                if (XXH3_64bits_update(state, chunkHash.data(), chunkHash.length()) == XXH_ERROR) {
+                    (void) XXH3_freeState(state);
+                    return Unknown;
+                }
+            } else {
+                if (XXH3_64bits_update(state, buffer.data(), static_cast<size_t>(readBytes)) == XXH_ERROR) {
+                    (void) XXH3_freeState(state);
+                    return Unknown;
+                }
             }
         }
 
         if (ifs.bad()) {
-            XXH3_freeState(state);
+            (void) XXH3_freeState(state);
             return Unknown;
         }
 
         XXH64_hash_t hash = XXH3_64bits_digest(state);
-        XXH3_freeState(state);
+        (void) XXH3_freeState(state);
 
         checksum = (chunked ? "N:xxh3:" : "xxh3:") + Utility::xxHashToStr(hash);
         return Success;
