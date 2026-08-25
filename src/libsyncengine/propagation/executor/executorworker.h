@@ -62,7 +62,7 @@ class TerminatedJobsQueue : public std::recursive_mutex {
         std::queue<UniqueId> _terminatedJobs;
 };
 
-class ExecutorWorker : public OperationProcessor {
+class ExecutorWorker : public OperationProcessor, public std::enable_shared_from_this<ExecutorWorker> {
     public:
         ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
@@ -73,6 +73,8 @@ class ExecutorWorker : public OperationProcessor {
         void execute() override;
 
     private:
+        void setJobCallbacks(const std::shared_ptr<SyncJob> &job);
+        void updateJobProgress(const std::shared_ptr<SyncJob> &job, int progress);
         void initProgressManager();
         void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
