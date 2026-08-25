@@ -89,15 +89,12 @@ public struct UISynchroNode: Sendable, Identifiable, Equatable, Hashable {
         return relevantPath.deletingLastPathComponent()
     }
 
-    public var fileType: UTType? {
-        return UTType(filenameExtension: relevantPath.pathExtension)
-    }
-
     public var fileTypeRepresentation: FileTypeRepresentation {
-        guard let fileType else {
-            return .unknown
+        if type == .directory {
+            return .folder
         }
-        return FileTypeRepresentation(utType: fileType)
+
+        return FileTypeRepresentation(filenameExtension: relevantPath.pathExtension)
     }
 
     public init(

@@ -21,7 +21,16 @@ import InfomaniakFoundation
 import UniformTypeIdentifiers
 
 public extension FileTypeRepresentation {
+    private static let overriddenExtensions: [String: FileTypeRepresentation] = [
+        "ts": .code
+    ]
+
     init(filenameExtension: String) {
+        if let overriddenType = Self.overriddenExtensions[filenameExtension] {
+            self = overriddenType
+            return
+        }
+
         guard let utType = UTType(filenameExtension: filenameExtension) else {
             self = .unknown
             return
@@ -31,7 +40,9 @@ public extension FileTypeRepresentation {
     }
 
     init(utType: UTType) {
-        if utType.conforms(to: .archive) {
+        if utType.conforms(to: .svg) {
+            self = .image
+        } else if utType.conforms(to: .archive) {
             self = .archive
         } else if utType.conforms(to: .audio) {
             self = .audio
