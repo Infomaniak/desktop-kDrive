@@ -89,8 +89,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     progressCallback(InstallStep::Verifying, QObject::tr("Verifying file integrity..."));
-    if (!verifyChecksum(SyncPath(pkgPath.toStdString()), pkgUrl.toStdString())) {
-        outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
+    if (!verifyChecksum(SyncPath(pkgPath.toStdString()), pkgUrl.toStdString(), outMessage)) {
         return false;
     }
 
