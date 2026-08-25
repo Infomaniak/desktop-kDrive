@@ -241,8 +241,30 @@ namespace Infomaniak.kDrive.TrayIcon
 
         private static string GetThemeSuffix()
         {
-            bool isDark = App.Current.RequestedTheme == ApplicationTheme.Dark;
+            // The tray icon sits on the system taskbar, which follows the system theme (not the app theme).
+            // Use the system theme so the icon stays visible even when the app and system themes differ.
+            bool isDark = IsSystemThemeDark() ?? (App.Current.RequestedTheme == ApplicationTheme.Dark);
             return isDark ? "-dark" : "-light";
+        }
+
+        private static bool? IsSystemThemeDark()
+        {
+            try
+            {
+                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                if (key?.GetValue("SystemUsesLightTheme") is int usesLightTheme)
+                {
+                    return usesLightTheme == 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to read system theme from registry, falling back to app theme: {ex.Message}");
+            }
+
+            // Value not available: fall back to the app theme.
+            return null;
         }
 
         public void Dispose()
