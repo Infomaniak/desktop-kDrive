@@ -35,14 +35,14 @@ set(libcommon_SRCS
     data/driveavailable.h data/driveavailable.cpp
     data/user.h data/user.cpp
     data/sync.h data/sync.cpp
-    info/nodeinfo.h info/nodeinfo.cpp
-    info/nodeconflictinfo.h info/nodeconflictinfo.cpp
     data/error.h data/error.cpp
-    info/parametersinfo.h info/parametersinfo.cpp
-    info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     data/exclusiontemplate.h data/exclusiontemplate.cpp
     data/exclusionapp.h data/exclusionapp.cpp
-    info/proxyconfiginfo.h info/proxyconfiginfo.cpp
+    data/proxyconfig.h data/proxyconfig.cpp
+    info/nodeinfo.h info/nodeinfo.cpp
+    info/nodeconflictinfo.h info/nodeconflictinfo.cpp
+    info/parametersinfo.h info/parametersinfo.cpp
+    info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
     info/maintenanceinfo.h info/maintenanceinfo.cpp

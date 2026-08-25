@@ -18,7 +18,6 @@
 
 #include "abstractnetworkjob.h"
 
-#include "network/proxy.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
@@ -354,11 +353,12 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
     }
 
     // Set proxy params
-    if (Proxy::instance()->proxyConfig().type() == ProxyType::HTTP) {
-        _session->setProxy(Proxy::instance()->proxyConfig().hostName(),
-                           static_cast<Poco::UInt16>(Proxy::instance()->proxyConfig().port()));
-        if (Proxy::instance()->proxyConfig().needsAuth()) {
-            _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
+    if (ParametersCache::instance()->parameters().proxyConfig().type() == ProxyType::HTTP) {
+        _session->setProxy(ParametersCache::instance()->parameters().proxyConfig().hostName(),
+                           static_cast<Poco::UInt16>(ParametersCache::instance()->parameters().proxyConfig().port()));
+        if (ParametersCache::instance()->parameters().proxyConfig().needsAuth()) {
+            _session->setProxyCredentials(ParametersCache::instance()->parameters().proxyConfig().user(),
+                                          ParametersCache::instance()->parameters().proxyConfig().pwd());
         }
     }
 }

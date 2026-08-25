@@ -125,7 +125,7 @@ ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
         if (!KeyChainManager::instance()->isTesting()) {
             (void) DeleteTokenJob(apiToken).runSynchronously();
         }
-        (void) KeyChainManager::instance()->deleteToken(user.keychainKey());
+        (void) KeyChainManager::instance()->deleteData(user.keychainKey());
     }
 
     // Delete user (and linked accounts/drives/syncs by cascade)
@@ -1156,12 +1156,15 @@ ExitCode ServerRequests::createSync(const Sync &sync) {
 }
 
 
-ExitCode ServerRequests::fixProxyConfig() {
+void ServerRequests::fixProxyConfig() {
     ProxyConfig proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
-    proxyConfig.setType(ProxyType::None);
+    const auto previousKeychainKey = proxyConfig.keychainKey();
+    proxyConfig.clear();
+    if (!previousKeychainKey.empty()) {
+        (void) KeyChainManager::instance()->deleteData(previousKeychainKey);
+    }
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
     ParametersCache::instance()->save();
-    return ExitCode::Ok;
 }
 
 bool ServerRequests::isDisplayableError(const Error &error) {
@@ -2137,10 +2140,7 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     parametersInfo.setLogLevel(parameters.logLevel());
     parametersInfo.setExtendedLog(parameters.extendedLog());
     parametersInfo.setPurgeOldLogs(parameters.purgeOldLogs());
-
-    ProxyConfigInfo proxyConfigInfo;
-    proxyConfigToProxyConfigInfo(parameters.proxyConfig(), proxyConfigInfo);
-    parametersInfo.setProxyConfigInfo(proxyConfigInfo);
+    parametersInfo.setProxyConfig(parameters.proxyConfig());
     parametersInfo.setDarkTheme(parameters.darkTheme());
 
     if (parameters.dialogGeometry()) {
@@ -2171,11 +2171,7 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setLogLevel(parametersInfo.logLevel());
     parameters.setExtendedLog(parametersInfo.extendedLog());
     parameters.setPurgeOldLogs(parametersInfo.purgeOldLogs());
-
-    ProxyConfig proxyConfig;
-    proxyConfigInfoToProxyConfig(parametersInfo.proxyConfigInfo(), proxyConfig);
-    parameters.setProxyConfig(proxyConfig);
-
+    parameters.setProxyConfig(parametersInfo.proxyConfig());
     parameters.setDarkTheme(parametersInfo.darkTheme());
     parameters.setMoveToTrash(parametersInfo.moveToTrash());
 
@@ -2195,54 +2191,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setSentryEnabled(parametersInfo.sentryEnabled());
     parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
     parameters.setNotifyBeforeDelete(parametersInfo.notifyBeforeDelete());
-}
-
-void ServerRequests::proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo) {
-    proxyConfigInfo.setType(proxyConfig.type());
-    proxyConfigInfo.setHostName(QString::fromStdString(proxyConfig.hostName()));
-    proxyConfigInfo.setPort(proxyConfig.port());
-    proxyConfigInfo.setNeedsAuth(proxyConfig.needsAuth());
-
-    if (proxyConfig.needsAuth()) {
-        proxyConfigInfo.setUser(QString::fromStdString(proxyConfig.user()));
-
-        // Read pwd from keystore
-        std::string pwd;
-        bool found;
-        if (!KeyChainManager::instance()->readDataFromKeystore(proxyConfig.token(), pwd, found)) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to read proxy pwd from keychain");
-            proxyConfigInfo.setPwd(QString());
-            return;
-        }
-        if (!found) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Proxy pwd not found for keychainKey=" << proxyConfig.token());
-            proxyConfigInfo.setPwd(QString());
-            return;
-        }
-        proxyConfigInfo.setPwd(QString::fromStdString(pwd));
-    }
-}
-
-void ServerRequests::proxyConfigInfoToProxyConfig(const ProxyConfigInfo &proxyConfigInfo, ProxyConfig &proxyConfig) {
-    proxyConfig.setType(proxyConfigInfo.type());
-    proxyConfig.setHostName(proxyConfigInfo.hostName().toStdString());
-    proxyConfig.setPort(proxyConfigInfo.port());
-    proxyConfig.setNeedsAuth(proxyConfigInfo.needsAuth());
-
-    if (proxyConfig.needsAuth()) {
-        proxyConfig.setUser(proxyConfigInfo.user().toStdString());
-
-        // Write pwd to keystore
-        if (proxyConfig.token().empty()) {
-            // Generate token
-            std::string keychainKeyProxyPass(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
-            proxyConfig.setToken(keychainKeyProxyPass);
-        }
-        if (!KeyChainManager::instance()->writeToken(proxyConfig.token(), proxyConfigInfo.pwd().toStdString())) {
-            LOG_WARN(Log::instance()->getLogger(), "Failed to write proxy token into keychain");
-            return;
-        }
-    }
 }
 
 } // namespace KDC

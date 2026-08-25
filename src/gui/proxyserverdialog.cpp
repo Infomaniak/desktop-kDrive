@@ -56,7 +56,7 @@ ProxyServerDialog::ProxyServerDialog(QWidget *parent) :
     _portValidator(new PortValidator(this)) {
     initUI();
 
-    _proxyConfigInfo = ParametersCache::instance()->parametersInfo().proxyConfigInfo();
+    _proxyConfig = ParametersCache::instance()->parametersInfo().proxyConfig();
 
     updateUI();
 }
@@ -209,11 +209,11 @@ void ProxyServerDialog::initUI() {
 }
 
 void ProxyServerDialog::updateUI() {
-    if (_proxyConfigInfo.type() == ProxyType::None) {
+    if (_proxyConfig.type() == ProxyType::None) {
         if (!_noProxyButton->isChecked()) {
             _noProxyButton->setChecked(true);
         }
-    } else if (_proxyConfigInfo.type() == ProxyType::System) {
+    } else if (_proxyConfig.type() == ProxyType::System) {
         if (!_systemProxyButton->isChecked()) {
             _systemProxyButton->setChecked(true);
         }
@@ -225,58 +225,57 @@ void ProxyServerDialog::updateUI() {
     _manualProxyWidget->setVisible(manualProxy);
 
     if (manualProxy) {
-        if (_proxyTypeComboBox->currentIndex() != _manualProxyMap[_proxyConfigInfo.type()].first) {
-            _proxyTypeComboBox->setCurrentIndex(_manualProxyMap[_proxyConfigInfo.type()].first);
+        if (_proxyTypeComboBox->currentIndex() != _manualProxyMap[_proxyConfig.type()].first) {
+            _proxyTypeComboBox->setCurrentIndex(_manualProxyMap[_proxyConfig.type()].first);
         }
-        if (!_proxyConfigInfo.port()) {
-            _proxyConfigInfo.setPort(defaultPortNumber);
+        if (!_proxyConfig.port()) {
+            _proxyConfig.setPort(defaultPortNumber);
         }
     } else {
         _proxyTypeComboBox->setCurrentIndex(-1);
     }
 
-    _portLineEdit->setText(manualProxy ? QString::number(_proxyConfigInfo.port()) : QString());
-    _addressLineEdit->setText(manualProxy ? _proxyConfigInfo.hostName() : QString());
+    _portLineEdit->setText(manualProxy ? QString::number(_proxyConfig.port()) : QString());
+    _addressLineEdit->setText(manualProxy ? QString::fromStdString(_proxyConfig.hostName()) : QString());
 
-    bool authentication = manualProxy && _proxyConfigInfo.needsAuth();
+    bool authentication = manualProxy && _proxyConfig.needsAuth();
     if (_authenticationCheckBox->isChecked() != authentication) {
         _authenticationCheckBox->setChecked(authentication);
     }
 
     _authenticationWidget->setVisible(authentication);
 
-    _loginLineEdit->setText(authentication ? _proxyConfigInfo.user() : QString());
-    _pwdLineEdit->setText(authentication ? _proxyConfigInfo.pwd() : QString());
+    _loginLineEdit->setText(authentication ? QString::fromStdString(_proxyConfig.user()) : QString());
+    _pwdLineEdit->setText(authentication ? QString::fromStdString(_proxyConfig.pwd()) : QString());
 
     ClientGui::restoreGeometry(this);
     setResizable(true);
 }
 
-void ProxyServerDialog::setNeedToSave(bool value) {
+void ProxyServerDialog::setNeedToSave(const bool value) {
     _needToSave = value;
     _saveButton->setEnabled(isSaveEnabled());
 }
 
 bool ProxyServerDialog::isSaveEnabled() {
-    bool saveButtonEnabled =
-            _needToSave &&
-            (_proxyConfigInfo.type() == ProxyType::None || _proxyConfigInfo.type() == ProxyType::System ||
-             (!_proxyConfigInfo.hostName().isEmpty() &&
-              (!_proxyConfigInfo.needsAuth() || (!_proxyConfigInfo.user().isEmpty() && !_proxyConfigInfo.pwd().isEmpty()))));
+    const bool saveButtonEnabled =
+            _needToSave && (_proxyConfig.type() == ProxyType::None || _proxyConfig.type() == ProxyType::System ||
+                            (!_proxyConfig.hostName().empty() &&
+                             (!_proxyConfig.needsAuth() || (!_proxyConfig.user().empty() && !_proxyConfig.pwd().empty()))));
 
     return saveButtonEnabled;
 }
 
 void ProxyServerDialog::resetManualProxy() {
-    _proxyConfigInfo.setPort(0);
-    _proxyConfigInfo.setHostName(QString());
-    _proxyConfigInfo.setNeedsAuth(false);
+    _proxyConfig.setPort(0);
+    _proxyConfig.setHostName("");
+    _proxyConfig.setNeedsAuth(false);
     resetAuthentication();
 }
 
 void ProxyServerDialog::resetAuthentication() {
-    _proxyConfigInfo.setUser(QString());
-    _proxyConfigInfo.setPwd(QString());
+    _proxyConfig.setUser("");
+    _proxyConfig.setPwd("");
 }
 
 void ProxyServerDialog::onExit() {
@@ -305,18 +304,18 @@ void ProxyServerDialog::onExit() {
     }
 }
 
-void ProxyServerDialog::onSaveButtonTriggered(bool checked) {
+void ProxyServerDialog::onSaveButtonTriggered(const bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "saveButton");
 
     // Check host name
-    if (!_proxyConfigInfo.hostName().isEmpty()) {
-        QHostInfo info = QHostInfo::fromName(_proxyConfigInfo.hostName());
+    if (!_proxyConfig.hostName().empty()) {
+        const QHostInfo info = QHostInfo::fromName(QString::fromStdString(_proxyConfig.hostName()));
         if (info.error() != QHostInfo::NoError) {
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Proxy not found, save anyway?"),
                                     QMessageBox::Ok | QMessageBox::Cancel, this);
             msgBox.setDefaultButton(QMessageBox::Cancel);
-            int ret = msgBox.exec();
+            const auto ret = msgBox.exec();
             if (ret != QDialog::Rejected) {
                 if (ret == QMessageBox::Cancel) {
                     return;
@@ -325,65 +324,62 @@ void ProxyServerDialog::onSaveButtonTriggered(bool checked) {
         }
     }
 
-    ProxyConfigInfo proxyConfigInfo(_proxyConfigInfo.type(), _proxyConfigInfo.hostName(), _proxyConfigInfo.port(),
-                                    _proxyConfigInfo.needsAuth(), _proxyConfigInfo.user(), _proxyConfigInfo.pwd());
-
-    ParametersCache::instance()->parametersInfo().setProxyConfigInfo(proxyConfigInfo);
-    ParametersCache::instance()->saveParametersInfo();
+    ParametersCache::instance()->parametersInfo().setProxyConfig(_proxyConfig);
+    (void) ParametersCache::instance()->saveParametersInfo();
 
     accept();
 }
 
-void ProxyServerDialog::onNoProxyButtonClicked(bool checked) {
+void ProxyServerDialog::onNoProxyButtonClicked(const bool checked) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "noProxyButton", checked ? 1 : 0);
     if (checked) {
-        _proxyConfigInfo.setType(ProxyType::None);
+        _proxyConfig.setType(ProxyType::None);
         resetManualProxy();
         updateUI();
         setNeedToSave(true);
     }
 }
 
-void ProxyServerDialog::onSystemProxyButtonClicked(bool checked) {
+void ProxyServerDialog::onSystemProxyButtonClicked(const bool checked) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "systemProxyButton", checked ? 1 : 0);
     if (checked) {
-        _proxyConfigInfo.setType(ProxyType::System);
+        _proxyConfig.setType(ProxyType::System);
         resetManualProxy();
         updateUI();
         setNeedToSave(true);
     }
 }
 
-void ProxyServerDialog::onManualProxyButtonClicked(bool checked) {
+void ProxyServerDialog::onManualProxyButtonClicked(const bool checked) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "manualProxyButton", checked ? 1 : 0);
     if (checked) {
-        _proxyConfigInfo.setType(ProxyType::HTTP); // Default manual proxy type
+        _proxyConfig.setType(ProxyType::HTTP); // Default manual proxy type
         updateUI();
         setNeedToSave(true);
     }
 }
 
-void ProxyServerDialog::onProxyTypeComboBoxActivated(int index) {
-    _proxyConfigInfo.setType(qvariant_cast<ProxyType>(_proxyTypeComboBox->itemData(index)));
+void ProxyServerDialog::onProxyTypeComboBoxActivated(const int index) {
+    _proxyConfig.setType(qvariant_cast<ProxyType>(_proxyTypeComboBox->itemData(index)));
     updateUI();
     setNeedToSave(true);
 }
 
 void ProxyServerDialog::onPortTextEdited(const QString &text) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "portInput");
-    _proxyConfigInfo.setPort(text.toInt());
+    _proxyConfig.setPort(static_cast<Port>(text.toInt()));
     setNeedToSave(true);
 }
 
 void ProxyServerDialog::onAddressTextEdited(const QString &text) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "addressInput");
-    _proxyConfigInfo.setHostName(text);
+    _proxyConfig.setHostName(text.toStdString());
     setNeedToSave(true);
 }
 
-void ProxyServerDialog::onAuthenticationCheckBoxClicked(bool checked) {
+void ProxyServerDialog::onAuthenticationCheckBoxClicked(const bool checked) {
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Click, "authenticationCheckbox", checked ? 1 : 0);
-    _proxyConfigInfo.setNeedsAuth(checked);
+    _proxyConfig.setNeedsAuth(checked);
     updateUI();
     setNeedToSave(true);
 
@@ -393,13 +389,13 @@ void ProxyServerDialog::onAuthenticationCheckBoxClicked(bool checked) {
 }
 
 void ProxyServerDialog::onLoginTextEdited(const QString &text) {
-    _proxyConfigInfo.setUser(text);
+    _proxyConfig.setUser(text.toStdString());
     setNeedToSave(true);
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "loginInput");
 }
 
 void ProxyServerDialog::onPwdTextEdited(const QString &text) {
-    _proxyConfigInfo.setPwd(text);
+    _proxyConfig.setPwd(text.toStdString());
     setNeedToSave(true);
     MatomoClient::sendEvent("preferencesProxyServer", MatomoEventAction::Input, "passwordInput");
 }
