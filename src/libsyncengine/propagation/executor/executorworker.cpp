@@ -59,6 +59,35 @@ namespace KDC {
 ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
     OperationProcessor(syncPal, name, shortName, false) {}
 
+void ExecutorWorker::setJobCallbacks(const std::shared_ptr<SyncJob> &job) {
+    const std::weak_ptr<ExecutorWorker> weakExecutor = weak_from_this();
+    job->setAdditionalCallback([weakExecutor](const UniqueId jobId) {
+        if (const auto executor = weakExecutor.lock()) executor->executorCallback(jobId);
+    });
+
+    // The callbacks must not keep either the job or its executor alive. Jobs can finish after a SyncPal stop has released its
+    // workers and progress state.
+    const std::weak_ptr<SyncJob> weakJob = job;
+    const auto progressPercentCallback = [weakExecutor, weakJob]([[maybe_unused]] UniqueId, int progress /* % */) {
+        const auto executor = weakExecutor.lock();
+        const auto currentJob = weakJob.lock();
+        if (!executor || !currentJob) {
+            return;
+        }
+
+        executor->updateJobProgress(currentJob, progress);
+    };
+    job->setProgressPercentCallback(progressPercentCallback);
+}
+
+void ExecutorWorker::updateJobProgress(const std::shared_ptr<SyncJob> &job, const int progress) {
+    if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: path=" << Utility::formatSyncPath(job->affectedFilePath())
+                                                                           << L", progress=" << progress << L"%" << L", jobId="
+                                                                           << job->jobId());
+    }
+}
+
 void ExecutorWorker::executorCallback(const UniqueId jobId) {
     _terminatedJobs.push(jobId);
 }
@@ -162,28 +191,7 @@ void ExecutorWorker::execute() {
         }
 
         if (job) {
-            job->setAdditionalCallback(std::bind_front(&ExecutorWorker::executorCallback, this));
-
-            // Use a weak_ptr to avoid a reference cycle:
-            // The job owns the progress callback, and capturing a shared_ptr<SyncJob> inside
-            // the callback would create a cycle (job → callback → job).
-            // This would prevent the job from being destroyed after completion and removal
-            // from the job map, resulting in a memory leak.
-            std::weak_ptr<SyncJob> weakJobPtr = job;
-            const auto progressPercentCallback = [weakJobPtr, this]([[maybe_unused]] UniqueId, int progress /* % */) {
-                auto job = weakJobPtr.lock();
-                if (!job) {
-                    LOG_SYNCPAL_WARN(_logger, "Job no longer exists in progress callback");
-                    return;
-                }
-
-                if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: path="
-                                                       << Utility::formatSyncPath(job->affectedFilePath()) << L", progress="
-                                                       << progress << L"%" << L", jobId=" << job->jobId());
-                }
-            };
-            job->setProgressPercentCallback(progressPercentCallback);
+            setJobCallbacks(job);
 
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
             (void) _ongoingJobs.try_emplace(job->jobId(), job);

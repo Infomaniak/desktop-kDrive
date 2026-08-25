@@ -38,6 +38,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include <memory>
+#include <mutex>
 #include <comm.h>
 
 namespace KDC {
@@ -408,6 +409,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> _remoteUpdateTree{nullptr};
         std::shared_ptr<ConflictQueue> _conflictQueue{nullptr};
         std::shared_ptr<SyncOperationList> _syncOps{nullptr};
+        mutable std::mutex _progressInfoMutex;
         std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
         // Workers
@@ -439,6 +441,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
 
         // Progress info management
+        [[nodiscard]] std::shared_ptr<ProgressInfo> progressInfo() const;
+        void setProgressInfo(std::shared_ptr<ProgressInfo> progressInfo);
+        void clearProgressInfo();
         void createProgressInfo();
         void resetEstimateUpdates();
         void startEstimateUpdates();
