@@ -214,8 +214,6 @@ bool HttpDownloader::fetchAppVersion(DistributionChannel channel, const std::str
             outError = "missing 'download_link'";
             return false;
         }
-        // checksum is optional: the SHA-256 is now fetched from the .sha256 sidecar file at download time.
-        (void) JsonParserUtility::extractValue(dataObj, "checksum", outVersionInfo.checksum);
         if (!JsonParserUtility::extractValue(dataObj, "min_version", outVersionInfo.minAppVersion)) {
             outError = "missing 'min_version'";
             return false;
