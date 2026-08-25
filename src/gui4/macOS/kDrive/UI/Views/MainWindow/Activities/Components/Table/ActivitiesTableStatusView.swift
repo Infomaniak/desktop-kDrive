@@ -203,6 +203,9 @@ struct ActivitiesTableStatusView: View {
 
     private func navigateToErrorsView() {
         matomo.track(eventWithCategory: .activityPage, name: "openErrors")
+        @InjectService var router: MainViewRouter
+        router.setCurrentTab(.activities)
+        router.append(.errors)
     }
 }
 
