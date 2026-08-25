@@ -60,7 +60,7 @@ bool tryLoadBundleFile(SSL_CTX *ctx, const char *path) {
     return false;
 }
 
-// Try to load from a hashed cert directory.  Unlike file loads, certs in a
+// Try to load from a hashed cert directory. Unlike file loads, certs in a
 // CApath directory are loaded lazily at handshake time, so certCount() is
 // always 0 here — we can only trust the return value of load_verify_locations.
 bool tryLoadBundleDir(SSL_CTX *ctx, const char *path) {
