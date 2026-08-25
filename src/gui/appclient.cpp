@@ -353,7 +353,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::SYNC_COMPLETEDITEM: {
             qint64 syncDbId = 0;
-            SyncFileItemInfo itemInfo;
+            SyncFileItem itemInfo;
             paramsStream >> syncDbId;
             paramsStream >> itemInfo;
 

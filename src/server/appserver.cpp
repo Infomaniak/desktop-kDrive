@@ -2796,9 +2796,7 @@ void AppServer::sendErrorRemoved(int64_t dbId) const {
 
 void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item, const bool notify) {
     // Send completedItem signal to client
-    SyncFileItemInfo itemInfo;
-    ServerRequests::syncFileItemToSyncFileItemInfo(item, itemInfo);
-    sendSyncCompletedItem(syncDbId, itemInfo);
+    sendSyncCompletedItem(syncDbId, item);
 
     if (item.status() != SyncFileStatus::Success) {
         return;
@@ -2810,9 +2808,9 @@ void AppServer::addCompletedItem(const SyncDbId syncDbId, const SyncFileItem &it
         // Store notification
         Notification notification;
         notification._syncDbId = syncDbId;
-        notification._filename = itemInfo.path();
-        notification._renameTarget = itemInfo.newPath();
-        notification._status = itemInfo.instruction();
+        notification._filename = Path2QStr(item.path());
+        notification._renameTarget = item.newPath().has_value() ? Path2QStr(item.newPath().value()) : QString();
+        notification._status = item.instruction();
         _notifications.push_back(notification);
     }
 }
@@ -4993,29 +4991,29 @@ void AppServer::sendSyncProgressInfo(const SyncDbId syncDbId, const SyncStatus s
     }
 }
 
-void AppServer::sendSyncCompletedItem(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) const {
+void AppServer::sendSyncCompletedItem(const SyncDbId syncDbId, const SyncFileItem &item) const {
     if (useOldCommServer()) {
-        if (itemInfo.progress() == 100) { // 100%
+        if (item.progress() == 100) { // 100%
             int id = 0;
 
             QByteArray params;
             QDataStream paramsStream(&params, QIODevice::WriteOnly);
             paramsStream << static_cast<qint64>(syncDbId);
-            paramsStream << itemInfo;
+            paramsStream << item;
             (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_DEBUG(_logger, L"Send progress for syncDbId="
-                                            << syncDbId << L" path=" << Path2WStr(QStr2Path(itemInfo.path())) << L" size="
-                                            << itemInfo.size() << L" progress=" << itemInfo.progress() << L"% to gui");
+                LOGW_DEBUG(_logger, L"Send progress for syncDbId=" << syncDbId << L" path=" << Path2WStr(item.path()) << L" size="
+                                                                   << item.size() << L" progress=" << item.progress()
+                                                                   << L"% to gui");
             }
         }
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItemJob>(syncDbId, itemInfo));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncCompletedItemJob>(syncDbId, item));
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_DEBUG(_logger, L"Send progress for syncDbId=" << syncDbId << L" path=" << Path2WStr(QStr2Path(itemInfo.path()))
-                                                               << L" size=" << itemInfo.size() << L" progress="
-                                                               << itemInfo.progress() << L"% to new gui");
+            LOGW_DEBUG(_logger, L"Send progress for syncDbId=" << syncDbId << L" path=" << Path2WStr(item.path()) << L" size="
+                                                               << item.size() << L" progress=" << item.progress()
+                                                               << L"% to new gui");
         }
     }
 }

@@ -76,7 +76,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                               int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
-        void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
+        void itemCompleted(SyncDbId syncDbId, const SyncFileItem &itemInfo);
         void vfsConversionCompleted(SyncDbId syncDbId);
         void syncDeletionFailed(SyncDbId syncDbId);
         void tooManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles);

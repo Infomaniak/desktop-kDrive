@@ -19,7 +19,7 @@
 #pragma once
 
 #include "customdialog.h"
-#include "info/syncfileiteminfo.h"
+#include "data/syncfileitem.h"
 #include "libcommon/data/error.h"
 #include "mainmenubarwidget.h"
 #include "preferencesmenubarwidget.h"
@@ -64,7 +64,7 @@ class ParametersDialog : public CustomDialog {
     public slots:
         void onConfigRefreshed();
         void onUpdateProgress(SyncDbId syncDbId);
-        void onItemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &item);
+        void onItemCompleted(SyncDbId syncDbId, const SyncFileItem &item);
         void onDriveQuotaUpdated(DriveDbId driveDbId);
         void onRefreshErrorList(DriveDbId driveDbId);
         void onRefreshStatusNeeded();

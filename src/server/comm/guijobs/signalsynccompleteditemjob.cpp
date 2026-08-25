@@ -26,7 +26,7 @@ static const auto outParamsItemInfo = "itemInfo";
 
 namespace KDC {
 
-SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncFileItemInfo &itemInfo) :
+SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncFileItem &itemInfo) :
     _syncDbId(syncDbId),
     _itemInfo(itemInfo) {
     _signalNum = SignalNum::SYNC_COMPLETEDITEM;
@@ -35,7 +35,7 @@ SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncF
 
 ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
+    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItem>);
     return ExitCode::Ok;
 }
 

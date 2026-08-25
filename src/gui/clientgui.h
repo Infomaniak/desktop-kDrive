@@ -28,7 +28,7 @@
 #include "libcommon/data/account.h"
 #include "info/driveinfoclient.h"
 #include "info/syncinfoclient.h"
-#include "info/syncfileiteminfo.h"
+#include "data/syncfileitem.h"
 
 #include <QAction>
 #include <QMenu>
@@ -93,7 +93,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void driveQuotaUpdated(DriveDbId driveDbId);
         void updateProgress(SyncDbId syncDbId);
         void syncFinished(SyncDbId syncDbId);
-        void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &itemInfo);
+        void itemCompleted(SyncDbId syncDbId, const SyncFileItem &itemInfo);
         void vfsConversionCompleted(SyncDbId syncDbId);
         void errorAdded(SyncDbId syncDbId);
         void appVersionLocked(bool currentVersionLocked);

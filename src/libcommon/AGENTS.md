@@ -1,4 +1,4 @@
-# libcommon — Foundation Library
+#libcommon — Foundation Library
 
 ## Package Identity
 Foundational shared library. **Everything depends on it** (`libcommonserver` → `libparms` → `libsyncengine` → `server`; `libcommongui` → `gui`). Defines all core enums, type aliases, IPC protocol, DTO classes, error propagation types, logging helpers, Sentry integration, and the app theme singleton. No platform-specific code except `utility_mac.mm` / `utility_win.cpp` / `utility_linux.cpp`. Export macro: `COMMON_EXPORT`.
@@ -65,7 +65,7 @@ Reference: `src/libcommon/info/userinfo.h`
 Key info classes:
 - `User` → `Account` → `Drive` → `Sync` (ownership chain)
 - `ErrorInfo` — full error record with all context fields
-- `SyncFileItemInfo` — live sync progress event
+- `SyncFileItem` (`data/syncfileitem.h`) — live sync progress event shared by sync engine and IPC
 - `ParametersInfo` + `ProxyConfigInfo` — all app settings
 
 **Adding a new entity:** copy the pattern from `userinfo.h`. Register both `toDynamicStruct` and the `QDataStream` operators.
@@ -130,3 +130,4 @@ rg -n "PTraceName::" src/libcommon/log/sentry/
 ```bash
 cmake --build build-macos --target kDrive_test_common && ./build-macos/bin/kDrive_test_common
 ```
+

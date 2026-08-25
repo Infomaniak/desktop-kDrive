@@ -18,7 +18,11 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
+
+#include <Poco/Dynamic/Struct.h>
+#include <QDataStream>
+#include <QList>
 
 #include <optional>
 
@@ -75,6 +79,14 @@ class SyncFileItem {
         inline void setTimestamp(SyncTime newTimestamp) { _timestamp = newTimestamp; }
 
         inline bool isDirectory() const { return _type == NodeType::Directory; }
+
+        void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
+
+        friend QDataStream &operator>>(QDataStream &in, SyncFileItem &info);
+        friend QDataStream &operator<<(QDataStream &out, const SyncFileItem &info);
+
+        friend QDataStream &operator>>(QDataStream &in, QList<SyncFileItem> &list);
+        friend QDataStream &operator<<(QDataStream &out, const QList<SyncFileItem> &list);
 
         // TODO : "default" does not work with gcc version used to build the Linux package. Use it once support to Ubuntu 20.04
         // has been dropped: bool operator==(const SyncFileItem &) const = default;

@@ -844,7 +844,7 @@ void SynthesisPopover::onDriveQuotaUpdated(const DriveDbId driveDbId) {
 
 void SynthesisPopover::onRefreshStatusNeeded() {}
 
-void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) {
+void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileItem &itemInfo) {
 #ifdef CONSOLE_DEBUG
     std::cout << QTime::currentTime().toString("hh:mm:ss").toStdString() << " - SynthesisPopover::onItemCompleted" << std::endl;
 #endif
@@ -884,9 +884,13 @@ void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileIt
     }
 
     // Add item to synchronized list
-    SynchronizedItem synchronizedItem(syncDbId, itemInfo.path().isEmpty() ? itemInfo.newPath() : itemInfo.path(),
-                                      itemInfo.remoteNodeId(), itemInfo.status(), itemInfo.direction(), itemInfo.type(),
-                                      _gui->folderPath(syncDbId, itemInfo.path()), QDateTime::currentDateTime());
+    const QString path = Path2QStr(itemInfo.path());
+    const QString newPath = itemInfo.newPath().has_value() ? Path2QStr(itemInfo.newPath().value()) : QString();
+    const QString remoteNodeId =
+            itemInfo.remoteNodeId().has_value() ? QString::fromStdString(itemInfo.remoteNodeId().value()) : QString();
+    SynchronizedItem synchronizedItem(syncDbId, path.isEmpty() ? newPath : path, remoteNodeId, itemInfo.status(),
+                                      itemInfo.direction(), itemInfo.type(), _gui->folderPath(syncDbId, path),
+                                      QDateTime::currentDateTime());
 
     driveInfoIt->second.synchronizedItemList().prepend(std::move(synchronizedItem));
 

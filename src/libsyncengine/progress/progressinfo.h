@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "syncfileitem.h"
+#include "libcommon/data/syncfileitem.h"
 #include "estimates.h"
 #include "progress.h"
 #include "progressitem.h"
