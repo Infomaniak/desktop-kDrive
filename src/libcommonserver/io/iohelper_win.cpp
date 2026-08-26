@@ -178,7 +178,7 @@ bool IoHelper::_getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept {
     }
 
     // Get parent folder handle
-    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
+    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
                                  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
     if (hParent == INVALID_HANDLE_VALUE) {
