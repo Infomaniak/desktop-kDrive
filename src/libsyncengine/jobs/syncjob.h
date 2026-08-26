@@ -40,7 +40,7 @@ class SyncJob : public AbstractJob {
         void setProgressExpectedFinalValue(const int64_t newExpectedFinishProgress) {
             _expectedFinishProgress = newExpectedFinishProgress;
         }
-        void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
+        void setProgressPercentCallback(const std::function<void(UniqueId, int16_t)> &newCallback) {
             _progressPercentCallback = newCallback;
         }
 
