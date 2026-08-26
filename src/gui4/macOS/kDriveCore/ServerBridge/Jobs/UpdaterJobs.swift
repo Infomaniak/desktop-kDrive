@@ -34,15 +34,7 @@ public struct UpdaterJobs: Sendable {
             responseType: CallbackMessage<UpdaterVersionInfoResponse>.self
         )
 
-        let versionInfoResponse = decodedMessage.body.versionInfo
-        return VersionInfo(
-            channel: versionInfoResponse.channel,
-            tag: versionInfoResponse.tag,
-            buildVersion: versionInfoResponse.buildVersion,
-            buildMinOsVersion: versionInfoResponse.buildMinOsVersion,
-            downloadUrl: versionInfoResponse.downloadUrl,
-            checksum: versionInfoResponse.checksum
-        )
+        return decodedMessage.body.versionInfo.asVersionInfo
     }
 
     public func updaterState() async throws -> KDC.UpdateState {

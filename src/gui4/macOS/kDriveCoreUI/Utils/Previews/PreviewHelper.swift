@@ -169,8 +169,9 @@ public enum PreviewHelper {
         channel: KDC.DistributionChannel.Beta,
         tag: "3.8.4",
         buildVersion: 2,
-        buildMinOsVersion: "26",
         downloadUrl: "",
-        checksum: ""
+        checksum: "",
+        minOsVersion: "26",
+        minAppVersion: ""
     )
 }
