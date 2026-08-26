@@ -33,7 +33,7 @@ struct DistributionChannelView: View {
     private var availableOptions: [BetaOption] {
         var minimumOptions: [BetaOption] = [.doNotJoin, .beta]
         if containsStaffUser {
-            minimumOptions.append(.internal)
+            minimumOptions.append(contentsOf: [.internal, .test])
         }
         return minimumOptions
     }
@@ -88,6 +88,9 @@ struct DistributionChannelView: View {
             case .internal:
                 guard currentValue != .internal else { return }
                 newValue = .internal
+            case .test:
+                guard currentValue != .test else { return }
+                newValue = .test
             }
 
             try? await repository.update(\.distributionChannel, value: newValue)
