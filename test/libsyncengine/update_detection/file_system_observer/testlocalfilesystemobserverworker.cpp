@@ -778,12 +778,12 @@ void TestLocalFileSystemObserverWorker::populatePendingFiles(const Count fileCou
 }
 
 void TestLocalFileSystemObserverWorker::testLocalChangesDetectedDoesNotAppendPendingEventsToItself() {
-    // Regression test for the fix that splits changesDetected() using localChangesDetected().
+    // Regression test for the fix that splits changesDetected() using processDetectedChanges().
     // Before the fix, generateInitialSnapshot() called changesDetected(_pendingFileEvents), which — when the
     // snapshot was still invalid — executed `_pendingFileEvents.insert(_pendingFileEvents.end(),
     // _pendingFileEvents.begin(), _pendingFileEvents.end())`, inserting a std::list into itself (undefined behaviour).
     //
-    // This test verifies that localChangesDetected(), when the live snapshot is invalid, returns Ok without modifying
+    // This test verifies that processDetectedChanges(), when the live snapshot is invalid, returns Ok without modifying
     // _pendingFileEvents (no self-append).
 
     auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
@@ -801,8 +801,8 @@ void TestLocalFileSystemObserverWorker::testLocalChangesDetectedDoesNotAppendPen
     const size_t sizeBefore = 3;
     populatePendingFiles(Count{3});
 
-    // Call localChangesDetected with _pendingFileEvents — the exact call made by generateInitialSnapshot().
-    const auto exitInfo = localFSO->localChangesDetected(localFSO->_pendingFileEvents);
+    // Call processDetectedChanges with _pendingFileEvents — the exact call made by generateInitialSnapshot().
+    const auto exitInfo = localFSO->processDetectedChanges(localFSO->_pendingFileEvents);
 
     // Must return Ok (the snapshot is invalid, so it returns early without processing).
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
@@ -812,10 +812,10 @@ void TestLocalFileSystemObserverWorker::testLocalChangesDetectedDoesNotAppendPen
 }
 
 void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithInvalidSnapshotAndPendingEvents() {
-    // Regression test for the fix that splits changesDetected() using localChangesDetected().
+    // Regression test for the fix that splits changesDetected() using processDetectedChanges().
     // This test exercises the full generateInitialSnapshot() code path when the snapshot cannot become valid (because
     // the sync directory is missing). With the old code, pending events would be appended to themselves (UB); with
-    // the fix, localChangesDetected() is called instead, which returns early without self-appending.
+    // the fix, processDetectedChanges() is called instead, which returns early without self-appending.
     //
     // The test verifies that generateInitialSnapshot() does not crash nor hang and clears the pending events afterward.
 

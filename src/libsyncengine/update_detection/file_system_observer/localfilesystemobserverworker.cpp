@@ -109,7 +109,7 @@ ExitInfo LocalFileSystemObserverWorker::handleDeleteOp(const SyncPath &absoluteP
     return ExitCode::Ok;
 }
 
-ExitInfo LocalFileSystemObserverWorker::localChangesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes) {
+ExitInfo LocalFileSystemObserverWorker::processDetectedChanges(const std::list<std::pair<SyncPath, OperationType>> &changes) {
     const std::scoped_lock lock(_recursiveMutex);
 
     if (!_liveSnapshot.isValid()) return ExitCode::Ok;
@@ -468,7 +468,7 @@ ExitInfo LocalFileSystemObserverWorker::changesDetected(const std::list<std::pai
         return ExitCode::Ok;
     }
 
-    return localChangesDetected(changes);
+    return processDetectedChanges(changes);
 }
 
 void LocalFileSystemObserverWorker::forceUpdate() {
@@ -588,7 +588,7 @@ ExitInfo LocalFileSystemObserverWorker::generateInitialSnapshot() {
     const std::scoped_lock lock(_recursiveMutex);
     if (!_pendingFileEvents.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "Processing pending file events");
-        if (const auto exitInfo = localChangesDetected(_pendingFileEvents); !exitInfo) {
+        if (const auto exitInfo = processDetectedChanges(_pendingFileEvents); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in LocalFileSystemObserverWorker::changesDetected: " << exitInfo);
             mainExitInfo.merge(exitInfo, {ExitCode::SystemError, ExitCode::DataError});
         }
