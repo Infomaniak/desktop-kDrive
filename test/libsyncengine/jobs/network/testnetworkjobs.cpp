@@ -65,6 +65,7 @@
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #include <sstream>
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 
 using namespace CppUnit;
 
@@ -1367,6 +1368,11 @@ void TestNetworkJobs::testUploadChecksum() {
         CPPUNIT_ASSERT_MESSAGE("CREATE upload must have been performed", createJob.uploadPerformed());
         nodeId = createJob.nodeId();
         uploadedSize = createJob.size();
+
+        // Verify server-side checksum and client-side checksum match for the uploaded file ( file size < 100MB → "xxhash" format)
+        CheckHashMatchJob verifyJob(_driveDbId, localFilePath, nodeId, uploadedSize);
+        verifyJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("Hash mismatch", true, verifyJob.hashMatch());
     }
 
     // Modify the local file content so the hash no longer matches the remote
@@ -1428,6 +1434,11 @@ void TestNetworkJobs::testUploadSessionChecksum() {
         nodeId = createJob.nodeId();
         CPPUNIT_ASSERT(!nodeId.empty());
         uploadedSize = createJob.size();
+
+        // Verify server-side checksum and client-side checksum match for the uploaded file ( file size > 100MB → "N:xxhash" format)
+        CheckHashMatchJob verifyJob(_driveDbId, localFilePath, nodeId, uploadedSize);
+        verifyJob.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL_MESSAGE("Hash mismatch", true, verifyJob.hashMatch());
     }
 
     // Modify the local file content so the hash no longer matches the remote
