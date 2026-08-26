@@ -233,6 +233,7 @@
 				Parsing/Signals/VfsConversionCompletedParsingTest.swift,
 				Router/MainViewRouterTests.swift,
 				Signal/SignalProcessorTests.swift,
+				UI/BetaOptionTests.swift,
 				UI/UISynchroNodeTests.swift,
 				Utils/FinderSidebarFavoritesTests.swift,
 				Utils/MacOSPermissionHandlerTests.swift,

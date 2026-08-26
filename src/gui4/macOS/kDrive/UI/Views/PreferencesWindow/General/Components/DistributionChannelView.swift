@@ -31,11 +31,7 @@ struct DistributionChannelView: View {
     let containsStaffUser: Bool
 
     private var availableOptions: [BetaOption] {
-        var minimumOptions: [BetaOption] = [.doNotJoin, .beta]
-        if containsStaffUser {
-            minimumOptions.append(contentsOf: [.internal, .test])
-        }
-        return minimumOptions
+        BetaOption.availableOptions(containsStaffUser: containsStaffUser)
     }
 
     var body: some View {

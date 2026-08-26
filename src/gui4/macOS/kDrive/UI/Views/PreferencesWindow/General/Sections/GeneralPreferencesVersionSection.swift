@@ -31,6 +31,10 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
     case `internal`
     case test
 
+    static func availableOptions(containsStaffUser: Bool) -> [BetaOption] {
+        containsStaffUser ? [.doNotJoin, .beta, .internal, .test] : [.doNotJoin, .beta]
+    }
+
     var description: String {
         switch self {
         case .doNotJoin:
