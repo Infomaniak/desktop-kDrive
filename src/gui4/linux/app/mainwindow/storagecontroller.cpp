@@ -93,7 +93,7 @@ void StorageController::setViewActive(const bool active) {
 
     refreshSelectedContext();
     if (const auto status = currentStatus(); status && isActiveStatus(*status)) {
-        _dirtySyncs.insert(_selectedSyncDbId);
+        (void) _dirtySyncs.insert(_selectedSyncDbId);
     }
     startScan();
 }
@@ -115,7 +115,7 @@ void StorageController::refreshSelectedContext() {
 
     cancelScan();
     if (_selectedSyncDbId != 0 && nextSyncDbId == _selectedSyncDbId && nextSyncRoot != _selectedSyncRoot) {
-        _cache.erase(_selectedSyncDbId);
+        (void) _cache.erase(_selectedSyncDbId);
     }
 
     _selectedSyncDbId = nextSyncDbId;
@@ -124,7 +124,7 @@ void StorageController::refreshSelectedContext() {
     presentSelectedCache();
     if (_viewActive && _selectedSyncDbId != 0) {
         if (_observedStatus && isActiveStatus(*_observedStatus)) {
-            _dirtySyncs.insert(_selectedSyncDbId);
+            (void) _dirtySyncs.insert(_selectedSyncDbId);
         }
         startScan();
     }
@@ -139,7 +139,7 @@ void StorageController::handleSyncStatusChanged() {
 
     const bool nextStatusIsActive = isActiveStatus(*nextStatus);
     if (nextStatusIsActive) {
-        _dirtySyncs.insert(_selectedSyncDbId);
+        (void) _dirtySyncs.insert(_selectedSyncDbId);
     }
 
     const bool leftActiveStatus = _observedStatus && isActiveStatus(*_observedStatus) && !nextStatusIsActive;
@@ -185,8 +185,8 @@ void StorageController::startScan() {
     const auto cancellation = _scanCancellation;
     qCInfo(lcStorageController) << "Starting local Storage scan | syncDbId:" << requestedSyncDbId
                                 << "| root:" << Path2QStr(requestedSyncRoot);
-    _scanWatcher.setProperty("syncDbId", QVariant::fromValue<qint64>(requestedSyncDbId));
-    _scanWatcher.setProperty("syncRoot", Path2QStr(requestedSyncRoot));
+    (void) _scanWatcher.setProperty("syncDbId", QVariant::fromValue<qint64>(requestedSyncDbId));
+    (void) _scanWatcher.setProperty("syncRoot", Path2QStr(requestedSyncRoot));
     _scanWatcher.setFuture(QtConcurrent::run([requestedSyncRoot, cancellation] {
         return StorageScanner::scan(requestedSyncRoot, [cancellation] { return cancellation->load(std::memory_order_relaxed); });
     }));
@@ -211,7 +211,7 @@ void StorageController::handleScanFinished() {
     if (result.succeeded()) {
         _cache[requestedSyncDbId] = CachedSnapshot{.syncRoot = requestedSyncRoot, .snapshot = *result.snapshot};
         if (const auto status = currentStatus(); status && !isActiveStatus(*status)) {
-            _dirtySyncs.erase(requestedSyncDbId);
+            (void) _dirtySyncs.erase(requestedSyncDbId);
         }
         _scanCancellation.reset();
         presentSnapshot(*result.snapshot);
@@ -219,7 +219,7 @@ void StorageController::handleScanFinished() {
         return;
     }
 
-    _cache.erase(requestedSyncDbId);
+    (void) _cache.erase(requestedSyncDbId);
     _currentSnapshot.reset();
     _scanCancellation.reset();
     setState(State::Unavailable);
