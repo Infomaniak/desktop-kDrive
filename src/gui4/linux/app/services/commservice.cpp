@@ -193,6 +193,17 @@ void CommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
         info.fromDynamicStruct(params[msgParamItemInfo].extract<Poco::DynamicStruct>());
         emit itemCompleted(syncDbId, info);
     });
+
+    dispatcher.registerHandler(SignalNum::SYNC_NOTIFY_MANY_DELETES, [this](const Poco::DynamicStruct &params) {
+        SyncDbId syncDbId = 0;
+        TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::Unknown;
+        Count itemCount = 0;
+        CommonUtility::readValueFromStruct(params, msgParamSyncDbId, syncDbId);
+        CommonUtility::readValueFromStruct(params, msgParamNotificationType, notificationType);
+        CommonUtility::readValueFromStruct(params, msgParamNbFiles, itemCount);
+
+        emit manyDeletesNotification(syncDbId, notificationType, itemCount);
+    });
 }
 
 // -- Error ---------------------------------------------------------------------
@@ -493,6 +504,15 @@ void CommService::requestStartSyncsAfterLogin(const UserDbId userDbId, const Voi
     Poco::DynamicStruct params;
     CommonUtility::writeValueToStruct(params, msgParamUserDbId, userDbId);
     _ipcClient.sendRequest(RequestNum::SYNC_START_AFTER_LOGIN, params,
+                           [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
+}
+
+void CommService::requestAcknowledgeManyDeletes(const SyncDbId syncDbId, const TooManyDeletesUserChoice userChoice,
+                                                const VoidCallback &callback) const {
+    Poco::DynamicStruct params;
+    CommonUtility::writeValueToStruct(params, msgParamSyncDbId, syncDbId);
+    CommonUtility::writeValueToStruct(params, msgParamUserChoice, userChoice);
+    _ipcClient.sendRequest(RequestNum::SYNC_ACKNOWLEDGE_MANY_DELETES, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });
 }
 
