@@ -20,17 +20,15 @@ import Foundation
 @testable import kDriveCore
 import Testing
 
-@Suite("UpdaterVersionInfo Job Parsing Test")
-struct UpdaterVersionInfoTest {
+@Suite("UpdaterShowDialog Signal Parsing Test")
+struct UpdaterShowDialogTest {
     private let decoder = JSONDecoder()
 
-    // MARK: - Test Data
-
-    var validJobCallbackData: Data {
+    var validSignalData: Data {
         get throws {
             let bundle = Bundle(for: TestBundleMarker.self)
 
-            guard let url = bundle.url(forResource: "UPDATER_VERSION_INFO", withExtension: "json") else {
+            guard let url = bundle.url(forResource: "UPDATER_SHOW_DIALOG", withExtension: "json") else {
                 fatalError("Unable to find specified JSON file")
             }
 
@@ -38,29 +36,20 @@ struct UpdaterVersionInfoTest {
         }
     }
 
-    // MARK: - Parsing Test
+    @Test("Successfully parses a valid UPDATER_SHOW_DIALOG.json")
+    func parseValidSignal() throws {
+        let response = try decoder.decode(SignalMessage<UpdaterShowDialogSignal>.self, from: validSignalData)
+        let versionInfo = response.body.versionInfo
 
-    @Test("Successfully parses a valid UPDATER_VERSION_INFO.json")
-    func parseValidJobCallback() throws {
-        // GIVEN
-        let callbackData = try validJobCallbackData
-
-        // WHEN
-        let response = try decoder.decode(CallbackMessage<UpdaterVersionInfoResponse>.self, from: callbackData)
-
-        // THEN
-        #expect(response.code == KDC.ExitCode.Ok)
-        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 18)
-
-        // VersionInfo assertions
-        #expect(response.body.versionInfo.channel == .Internal)
-        #expect(response.body.versionInfo.tag == "3.8.2")
-        #expect(response.body.versionInfo.buildVersion == 5)
-        #expect(response.body.versionInfo.minOsVersion == "10.15")
-        #expect(response.body.versionInfo.minAppVersion == "3.6.2.1")
-        #expect(response.body.versionInfo
+        #expect(response.num == .UPDATER_SHOW_DIALOG)
+        #expect(versionInfo.channel == KDC.DistributionChannel.Internal)
+        #expect(versionInfo.tag == "3.8.2")
+        #expect(versionInfo.buildVersion == 5)
+        #expect(versionInfo
             .downloadUrl == "https://download.storage.infomaniak.com/drive/desktopclient/update-macos-3.8.2.5.xml")
-        #expect(response.body.versionInfo.checksum == "12345")
+        #expect(versionInfo.checksum == "12345")
+        #expect(versionInfo.minOsVersion == "10.15")
+        #expect(versionInfo.minAppVersion == "3.6.2.1")
     }
 }
