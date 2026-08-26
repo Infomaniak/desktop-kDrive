@@ -42,7 +42,7 @@ AbstractJob::AbstractJob() :
 AbstractJob::~AbstractJob() {
     _mainCallback = nullptr;
     _additionalCallback = nullptr;
-    if (ParametersCache::isExtendedLogEnabled()) {
+    if (_isExtendedLog) {
         LOG_DEBUG(_logger, "Job " << _jobId << " deleted");
     }
     log4cplus::threadCleanup();
@@ -61,7 +61,7 @@ ExitInfo AbstractJob::runSynchronously() {
 }
 
 void AbstractJob::abort() {
-    if (ParametersCache::isExtendedLogEnabled()) {
+    if (_isExtendedLog) {
         LOG_DEBUG(_logger, "Aborting job " << jobId());
     }
     _aborted = true;
