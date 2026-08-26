@@ -39,6 +39,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/dialogs/manydeletescontroller.cpp
+        app/dialogs/manydeletescontroller.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
         app/mainwindow/activitiescontroller.cpp
