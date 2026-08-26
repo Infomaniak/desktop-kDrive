@@ -249,6 +249,22 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
     LOGW_DEBUG(_logger, L"Tests for files successful!");
 }
 
+void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision,
+                                                      const std::chrono::milliseconds timeoutMs) const {
+    using namespace std::chrono;
+    const auto start = system_clock::now();
+    while (previousRevision == liveSnapshot().revision() &&
+           duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
+        Utility::msleep(10);
+    }
+    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
+    while (_updating && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
+        Utility::msleep(10);
+    }
+    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
+}
+
+
 void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // Create two files with the same name, up to encoding (NFC vs NFD).
     // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local snapshot and
@@ -710,8 +726,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         testhelpers::generateOrEditTestFile(filePath);
 
         // Wait until _updating becomes true (change detected)
-        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout,
-                                              loopPollInterval));
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout, loopPollInterval));
         CPPUNIT_ASSERT(!localFSO->_useExtendedDelay);
 
         // Measure how long until _updating goes back to false (sync allowed)
@@ -732,8 +747,7 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
         testhelpers::generateOrEditTestFile(filePath);
 
         // Wait until _updating becomes true (change detected)
-        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout,
-                                              loopPollInterval));
+        CPPUNIT_ASSERT(TimeoutHelper::waitFor([&]() { return localFSO->updating(); }, changeDetectionTimeout, loopPollInterval));
         CPPUNIT_ASSERT(localFSO->_useExtendedDelay);
 
         // Measure how long until _updating goes back to false (sync allowed)
@@ -748,19 +762,89 @@ void TestLocalFileSystemObserverWorker::testSlowWritingExtensionDelay() {
     }
 }
 
-void MockLocalFileSystemObserverWorker::waitForUpdate(SnapshotRevision previousRevision,
-                                                      const std::chrono::milliseconds timeoutMs) const {
-    using namespace std::chrono;
-    const auto start = system_clock::now();
-    while (previousRevision == liveSnapshot().revision() &&
-           duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
-        Utility::msleep(10);
+void TestLocalFileSystemObserverWorker::populatePendingFiles(const Count fileCount) {
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
+    localFSO->_pendingFileEvents.clear();
+
+    // Populate _pendingFileEvents with a few events.
+    for (Count i = 0; i < fileCount; ++i) {
+        const auto filename = "pending_file_" + std::to_string(i) + ".txt";
+        localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / filename, OperationType::Create);
     }
-    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
-    while (_updating && duration_cast<milliseconds>(system_clock::now() - start) < timeoutMs) {
-        Utility::msleep(10);
-    }
-    CPPUNIT_ASSERT_LESS(timeoutMs.count(), duration_cast<milliseconds>(system_clock::now() - start).count());
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(fileCount), localFSO->_pendingFileEvents.size());
+}
+
+void TestLocalFileSystemObserverWorker::testLocalChangesDetectedDoesNotAppendPendingEventsToItself() {
+    // Regression test for the fix that splits changesDetected() using localChangesDetected().
+    // Before the fix, generateInitialSnapshot() called changesDetected(_pendingFileEvents), which — when the
+    // snapshot was still invalid — executed `_pendingFileEvents.insert(_pendingFileEvents.end(),
+    // _pendingFileEvents.begin(), _pendingFileEvents.end())`, inserting a std::list into itself (undefined behaviour).
+    //
+    // This test verifies that localChangesDetected(), when the live snapshot is invalid, returns Ok without modifying
+    // _pendingFileEvents (no self-append).
+
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
+    // Ensure the worker thread is stopped, so that we can safely manipulate internal state.
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+
+    // Make the snapshot invalid, reproducing the state in which generateInitialSnapshot() processes pending events.
+    localFSO->invalidateSnapshot();
+    CPPUNIT_ASSERT(!localFSO->_liveSnapshot.isValid());
+
+    // Clear and populate _pendingFileEvents with a few events.
+    const size_t sizeBefore = 3;
+    populatePendingFiles(Count{3});
+
+    // Call localChangesDetected with _pendingFileEvents — the exact call made by generateInitialSnapshot().
+    const auto exitInfo = localFSO->localChangesDetected(localFSO->_pendingFileEvents);
+
+    // Must return Ok (the snapshot is invalid, so it returns early without processing).
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+
+    // _pendingFileEvents must be unchanged — no self-append occurred.
+    CPPUNIT_ASSERT_EQUAL(sizeBefore, localFSO->_pendingFileEvents.size());
+}
+
+void TestLocalFileSystemObserverWorker::testGenerateInitialSnapshotWithInvalidSnapshotAndPendingEvents() {
+    // Regression test for the fix that splits changesDetected() using localChangesDetected().
+    // This test exercises the full generateInitialSnapshot() code path when the snapshot cannot become valid (because
+    // the sync directory is missing). With the old code, pending events would be appended to themselves (UB); with
+    // the fix, localChangesDetected() is called instead, which returns early without self-appending.
+    //
+    // The test verifies that generateInitialSnapshot() does not crash nor hang and clears the pending events afterward.
+
+    auto localFSO = std::dynamic_pointer_cast<LocalFileSystemObserverWorker>(_syncPal->_localFSObserverWorker);
+    CPPUNIT_ASSERT(localFSO);
+
+    // Ensure the worker thread is stopped so that we can safely manipulate internal state.
+    _syncPal->_localFSObserverWorker->stop();
+    _syncPal->_localFSObserverWorker->waitForExit();
+
+    // Delete the root folder so that exploreDir() in generateInitialSnapshot() fails and the snapshot stays invalid.
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::deleteItem(_rootFolderPath, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    localFSO->invalidateSnapshot();
+    CPPUNIT_ASSERT(!localFSO->_liveSnapshot.isValid());
+
+    // Clear and populate _pendingFileEvents with a few events.
+    populatePendingFiles(3);
+
+    // Call generateInitialSnapshot() — with the old code this would append _pendingFileEvents to itself (UB).
+    const auto exitInfo = localFSO->generateInitialSnapshot();
+
+    // exploreDir() should have failed because the root folder no longer exists.
+    CPPUNIT_ASSERT(!exitInfo);
+
+    // _pendingFileEvents must have been cleared after processing, regardless of the snapshot validity.
+    CPPUNIT_ASSERT(localFSO->_pendingFileEvents.empty());
 }
 
 } // namespace KDC
