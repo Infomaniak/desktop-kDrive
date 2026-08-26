@@ -1417,7 +1417,7 @@ void TestNetworkJobs::testUploadSessionChecksum() {
     const LocalTemporaryDirectory localTmpDir("testUploadSessionChecksum");
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionChecksum");
     const SyncPath localFilePath = localTmpDir.path() / "test_checksum.txt";
-    testhelpers::generateTestFile(localFilePath, 101 * 1024 * 1024);
+    testhelpers::generateTestFile(localFilePath, 101 * 1024 * 1024, testhelpers::TestFileGenerationMode::PseudoRandom);
 
     const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
     const SyncTime creationTime = std::chrono::duration_cast<std::chrono::seconds>(epochNow).count();
@@ -1441,8 +1441,8 @@ void TestNetworkJobs::testUploadSessionChecksum() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE("Hash mismatch", true, verifyJob.hashMatch());
     }
 
-    // Modify the local file content so the hash no longer matches the remote
-    testhelpers::generateTestFile(localFilePath, 101 * 1024 * 1024);
+    // Modify the local file content but keep the same content so the hash no longer matches the remote
+    testhelpers::generateTestFile(localFilePath, 101 * 1024 * 1024, testhelpers::TestFileGenerationMode::PseudoRandom);
     modificationTime += 10;
 
     // EDIT upload — checksum mismatch expected → must upload
@@ -1450,7 +1450,8 @@ void TestNetworkJobs::testUploadSessionChecksum() {
         DriveUploadSession editJob(nullptr, _driveDbId, nullptr, localFilePath, nodeId, modificationTime, 2, uploadedSize);
         const ExitInfo exitInfo = editJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
-        // A real upload must have occurred: the returned node ID must be non-empty
+        // A real upload must have occurred: progress should be greater than 0 and the returned node ID must be non-empty
+        CPPUNIT_ASSERT(editJob.getProgress() > 0);
         CPPUNIT_ASSERT(!editJob.nodeId().empty());
         CPPUNIT_ASSERT_EQUAL(modificationTime, editJob.modificationTime());
         uploadedSize = editJob.size();
@@ -1462,8 +1463,10 @@ void TestNetworkJobs::testUploadSessionChecksum() {
         DriveUploadSession editJob(nullptr, _driveDbId, nullptr, localFilePath, nodeId, modificationTime, 2, uploadedSize);
         const ExitInfo exitInfo = editJob.runSynchronously();
         CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
-        // No real upload: nodeId returned by the job should be non-empty (set from setOutputParameters)
+        // No real upload: progress should be 0 and the returned node ID must be non-empty
+        CPPUNIT_ASSERT(editJob.getProgress() == 0);
         CPPUNIT_ASSERT(!editJob.nodeId().empty());
+
         // The modification time must reflect the server-confirmed value via PostFileModificationDateJob
         CPPUNIT_ASSERT_EQUAL(modificationTime, editJob.modificationTime());
     }
