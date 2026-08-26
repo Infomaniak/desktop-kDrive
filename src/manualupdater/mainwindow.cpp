@@ -250,9 +250,6 @@ void MainWindow::runInstall(const std::string &desiredVersion, VersionInfo fetch
     }
     if (versionChanged) {
         LOGW_INFO(Log::instance()->getLogger(), L"Version changed.");
-        // we can't know the checksum when the version is manually enter by the user
-        // will be fix in another PR
-        specificVersion.checksum.clear();
     }
 
     postToUi(self, [self] {
