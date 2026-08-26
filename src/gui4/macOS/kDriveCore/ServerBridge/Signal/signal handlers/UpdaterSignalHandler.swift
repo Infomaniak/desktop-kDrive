@@ -28,7 +28,7 @@ struct UpdaterSignalHandler {
             throw SignalError.unableToGetVersionInfoFromSignal
         }
 
-        let versionInfo = showDialogSignal.body.versionInfo
+        let versionInfo = showDialogSignal.body.versionInfo.asVersionInfo
 
         IKLogger.xpc.log("[KD] Update available: \(versionInfo.tag) (build: \(versionInfo.buildVersion))")
 

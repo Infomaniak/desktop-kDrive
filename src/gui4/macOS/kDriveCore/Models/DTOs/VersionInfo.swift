@@ -23,22 +23,25 @@ public struct VersionInfo: Codable, Sendable {
         channel: KDC.DistributionChannel,
         tag: String,
         buildVersion: UInt64,
-        buildMinOsVersion: String,
         downloadUrl: String,
-        checksum: String
+        checksum: String,
+        minOsVersion: String,
+        minAppVersion: String
     ) {
         self.channel = channel
         self.tag = tag
         self.buildVersion = buildVersion
-        self.buildMinOsVersion = buildMinOsVersion
         self.downloadUrl = downloadUrl
         self.checksum = checksum
+        self.minOsVersion = minOsVersion
+        self.minAppVersion = minAppVersion
     }
 
     public let channel: KDC.DistributionChannel
     public let tag: String
     public let buildVersion: UInt64
-    public let buildMinOsVersion: String
     public let downloadUrl: String
     public let checksum: String
+    public let minOsVersion: String
+    public let minAppVersion: String
 }
