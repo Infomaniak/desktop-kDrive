@@ -1404,7 +1404,7 @@ void TestNetworkJobs::testUploadChecksum() {
 }
 
 void TestNetworkJobs::testUploadSessionChecksum() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 
     // Upload a file, then modify its content and re-upload using the EDIT constructor.
     // The hash will differ, so the job must perform a real upload and return a valid node ID.
