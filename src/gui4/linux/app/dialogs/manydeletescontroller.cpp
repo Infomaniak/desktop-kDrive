@@ -102,9 +102,9 @@ void ManyDeletesController::openTrash(const bool disableFutureWarnings) {
         return;
     }
 
-    const QUrl trashUrl =
-            AppConstants::WebDrive::destinationUri(context->drive.driveId(), AppConstants::WebDrive::Destination::Trash);
-    if (!QDesktopServices::openUrl(trashUrl)) {
+    if (const QUrl trashUrl =
+                AppConstants::WebDrive::destinationUri(context->drive.driveId(), AppConstants::WebDrive::Destination::Trash);
+        !QDesktopServices::openUrl(trashUrl)) {
         qCWarning(lcManyDeletesController) << "Desktop service failed to open the web trash"
                                            << "| syncDbId:" << notification->syncDbId << "| url:" << trashUrl;
         return;
@@ -133,10 +133,10 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
         return;
     }
 
-    const Notification incoming{.syncDbId=syncDbId, .severity=incomingSeverity, .itemCount=itemCount};
-    const auto existing = std::ranges::find_if(
-            _notifications, [syncDbId](const Notification &notification) { return notification.syncDbId == syncDbId; });
-    if (existing != _notifications.end()) {
+    const Notification incoming{.syncDbId = syncDbId, .severity = incomingSeverity, .itemCount = itemCount};
+    if (const auto existing = std::ranges::find_if(
+                _notifications, [syncDbId](const Notification &notification) { return notification.syncDbId == syncDbId; });
+        existing != _notifications.end()) {
         if (incomingSeverity <= existing->severity) {
             qCDebug(lcManyDeletesController) << "Duplicate mass deletion notification ignored"
                                              << "| syncDbId:" << syncDbId;
