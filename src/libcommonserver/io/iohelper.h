@@ -138,11 +138,11 @@ struct IoHelper {
         //! Get the checksum of the file indicated by `path`.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
-         \param ifs is an input file stream used to read the file contents.
          \param checksum is set with the checksum of the file indicated by `path`, or empty on error.
+         \param chunkSize is the size of the chunks to be used for computing the checksum.
          \return the IoError representing the success or failure of the operation.
          */
-        static IoError getFileChecksum(const SyncPath &path, std::string &checksum) noexcept;
+        static IoError getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize = 0) noexcept;
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!

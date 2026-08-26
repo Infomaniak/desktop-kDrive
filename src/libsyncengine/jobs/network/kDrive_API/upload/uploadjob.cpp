@@ -1,26 +1,30 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-/// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "uploadjob.h"
 
+#include "uploadhelpers.h"
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
 
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <fstream>
 #include <Poco/Net/HTTPRequest.h>
@@ -52,8 +56,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 
     // Retrieve creation date from the local file
     FileStat fileStat;
-    auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
     }
@@ -98,60 +102,20 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo UploadJob::resolveUploadNeed() {
-    _shouldUpload = true;
-    if (_remoteSize < 0) {
-        LOGW_WARN(_logger,
-                  L"UploadJob::resolveUploadNeed: failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath));
-        return ExitCode::Ok; // Non-fatal: fall through to upload
-    }
-    CheckHashMatchJob hashJob(driveDbId(), _absoluteFilePath, _fileId, _remoteSize);
-    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
-        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding UploadJob normally.");
-        return exitInfo; // Non-fatal for the caller: fall through to upload
-    }
-    _shouldUpload = !hashJob.hashMatch();
-
-    if (!_shouldUpload) {
-        LOGW_DEBUG(_logger, L"Changing last modified date without uploading: hash match");
-        if (const ExitInfo exitInfo = applyFileDates(); !exitInfo) {
-            LOGW_DEBUG(_logger, L"applyFileDates failed: " << exitInfo << L" Proceeding UploadJob normally.");
-            _shouldUpload = true;
-            return exitInfo;
-        }
-    }
-    return ExitCode::Ok;
-}
-
 ExitInfo UploadJob::runJob() noexcept {
     if (!_fileId.empty()) {
-        const ExitInfo exitInfo = resolveUploadNeed();
-        if (!_shouldUpload && exitInfo) return ExitCode::Ok;
-        LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << exitInfo);
+        const auto result = KDC::resolveUploadNeed(_logger, driveDbId(), _absoluteFilePath, _fileId, _remoteSize, _creationTimeIn,
+                                                   _modificationTimeIn);
+        if (result.applyFileDatesResult) {
+            _nodeIdOut = result.applyFileDatesResult->nodeId;
+            _creationTimeOut = result.applyFileDatesResult->creationTime;
+            _modificationTimeOut = result.applyFileDatesResult->modificationTime;
+            _sizeOut = result.applyFileDatesResult->size;
+        }
+        if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
     }
     return AbstractTokenNetworkJob::runJob();
-}
-
-ExitInfo UploadJob::applyFileDates() {
-    PostFileModificationDateJob postJob(driveDbId(), _fileId, _modificationTimeIn);
-    const ExitInfo exitInfo = postJob.runSynchronously();
-    if (!exitInfo) {
-        LOGW_DEBUG(_logger, L"PostFileModificationDateJob failed: " << exitInfo);
-        return exitInfo;
-    }
-    IoError ioError = IoError::Success;
-    uint64_t fileSize = 0;
-    if (!IoHelper::getFileSize(_absoluteFilePath, fileSize, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_absoluteFilePath, ioError));
-    } else if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatIoError(_absoluteFilePath, ioError));
-    }
-
-    _nodeIdOut = _fileId;
-    _modificationTimeOut = postJob.lastModifiedAt();
-    _creationTimeOut = _creationTimeIn;
-    _sizeOut = static_cast<int64_t>(fileSize);
-    return ExitCode::Ok;
 }
 
 ExitInfo UploadJob::handleResponse(std::istream &is) {
