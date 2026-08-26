@@ -22,7 +22,7 @@ import Testing
 
 struct BetaOptionTests {
     @Test("Test channel is available to staff users only")
-    func testChannelAvailability() {
+    func betaTestChannelAvailability() {
         #expect(BetaOption.availableOptions(containsStaffUser: true).contains(.test))
         #expect(!BetaOption.availableOptions(containsStaffUser: false).contains(.test))
         #expect(BetaOption(UIDistributionChannel.test) == .test)
