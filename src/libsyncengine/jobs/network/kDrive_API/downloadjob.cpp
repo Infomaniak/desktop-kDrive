@@ -167,10 +167,12 @@ ExitInfo DownloadJob::resolveDownloadNeed() {
         LOGW_DEBUG(_logger, L"Changing last modified date without downloading : hash match");
         if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) {
             LOGW_DEBUG(_logger, L"applyFileDatesIfRequired failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+            _shouldDownload = true;
             return exitInfo;
         }
         if (const ExitInfo exitInfo = setOutputParameters(); !exitInfo) {
             LOGW_DEBUG(_logger, L"setOutputParameters failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+            _shouldDownload = true;
             return exitInfo;
         }
     }

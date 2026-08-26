@@ -56,8 +56,20 @@ struct ApplyFileDatesResult {
     uint64_t fileSize = 0;
     if (auto ioError = IoError::Success; !IoHelper::getFileSize(filePath, fileSize, ioError)) {
         LOGW_WARN(logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(filePath, ioError));
-    } else if (ioError != IoError::Success) {
+        result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        return result;
+    } else if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(logger, L"Unable to read file size for " << Utility::formatIoError(filePath, ioError));
+        result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::NotFound);
+        return result;
+    }else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger, L"Unable to read file size for " << Utility::formatIoError(filePath, ioError));
+        result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError);
+        return result;
+    }else if (ioError != IoError::Success) {
+        LOGW_WARN(logger, L"Unable to read file size for " << Utility::formatIoError(filePath, ioError));
+        result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        return result;
     }
 
     result.nodeId = fileId;
