@@ -771,7 +771,7 @@ void TestLocalFileSystemObserverWorker::populatePendingFiles(const Count fileCou
     // Populate _pendingFileEvents with a few events.
     for (Count i = 0; i < fileCount; ++i) {
         const auto filename = "pending_file_" + std::to_string(i) + ".txt";
-        localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / filename, OperationType::Create);
+        (void) localFSO->_pendingFileEvents.emplace_back(_rootFolderPath / filename, OperationType::Create);
     }
 
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(fileCount), localFSO->_pendingFileEvents.size());
