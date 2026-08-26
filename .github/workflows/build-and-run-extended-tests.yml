@@ -37,6 +37,7 @@ jobs:
     runs-on: [ self-hosted, Windows, vs2026 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
+      QT_QPA_PLATFORM: offscreen
       # COVFILE: ${{ github.workspace }}\\src\\test.cov
     steps:
       - name: Load system Path into Github environment
