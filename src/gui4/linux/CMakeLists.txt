@@ -123,6 +123,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKActivities.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
+        ui/tokens/IKModalTokens.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -149,6 +150,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKAvatar.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLoadingSpinner.qml
+        ui/components/IKModal.qml
+        ui/components/IKModalButton.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
         ui/components/IKToolTip.qml
