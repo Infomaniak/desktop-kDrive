@@ -52,25 +52,19 @@ class WindowsUpdater : public AbstractUpdater {
         virtual std::streamsize getExpectedInstallerSize(const std::string &downloadUrl);
 
         /**
-         * Check the checksum of the downloaded installer. Delete the file if the checksum is not valid.
-         * @param filepath Path to the downloaded installer.
-         * @return true if the checksum is valid.
-         */
-        bool verifyFileChecksum(const SyncPath &filepath);
-
-        /**
-         * Compute the checksum of the downloaded installer.
-         * @param filepath Path to the downloaded installer.
-         * @return the result checksum
-         */
-        std::string computeFileChecksum(const SyncPath &filepath);
-
-        /**
          * Check the digital signature of the downloaded installer. Delete the file if the signature is not valid.
          * @param filepath Path to the downloaded installer.
          * @return true if the signature is valid.
          */
         virtual bool verifyDigitalSignature(const SyncPath &filepath);
+
+        /**
+         * Verify the checksum of the downloaded installer against the `.sha256` sidecar file.
+         * The expected checksum is fetched at download time from the sidecar file — this is mandatory and blocking.
+         * @param filepath Path to the downloaded installer.
+         * @return true if the checksum is valid.
+         */
+        virtual bool verifyInstallerChecksum(const SyncPath &filepath);
 
         /**
          * @brief Attempt to re-download the installer. Fails if already attempted.
@@ -79,6 +73,10 @@ class WindowsUpdater : public AbstractUpdater {
         void retryDownload(const SyncPath &filepath);
 
         bool _autoUpdate{false};
+
+        // Cached from the .sha256 sidecar file on first verification. Avoids re-downloading the sidecar
+        // when the checksum is re-verified in startInstaller() after a successful downloadFinished().
+        std::string _expectedChecksum;
 
         friend class TestWindowsUpdater;
 };
