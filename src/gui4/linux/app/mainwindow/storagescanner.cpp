@@ -146,7 +146,7 @@ struct DirectoryScanState {
         if (state.countedHardLinks.contains(identity)) {
             return StorageScanError::None;
         }
-        state.countedHardLinks.insert(identity);
+        (void) state.countedHardLinks.insert(identity);
     }
     addAllocatedBytes(entryStat, state.syncBytes);
     return StorageScanError::None;
