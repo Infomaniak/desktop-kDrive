@@ -601,7 +601,7 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
     return currentProgressInfo && currentProgressInfo->initProgress(item);
 }
 
-bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
+bool SyncPal::setProgress(const SyncPath &relativePath, int16_t progress) {
     const auto currentProgressInfo = progressInfo();
     if (!currentProgressInfo) {
         return false;

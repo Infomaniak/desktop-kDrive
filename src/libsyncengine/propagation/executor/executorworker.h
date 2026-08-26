@@ -74,7 +74,7 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
 
     private:
         void setJobCallbacks(const std::shared_ptr<SyncJob> &job);
-        void updateJobProgress(const std::shared_ptr<SyncJob> &job, int progress);
+        void updateJobProgress(const std::shared_ptr<SyncJob> &job, const int16_t progress);
         void initProgressManager();
         void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
