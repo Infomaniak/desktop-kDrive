@@ -19,10 +19,7 @@
 #include "syncacknowledgemanydeletesjob.h"
 
 #include "appserver.h"
-
-// Input parameters keys
-static const auto inParamsSyncDbId = "syncDbId";
-static const auto inParamsUserChoice = "userChoice";
+#include "libcommon/comm.h"
 
 namespace KDC {
 
@@ -35,8 +32,8 @@ SyncAcknowledgeManyDeletesJob::SyncAcknowledgeManyDeletesJob(std::shared_ptr<Com
 
 ExitInfo SyncAcknowledgeManyDeletesJob::deserializeInputParms() {
     try {
-        readParamValue(inParamsSyncDbId, _syncDbId);
-        readParamValue(inParamsUserChoice, _userChoice);
+        readParamValue(msgParamSyncDbId, _syncDbId);
+        readParamValue(msgParamUserChoice, _userChoice);
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in SyncAcknowledgeManyDeletesJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;

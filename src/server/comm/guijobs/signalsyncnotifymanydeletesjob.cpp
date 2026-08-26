@@ -17,11 +17,7 @@
  */
 
 #include "signalsyncnotifymanydeletesjob.h"
-
-// Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsNotificationType = "notificationType";
-static const auto outParamsNbFiles = "nbFiles";
+#include "libcommon/comm.h"
 
 namespace KDC {
 
@@ -35,9 +31,9 @@ SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId sy
 }
 
 ExitInfo SignalSyncNotifyManyDeletesJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsNotificationType, _notificationType);
-    writeParamValue(outParamsNbFiles, _nbFiles);
+    writeParamValue(msgParamSyncDbId, _syncDbId);
+    writeParamValue(msgParamNotificationType, _notificationType);
+    writeParamValue(msgParamNbFiles, _nbFiles);
     return ExitCode::Ok;
 }
 
