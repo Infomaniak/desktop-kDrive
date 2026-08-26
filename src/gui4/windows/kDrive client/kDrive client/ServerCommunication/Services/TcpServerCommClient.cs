@@ -41,7 +41,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     {
         // Must match the server-side keychain key used to publish the TLS certificate (see comm.h: certKeychainKey).
         private const string _certKeychainKey = "kdrive_ipc_tls_cert";
+        // Must match the server-side keychain keys used to publish the TLS client certificate and its private key
+        // (see comm.h: clientCertKeychainKey / clientKeyKeychainKey). The server generates this pair, trusts the
+        // certificate as a CA and requires the client to present it during the handshake.
+        private const string _clientCertKeychainKey = "kdrive_ipc_tls_client_cert";
+        private const string _clientKeyKeychainKey = "kdrive_ipc_tls_client_key";
 
+        private readonly string _commPortFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "kDrive", ".comm");
         private readonly IKeychainStore _keychainStore;
         private SslStream? _stream;
         private readonly SemaphoreSlim _sendLock = new(1, 1);
@@ -93,8 +99,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #if DEBUG
             try
             {
-                string commPortFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "kDrive", ".comm");
-                int port = int.Parse(File.ReadAllText(commPortFilePath).Trim());
+                int port = int.Parse(File.ReadAllText(_commPortFilePath).Trim());
                 return port;
             }
             catch (FileNotFoundException)
@@ -138,7 +143,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return true;
         }
 
-        private X509Certificate2? LoadPinnedCertificate()
+        private X509Certificate2? LoadServerCertificate()
         {
             string? pem = _keychainStore.ReadSecret(_certKeychainKey);
             if (string.IsNullOrEmpty(pem))
@@ -153,9 +158,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse pinned TLS certificate from keychain: {ex.Message}");
+                Logger.Log(Logger.Level.Error, $"Failed to parse server TLS certificate from keychain: {ex.Message}");
                 return null;
             }
+        }
+
+        private X509Certificate2? LoadClientCertificate()
+        {
+            string? certPem = _keychainStore.ReadSecret(_clientCertKeychainKey);
+            string? keyPem = _keychainStore.ReadSecret(_clientKeyKeychainKey);
+            if (string.IsNullOrEmpty(certPem) || string.IsNullOrEmpty(keyPem))
+            {
+                Logger.Log(Logger.Level.Warning, "TLS client certificate/key not found in keychain yet.");
+                return null;
+            }
+
+            return SecureSocketConnection.BuildClientCertificate(certPem, keyPem);
         }
 
         public async Task<bool> InitConnection(CancellationToken cancellationToken)
@@ -186,19 +204,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #endif
                     }
 
-                    X509Certificate2? pinnedCertificate = LoadPinnedCertificate();
-                    if (pinnedCertificate is null)
+                    X509Certificate2? serverCertificate = LoadServerCertificate();
+                    if (serverCertificate is null)
                     {
                         // The server may not have published its certificate yet; retry.
                         await Task.Delay(500, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
+                    X509Certificate2? clientCertificate = LoadClientCertificate();
+                    if (clientCertificate is null)
+                    {
+                        // The server may not have published the client certificate/key yet, or the
+                        // material is incomplete; the server requires it, so retry until it is available.
+                        serverCertificate.Dispose();
+                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
+                        continue;
+                    }
+
                     Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
                     DisposeConnection();
-                    using (pinnedCertificate)
+                    using (serverCertificate)
+                    using (clientCertificate)
                     {
-                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, pinnedCertificate, cancellationToken).ConfigureAwait(false);
+                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, serverCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
                     }
                     Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
                     _pollingTask = Task.Run(PollingLoop);
@@ -298,8 +327,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
-                _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
+                var replySource = new TaskCompletionSource<CommData>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
+                _pendingRequests[requestId] = replySource;
 
                 // Create the JSON object
                 var requestObj = new JsonObject
@@ -325,7 +355,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
-                CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
+                CommData reply = await WaitForReplyAsync(requestId, replySource, cancellationToken).ConfigureAwait(false);
                 if (reply.RequestNum == RequestNum.Unknown)
                 {
                     Logger.Log(Logger.Level.Debug, "Request not implemented server-side");
@@ -348,15 +378,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-        private Task<CommData> WaitForReplyAsync(long requestId, CancellationToken ct = default)
+        private Task<CommData> WaitForReplyAsync(long requestId, TaskCompletionSource<CommData> tcs, CancellationToken ct = default)
         {
-
-            if (!_pendingRequests.TryGetValue(requestId, out var tcs))
-            {
-                Logger.Log(Logger.Level.Error, $"RequestId {requestId} not found in pending requests.");
-                return Task.FromResult(new CommData());
-            }
-
             // Tie cancellation to the task
             if (ct.CanBeCanceled)
             {

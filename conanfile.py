@@ -1,4 +1,6 @@
 import os
+import shutil
+import subprocess
 import textwrap
 
 from conan import ConanFile
@@ -8,7 +10,6 @@ from conan.tools.cmake.toolchain.blocks import VSRuntimeBlock
 
 
 class KDriveDesktop(ConanFile):
-
     name = "desktop-kdrive"
     url = "https://github.com/Infomaniak/desktop-kdrive"
 
@@ -104,6 +105,50 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             self.settings.os.version = "10.15"
 
+    def _set_linux_package_runpath(self, package_name):
+        """
+        Set RUNPATH to $ORIGIN on shared libraries owned by a Conan package.
+
+        Resolving symlinks before patching both avoids modifying the same ELF
+        several times and guarantees that no file outside the package folder
+        can be changed.
+        """
+        patchelf = shutil.which("patchelf")
+        if not patchelf:
+            self.output.warning("patchelf is not installed. Skipping RUNPATH setting.")
+            return
+
+        dependency = self.dependencies[package_name]
+        package_folder = os.path.realpath(dependency.package_folder)
+        library_folder = os.path.join(package_folder, "lib")
+        if not os.path.isdir(library_folder):
+            raise ConanInvalidConfiguration(
+                f"Library directory for {package_name} does not exist: {library_folder}"
+            )
+
+        patched_libraries = set()
+        for filename in os.listdir(library_folder):
+            if not (filename.endswith(".so") or ".so." in filename):
+                continue
+
+            library_path = os.path.realpath(os.path.join(library_folder, filename))
+            if os.path.commonpath([package_folder, library_path]) != package_folder:
+                self.output.warning(
+                    f"Skipping {filename}: its target is outside the {package_name} package folder"
+                )
+                continue
+            if not os.path.isfile(library_path) or library_path in patched_libraries:
+                continue
+
+            subprocess.run(
+                [patchelf, "--set-rpath", "$ORIGIN", library_path],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            patched_libraries.add(library_path)
+            self.output.info(f"Set RUNPATH to $ORIGIN for {library_path}")
+
     def generate(self):
         """
         Generate the CMake toolchain file.
@@ -124,6 +169,10 @@ class KDriveDesktop(ConanFile):
         if self.settings.os == "Macos":
             tc.variables["CMAKE_OSX_ARCHITECTURES"] = "x86_64;arm64"
             tc.variables["CMAKE_MACOSX_DEPLOYMENT_TARGET"] = self.settings.os.version
+
+        if self.settings.os == "Linux":
+            self._set_linux_package_runpath("openssl")
+            self._set_linux_package_runpath("poco")
 
         tc.generate()
 
@@ -156,7 +205,7 @@ class KDriveDesktop(ConanFile):
         else:
             qt_version = "6.2.3"
         self.requires(f"qt/{qt_version}")
-        self.requires("xxhash/0.8.2") # From local recipe
+        self.requires("xxhash/0.8.2")  # From local recipe
         self.requires("sqlite3/3.53.0", options={
             "shared": False,
             "build_executable": False
@@ -171,12 +220,13 @@ class KDriveDesktop(ConanFile):
         # openssl depends on zlib, which is already inside the conanfile.py of openssl
         # but since we build openssl two times (for x86_64 and arm64) in single arch and then merge them, we need to add zlib in 'armv8|x86_64' arch mode.
         if self.settings.os == "Macos":
-            self.requires("openssl-macos/3.2.4", options={ "shared": True }) # on macOS => Using the local recipe, using the openssl universal build script.
+            self.requires("openssl-macos/3.2.4", options={
+                "shared": True})  # on macOS => Using the local recipe, using the openssl universal build script.
         else:
-            self.requires("openssl/3.2.4", options={ "shared": True }) # Otherwise, using the conan center recipe.
+            self.requires("openssl/3.2.4", options={"shared": True})  # Otherwise, using the conan center recipe.
 
-        self.requires("sentry/0.7.10", options={ "shared": True, "qt_version": qt_version })
-        self.requires("poco/1.13.3", options={ "shared": True })
+        self.requires("sentry/0.7.10", options={"shared": True, "qt_version": qt_version})
+        self.requires("poco/1.13.3", options={"shared": True})
 
     def _append_conan_vars_normalization(self):
         """
@@ -218,6 +268,7 @@ class KDriveDesktop(ConanFile):
 
         with open(helper_file, "w") as f:
             f.write(normalization_code)
+
 
 class OverrideVSRuntimeBlock(VSRuntimeBlock):
     def __init__(self, conanfile, toolchain, name):

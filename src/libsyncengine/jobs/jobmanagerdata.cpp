@@ -37,6 +37,7 @@ std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> JobManagerData::
 }
 
 bool JobManagerData::hasQueuedJob() const {
+    const std::scoped_lock lock(_mutex);
     return !_queuedJobs.empty();
 }
 

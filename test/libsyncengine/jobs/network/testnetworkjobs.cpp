@@ -34,7 +34,6 @@
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/getsizejob.h"
 #include "jobs/syncjobmanager.h"
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
@@ -141,7 +140,7 @@ void TestNetworkJobs::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, _apiToken.reconstructJsonString());
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
@@ -162,13 +161,6 @@ void TestNetworkJobs::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     _remoteDirId = testVariables.remoteDirId;
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     // Setup cache directory
     _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
@@ -1750,7 +1742,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         public:
             explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken) {}
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
@@ -1758,9 +1750,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
 
             // /!\ The base class constructor will not call this override.
             // This method can only be called after the derived class constructor has completed.
-            ApiToken loadApiToken() override {
-                return _apiToken;
-            }
+            ApiToken loadApiToken() override { return _apiToken; }
 
         private:
             ApiToken _apiToken;
