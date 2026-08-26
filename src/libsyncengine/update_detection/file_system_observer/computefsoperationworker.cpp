@@ -267,6 +267,9 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         // Exits if the item is excluded.
         if (checkTemplate && ExclusionTemplateCache::instance()->isExcluded(dbPath)) return ExitCode::Ok;
 
+        // Exits if the item is temporarily blacklisted.
+        if (_syncPal->isTmpBlacklisted(dbPath, side)) return ExitCode::Ok;
+
         // Delete operation
         const auto fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
                                                         dbNode.created().has_value() ? dbNode.created().value() : 0,
