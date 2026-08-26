@@ -276,6 +276,9 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
+    - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
+      routes; feature queueing remains in the owning C++ controller until several global modal families require shared
+      arbitration.
     - `ui/windows/main/`: main-window shell, remaining temporary tab placeholders, and feature families grouped under
       `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`,
       `states/`, and versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window
@@ -294,15 +297,18 @@
     - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
-      services directly.
+      services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
+      feature dialogs supply their own wording, state, and actions.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
-      and close behavior. Onboarding uses `headerOverlaysContent` so window controls do not shift its fixed visual
-      composition. The window decoration controller limits input to the surface and resize handles without clipping the
-      diffuse shadow. It publishes `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible
-      surface rather than the transparent shadow during snapping and maximization. Native Wayland intentionally uses
-      public Qt APIs only and therefore snaps the complete native window, including its transparent shadow margin.
+      and close behavior. `IKWindowResizeHandles` is the single owner of custom-frame resize hit areas and can be reused
+      by an interaction layer above a modal overlay without unblocking the underlying application content. Onboarding
+      uses `headerOverlaysContent` so window controls do not shift its fixed visual composition. The window decoration
+      controller limits input to the surface and resize handles without clipping the diffuse shadow. It publishes
+      `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible surface rather than the transparent
+      shadow during snapping and maximization. Native Wayland intentionally uses public Qt APIs only and therefore snaps
+      the complete native window, including its transparent shadow margin.
     - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON
       payloads. Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator
       and the QML compilation step.
@@ -403,6 +409,9 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Pass stable app-owned controllers such as `OnboardingSessionManager` and `MainSidebarController` to `Main.qml` as
   initial properties. Pass controllers/models down through explicit required QML properties; do not add dynamic context
   properties for window-owned composition.
+- Keep app-global modals in `GlobalModalHost` so they survive route loader changes. Contextual onboarding/settings
+  modals should instantiate `IKModal` in their owning window or view instead of moving their workflow into the global
+  host.
 
 ## IPC And Error Handling
 
