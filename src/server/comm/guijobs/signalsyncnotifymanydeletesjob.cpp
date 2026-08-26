@@ -17,11 +17,9 @@
  */
 
 #include "signalsyncnotifymanydeletesjob.h"
+#include "libcommon/comm.h"
 
 // Output parameters keys
-static const auto outParamsSyncDbId = "syncDbId";
-static const auto outParamsNotificationType = "notificationType";
-static const auto outParamsNbFiles = "nbFiles";
 static const auto outParamsFilesPaths = "filesPaths";
 
 namespace KDC {
@@ -37,9 +35,9 @@ SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId sy
 }
 
 ExitInfo SignalSyncNotifyManyDeletesJob::serializeOutputParms() {
-    writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsNotificationType, _notificationType);
-    writeParamValue(outParamsNbFiles, _nbFiles);
+    writeParamValue(msgParamSyncDbId, _syncDbId);
+    writeParamValue(msgParamNotificationType, _notificationType);
+    writeParamValue(msgParamNbFiles, _nbFiles);
     std::vector<CommString> filesPaths;
     (void) std::transform(_filesPaths.begin(), _filesPaths.end(), std::back_inserter(filesPaths),
                           [](const SyncPath &syncPath) { return CommonUtility::syncPath2CommString(syncPath); });
