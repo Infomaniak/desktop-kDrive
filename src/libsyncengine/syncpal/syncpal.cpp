@@ -399,7 +399,7 @@ bool SyncPal::wipeVirtualFiles() {
     VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, vfs());
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
-        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitInfo()));
         return false;
     }
     return true;
@@ -413,7 +413,7 @@ bool SyncPal::wipeOldPlaceholders() {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem: failedToRemovePlaceholders) {
             addError(Error(syncDbId(), "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
-                           CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+                           CancelType::None, "", virtualFileCleaner.exitInfo()));
         }
         return false;
     }

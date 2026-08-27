@@ -41,7 +41,7 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
 
             VfsStatus vfsStatus;
             if (const auto exitInfo = syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(),
+                LOGW_WARN(Log::instance()->getLogger(),
                           L"Failed to get VFS status for file " << Utility::formatSyncPath(entry.path()));
                 continue; // We simply ignore the file.
             }
@@ -49,16 +49,22 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
 
             uint64_t entrySize = 0;
             if (!IoHelper::getFileSize(entry.path(), entrySize, ioError) || ioError != IoError::Success) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for "
-                                                                     << Utility::formatSyncPath(entry.path()) << L" - "
-                                                                     << Utility::formatIoError(ioError));
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for "
+                                                                << Utility::formatSyncPath(entry.path()) << L" - "
+                                                                << Utility::formatIoError(ioError));
                 continue; // We simply ignore the file.
             }
 
             _offlineFilesTotalSize += entrySize;
         }
 
-        if (!endOfDir || ioError == IoError::InvalidDirectoryIterator) return ExitCode::Unknown;
+        if (ioError != IoError::Success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in DirectoryIterator for " << Utility::formatIoError(basePath, ioError));
+            return ioError == IoError::FileOrDirectoryCorrupted
+                           ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
+                           : ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        }
     }
     return ExitCode::Ok;
 }

@@ -37,8 +37,7 @@ class VirtualFilesCleaner {
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
 
-        inline ExitCode exitCode() const { return _exitCode; }
-        inline ExitCause exitCause() const { return _exitCause; }
+        inline ExitInfo exitInfo() const { return _exitInfo; }
 
     private:
         bool removePlaceholdersRecursively(const SyncPath &parentPath);
@@ -50,8 +49,7 @@ class VirtualFilesCleaner {
         std::shared_ptr<SyncDb> _syncDb = nullptr;
         std::shared_ptr<Vfs> _vfs;
 
-        ExitCode _exitCode = ExitCode::Unknown;
-        ExitCause _exitCause = ExitCause::Unknown;
+        ExitInfo _exitInfo = ExitCode::Unknown;
 };
 
 } // namespace KDC

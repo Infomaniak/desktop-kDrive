@@ -973,6 +973,11 @@ bool LiteSyncCommClient::vfsSetPinState(const SyncPath &path, const SyncPath &lo
         break;
     }
 
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
     if (!foundChild) {
         // Set status
         VfsStatus vfsStatus = {.isHydrated = pinState == litesync_attrs::pinStatePinned};
@@ -1502,6 +1507,11 @@ bool LiteSyncCommClient::vfsProcessDirStatus(const SyncPath &path, const SyncPat
         }
     }
 
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
+        return false;
+    }
+
     VfsStatus tmpVfsStatus = {.isHydrated = !hasADehydratedChild, .isSyncing = hasASyncingChild, .progress = 100};
     if (!vfsSetStatus(path, localSyncPath, tmpVfsStatus)) {
         return false;
@@ -1540,7 +1550,6 @@ bool LiteSyncCommClient::checkFilesAttributes(const SyncPath &path, const SyncPa
     IoHelper::DirectoryIterator dirIt(path, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    bool foundChild = false;
     bool atLeastOneChanged = false;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
         std::string pinState;
@@ -1587,6 +1596,11 @@ bool LiteSyncCommClient::checkFilesAttributes(const SyncPath &path, const SyncPa
             }
         }
     }
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
+    }
+
     return atLeastOneChanged;
 }
 

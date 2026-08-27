@@ -1202,34 +1202,32 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
             bool endOfDir = false;
             DirectoryEntry entry;
 
-            try {
-                if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
-                    LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+            if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+                continue;
+            }
+
+            while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+                FileData tmpFileData = FileData::get(entry.path());
+                if (!tmpFileData.isValid() || tmpFileData.isLink || tmpFileData.isDirectory) continue;
+
+                auto status = SyncFileStatus::Unknown;
+                if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+                    LOGW_WARN(Log::instance()->getLogger(),
+                              L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
                     continue;
                 }
 
-                while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-                    FileData tmpFileData = FileData::get(entry.path());
-                    if (!tmpFileData.isValid() || tmpFileData.isLink || tmpFileData.isDirectory) continue;
-
-                    auto status = SyncFileStatus::Unknown;
-                    if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
-                        LOGW_WARN(Log::instance()->getLogger(),
-                                  L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
-                        continue;
-                    }
-
-                    if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
-                        continue;
-                    }
-
-                    outFileList.push_back(entry.path());
+                if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
+                    continue;
                 }
-            } catch (std::filesystem::filesystem_error &e) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error caught in ExtensionJob::processFileList: code=" << e.code() << " error=" << e.what());
-            } catch (...) {
-                LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
+
+                outFileList.push_back(entry.path());
+            }
+
+            if (ioError != IoError::Success) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
             }
         } else {
             outFileList.push_back(path);

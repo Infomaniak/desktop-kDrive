@@ -353,9 +353,10 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
         }
     }
 
-    if (!endOfDirectory) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
-        return ExitCode::SystemError;
+        return ioError == IoError::FileOrDirectoryCorrupted ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
+                                                            : ExitInfo(ExitCode::SystemError);
     }
 
     return ExitCode::Ok;
@@ -477,10 +478,11 @@ ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, cons
         }
     }
 
-    if (!endOfDirectory) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError));
-        return ExitCode::SystemError;
+        return ioError == IoError::FileOrDirectoryCorrupted ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
+                                                            : ExitInfo(ExitCode::SystemError);
     }
 
     if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 90); !exitInfo) {

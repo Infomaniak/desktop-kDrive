@@ -233,9 +233,10 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
         }
     }
 
-    if (!endOfDirectory) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
-        return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+        return ioError == IoError::FileOrDirectoryCorrupted ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
+                                                            : ExitInfo(ExitCode::SystemError);
     }
 
     return ExitCode::Ok;

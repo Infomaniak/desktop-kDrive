@@ -620,7 +620,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         size += entrySize;
     }
 
-    if (!endOfDirectory) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
         return isExpectedError(ioError);
     }
@@ -983,7 +983,21 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
     std::error_code ec;
     const auto option = skipPermissionDenied ? DirectoryOptions::skip_permission_denied : DirectoryOptions::none;
 
-    _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
+    try {
+        _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
+    } catch (const std::filesystem::filesystem_error &e) {
+        LOG_WARN(logger(),
+                 "Exception caught in std::filesystem::recursive_directory_iterator: code=" << e.code() << " error=" << e.what());
+        ioError = IoError::InvalidDirectoryIterator;
+        _invalid = true;
+        return;
+    } catch (...) {
+        LOG_WARN(logger(), "Exception caught in std::filesystem::recursive_directory_iterator.");
+        ioError = IoError::InvalidDirectoryIterator;
+        _invalid = true;
+        return;
+    }
+
     ioError = IoHelper::stdError2ioError(ec);
 }
 
@@ -1013,14 +1027,36 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (!_firstElement) {
+        const auto &prevEntry = *_dirIterator;
+
         std::error_code ec;
-        _dirIterator.increment(ec);
+        try {
+            (void) _dirIterator.increment(ec);
+        } catch (const std::filesystem::filesystem_error &e) {
+            LOG_WARN(logger(), "Exception caught in std::filesystem::recursive_directory_iterator::increment: code="
+                                       << e.code() << " error=" << e.what());
+            ioError = IoError::InvalidDirectoryIterator;
+            _invalid = true;
+            return false;
+        } catch (...) {
+            LOG_WARN(logger(), "Exception caught in std::filesystem::recursive_directory_iterator::increment.");
+            ioError = IoError::InvalidDirectoryIterator;
+            _invalid = true;
+            return false;
+        }
+
         if (ec) {
+            LOGW_WARN(_logger, L"Error in recursive_directory_iterator::increment: previous "
+                                       << Utility::formatStdError(prevEntry.path(), ec));
             ioError = IoHelper::stdError2ioError(ec);
-            if (ioError != IoError::Success) {
-                _invalid = true;
-                return false;
+            if (ioError == IoError::Unknown) {
+                // TODO: once known, manage this error in IoHelper::stdError2ioError
+                const std::string message = "ec=" + std::to_string(ec.value());
+                sentry::Handler::captureMessage(sentry::Level::Warning, "recursive_directory_iterator::increment error", message);
+                ioError = IoError::FileOrDirectoryCorrupted;
             }
+            _invalid = true;
+            return false;
         }
     } else {
         _firstElement = false;
@@ -1049,7 +1085,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 }
 
 void IoHelper::DirectoryIterator::disableRecursionPending() {
-    _dirIterator.disable_recursion_pending();
+    if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
 }
 
 bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
