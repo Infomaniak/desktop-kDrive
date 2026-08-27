@@ -241,7 +241,9 @@ ExitInfo LogUploadJob::archive(SyncPath &generatedArchivePath) {
         return exitInfo;
     }
 
+#if defined(KD_MACOS)
     extractExtensionsLog();
+#endif
 
     SyncName archiveName;
     if (const ExitInfo exitInfo = getArchiveName(archiveName); !exitInfo) {
