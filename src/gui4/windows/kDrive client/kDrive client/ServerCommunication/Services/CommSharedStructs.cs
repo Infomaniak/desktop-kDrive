@@ -401,7 +401,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public CancelType? CancelType { get; set; }
         public bool? AutoResolved { get; set; }
 
-        public String toString()
+        public override String ToString()
         {
             return $"ErrorInfo: DbId={DbId}, Time={Time}, Level={Level}, SyncDbId={SyncDbId}, ExitCode={ExitCode}, ExitCause={ExitCause}, NodeType={NodeType}, Path={Path}, DestinationPath={DestinationPath}, LocalNodeId={LocalNodeId}, RemoteNodeId={RemoteNodeId}, ConflictType={ConflictType}, InconsistencyType={InconsistencyType}, CancelType={CancelType}, AutoResolved={AutoResolved}";
         }
