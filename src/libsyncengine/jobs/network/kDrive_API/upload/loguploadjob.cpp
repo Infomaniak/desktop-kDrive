@@ -436,6 +436,7 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
     return ExitCode::Ok;
 }
 
+#if defined(KD_MACOS)
 void LogUploadJob::extractExtensionsLog() const {
     const SyncPath filePath = _tmpJobWorkingDir / "kdrive_extension_logs.txt";
 
@@ -447,6 +448,7 @@ void LogUploadJob::extractExtensionsLog() const {
         LOG_WARN(Log::instance()->getLogger(), "Error in Utility::runCommand to extract kDrive extension logs");
     }
 }
+#endif
 
 ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, const SyncPath &destPath,
                                        const SyncName &archiveNameWithoutExtension, SyncPath &finalPath) {
