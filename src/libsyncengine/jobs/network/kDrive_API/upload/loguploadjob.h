@@ -94,7 +94,7 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
         /*! Extracts the extensions log file from the system logs and copies it to the temporary job working directory.
          * Non blocking on error.
          */
-        void extractExtensionsLog() const;
+        virtual void extractExtensionsLog() const;
 #endif
 
         // Update the log upload state in the database (appstate table).
