@@ -1996,7 +1996,6 @@ void TestNetworkJobs::testLongPollJobWithoutToken() {
     const auto exitInfo = jobWithToken.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfo), ExitInfo(ExitCode::BackError, ExitCause::HttpErr), exitInfo);
-    AbstractTokenNetworkJob::clearCache();
 
     clearAccessTokenCache();
 
