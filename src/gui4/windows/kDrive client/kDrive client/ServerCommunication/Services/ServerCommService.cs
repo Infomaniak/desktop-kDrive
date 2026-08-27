@@ -1417,12 +1417,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         }
                         else
                         {
-                            Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {errorInfo}");
+                            Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, {errorInfo}");
                         }
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} has invalid SyncDbId {errorInfo.SyncDbId}, ErrorInfo: {errorInfo}.");
+                        Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} has invalid SyncDbId {errorInfo.SyncDbId}, {errorInfo}.");
                     }
                 }
             });
