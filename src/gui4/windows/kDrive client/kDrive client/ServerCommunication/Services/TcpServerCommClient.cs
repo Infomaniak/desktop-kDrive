@@ -417,7 +417,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Warning, $"Received reply for unknown request ID {data.Id}");
+                        Logger.Log(Logger.Level.Debug, $"Received reply for unknown request ID {data.Id}");
                     }
                     break;
                 case CommMessageType.Signal:

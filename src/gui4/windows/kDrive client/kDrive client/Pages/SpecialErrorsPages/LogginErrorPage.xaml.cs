@@ -102,7 +102,7 @@ namespace Infomaniak.kDrive.Pages
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Warning, "Authentication process canceled by user.");
+                Logger.Log(Logger.Level.Info, "Authentication process canceled by user.");
             }
             catch (Exception ex)
             {
