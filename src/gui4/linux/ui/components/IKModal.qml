@@ -56,7 +56,7 @@ Popup {
     closePolicy: Popup.NoAutoClose
 
     Shortcut {
-        sequence: StandardKey.Cancel
+        sequences: [ StandardKey.Cancel ]
         enabled: root.opened && root.escapeDismissible
         context: Qt.WindowShortcut
         onActivated: root.dismissRequested()
