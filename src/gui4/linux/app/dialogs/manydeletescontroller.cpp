@@ -22,6 +22,7 @@
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/parametersservice.h"
+#include "app/services/sentryservice.h"
 
 #include <QDesktopServices>
 #include <QLoggingCategory>
@@ -130,6 +131,11 @@ void ManyDeletesController::enqueue(const SyncDbId syncDbId, const TooManyDelete
     if (syncDbId <= 0 || incomingSeverity == Severity::None) {
         qCWarning(lcManyDeletesController) << "Invalid mass deletion notification ignored"
                                            << "| syncDbId:" << syncDbId << "| notificationType:" << notificationType;
+        SentryService::reportError(QStringLiteral("Invalid mass deletion notification"),
+                                   QStringLiteral("syncDbId: %1 | notificationType: %2 | itemCount: %3")
+                                           .arg(syncDbId)
+                                           .arg(QString::fromStdString(toString(notificationType)))
+                                           .arg(itemCount));
         return;
     }
 
@@ -178,7 +184,7 @@ void ManyDeletesController::acknowledge(const TooManyDeletesUserChoice userChoic
     setBusy(true);
 
     const QPointer guard{this};
-    _commService.requestAcknowledgeManyDeletes(syncDbId, userChoice, [guard, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestAcknowledgeManyDeletes(syncDbId, userChoice, [guard, syncDbId, userChoice](const ExitInfo &exitInfo) {
         if (guard.isNull()) {
             return;
         }
@@ -188,6 +194,11 @@ void ManyDeletesController::acknowledge(const TooManyDeletesUserChoice userChoic
             qCWarning(lcManyDeletesController)
                     << "Mass deletion acknowledgement failed"
                     << "| syncDbId:" << syncDbId << "| code:" << exitInfo.code() << "| cause:" << exitInfo.cause();
+            SentryService::reportError(QStringLiteral("Mass deletion acknowledgement failed"),
+                                       QStringLiteral("syncDbId: %1 | userChoice: %2 | %3")
+                                               .arg(syncDbId)
+                                               .arg(QString::fromStdString(toString(userChoice)))
+                                               .arg(QString::fromStdString(toString(exitInfo))));
             guard->setSubmissionFailed(true);
             return;
         }
