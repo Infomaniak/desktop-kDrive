@@ -171,15 +171,9 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
     }
 
     if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                          L"Error in DirectoryIterator for " << Utility::formatIoError(absoluteLocalPath, ioError));
-        directoryIterationException = true;
-    }
-
-    if (const auto interruptionExitInfo =
-                IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
-        !interruptionExitInfo) {
-        return interruptionExitInfo;
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                                                << Utility::formatIoError(absoluteLocalPath, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancelling hydration of " << Utility::formatSyncPath(absoluteLocalPath));

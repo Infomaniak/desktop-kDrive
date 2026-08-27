@@ -111,38 +111,32 @@ ExitInfo ExcludeListPropagator::checkItems() {
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    try {
-        if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
-            return ExitCode::SystemError;
-        }
-
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (isAborted()) {
-                LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
-                return ExitCode::Ok;
-            }
-
-            if (entry.path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << Utility::formatSyncPath(entry.path())
-                                                                           << L" because size > "
-                                                                           << CommonUtility::maxPathLength());
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (const auto checkItemExitInfo = checkItem(entry); !checkItemExitInfo) return checkItemExitInfo;
-        }
-    } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error caught in ExcludeListPropagator::checkItems: code=" << e.code() << " error=" << e.what());
-        directoryIterationException = true;
-    } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in ExcludeListPropagator::checkItems");
-        directoryIterationException = true;
+    if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+        return ExitCode::SystemError;
     }
 
-    return IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        if (isAborted()) {
+            LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
+            return ExitCode::Ok;
+        }
+
+        if (entry.path().native().length() > CommonUtility::maxPathLength()) {
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << Utility::formatSyncPath(entry.path())
+                                                                       << L" because size > " << CommonUtility::maxPathLength());
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (const auto checkItemExitInfo = checkItem(entry); !checkItemExitInfo) return checkItemExitInfo;
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                                                << Utility::formatIoError(_syncPal->localPath(), ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
+    }
 }
 
 } // namespace KDC

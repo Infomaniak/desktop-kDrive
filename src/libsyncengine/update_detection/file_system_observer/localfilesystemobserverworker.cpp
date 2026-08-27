@@ -887,10 +887,9 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     ExitInfo res = ExitCode::Ok;
     if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                          L"Error in DirectoryIterator for " << Utility::formatIoError(absoluteParentDirPath, ioError));
-        res = ioError == IoError::FileOrDirectoryCorrupted ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
-                                                           : ExitInfo(ExitCode::SystemError);
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                                                << Utility::formatIoError(absoluteParentDirPath, ioError));
+        res = IoHelper::directoryIteratorExitCode(ioError);
     }
 
     if (!res) {

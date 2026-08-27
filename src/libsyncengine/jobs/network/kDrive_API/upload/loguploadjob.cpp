@@ -354,9 +354,9 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     }
 
     if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
-        return ioError == IoError::FileOrDirectoryCorrupted ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
-                                                            : ExitInfo(ExitCode::SystemError);
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error iterating directory with IoHelper::DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     return ExitCode::Ok;
@@ -479,10 +479,9 @@ ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, cons
     }
 
     if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError));
-        return ioError == IoError::FileOrDirectoryCorrupted ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
-                                                            : ExitInfo(ExitCode::SystemError);
+        LOGW_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                                        << Utility::formatIoError(directoryToCompress, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 90); !exitInfo) {

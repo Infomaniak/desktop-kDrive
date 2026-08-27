@@ -980,8 +980,10 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
                                                bool skipPermissionDenied) :
     _recursive(recursive),
     _directoryPath(directoryPath) {
-    std::error_code ec;
+    ioError = IoError::Success;
+
     const auto option = skipPermissionDenied ? DirectoryOptions::skip_permission_denied : DirectoryOptions::none;
+    std::error_code ec;
 
     try {
         _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
@@ -998,7 +1000,12 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
         return;
     }
 
-    ioError = IoHelper::stdError2ioError(ec);
+    if (ec) {
+        LOGW_WARN(logger(),
+                  L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(directoryPath, ec));
+        ioError = IoHelper::stdError2ioError(ec);
+        _invalid = true;
+    }
 }
 
 
@@ -1046,8 +1053,8 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         }
 
         if (ec) {
-            LOGW_WARN(_logger, L"Error in recursive_directory_iterator::increment: previous "
-                                       << Utility::formatStdError(prevEntry.path(), ec));
+            LOGW_WARN(logger(), L"Error in recursive_directory_iterator::increment: previous "
+                                        << Utility::formatStdError(prevEntry.path(), ec));
             ioError = IoHelper::stdError2ioError(ec);
             if (ioError == IoError::Unknown) {
                 // TODO: once known, manage this error in IoHelper::stdError2ioError
@@ -1100,18 +1107,17 @@ bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::Direct
     return true;
 }
 
-ExitInfo IoHelper::checkDirectoryIteratorInterruption(const bool endOfDir, const IoError ioError, const DirectoryEntry &entry,
-                                                      const bool directoryIterationException) {
-    if (!endOfDir || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << Utility::formatIoError(entry.path(), ioError));
+ExitInfo IoHelper::directoryIteratorExitCode(IoError ioError) {
+    switch (ioError) {
+        case IoError::Success:
+            return ExitCode::Ok;
+        case IoError::AccessDenied:
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        case IoError::FileOrDirectoryCorrupted:
+            return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+        default:
+            return ExitCode::SystemError;
     }
-
-    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
-        return ExitCode::SystemError;
-    }
-
-    return ExitCode::Ok;
 }
 
 #ifndef KD_WINDOWS
