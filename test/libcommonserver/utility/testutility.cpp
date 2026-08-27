@@ -547,4 +547,29 @@ void TestUtility::testTryCreateTmpFile() {
     }
 }
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
+void TestUtility::testEscapePath() {
+    // Test simple path without special characters
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test"), Utility::escapePath(SyncPath("/tmp/test")));
+
+    // Test path with single quotes — each ' is replaced by '\'' (4 chars: quote, backslash, quote, quote)
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test'\\''file"), Utility::escapePath(SyncPath("/tmp/test'file")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/'\\''quoted'\\''path"), Utility::escapePath(SyncPath("/tmp/'quoted'path")));
+
+    // Test path with multiple single quotes
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test'\\'''\\''file"), Utility::escapePath(SyncPath("/tmp/test''file")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/'\\''test'\\''file'\\''path"), Utility::escapePath(SyncPath("/tmp/'test'file'path")));
+
+    // Test path with spaces and other characters (no quotes, so unchanged)
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test file"), Utility::escapePath(SyncPath("/tmp/test file")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test;command"), Utility::escapePath(SyncPath("/tmp/test;command")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test&command"), Utility::escapePath(SyncPath("/tmp/test&command")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test|command"), Utility::escapePath(SyncPath("/tmp/test|command")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test$(command)"), Utility::escapePath(SyncPath("/tmp/test$(command)")));
+
+    // Test path with quote followed by semicolon (injection attempt - quote gets escaped)
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test'\\''; rm -rf /"), Utility::escapePath(SyncPath("/tmp/test'; rm -rf /")));
+}
+#endif
+
 } // namespace KDC
