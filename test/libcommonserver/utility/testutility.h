@@ -52,7 +52,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUserName);
         CPPUNIT_TEST(testTryCreateTmpDir);
         CPPUNIT_TEST(testTryCreateTmpFile);
+#if defined(KD_MACOS) || defined(KD_LINUX)
         CPPUNIT_TEST(testEscapePath);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -88,7 +90,9 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testUserName();
         void testTryCreateTmpDir();
         void testTryCreateTmpFile();
+#if defined(KD_MACOS) || defined(KD_LINUX)
         void testEscapePath();
+#endif
 
     private:
         bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);
