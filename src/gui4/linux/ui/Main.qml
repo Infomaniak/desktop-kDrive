@@ -37,6 +37,9 @@ IKShadowedWindow {
     required property var systemTrayController
 
     readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
+    readonly property bool manyDeletesPresentationAllowed: !onboardingActive
+                                                           && appRouter.mainWindowActive
+                                                           && visible
     readonly property bool waitingActive: !onboardingActive && !appRouter.mainWindowActive
 
     visible: false
@@ -104,7 +107,8 @@ IKShadowedWindow {
     }
 
     onClosing: close => {
-        if (mainWindow.manyDeletesController.visible
+        if (mainWindow.manyDeletesPresentationAllowed
+                && mainWindow.manyDeletesController.visible
                 && mainWindow.manyDeletesController.severity === ManyDeletesController.Hard) {
             close.accepted = false
             return
@@ -169,6 +173,7 @@ IKShadowedWindow {
     GlobalModalHost {
         anchors.fill: parent
         manyDeletesController: mainWindow.manyDeletesController
+        presentationAllowed: mainWindow.manyDeletesPresentationAllowed
         surfaceInset: mainWindow.effectiveShadowMargin
         surfaceRadius: mainWindow.surfaceRadius
         targetWindow: mainWindow
