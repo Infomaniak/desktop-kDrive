@@ -113,6 +113,7 @@ class AppClientLinux : public QApplication {
         void updateLoggerMinLevel() const;
         void requestQuit();
         void quitOnServerDisconnection();
+        void handleManyDeletesPresentationRequested();
         void openMainWindow();
         void openOnboardingFromHome();
         void handleConfiguredSyncsChanged();
