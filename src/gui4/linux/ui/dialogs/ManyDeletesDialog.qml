@@ -33,6 +33,7 @@ IKModal {
     }
 
     required property var controller
+    required property bool presentationAllowed
     readonly property bool hardLimit: controller.severity === ManyDeletesController.Hard
     property int pendingAction: ManyDeletesDialog.None
     readonly property bool softLimit: controller.severity === ManyDeletesController.Soft
@@ -44,7 +45,7 @@ IKModal {
     }
 
     function synchronizePresentation() {
-        if (!controller.visible) {
+        if (!controller.visible || !presentationAllowed) {
             root.close();
             return;
         }
@@ -222,6 +223,7 @@ IKModal {
 
     Component.onCompleted: synchronizePresentation()
     onDismissRequested: controller.dismissSoft(doNotShowAgainCheckBox.checked)
+    onPresentationAllowedChanged: synchronizePresentation()
 
     Connections {
         function onBusyChanged() {

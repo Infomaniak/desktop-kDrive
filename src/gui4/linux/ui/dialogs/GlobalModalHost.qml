@@ -26,6 +26,7 @@ Item {
     id: root
 
     required property var manyDeletesController
+    required property bool presentationAllowed
     required property real surfaceInset
     required property real surfaceRadius
     required property var targetWindow
@@ -35,6 +36,7 @@ Item {
         id: manyDeletesDialog
 
         controller: root.manyDeletesController
+        presentationAllowed: root.presentationAllowed
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
     }
