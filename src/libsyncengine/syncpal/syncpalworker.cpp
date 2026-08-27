@@ -175,7 +175,29 @@ void SyncPalWorker::checkForMassDeletions() const {
     }
 }
 
-ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
+ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
+    LOG_DEBUG(_logger, "Ensure Blacklist is propagated (trial " << trial + 1 << ")");
+
+    if (trial) {
+        LOG_DEBUG(_logger, "Restarting blacklist propagator");
+        UserActionScopedLock lock;
+        const std::chrono::milliseconds timeout(5000);
+        if (!lock.tryLock(_syncPal, timeout)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
+                             "running, aborting.");
+            return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        }
+
+        _isPaused = true;
+        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            _isPaused = false;
+            return exitInfo;
+        }
+        _isPaused = false;
+    }
+
     // Check if any of the Blacklisted directory still in the db, if yes, restart the blacklist propagator.
     // It might happen if it as previously been stopped or encountered a locked directory / file.
     NodeSet blacklistedNodes;
@@ -185,6 +207,19 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         return exitInfo;
     }
 
+    // Remove temporary blacklisted nodes from the list of blacklisted nodes.
+    NodeSet tmpBlacklistedNodes;
+    if (ExitInfo exitInfo =
+                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, tmpBlacklistedNodes);
+        !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncNodeCache::syncNodes");
+        return exitInfo;
+    }
+
+    (void) std::erase_if(blacklistedNodes,
+                         [&tmpBlacklistedNodes](const auto &value) { return tmpBlacklistedNodes.contains(value); });
+
+    // Check if any of the blacklisted nodes are still in the db.
     std::function<ExitInfo(const NodeSet &, bool &)> areBlacklistedNodesStillInDb = [this](const NodeSet &nodes, bool &found) {
         found = false;
         for (const auto &nodeId: nodes) {
@@ -205,37 +240,12 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
         return exitInfo;
     }
 
-    if (!found) return ExitCode::Ok;
-
-    LOG_WARN(_logger, "Blacklisted nodes still exist in SyncDb, restarting blacklist propagator");
-
-    {
-        UserActionScopedLock lock;
-        const std::chrono::milliseconds timeout(5000);
-        if (!lock.tryLock(_syncPal, timeout)) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
-                             "running, aborting.");
+    if (found) {
+        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist in SyncDb");
+        if (trial >= 1) {
             return {ExitCode::DataError, ExitCause::BlackListPropagationError};
         }
-
-        _isPaused = true;
-        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
-            _isPaused = false;
-            return exitInfo;
-        }
-        _isPaused = false;
-    }
-
-    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
-        return exitInfo;
-    }
-
-    if (found) {
-        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist after retry, giving up");
-        return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        return ensureBlackListIsPropagated(trial + 1);
     }
 
     return ExitCode::Ok;

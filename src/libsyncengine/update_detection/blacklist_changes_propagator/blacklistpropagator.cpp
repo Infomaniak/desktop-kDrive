@@ -234,12 +234,20 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         job.setBypassCheck(true);
         job.runSynchronously();
         if (!job.exitInfo()) {
-            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                              L"Failed to remove item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
-                                                             << CommonUtility::s2ws(localNodeId)
-                                                             << L") removed from local replica. It will not be blacklisted.");
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Failed to remove item with "
+                                                                    << Utility::formatExitInfo(absoluteLocalPath, job.exitInfo())
+                                                                    << L" (" << CommonUtility::s2ws(localNodeId)
+                                                                    << L"), it will be temporarily blacklisted.");
             removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
                                   // remove it from filesystem (we can have transient errors like file locks)
+
+            if (job.exitInfo() == ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError}) {
+                if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(localPath, false); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in SyncPal::handleAccessDeniedItem: "
+                                                                            << Utility::formatExitInfo(localPath, exitInfo));
+                    return exitInfo;
+                }
+            }
         } else {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absoluteLocalPath) << L" ("
                                                                            << CommonUtility::s2ws(localNodeId)
@@ -254,8 +262,8 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             return ExitCode::DbError;
         }
         if (!found) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Node not found in node table for dbId=" << dbId);
-            return ExitCode::DataError;
+            // The item is not synchronized
+            LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "Node not found in node table for dbId=" << dbId);
         }
     }
 
