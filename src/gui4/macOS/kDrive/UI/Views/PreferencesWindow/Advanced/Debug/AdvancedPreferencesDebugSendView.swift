@@ -23,6 +23,48 @@ import kDriveCoreUI
 import kDriveResources
 import SwiftUI
 
+enum LogUploadStatusEffect: Equatable {
+    case ignored
+    case inProgress
+    case succeeded
+    case failed
+    case canceled
+    case idle
+}
+
+struct LogUploadSessionTracker {
+    private(set) var hasObservedInProgressStatus = false
+
+    mutating func prepareForUpload() {
+        hasObservedInProgressStatus = false
+    }
+
+    mutating func handle(_ status: LogUploadStatus) -> LogUploadStatusEffect {
+        switch status.state {
+        case .Archiving, .Uploading, .CancelRequested:
+            hasObservedInProgressStatus = true
+            return .inProgress
+        case .Success:
+            return finish(with: .succeeded)
+        case .Failed:
+            return finish(with: .failed)
+        case .Canceled:
+            return finish(with: .canceled)
+        case .None, .EnumEnd:
+            hasObservedInProgressStatus = false
+            return .idle
+        @unknown default:
+            return finish(with: .failed)
+        }
+    }
+
+    private mutating func finish(with effect: LogUploadStatusEffect) -> LogUploadStatusEffect {
+        guard hasObservedInProgressStatus else { return .ignored }
+        hasObservedInProgressStatus = false
+        return effect
+    }
+}
+
 struct SendDebugFolderView: View {
     @LazyInjectService private var logUploadStatusObservable: LogUploadStatusCacheObservable
 
@@ -31,8 +73,10 @@ struct SendDebugFolderView: View {
     @Binding var isShowingError: Bool
 
     @State private var shouldOnlySendLastSession = false
+    @State private var isStartingDebugFolderUpload = false
     @State private var isSendingDebugFolder = false
     @State private var logUploadStatus: LogUploadStatus?
+    @State private var uploadSessionTracker = LogUploadSessionTracker()
 
     private var progressValue: Double {
         let percentage = logUploadStatus?.percentage ?? 0
@@ -66,13 +110,13 @@ struct SendDebugFolderView: View {
         .toolbar {
             @InjectService var matomo: MatomoUtils
             ToolbarItem(placement: .confirmationAction) {
-                LoadingButton(isLoading: $isSendingDebugFolder) {
+                LoadingButton(isLoading: $isStartingDebugFolderUpload) {
                     matomo.track(eventWithCategory: .advancedSettingsPage, name: "sendLogToSupport")
                     await sendFolder()
                 } label: {
                     Text(KDriveLocalizable.buttonSend)
                 }
-                .disabled(isSendingDebugFolder)
+                .disabled(isSendingDebugFolder || isStartingDebugFolderUpload)
             }
 
             ToolbarItem(placement: .cancellationAction) {
@@ -88,6 +132,7 @@ struct SendDebugFolderView: View {
         let utilityJobs = UtilityJobs()
         do {
             logUploadStatus = nil
+            uploadSessionTracker.prepareForUpload()
             isSendingDebugFolder = true
             try await utilityJobs.sendLogToSupport(includeArchivedLogs: !shouldOnlySendLastSession)
         } catch {
@@ -97,25 +142,27 @@ struct SendDebugFolderView: View {
     }
 
     private func handleLogUploadStatus(_ status: LogUploadStatus) {
+        let effect = uploadSessionTracker.handle(status)
+        guard effect != .ignored else { return }
+
         logUploadStatus = status
 
-        switch status.state {
-        case .Archiving, .Uploading, .CancelRequested:
+        switch effect {
+        case .inProgress:
             isSendingDebugFolder = true
-        case .Success:
+        case .succeeded:
             isSendingDebugFolder = false
             dismiss()
-        case .Failed:
+        case .failed:
             isSendingDebugFolder = false
             isShowingError = true
-        case .Canceled:
+        case .canceled:
             isSendingDebugFolder = false
             dismiss()
-        case .None, .EnumEnd:
+        case .idle:
             isSendingDebugFolder = false
-        @unknown default:
-            isSendingDebugFolder = false
-            isShowingError = true
+        case .ignored:
+            break
         }
     }
 
