@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive
         {
             if (Availability != AppNotificationAvailability.Available)
             {
-                Logger.Log(Logger.Level.Warning, $"App notifications are not available: {Availability} ({AppNotificationManager.Default.Setting})");
+                Logger.Log(Logger.Level.Info, $"App notifications are not available: {Availability} ({AppNotificationManager.Default.Setting})");
                 return;
             }
 
