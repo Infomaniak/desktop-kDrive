@@ -170,7 +170,7 @@ namespace Infomaniak.kDrive.ViewModels
             catch (OperationCanceledException)
             {
                 CurrentOAuth2State = OAuth2State.Error;
-                Logger.Log(Logger.Level.Warning, "Authentication process canceled by user.");
+                Logger.Log(Logger.Level.Info, "Authentication process canceled by user.");
             }
             catch (Exception ex)
             {
