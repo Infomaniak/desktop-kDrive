@@ -153,7 +153,8 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
-    (void) connect(&_manyDeletesController, &ManyDeletesController::presentationRequested, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_manyDeletesController, &ManyDeletesController::presentationRequested, this,
+                   &AppClientLinux::handleManyDeletesPresentationRequested);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::openOnboardingWindowRequested, &_systemTrayController,
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
@@ -329,6 +330,15 @@ void AppClientLinux::setupTranslations() {
     } else {
         qCInfo(lcAppClientLinux) << "no catalog for locale" << locale.name() << "- using English base";
     }
+}
+
+void AppClientLinux::handleManyDeletesPresentationRequested() {
+    if (_onboardingSessionManager.activeSession() != nullptr) {
+        qCInfo(lcAppClientLinux) << "Mass deletion dialog presentation deferred until onboarding is inactive";
+        return;
+    }
+
+    openMainWindow();
 }
 
 void AppClientLinux::openMainWindow() {
