@@ -52,6 +52,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUserName);
         CPPUNIT_TEST(testTryCreateTmpDir);
         CPPUNIT_TEST(testTryCreateTmpFile);
+        CPPUNIT_TEST(testEscapePath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -87,6 +88,7 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testUserName();
         void testTryCreateTmpDir();
         void testTryCreateTmpFile();
+        void testEscapePath();
 
     private:
         bool checkNfcAndNfdNamesEqual(const SyncName &name, bool &equal);
