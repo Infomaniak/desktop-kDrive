@@ -300,7 +300,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             {
                 target.UseLog = true;
                 target.ExtendedLog = true;
-                target.LogLevel = Logger.Level.Info;
+                target.LogLevel = Logger.Level.Debug;
             }
             else
             {
