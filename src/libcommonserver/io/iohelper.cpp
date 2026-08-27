@@ -1106,7 +1106,7 @@ bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::Direct
     return true;
 }
 
-ExitInfo IoHelper::directoryIteratorExitCode(IoError ioError) {
+ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
     switch (ioError) {
         case IoError::Success:
             return ExitCode::Ok;

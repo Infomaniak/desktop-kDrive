@@ -89,7 +89,7 @@ struct IoHelper {
         };
 
         static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
-        static ExitInfo directoryIteratorExitCode(IoError ioError);
+        static ExitInfo directoryIteratorExitCode(const IoError ioError);
 
         IoHelper() = default;
 
