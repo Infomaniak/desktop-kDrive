@@ -120,7 +120,6 @@ ExitInfo BlacklistPropagator::checkNodes() {
 }
 
 ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath) {
-    bool directoryIterationException = false;
     auto ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt;
     bool endOfDir = false;

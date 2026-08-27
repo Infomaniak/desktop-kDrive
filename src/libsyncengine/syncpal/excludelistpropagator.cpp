@@ -105,7 +105,6 @@ ExitInfo ExcludeListPropagator::checkItem(const DirectoryEntry &entry) {
 }
 
 ExitInfo ExcludeListPropagator::checkItems() {
-    bool directoryIterationException = false;
     auto ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt;
     bool endOfDir = false;
@@ -137,6 +136,8 @@ ExitInfo ExcludeListPropagator::checkItems() {
                                                                 << Utility::formatIoError(_syncPal->localPath(), ioError));
         return IoHelper::directoryIteratorExitCode(ioError);
     }
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

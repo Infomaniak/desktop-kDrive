@@ -96,7 +96,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
         // Check file system
         VfsStatus vfsStatus;
         assert(_vfs && "Missing VFS.");
-        if (_exitInfo = _vfs->status(absolutePath, vfsStatus); !_exitInfo) {
+        _exitInfo = _vfs->status(absolutePath, vfsStatus);
+        if (!_exitInfo) {
             LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(absolutePath) << L": " << _exitInfo);
             return false;
         }

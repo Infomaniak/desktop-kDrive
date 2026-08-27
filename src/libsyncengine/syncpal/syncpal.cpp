@@ -779,7 +779,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // from the job map, resulting in a memory leak.
     std::weak_ptr<SyncJob> weakJobPtr = job;
     const auto progressPercentCallback = [weakJobPtr, this](UniqueId,
-                                                            int progress // %
+                                                            int16_t progress // %
                                          ) {
         auto job = weakJobPtr.lock();
         if (!job) {
