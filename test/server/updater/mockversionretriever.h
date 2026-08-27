@@ -32,7 +32,6 @@ class MockVersionRetriever : public VersionRetriever {
         void setBigMinOsVersion(const bool bigMinOsVersion) { _bigMinOsVersion = bigMinOsVersion; }
         void setVersionInfo(const VersionInfo &versionInfo) { _versionsInfo = versionInfo; }
         void setVersionReceived(const bool isVersionReceived) { _isVersionReceived = isVersionReceived; }
-        void setChecksum(const std::string &checksum) { _versionsInfo.checksum = checksum; }
 
     private:
         ExitCode generateGetAppVersionJob(const DistributionChannel channel, std::shared_ptr<AbstractNetworkJob> &job) override {

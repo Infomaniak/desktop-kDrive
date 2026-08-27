@@ -68,7 +68,7 @@ void ExecutorWorker::setJobCallbacks(const std::shared_ptr<SyncJob> &job) {
     // The callbacks must not keep either the job or its executor alive. Jobs can finish after a SyncPal stop has released its
     // workers and progress state.
     const std::weak_ptr<SyncJob> weakJob = job;
-    const auto progressPercentCallback = [weakExecutor, weakJob]([[maybe_unused]] UniqueId, int progress /* % */) {
+    const auto progressPercentCallback = [weakExecutor, weakJob]([[maybe_unused]] UniqueId, int16_t progress /* % */) {
         const auto executor = weakExecutor.lock();
         const auto currentJob = weakJob.lock();
         if (!executor || !currentJob) {
@@ -80,7 +80,7 @@ void ExecutorWorker::setJobCallbacks(const std::shared_ptr<SyncJob> &job) {
     job->setProgressPercentCallback(progressPercentCallback);
 }
 
-void ExecutorWorker::updateJobProgress(const std::shared_ptr<SyncJob> &job, const int progress) {
+void ExecutorWorker::updateJobProgress(const std::shared_ptr<SyncJob> &job, const int16_t progress) {
     if (!_syncPal->setProgress(job->affectedFilePath(), progress)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: path=" << Utility::formatSyncPath(job->affectedFilePath())
                                                                            << L", progress=" << progress << L"%" << L", jobId="

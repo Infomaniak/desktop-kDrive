@@ -601,7 +601,7 @@ bool SyncPal::initProgress(const SyncFileItem &item) {
     return currentProgressInfo && currentProgressInfo->initProgress(item);
 }
 
-bool SyncPal::setProgress(const SyncPath &relativePath, int progress) {
+bool SyncPal::setProgress(const SyncPath &relativePath, int16_t progress) {
     const auto currentProgressInfo = progressInfo();
     if (!currentProgressInfo) {
         return false;
@@ -1543,24 +1543,22 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         return ExitInfo(ExitCode::SystemError, Utility::exitCauseFromInaccessibleSyncDirectory(localPath()));
     }
 
-    LOG_IF_FAIL(_localFSObserverWorker)
-    LOG_IF_FAIL(_remoteFSObserverWorker)
-    if (!_localFSObserverWorker || !_remoteFSObserverWorker) return ExitCode::LogicError;
-
     NodeId localNodeId;
-    if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
-        !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
-        return exitInfo;
-    }
     NodeId remoteNodeId;
-    if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
-        !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
-        return exitInfo;
+    if (_localFSObserverWorker && _remoteFSObserverWorker) {
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Local).getItemId(relativeLocalPath, localNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
+        if (const auto exitInfo = liveSnapshot(ReplicaSide::Remote).getItemId(relativeLocalPath, remoteNodeId);
+            !exitInfo && exitInfo.cause() != ExitCause::NotFound) {
+            return exitInfo;
+        }
     }
 
     // File type cannot be fetched for an access denied item, using File as default.
-    Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
-                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
+    const Error error(syncDbId(), localNodeId, remoteNodeId, NodeType::File, relativeLocalPath, ConflictType::None,
+                      InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, cause);
     addError(error);
 
     if (localNodeId.empty()) {
@@ -1591,7 +1589,12 @@ ExitInfo SyncPal::handleAccessDeniedItem(const SyncPath &relativeLocalPath, bool
         return {ExitCode::DbError, ExitCause::Unknown};
     }
 
-    // Blacklist the item
+    if (!_tmpBlacklistManager) {
+        // Can happen if the sync is restarting
+        return ExitCode::Ok;
+    }
+
+    // Tmp blacklist the item
     if (!localNodeId.empty()) {
         _tmpBlacklistManager->blacklistItem(localNodeId, relativeLocalPath, ReplicaSide::Local);
     }

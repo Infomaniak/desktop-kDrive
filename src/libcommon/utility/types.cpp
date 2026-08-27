@@ -1093,7 +1093,6 @@ void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
     CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
     CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
-    CommonUtility::writeValueToStruct(dstruct, versionInfoChecksum, checksum);
     CommonUtility::writeValueToStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
     CommonUtility::writeValueToStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
@@ -1103,7 +1102,6 @@ void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
     CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
     CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
-    CommonUtility::readValueFromStruct(dstruct, versionInfoChecksum, checksum);
     CommonUtility::readValueFromStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
     CommonUtility::readValueFromStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
