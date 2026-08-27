@@ -1441,7 +1441,7 @@ void TestNetworkJobs::testUploadSessionChecksum() {
         CPPUNIT_ASSERT_EQUAL_MESSAGE("Hash mismatch", true, verifyJob.hashMatch());
     }
 
-    // Modify the local file content but keep the same content so the hash no longer matches the remote
+    // Modify the local file content but keep the same content length so the hash no longer matches the remote
     testhelpers::generateTestFile(localFilePath, 101 * 1024 * 1024, testhelpers::TestFileGenerationMode::PseudoRandom);
     modificationTime += 10;
 
