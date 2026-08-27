@@ -90,11 +90,12 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
          */
         ExitInfo generateUserDescriptionFile(const SyncPath &outputPath) const;
 
+#if defined(KD_MACOS)
         /*! Extracts the extensions log file from the system logs and copies it to the temporary job working directory.
          * Non blocking on error.
          */
         void extractExtensionsLog() const;
-
+#endif
 
         // Update the log upload state in the database (appstate table).
         void updateLogUploadState(LogUploadState newState) const;
