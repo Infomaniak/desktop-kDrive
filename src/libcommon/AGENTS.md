@@ -1,4 +1,4 @@
-#libcommon — Foundation Library
+# libcommon — Foundation Library
 
 ## Package Identity
 Foundational shared library. **Everything depends on it** (`libcommonserver` → `libparms` → `libsyncengine` → `server`; `libcommongui` → `gui`). Defines all core enums, type aliases, IPC protocol, DTO classes, error propagation types, logging helpers, Sentry integration, and the app theme singleton. No platform-specific code except `utility_mac.mm` / `utility_win.cpp` / `utility_linux.cpp`. Export macro: `COMMON_EXPORT`.
