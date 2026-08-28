@@ -55,6 +55,7 @@ class Logger : public QObject {
         static Logger *instance();
         static void installMessagePattern();
         static void installEarlyMessageHandler();
+        static void setSentryBreadcrumbsEnabled(bool enabled);
 
         void postNotification(const QString &title, const QString &message);
 
