@@ -17,6 +17,7 @@
  */
 
 #include "longpolljob.h"
+#include "jobs/network/jobexceptions.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
@@ -24,11 +25,16 @@ namespace KDC {
 
 static const uint32_t apiTimout = 50;
 
-LongPollJob::LongPollJob(const int driveDbId, const std::string &cursor, const NodeSet &blacklist /*= {}*/) :
+LongPollJob::LongPollJob(const DriveDbId driveDbId, const std::string &cursor, const NodeSet &blacklist /*= {}*/) :
     AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist),
     _cursor(cursor) {
     _customTimeout = apiTimout + 5; // Must be < 1 min (VPNs' default timeout)
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+
+    // Check if the mandatory access token is empty and throw an exception if it is.
+    // This happens in particular when the token has been remotely revoked.
+    // Sending this request with an empty access token would result in a not-so-informative HTTP 422 error (Unprocessable Entity).
+    if (!hasAccessToken()) throw EmptyTokenError("Access token is empty.");
 }
 
 std::string LongPollJob::getSpecificUrl() {
