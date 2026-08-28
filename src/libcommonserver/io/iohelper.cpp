@@ -1101,7 +1101,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
             disableRecursionPending();
             return next(nextEntry, endOfDirectory, ioError);
         }
-
 #endif
         nextEntry = *_dirIterator;
     } else {

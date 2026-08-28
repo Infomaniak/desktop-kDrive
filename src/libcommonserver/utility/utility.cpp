@@ -351,8 +351,10 @@ void Utility::unzipStream(std::istream &inputStream, std::stringstream &ss,
 SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
     if (test) return excludedAppFileName;
 
-    auto canonicalPath =
-            std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName);
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(
+            CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName, ec);
+    if (ec.value()) return {};
 
     return canonicalPath.make_preferred();
 }

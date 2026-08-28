@@ -67,14 +67,14 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     progressCallback(InstallStep::Preparing, QObject::tr("Making AppImage executable..."));
-    try {
-        std::filesystem::permissions(
-                destPath,
-                std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
-                std::filesystem::perm_options::add);
-    } catch (const std::filesystem::filesystem_error &e) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Failed to make AppImage executable: " << CommonUtility::s2ws(e.what()));
-        outMessage = QObject::tr("Failed to make AppImage executable: %1").arg(QString::fromUtf8(e.what()));
+    std::error_code ec;
+    std::filesystem::permissions(
+            destPath,
+            std::filesystem::perms::owner_exec | std::filesystem::perms::group_exec | std::filesystem::perms::others_exec,
+            std::filesystem::perm_options::add, ec);
+    if (ec.value()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Failed to make AppImage executable: " << ec.value());
+        outMessage = QObject::tr("Failed to make AppImage executable: %1").arg(QString::fromUtf8(ec.value()));
         return false;
     }
 
