@@ -55,6 +55,8 @@ Window {
                                                   : 0
     readonly property real surfaceWidth: Math.max(0, width - 2 * effectiveShadowMargin)
     readonly property real surfaceHeight: Math.max(0, height - 2 * effectiveShadowMargin)
+    readonly property rect headerMoveArea: Qt.rect(effectiveShadowMargin, effectiveShadowMargin,
+                                                   windowHeader.moveAreaWidth, effectiveHeaderHeight)
 
     function updateWindowDecoration() {
         if (!windowDecorationReady) {
@@ -166,84 +168,11 @@ Window {
             layer.enabled: true
         }
 
-        MouseArea {
-            x: surface.x - width
-            y: surface.y
-            width: IKWindow.resizeHandleThickness
-            height: surface.height
+        IKWindowResizeHandles {
+            anchors.fill: parent
+            targetWindow: root
+            surfaceInset: root.effectiveShadowMargin
             visible: root.customFrameVisible
-            cursorShape: Qt.SizeHorCursor
-            onPressed: root.startSystemResize(Qt.LeftEdge)
-        }
-
-        MouseArea {
-            x: surface.x + surface.width
-            y: surface.y
-            width: IKWindow.resizeHandleThickness
-            height: surface.height
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeHorCursor
-            onPressed: root.startSystemResize(Qt.RightEdge)
-        }
-
-        MouseArea {
-            x: surface.x
-            y: surface.y - height
-            width: surface.width
-            height: IKWindow.resizeHandleThickness
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeVerCursor
-            onPressed: root.startSystemResize(Qt.TopEdge)
-        }
-
-        MouseArea {
-            x: surface.x
-            y: surface.y + surface.height
-            width: surface.width
-            height: IKWindow.resizeHandleThickness
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeVerCursor
-            onPressed: root.startSystemResize(Qt.BottomEdge)
-        }
-
-        MouseArea {
-            x: surface.x - width
-            y: surface.y - height
-            width: IKWindow.resizeHandleThickness
-            height: IKWindow.resizeHandleThickness
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeFDiagCursor
-            onPressed: root.startSystemResize(Qt.TopEdge | Qt.LeftEdge)
-        }
-
-        MouseArea {
-            x: surface.x + surface.width
-            y: surface.y - height
-            width: IKWindow.resizeHandleThickness
-            height: IKWindow.resizeHandleThickness
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeBDiagCursor
-            onPressed: root.startSystemResize(Qt.TopEdge | Qt.RightEdge)
-        }
-
-        MouseArea {
-            x: surface.x - width
-            y: surface.y + surface.height
-            width: IKWindow.resizeHandleThickness
-            height: IKWindow.resizeHandleThickness
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeBDiagCursor
-            onPressed: root.startSystemResize(Qt.BottomEdge | Qt.LeftEdge)
-        }
-
-        MouseArea {
-            x: surface.x + surface.width
-            y: surface.y + surface.height
-            width: IKWindow.resizeHandleThickness
-            height: IKWindow.resizeHandleThickness
-            visible: root.customFrameVisible
-            cursorShape: Qt.SizeFDiagCursor
-            onPressed: root.startSystemResize(Qt.BottomEdge | Qt.RightEdge)
         }
     }
 }

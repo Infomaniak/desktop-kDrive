@@ -91,6 +91,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                          "ActivityListModel is owned by ActivitiesController.");
     (void) qmlRegisterUncreatableType<ActivitiesController>("kDrive.UI", 1, 0, "ActivitiesController",
                                                             "ActivitiesController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<ManyDeletesController>("kDrive.UI", 1, 0, "ManyDeletesController",
+                                                             "ManyDeletesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
                                             QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
@@ -104,6 +106,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
+            {QStringLiteral("manyDeletesController"), QVariant::fromValue<QObject *>(&_manyDeletesController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
@@ -150,6 +153,8 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
+    (void) connect(&_manyDeletesController, &ManyDeletesController::presentationRequested, this,
+                   &AppClientLinux::handleManyDeletesPresentationRequested);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::openOnboardingWindowRequested, &_systemTrayController,
                    &SystemTrayController::showMainWindow);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::closeOnboardingWindowRequested, &_systemTrayController,
@@ -325,6 +330,15 @@ void AppClientLinux::setupTranslations() {
     } else {
         qCInfo(lcAppClientLinux) << "no catalog for locale" << locale.name() << "- using English base";
     }
+}
+
+void AppClientLinux::handleManyDeletesPresentationRequested() {
+    if (_onboardingSessionManager.activeSession() != nullptr) {
+        qCInfo(lcAppClientLinux) << "Mass deletion dialog presentation deferred until onboarding is inactive";
+        return;
+    }
+
+    openMainWindow();
 }
 
 void AppClientLinux::openMainWindow() {
