@@ -280,6 +280,9 @@ StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const Cancellat
     snapshot.volumeRoot = volumeRoot;
     snapshot.totalBytes = totalBytes;
     snapshot.availableBytes = availableBytes;
+    // The walk and the volume figures are not read atomically, and reflinked copies count once on disk but twice here,
+    // so the scanned total can exceed the used space. Clamping preserves the syncBytes <= usedBytes <= totalBytes
+    // invariant the storage gauge relies on.
     snapshot.syncBytes = std::min(syncBytes, usedBytes);
     qCDebug(lcStorageScanner) << "Storage scan completed | root:" << Path2QStr(syncRoot)
                               << "| total bytes:" << static_cast<qulonglong>(snapshot.totalBytes)
