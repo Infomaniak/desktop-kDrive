@@ -233,7 +233,6 @@ StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const Cancellat
     }
 
     QStorageInfo storage(Path2QStr(syncRoot));
-    storage.refresh();
     if (!storage.isValid() || !storage.isReady() || storage.bytesTotal() <= 0 || storage.bytesAvailable() < 0) {
         qCWarning(lcStorageScanner) << "Storage volume is unavailable | root:" << Path2QStr(syncRoot);
         return failure(StorageScanError::Unavailable);
