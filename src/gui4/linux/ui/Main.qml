@@ -20,6 +20,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import kDrive.UI
+import "dialogs"
 import "windows/main"
 import "windows/onboarding"
 import "windows/waiting"
@@ -31,10 +32,14 @@ IKShadowedWindow {
     required property var activitiesController
     required property var homeController
     required property var mainSidebarController
+    required property var manyDeletesController
     required property var onboardingSessionManager
     required property var systemTrayController
 
     readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
+    readonly property bool manyDeletesPresentationAllowed: !onboardingActive
+                                                           && appRouter.mainWindowActive
+                                                           && visible
     readonly property bool waitingActive: !onboardingActive && !appRouter.mainWindowActive
 
     visible: false
@@ -102,6 +107,13 @@ IKShadowedWindow {
     }
 
     onClosing: close => {
+        if (mainWindow.manyDeletesPresentationAllowed
+                && mainWindow.manyDeletesController.visible
+                && mainWindow.manyDeletesController.severity === ManyDeletesController.Hard) {
+            close.accepted = false
+            return
+        }
+
         if (mainWindow.systemTrayController.trayModeActive) {
             close.accepted = false;
             if (mainWindow.onboardingActive) {
@@ -156,6 +168,16 @@ IKShadowedWindow {
         anchors.fill: parent
         active: mainWindow.waitingActive
         sourceComponent: waitingComponent
+    }
+
+    GlobalModalHost {
+        anchors.fill: parent
+        manyDeletesController: mainWindow.manyDeletesController
+        presentationAllowed: mainWindow.manyDeletesPresentationAllowed
+        surfaceInset: mainWindow.effectiveShadowMargin
+        surfaceRadius: mainWindow.surfaceRadius
+        targetWindow: mainWindow
+        windowMoveArea: mainWindow.headerMoveArea
     }
 
     Component {
