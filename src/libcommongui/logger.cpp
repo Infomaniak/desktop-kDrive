@@ -20,12 +20,15 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 
+#include <sentry.h>
+
 #include <QDir>
 #include <QLoggingCategory>
 #include <QRegularExpression>
 #include <QStringList>
 #include <QThread>
 
+#include <atomic>
 #include <cstdint>
 #include <iostream>
 
@@ -43,6 +46,8 @@ constexpr char logMessagePattern[] =
         "%{time yyyy-MM-dd hh:mm:ss:zzz} "
         "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
         "(%{threadid}) %{file}:%{line} - %{message}";
+
+static std::atomic_bool sentryBreadcrumbsEnabled{false};
 
 namespace KDC {
 
@@ -63,9 +68,26 @@ static int8_t logLevelForMessageType(const QtMsgType type) noexcept {
     Q_UNREACHABLE();
 }
 
+static const char *sentryLevelForMessageType(const QtMsgType type) noexcept {
+    switch (type) {
+        case QtDebugMsg:
+            return "debug";
+        case QtInfoMsg:
+            return "info";
+        case QtWarningMsg:
+            return "warning";
+        case QtCriticalMsg:
+            return "error";
+        case QtFatalMsg:
+            return "fatal";
+    }
+
+    Q_UNREACHABLE();
+}
+
 static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     SyncName fileName;
-    if (ctx.file) {
+    if (ctx.file != nullptr) {
         const SyncPath filePath(ctx.file);
         fileName = filePath.filename();
     }
@@ -80,20 +102,52 @@ static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessag
     return qFormatLogMessage(type, ctxNew, message);
 }
 
-static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    std::cerr << qPrintable(formatLogMessageWithShortFile(type, ctx, message)) << std::endl;
+static QString formatSentryBreadcrumb(const QMessageLogContext &ctx, const QString &message) {
+    if (ctx.file == nullptr) {
+        return message;
+    }
+
+    const SyncName fileName = SyncPath(ctx.file).filename();
+#if defined(KD_WINDOWS)
+    const QString fileNameString = QString::fromStdString(CommonUtility::toUnsafeStr(fileName));
+#else
+    const QString fileNameString = QString::fromStdString(fileName);
+#endif
+    return QStringLiteral("%1:%2 - %3").arg(fileNameString).arg(ctx.line).arg(message);
 }
 
-static void kdriveLogCatcher(QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    const auto logger = Logger::instance();
+static void addSentryBreadcrumb(const QtMsgType type, const QString &breadcrumbMessage) {
+    if (!sentryBreadcrumbsEnabled.load(std::memory_order_relaxed)) {
+        return;
+    }
+
+    const std::string message = breadcrumbMessage.toStdString();
+    const sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, message.c_str());
+    (void) sentry_value_set_by_key(breadcrumb, "level", sentry_value_new_string(sentryLevelForMessageType(type)));
+    sentry_add_breadcrumb(breadcrumb);
+}
+
+static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
+    const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message);
+    addSentryBreadcrumb(type, formatSentryBreadcrumb(ctx, message));
+    if (CommonUtility::logToConsoleEnabled()) {
+        std::cerr << qPrintable(formattedMessage) << '\n';
+    }
+}
+
+static void kdriveLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
+    auto *const logger = Logger::instance();
+    const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message);
+    addSentryBreadcrumb(type, formatSentryBreadcrumb(ctx, message));
+
     if (logLevelForMessageType(type) < logger->minLogLevel()) {
         return;
     }
 
     if (!logger->isNoop()) {
-        logger->doLog(formatLogMessageWithShortFile(type, ctx, message));
+        logger->doLog(formattedMessage);
     } else if (type >= QtCriticalMsg) {
-        std::cerr << qPrintable(formatLogMessageWithShortFile(type, ctx, message)) << std::endl;
+        std::cerr << qPrintable(formattedMessage) << '\n';
     }
 
 #if defined(Q_OS_WIN)
@@ -121,6 +175,10 @@ void Logger::installEarlyMessageHandler() {
 #else
     Q_UNUSED(earlyLogCatcher)
 #endif
+}
+
+void Logger::setSentryBreadcrumbsEnabled(const bool enabled) {
+    sentryBreadcrumbsEnabled.store(enabled, std::memory_order_relaxed);
 }
 
 Logger::Logger(QObject *parent) :

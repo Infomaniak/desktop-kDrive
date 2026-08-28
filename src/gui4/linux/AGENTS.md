@@ -160,7 +160,8 @@
 
 ## Current Structure
 
-- `main.cpp`: process entry point + single-instance lock file.
+- `main.cpp`: process entry point, single-instance lock file, and Linux-v4 opt-in for forwarding Qt logs to Sentry
+  breadcrumbs.
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
@@ -191,7 +192,8 @@
 - `app/services/serviceeventbus.*`: shared high-level service event hub (single UI subscription point for generic
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
-  linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers.
+  linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
+  breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
