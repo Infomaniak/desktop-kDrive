@@ -269,6 +269,8 @@ StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const Cancellat
         return failure(StorageScanError::Unavailable);
     }
 
+    // Filesystems with dynamic allocation (btrfs, ZFS) and FUSE or network mounts may report more available bytes than
+    // total bytes. Clamping keeps the unsigned subtraction below from underflowing.
     const auto totalBytes = static_cast<uint64_t>(storage.bytesTotal());
     const auto availableBytes = std::min(static_cast<uint64_t>(storage.bytesAvailable()), totalBytes);
     const auto usedBytes = totalBytes - availableBytes;
