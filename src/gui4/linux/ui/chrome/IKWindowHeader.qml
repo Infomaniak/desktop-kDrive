@@ -29,6 +29,7 @@ Item {
     property bool titleVisible: true
 
     readonly property bool maximized: targetWindow.visibility === Window.Maximized
+    readonly property real moveAreaWidth: windowMoveArea.width
 
     height: IKWindow.headerHeight
 
@@ -44,6 +45,8 @@ Item {
     }
 
     Item {
+        id: windowMoveArea
+
         anchors.left: parent.left
         anchors.right: windowControls.left
         anchors.top: parent.top
