@@ -83,8 +83,8 @@
 - Keep Activities geometry in `IKActivities` and Activities-specific colors in the T3 section of `IKColors`. Store exact
   exported Figma assets under `ui/assets/main/activities/`; never reference temporary Figma URLs from QML.
 - Preserve the visual aspect ratio of Activities menu icons and center differently sized glyphs in a fixed slot. Add a
-  small safety area to SVG view boxes whose paths touch or exceed their bounds, since Qt SVG clips that antialiasing even
-  when the asset declares `overflow="visible"`.
+  small safety area to SVG view boxes whose paths touch or exceed their bounds, since Qt SVG clips that antialiasing
+  even when the asset declares `overflow="visible"`.
 - Rasterize small tintable SVG sources at no less than 3x their logical size before applying `MultiEffect`, while
   constraining only one `sourceSize` dimension so Qt retains the SVG aspect ratio. Do not enable mipmapping for these
   icons. Wrap icons used as a `Control.contentItem` before assigning their intended size because the control owns the
@@ -152,6 +152,9 @@
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
+- `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
+  same-sync severity escalation, hard-warning acknowledgement, soft-warning preference mutation, and web-trash action;
+  it requests main-window presentation without owning window routing.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
   tray availability, and main QML window show/hide behavior.
@@ -179,9 +182,10 @@
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
-  updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for the
-  same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct anonymous
-  operations, and bounds retention to 500 entries per synchronization. It stays separate from the durable `AppCache`
+  updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for
+  the same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct
+  anonymous operations, and bounds retention to 500 entries per synchronization. It stays separate from the durable
+  `AppCache`
   graph and is not exposed directly to QML.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
     - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
@@ -202,9 +206,9 @@
 - `app/mainwindow/mainsidebarcontroller.*`: QML-facing sidebar interaction controller. It exposes `SyncSelectorModel`,
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
-  active node errors. It omits failed activities after their active error is resolved, maps server status and direction to
-  the QML-facing presentation enums, keeps actual in-progress rows first, coalesces bursty cache invalidations, and keeps
-  active errors visible even when their recent activity has been evicted.
+  active node errors. It omits failed activities after their active error is resolved, maps server status and direction
+  to the QML-facing presentation enums, keeps actual in-progress rows first, coalesces bursty cache invalidations, and
+  keeps active errors visible even when their recent activity has been evicted.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
@@ -263,8 +267,8 @@
   `CachePipeline`.
 - `app/services/driveservice.*`: targeted drive use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
-- `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`, owns
-  browser and clipboard side effects, and tracks concurrent actions without owning activity history.
+- `app/services/activityservice.*`: activity-row link facade. It resolves private/public URLs through `CommService`,
+  owns browser and clipboard side effects, and tracks concurrent actions without owning activity history.
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
   `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
   confirmation.
@@ -272,10 +276,14 @@
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
+    - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
+      routes; feature queueing remains in the owning C++ controller until several global modal families require shared
+      arbitration.
     - `ui/windows/main/`: main-window shell, remaining temporary tab placeholders, and feature families grouped under
-      `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`, `states/`, and
-      versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window active and no
-      onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML models.
+      `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`,
+      `states/`, and versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window
+      active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML
+      models.
     - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
       presentation, and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
@@ -289,15 +297,18 @@
     - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
-      services directly.
+      services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
+      feature dialogs supply their own wording, state, and actions.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
-      and close behavior. Onboarding uses `headerOverlaysContent` so window controls do not shift its fixed visual
-      composition. The window decoration controller limits input to the surface and resize handles without clipping the
-      diffuse shadow. It publishes `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible
-      surface rather than the transparent shadow during snapping and maximization. Native Wayland intentionally uses
-      public Qt APIs only and therefore snaps the complete native window, including its transparent shadow margin.
+      and close behavior. `IKWindowResizeHandles` is the single owner of custom-frame resize hit areas and can be reused
+      by an interaction layer above a modal overlay without unblocking the underlying application content. Onboarding
+      uses `headerOverlaysContent` so window controls do not shift its fixed visual composition. The window decoration
+      controller limits input to the surface and resize handles without clipping the diffuse shadow. It publishes
+      `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible surface rather than the transparent
+      shadow during snapping and maximization. Native Wayland intentionally uses public Qt APIs only and therefore snaps
+      the complete native window, including its transparent shadow margin.
     - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON
       payloads. Do not edit these files manually. They are excluded from `qmllint`; validation belongs to the generator
       and the QML compilation step.
@@ -398,6 +409,9 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Pass stable app-owned controllers such as `OnboardingSessionManager` and `MainSidebarController` to `Main.qml` as
   initial properties. Pass controllers/models down through explicit required QML properties; do not add dynamic context
   properties for window-owned composition.
+- Keep app-global modals in `GlobalModalHost` so they survive route loader changes. Contextual onboarding/settings
+  modals should instantiate `IKModal` in their owning window or view instead of moving their workflow into the global
+  host.
 
 ## IPC And Error Handling
 
@@ -405,8 +419,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   `QSslSocket`. The server presents a self-signed certificate generated by `SelfSignedCert` and stored in the OS
   keychain under `certKeychainKey` (`libcommon/comm.h`). The client pins that certificate as the only trusted CA
   (`CertReader` loads it at startup) and verifies the peer name against `kDrive-localhost` (`localHostName` in
-  `libcommon/comm.h`); SSL errors are logged and never ignored. The shared keychain `package` / `service` constants
-  live in `libcommon/utility/utility.h` (`keychainConstant` namespace) and must stay in sync with `KeyChainStorage`
+  `libcommon/comm.h`); SSL errors are logged and never ignored. The shared keychain `package` / `service` constants live
+  in `libcommon/utility/utility.h` (`keychainConstant` namespace) and must stay in sync with `KeyChainStorage`
   on the server side.
 - `IpcClient` treats post-connection socket failure as fatal (disconnect/error after first successful connection exits
   process).
