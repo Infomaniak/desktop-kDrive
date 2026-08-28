@@ -5,7 +5,8 @@ endif ()
 project(${APPLICATION_CLIENTV4_EXECUTABLE} LANGUAGES C CXX)
 
 
-find_package(Qt6 6.11 REQUIRED COMPONENTS Core Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
+find_package(Qt6 6.11 REQUIRED COMPONENTS
+        Core Concurrent Gui Network Qml Quick Sql Widgets QuickControls2 QuickEffects LinguistTools)
 if (QT_FEATURE_xcb)
     find_package(X11 REQUIRED COMPONENTS Xext xcb)
 endif ()
@@ -53,6 +54,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/homestateresolver.h
         app/mainwindow/networkstatusobserver.cpp
         app/mainwindow/networkstatusobserver.h
+        app/mainwindow/storagecontroller.cpp
+        app/mainwindow/storagecontroller.h
+        app/mainwindow/storagescanner.cpp
+        app/mainwindow/storagescanner.h
         app/mainwindow/syncselectormodel.cpp
         app/mainwindow/syncselectormodel.h
         app/navigation/approuter.cpp
@@ -124,6 +129,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
+        ui/tokens/IKStorage.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -163,7 +169,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
-        ui/windows/main/StoragePlaceholder.qml
+        ui/windows/main/storage/StorageErrorState.qml
+        ui/windows/main/storage/StorageUsageCard.qml
+        ui/windows/main/storage/StorageView.qml
         ui/windows/main/activities/ActivitiesEmptyState.qml
         ui/windows/main/activities/ActivitiesFilterMenu.qml
         ui/windows/main/activities/ActivitiesHeader.qml
@@ -269,6 +277,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/home/status-setup-drawer.svg
         ui/assets/main/home/trash.svg
         ui/assets/main/storage.svg
+        ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
         ui/assets/onboarding/drive-icon-glyph.svg
         ui/assets/taskbar/logo_kdrive.svg
@@ -318,6 +327,7 @@ qt_add_resources(${APPLICATION_CLIENTV4_EXECUTABLE} "linux_gui_assets"
 
 target_link_libraries(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         Qt6::Core
+        Qt6::Concurrent
         Qt6::Gui
         Qt6::Network
         Qt6::Qml
