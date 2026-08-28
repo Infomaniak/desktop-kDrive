@@ -34,6 +34,7 @@ IKShadowedWindow {
     required property var mainSidebarController
     required property var manyDeletesController
     required property var onboardingSessionManager
+    required property var storageController
     required property var systemTrayController
 
     readonly property bool onboardingActive: onboardingSessionManager.activeSession !== null
@@ -196,6 +197,7 @@ IKShadowedWindow {
             appRouter: mainWindow.appRouter
             homeController: mainWindow.homeController
             mainSidebarController: mainWindow.mainSidebarController
+            storageController: mainWindow.storageController
         }
     }
 
