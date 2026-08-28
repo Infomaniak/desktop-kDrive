@@ -173,7 +173,6 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
             continue;
         }
 
-        std::error_code ec;
         if (!isSymlink && isDirectory) fullList.push_back(entry.path());
     }
 
