@@ -19,6 +19,8 @@
 #include "keychainmanager.h"
 #include "log/log.h"
 
+#include <chrono>
+#include <future>
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -68,7 +70,30 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
 }
 
 bool KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
-    return _storage->readPassword(keychainKey, data, found);
+    constexpr auto keychainReadTimeout = std::chrono::seconds(60);
+
+    auto future = std::async(std::launch::async, [this, keychainKey]() {
+        std::string localData;
+        bool localFound = false;
+        const bool ok = _storage->readPassword(keychainKey, localData, localFound);
+        return std::tuple<bool, std::string, bool>(ok, std::move(localData), localFound);
+    });
+
+    if (future.wait_for(keychainReadTimeout) != std::future_status::ready) {
+        LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain after 60 seconds");
+        found = false;
+        return false;
+    }
+
+    const auto [ok, readData, localFound] = future.get();
+    if (!ok) {
+        found = false;
+        return false;
+    }
+
+    data = readData;
+    found = localFound;
+    return true;
 }
 
 bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
