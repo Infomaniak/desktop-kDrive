@@ -232,8 +232,7 @@ void SparkleUpdater::startInstaller() {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
         return;
     }
-    [d->updater checkForUpdatesInBackground];
-    [d->spuStandardUserDriver showUpdateInFocus];
+    [d->updater checkForUpdates];
 }
 
 void SparkleUpdater::unskipVersion() {
