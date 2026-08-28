@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: fi, Finnish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:20 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="fi"> 
     <context>
@@ -1727,6 +1727,14 @@ Hyödyllinen, jos tiedät tärkeän työn olevan verkossa kDrivessa.</translatio
             <source>Link copied to clipboard</source> 
             <translation>Linkki kopioitu leikepöydälle</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive ei voi käyttää tämän synkronoinnin tallennussijaintia. Varmista, että laite on kytketty ja lukitsematon, ja tarkista sitten, että kDrivella on lupa käyttää sitä.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Tallennussijainti ei ole käytettävissä</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Yhteensopimaton asema tai kansio suoraan aseman juuressa (esim.: valitse kansio kuten /Oma asema /n sijaan)</translation> 
@@ -2258,6 +2266,11 @@ lukitsematon ja tietokoneeltasi käytettävissä.</translation>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synkronointi</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Tämä tietokone</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 
