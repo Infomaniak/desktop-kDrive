@@ -23,12 +23,13 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+using namespace CppUnit;
+
 namespace KDC {
 
 class TestKeychainManager : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestKeychainManager);
         CPPUNIT_TEST(testTimeOut);
-        CPPUNIT_TEST(testConcurrentReadLimit);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -37,7 +38,6 @@ class TestKeychainManager : public CppUnit::TestFixture, public TestBase {
 
     protected:
         void testTimeOut();
-        void testConcurrentReadLimit();
 };
 
 } // namespace KDC

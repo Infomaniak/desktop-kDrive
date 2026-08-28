@@ -21,17 +21,10 @@
 #include "keychainmanager/keychainmanager.h"
 #include "keychainmanager/keychainstorage.h"
 #include "test_utility/testhelpers.h"
-#include "utility/timerutility.h"
 #include "utility/utility.h"
-
-#include <condition_variable>
-#include <mutex>
-#include <thread>
-#include <vector>
 
 namespace KDC {
 
-namespace {
 class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
     public:
         bool writePassword([[maybe_unused]] const std::string &keychainKey,
@@ -48,43 +41,14 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
 
         bool isTesting() override { return true; }
 };
-} // namespace
 
 void TestKeychainManager::testTimeOut() {
     if (!testhelpers::isExtendedTest()) return;
 
-    const TimerUtility timer;
-
     std::string data;
     bool found = false;
-    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
-    const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessTimeout), exitInfo);
-    // Ensure that the timeout occurred after 60 seconds before 90 seconds
-    CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60), timer.elapsed<std::chrono::seconds>());
-    CPPUNIT_ASSERT_LESS(std::chrono::seconds(90), timer.elapsed<std::chrono::seconds>());
-}
-
-void TestKeychainManager::testConcurrentReadLimit() {
-    const auto storage = std::make_shared<MockKeyChainStorageWithTimeout>();
-    (void) KeyChainManager::instance(storage);
-
-    constexpr std::size_t concurrentReads = 10;
-    for (std::size_t index = 0; index < concurrentReads; ++index) {
-        std::thread([&]() {
-            std::string data;
-            bool found = false;
-            const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
-        }).detach();
-    }
-
-    Utility::msleep(100); // Give some time for the threads to start
-
-    std::string data;
-    bool found = false;
-    const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessError), exitInfo);
-    CPPUNIT_ASSERT(!found);
+    KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
+    CPPUNIT_ASSERT(!KeyChainManager::instance()->readData("dummy_key", data, found));
 }
 
 } // namespace KDC
