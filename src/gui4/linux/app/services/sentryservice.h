@@ -33,7 +33,8 @@ class ParametersStore;
 /**
  * Linux v4 Sentry coordinator.
  *
- * Role: own Linux v4 Sentry consent reconciliation, delayed initialization, user identity, and UI/process capture helpers.
+ * Role: own Linux v4 Sentry consent reconciliation, delayed initialization, runtime context, user identity, and UI/process
+ * capture helpers.
  * Non-role: decide server-side persistence; the server remains the source of truth for ParametersInfo.
  */
 class SentryService final : public QObject {
@@ -60,6 +61,7 @@ class SentryService final : public QObject {
         void updateAuthenticatedUser() const;
 
     private:
+        static void updateLinuxRuntimeTags();
         void reconcileConsentWithParametersStore();
         void applyConsent(bool enabled);
 
