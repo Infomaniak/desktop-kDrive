@@ -76,7 +76,11 @@ SyncPath CommonUtility::getGenericAppSupportDir() {
     sentry::Handler::captureMessage(sentry::Level::Warning, "Utility_win::getGenericAppSupportDir",
                                     "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method");
 
-    return std::filesystem::temp_directory_path().parent_path().parent_path().native();
+    std::error_code ec;
+    const auto tempDirPath = std::filesystem::temp_directory_path(ec);
+    if (ec.value()) return {};
+
+    return tempDirPath.parent_path().parent_path().native();
 }
 
 SyncPath CommonUtility::getAppDir() {

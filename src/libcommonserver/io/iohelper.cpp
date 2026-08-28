@@ -573,7 +573,28 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (!entry.is_symlink() && entry.is_directory()) {
+        std::error_code ec;
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_WARN(logger(),
+                      L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+            if (const auto ioError = stdError2ioError(ec); isExpectedError(ioError))
+                continue;
+            else
+                return false;
+        }
+
+        const auto isDirectory = entry.is_directory(ec);
+        if (ec.value()) {
+            LOGW_WARN(logger(),
+                      L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+            if (const auto ioError = stdError2ioError(ec); isExpectedError(ioError))
+                continue;
+            else
+                return false;
+        }
+
+        if (!isSymlink && isDirectory) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));
@@ -737,7 +758,7 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum) n
 #endif
 
         std::ifstream ifs;
-        if (IoError openError = IoError::Success; !IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
+        if (auto openError = IoError::Success; !IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
         constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
         std::vector<char> buffer(chunkSize);

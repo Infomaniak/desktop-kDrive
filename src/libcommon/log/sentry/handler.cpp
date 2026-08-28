@@ -461,10 +461,11 @@ SyncPath Handler::getSentryTemporaryDir() {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y%m");
 
-    const auto sentryDirectory = std::filesystem::temp_directory_path() / "sentry" / oss.str();
     std::error_code ec;
-    (void) std::filesystem::create_directories(sentryDirectory, ec);
+    const auto sentryDirectory = std::filesystem::temp_directory_path(ec) / "sentry" / oss.str();
+    assert(!ec && "Temporary directory not found.");
 
+    (void) std::filesystem::create_directories(sentryDirectory, ec);
     assert(!ec && "Sentry temporary directory failed to be created.");
 
     return sentryDirectory;

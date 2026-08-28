@@ -332,7 +332,15 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     DirectoryEntry entry;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.is_directory()) {
+        std::error_code ec;
+        const auto isDirectory = entry.is_directory(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        if (isDirectory) {
             LOG_INFO(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string());
             continue;
         }

@@ -48,22 +48,6 @@ bool VirtualFilesCleaner::run() {
     return removePlaceholdersRecursively(_rootPath);
 }
 
-namespace {
-bool hasFileType(const std::filesystem::directory_entry &entry) {
-    return entry.is_symlink() || (!entry.is_directory());
-}
-
-bool shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry, const VfsStatus &vfsStatus) {
-    if (!hasFileType(entry)) return true; // Folders are kept on disk.
-    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) return true; // Hydrated placeholders are kept on disk.
-    if (!vfsStatus.isPlaceholder) return true; // Non-placeholder files are kept on disk.
-
-    return false;
-}
-
-} // namespace
-
-
 bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
     bool directoryIterationException = false;
     IoError ioError = IoError::Success;
@@ -102,7 +86,17 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             return false;
         }
 
-        if (const bool entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus); entryShouldBeKeptOnDisk) {
+        auto ioError = IoError::Success;
+        const auto entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus, ioError);
+        if (!entryShouldBeKeptOnDisk.has_value()) {
+            LOGW_DEBUG(_logger, L"Error in shouldBeKeptOnDisk " << Utility::formatIoError(entry.path(), ioError));
+            if (IoHelper::isExpectedError(ioError))
+                continue;
+            else
+                return false;
+        }
+
+        if (entryShouldBeKeptOnDisk.value()) {
             // Keep file on file system.
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item with " << Utility::formatSyncPath(absolutePath)
@@ -163,9 +157,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 
     const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException;
     if (!success) {
-        _exitInfo = ioError == IoError::FileOrDirectoryCorrupted
-                            ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
-                            : ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
     }
 
     return success;
@@ -179,6 +171,43 @@ bool VirtualFilesCleaner::folderCanBeProcessed(const DirectoryEntry &directoryEn
     }
 
     return true;
+}
+
+std::optional<bool> VirtualFilesCleaner::hasFileType(const std::filesystem::directory_entry &entry, IoError &ioError) {
+    std::error_code ec;
+    const auto isSymlink = entry.is_symlink(ec);
+    if (ec.value()) {
+        LOGW_WARN(_logger,
+                  L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+        ioError = IoHelper::stdError2ioError(ec);
+        return std::nullopt;
+    }
+
+    const auto isDirectory = entry.is_directory(ec);
+    if (ec.value()) {
+        LOGW_WARN(_logger,
+                  L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+        ioError = IoHelper::stdError2ioError(ec);
+        return std::nullopt;
+    }
+
+    return std::make_optional(isSymlink || !isDirectory);
+}
+
+std::optional<bool> VirtualFilesCleaner::shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry,
+                                                            const VfsStatus &vfsStatus, IoError &ioError) {
+    ioError = IoError::Success;
+    const auto isFile = hasFileType(entry, ioError);
+    if (!isFile.has_value()) {
+        LOGW_WARN(_logger, L"Error in hasFileType " << Utility::formatIoError(entry.path(), ioError));
+        return std::nullopt;
+    } else if (!isFile.value())
+        return true; // Folders are kept on disk.
+
+    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) return true; // Hydrated placeholders are kept on disk.
+    if (!vfsStatus.isPlaceholder) return true; // Non-placeholder files are kept on disk.
+
+    return false;
 }
 
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
@@ -200,10 +229,18 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             continue;
         }
 
-        if (!hasFileType(entry)) continue;
+        IoError ioError = IoError::Success;
+        const auto isFile = hasFileType(entry, ioError);
+        if (!isFile.has_value()) {
+            if (IoHelper::isExpectedError(ioError))
+                continue;
+            else
+                return false;
+        } else if (!isFile.value())
+            continue;
 
         bool isDehydrated = false;
-        auto ioError = IoError::Unknown;
+        ioError = IoError::Success;
         if (const bool success = IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError);
             !success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(entry.path(), ioError));
@@ -233,9 +270,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
     const bool iterationSuccess = (iterationIoError == IoError::Success) && endOfDir && !directoryIterationException;
     if (!iterationSuccess) {
-        _exitInfo = iterationIoError == IoError::FileOrDirectoryCorrupted
-                            ? ExitInfo(ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted)
-                            : ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        _exitInfo = IoHelper::directoryIteratorExitCode(iterationIoError);
     }
 
     return iterationSuccess && failedToRemovePlaceholders.empty();

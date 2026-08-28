@@ -42,6 +42,9 @@ class VirtualFilesCleaner {
     private:
         bool removePlaceholdersRecursively(const SyncPath &parentPath);
         bool folderCanBeProcessed(const DirectoryEntry &directoryEntry);
+        std::optional<bool> hasFileType(const std::filesystem::directory_entry &entry, IoError &ioError);
+        std::optional<bool> shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry, const VfsStatus &vfsStatus,
+                                               IoError &ioError);
 
         log4cplus::Logger _logger;
 

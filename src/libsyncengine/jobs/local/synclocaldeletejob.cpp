@@ -218,7 +218,22 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     DirectoryEntry entry;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if ((entry.is_symlink() || entry.is_regular_file()) && isFileDehydrated(entry.path(), _logger)) {
+        std::error_code ec;
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        const auto isRegularFile = entry.is_regular_file(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
+                                                            << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        if ((isSymlink || isRegularFile) && isFileDehydrated(entry.path(), _logger)) {
             if (const auto exitInfo = hardDelete(entry.path()); !exitInfo) return exitInfo;
 
             const auto relativeLocalPath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());

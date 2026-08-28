@@ -360,8 +360,9 @@ SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
 
 SyncPath Utility::getExcludedTemplateFilePath(const bool test /*= false*/) {
     if (test) return excludedTemplateFileName;
-    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
-                                                           excludedTemplateFileName);
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(
+            CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedTemplateFileName, ec);
     return canonicalPath.make_preferred();
 }
 
@@ -438,8 +439,9 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
 }
 SyncPath Utility::getSyncFolderRulesFilePath(const bool test) {
     if (test) return syncFolderRulesFileName;
-    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
-                                                           syncFolderRulesFileName);
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(
+            CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / syncFolderRulesFileName, ec);
     return canonicalPath.make_preferred();
 }
 
@@ -454,8 +456,30 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     }
 
     std::error_code ec;
-    const bool isSpecialItem = !dirEntry.is_regular_file(ec) && !dirEntry.is_directory(ec);
-    const bool isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
+    bool isSymLinkWithTooManyLevels = false;
+    const auto isDirectory = dirEntry.is_directory(ec);
+    if (ec.value()) {
+        LOGW_WARN(logger(),
+                  L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(dirEntry.path(), ec));
+        isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
+        if (!isSymLinkWithTooManyLevels) {
+            ioError = IoHelper::stdError2ioError(ec);
+            return false;
+        }
+    }
+
+    const auto isRegularFile = dirEntry.is_regular_file(ec);
+    if (ec.value()) {
+        LOGW_WARN(logger(),
+                  L"Error in std::filesystem::directory_entry::is_regular_file " << Utility::formatStdError(dirEntry.path(), ec));
+        isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
+        if (!isSymLinkWithTooManyLevels) {
+            ioError = IoHelper::stdError2ioError(ec);
+            return false;
+        }
+    }
+
+    const bool isSpecialItem = !isRegularFile && !isDirectory;
 
     if (isSymLinkWithTooManyLevels) {
         LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << Utility::formatSyncPath(dirEntry.path())

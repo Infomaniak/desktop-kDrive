@@ -1138,10 +1138,12 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
     using namespace KDC::event_dump_files;
+    std::error_code ec;
     auto sigFilePath =
-            std::filesystem::temp_directory_path() /
+            std::filesystem::temp_directory_path(ec) /
             (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
                                         : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+    assert(!ec && "Temporary directory not found.");
     return sigFilePath;
 }
 
@@ -1294,7 +1296,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        (void) std::filesystem::remove(sigFilePath);
+        (void) std::filesystem::remove(sigFilePath, ec);
     }
 }
 
