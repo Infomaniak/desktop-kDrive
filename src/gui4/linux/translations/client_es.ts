@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: es, Spanish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:19 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="es"> 
     <context>
@@ -1727,6 +1727,14 @@ Useful if you know the important work is online on kDrive.</source>
             <source>Link copied to clipboard</source> 
             <translation>Enlace copiado al portapapeles</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive no puede acceder a la ubicación de almacenamiento de esta sincronización. Asegúrese de que el dispositivo esté conectado y desbloqueado y, a continuación, compruebe que kDrive tenga permiso para acceder a ella.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Ubicación de almacenamiento no disponible</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Disco incompatible o carpeta directamente en la raíz del disco (ej: elige una carpeta como /Mon drive en lugar de /)</translation> 
@@ -2258,6 +2266,11 @@ desbloqueado y accesible desde su ordenador.</translation>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Sincronización</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Este ordenador</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 

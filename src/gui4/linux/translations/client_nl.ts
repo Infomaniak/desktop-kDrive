@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: nl, Dutch; Flemish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:20 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="nl"> 
     <context>
@@ -1727,6 +1727,14 @@ Handig als u weet dat het belangrijke werk online staat op kDrive.</translation>
             <source>Link copied to clipboard</source> 
             <translation>Link gekopieerd naar klembord</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive heeft geen toegang tot de opslaglocatie voor deze synchronisatie. Zorg ervoor dat het apparaat is aangesloten en ontgrendeld en controleer vervolgens of kDrive toestemming heeft om toegang te krijgen tot deze locatie.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Opslaglocatie niet beschikbaar</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Incompatibele schijf of map direct in de root van de schijf (bijv.: kies een map zoals /Mijn drive in plaats van /)</translation> 
@@ -2258,6 +2266,11 @@ ontgrendeld en toegankelijk is vanaf uw computer.</translation>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synchronisatie</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Deze computer</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 
