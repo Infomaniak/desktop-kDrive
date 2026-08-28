@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: sv, Swedish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:20 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="sv"> 
     <context>
@@ -1727,6 +1727,14 @@ Användbart om du vet att det viktiga arbetet finns online på kDrive.</translat
             <source>Link copied to clipboard</source> 
             <translation>Länk kopierad till urklipp</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive kan inte komma åt lagringsplatsen för den här synkroniseringen. Se till att enheten är ansluten och olåst och kontrollera sedan att kDrive har behörighet att komma åt den.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Lagringsplatsen är inte tillgänglig</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Inkompatibel enhet eller mapp direkt i roten av enheten (t.ex. välj en mapp som /Min enhet istället för /)</translation> 
@@ -2258,6 +2266,11 @@ olåst och tillgänglig från din dator.</translation>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synkronisering</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Den här datorn</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 

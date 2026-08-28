@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: de, German
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:19 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="de"> 
     <context>
@@ -1727,6 +1727,14 @@ Nützlich, wenn Sie wissen, dass die wichtige Arbeit online auf kDrive ist.</tra
             <source>Link copied to clipboard</source> 
             <translation>Link in die Zwischenablage kopiert</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive kann nicht auf den Speicherort dieser Synchronisierung zugreifen. Stellen Sie sicher, dass das Gerät angeschlossen und entsperrt ist, und überprüfen Sie anschliessend, ob kDrive die Berechtigung hat, darauf zuzugreifen.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Speicherort nicht verfügbar</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Inkompatibles Laufwerk oder Ordner direkt im Stammverzeichnis des Laufwerks (z. B. wählen Sie einen Ordner wie /Mon drive statt /)</translation> 
@@ -2257,6 +2265,11 @@ entsperrt ist und von Ihrem Computer aus darauf zugegriffen werden kann.</transl
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synchronisierung</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Dieser Computer</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 

@@ -71,10 +71,14 @@ bool MainSidebarController::currentHasWarning() const {
     return selectedData(SyncSelectorModel::WarningRole).toBool();
 }
 
-bool MainSidebarController::canOpenCurrentSyncFolder() const {
+bool MainSidebarController::hasCurrentSyncRoot() const {
     // Keep this QML-facing capability check free of filesystem I/O because bindings may evaluate it frequently.
     const auto context = _selectionStore.currentSyncContext();
     return context.has_value() && !context->syncInfo.localPath().empty();
+}
+
+bool MainSidebarController::canOpenCurrentSyncFolder() const {
+    return hasCurrentSyncRoot();
 }
 
 qint32 MainSidebarController::currentErrorCount() const {

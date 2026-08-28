@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: el, Greek
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:19 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="el"> 
     <context>
@@ -1727,6 +1727,14 @@ Useful if you know the important work is online on kDrive.</source>
             <source>Link copied to clipboard</source> 
             <translation>Ο σύνδεσμος αντιγράφηκε στο πρόχειρο</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>Το kDrive δεν μπορεί να αποκτήσει πρόσβαση στη θέση αποθήκευσης για αυτόν τον συγχρονισμό. Βεβαιωθείτε ότι η συσκευή είναι συνδεδεμένη και ξεκλείδωτη και, στη συνέχεια, ελέγξτε ότι το kDrive έχει άδεια πρόσβασης σε αυτήν.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Η τοποθεσία αποθήκευσης δεν είναι διαθέσιμη</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Μη συμβατή μονάδα δίσκου ή φάκελος απευθείας στη ρίζα της μονάδας (π.χ. επιλέξτε έναν φάκελο όπως /Η μονάδα μου αντί για /)</translation> 
@@ -2258,6 +2266,11 @@ unlocked and accessible from your computer.</source>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Συγχρονισμός</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Αυτός ο υπολογιστής</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 
