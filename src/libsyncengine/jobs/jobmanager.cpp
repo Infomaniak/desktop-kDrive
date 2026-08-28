@@ -44,6 +44,10 @@ void JobManager::startMainThreadIfNeeded() {
 
 void JobManager::stop() {
     _stop = true;
+    if (_mainThread) {
+        if (_mainThread->joinable()) _mainThread->join();
+        _mainThread = nullptr;
+    }
 }
 
 void JobManager::clear() {

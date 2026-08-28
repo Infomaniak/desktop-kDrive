@@ -90,9 +90,7 @@ void KDC::TestSyncJobManagerSingleton::tearDown() {
     // Abort the jobs that are still running. SyncJobManagerSingleton::clear() destroys the job objects, which
     // would result in a use-after-free if a job is still executing in the thread pool.
     for (const auto &jobId: SyncJobManagerSingleton::instance()->data().runningJobs()) {
-        if (const auto job = SyncJobManagerSingleton::instance()->getJob(jobId)) {
-            job->abort();
-        }
+        if (const auto job = SyncJobManagerSingleton::instance()->getJob(jobId)) job->abort();
     }
 
     // Wait max 1 min for the aborted jobs to finish and self-erase. Aborts are re-applied to jobs that would
@@ -100,9 +98,7 @@ void KDC::TestSyncJobManagerSingleton::tearDown() {
     (void) TimeoutHelper::waitFor([]() { return SyncJobManagerSingleton::instance()->data().runningJobs().empty(); },
                                   []() {
                                       for (const auto &jobId: SyncJobManagerSingleton::instance()->data().runningJobs()) {
-                                          if (const auto job = SyncJobManagerSingleton::instance()->getJob(jobId)) {
-                                              job->abort();
-                                          }
+                                          if (const auto job = SyncJobManagerSingleton::instance()->getJob(jobId)) job->abort();
                                       }
                                   },
                                   std::chrono::minutes(1), std::chrono::milliseconds(100));
@@ -374,7 +370,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         CPPUNIT_ASSERT_MESSAGE("Small file uploads have not all finished in 5 minutes",
                                TimeoutHelper::waitFor(
                                        [&jobIds]() {
-                                           return std::all_of(jobIds.cbegin(), jobIds.cend(), [](const UniqueId jobId) {
+                                           return std::ranges::all_of(jobIds.cbegin(), jobIds.cend(), [](const UniqueId jobId) {
                                                return SyncJobManagerSingleton::instance()->isJobFinished(jobId);
                                            });
                                        },
@@ -386,12 +382,10 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
 
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
-
-
-        const auto createUploadSessionJob = [](const DriveDbId driveDbId, const SyncPath &path,
+        const auto createUploadSessionJob = [](const DriveDbId driveDbId_, const SyncPath &path,
                                                const RemoteNodeId &remoteDirNodeId) {
             const bool liteSyncActivated = false;
-            return std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, path, path.filename().native(),
+            return std::make_shared<DriveUploadSession>(nullptr, driveDbId_, nullptr, path, path.filename().native(),
                                                         remoteDirNodeId, testhelpers::defaultTime, testhelpers::defaultTime,
                                                         liteSyncActivated, 3);
         };

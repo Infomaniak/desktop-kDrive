@@ -87,7 +87,7 @@ class AbstractJob : public Poco::Runnable {
 
         bool _isRunning = false;
         ExitInfo _exitInfo;
-        bool _aborted = false;
+        std::atomic<bool> _aborted = false;
         bool _isExtendedLog = false;
 
         Poco::Thread::Priority _jobPriority = Poco::Thread::PRIO_NORMAL;
