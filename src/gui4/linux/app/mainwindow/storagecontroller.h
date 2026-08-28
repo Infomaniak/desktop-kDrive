@@ -41,7 +41,7 @@ namespace KDC {
  * QML-facing state and lifecycle owner for the Linux Storage page.
  *
  * Storage data is computed locally and cached per synchronization for the process lifetime. Scans run outside the GUI
- * thread, keep the last resolved presentation visible, are cancelled when the page is hidden or the selection changes,
+ * thread, keep the last resolved presentation visible, are canceled when the page is hidden or the selection changes,
  * and are refreshed once an active synchronization leaves an active or transitional state.
  */
 class StorageController final : public QObject {

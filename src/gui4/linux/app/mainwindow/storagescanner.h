@@ -43,7 +43,7 @@ enum class StorageScanError : uint8_t {
     Unavailable,
     AccessDenied,
     IoError,
-    Cancelled,
+    Canceled,
 };
 
 [[nodiscard]] constexpr const char *toString(const StorageScanError error) noexcept {
@@ -56,8 +56,8 @@ enum class StorageScanError : uint8_t {
             return "AccessDenied";
         case StorageScanError::IoError:
             return "IoError";
-        case StorageScanError::Cancelled:
-            return "Cancelled";
+        case StorageScanError::Canceled:
+            return "Canceled";
     }
     return "Unknown";
 }
@@ -80,7 +80,7 @@ class StorageScanner {
     public:
         using CancellationCheck = std::function<bool()>;
 
-        [[nodiscard]] static StorageScanResult scan(const SyncPath &syncRoot, const CancellationCheck &isCancelled = {});
+        [[nodiscard]] static StorageScanResult scan(const SyncPath &syncRoot, const CancellationCheck &isCanceled = {});
 };
 
 } // namespace KDC

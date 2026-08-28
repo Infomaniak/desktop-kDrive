@@ -204,7 +204,7 @@ void StorageController::handleScanFinished() {
     const auto requestedSyncDbId = static_cast<SyncDbId>(_scanWatcher.property("syncDbId").toLongLong());
     const auto requestedSyncRoot = QStr2Path(_scanWatcher.property("syncRoot").toString());
     if (!_viewActive || requestedSyncDbId != _selectedSyncDbId || requestedSyncRoot != _selectedSyncRoot ||
-        result.error == StorageScanError::Cancelled) {
+        result.error == StorageScanError::Canceled) {
         return;
     }
 
