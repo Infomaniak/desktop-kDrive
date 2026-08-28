@@ -295,6 +295,9 @@
 - `app/services/parametersservice.*`: targeted facade for application settings updates. It starts from the confirmed
   `ParametersStore` snapshot, sends the full `PARAMETERS_UPDATE` payload, and updates the store only after server
   confirmation.
+- `app/services/sentryservice.*`: Linux v4 Sentry coordinator. It reconciles cached and server-confirmed consent,
+  publishes normalized Linux/Qt runtime tags after the GUI application exists, and refreshes the distribution channel
+  from the confirmed `ParametersStore` snapshot.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
   durable cache mutations stay signal-driven through `CachePipeline`.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
