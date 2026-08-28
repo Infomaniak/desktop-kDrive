@@ -51,8 +51,8 @@ struct FileIdentity {
         }
 };
 
-[[nodiscard]] bool cancelled(const StorageScanner::CancellationCheck &isCancelled) {
-    return isCancelled && isCancelled();
+[[nodiscard]] bool canceled(const StorageScanner::CancellationCheck &isCanceled) {
+    return isCanceled && isCanceled();
 }
 
 [[nodiscard]] StorageScanResult failure(const StorageScanError error) {
@@ -154,12 +154,12 @@ struct DirectoryScanState {
 
 /** Iterates one readable directory without recursively following it. */
 [[nodiscard]] StorageScanError scanDirectory(const SyncPath &directoryPath, DirectoryScanState &state,
-                                             const StorageScanner::CancellationCheck &isCancelled) {
+                                             const StorageScanner::CancellationCheck &isCanceled) {
     QDirIterator iterator(Path2QStr(directoryPath), QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot,
                           QDirIterator::NoIteratorFlags);
     while (iterator.hasNext()) {
-        if (cancelled(isCancelled)) {
-            return StorageScanError::Cancelled;
+        if (canceled(isCanceled)) {
+            return StorageScanError::Canceled;
         }
         if (const auto error = processEntry(QStr2Path(iterator.next()), state); error != StorageScanError::None) {
             return error;
@@ -170,14 +170,14 @@ struct DirectoryScanState {
 
 /** Walks the synchronization root using an explicit stack so other-device subtrees can be pruned before traversal. */
 [[nodiscard]] StorageScanError calculateSyncBytes(const SyncPath &syncRoot, const dev_t rootDevice,
-                                                  const StorageScanner::CancellationCheck &isCancelled, uint64_t &syncBytes) {
+                                                  const StorageScanner::CancellationCheck &isCanceled, uint64_t &syncBytes) {
     DirectoryScanState state;
     state.rootDevice = rootDevice;
     state.pendingDirectories.push_back(syncRoot);
 
     while (!state.pendingDirectories.empty()) {
-        if (cancelled(isCancelled)) {
-            return StorageScanError::Cancelled;
+        if (canceled(isCanceled)) {
+            return StorageScanError::Canceled;
         }
 
         const SyncPath directoryPath = std::move(state.pendingDirectories.back());
@@ -187,13 +187,13 @@ struct DirectoryScanState {
             logFilesystemError("Unable to read Storage directory", directoryPath, errorNumber);
             return errorFromErrno(errorNumber);
         }
-        if (const auto error = scanDirectory(directoryPath, state, isCancelled); error != StorageScanError::None) {
+        if (const auto error = scanDirectory(directoryPath, state, isCanceled); error != StorageScanError::None) {
             return error;
         }
     }
 
-    if (cancelled(isCancelled)) {
-        return StorageScanError::Cancelled;
+    if (canceled(isCanceled)) {
+        return StorageScanError::Canceled;
     }
     syncBytes = state.syncBytes;
     return StorageScanError::None;
@@ -201,9 +201,9 @@ struct DirectoryScanState {
 
 } // namespace
 
-StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const CancellationCheck &isCancelled) {
-    if (cancelled(isCancelled)) {
-        return failure(StorageScanError::Cancelled);
+StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const CancellationCheck &isCanceled) {
+    if (canceled(isCanceled)) {
+        return failure(StorageScanError::Canceled);
     }
     if (syncRoot.empty()) {
         qCWarning(lcStorageScanner) << "Storage synchronization root is empty";
@@ -246,7 +246,7 @@ StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const Cancellat
     }
 
     uint64_t syncBytes = 0;
-    if (const auto error = calculateSyncBytes(syncRoot, rootStat.st_dev, isCancelled, syncBytes);
+    if (const auto error = calculateSyncBytes(syncRoot, rootStat.st_dev, isCanceled, syncBytes);
         error != StorageScanError::None) {
         return failure(error);
     }
