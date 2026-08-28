@@ -39,6 +39,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/cache/onboardingstate.h
         app/cache/parametersstore.cpp
         app/cache/parametersstore.h
+        app/dialogs/manydeletescontroller.cpp
+        app/dialogs/manydeletescontroller.h
         app/mainwindow/mainsidebarcontroller.cpp
         app/mainwindow/mainsidebarcontroller.h
         app/mainwindow/activitiescontroller.cpp
@@ -121,6 +123,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKActivities.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
+        ui/tokens/IKModalTokens.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -143,15 +146,20 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
+        ui/chrome/IKWindowResizeHandles.qml
         ui/components/IKBadge.qml
         ui/components/IKAvatar.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLoadingSpinner.qml
+        ui/components/IKModal.qml
+        ui/components/IKModalButton.qml
         ui/components/IKSidebarItem.qml
         ui/components/IKDriveSyncSelectorItem.qml
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
         ui/components/IKErrorBanner.qml
+        ui/dialogs/GlobalModalHost.qml
+        ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
         ui/windows/main/MainToolbar.qml
         ui/windows/main/MainWindowView.qml
