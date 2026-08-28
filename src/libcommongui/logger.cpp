@@ -129,7 +129,7 @@ static void addSentryBreadcrumb(const QtMsgType type, const QMessageLogContext &
         static const auto guiV4Prefix = QStringLiteral("gui.v4.");
         QString category = QString::fromUtf8(ctx.category);
         if (category.startsWith(guiV4Prefix)) {
-            category.remove(0, guiV4Prefix.size());
+            (void) category.remove(0, guiV4Prefix.size());
         }
         const std::string breadcrumbCategory = category.toStdString();
         (void) sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string(breadcrumbCategory.c_str()));
