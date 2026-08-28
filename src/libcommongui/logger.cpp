@@ -47,8 +47,6 @@ constexpr char logMessagePattern[] =
         "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
         "(%{threadid}) %{file}:%{line} - %{message}";
 
-static std::atomic_bool sentryBreadcrumbsEnabled{false};
-
 namespace KDC {
 
 static int8_t logLevelForMessageType(const QtMsgType type) noexcept {
@@ -117,7 +115,7 @@ static QString formatSentryBreadcrumb(const QMessageLogContext &ctx, const QStri
 }
 
 static void addSentryBreadcrumb(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    if (!sentryBreadcrumbsEnabled.load(std::memory_order_relaxed)) {
+    if (!Logger::sentryBreadcrumbsEnabled()) {
         return;
     }
 
@@ -189,7 +187,7 @@ void Logger::installEarlyMessageHandler() {
 }
 
 void Logger::setSentryBreadcrumbsEnabled(const bool enabled) {
-    sentryBreadcrumbsEnabled.store(enabled, std::memory_order_relaxed);
+    _sentryBreadcrumbsEnabled.store(enabled, std::memory_order_relaxed);
 }
 
 Logger::Logger(QObject *parent) :
