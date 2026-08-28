@@ -74,7 +74,8 @@ struct StorageScanResult {
  *
  * The scanner never follows symbolic links and never descends onto a device different from the synchronization root's
  * device. Regular files contribute their allocated blocks rather than their logical size, so fully sparse files use zero
- * bytes. The call is synchronous and must run outside the GUI thread.
+ * bytes. Subdirectories the user cannot traverse are skipped instead of failing the scan, so restricted subtrees are
+ * under-counted. The call is synchronous and must run outside the GUI thread.
  */
 class StorageScanner {
     public:
