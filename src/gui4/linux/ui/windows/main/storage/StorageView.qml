@@ -22,10 +22,28 @@ import QtQuick
 import kDrive.UI
 
 Item {
-    Text {
-        anchors.centerIn: parent
-        text: qsTrId("tabTitleStorage")
-        color: IKColors.textSecondary
-        font.pixelSize: IKFonts.bodySize
+    id: root
+
+    required property var controller
+
+    Component.onCompleted: controller.setViewActive(true)
+    Component.onDestruction: controller.setViewActive(false)
+
+    StorageUsageCard {
+        anchors.left: parent.left
+        anchors.leftMargin: IKSpacing.page
+        anchors.right: parent.right
+        anchors.rightMargin: IKSpacing.page
+        anchors.top: parent.top
+        anchors.topMargin: IKSpacing.s32
+        visible: root.controller.state !== StorageController.Unavailable
+        controller: root.controller
+        loading: root.controller.state === StorageController.Loading
+    }
+
+    StorageErrorState {
+        anchors.fill: parent
+        visible: root.controller.state === StorageController.Unavailable
+        controller: root.controller
     }
 }

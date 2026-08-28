@@ -5,7 +5,7 @@
  Project: kDrive Desktop
  Locale: da, Danish
  Exported by: Romain Galland
- Exported at: Mon, 17 Aug 2026 14:29:19 +0200 
+ Exported at: Tue, 25 Aug 2026 14:05:49 +0200 
 --> 
 <TS version="2.1" sourcelanguage="en" language="da"> 
     <context>
@@ -1727,6 +1727,14 @@ Nyttigt, hvis du ved, at det vigtige arbejde er online på kDrive.</translation>
             <source>Link copied to clipboard</source> 
             <translation>Link kopieret til udklipsholder</translation> 
         </message> 
+        <message id="linuxStorageLocationUnavailableDescription"> 
+            <source>kDrive can’t access the storage location for this synchronization. Make sure the device is connected and unlocked, then check that kDrive has permission to access it.</source> 
+            <translation>kDrive kan ikke få adgang til lagerplaceringen for denne synkronisering. Sørg for, at enheden er tilsluttet og låst op, og kontrollér derefter, at kDrive har tilladelse til at få adgang til den.</translation> 
+        </message> 
+        <message id="linuxStorageLocationUnavailableTitle"> 
+            <source>Storage location unavailable</source> 
+            <translation>Lagerplacering ikke tilgængelig</translation> 
+        </message> 
         <message id="liteSyncUnavailableDescriptionMac"> 
             <source>Incompatible drive or folder directly at the root of the drive (e.g., choose a folder like /My drive instead of /)</source> 
             <translation>Inkompatibelt drev eller mappe direkte i roden af drevet (f.eks. vælg en mappe som /Mit drev i stedet for /)</translation> 
@@ -2258,6 +2266,11 @@ oplåst og tilgængeligt fra din computer.</translation>
         <message id="storageSyncBlockTitle"> 
             <source>Sync</source> 
             <translation>Synkronisering</translation> 
+        </message> 
+        <message id="storageThisComputer"> 
+            <source>This computer</source> 
+            <extracomment>Title shown for the main system volume when it has no filesystem label.</extracomment> 
+            <translation>Denne computer</translation> 
         </message> 
         <message id="storageThisComputerTitle"> 
             <source>This PC - %1 - %2</source> 
