@@ -168,9 +168,20 @@ struct DirectoryScanState {
     return StorageScanError::None;
 }
 
-/** Walks the synchronization root using an explicit stack so other-device subtrees can be pruned before traversal. */
+/**
+ * Walks the synchronization root using an explicit stack so other-device subtrees can be pruned before traversal.
+ *
+ * Subdirectories the user cannot traverse are logged and skipped: a single restricted directory must not void the whole
+ * scan. The synchronization root itself remains a hard failure, as its content would otherwise be reported as empty.
+ */
 [[nodiscard]] StorageScanError calculateSyncBytes(const SyncPath &syncRoot, const dev_t rootDevice,
                                                   const StorageScanner::CancellationCheck &isCanceled, uint64_t &syncBytes) {
+    if (access(syncRoot.c_str(), R_OK | X_OK) != 0) {
+        const int errorNumber = errno;
+        logFilesystemError("Unable to read Storage synchronization root", syncRoot, errorNumber);
+        return errorFromErrno(errorNumber);
+    }
+
     DirectoryScanState state;
     state.rootDevice = rootDevice;
     state.pendingDirectories.push_back(syncRoot);
@@ -184,8 +195,8 @@ struct DirectoryScanState {
         state.pendingDirectories.pop_back();
         if (access(directoryPath.c_str(), R_OK | X_OK) != 0) {
             const int errorNumber = errno;
-            logFilesystemError("Unable to read Storage directory", directoryPath, errorNumber);
-            return errorFromErrno(errorNumber);
+            logFilesystemError("Skipping unreadable Storage directory", directoryPath, errorNumber);
+            continue;
         }
         if (const auto error = scanDirectory(directoryPath, state, isCanceled); error != StorageScanError::None) {
             return error;
