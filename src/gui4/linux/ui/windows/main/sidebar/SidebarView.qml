@@ -57,6 +57,7 @@ Rectangle {
                 onTriggered: root.appRouter.navigateToMainTab(root.tabHome)
             }
             IKSidebarItem {
+                enabled: root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/activities.svg"
                 label: qsTrId("tabTitleActivities")
                 notificationColor: IKColors.statusMediumWarning
@@ -67,6 +68,7 @@ Rectangle {
                 onTriggered: root.appRouter.navigateToMainTab(root.tabActivities)
             }
             IKSidebarItem {
+                enabled: root.controller.hasCurrentSyncRoot
                 iconSource: "qrc:/assets/main/storage.svg"
                 label: qsTrId("tabTitleStorage")
                 selected: root.currentTab === root.tabStorage

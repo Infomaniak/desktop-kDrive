@@ -29,6 +29,7 @@ Item {
     required property var activitiesController
     required property var homeController
     required property var mainSidebarController
+    required property var storageController
 
     readonly property int tabHome: AppRouter.Home
     readonly property int tabActivities: AppRouter.Activities
@@ -73,9 +74,10 @@ Item {
                     sourceComponent: activitiesViewComponent
                 }
 
-                StoragePlaceholder {
+                Loader {
                     anchors.fill: parent
-                    visible: root.currentTab === root.tabStorage
+                    active: root.currentTab === root.tabStorage && root.windowVisible
+                    sourceComponent: storageViewComponent
                 }
 
                 BlockingErrorPlaceholder {
@@ -115,6 +117,14 @@ Item {
 
         ActivitiesView {
             controller: root.activitiesController
+        }
+    }
+
+    Component {
+        id: storageViewComponent
+
+        StorageView {
+            controller: root.storageController
         }
     }
 }
