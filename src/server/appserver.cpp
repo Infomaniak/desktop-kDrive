@@ -22,7 +22,6 @@
 #include "runningprocessinfo_linux.h"
 #endif
 #include "version.h"
-#include "migration/migrationparams.h"
 #include "keychainmanager/keychainmanager.h"
 #include "requests/syncnodecache.h"
 #include "requests/offlinefilessizeestimator.h"
@@ -276,17 +275,7 @@ void AppServer::init() {
         throw std::runtime_error("Unable to check if ParmsDb exists.");
     }
 
-    std::filesystem::path pre334ConfigFilePath =
-            std::filesystem::path(QStr2SyncName(MigrationParams::configDir().filePath(MigrationParams::configFileName())));
-    bool oldConfigExists;
-    if (!IoHelper::checkIfPathExists(pre334ConfigFilePath, oldConfigExists, ioError, IoHelper::PathCheckOption::Insensitive) ||
-        ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError));
-        throw std::runtime_error("Unable to check if a pre 3.3.4 config exists.");
-    }
-
-    LOGW_INFO(_logger, L"New DB exists : " << Path2WStr(parmsDbPath) << L" => " << newDbExists);
-    LOGW_INFO(_logger, L"Old config exists : " << Path2WStr(pre334ConfigFilePath) << L" => " << oldConfigExists);
+    LOGW_INFO(_logger, L"DB exists : " << Path2WStr(parmsDbPath) << L" => " << newDbExists);
 
     // Init ParmsDb instance
     if (!initParmsDB(parmsDbPath, _theme->version())) {
@@ -298,22 +287,6 @@ void AppServer::init() {
     if (clearErrors(0) != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in AppServer::clearErrors");
         throw std::runtime_error("Unable to clear old errors.");
-    }
-
-    bool migrateFromPre334 = !newDbExists && oldConfigExists;
-    if (migrateFromPre334) {
-        // Migrate pre v3.4.0 configuration
-        LOG_INFO(_logger, "Migrate pre v3.4.0 configuration");
-        bool proxyNotSupported = false;
-        ExitCode exitCode = migrateConfiguration(proxyNotSupported);
-        if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in migrateConfiguration");
-            addError(Error(ERR_ID, exitCode, exitCode == ExitCode::SystemError ? ExitCause::MigrationError : ExitCause::Unknown));
-        }
-
-        if (proxyNotSupported) {
-            addError(Error(ERR_ID, ExitCode::DataError, ExitCause::MigrationProxyNotImplemented));
-        }
     }
 
     // Init KeyChainManager instance
@@ -2917,35 +2890,6 @@ void AppServer::exclusionAppList(QString &appList) {
     }
 }
 #endif
-
-ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
-    typedef ExitCode (MigrationParams::*migrateptr)();
-    ExitCode exitCode(ExitCode::Ok);
-
-    MigrationParams mp = MigrationParams();
-    std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
-#if defined(KD_MACOS)
-            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
-#endif
-    };
-
-    for (const auto &migrate: migrateArr) {
-        ExitCode functionExitCode = (mp.*migrate.first)();
-        if (functionExitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in " << migrate.second);
-            exitCode = functionExitCode;
-        }
-    }
-
-    // delete old files
-    mp.deleteUselessConfigFiles();
-    proxyNotSupported = mp.isProxyNotSupported();
-
-    return exitCode;
-}
 
 ExitInfo AppServer::updateUserInfo(User &user) {
     if (user.keychainKey().empty()) {
