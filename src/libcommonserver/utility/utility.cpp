@@ -813,4 +813,16 @@ ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDi
     return ExitCause::SyncDirAccessError;
 }
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
+std::string Utility::escapePath(const SyncPath &path) {
+    std::string escapedPath = path.string();
+    size_t pos = 0;
+    while ((pos = escapedPath.find('\'', pos)) != std::string::npos) {
+        (void) escapedPath.replace(pos, 1, "'\\''");
+        pos += 4;
+    }
+    return escapedPath;
+}
+#endif
+
 } // namespace KDC
