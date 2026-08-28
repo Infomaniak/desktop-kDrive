@@ -464,7 +464,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         CPPUNIT_ASSERT_MESSAGE("Big file downloads have not all finished in 10 minutes",
                                TimeoutHelper::waitFor(
                                        [&jobIds]() {
-                                           return std::all_of(jobIds.cbegin(), jobIds.cend(), [](const UniqueId jobId) {
+                                           return std::ranges::all_of(jobIds.cbegin(), jobIds.cend(), [](const UniqueId jobId) {
                                                return SyncJobManagerSingleton::instance()->isJobFinished(jobId);
                                            });
                                        },
