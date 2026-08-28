@@ -188,7 +188,6 @@ void ManyDeletesController::acknowledge(const TooManyDeletesUserChoice userChoic
         if (guard.isNull()) {
             return;
         }
-
         guard->setBusy(false);
         if (!exitInfo) {
             qCWarning(lcManyDeletesController)
