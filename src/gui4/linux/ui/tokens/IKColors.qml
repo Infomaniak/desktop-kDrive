@@ -106,6 +106,9 @@ QtObject {
     readonly property color actionPrimary: accentPrimary
     readonly property color actionOnPrimary: darkMode ? _p.neutralBlue800 : _p.neutralBlue100
     readonly property color actionDisabled: _p.gray400
+    readonly property color actionDestructive: _p.red500
+    readonly property color actionDestructivePressed: _p.red600
+    readonly property color actionOnDestructive: _p.white
 
     // Text
     readonly property color textPrimary: darkMode ? _p.neutralBlue50 : _p.neutralBlue800
@@ -182,4 +185,9 @@ QtObject {
     readonly property color activitiesActionMenuHover: surfaceTertiary
     readonly property color sidebarNotificationSurface: surfacePrimary
     readonly property color sidebarNotificationBorder: surfaceTertiary
+    readonly property color modalSurface: onboardingSurfacePrimary
+    readonly property color modalBorder: surfaceTertiary
+    readonly property color modalScrim: _p.neutralBlack35
+    readonly property color modalSecondaryActionHover: surfaceTertiary
+    readonly property color modalHardWarningIcon: actionDestructive
 }
