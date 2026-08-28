@@ -166,6 +166,8 @@ class CommService : public QObject {
         void requestSyncStatus(SyncDbId syncDbId, const SyncStatusCallback &callback) const;
         void requestSyncDelete(SyncDbId syncDbId, const VoidCallback &callback) const;
         void requestStartSyncsAfterLogin(UserDbId userDbId, const VoidCallback &callback) const;
+        void requestAcknowledgeManyDeletes(SyncDbId syncDbId, TooManyDeletesUserChoice userChoice,
+                                           const VoidCallback &callback) const;
         void requestSyncTriggerProgressUpdate(SyncDbId syncDbId, const VoidCallback &callback) const;
         void requestSyncGetPrivateLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, const StringCallback &callback) const;
         void requestSyncGetPublicLinkUrl(DriveDbId driveDbId, const NodeId &nodeId, const StringCallback &callback) const;
@@ -248,6 +250,7 @@ class CommService : public QObject {
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, const KDC::SyncRuntimeInfo &runtimeInfo);
         void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &info);
+        void manyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, Count itemCount);
 
         // --- Error ---
         void errorAdded(const Error &info);
