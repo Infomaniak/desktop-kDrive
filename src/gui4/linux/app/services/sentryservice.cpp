@@ -149,7 +149,7 @@ void SentryService::updateLinuxRuntimeTags() {
     handler->setTag("os.display_server", normalizedDisplayServer(platformPlugin).toStdString());
     handler->setTag("os.desktop", normalizedDesktopEnvironment(desktopEnvironment).toStdString());
     handler->setTag("os.packaging", qEnvironmentVariable("APPIMAGE").isEmpty() ? "other" : "appimage");
-    handler->setTag("runtime.qt_version", qVersion());
+    handler->setTag("qt.version", qVersion());
     handler->setTag("qt.platform_plugin", platformPlugin.toStdString());
 }
 
