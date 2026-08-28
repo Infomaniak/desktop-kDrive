@@ -308,7 +308,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
         void processInterruptedLogsUpload();
 
-        ExitCode migrateConfiguration(bool &proxyNotSupported);
         enum class UpdateFollowUpAction {
             None,
             CleanUserDbEntry
