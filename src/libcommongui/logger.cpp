@@ -116,20 +116,31 @@ static QString formatSentryBreadcrumb(const QMessageLogContext &ctx, const QStri
     return QStringLiteral("%1:%2 - %3").arg(fileNameString).arg(ctx.line).arg(message);
 }
 
-static void addSentryBreadcrumb(const QtMsgType type, const QString &breadcrumbMessage) {
+static void addSentryBreadcrumb(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     if (!sentryBreadcrumbsEnabled.load(std::memory_order_relaxed)) {
         return;
     }
 
-    const std::string message = breadcrumbMessage.toStdString();
-    const sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, message.c_str());
+    const std::string breadcrumbMessage = formatSentryBreadcrumb(ctx, message).toStdString();
+    const sentry_value_t breadcrumb = sentry_value_new_breadcrumb("default", breadcrumbMessage.c_str());
     (void) sentry_value_set_by_key(breadcrumb, "level", sentry_value_new_string(sentryLevelForMessageType(type)));
+
+    if (ctx.category != nullptr) {
+        static const auto guiV4Prefix = QStringLiteral("gui.v4.");
+        QString category = QString::fromUtf8(ctx.category);
+        if (category.startsWith(guiV4Prefix)) {
+            category.remove(0, guiV4Prefix.size());
+        }
+        const std::string breadcrumbCategory = category.toStdString();
+        (void) sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string(breadcrumbCategory.c_str()));
+    }
+
     sentry_add_breadcrumb(breadcrumb);
 }
 
 static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message);
-    addSentryBreadcrumb(type, formatSentryBreadcrumb(ctx, message));
+    addSentryBreadcrumb(type, ctx, message);
     if (CommonUtility::logToConsoleEnabled()) {
         std::cerr << qPrintable(formattedMessage) << '\n';
     }
@@ -138,7 +149,7 @@ static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx,
 static void kdriveLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     auto *const logger = Logger::instance();
     const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message);
-    addSentryBreadcrumb(type, formatSentryBreadcrumb(ctx, message));
+    addSentryBreadcrumb(type, ctx, message);
 
     if (logLevelForMessageType(type) < logger->minLogLevel()) {
         return;
