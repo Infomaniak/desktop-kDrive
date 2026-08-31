@@ -94,7 +94,7 @@ jobs:
           rc=0
 
           for i in $(seq 1 "$COUNT"); do
-            NAME="ci-runner-${RUN_ID}-${i}"
+            NAME="ci-runner-win-${RUN_ID}-${i}"
             echo "Launching $NAME ..."
             openstack server create \
               --os-cloud "$OS_CLOUD" \
