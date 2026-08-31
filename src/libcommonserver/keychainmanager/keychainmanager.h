@@ -21,6 +21,7 @@
 #include "libcommon.h"
 #include "keychainstorage.h"
 #include "apitoken.h"
+#include "libcommon/utility/types.h"
 
 #include <memory>
 
@@ -41,10 +42,10 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         void clearDummyTest();
 
         bool writeData(const std::string &keychainKey, const std::string &rawData);
-        bool readData(const std::string &keychainKey, std::string &data, bool &found);
+        ExitInfo readData(const std::string &keychainKey, std::string &data, bool &found);
         bool deleteData(const std::string &keychainKey);
 
-        bool readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
+        ExitInfo readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found);
 
         [[nodiscard]] bool isTesting() const { return _storage ? _storage->isTesting() : false; }
 
