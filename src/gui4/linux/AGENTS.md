@@ -284,6 +284,9 @@
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
+- `app/syncconfiguration/remotefolderprovider.*`: injectable asynchronous boundary for remote folder metadata,
+  children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
+  same contract without onboarding dependencies.
 - `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
   work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, and the free-folder
   derivation that appends the attempt count without a separator, as the server does.
