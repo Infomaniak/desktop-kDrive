@@ -92,6 +92,8 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
             return IoError::AccessDenied;
         case static_cast<int>(std::errc::cross_device_link):
             return IoError::CrossDeviceLink;
+        case static_cast<int>(std::errc::too_many_symbolic_link_levels):
+            return IoError::TooManySymbolicLinkLevels;
         default:
             return IoError::Unknown;
     }
@@ -223,7 +225,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
 }
 
 bool IoHelper::isExpectedError(IoError ioError) noexcept {
-    return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
+    return ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied;
 }
 //! Set the target type of link item.
 /*!

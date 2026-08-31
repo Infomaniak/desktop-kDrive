@@ -451,70 +451,41 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
                                        const ItemType &itemType) {
     isManaged = false;
     ioError = IoError::Success;
+
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path()) << L" because size > "
                                        << CommonUtility::maxPathLength());
         return true;
     }
 
-    std::error_code ec;
-    bool isSymLinkWithTooManyLevels = false;
-    const auto isDirectory = dirEntry.is_directory(ec);
-    if (ec.value()) {
-        LOGW_WARN(logger(),
-                  L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(dirEntry.path(), ec));
-        isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
-        if (!isSymLinkWithTooManyLevels) {
-            ioError = IoHelper::stdError2ioError(ec);
-            return false;
+    auto tmpItemType = itemType;
+    if (tmpItemType == ItemType()) {
+        if (!IoHelper::getItemType(dirEntry.path(), tmpItemType)) {
+            ioError = tmpItemType.ioError;
+            if (IoHelper::isExpectedError(ioError)) {
+                LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
+                return true;
+            } else if (ioError == IoError::TooManySymbolicLinkLevels) {
+                LOGW_DEBUG(logger(), L"Invalid symbolic link with "
+                                             << Utility::formatSyncPath(dirEntry.path())
+                                             << L" is managed although it has too many levels of indirection.")
+                isManaged = true;
+                return true;
+            } else {
+                LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
+                return false;
+            }
         }
     }
 
-    const auto isRegularFile = dirEntry.is_regular_file(ec);
-    if (ec.value()) {
-        LOGW_WARN(logger(),
-                  L"Error in std::filesystem::directory_entry::is_regular_file " << Utility::formatStdError(dirEntry.path(), ec));
-        isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
-        if (!isSymLinkWithTooManyLevels) {
-            ioError = IoHelper::stdError2ioError(ec);
-            return false;
-        }
-    }
-
-    const bool isSpecialItem = !isRegularFile && !isDirectory;
-
-    if (isSymLinkWithTooManyLevels) {
-        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << Utility::formatSyncPath(dirEntry.path())
-                                                                          << L" although it has too many levels of indirection.")
-    }
-
-    if (isSymLinkWithTooManyLevels || !isSpecialItem) {
+    if (tmpItemType.nodeType == NodeType::Directory || tmpItemType.nodeType == NodeType::File) {
+        // Directory, regular file or symlink
         isManaged = true;
         return true;
     }
 
-    auto tmpItemType = itemType;
-    if (tmpItemType == ItemType()) {
-        bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
-        ioError = tmpItemType.ioError;
-        if (!result) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
-            return false;
-        }
-
-        if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
-            return true;
-        }
-    }
-    if (tmpItemType.linkType == LinkType::None) {
-        LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path())
-                                       << L" because it is not a directory, a regular file or a symlink.");
-        return true;
-    }
-
-    isManaged = true;
-
+    LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path())
+                                   << L" because it is not a directory, a regular file or a symlink.");
     return true;
 }
 

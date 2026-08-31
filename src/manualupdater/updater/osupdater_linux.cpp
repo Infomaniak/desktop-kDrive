@@ -74,7 +74,7 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
             std::filesystem::perm_options::add, ec);
     if (ec.value()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to make AppImage executable: " << ec.value());
-        outMessage = QObject::tr("Failed to make AppImage executable: %1").arg(QString::fromUtf8(ec.value()));
+        outMessage = QObject::tr("Failed to make AppImage executable: %1").arg(ec.value());
         return false;
     }
 
