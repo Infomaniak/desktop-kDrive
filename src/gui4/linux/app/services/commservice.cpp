@@ -652,10 +652,11 @@ void CommService::requestNodePath(const SyncDbId syncDbId, const NodeId &nodeId,
                            });
 }
 
-void CommService::requestNodeSubfolders(const DriveDbId driveDbId, const NodeId &nodeId, const bool withPath,
+void CommService::requestNodeSubfolders(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId, const bool withPath,
                                         const NodeInfoListCallback &callback) const {
     Poco::DynamicStruct params;
-    CommonUtility::writeValueToStruct(params, msgParamDriveDbId, driveDbId);
+    CommonUtility::writeValueToStruct(params, msgParamUserDbId, userDbId);
+    CommonUtility::writeValueToStruct(params, msgParamDriveId, driveId);
     CommonUtility::writeValueToStruct(params, msgParamNodeId, nodeId);
     CommonUtility::writeValueToStruct(params, msgParamWithPath, withPath);
     _ipcClient.sendRequest(
