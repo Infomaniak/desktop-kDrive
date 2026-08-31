@@ -122,6 +122,8 @@ Item {
                     implicitHeight: IKOnboarding.driveSelectionButtonHeight
                     radius: IKOnboarding.buttonCornerRadius
                     color: IKColors.actionPrimary
+                    border.width: retryButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                    border.color: IKColors.actionOnPrimary
                 }
 
                 padding: 0
@@ -229,6 +231,8 @@ Item {
                         implicitHeight: IKOnboarding.driveSelectionButtonHeight
                         radius: IKOnboarding.buttonCornerRadius
                         color: continueButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
+                        border.width: continueButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                        border.color: IKColors.actionOnPrimary
                     }
 
                     padding: 0
