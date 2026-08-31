@@ -1910,11 +1910,14 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
             }
 
+        private:
             // /!\ The base class constructor will not call this override.
             // This method can only be called after the derived class constructor has completed.
-            ApiToken loadApiToken() override { return _apiToken; }
+            ExitInfo loadApiToken(ApiToken &apiToken) override {
+                apiToken = _apiToken;
+                return ExitCode::Ok;
+            }
 
-        private:
             ApiToken _apiToken;
     };
 
@@ -2254,13 +2257,14 @@ void TestNetworkJobs::testDownloadChecksumHandling() {
 
 void TestNetworkJobs::testLongPollJobWithoutToken() {
     LongPollJob jobWithToken(_driveDbId, "dummy_cursor_content");
-    const auto exitInfo = jobWithToken.runSynchronously();
+    auto exitInfo = jobWithToken.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfo), ExitInfo(ExitCode::BackError, ExitCause::HttpErr), exitInfo);
 
     clearAccessTokenCache();
 
-    CPPUNIT_ASSERT_THROW_MESSAGE("LongPollJob did not throw as expected", LongPollJob(_driveDbId, "dummy_cursor_content"),
-                                 EmptyTokenError);
+    LongPollJob jobWithoutToken(_driveDbId, "dummy_cursor_content");
+    exitInfo = jobWithoutToken.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::InvalidToken, exitInfo.code());
 }
 } // namespace KDC

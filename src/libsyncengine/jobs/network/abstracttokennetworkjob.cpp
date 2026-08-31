@@ -74,11 +74,6 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const Us
     }
 
     checkParametersValidity();
-    _apiToken = loadApiToken();
-
-    if (!_apiToken.accessToken().empty()) {
-        addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
-    }
 }
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(const ApiType apiType, const bool returnJson /*= true*/) :
@@ -123,6 +118,17 @@ void AbstractTokenNetworkJob::clearCache() {
     const std::scoped_lock lock(_cacheMutex);
     _driveToApiKeyMap.clear();
     _userToApiKeyMap.clear();
+}
+
+ExitInfo AbstractTokenNetworkJob::runJob() noexcept {
+    if (const auto exitInfo = loadApiToken(_apiToken); !exitInfo) {
+        return exitInfo;
+    }
+    if (!_apiToken.accessToken().empty()) {
+        addRawHeader("Authorization", "Bearer " + _apiToken.accessToken());
+    }
+
+    return AbstractNetworkJob::runJob();
 }
 
 std::string AbstractTokenNetworkJob::getSpecificUrl() {
@@ -182,7 +188,9 @@ ExitInfo AbstractTokenNetworkJob::handleDriveUnauthorizedResponse() {
 ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
     // There is no longer any refresh of the token since v3.5.6
     // This code is only used when updating from a version < v3.5.6
-    if (const auto apiToken = loadApiToken(); apiToken != _apiToken) {
+    ApiToken apiToken;
+    (void) loadApiToken(apiToken);
+    if (apiToken != _apiToken) {
         LOG_DEBUG(_logger, "Token refreshed by another request");
         _accessTokenAlreadyRefreshed = false;
         _apiToken = apiToken;
@@ -576,8 +584,17 @@ void AbstractTokenNetworkJob::fetchFirstUserDbId() {
     _userDbId = userList[0].dbId();
 }
 
-ApiToken AbstractTokenNetworkJob::loadApiToken() {
-    ApiToken apiToken;
+ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
+    apiToken = ApiToken();
+    const auto retrieveAndValidateApiToken = [this, &apiToken]() -> ExitInfo {
+        apiToken = retrieveApiTokenFromUserCache();
+        if (apiToken.accessToken().empty()) {
+            LOG_WARN(_logger, "No access token found");
+            return ExitInfo{ExitCode::InvalidToken, ExitCause::LoginError};
+        }
+        return ExitCode::Ok;
+    };
+
     if (_apiType == ApiType::Desktop) {
         fetchDriveDbIdFromSync();
     } else if (_apiType == ApiType::Internal) {
@@ -589,15 +606,13 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
             if (_driveDbId) loadUserInfoFromDriveDbId();
-            apiToken = retrieveApiTokenFromUserCache();
-            break;
+            return retrieveAndValidateApiToken();
         }
         case ApiType::Profile:
         case ApiType::DriveByUser:
         case ApiType::Internal: {
             loadUserInfoFromUserDbId();
-            apiToken = retrieveApiTokenFromUserCache();
-            break;
+            return retrieveAndValidateApiToken();
         }
         case ApiType::InternalUnauthenticated:
         default:
@@ -605,7 +620,7 @@ ApiToken AbstractTokenNetworkJob::loadApiToken() {
             break;
     }
 
-    return apiToken;
+    return ExitCode::Ok;
 }
 
 std::string AbstractTokenNetworkJob::contentType() {
