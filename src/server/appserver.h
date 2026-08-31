@@ -35,7 +35,7 @@
 #include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
 #include "libcommon/data/sync.h"
-#include "libcommon/info/syncfileiteminfo.h"
+#include "libcommon/data/syncfileitem.h"
 #include "libcommonserver/vfs/vfs.h"
 
 #include <QApplication>
@@ -377,7 +377,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 #if defined(KD_MACOS)
         void exclusionAppList(QString &appList);
 #endif
-        void sendSyncCompletedItem(SyncDbId syncDbId, const SyncFileItemInfo &item) const;
+        void sendSyncCompletedItem(SyncDbId syncDbId, const SyncFileItem &item) const;
         void sendVfsConversionCompleted(SyncDbId syncDbId) const;
         ExitCode sendShowFileNotification(SyncDbId syncDbId, const QString &filename, const QString &renameTarget,
                                           SyncFileInstruction status, int count) const;
