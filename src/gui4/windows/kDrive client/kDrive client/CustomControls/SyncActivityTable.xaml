@@ -60,7 +60,7 @@
             <local:SvgIcon Grid.Row="0"
                            Height="120"
                            UriString="{ThemeResource Infomaniak.Custom.Images.servin}"
-                           Foreground="{ThemeResource AccentFillColorTertiaryBrush}" />
+                           Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
 
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -332,10 +332,10 @@
                             <TextBlock Grid.Column="1"
                                        Grid.Row="0"
                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                       Text="{x:Bind RevelantFilePath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                       Text="{x:Bind RelevantFilePath, Converter={StaticResource StringPathToFileNameConverter}}"
                                        TextTrimming="CharacterEllipsis">
                                 <ToolTipService.ToolTip>
-                                    <ToolTip Content="{x:Bind RevelantFilePath}" />
+                                    <ToolTip Content="{x:Bind RelevantFilePath}" />
                                 </ToolTipService.ToolTip>
                             </TextBlock>
                             <TextBlock Grid.Column="1"
@@ -353,9 +353,9 @@
                                          Click="SyncActivityParent_Click"
                                          Style="{ThemeResource DefaultHyperlinkButtonStyle}">
                             <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind RevelantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                <ToolTip Content="{x:Bind RelevantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
                             </ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind RevelantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                            <TextBlock Text="{x:Bind RelevantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
                                        TextTrimming="CharacterEllipsis"
                                        HorizontalAlignment="Left" />
 
