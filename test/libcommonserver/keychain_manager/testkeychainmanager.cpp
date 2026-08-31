@@ -43,7 +43,7 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
 };
 
 void TestKeychainManager::testTimeOut() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 
     std::string data;
     bool found = false;
