@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 14:27:04 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -107,7 +107,7 @@
     <value>Importato</value> 
   </data> 
   <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importato - %@</value> 
+    <value>Importato %@</value> 
   </data> 
   <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
     <value>Ignorato</value> 
@@ -116,31 +116,31 @@
     <value>Spostato</value> 
   </data> 
   <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Spostato - %@</value> 
+    <value>Spostato %@</value> 
   </data> 
   <data name="activityInstructionPutLabel" xml:space="preserve"> 
     <value>Aggiunto</value> 
   </data> 
   <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Aggiunto - %@</value> 
+    <value>Aggiunto %@</value> 
   </data> 
   <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
     <value>Spostato nel cestino</value> 
   </data> 
   <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Spostato nel cestino - %@</value> 
+    <value>Spostato nel cestino %@</value> 
   </data> 
   <data name="activityInstructionRenameLabel" xml:space="preserve"> 
     <value>Rinominato</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Rinominato - %@</value> 
+    <value>Rinominato %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Modificato</value> 
   </data> 
   <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Modificato - %@</value> 
+    <value>Modificato %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sincronizza una cartella con kDrive</value> 
@@ -1163,7 +1163,7 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Dal: %@</value> 
+    <value>Da: %@</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 

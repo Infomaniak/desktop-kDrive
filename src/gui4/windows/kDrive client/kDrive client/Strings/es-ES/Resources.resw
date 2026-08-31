@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 14:27:04 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -107,7 +107,7 @@
     <value>Importado</value> 
   </data> 
   <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Importado - %@</value> 
+    <value>Importado %@</value> 
   </data> 
   <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
     <value>Ignorado</value> 
@@ -116,31 +116,31 @@
     <value>Movido</value> 
   </data> 
   <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Desplazado - %@</value> 
+    <value>Movido %@</value> 
   </data> 
   <data name="activityInstructionPutLabel" xml:space="preserve"> 
     <value>Añadido</value> 
   </data> 
   <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Añadido - %@</value> 
+    <value>Añadido %@</value> 
   </data> 
   <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
     <value>Movido a la papelera</value> 
   </data> 
   <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Enviado a la papelera - %@</value> 
+    <value>Se ha enviado a la papelera %@</value> 
   </data> 
   <data name="activityInstructionRenameLabel" xml:space="preserve"> 
     <value>Cambiado de nombre</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Renombrado - %@</value> 
+    <value>Renombrado %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Modificado</value> 
   </data> 
   <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Modificado - %@</value> 
+    <value>Modificado %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sincronizar una carpeta con kDrive</value> 

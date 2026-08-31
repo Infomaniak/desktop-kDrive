@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 14:27:04 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -107,7 +107,7 @@
     <value>Imported</value> 
   </data> 
   <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
-    <value>Imported - %@</value> 
+    <value>Imported %@</value> 
   </data> 
   <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
     <value>Ignored</value> 
@@ -116,31 +116,31 @@
     <value>Moved</value> 
   </data> 
   <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
-    <value>Moved - %@</value> 
+    <value>Moved %@</value> 
   </data> 
   <data name="activityInstructionPutLabel" xml:space="preserve"> 
     <value>Added</value> 
   </data> 
   <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
-    <value>Added - %@</value> 
+    <value>Added %@</value> 
   </data> 
   <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
     <value>Moved to trash</value> 
   </data> 
   <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
-    <value>Moved to the trash - %@</value> 
+    <value>Moved to the trash %@</value> 
   </data> 
   <data name="activityInstructionRenameLabel" xml:space="preserve"> 
     <value>Renamed</value> 
   </data> 
   <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
-    <value>Renamed - %@</value> 
+    <value>Renamed %@</value> 
   </data> 
   <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
     <value>Modified</value> 
   </data> 
   <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
-    <value>Modified - %@</value> 
+    <value>Modified %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sync a folder with kDrive</value> 
