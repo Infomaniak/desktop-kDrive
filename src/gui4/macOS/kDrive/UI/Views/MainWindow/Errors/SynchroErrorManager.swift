@@ -82,6 +82,20 @@ final class SynchroErrorManager: ObservableObject {
         NSWorkspace.shared.open(url)
     }
 
+    func openRescueFolder(_ error: SynchroError) async {
+        @InjectService var cache: CoherentCache
+        guard !error.metadata.destinationPath.isEmpty,
+              let synchro = await cache.getSynchro(synchroDbId: Int32(error.metadata.synchroDbId)) else {
+            return
+        }
+
+        let folderURL = Self.rescueFolderURL(
+            destinationPath: error.metadata.destinationPath,
+            synchroPath: synchro.localPath
+        )
+        NSWorkspace.shared.open(folderURL)
+    }
+
     func openParentFolder(_ error: SynchroError) {
         let url = URL(fileURLWithPath: error.metadata.path)
         let parentURL = url.deletingLastPathComponent()
@@ -201,5 +215,11 @@ final class SynchroErrorManager: ObservableObject {
         }
 
         return synchroContext.drive
+    }
+
+    nonisolated static func rescueFolderURL(destinationPath: String, synchroPath: String) -> URL {
+        let synchroURL = URL(fileURLWithPath: synchroPath, isDirectory: true)
+        let rescuedItemURL = URL(fileURLWithPath: destinationPath, relativeTo: synchroURL).standardizedFileURL
+        return rescuedItemURL.deletingLastPathComponent()
     }
 }
