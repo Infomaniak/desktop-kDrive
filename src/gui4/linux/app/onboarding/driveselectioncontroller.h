@@ -21,6 +21,7 @@
 #include "app/cache/appcache.h"
 #include "app/cache/onboardingstate.h"
 #include "app/onboarding/availabledrivesmodel.h"
+#include "app/onboarding/onboardingdefaultpathresolver.h"
 #include "app/onboarding/onboardingflowcontroller.h"
 #include "app/services/userservice.h"
 
@@ -52,7 +53,8 @@ class DriveSelectionController final : public QObject {
 
     public:
         explicit DriveSelectionController(const AppCache &cache, OnboardingState &onboardingState, UserService &userService,
-                                          OnboardingFlowController &flowController, QObject *parent = nullptr);
+                                          OnboardingFlowController &flowController,
+                                          const OnboardingDefaultPathResolver &defaultPathResolver, QObject *parent = nullptr);
 
         [[nodiscard]] QAbstractItemModel *drivesModel() { return &_drivesModel; }
         [[nodiscard]] AvailableDrivesModel *availableDrivesModel() { return &_drivesModel; }
@@ -91,6 +93,7 @@ class DriveSelectionController final : public QObject {
         OnboardingState &_onboardingState;
         UserService &_userService;
         OnboardingFlowController &_flowController;
+        const OnboardingDefaultPathResolver &_defaultPathResolver;
         AvailableDrivesModel _drivesModel;
         bool _loadFailed{false};
 };
