@@ -23,6 +23,7 @@
 #include "app/onboarding/onboardingflowcontroller.h"
 #include "app/onboarding/onboardingdefaultpathresolver.h"
 #include "app/onboarding/onboardinglogincoordinator.h"
+#include "app/onboarding/onboardingsyncconfigurationcontroller.h"
 #include "app/onboarding/onboardingsynccreationcoordinator.h"
 
 #include <QObject>
@@ -50,6 +51,7 @@ class OnboardingSession final : public QObject {
         Q_PROPERTY(OnboardingFlowController *flowController READ flowController CONSTANT)
         Q_PROPERTY(DriveSelectionController *driveSelectionController READ driveSelectionController CONSTANT)
         Q_PROPERTY(AvailableDrivesModel *availableDrivesModel READ availableDrivesModel CONSTANT)
+        Q_PROPERTY(OnboardingSyncConfigurationController *syncConfigurationController READ syncConfigurationController CONSTANT)
 
     public:
         enum class EntryPoint : uint8_t {
@@ -64,6 +66,9 @@ class OnboardingSession final : public QObject {
         [[nodiscard]] OnboardingFlowController *flowController() { return &_flowController; }
         [[nodiscard]] DriveSelectionController *driveSelectionController() { return &_driveSelectionController; }
         [[nodiscard]] AvailableDrivesModel *availableDrivesModel();
+        [[nodiscard]] OnboardingSyncConfigurationController *syncConfigurationController() {
+            return &_syncConfigurationController;
+        }
         [[nodiscard]] uint64_t generation() const { return _generation; }
         void invalidatePendingOperations();
 
@@ -77,6 +82,7 @@ class OnboardingSession final : public QObject {
         OnboardingLoginCoordinator _loginCoordinator;
         OnboardingDefaultPathResolver _defaultPathResolver;
         DriveSelectionController _driveSelectionController;
+        OnboardingSyncConfigurationController _syncConfigurationController;
         OnboardingSyncCreationCoordinator _syncCreationCoordinator;
         const uint64_t _generation;
 };
