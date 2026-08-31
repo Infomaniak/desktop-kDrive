@@ -20,7 +20,9 @@
 #include "log/log.h"
 
 #include <chrono>
-#include <future>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -69,36 +71,51 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
     return _storage->writePassword(keychainKey, rawData);
 }
 
-bool KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
+ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
     constexpr auto keychainReadTimeout = std::chrono::seconds(60);
 
-    auto future = std::async(std::launch::async, [this, keychainKey]() {
-        std::string localData;
-        bool localFound = false;
-        const bool ok = _storage->readPassword(keychainKey, localData, localFound);
-        return std::tuple<bool, std::string, bool>(ok, std::move(localData), localFound);
-    });
+    std::mutex mutex;
+    std::condition_variable conditionVariable;
+    bool done = false;
+    bool localOk = false;
+    bool localFound = false;
+    std::string localData;
 
-    if (future.wait_for(keychainReadTimeout) != std::future_status::ready) {
-        LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain after 60 seconds");
+    std::thread([this, keychainKey, &mutex, &conditionVariable, &done, &localOk, &localFound, &localData]() {
+        std::string tmpData;
+        bool tmpFound = false;
+        const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
+
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            localOk = ok;
+            localFound = tmpFound;
+            localData = std::move(tmpData);
+            done = true;
+        }
+        conditionVariable.notify_one();
+    }).detach();
+
+    std::unique_lock<std::mutex> lock(mutex);
+    if (!conditionVariable.wait_for(lock, keychainReadTimeout, [&done]() { return done; })) {
+        LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain");
         found = false;
-        return false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessTimeout};
     }
 
-    const auto [ok, readData, localFound] = future.get();
-    if (!ok) {
+    if (!localOk) {
         found = false;
-        return false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
     }
 
-    data = readData;
+    data = std::move(localData);
     found = localFound;
-    return true;
+    return ExitCode::Ok;
 }
 
-bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
+ExitInfo KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
     std::string token;
-    const bool returnValue = readData(keychainKey, token, found);
+    const auto returnValue = readData(keychainKey, token, found);
     if (returnValue && found) {
         apiToken = ApiToken(token);
     }

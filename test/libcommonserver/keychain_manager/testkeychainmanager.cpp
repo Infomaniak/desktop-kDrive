@@ -43,12 +43,13 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
 };
 
 void TestKeychainManager::testTimeOut() {
-    if (!testhelpers::isExtendedTest()) return;
+    // if (!testhelpers::isExtendedTest()) return;
 
     std::string data;
     bool found = false;
     KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
-    CPPUNIT_ASSERT(!KeyChainManager::instance()->readData("dummy_key", data, found));
+    const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
+    CPPUNIT_ASSERT(!exitInfo);
 }
 
 } // namespace KDC
