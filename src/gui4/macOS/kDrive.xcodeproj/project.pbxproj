@@ -235,6 +235,7 @@
 				Signal/SignalProcessorTests.swift,
 				UI/BetaOptionTests.swift,
 				UI/LogUploadSessionTrackerTests.swift,
+				UI/SynchroErrorManagerTests.swift,
 				UI/UISynchroNodeTests.swift,
 				Utils/FinderSidebarFavoritesTests.swift,
 				Utils/MacOSPermissionHandlerTests.swift,
