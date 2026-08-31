@@ -70,6 +70,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/onboarding/driveselectioncontroller.h
         app/onboarding/onboardingentrydecision.cpp
         app/onboarding/onboardingentrydecision.h
+        app/onboarding/onboardingdefaultpathresolver.cpp
+        app/onboarding/onboardingdefaultpathresolver.h
         app/onboarding/onboardingflowcontroller.cpp
         app/onboarding/onboardingflowcontroller.h
         app/onboarding/onboardinglogincoordinator.cpp
