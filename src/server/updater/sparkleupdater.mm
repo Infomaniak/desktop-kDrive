@@ -237,7 +237,7 @@ void SparkleUpdater::startInstaller() {
         return;
     }
 
-    if ([d->updater sessionInProgress]) {
+    if ([d->updater sessionInProgress] && [d->updater canCheckForUpdates]) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "An update session is already in progress, bringing it to focus.");
         [d->spuStandardUserDriver showUpdateInFocus];
         return;
