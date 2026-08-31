@@ -34,6 +34,12 @@ Item {
 
     signal toggled(int row)
 
+    function toggleFromKeyboard(): void {
+        if (root.cellEnabled) {
+            root.toggled(root.row)
+        }
+    }
+
     function driveNameContainsMouse() {
         const point = cellMouseArea.mapToItem(driveNameText, cellMouseArea.mouseX, cellMouseArea.mouseY)
         return point.x >= 0 && point.x <= driveNameText.width && point.y >= 0 && point.y <= driveNameText.height
@@ -42,6 +48,18 @@ Item {
     implicitWidth: IKOnboarding.driveSelectionListWidth
     implicitHeight: Math.max(IKOnboarding.driveSelectionCellMinHeight,
                              contentRow.implicitHeight + IKOnboarding.driveSelectionCellPadding * 2)
+
+    // A drive is picked with the keyboard as well as with the mouse: the cell is a checkable control, not a
+    // decorated mouse target.
+    activeFocusOnTab: root.cellEnabled
+    Accessible.role: Accessible.CheckBox
+    Accessible.name: root.driveName
+    Accessible.description: root.accountName
+    Accessible.checkable: root.cellEnabled
+    Accessible.checked: root.checked
+    Keys.onSpacePressed: root.toggleFromKeyboard()
+    Keys.onReturnPressed: root.toggleFromKeyboard()
+    Keys.onEnterPressed: root.toggleFromKeyboard()
 
     Rectangle {
         anchors.fill: parent
@@ -136,9 +154,20 @@ Item {
         cursorShape: root.cellEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: {
             if (root.cellEnabled) {
+                root.forceActiveFocus(Qt.MouseFocusReason)
                 root.toggled(root.row)
             }
         }
+    }
+
+    // Drawn above the cell content so the focus ring stays visible over the hover and selection fills.
+    Rectangle {
+        anchors.fill: parent
+        visible: root.activeFocus
+        radius: IKOnboarding.driveSelectionCellRadius
+        color: "transparent"
+        border.width: IKOnboarding.driveSelectionCellFocusBorderWidth
+        border.color: IKColors.accentPrimary
     }
 
     IKToolTip {
