@@ -121,7 +121,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         void loadUserInfoFromDriveDbId();
 
         // Load user information, including the API token, based on the value of `_userDbId`, assuming it has been set.
-        void loadUserInfoFromUserDbId();
+        ExitInfo loadUserInfoFromUserDbId();
 
         ApiToken retrieveApiTokenFromUserCache();
         Account getAccount(const Drive &drive) const;

@@ -102,7 +102,6 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
         found = false;
         return {ExitCode::SystemError, ExitCause::KeychainAccessTimeout};
     }
-
     if (!localOk) {
         found = false;
         return {ExitCode::SystemError, ExitCause::KeychainAccessError};
