@@ -33,7 +33,6 @@
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
-        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
         <converters:SyncActivityDirectionToIconUriConverter x:Key="SyncActivityDirectionToIconConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
@@ -349,16 +348,14 @@
                         </Grid>
 
                         <HyperlinkButton Grid.Column="1"
-                                         Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
+                                         Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.S}"
                                          VerticalAlignment="Center"
                                          Click="SyncActivityParent_Click"
-                                         Tag="{x:Bind ParentFolderPath}"
-                                         Style="{ThemeResource TextBlockButtonStyle}"
-                                         MaxWidth="100">
+                                         Style="{ThemeResource DefaultHyperlinkButtonStyle}">
                             <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                <ToolTip Content="{x:Bind RevelantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
                             </ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind ParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                            <TextBlock Text="{x:Bind RevelantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
                                        TextTrimming="CharacterEllipsis"
                                        HorizontalAlignment="Left" />
 

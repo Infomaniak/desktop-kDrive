@@ -1,21 +1,28 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Infomaniak.kDrive.Utilities
 {
-    internal class Time
+    public enum DateTimeToStringMode
     {
-        public enum DateTimeToStringMode
+        Elapsed,
+        ElapsedSinceCapitalized,
+        ElapsedSince,
+        ElapsedAgo,
+        ElapsedAgoCapitalized,
+    }
+
+    public class Time
+    {
+        public static string DateTimeToString(DateTime? value, string format)
         {
-            Elapsed,
-            ElapsedSinceCapitalized,
-            ElapsedSince,
-            ElapsedAgo,
-            ElapsedAgoCapitalized,
-            Raw
+            return value?.ToString(format, CultureInfo.CurrentCulture) ?? "?";
         }
 
-        public static string DateTimeToString(DateTime value, DateTimeToStringMode mode)
+        public static string DateTimeElapsedToString(DateTime? value, DateTimeToStringMode mode)
         {
+            if (value is null) return "?";
+
             string format;
             switch (mode)
             {
@@ -27,8 +34,6 @@ namespace Infomaniak.kDrive.Utilities
                 case DateTimeToStringMode.ElapsedAgoCapitalized:
                     format = Localizer.Instance.GetString("labelAgo");
                     break;
-                case DateTimeToStringMode.Raw:
-                    return value.ToString("d");
                 case DateTimeToStringMode.Elapsed:
                     format = "{0}";
                     break;
@@ -38,7 +43,7 @@ namespace Infomaniak.kDrive.Utilities
                     break;
             }
 
-            var timeSpan = DateTime.Now - value;
+            TimeSpan timeSpan = (DateTime.Now - value).GetValueOrDefault();
 
             string FixCapitalization(string str)
             {
@@ -96,7 +101,7 @@ namespace Infomaniak.kDrive.Utilities
             }
             else
             {
-                return value.ToString("d");
+                return value?.ToString("d") ?? "?";
             }
         }
 
