@@ -384,10 +384,8 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
         const auto createUploadSessionJob = [](const DriveDbId driveDbId_, const SyncPath &path,
                                                const RemoteNodeId &remoteDirNodeId) {
-            const bool liteSyncActivated = false;
             return std::make_shared<DriveUploadSession>(nullptr, driveDbId_, nullptr, path, path.filename().native(),
-                                                        remoteDirNodeId, testhelpers::defaultTime, testhelpers::defaultTime,
-                                                        liteSyncActivated, 3);
+                                                        remoteDirNodeId, testhelpers::defaultTime, testhelpers::defaultTime, 3);
         };
 
         const auto job1 = createUploadSessionJob(driveDbId, filepath, remoteTmpDir.id());
