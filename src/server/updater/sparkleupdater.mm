@@ -236,6 +236,10 @@ void SparkleUpdater::startInstaller() {
     [d->spuStandardUserDriver showUpdateInFocus];
 }
 
+bool SparkleUpdater::isUpdateSessionInProgress() const {
+    return d->updater && [d->updater sessionInProgress];
+}
+
 void SparkleUpdater::unskipVersion() {
     AbstractUpdater::unskipVersion();
 
