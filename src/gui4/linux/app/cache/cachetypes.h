@@ -105,8 +105,11 @@ struct AvailableDriveContext {
 
 struct PendingSyncConfig {
         QString localPath;
+        QString defaultLocalPath;
         QString targetPath;
         QString targetNodeId;
+        std::vector<NodeId> blackList;
+        bool usesDefaultLocalPath{true};
         bool supportVfs{false};
         VirtualFileMode virtualFileMode{VirtualFileMode::Off};
 };
