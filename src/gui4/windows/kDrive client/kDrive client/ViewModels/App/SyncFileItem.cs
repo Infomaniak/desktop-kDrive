@@ -201,10 +201,10 @@ namespace Infomaniak.kDrive.ViewModels
 
         public string RevelantFilePath
         {
-            get => _newPath ?? _path;
+            get => String.IsNullOrEmpty(_newPath) ? _path : _newPath;
         }
 
-        public string SyncFileItemToInstructionText(SyncFileInstruction instruction, SyncFileStatus status)
+        public string SyncFileItemToInstructionText(SyncFileInstruction instruction, SyncFileStatus status, DateTime timeStamp )
         {
             switch (instruction)
             {
@@ -214,17 +214,17 @@ namespace Infomaniak.kDrive.ViewModels
                     return "exportation";
                 case SyncFileInstruction.Move:
                     if (System.IO.Path.GetDirectoryName(Path) != System.IO.Path.GetDirectoryName(NewPath))
-                        return "deplacé";
+                            return $"deplacé {Utilities.Time.DateTimeToString(timeStamp, Utilities.Time.DateTimeToStringMode.ElapsedAgo)}";
                     else
-                        return "renommé";
+                        return $"renommé {Utilities.Time.DateTimeToString(timeStamp, Utilities.Time.DateTimeToStringMode.ElapsedAgo)}";
 
                 case SyncFileInstruction.Remove:
-                    return "placé dans la corbeille";
+                    return $"placé dans la corbeille {Utilities.Time.DateTimeToString(timeStamp, Utilities.Time.DateTimeToStringMode.ElapsedAgo)}";
                 case SyncFileInstruction.Update:
                 case SyncFileInstruction.UpdateMetadata:
-                    return "Mis à jour";
+                    return $"Mis à jour {Utilities.Time.DateTimeToString(timeStamp, Utilities.Time.DateTimeToStringMode.ElapsedAgo)}";
                 default:
-                    return "Mis à jour";
+                    return $"Mis à jour {Utilities.Time.DateTimeToString(timeStamp, Utilities.Time.DateTimeToStringMode.ElapsedAgo)}";
             }
         }
 

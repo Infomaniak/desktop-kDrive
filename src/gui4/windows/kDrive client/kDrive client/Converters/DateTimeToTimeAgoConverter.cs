@@ -31,7 +31,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 format = "{0}";
             }
-            else if (parser.KeyEquals("Format", "Since"))
+            else if (parser.KeyEquals("Format", "ElapsedSince"))
             {
                 format = Localizer.Instance.GetString("labelSince");
             }
