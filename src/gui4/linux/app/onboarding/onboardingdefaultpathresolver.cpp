@@ -1,0 +1,121 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ */
+
+#include "onboardingdefaultpathresolver.h"
+
+#include "app/cache/appcache.h"
+#include "app/cache/onboardingstate.h"
+#include "app/services/commservice.h"
+#include "app/services/serviceeventbus.h"
+#include "app/syncconfiguration/localpaths.h"
+#include "libcommon/utility/utility.h"
+
+#include <QLoggingCategory>
+#include <QPointer>
+
+namespace KDC {
+
+namespace {
+Q_LOGGING_CATEGORY(lcOnboardingDefaultPathResolver, "gui.v4.onboardingdefaultpathresolver", QtInfoMsg)
+}
+
+OnboardingDefaultPathResolver::OnboardingDefaultPathResolver(const AppCache &appCache, OnboardingState &onboardingState,
+                                                             CommService &commService, ServiceEventBus &serviceEventBus,
+                                                             QObject *const parent) :
+    QObject(parent),
+    _appCache(appCache),
+    _onboardingState(onboardingState),
+    _commService(commService),
+    _serviceEventBus(serviceEventBus) {
+    (void) connect(&_onboardingState, &OnboardingState::selectedAvailableDrivesChanged, this,
+                   &OnboardingDefaultPathResolver::resolveMissingDefaultPaths);
+}
+
+void OnboardingDefaultPathResolver::invalidatePendingRequests() {
+    ++_generation;
+    if (_pendingKeys.empty()) return;
+    _pendingKeys.clear();
+    emit pendingResolutionsChanged();
+}
+
+bool OnboardingDefaultPathResolver::pathTakenByAnotherDrive(const QString &path, const AvailableDriveKey &excludedKey) const {
+    for (const auto &key: _onboardingState.selectedAvailableDriveKeys()) {
+        if (key == excludedKey) continue;
+        const auto config = _onboardingState.pendingSyncConfig(key);
+        if (!config || config->localPath.isEmpty()) continue;
+        if (localPathsOverlap(path, config->localPath)) return true;
+    }
+    return false;
+}
+
+void OnboardingDefaultPathResolver::resolveMissingDefaultPaths() {
+    for (const auto &key: _onboardingState.selectedAvailableDriveKeys()) {
+        if (_pendingKeys.contains(key)) continue;
+        if (const auto config = _onboardingState.pendingSyncConfig(key); config && !config->defaultLocalPath.isEmpty()) continue;
+
+        const auto availableDrive = _appCache.availableDrive(key);
+        if (!availableDrive) continue;
+
+        const bool wasIdle = _pendingKeys.empty();
+        (void) _pendingKeys.insert(key);
+        if (wasIdle) emit pendingResolutionsChanged();
+
+        qCInfo(lcOnboardingDefaultPathResolver)
+                << "Requesting default sync folder | userDbId:" << key.userDbId << "/ driveId:" << key.driveId;
+        const uint64_t generation = _generation;
+        const QPointer self(this);
+        _commService.requestFindGoodPathForNewSync(
+                CommonUtility::str2CommString(availableDrive->name()),
+                [self, key, generation](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                    if (!self) return;
+                    self->handleGoodPathResult(key, generation, exitInfo, result);
+                });
+    }
+}
+
+void OnboardingDefaultPathResolver::handleGoodPathResult(const AvailableDriveKey &key, const uint64_t generation,
+                                                         const ExitInfo &exitInfo, const GoodPathResult &result) {
+    if (generation != _generation || !_pendingKeys.contains(key)) return;
+    finishRequest(key);
+
+    if (!_onboardingState.isAvailableDriveSelected(key)) {
+        qCDebug(lcOnboardingDefaultPathResolver)
+                << "Default sync folder dropped: drive unselected meanwhile | driveId:" << key.driveId;
+        return;
+    }
+
+    const QString defaultPath = exitInfo ? makeUniqueLocalPath(Path2QStr(result.goodPath),
+                                                               [this, &key](const QString &candidate) {
+                                                                   return pathTakenByAnotherDrive(candidate, key);
+                                                               })
+                                         : QString{};
+    if (defaultPath.isEmpty()) {
+        qCWarning(lcOnboardingDefaultPathResolver)
+                << "No default sync folder available, unselecting drive | driveId:" << key.driveId;
+        _onboardingState.unselectAvailableDrive(key);
+        _serviceEventBus.notifyGenericError(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
+        return;
+    }
+
+    PendingSyncConfig config = _onboardingState.pendingSyncConfig(key).value_or(PendingSyncConfig{});
+    config.defaultLocalPath = defaultPath;
+    if (config.localPath.isEmpty() || config.usesDefaultLocalPath) {
+        config.localPath = defaultPath;
+        config.usesDefaultLocalPath = true;
+    }
+    _onboardingState.setPendingSyncConfig(key, config);
+}
+
+void OnboardingDefaultPathResolver::finishRequest(const AvailableDriveKey &key) {
+    if (_pendingKeys.erase(key) == 0) return;
+    if (_pendingKeys.empty()) emit pendingResolutionsChanged();
+}
+
+} // namespace KDC
