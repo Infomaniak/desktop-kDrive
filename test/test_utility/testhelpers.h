@@ -97,9 +97,14 @@ struct RightsSet {
         bool execute;
 };
 
-void generateTestFile(const SyncPath &path, const uint64_t size = 0);
+enum class TestFileGenerationMode {
+    Deterministic,
+    PseudoRandom
+};
+void generateTestFile(const SyncPath &path, const uint64_t size = 0,
+                      TestFileGenerationMode mode = TestFileGenerationMode::Deterministic);
 void generateOrEditTestFile(const SyncPath &path);
-void setTestFileSize(const SyncPath &path, uint64_t size);
+void setTestFileSize(const SyncPath &path, uint64_t size, TestFileGenerationMode mode = TestFileGenerationMode::Deterministic);
 bool generateTestFolder(const SyncPath &path);
 
 /**

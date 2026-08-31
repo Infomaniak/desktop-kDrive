@@ -1,27 +1,30 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2026 Infomaniak Network SA
-/// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "uploadjob.h"
 
+#include "uploadhelpers.h"
 #include "uploadjobreplyhandler.h"
 #include "io/filestat.h"
 
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
 
 #include <fstream>
 #include <Poco/Net/HTTPRequest.h>
@@ -46,14 +49,15 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
 }
 
 UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
-                     const NodeId &fileId, const SyncTime modificationTime) :
+                     const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
     UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
+    _remoteSize = remoteSize;
 
     // Retrieve creation date from the local file
     FileStat fileStat;
-    auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::getFileStat(_absoluteFilePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
     }
@@ -98,13 +102,29 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
+ExitInfo UploadJob::runJob() noexcept {
+    if (!_fileId.empty()) {
+        const auto result = KDC::resolveUploadNeed(_logger, driveDbId(), _absoluteFilePath, _fileId, _remoteSize, _creationTimeIn,
+                                                   _modificationTimeIn);
+        if (result.applyFileDatesResult) {
+            _nodeIdOut = result.applyFileDatesResult->nodeId;
+            _creationTimeOut = result.applyFileDatesResult->creationTime;
+            _modificationTimeOut = result.applyFileDatesResult->modificationTime;
+            _sizeOut = result.applyFileDatesResult->size;
+        }
+        if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
+    }
+    return AbstractTokenNetworkJob::runJob();
+}
+
 ExitInfo UploadJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
         return exitInfo;
     }
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
-    if (!replyHandler.extractData(jsonRes())) return {};
+    if (!replyHandler.extractData(jsonRes())) return {ExitCode::BackError, ExitCause::MissingReplyData};
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();

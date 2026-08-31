@@ -342,7 +342,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
