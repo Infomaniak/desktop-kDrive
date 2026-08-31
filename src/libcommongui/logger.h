@@ -27,6 +27,7 @@
 #include <QMutex>
 #include <QTimer>
 
+#include <atomic>
 #include <chrono>
 
 namespace KDC {
@@ -55,6 +56,8 @@ class Logger : public QObject {
         static Logger *instance();
         static void installMessagePattern();
         static void installEarlyMessageHandler();
+        static void setSentryBreadcrumbsEnabled(bool enabled);
+        static bool sentryBreadcrumbsEnabled() { return _sentryBreadcrumbsEnabled.load(std::memory_order_relaxed); }
 
         void postNotification(const QString &title, const QString &message);
 
@@ -106,6 +109,7 @@ class Logger : public QObject {
         int _minLogLevel;
         QTimer _watchLogSizeTimer;
         bool _isClientLog = false;
+        inline static std::atomic_bool _sentryBreadcrumbsEnabled{false};
 };
 
 } // namespace KDC
