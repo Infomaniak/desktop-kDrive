@@ -19,6 +19,7 @@
 #include "onboardingstate.h"
 
 #include <algorithm>
+#include <ranges>
 
 Q_LOGGING_CATEGORY(lcOnboardingState, "gui.v4.onboardingstate", QtInfoMsg)
 
@@ -85,7 +86,8 @@ void OnboardingState::clearSelectedUser() {
 
 void OnboardingState::selectAvailableDrive(const AvailableDriveKey &key) {
     if (!belongsToSelectedUser(key)) {
-        qCWarning(lcOnboardingState) << "Drive select ignored: key does not belong to selected user | userDbId:" << key.userDbId << "/ selectedUserDbId:" << _selectedUserDbId;
+        qCWarning(lcOnboardingState) << "Drive select ignored: key does not belong to selected user | userDbId:" << key.userDbId
+                                     << "/ selectedUserDbId:" << _selectedUserDbId;
         return;
     }
     if (!_selectedAvailableDriveKeys.insert(key).second) {
@@ -124,11 +126,32 @@ void OnboardingState::clearSelectedAvailableDrives() {
 
 void OnboardingState::setPendingSyncConfig(const AvailableDriveKey &key, const PendingSyncConfig &config) {
     if (!belongsToSelectedUser(key) || !isAvailableDriveSelected(key)) {
-        qCWarning(lcOnboardingState) << "Pending sync config ignored: drive not selected or wrong user | userDbId:" << key.userDbId << "/ driveId:" << key.driveId;
+        qCWarning(lcOnboardingState) << "Pending sync config ignored: drive not selected or wrong user | userDbId:"
+                                     << key.userDbId << "/ driveId:" << key.driveId;
         return;
     }
     _pendingSyncConfigs[key] = config;
     emit pendingSyncConfigsChanged();
+}
+
+bool OnboardingState::replacePendingSyncConfigs(const std::unordered_map<AvailableDriveKey, PendingSyncConfig> &configs) {
+    if (configs.size() != _selectedAvailableDriveKeys.size()) {
+        qCWarning(lcOnboardingState) << "Pending sync configs replacement ignored: incomplete selected-drive map | configs:"
+                                     << configs.size() << "/ selected drives:" << _selectedAvailableDriveKeys.size();
+        return false;
+    }
+    for (const auto &key: configs | std::views::keys) {
+        if (!belongsToSelectedUser(key) || !isAvailableDriveSelected(key)) {
+            qCWarning(lcOnboardingState)
+                    << "Pending sync configs replacement ignored: drive not selected or wrong user | userDbId:" << key.userDbId
+                    << "/ driveId:" << key.driveId;
+            return false;
+        }
+    }
+
+    _pendingSyncConfigs = configs;
+    emit pendingSyncConfigsChanged();
+    return true;
 }
 
 void OnboardingState::clearPendingSyncConfig(const AvailableDriveKey &key) {
@@ -176,7 +199,8 @@ void OnboardingState::pruneSelectedAvailableDrives() {
             ++it;
             continue;
         }
-        qCDebug(lcOnboardingState) << "Selected drive pruned (no longer available) | userDbId:" << it->userDbId << "/ driveId:" << it->driveId;
+        qCDebug(lcOnboardingState) << "Selected drive pruned (no longer available) | userDbId:" << it->userDbId
+                                   << "/ driveId:" << it->driveId;
         pendingConfigsChanged = _pendingSyncConfigs.erase(*it) > 0 || pendingConfigsChanged;
         it = _selectedAvailableDriveKeys.erase(it);
         selectionChanged = true;
