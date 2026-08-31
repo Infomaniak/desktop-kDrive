@@ -48,5 +48,11 @@ ListView {
         cellEnabled: model.enabled
         disabledTooltip: model.tooltip
         onToggled: row => root.drivesModel.toggleDrive(row)
+        // Tabbing to a cell that sits below the visible part of the list has to bring it into view.
+        onActiveFocusChanged: {
+            if (activeFocus) {
+                root.positionViewAtIndex(index, ListView.Contain)
+            }
+        }
     }
 }
