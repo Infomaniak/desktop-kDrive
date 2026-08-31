@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import InfomaniakDI
 
 public enum MacOSPermission: Sendable {
     case endpointSecurityExtension
@@ -34,31 +35,31 @@ public protocol MacOSPermissionHandling: Sendable {
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
-    private let authorizationCheckers: [MacOSPermission: AuthorizationChecker]
+    @LazyInjectService private var permissionsProvider: MacOSPermissionsProviding
 
-    init(authorizationCheckers: [MacOSPermission: AuthorizationChecker]? = nil) {
-        if let authorizationCheckers {
-            self.authorizationCheckers = authorizationCheckers
-        } else {
-            let permissionsProvider = SingleFlightMacOSPermissionsProvider()
-            self.authorizationCheckers = [
-                .endpointSecurityExtension: EndpointSecurityExtensionChecker(
-                    permissionsProvider: permissionsProvider
-                ),
-                .fullDiskAccess: FullDiskChecker(permissionsProvider: permissionsProvider)
-            ]
-        }
+    private let injectedPermissionsProvider: MacOSPermissionsProviding?
+
+    init(permissionsProvider: MacOSPermissionsProviding? = nil) {
+        injectedPermissionsProvider = permissionsProvider
     }
 
     public func isAuthorized(for permission: MacOSPermission) async -> Bool {
-        guard let checker = authorizationCheckers[permission] else {
-            return false
-        }
+        let checker = authorizationChecker(for: permission)
         return await checker.hasAccess()
     }
 
     public func systemPreferencesURL(for permission: MacOSPermission) -> URL? {
-        return authorizationCheckers[permission]?.systemPreferencesURL
+        return authorizationChecker(for: permission).systemPreferencesURL
+    }
+
+    private func authorizationChecker(for permission: MacOSPermission) -> AuthorizationChecker {
+        let permissionsProvider = injectedPermissionsProvider ?? permissionsProvider
+        switch permission {
+        case .endpointSecurityExtension:
+            return EndpointSecurityExtensionChecker(permissionsProvider: permissionsProvider)
+        case .fullDiskAccess:
+            return FullDiskChecker(permissionsProvider: permissionsProvider)
+        }
     }
 }
 
@@ -117,7 +118,7 @@ final class FullDiskChecker: AuthorizationChecker {
 
     private let permissionsProvider: MacOSPermissionsProviding
 
-    init(permissionsProvider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+    init(permissionsProvider: MacOSPermissionsProviding) {
         self.permissionsProvider = permissionsProvider
     }
 
@@ -136,7 +137,7 @@ final class EndpointSecurityExtensionChecker: AuthorizationChecker {
 
     private let permissionsProvider: MacOSPermissionsProviding
 
-    init(permissionsProvider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+    init(permissionsProvider: MacOSPermissionsProviding) {
         self.permissionsProvider = permissionsProvider
     }
 

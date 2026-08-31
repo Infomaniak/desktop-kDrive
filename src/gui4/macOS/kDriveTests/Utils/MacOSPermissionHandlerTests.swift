@@ -75,10 +75,7 @@ private actor SuspendingMacOSPermissionsProvider: MacOSPermissionsProviding {
 struct MacOSPermissionHandlerTests {
     private func makeHandler(with response: UtilityCheckMacOsPermissionsResponse?) -> MacOSPermissionHandler {
         let provider = MockMacOSPermissionsProvider(response: response)
-        return MacOSPermissionHandler(authorizationCheckers: [
-            .fullDiskAccess: FullDiskChecker(permissionsProvider: provider),
-            .endpointSecurityExtension: EndpointSecurityExtensionChecker(permissionsProvider: provider)
-        ])
+        return MacOSPermissionHandler(permissionsProvider: provider)
     }
 
     // MARK: - Full Disk Access
