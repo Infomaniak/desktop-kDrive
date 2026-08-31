@@ -186,7 +186,7 @@ class CommService : public QObject {
         void requestNodeConflictInfo(SyncDbId syncDbId, const SyncPath &relativePath, ReplicaSide replicaSide,
                                      const NodeConflictInfoCallback &callback) const;
         void requestNodePath(SyncDbId syncDbId, const NodeId &nodeId, const StringCallback &callback) const;
-        void requestNodeSubfolders(DriveDbId driveDbId, const NodeId &nodeId, bool withPath,
+        void requestNodeSubfolders(UserDbId userDbId, DriveId driveId, const NodeId &nodeId, bool withPath,
                                    const NodeInfoListCallback &callback) const;
         void requestNodeSubfolders2(DriveDbId driveDbId, const NodeId &nodeId, bool withPath,
                                     const NodeInfoListCallback &callback) const;
