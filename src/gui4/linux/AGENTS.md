@@ -284,6 +284,9 @@
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
+- `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
+  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, and the free-folder
+  derivation that appends the attempt count without a separator, as the server does.
 - `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
   branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
   only after both branches succeed, and overlapping population requests are ignored. It is used at initial connection
