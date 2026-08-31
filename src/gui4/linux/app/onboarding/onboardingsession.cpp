@@ -40,7 +40,8 @@ OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commServic
     _userService(userService),
     _onboardingState(appCache),
     _loginCoordinator(_flowController, commService, userService, appCache, _onboardingState),
-    _driveSelectionController(appCache, _onboardingState, userService, _flowController),
+    _defaultPathResolver(appCache, _onboardingState, commService, serviceEventBus),
+    _driveSelectionController(appCache, _onboardingState, userService, _flowController, _defaultPathResolver),
     _syncCreationCoordinator(_flowController, _onboardingState, appCache, commService, cachePopulator, serviceEventBus),
     _generation(generation) {
     (void) connect(&_loginCoordinator, &OnboardingLoginCoordinator::openWindowRequested, this,
@@ -65,6 +66,7 @@ AvailableDrivesModel *OnboardingSession::availableDrivesModel() {
 }
 
 void OnboardingSession::invalidatePendingOperations() {
+    _defaultPathResolver.invalidatePendingRequests();
     _userService.invalidateLoginTokenRequest();
     if (const UserDbId selectedUserDbId = _onboardingState.typedSelectedUserDbId(); selectedUserDbId != 0) {
         _userService.invalidateAvailableDrivesRequest(selectedUserDbId);
