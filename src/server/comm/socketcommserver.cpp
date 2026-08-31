@@ -368,7 +368,7 @@ void SocketCommServer::execute() {
             continue;
         }
 
-#ifdef DEBUG
+#ifndef NDEBUG
         // All TLS material in the keychain (server cert, client cert, client private key) has been
         // consumed: the handshake verified the client, and the client already pinned the server cert
         // before connecting. Erase them to avoid leaving sensitive material accessible.
