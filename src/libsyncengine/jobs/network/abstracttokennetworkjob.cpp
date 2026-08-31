@@ -396,14 +396,14 @@ std::string getAccessTokenFromEnv(const UserId &userId) {
 } // namespace
 #endif
 
-void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
+ExitInfo AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     assert(_userDbId && "Invalid user DB ID.");
 
     const std::scoped_lock lock(_cacheMutex);
 
     if (_userToApiKeyMap.contains(_userDbId) && _userToApiKeyMap[_userDbId].login != nullptr &&
         _userToApiKeyMap[_userDbId].login->hasToken())
-        return;
+        return ExitCode::Ok;
 
     // Get user
     User user;
@@ -416,25 +416,25 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     }
     if (!found) {
         assert(false);
-        const std::string err{"User not found for userDbId=" + std::to_string(_userDbId)};
-        LOG_WARN(_logger, err);
-        return;
+        LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
+        return {ExitCode::DbError, ExitCause::DbEntryNotFound};
     }
 
+    const auto login = std::make_shared<Login>();
 
 #ifndef NDEBUG
-    const auto debugAccessToken = getAccessTokenFromEnv(user.userId());
-    if (debugAccessToken.empty()) {
+    if (const auto debugAccessToken = getAccessTokenFromEnv(user.userId()); debugAccessToken.empty()) {
 #endif
-        std::shared_ptr<Login> login;
         if (user.keychainKey().empty()) {
             LOG_DEBUG(_logger, "keychainKey is empty");
-            login = std::make_shared<Login>();
         } else {
-            login = std::make_shared<Login>(user.keychainKey());
+            if (const auto exitInfo = login->loadTokenFromKeychain(user.keychainKey()); !exitInfo) {
+                LOG_WARN(_logger, "Failed to retrieve access token for userDbId=" << _userDbId << " error=" << exitInfo
+                                                                                  << " keychainKey=" << user.keychainKey());
+                return exitInfo;
+            }
             if (!login->hasToken()) {
-                const std::string err{"Failed to retrieve access token for userDbId=" + std::to_string(_userDbId)};
-                LOG_WARN(_logger, err);
+                LOG_WARN(_logger, "Access token not found for userDbId=" << _userDbId << " keychainKey=" << user.keychainKey());
             }
         }
 
@@ -444,12 +444,12 @@ void AbstractTokenNetworkJob::loadUserInfoFromUserDbId() {
     } else {
         ApiToken apiToken;
         apiToken.setAccessToken(debugAccessToken);
-        auto login = std::make_shared<Login>();
         login->setApiToken(apiToken);
         LOG_INFO(_logger, "Using API token from environment variable KDRIVE_DEBUG_API_TOKEN for userDbId=" << _userDbId);
         _userToApiKeyMap[_userDbId] = {login, user.userId()};
     }
 #endif
+    return ExitCode::Ok;
 }
 
 Drive AbstractTokenNetworkJob::getDrive(const DriveDbId driveDbId) const {
