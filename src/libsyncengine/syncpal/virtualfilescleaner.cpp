@@ -86,11 +86,11 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             return false;
         }
 
-        auto ioError = IoError::Success;
-        const auto entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus, ioError);
+        auto entryIoError = IoError::Success;
+        const auto entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus, entryIoError);
         if (!entryShouldBeKeptOnDisk.has_value()) {
-            LOGW_DEBUG(_logger, L"Error in shouldBeKeptOnDisk " << Utility::formatIoError(entry.path(), ioError));
-            if (IoHelper::isExpectedError(ioError))
+            LOGW_DEBUG(_logger, L"Error in shouldBeKeptOnDisk " << Utility::formatIoError(entry.path(), entryIoError));
+            if (IoHelper::isExpectedError(entryIoError))
                 continue;
             else
                 return false;

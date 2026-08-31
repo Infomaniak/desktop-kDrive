@@ -578,20 +578,26 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (ec.value()) {
             LOGW_WARN(logger(),
                       L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
-            if (const auto ioError = stdError2ioError(ec); isExpectedError(ioError))
+            const auto entryIoError = stdError2ioError(ec);
+            if (isExpectedError(entryIoError))
                 continue;
-            else
+            else {
+                ioError = entryIoError;
                 return false;
+            }
         }
 
         const auto isDirectory = entry.is_directory(ec);
         if (ec.value()) {
             LOGW_WARN(logger(),
                       L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
-            if (const auto ioError = stdError2ioError(ec); isExpectedError(ioError))
+            const auto entryIoError = stdError2ioError(ec);
+            if (isExpectedError(entryIoError))
                 continue;
-            else
+            else {
+                ioError = entryIoError;
                 return false;
+            }
         }
 
         if (!isSymlink && isDirectory) {
@@ -737,6 +743,7 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
     if (!getFileStat(path, buf, ioError, option)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
+
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
 }
