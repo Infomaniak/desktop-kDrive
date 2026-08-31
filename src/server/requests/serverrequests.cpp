@@ -119,7 +119,7 @@ ExitInfo ServerRequests::deleteUser(const UserDbId userDbId) {
     }
 
     ApiToken apiToken;
-    if (KeyChainManager::instance()->readApiToken(user.keychainKey(), apiToken, found) && found) {
+    if (const auto exitInfo = KeyChainManager::instance()->readApiToken(user.keychainKey(), apiToken, found); exitInfo && found) {
         // Skip the network revocation call when running inside the test suite so that
         // the CI test token is not invalidated.
         if (!KeyChainManager::instance()->isTesting()) {
@@ -491,30 +491,34 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
+ExitInfo ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
     // Generate keychainKey
-    std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
+    const std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
     // Create Login instance and request token
-    Login login(keychainKey);
-    if (ExitCode exitCode = login.requestToken(code, codeVerifier); exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: code=" << exitCode);
+    Login login;
+    if (const auto exitInfo = login.loadTokenFromKeychain(keychainKey); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Login::loadTokenFromKeychain: " << exitInfo);
+        return exitInfo.code();
+    }
+    if (const auto exitInfo = login.requestToken(code, codeVerifier); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: " << exitInfo);
         error = login.error();
         errorDescr = login.errorDescr();
-        return exitCode;
+        return exitInfo;
     }
 
     // Create or update user
-    if (ExitCode exitCode = processRequestTokenFinished(login, user, userCreated); exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: code=" << exitCode);
-        return exitCode;
+    if (const auto exitInfo = processRequestTokenFinished(login, user, userCreated); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished: " << exitInfo);
+        return exitInfo;
     }
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::requestToken(const QString &code, const QString &codeVerifier, User &user, bool &userCreated,
+ExitInfo ServerRequests::requestToken(const QString &code, const QString &codeVerifier, User &user, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
     return requestToken(QStr2Str(code), QStr2Str(codeVerifier), user, userCreated, error, errorDescr);
 }
@@ -1958,7 +1962,7 @@ ExitInfo ServerRequests::loadUserAvatar(User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &user, bool &userCreated) {
+ExitInfo ServerRequests::processRequestTokenFinished(const Login &login, User &user, bool &userCreated) {
     // Get user
     bool found = false;
     if (!ParmsDb::instance()->selectUserByUserId(login.apiToken().userId(), user, found)) {
@@ -1970,11 +1974,9 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &u
         user.setKeychainKey(login.keychainKey());
 
         AbstractTokenNetworkJob::updateLoginByUserDbId(login, user.dbId());
-
-        ExitCode exitCode = updateUser(user);
-        if (exitCode != ExitCode::Ok) {
+        if (const auto exitInfo = updateUser(user); !exitInfo) {
             LOG_WARN(Log::instance()->getLogger(), "Error in updateUser");
-            return exitCode;
+            return exitInfo;
         }
 
         userCreated = false;
