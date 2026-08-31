@@ -43,8 +43,11 @@
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h"
+#include "jobs/network/kDrive_API/listing/longpolljob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
+
+#include "jobs/network/jobexceptions.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
@@ -1934,6 +1937,19 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     }
 }
 
+void TestNetworkJobs::clearAccessTokenCache() {
+    // Clear the keychain key to test when there is no token in db/cache.
+    AbstractTokenNetworkJob::clearCache();
+
+    User user;
+    bool found = false;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(_userDbId, user, found));
+    CPPUNIT_ASSERT(found);
+    user.setKeychainKey({});
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user, found));
+    CPPUNIT_ASSERT(found);
+}
+
 void TestNetworkJobs::testGetInfoDriveOn401Error() {
     class GetInfoDriveJobMock final : public GetInfoDriveJob {
         public:
@@ -1949,16 +1965,9 @@ void TestNetworkJobs::testGetInfoDriveOn401Error() {
     const auto exitInfo = jobWithToken.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfo), ExitInfo(ExitCode::BackError, ExitCause::DriveAccessError), exitInfo);
-    AbstractTokenNetworkJob::clearCache();
 
-    // Clear the keychain key to test when there is no token in db/cache.
-    User user;
-    bool found = false;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectUser(_userDbId, user, found));
-    CPPUNIT_ASSERT(found);
-    user.setKeychainKey({});
-    CPPUNIT_ASSERT(ParmsDb::instance()->updateUser(user, found));
-    CPPUNIT_ASSERT(found);
+    clearAccessTokenCache();
+
     CPPUNIT_ASSERT_EQUAL(0, jobWithToken.trials());
 
     GetInfoDriveJobMock jobWithoutToken(_driveDbId);
@@ -2242,4 +2251,15 @@ void TestNetworkJobs::testDownloadChecksumHandling() {
     }
 }
 
+void TestNetworkJobs::testLongPollJobWithoutToken() {
+    LongPollJob jobWithToken(_driveDbId, "dummy_cursor_content");
+    const auto exitInfo = jobWithToken.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfo), ExitInfo(ExitCode::BackError, ExitCause::HttpErr), exitInfo);
+
+    clearAccessTokenCache();
+
+    CPPUNIT_ASSERT_THROW_MESSAGE("LongPollJob did not throw as expected", LongPollJob(_driveDbId, "dummy_cursor_content"),
+                                 EmptyTokenError);
+}
 } // namespace KDC

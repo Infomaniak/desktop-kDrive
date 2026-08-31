@@ -76,6 +76,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testExists);
         CPPUNIT_TEST(testGetAllFilesInDirectory);
         CPPUNIT_TEST(testPostFileModificationDate);
+        CPPUNIT_TEST(testLongPollJobWithoutToken);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -126,12 +127,15 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testExists();
         void testGetAllFilesInDirectory();
         void testPostFileModificationDate();
+        void testLongPollJobWithoutToken();
 
     private:
         bool createTestFiles();
 
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
+
+        void clearAccessTokenCache();
 
         DriveDbId _driveDbId = 0;
         UserDbId _userDbId = 0;

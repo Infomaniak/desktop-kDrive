@@ -121,6 +121,7 @@ ExitInfo LogUploadJob::runJob() {
         return exitInfo;
     }
 
+
     if (const ExitInfo exitInfo = archive(_generatedArchivePath); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::archive: " << exitInfo);
         handleJobFailure(exitInfo);
@@ -239,6 +240,10 @@ ExitInfo LogUploadJob::archive(SyncPath &generatedArchivePath) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << exitInfo);
         return exitInfo;
     }
+
+#if defined(KD_MACOS)
+    extractExtensionsLog();
+#endif
 
     SyncName archiveName;
     if (const ExitInfo exitInfo = getArchiveName(archiveName); !exitInfo) {
@@ -420,10 +425,9 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
         file << std::endl;
     } else {
         file << "Unable to retrieve drive ID(s)" << std::endl;
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
         _addErrorCallback(Error(ERR_ID, ExitCode::DbError, ExitCause::DbAccessError));
     }
-
 
     file.close();
     if (file.bad()) {
@@ -433,6 +437,20 @@ ExitInfo LogUploadJob::generateUserDescriptionFile(const SyncPath &outputPath) c
 
     return ExitCode::Ok;
 }
+
+#if defined(KD_MACOS)
+void LogUploadJob::extractExtensionsLog() const {
+    const SyncPath filePath = _tmpJobWorkingDir / "kdrive_extension_logs.txt";
+
+    // Properly escape the path to prevent shell injection
+    const auto escapedPath = Utility::escapePath(filePath);
+    const auto command = std::string("log show --predicate 'eventMessage BEGINSWITH \"[KD]\"' --last 24h > '") + escapedPath +
+                         std::string("'");
+    if (!Utility::runCommand("/bin/sh", {"-c", command})) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Utility::runCommand to extract kDrive extension logs");
+    }
+}
+#endif
 
 ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, const SyncPath &destPath,
                                        const SyncName &archiveNameWithoutExtension, SyncPath &finalPath) {
