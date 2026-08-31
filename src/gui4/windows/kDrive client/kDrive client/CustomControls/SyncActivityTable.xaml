@@ -61,7 +61,7 @@
             <local:SvgIcon Grid.Row="0"
                            Height="120"
                            UriString="{ThemeResource Infomaniak.Custom.Images.servin}"
-                           Foreground="{ThemeResource AccentFillColorTertiaryBrush}"/>
+                           Foreground="{ThemeResource AccentFillColorTertiaryBrush}" />
 
             <StackPanel Grid.Row="1"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
@@ -262,7 +262,6 @@
                                     </Button.Flyout>
                                 </Button>
                             </DataTemplate>
-
                             <DataTemplate x:Key="SynchronizationErrorFlyoutTemplate"
                                           x:DataType="types:SyncFileStatus">
                                 <Button Grid.Column="2"
@@ -292,7 +291,6 @@
                                     </Button.Flyout>
                                 </Button>
                             </DataTemplate>
-
                             <DataTemplate x:Key="SynchronizingFlyoutTemplate"
                                           x:DataType="types:SyncFileStatus">
                                 <!-- The flyout is only available for synchronized items -->
@@ -319,20 +317,34 @@
                               Padding="{StaticResource Infomaniak.Style.Thickness.Left.S}"
                               VerticalAlignment="Center"
                               ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <ContentControl Grid.Column="0"
+                                            Grid.RowSpan="2"
+                                            VerticalContentAlignment="Center"
                                             Content="{x:Bind}"
                                             ContentTemplateSelector="{StaticResource ItemTypeIconDataTemplateSelector}" />
                             <TextBlock Grid.Column="1"
+                                       Grid.Row="0"
                                        Style="{StaticResource Infomaniak.Style.TextBlock.Body}"
-                                       Text="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}"
+                                       Text="{x:Bind RevelantFilePath, Converter={StaticResource StringPathToFileNameConverter}}"
                                        TextTrimming="CharacterEllipsis">
                                 <ToolTipService.ToolTip>
-                                    <ToolTip Content="{x:Bind LocalPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                    <ToolTip Content="{x:Bind RevelantFilePath}" />
                                 </ToolTipService.ToolTip>
+                            </TextBlock>
+                            <TextBlock Grid.Column="1"
+                                       Grid.Row="1"
+                                       Style="{StaticResource CaptionTextBlockStyle}"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       Text="{x:Bind SyncFileItemToInstructionText(Instruction, Status), Mode=OneWay}"
+                                       TextTrimming="CharacterEllipsis">
                             </TextBlock>
                         </Grid>
 

@@ -19,6 +19,7 @@ using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.Types;
 using System;
+using System.IO;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -197,5 +198,35 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _parentFolderName;
         }
+
+        public string RevelantFilePath
+        {
+            get => _newPath ?? _path;
+        }
+
+        public string SyncFileItemToInstructionText(SyncFileInstruction instruction, SyncFileStatus status)
+        {
+            switch (instruction)
+            {
+                case SyncFileInstruction.Get:
+                    return "importation";
+                case SyncFileInstruction.Put:
+                    return "exportation";
+                case SyncFileInstruction.Move:
+                    if (System.IO.Path.GetDirectoryName(Path) != System.IO.Path.GetDirectoryName(NewPath))
+                        return "deplacé";
+                    else
+                        return "renommé";
+
+                case SyncFileInstruction.Remove:
+                    return "placé dans la corbeille";
+                case SyncFileInstruction.Update:
+                case SyncFileInstruction.UpdateMetadata:
+                    return "Mis à jour";
+                default:
+                    return "Mis à jour";
+            }
+        }
+
     }
 }
