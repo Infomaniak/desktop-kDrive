@@ -23,6 +23,11 @@ import kDrive.UI
 Column {
     id: root
 
+    // The step opens on its main action so keyboard users start somewhere instead of from nothing.
+    Component.onCompleted: Qt.callLater(function() {
+        startForFreeButton.forceActiveFocus()
+    })
+
     required property var selectionController
 
     width: parent ? parent.width : IKOnboarding.driveSelectionContentMaxWidth
@@ -78,6 +83,8 @@ Column {
                 implicitHeight: IKOnboarding.driveSelectionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
                 color: "transparent"
+                border.width: showOffersButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                border.color: IKColors.accentPrimary
             }
 
             padding: 0
@@ -108,6 +115,8 @@ Column {
                 implicitHeight: IKOnboarding.driveSelectionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
                 color: IKColors.actionPrimary
+                border.width: startForFreeButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                border.color: IKColors.actionOnPrimary
             }
 
             padding: 0

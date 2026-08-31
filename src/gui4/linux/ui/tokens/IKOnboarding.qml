@@ -90,6 +90,8 @@ QtObject {
     readonly property real driveSelectionCellSpacing: IKSpacing.s8
     readonly property real driveSelectionCellMinHeight: 40
     readonly property real driveSelectionCheckboxSize: 16
+    readonly property real buttonFocusBorderWidth: 2
+    readonly property real driveSelectionCellFocusBorderWidth: 2
     readonly property real driveSelectionDriveIconSize: 20
     readonly property real driveSelectionDriveIconRadius: 5
     readonly property real driveSelectionDriveIconGlyphInset: 4
