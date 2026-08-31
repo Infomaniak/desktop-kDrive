@@ -67,6 +67,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
 
+        ExitInfo runJob() noexcept override;
+
     protected:
         std::string getSpecificUrl() override;
         std::string contentType() override;
@@ -107,7 +109,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         void fetchDriveDbIdFromSync();
         void fetchFirstUserDbId();
-        virtual ApiToken loadApiToken();
+        virtual ExitInfo loadApiToken(ApiToken &apiToken);
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
