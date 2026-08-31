@@ -23,12 +23,16 @@
 #include "app/services/parametersservice.h"
 #include "config.h"
 #include "libcommon/log/sentry/handler.h"
+#include "libcommon/utility/utility.h"
 
+#include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QSettings>
 
 #include <algorithm>
 #include <cstdlib>
+
+using namespace Qt::StringLiterals;
 
 namespace {
 
@@ -37,6 +41,30 @@ Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 constexpr char settingsOrganization[] = "Infomaniak";
 constexpr char settingsApplication[] = APPLICATION_NAME;
 constexpr char sentryConsentKey[] = "sentry/enabled";
+
+QString normalizedDisplayServer(const QString &platformPlugin) {
+    if (platformPlugin.contains(QStringLiteral("wayland"), Qt::CaseInsensitive)) {
+        return QStringLiteral("wayland");
+    }
+    if (platformPlugin.compare(QStringLiteral("xcb"), Qt::CaseInsensitive) == 0) {
+        return QStringLiteral("x11");
+    }
+    return QStringLiteral("unknown");
+}
+
+QString normalizedDesktopEnvironment(const QString &desktopEnvironment) {
+    const QString normalized = desktopEnvironment.toLower();
+    if (normalized.contains(QStringLiteral("gnome"))) return QStringLiteral("gnome");
+    if (normalized.contains(QStringLiteral("kde")) || normalized.contains(QStringLiteral("plasma"))) {
+        return QStringLiteral("kde");
+    }
+    if (normalized.contains(QStringLiteral("cinnamon"))) return QStringLiteral("cinnamon");
+    if (normalized.contains(QStringLiteral("xfce"))) return QStringLiteral("xfce");
+    if (normalized.contains(QStringLiteral("mate"))) return QStringLiteral("mate");
+    if (normalized.contains(QStringLiteral("lxqt"))) return QStringLiteral("lxqt");
+    if (normalized.contains(QStringLiteral("lxde"))) return QStringLiteral("lxde");
+    return normalized.isEmpty() ? QStringLiteral("unknown") : QStringLiteral("other");
+}
 } // namespace
 
 namespace KDC {
@@ -49,6 +77,7 @@ SentryService::SentryService(ParametersService &parametersService, AppCache &app
     _parametersStore(parametersStore) {
     (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this,
                    &SentryService::reconcileConsentWithParametersStore);
+    updateLinuxRuntimeTags();
 }
 
 std::optional<bool> SentryService::readCachedConsent() {
@@ -89,6 +118,7 @@ void SentryService::initializeWithLinuxConfig() {
     if (sentry::Handler::isInitialized()) {
         qCInfo(lcSentryService) << "Sentry already initialized; activating handler";
         sentry::Handler::instance()->setIsSentryActivated(true);
+        updateLinuxRuntimeTags();
         return;
     }
 
@@ -102,7 +132,25 @@ void SentryService::initializeWithLinuxConfig() {
 
     sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Authenticated);
     sentry::Handler::instance()->setIsSentryActivated(true);
+    updateLinuxRuntimeTags();
     qCInfo(lcSentryService) << "Sentry initialized and activated";
+}
+
+void SentryService::updateLinuxRuntimeTags() {
+    if (!isInitialized() || qobject_cast<QGuiApplication *>(QCoreApplication::instance()) == nullptr) {
+        return;
+    }
+
+    const QString platformPlugin = QGuiApplication::platformName().toLower();
+    const QString desktopEnvironment = qEnvironmentVariable("XDG_CURRENT_DESKTOP");
+    const auto handler = sentry::Handler::instance();
+    handler->setTag("linux.distribution", CommonUtility::platformName().toStdString());
+    handler->setTag("linux.distribution_version", CommonUtility::osVersion());
+    handler->setTag("os.display_server", normalizedDisplayServer(platformPlugin).toStdString());
+    handler->setTag("os.desktop", normalizedDesktopEnvironment(desktopEnvironment).toStdString());
+    handler->setTag("os.packaging", qEnvironmentVariable("APPIMAGE").isEmpty() ? "other" : "appimage");
+    handler->setTag("qt.version", qVersion());
+    handler->setTag("qt.platform_plugin", platformPlugin.toStdString());
 }
 
 bool SentryService::isInitialized() {
@@ -227,6 +275,9 @@ void SentryService::reconcileConsentWithParametersStore() {
                             << currentParametersInfo->sentryEnabled();
     writeCachedConsent(currentParametersInfo->sentryEnabled());
     applyConsent(currentParametersInfo->sentryEnabled());
+    if (isInitialized()) {
+        sentry::Handler::instance()->setDistributionChannel(currentParametersInfo->distributionChannel());
+    }
 }
 
 } // namespace KDC
