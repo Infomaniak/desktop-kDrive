@@ -22,13 +22,19 @@ namespace KDC {
 
 DriveSelectionController::DriveSelectionController(const AppCache &cache, OnboardingState &onboardingState,
                                                    UserService &userService, OnboardingFlowController &flowController,
+                                                   const OnboardingDefaultPathResolver &defaultPathResolver,
                                                    QObject *const parent) :
     QObject(parent),
     _cache(cache),
     _onboardingState(onboardingState),
     _userService(userService),
     _flowController(flowController),
+    _defaultPathResolver(defaultPathResolver),
     _drivesModel(cache, onboardingState, this) {
+    (void) connect(&_defaultPathResolver, &OnboardingDefaultPathResolver::pendingResolutionsChanged, this, [this] {
+        emit canContinueChanged();
+        emit canOpenAdvancedSettingsChanged();
+    });
     (void) connect(&_cache, &AppCache::usersChanged, this, &DriveSelectionController::userChanged);
     (void) connect(&_onboardingState, &OnboardingState::selectedUserDbIdChanged, this, [this] {
         setLoadFailed(false);
@@ -82,11 +88,13 @@ qint32 DriveSelectionController::configuredCount() const {
 }
 
 bool DriveSelectionController::canContinue() const {
+    if (_defaultPathResolver.hasPendingResolutions()) return false;
     return selectedCount() > 0 || configuredCount() > 0;
 }
 
 bool DriveSelectionController::canOpenAdvancedSettings() const {
-    return selectedCount() > 0;
+    // Every selected drive must already own its default folder: the modal never requests one.
+    return selectedCount() > 0 && !loading() && !_defaultPathResolver.hasPendingResolutions();
 }
 
 QString DriveSelectionController::userName() const {

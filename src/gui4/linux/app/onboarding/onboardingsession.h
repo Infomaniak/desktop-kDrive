@@ -21,6 +21,7 @@
 #include "app/cache/onboardingstate.h"
 #include "app/onboarding/driveselectioncontroller.h"
 #include "app/onboarding/onboardingflowcontroller.h"
+#include "app/onboarding/onboardingdefaultpathresolver.h"
 #include "app/onboarding/onboardinglogincoordinator.h"
 #include "app/onboarding/onboardingsynccreationcoordinator.h"
 
@@ -74,6 +75,7 @@ class OnboardingSession final : public QObject {
         OnboardingState _onboardingState;
         OnboardingFlowController _flowController;
         OnboardingLoginCoordinator _loginCoordinator;
+        OnboardingDefaultPathResolver _defaultPathResolver;
         DriveSelectionController _driveSelectionController;
         OnboardingSyncCreationCoordinator _syncCreationCoordinator;
         const uint64_t _generation;
