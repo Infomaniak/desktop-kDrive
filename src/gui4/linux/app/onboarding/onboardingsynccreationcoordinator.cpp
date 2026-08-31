@@ -97,8 +97,7 @@ void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDr
 
     const auto driveName = availableDrive->name();
     qCInfo(lcOnboardingSyncCreationCoordinator)
-            << "Requesting onboarding sync path | driveId:" << key.driveId
-            << "/ driveName:" << QString::fromStdString(driveName);
+            << "Requesting onboarding sync path | driveId:" << key.driveId << "/ driveName:" << QString::fromStdString(driveName);
     const QPointer<OnboardingSyncCreationCoordinator> self(this);
     _commService.requestFindGoodPathForNewSync(CommonUtility::str2CommString(driveName),
                                                [self, key](const ExitInfo &exitInfo, const GoodPathResult &result) {
@@ -128,6 +127,7 @@ void OnboardingSyncCreationCoordinator::handleGoodPathResult(const AvailableDriv
 
     PendingSyncConfig config;
     config.localPath = Path2QStr(result.goodPath);
+    config.defaultLocalPath = config.localPath;
     if (config.localPath.isEmpty()) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Server returned an empty onboarding sync path | driveId:" << key.driveId;
@@ -156,6 +156,7 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
     request.serverFolderPath = QStr2Path(config.targetPath);
     request.serverFolderNodeId = QStr2Str(config.targetNodeId);
     request.liteSync = false;
+    request.blackList = config.blackList;
 
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Creating onboarding sync | driveId:" << key.driveId << "/ localPath:" << config.localPath;
