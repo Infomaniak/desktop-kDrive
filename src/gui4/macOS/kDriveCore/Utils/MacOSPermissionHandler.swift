@@ -37,10 +37,17 @@ public final class MacOSPermissionHandler: MacOSPermissionHandling {
     private let authorizationCheckers: [MacOSPermission: AuthorizationChecker]
 
     init(authorizationCheckers: [MacOSPermission: AuthorizationChecker]? = nil) {
-        self.authorizationCheckers = authorizationCheckers ?? [
-            .endpointSecurityExtension: EndpointSecurityExtensionChecker(),
-            .fullDiskAccess: FullDiskChecker()
-        ]
+        if let authorizationCheckers {
+            self.authorizationCheckers = authorizationCheckers
+        } else {
+            let permissionsProvider = SingleFlightMacOSPermissionsProvider()
+            self.authorizationCheckers = [
+                .endpointSecurityExtension: EndpointSecurityExtensionChecker(
+                    permissionsProvider: permissionsProvider
+                ),
+                .fullDiskAccess: FullDiskChecker(permissionsProvider: permissionsProvider)
+            ]
+        }
     }
 
     public func isAuthorized(for permission: MacOSPermission) async -> Bool {
@@ -74,6 +81,30 @@ struct ServerMacOSPermissionsProvider: MacOSPermissionsProviding {
             IKLogger.general.error("Failed to check macOS permissions: \(error)")
             return nil
         }
+    }
+}
+
+actor SingleFlightMacOSPermissionsProvider: MacOSPermissionsProviding {
+    private let provider: MacOSPermissionsProviding
+    private var currentFetch: Task<UtilityCheckMacOsPermissionsResponse?, Never>?
+
+    init(provider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+        self.provider = provider
+    }
+
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse? {
+        if let currentFetch {
+            return await currentFetch.value
+        }
+
+        let fetch = Task {
+            await provider.fetchPermissions()
+        }
+        currentFetch = fetch
+
+        let permissions = await fetch.value
+        currentFetch = nil
+        return permissions
     }
 }
 
