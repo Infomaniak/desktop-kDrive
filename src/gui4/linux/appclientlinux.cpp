@@ -95,6 +95,9 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                              "ManyDeletesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<StorageController>("kDrive.UI", 1, 0, "StorageController",
                                                          "StorageController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<OnboardingSyncConfigurationController>(
+            "kDrive.UI", 1, 0, "OnboardingSyncConfigurationController",
+            "OnboardingSyncConfigurationController is owned by OnboardingSession.");
     (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
                                             QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
