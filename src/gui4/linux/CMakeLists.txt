@@ -138,10 +138,12 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKActivities.qml
+        ui/tokens/IKCheckBoxTokens.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
         ui/tokens/IKStorage.qml
+        ui/tokens/IKSyncConfiguration.qml
         ui/tokens/IKWaiting.qml
 )
 
