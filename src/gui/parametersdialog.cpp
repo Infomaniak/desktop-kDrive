@@ -978,9 +978,9 @@ void ParametersDialog::onRefreshStatusNeeded() {
     _drivePreferencesWidget->refreshStatus();
 }
 
-void ParametersDialog::onItemCompleted(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) {
-    if (itemInfo.status() != SyncFileStatus::Error && itemInfo.status() != SyncFileStatus::Conflict &&
-        itemInfo.status() != SyncFileStatus::Inconsistency) {
+void ParametersDialog::onItemCompleted(const SyncDbId syncDbId, const SyncFileItem &syncFileItem) {
+    if (syncFileItem.status() != SyncFileStatus::Error && syncFileItem.status() != SyncFileStatus::Conflict &&
+        syncFileItem.status() != SyncFileStatus::Inconsistency) {
         return;
     }
 
