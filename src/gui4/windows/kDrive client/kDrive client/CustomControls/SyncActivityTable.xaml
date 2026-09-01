@@ -353,7 +353,7 @@
                                          Click="SyncActivityParent_Click"
                                          Style="{ThemeResource DefaultHyperlinkButtonStyle}">
                             <ToolTipService.ToolTip>
-                                <ToolTip Content="{x:Bind RelevantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}" />
+                                <ToolTip Content="{x:Bind RelevantParentFolderPath}" />
                             </ToolTipService.ToolTip>
                             <TextBlock Text="{x:Bind RelevantParentFolderPath, Converter={StaticResource StringPathToFileNameConverter}}"
                                        TextTrimming="CharacterEllipsis"

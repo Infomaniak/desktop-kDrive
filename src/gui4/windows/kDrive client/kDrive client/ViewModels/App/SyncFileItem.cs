@@ -206,14 +206,7 @@ namespace Infomaniak.kDrive.ViewModels
         }
         public string RelevantParentFolderPath
         {
-            get
-            {
-                var folder = System.IO.Path.GetDirectoryName(RelevantFilePath);
-                if (String.IsNullOrEmpty(folder) && Sync.LocalPath is not null)
-                    return Sync.LocalPath.Split('/', '\\').Last() ?? "/";
-
-                return folder ?? "/";
-            }
+            get => System.IO.Path.Combine(Sync.LocalPath, System.IO.Path.GetDirectoryName(RelevantFilePath) ?? "");
         }
 
         public string SyncFileItemToInstructionText(SyncFileInstruction instruction, SyncFileStatus status, DateTime timeStamp)
