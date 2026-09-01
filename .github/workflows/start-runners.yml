@@ -86,24 +86,28 @@ jobs:
 
           for i in $(seq 1 "$COUNT"); do
             NAME="ci-runner-win-${RUN_ID}-${i}"
+            USERDATA="userdata-${NAME}.ps1"
+
             sed \
-            -e "s|__REPO_URL__|https://github.com/${REPO}|" \
-            -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
-            -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
-            -e "s|__REG_NAME__|$NAME|" \
-            .github/workflows/templates/userdata-template.ps1 > userdata-final.ps1
+              -e "s|__REPO_URL__|https://github.com/${REPO}|" \
+              -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
+              -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
+              -e "s|__REG_NAME__|$NAME|" \
+              .github/workflows/templates/userdata-template.ps1 > "$USERDATA"
 
             echo "Launching $NAME ..."
+
             openstack server create \
               --os-cloud "$OS_CLOUD" \
               --image "$IMAGE_NAME" \
               --flavor "$FLAVOR" \
               --network "$NETWORK_NAME" \
-              --user-data userdata-final.ps1 \
+              --user-data "$USERDATA" \
               --property "purpose=ci-runner" \
               --wait \
-              -c id -c name -c status  \
+              -c id -c name -c status \
               "$NAME" &
+
             pids+=("$!")
           done
 
@@ -118,4 +122,4 @@ jobs:
 
       - name: Clean up rendered user-data
         if: always()
-        run: rm -f userdata-final.ps1
+        run: rm -f userdata-*.ps1
