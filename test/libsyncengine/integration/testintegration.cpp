@@ -869,7 +869,8 @@ void TestIntegration::testMoveDeleteRename() {
         (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
         // Delete a
         const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
-        (void) GenericLocalDeleteJob(deletedPath, GenericLocalDeleteJob::ForceHardDelete::Yes).runSynchronously();
+        (void) GenericLocalDeleteJob(deletedPath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes)
+                .runSynchronously();
         // Rename b
         const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         const auto renameDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
