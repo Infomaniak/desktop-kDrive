@@ -179,6 +179,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
         ui/components/IKErrorBanner.qml
+        ui/features/syncconfiguration/RemoteFolderTree.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
