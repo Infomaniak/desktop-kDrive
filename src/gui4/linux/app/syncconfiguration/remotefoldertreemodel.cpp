@@ -147,7 +147,8 @@ void RemoteFolderTreeModel::configure(const UserDbId userDbId, const DriveId dri
     _excludedNodeIds.clear();
     _excludedPaths.clear();
     _sizeQueue.clear();
-    _activeSizeRequests = 0;
+    // `_activeSizeRequests` is deliberately kept: the requests of the previous generation are still in flight and
+    // still occupy the provider, so resetting it here would let this generation start as many again.
     _pendingInitialPathRequests = 0;
     _initialPathsFailed = false;
     for (const auto &nodeId: initialBlackList) _excludedNodeIds.insert(QString::fromStdString(nodeId));
@@ -432,7 +433,7 @@ void RemoteFolderTreeModel::processSizeQueue() {
         const QPointer self(this);
         _provider.requestSize(_userDbId, _driveId, QStr2Str(nodeId),
                               [self, nodeId, generation](const bool success, const int64_t size) {
-                                  if (!self || generation != self->_generation) return;
+                                  if (!self) return;
                                   self->handleSizeResult(nodeId, generation, success, size);
                               });
     }
@@ -440,12 +441,15 @@ void RemoteFolderTreeModel::processSizeQueue() {
 
 void RemoteFolderTreeModel::handleSizeResult(const QString &nodeId, const uint64_t generation, const bool success,
                                              const qint64 size) {
-    if (generation != _generation) return;
+    // The counter tracks every request in flight, whatever its generation: a result of a previous configuration
+    // frees a slot on the provider just the same, and only its payload is dropped.
     if (_activeSizeRequests > 0) --_activeSizeRequests;
-    if (TreeNode *const node = _nodesById.value(nodeId, nullptr)) {
-        node->sizeState = success ? SizeState::Loaded : SizeState::Failed;
-        node->size = size;
-        emit dataChanged(indexForNode(node), indexForNode(node), {SizeTextRole});
+    if (generation == _generation) {
+        if (TreeNode *const node = _nodesById.value(nodeId, nullptr)) {
+            node->sizeState = success ? SizeState::Loaded : SizeState::Failed;
+            node->size = size;
+            emit dataChanged(indexForNode(node), indexForNode(node), {SizeTextRole});
+        }
     }
     processSizeQueue();
 }
