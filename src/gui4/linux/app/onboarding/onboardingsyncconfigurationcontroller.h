@@ -117,6 +117,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         void openDrive(int32_t row);
         void refreshSummaryModel();
         void setBusy(bool busy);
+        void abortPendingRequest();
         void clearError();
         void setError(const QString &title, const QString &text);
         void closeWithoutCommit();

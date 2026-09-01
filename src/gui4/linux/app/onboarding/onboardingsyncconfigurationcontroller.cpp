@@ -103,6 +103,8 @@ void OnboardingSyncConfigurationController::configureDrive(const int32_t row) {
 }
 
 void OnboardingSyncConfigurationController::cancelCurrentPage() {
+    // Leaving the page drops the path validation it started: its result would land on a page the user has left.
+    abortPendingRequest();
     clearError();
     if (_page == FolderSelection) {
         _page = DriveConfiguration;
@@ -289,6 +291,11 @@ void OnboardingSyncConfigurationController::setBusy(const bool busy) {
     if (_busy == busy) return;
     _busy = busy;
     emit presentationChanged();
+}
+
+void OnboardingSyncConfigurationController::abortPendingRequest() {
+    ++_requestGeneration;
+    setBusy(false);
 }
 
 void OnboardingSyncConfigurationController::clearError() {
