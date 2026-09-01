@@ -60,6 +60,8 @@ AbstractButton {
     Accessible.description: root.accountName
     Accessible.checkable: root.cellEnabled
     Accessible.checked: root.checked
+    // Assistive technologies invoke either action depending on how they read the cell, so both reach the model.
+    Accessible.onPressAction: root.requestToggle()
     Accessible.onToggleAction: root.requestToggle()
 
     HoverHandler {
