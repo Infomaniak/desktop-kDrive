@@ -25,7 +25,7 @@ Item {
 
     // The step opens on its main action so keyboard users start somewhere instead of from nothing.
     Component.onCompleted: Qt.callLater(function() {
-        openButton.forceActiveFocus(Qt.TabFocusReason)
+        openButton.forceActiveFocus()
     })
 
     required property var onboardingFlowController
