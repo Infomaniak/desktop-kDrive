@@ -476,6 +476,16 @@ ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     return ExitCode::Ok;
 }
 
+ExitInfo AbstractNetworkJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &) {
+    disableRetry();
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+    LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+    _backError = BackError(replyBody);
+
+    return {ExitCode::BackError, ExitCause::HttpErr};
+}
+
 ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     StreamVector stream;
     if (const auto exitInfo = receiveResponseFromSession(stream); !exitInfo) return exitInfo;
@@ -513,12 +523,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             return ExitCode::Ok;
         }
         case Poco::Net::HTTPResponse::HTTP_UNPROCESSABLE_ENTITY: {
-            disableRetry();
-            std::string replyBody;
-            getStringFromStream(stream[0].get(), replyBody);
-            LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-            _backError = BackError(replyBody);
-            return {ExitCode::BackError, ExitCause::HttpErr};
+            return handleUnprocessableEntity(stream[0].get(), uri);
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
             LOG_WARN(_logger, "Received HTTP_UPGRADE_REQUIRED, update required");

@@ -66,6 +66,7 @@ NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
             {"object_not_found", NetworkErrorCode::ObjectNotFound},
             {"invalid_grant", NetworkErrorCode::InvalidGrant},
             {"validation_failed", NetworkErrorCode::ValidationFailed},
+            {"validation_rule_symbolic_link_target_rule", NetworkErrorCode::ValidationRuleSymbolicLinkTargetRule},
             {"upload_not_terminated_error", NetworkErrorCode::UploadNotTerminatedError},
             {"upload_error", NetworkErrorCode::UploadError},
             {"destination_already_exists", NetworkErrorCode::DestinationAlreadyExists},
