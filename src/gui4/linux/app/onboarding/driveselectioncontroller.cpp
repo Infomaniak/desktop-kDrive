@@ -41,6 +41,7 @@ DriveSelectionController::DriveSelectionController(const AppCache &cache, Onboar
         emit userChanged();
         emit loadingChanged();
         emit emptyChanged();
+        emit canOpenAdvancedSettingsChanged();
     });
     (void) connect(&_drivesModel, &QAbstractItemModel::modelReset, this, &DriveSelectionController::emptyChanged);
     (void) connect(&_drivesModel, &AvailableDrivesModel::selectedCountChanged, this, [this] {
@@ -56,6 +57,8 @@ DriveSelectionController::DriveSelectionController(const AppCache &cache, Onboar
         if (userDbId == selectedUserDbId()) {
             emit loadingChanged();
             emit emptyChanged();
+            // `canOpenAdvancedSettings` reads `loading()`, so its own notifier has to follow it.
+            emit canOpenAdvancedSettingsChanged();
         }
     });
     (void) connect(&_userService, &UserService::availableDrivesLoaded, this, [this](const UserDbId userDbId) {
