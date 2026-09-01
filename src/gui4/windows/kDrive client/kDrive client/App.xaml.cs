@@ -155,10 +155,10 @@ namespace Infomaniak.kDrive
         }
 
         public enum CreateWindowOptions
-        {
-            Foreground = 1,
-            CancelOnboarding = 2,
-            OpenSettings = 4
+        {   None = 1,
+            Foreground = 2,
+            CancelOnboarding = 4,
+            OpenSettings = 8
         }
         public void CreateWindow(CreateWindowOptions options)
         {
@@ -309,7 +309,10 @@ namespace Infomaniak.kDrive
                 if (_updateWindow is null)
                 {
                     _updateWindow = new UpdateWindow();
-                    _updateWindow.Closed += (s, e) => _updateWindow = null;
+                    _updateWindow.Closed += (s, e) => {
+                        CreateWindow(CreateWindowOptions.None);
+                        _updateWindow = null;
+                    };
                     _updateWindow.Activate();
                 }
                 else
