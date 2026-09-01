@@ -26,6 +26,17 @@ Column {
 
     required property var controller
 
+    // Set when the picker returns a path that still has to be validated: the button is disabled meanwhile, so it
+    // cannot take the focus back before the controller goes idle again.
+    property bool focusRestorePending: false
+
+    function restoreFocus(): void {
+        root.focusRestorePending = !changeFolderButton.enabled
+        if (changeFolderButton.enabled) {
+            changeFolderButton.forceActiveFocus()
+        }
+    }
+
     width: parent ? parent.width : implicitWidth
     spacing: IKSyncConfiguration.sectionSpacing
 
@@ -40,7 +51,7 @@ Column {
 
         // Returning from the native picker leaves focus nowhere otherwise, since the dialog is a separate window.
         function onCustomFolderDialogClosed() {
-            changeFolderButton.forceActiveFocus()
+            root.restoreFocus()
         }
     }
 
@@ -200,6 +211,11 @@ Column {
                     text: qsTrId("buttonChangeFolder")
                     actionEnabled: !root.controller.busy
                     onClicked: root.controller.requestCustomFolder()
+                    onEnabledChanged: {
+                        if (enabled && root.focusRestorePending) {
+                            root.restoreFocus()
+                        }
+                    }
                 }
 
                 IKModalButton {
