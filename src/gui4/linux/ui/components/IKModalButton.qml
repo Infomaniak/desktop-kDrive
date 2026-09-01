@@ -40,13 +40,19 @@ Button {
         if (!actionEnabled && !busy) {
             return IKColors.actionDisabled
         }
-        if (role === IKModalButton.Secondary || role === IKModalButton.Tonal) {
+        if (role === IKModalButton.Tonal) {
+            return IKColors.actionOnTonal
+        }
+        if (role === IKModalButton.Secondary) {
             return IKColors.actionPrimary
         }
         return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
     }
     readonly property color focusBorderColor: {
-        if (role === IKModalButton.Secondary || role === IKModalButton.Tonal) {
+        if (role === IKModalButton.Tonal) {
+            return IKColors.actionOnTonal
+        }
+        if (role === IKModalButton.Secondary) {
             return IKColors.accentPrimary
         }
         return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
