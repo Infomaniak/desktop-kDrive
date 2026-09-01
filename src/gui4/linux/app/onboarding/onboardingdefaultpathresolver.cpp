@@ -28,6 +28,8 @@
 #include <QLoggingCategory>
 #include <QPointer>
 
+#include <algorithm>
+
 namespace KDC {
 
 namespace {
@@ -48,9 +50,8 @@ OnboardingDefaultPathResolver::OnboardingDefaultPathResolver(const AppCache &app
 
 void OnboardingDefaultPathResolver::invalidatePendingRequests() {
     ++_generation;
-    if (_pendingKeys.empty()) return;
     _pendingKeys.clear();
-    emit pendingResolutionsChanged();
+    updatePendingResolutions();
 }
 
 bool OnboardingDefaultPathResolver::pathTakenByAnotherDrive(const QString &path, const AvailableDriveKey &excludedKey) const {
@@ -71,9 +72,7 @@ void OnboardingDefaultPathResolver::resolveMissingDefaultPaths() {
         const auto availableDrive = _appCache.availableDrive(key);
         if (!availableDrive) continue;
 
-        const bool wasIdle = _pendingKeys.empty();
         (void) _pendingKeys.insert(key);
-        if (wasIdle) emit pendingResolutionsChanged();
 
         qCInfo(lcOnboardingDefaultPathResolver)
                 << "Requesting default sync folder | userDbId:" << key.userDbId << "/ driveId:" << key.driveId;
@@ -86,6 +85,8 @@ void OnboardingDefaultPathResolver::resolveMissingDefaultPaths() {
                     self->handleGoodPathResult(key, generation, exitInfo, result);
                 });
     }
+    // Also covers a plain deselection: its request stays in flight but no longer holds onboarding back.
+    updatePendingResolutions();
 }
 
 void OnboardingDefaultPathResolver::handleGoodPathResult(const AvailableDriveKey &key, const uint64_t generation,
@@ -123,7 +124,16 @@ void OnboardingDefaultPathResolver::handleGoodPathResult(const AvailableDriveKey
 
 void OnboardingDefaultPathResolver::finishRequest(const AvailableDriveKey &key) {
     if (_pendingKeys.erase(key) == 0) return;
-    if (_pendingKeys.empty()) emit pendingResolutionsChanged();
+    updatePendingResolutions();
+}
+
+void OnboardingDefaultPathResolver::updatePendingResolutions() {
+    // Only a request whose drive is still selected blocks onboarding: the folder of an unselected one is never used.
+    const bool pending = std::ranges::any_of(
+            _pendingKeys, [this](const AvailableDriveKey &key) { return _onboardingState.isAvailableDriveSelected(key); });
+    if (pending == _pendingResolutions) return;
+    _pendingResolutions = pending;
+    emit pendingResolutionsChanged();
 }
 
 } // namespace KDC
