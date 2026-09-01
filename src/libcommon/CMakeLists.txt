@@ -39,18 +39,18 @@ set(libcommon_SRCS
     data/exclusiontemplate.h data/exclusiontemplate.cpp
     data/exclusionapp.h data/exclusionapp.cpp
     data/proxyconfig.h data/proxyconfig.cpp
+    data/syncfileitem.h data/syncfileitem.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
     info/parametersinfo.h info/parametersinfo.cpp
-    info/syncfileiteminfo.h info/syncfileiteminfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
     info/maintenanceinfo.h info/maintenanceinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
-    log/sentry/abstractptrace.h 
+    log/sentry/abstractptrace.h
     log/sentry/abstractcounterscopedptrace.h
-    log/sentry/abstractscopedptrace.h 
-    log/sentry/ptraces.h log/sentry/user.h 
+    log/sentry/abstractscopedptrace.h
+    log/sentry/ptraces.h log/sentry/user.h
     log/sentry/ptracedescriptor.h
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h

@@ -353,12 +353,12 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
 
-        const auto job1 = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath,
-                                                               filepath.filename().native(), remoteTmpDir.id(),
-                                                               testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
-        const auto job2 = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath,
-                                                               filepath.filename().native(), remoteTmpDir.id(),
-                                                               testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
+        const auto job1 =
+                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
+                                                     remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, 3);
+        const auto job2 =
+                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
+                                                     remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, 3);
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job1));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
         Utility::msleep(200);
@@ -397,7 +397,8 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
-        CPPUNIT_ASSERT_EQUAL(std::min(maxNumberParallelBigDownloads, SyncJobManagerSingleton::instance()->normalPriorityCapacity()), counter);
+        CPPUNIT_ASSERT_EQUAL(
+                std::min(maxNumberParallelBigDownloads, SyncJobManagerSingleton::instance()->normalPriorityCapacity()), counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
@@ -459,7 +460,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             } else {
                 auto job = std::make_shared<DriveUploadSession>(
                         nullptr, driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
-                        testhelpers::defaultTime, testhelpers::defaultTime, false,
+                        testhelpers::defaultTime, testhelpers::defaultTime,
                         ParametersCache::instance()->parameters().uploadSessionParallelJobs());
                 job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "syncpal/syncpal.h"
+#include "syncpal_test_helper/mocksyncpal.h"
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
@@ -40,9 +41,17 @@ typedef void (TestIntegration::*testFctPtr)();
 class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestIntegration);
         CPPUNIT_TEST(testAll);
+        CPPUNIT_TEST(testSimpleComparison);
+        CPPUNIT_TEST(testSimpleUpload);
+        CPPUNIT_TEST(testGlobalFramework);
+        CPPUNIT_TEST(testNestedRemoteOperations);
+        CPPUNIT_TEST(testRemoteMoveDirectoryDescendantRekey);
+        CPPUNIT_TEST(testExecuteSyncUpToStep);
+#if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
         CPPUNIT_TEST(testNodeIdReuseFalsePositive);
+#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -57,6 +66,12 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testRemoteChanges();
         void testSimultaneousChanges();
         void testUploadBigFile();
+        void testSimpleUpload();
+        void testSimpleComparison();
+        void testGlobalFramework();
+        void testNestedRemoteOperations();
+        void testRemoteMoveDirectoryDescendantRekey();
+        void testExecuteSyncUpToStep();
 
         void inconsistencyTests();
 
@@ -143,14 +158,19 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
                 bool isValid() const { return !id.empty(); }
         };
-        RemoteFileInfo getRemoteFileInfoByName(int driveDbId, const NodeId &parentId, const SyncName &name) const;
-        int64_t countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const;
+        RemoteFileInfo getRemoteFileInfoByName(DriveDbId driveDbId, const NodeId &parentId, const SyncName &name) const;
+        // Resolves a possibly multi-segment relative path (e.g. "A/AA/BBB") by walking down the remote tree one
+        // path component at a time, starting from rootParentId. Returns an invalid RemoteFileInfo as soon as any
+        // segment along the way cannot be found (in particular if the leaf itself doesn't exist).
+        RemoteFileInfo getRemoteFileInfoByPath(DriveDbId driveDbId, const NodeId &rootParentId,
+                                               const SyncPath &relativePath) const;
+        int64_t countItemsInRemoteDir(DriveDbId driveDbId, const NodeId &parentId) const;
 
         log4cplus::Logger _logger;
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<MockSyncPal> _syncPal = nullptr;
         std::shared_ptr<ParmsDb> _parmsDb = nullptr;
 
-        int _driveDbId = 0;
+        DriveDbId _driveDbId = 0;
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
         LocalTemporaryDirectory _localTempDir{"testIntegration"};
