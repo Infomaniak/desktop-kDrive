@@ -195,6 +195,11 @@ void OnboardingSyncConfigurationController::returnToDefaultFolder() {
     if (_busy) return;
     Draft *const draft = currentDraft();
     if (!draft || draft->config.defaultLocalPath.isEmpty()) return;
+    // Another drive may have taken that folder while this one sat on a custom path.
+    if (conflictsWithAnotherDraft(draft->config.defaultLocalPath, _currentRow)) {
+        setError(qtTrId("teachingTipInvalidFolderTitle"), qtTrId("teachingTipInvalidFolderContent"));
+        return;
+    }
     draft->config.localPath = draft->config.defaultLocalPath;
     draft->config.usesDefaultLocalPath = true;
     clearError();
@@ -233,11 +238,20 @@ bool OnboardingSyncConfigurationController::conflictsWithAnotherDraft(const QStr
 }
 
 void OnboardingSyncConfigurationController::buildDrafts() {
+    // Reconciles the drafts with the selection instead of reloading them: a rejected commit rebuilds them with the
+    // modal still open, and what the user has just configured has to survive that retry.
+    std::unordered_map<AvailableDriveKey, PendingSyncConfig> editedConfigs;
+    editedConfigs.reserve(_drafts.size());
+    for (const auto &draft: _drafts) editedConfigs.emplace(draft.key, draft.config);
+
     _drafts.clear();
     for (const auto &key: _onboardingState.selectedAvailableDriveKeys()) {
         const auto availableDrive = _appCache.availableDrive(key);
         if (!availableDrive) continue;
-        PendingSyncConfig config = _onboardingState.pendingSyncConfig(key).value_or(PendingSyncConfig{});
+        const auto editedConfig = editedConfigs.find(key);
+        PendingSyncConfig config = editedConfig != editedConfigs.cend()
+                                           ? editedConfig->second
+                                           : _onboardingState.pendingSyncConfig(key).value_or(PendingSyncConfig{});
         if (!config.localPath.isEmpty() && config.defaultLocalPath.isEmpty()) config.defaultLocalPath = config.localPath;
         _drafts.push_back({.key = key,
                            .driveName = QString::fromStdString(availableDrive->name()),
