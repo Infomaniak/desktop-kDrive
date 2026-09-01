@@ -73,7 +73,7 @@ Item {
             // Retry only exists once the synchronization failed, so it claims the focus when it appears.
             onVisibleChanged: {
                 if (visible) {
-                    retryButton.forceActiveFocus()
+                    retryButton.forceActiveFocus(Qt.TabFocusReason)
                 }
             }
             height: IKOnboarding.completionButtonHeight
