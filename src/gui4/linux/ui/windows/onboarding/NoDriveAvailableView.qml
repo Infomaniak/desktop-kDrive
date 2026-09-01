@@ -27,7 +27,7 @@ Column {
     // appears. Taking it on completion would leave the focus on a hidden button, which still receives key events.
     onVisibleChanged: {
         if (visible) {
-            startForFreeButton.forceActiveFocus(Qt.TabFocusReason)
+            startForFreeButton.forceActiveFocus()
         }
     }
 
