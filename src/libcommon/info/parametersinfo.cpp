@@ -126,7 +126,7 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
-            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
+            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfig >>
             parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled;
     return in;
 }
@@ -135,7 +135,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
     out << parametersInfo._language << parametersInfo._monoIcons << parametersInfo._autoStart << parametersInfo._moveToTrash
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
-        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
+        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfig
         << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled;
     return out;
 }
