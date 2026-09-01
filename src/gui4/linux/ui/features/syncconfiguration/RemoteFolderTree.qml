@@ -88,7 +88,9 @@ Rectangle {
 
             width: IKSyncConfiguration.treeSizeColumnWidth
             anchors.right: parent.right
-            anchors.rightMargin: IKSyncConfiguration.treeStateSpacing
+            // The values sit inside the TreeView, which the header does not share: its padding is added here so the
+            // two right edges line up.
+            anchors.rightMargin: IKSyncConfiguration.treeStateSpacing + IKSyncConfiguration.treeContentPadding
             anchors.verticalCenter: parent.verticalCenter
             text: qsTrId("labelSize")
             color: IKColors.textSecondary
@@ -187,6 +189,14 @@ Rectangle {
                 treeView.positionViewAtRow(targetRow, TableView.Contain)
             }
 
+            // The tree is usually still empty when it takes the focus, so the cursor is also placed once the rows
+            // arrive: without it Space and Enter stay inert until an arrow key moves the cursor.
+            function placeInitialCurrentRow(): void {
+                if (treeView.activeFocus && treeView.currentRow < 0) {
+                    treeView.moveCurrentToRow(0)
+                }
+            }
+
             anchors.fill: parent
             anchors.margins: IKSyncConfiguration.treeContentPadding
             visible: root.contentVisible
@@ -202,11 +212,8 @@ Rectangle {
                 model: root.treeModel
             }
 
-            onActiveFocusChanged: {
-                if (treeView.activeFocus && treeView.currentRow < 0) {
-                    treeView.moveCurrentToRow(0)
-                }
-            }
+            onActiveFocusChanged: treeView.placeInitialCurrentRow()
+            onRowsChanged: treeView.placeInitialCurrentRow()
 
             Keys.onUpPressed: treeView.moveCurrentToRow(treeView.currentRow - 1)
             Keys.onDownPressed: treeView.moveCurrentToRow(treeView.currentRow + 1)
@@ -261,6 +268,14 @@ Rectangle {
                 readonly property var treeIndex: folderRow.treeView.index(folderRow.row, folderRow.column)
                 readonly property bool disclosureVisible: folderRow.isTreeNode && folderRow.hasChildren
 
+                function requestToggle(): void {
+                    if (folderRow.accessDenied) {
+                        return
+                    }
+                    treeView.moveCurrentToRow(folderRow.row)
+                    root.treeModel.toggleSelection(folderRow.treeIndex)
+                }
+
                 implicitWidth: folderRow.treeView.width
                 implicitHeight: IKSyncConfiguration.treeRowHeight
 
@@ -273,6 +288,8 @@ Rectangle {
                 Accessible.checked: folderRow.checkState === Qt.Checked
                 Accessible.checkStateMixed: folderRow.checkState === Qt.PartiallyChecked
                 Accessible.readOnly: folderRow.accessDenied
+                // The row carries the check state, so it carries its action too: the checkbox is ignored above.
+                Accessible.onToggleAction: folderRow.requestToggle()
 
                 Component.onCompleted: root.treeModel.setRowVisible(folderRow.treeIndex, true)
                 Component.onDestruction: root.treeModel.setRowVisible(folderRow.treeIndex, false)
@@ -310,10 +327,7 @@ Rectangle {
                     enabled: !folderRow.accessDenied
                     focusPolicy: Qt.NoFocus
                     Accessible.ignored: true
-                    onClicked: {
-                        treeView.moveCurrentToRow(folderRow.row)
-                        root.treeModel.toggleSelection(folderRow.treeIndex)
-                    }
+                    onClicked: folderRow.requestToggle()
                 }
 
                 Item {
