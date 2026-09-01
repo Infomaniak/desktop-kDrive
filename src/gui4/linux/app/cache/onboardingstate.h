@@ -60,6 +60,7 @@ class OnboardingState : public QObject {
         void toggleAvailableDrive(const AvailableDriveKey &key);
         void clearSelectedAvailableDrives();
         void setPendingSyncConfig(const AvailableDriveKey &key, const PendingSyncConfig &config);
+        [[nodiscard]] bool replacePendingSyncConfigs(const std::unordered_map<AvailableDriveKey, PendingSyncConfig> &configs);
         void clearPendingSyncConfig(const AvailableDriveKey &key);
         void reset();
 
