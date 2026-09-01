@@ -138,7 +138,7 @@ namespace Infomaniak.kDrive
                 else if (arguments.Contains("--settings"))
                 {
                     Logger.Log(Logger.Level.Info, "--settings arg detected, opening Settings window in foreground.");
-                    CreateWindow(CreateWindowOptions.Foreground);
+                    CreateWindow(CreateWindowOptions.Foreground | CreateWindowOptions.OpenSettings);
                 }
             }
 
