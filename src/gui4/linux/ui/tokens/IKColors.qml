@@ -206,4 +206,19 @@ QtObject {
     readonly property color modalScrim: _p.neutralBlack35
     readonly property color modalSecondaryActionHover: surfaceTertiary
     readonly property color modalHardWarningIcon: actionDestructive
+    readonly property color checkboxSurface: surfaceTertiary
+    readonly property color checkboxSelectedSurface: actionPrimary
+    readonly property color checkboxMark: actionOnPrimary
+    readonly property color checkboxBorder: surfaceTertiary
+    readonly property color checkboxHoverBorder: textTertiary
+    readonly property color checkboxDisabledSurface: surfaceSecondary
+    readonly property color checkboxDisabledBorder: actionDisabled
+    readonly property color syncConfigurationTreeSurface: modalSurface
+    readonly property color syncConfigurationTreeHeaderSurface: surfaceSecondary
+    readonly property color syncConfigurationRowCurrent: surfaceTertiary
+    readonly property color syncConfigurationRowSelectedSurface: surfaceSecondary
+    readonly property color syncConfigurationRowHover: surfaceTertiary
+    readonly property color syncConfigurationDivider: surfaceTertiary
+    readonly property color syncConfigurationFolderIcon: textTertiary
+    readonly property color syncConfigurationDisclosureIcon: textSecondary
 }
