@@ -125,7 +125,6 @@ void TestIntegration::setUp() {
     const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
-
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                              KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
@@ -1027,16 +1026,17 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
+    // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
     testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
-    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
+    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
-    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_file.txt",
+    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
 
     (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
-    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "directory",
+    std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
-    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_directory",
+    std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
 
     waitForSyncToBeIdle(std::source_location::current());
@@ -1050,6 +1050,34 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
     CPPUNIT_ASSERT(remoteTestFileInfo3.isValid());
     CPPUNIT_ASSERT(remoteTestFileInfo4.isValid());
+
+    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
+    waitForSyncToBeIdle(std::source_location::current());
+
+    // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
+    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
+                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
+
+    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "../file.txt",
+                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_parent_traversal");
+
+    std::filesystem::create_directory_symlink(
+            _syncPal->localPath() / tmpRemoteDir.name() / "directory",
+            _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink_with_absolute_target_path");
+
+    waitForSyncToBeIdle(std::source_location::current());
+
+    const auto remoteTestFileInfo5 =
+            getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_with_absolute_target_path"));
+    const auto remoteTestFileInfo6 =
+            getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_with_parent_traversal"));
+    const auto remoteTestFileInfo7 =
+            getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
+
+    CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
+    CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
+    CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
 
     CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
