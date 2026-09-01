@@ -310,6 +310,68 @@ function build_app_image() {
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
 
+function build_recovery_updater_image() {
+  architecture=$1
+  updater_bin="/app/usr/bin/kDriveRecoveryUpdater"
+
+  if [ ! -f "$updater_bin" ]; then
+    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
+    return 0
+  fi
+
+  echo "Building recovery updater AppImage for ${architecture}..."
+
+  updater_appdir="/tmp/updater-app"
+  rm -rf "$updater_appdir"
+  mkdir -p "$updater_appdir/usr/bin"
+  mkdir -p "$updater_appdir/usr/lib"
+  mkdir -p "$updater_appdir/usr/plugins/platforms"
+
+  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
+
+  # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
+  cp -P "$conan_dependencies_folder"/* "$updater_appdir/usr/lib" 2>/dev/null || true
+
+  # Copy Qt platform plugins (required for GUI)
+  cp -P -r "$QT_BASE_DIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
+
+  # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
+  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=kDriveRecoveryUpdater
+Exec=kDriveRecoveryUpdater
+Icon=kDriveRecoveryUpdater
+Categories=Utility;
+EOF
+
+  # Use the recovery updater icon
+  updater_icon="/src/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
+  if [ -f "$updater_icon" ]; then
+    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
+  fi
+
+  export LD_LIBRARY_PATH="$updater_appdir/usr/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
+  export NO_STRIP=1
+  linuxdeploy --appdir "$updater_appdir" \
+    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
+    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
+    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
+    --plugin qt --output appimage -v0
+  if [ "$?" -ne 0 ]; then
+    echo "ERROR: linuxdeploy failed for recovery updater AppImage" >&2
+    return 1
+  fi
+
+  mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
+  if [ "$?" -ne 0 ]; then
+    echo "ERROR: Failed to move recovery updater AppImage to /install/" >&2
+    return 1
+  fi
+
+  echo "Recovery updater AppImage created: /install/kDriveRecoveryUpdater-$architecture.AppImage"
+}
+
 
 function setup_build() {
   # Validate that QT_BASE_DIR is set
@@ -417,6 +479,15 @@ build_app_image "$architecture"
 
 if [ ! "$?" -eq "0" ]; then
     printf "\nBuild of the AppImage failed." >&2
+    exit 1
+fi
+
+echo
+echo "Building recovery updater AppImage ..."
+build_recovery_updater_image "$architecture"
+
+if [ ! "$?" -eq "0" ]; then
+    printf "\nBuild of the recovery updater AppImage failed." >&2
     exit 1
 fi
 

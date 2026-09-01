@@ -18,15 +18,9 @@
 
 #include <QProcess>
 
-#include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <format>
-#include <fstream>
-
-#include <Poco/SHA2Engine.h>
-#include <Poco/DigestStream.h>
 
 #include "windowsupdater.h"
 #include "log/log.h"
@@ -34,7 +28,11 @@
 #include "jobs/syncjobmanager.h"
 #include "io/iohelper.h"
 #include "libcommonserver/utility/utility.h" // Path2WStr
+#include "libcommonserver/utility/checksumverifier.h"
 #include "utility/digitalsignaturechecker_win.h"
+
+#include <fstream>
+#include <sstream>
 
 namespace KDC {
 
@@ -58,7 +56,7 @@ void WindowsUpdater::onUpdateFound() {
         LOGW_INFO(Log::instance()->getLogger(), L"Installer already downloaded at " << Utility::formatSyncPath(filepath)
                                                                                     << L". Update is ready to be installed.");
 
-        if (!verifyFileChecksum(filepath)) {
+        if (!verifyInstallerChecksum(filepath)) {
             retryDownload(filepath);
             return;
         }
@@ -86,7 +84,7 @@ void WindowsUpdater::startInstaller() {
         retryDownload(filepath);
         return;
     }
-    if (!verifyFileChecksum(filepath)) {
+    if (!verifyInstallerChecksum(filepath)) {
         retryDownload(filepath);
         return;
     }
@@ -116,6 +114,9 @@ void WindowsUpdater::downloadUpdate() noexcept {
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(Log::instance()->getLogger(), L"Failed to to remove existing installer " << Utility::formatSyncPath(filepath));
     }
+
+    // Clear any cached checksum from a previous attempt so the sidecar is re-fetched.
+    _expectedChecksum.clear();
 
     const auto job = std::make_shared<DirectDownloadJob>(filepath, versionInfo().downloadUrl);
     const std::function<void(UniqueId)> callback = std::bind_front(&WindowsUpdater::downloadFinished, this);
@@ -158,7 +159,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         return;
     }
 
-    if (!verifyFileChecksum(filepath)) {
+    if (!verifyInstallerChecksum(filepath)) {
         retryDownload(filepath);
         return;
     }
@@ -198,68 +199,37 @@ std::streamsize WindowsUpdater::getExpectedInstallerSize(const std::string &down
     return job.httpResponse().getContentLength();
 }
 
-bool WindowsUpdater::verifyFileChecksum(const SyncPath &filepath) {
-    const std::string expectedChecksum = CommonUtility::trim(CommonUtility::toLower(versionInfo().checksum));
+bool WindowsUpdater::verifyInstallerChecksum(const SyncPath &filepath) {
+    ChecksumVerifier::Sha256Fetcher fetcher;
+    if (_expectedChecksum.empty()) {
+        // First call: download the .sha256 sidecar and cache the result.
+        fetcher = [this](const std::string &sha256Url) -> std::string {
+            SyncPath tmpDirPath;
+            if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) return "";
+            const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
 
-    auto cleanupAndFail = [&](const std::string &reason) {
-        auto ioError = IoError::Success;
-        (void) IoHelper::deleteItem(filepath, ioError);
-        if (ioError == IoError::Success) {
-            LOGW_INFO(Log::instance()->getLogger(), L"corrupted file at " << Utility::formatSyncPath(filepath) << L" deleted");
-        } else {
-            LOGW_WARN(Log::instance()->getLogger(), L"couldn't reach corrupted file at " << Utility::formatSyncPath(filepath)
-                                                                                         << L" : IOError state "
-                                                                                         << static_cast<int>(ioError));
-        }
+            auto ioError = IoError::Success;
+            (void) IoHelper::deleteItem(sha256FilePath, ioError);
 
-        // Send to Sentry
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Updater::verifyChecksum",
-                                             "Checksum verification failed: " + reason);
+            DirectDownloadJob job(sha256FilePath, sha256Url);
+            (void) job.runSynchronously();
 
-        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum verification failed: " << CommonUtility::s2ws(reason));
-        return false;
-    };
+            if (job.hasErrorApi() || job.exitInfo().code() != ExitCode::Ok) return "";
 
-    // Skip if API doesn't provide checksum
-    if (expectedChecksum.empty()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Checksum not available from API. Skipping verification.");
-        return true;
+            std::ifstream file(sha256FilePath);
+            if (!file) return "";
+
+            std::string checksum;
+            file >> checksum;
+            _expectedChecksum = checksum;
+            return checksum;
+        };
+    } else {
+        // Subsequent calls (e.g. startInstaller): reuse the cached checksum, no network I/O.
+        fetcher = [this](const std::string &) { return _expectedChecksum; };
     }
 
-    // Compute actual checksum
-    const std::string actualChecksum = CommonUtility::trim(CommonUtility::toLower(computeFileChecksum(filepath)));
-    if (actualChecksum.empty()) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"Failed to compute file checksum.");
-        return cleanupAndFail("computeFailed");
-    }
-
-    // verify checksum
-    if (actualChecksum != expectedChecksum) {
-        LOGW_ERROR(Log::instance()->getLogger(), L"Checksum mismatch! Expected: " << CommonUtility::s2ws(expectedChecksum)
-                                                                                  << L", Got: "
-                                                                                  << CommonUtility::s2ws(actualChecksum));
-        return cleanupAndFail("mismatch");
-    }
-
-    LOGW_INFO(Log::instance()->getLogger(), L"Checksum verification passed.");
-    return true;
-}
-
-std::string WindowsUpdater::computeFileChecksum(const SyncPath &filepath) {
-    std::ifstream file(filepath, std::ios::binary);
-    if (!file) return "";
-
-    Poco::SHA2Engine sha256(Poco::SHA2Engine::ALGORITHM::SHA_256);
-    // Using SHA256 instead of the project-standard XXH3 for security.
-    // XXH3 is a non-cryptographic hash; an attacker could craft a malicious
-    // file with the same XXH3 hash (collision attack).
-
-    std::array<char, 8192> buffer{};
-    while (file.read(buffer.data(), buffer.size()) || file.gcount() > 0) {
-        sha256.update(buffer.data(), static_cast<std::size_t>(file.gcount()));
-    }
-
-    return Poco::DigestEngine::digestToHex(sha256.digest());
+    return ChecksumVerifier::verifyFileChecksum(filepath, versionInfo().downloadUrl, fetcher);
 }
 
 bool WindowsUpdater::verifyDigitalSignature(const SyncPath &filepath) {

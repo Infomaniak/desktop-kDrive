@@ -39,6 +39,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDownload);
         CPPUNIT_TEST(testDownloadAborted);
         CPPUNIT_TEST(testGetAvatar);
+        CPPUNIT_TEST(testDownloadChecksumHandling);
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
@@ -55,6 +56,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
         CPPUNIT_TEST(testUploadAborted);
+        CPPUNIT_TEST(testUploadChecksum);
+        CPPUNIT_TEST(testUploadSessionChecksum);
         CPPUNIT_TEST(testDriveUploadSessionConstructorException);
         CPPUNIT_TEST(testDriveUploadSessionSynchronous);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
@@ -73,6 +76,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testExists);
         CPPUNIT_TEST(testGetAllFilesInDirectory);
         CPPUNIT_TEST(testPostFileModificationDate);
+        CPPUNIT_TEST(testLongPollJobWithoutToken);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -84,6 +88,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testCopyToDir();
         void testDelete();
         void testDownload();
+        void testDownloadChecksumHandling();
         void testDownloadAborted();
         void testGetAvatar();
         void testGetDriveList();
@@ -101,6 +106,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDuplicateRenameMove();
         void testRename();
         void testUpload();
+        void testUploadChecksum();
+        void testUploadSessionChecksum();
         void testUploadAborted();
         void testDriveUploadSessionConstructorException();
         void testDriveUploadSessionSynchronous();
@@ -120,12 +127,15 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testExists();
         void testGetAllFilesInDirectory();
         void testPostFileModificationDate();
+        void testLongPollJobWithoutToken();
 
     private:
         bool createTestFiles();
 
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
+
+        void clearAccessTokenCache();
 
         DriveDbId _driveDbId = 0;
         UserDbId _userDbId = 0;

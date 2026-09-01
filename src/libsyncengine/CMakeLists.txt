@@ -75,6 +75,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/upload/upload_session/uploadsessionchunkjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionchunkjob.cpp
     jobs/network/kDrive_API/upload/upload_session/uploadsessionfinishjob.h jobs/network/kDrive_API/upload/upload_session/uploadsessionfinishjob.cpp
     jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.h jobs/network/kDrive_API/upload/upload_session/uploadsessioncanceljob.cpp
+    jobs/network/kDrive_API/upload/uploadhelpers.h
     jobs/network/kDrive_API/upload/uploadjob.h jobs/network/kDrive_API/upload/uploadjob.cpp
     jobs/network/kDrive_API/upload/loguploadjob.h jobs/network/kDrive_API/upload/loguploadjob.cpp
     jobs/network/kDrive_API/upload/uploadjobreplyhandler.h jobs/network/kDrive_API/upload/uploadjobreplyhandler.cpp
@@ -150,7 +151,6 @@ set(syncengine_SRCS
     # Progress Dispatcher
     progress/estimates.h
     progress/progressitem.h
-    progress/syncfileitem.h progress/syncfileitem.cpp
     progress/progress.h progress/progress.cpp
     progress/progressinfo.h progress/progressinfo.cpp
     # Requests
@@ -242,5 +242,4 @@ target_link_libraries(${libsyncengine_NAME}
         ${libparms_NAME}
         Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
         OpenSSL::SSL OpenSSL::Crypto)
-
 

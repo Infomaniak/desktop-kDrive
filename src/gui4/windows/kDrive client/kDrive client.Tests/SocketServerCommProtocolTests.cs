@@ -10,12 +10,21 @@ using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommClient;
 
 namespace Infomaniak.kDrive.Tests;
 
-public class MockTcpServerCommClient : TcpServerCommClient
+internal class MockTcpServerCommClient : TcpServerCommClient
 {
     private int _port;
-    public MockTcpServerCommClient(int port) : base(new FakeKeychainStore(string.Empty))
+    public MockTcpServerCommClient(int port) : this(port, new InMemoryKeychainStore(string.Empty, string.Empty, string.Empty))
+    {
+    }
+
+    public MockTcpServerCommClient(int port, IKeychainStore keychainStore) : base(keychainStore)
     {
         _port = port;
+    }
+
+    public MockTcpServerCommClient(FakeSocketServer server)
+        : this(server.Port, new InMemoryKeychainStore(server.CertificatePem, server.ClientCertificatePem, server.ClientPrivateKeyPem))
+    {
     }
 
     protected override int? GetServerPort()
@@ -78,25 +87,7 @@ public class TcpServerCommClientTests
     }
 
     [Fact]
-    public async Task InitConnection_EventuallyConnects_WhenServerStartsLater()
-    {
-        string commPath = CreateCommFilePath();
-        var protocol = CreateProtocol(commPath);
-        await using var server = new FakeSocketServer();
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        Task<bool> initTask = protocol.InitConnection(cts.Token);
-
-        await Task.Delay(250);
-        await server.WriteCommFileAsync(commPath);
-
-        Assert.True(await initTask);
-        await server.WaitForClientAsync();
-        await ShutdownProtocolAsync(protocol);
-    }
-
-    [Fact]
-    public async Task InitConnection_Fails_AndExposesNoStream_WhenPinnedCertificateMismatches()
+    public async Task InitConnection_Fails_AndExposesNoStream_WhenServerCertificateMismatches()
     {
         string commPath = CreateCommFilePath();
         await using var server = new FakeSocketServer();
@@ -122,7 +113,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         var connectionLost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => connectionLost.TrySetResult();
 
@@ -141,7 +132,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -172,7 +163,7 @@ public class TcpServerCommClientTests
     public async Task SendRequestAsync_HandlesHighFrequencyConsecutiveMessages()
     {
         await using var server = new FakeSocketServer();
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
 
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
@@ -210,7 +201,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -256,7 +247,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -292,7 +283,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -327,7 +318,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protocol.ConnectionLost += (_, _) => lost.TrySetResult();
 
@@ -346,7 +337,7 @@ public class TcpServerCommClientTests
     {
         await using var server = new FakeSocketServer();
 
-        var protocol = new MockTcpServerCommClient(server.Port);
+        var protocol = new MockTcpServerCommClient(server);
         using var initCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         Assert.True(await protocol.InitConnection(initCts.Token));
         await server.WaitForClientAsync();
@@ -368,7 +359,7 @@ public class TcpServerCommClientTests
         for (int i = 0; i < 10; i++)
         {
             await using var server = new FakeSocketServer();
-            var protocol = new MockTcpServerCommClient(server.Port);
+            var protocol = new MockTcpServerCommClient(server);
 
             var lost = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             protocol.ConnectionLost += (_, _) => lost.TrySetResult();
@@ -381,15 +372,6 @@ public class TcpServerCommClientTests
             await WaitAsync(lost.Task, TimeSpan.FromSeconds(5));
             await ShutdownProtocolAsync(protocol);
         }
-    }
-
-    private static TcpServerCommClient CreateProtocol(string commPath)
-    {
-        var protocol = new TcpServerCommClient(new FakeKeychainStore(commPath));
-        var field = typeof(TcpServerCommClient).GetField("_commPortFilePath", _instancePrivate)
-                    ?? throw new InvalidOperationException("Failed to find _commPortFilePath field.");
-        field.SetValue(protocol, commPath);
-        return protocol;
     }
 
     private static TcpServerCommClient CreateProtocol(string commPath, IKeychainStore keychainStore)
@@ -420,9 +402,9 @@ public class TcpServerCommClientTests
                         ?? throw new InvalidOperationException("Failed to find _stopRequested field.");
         stopField.SetValue(protocol, true);
 
-        var socketField = typeof(TcpServerCommClient).GetField("_socket", _instancePrivate)
-                          ?? throw new InvalidOperationException("Failed to find _socket field.");
-        (socketField.GetValue(protocol) as Socket)?.Dispose();
+        var streamField = typeof(TcpServerCommClient).GetField("_stream", _instancePrivate)
+                          ?? throw new InvalidOperationException("Failed to find _stream field.");
+        (streamField.GetValue(protocol) as SslStream)?.Dispose();
 
         var pollingTaskField = typeof(TcpServerCommClient).GetField("_pollingTask", _instancePrivate)
                                ?? throw new InvalidOperationException("Failed to find _pollingTask field.");

@@ -38,6 +38,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include <memory>
+#include <mutex>
 #include <comm.h>
 
 namespace KDC {
@@ -452,13 +453,16 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
 
         // Progress info management
+        [[nodiscard]] std::shared_ptr<ProgressInfo> progressInfo() const;
+        void setProgressInfo(std::shared_ptr<ProgressInfo> progressInfo);
+        void clearProgressInfo();
         void createProgressInfo();
         void resetEstimateUpdates();
         void startEstimateUpdates();
         void stopEstimateUpdates();
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
-        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int progress);
+        [[nodiscard]] bool setProgress(const SyncPath &relativePath, int16_t progress);
         [[nodiscard]] bool setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status,
                                                const NodeId &newRemoteNodeId = {});
 
@@ -477,6 +481,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
+
+        mutable std::mutex _progressInfoMutex;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

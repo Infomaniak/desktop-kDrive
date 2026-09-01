@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "syncfileitem.h"
+#include "libcommon/data/syncfileitem.h"
 #include "estimates.h"
 #include "progress.h"
 #include "progressitem.h"
@@ -43,7 +43,7 @@ class ProgressInfo {
         [[nodiscard]] bool update() const { return _update; }
         void updateEstimates();
         [[nodiscard]] bool initProgress(const SyncFileItem &item);
-        [[nodiscard]] bool setProgress(const SyncPath &path, int progress);
+        [[nodiscard]] bool setProgress(const SyncPath &path, int16_t progress);
         [[nodiscard]] bool setProgressComplete(const SyncPath &path, SyncFileStatus status);
         [[nodiscard]] bool setSyncFileItemRemoteId(const SyncPath &path, const NodeId &remoteId);
         [[nodiscard]] bool getSyncFileItem(const SyncPath &path, SyncFileItem &item);

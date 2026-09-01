@@ -26,15 +26,14 @@
 #include "libcommon/data/drive.h"
 #include "libcommon/data/sync.h"
 #include "libcommon/info/nodeinfo.h"
-#include "libcommon/info/syncfileiteminfo.h"
+#include "libcommon/data/syncfileitem.h"
 #include "libcommon/data/error.h"
 #include "libcommon/info/parametersinfo.h"
-#include "libcommon/info/proxyconfiginfo.h"
+#include "libcommon/data/proxyconfig.h"
 #include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/exclusionapp.h"
 #include "libparms/db/parameters.h"
 #include "libsyncengine/login/login.h"
-#include "libsyncengine/progress/syncfileitem.h"
 
 #include <QList>
 #include <QString>
@@ -147,14 +146,12 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
-        static void syncFileItemToSyncFileItemInfo(const SyncFileItem &item, SyncFileItemInfo &itemInfo);
         static void parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo);
         static void parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters);
-        static void proxyConfigToProxyConfigInfo(const ProxyConfig &proxyConfig, ProxyConfigInfo &proxyConfigInfo);
-        static void proxyConfigInfoToProxyConfig(const ProxyConfigInfo &proxyConfigInfo, ProxyConfig &proxyConfig);
+
         static bool isDisplayableError(const Error &error);
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
-        static ExitCode fixProxyConfig();
+        static void fixProxyConfig();
 
     private:
         friend class TestServerRequests;

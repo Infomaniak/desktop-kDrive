@@ -87,19 +87,24 @@ struct RightsSet {
         RightsSet(int rights) :
             read(rights & 4),
             write(rights & 2),
-            execute(rights & 1){};
+            execute(rights & 1) {};
         RightsSet(bool read, bool write, bool execute) :
             read(read),
             write(write),
-            execute(execute){};
+            execute(execute) {};
         bool read;
         bool write;
         bool execute;
 };
 
-void generateTestFile(const SyncPath &path, const uint64_t size = 0);
+enum class TestFileGenerationMode {
+    Deterministic,
+    PseudoRandom
+};
+void generateTestFile(const SyncPath &path, const uint64_t size = 0,
+                      TestFileGenerationMode mode = TestFileGenerationMode::Deterministic);
 void generateOrEditTestFile(const SyncPath &path);
-void setTestFileSize(const SyncPath &path, uint64_t size);
+void setTestFileSize(const SyncPath &path, uint64_t size, TestFileGenerationMode mode = TestFileGenerationMode::Deterministic);
 bool generateTestFolder(const SyncPath &path);
 
 /**

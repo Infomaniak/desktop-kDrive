@@ -85,7 +85,7 @@ class SyncPalWorker : public ISyncWorker {
          */
         bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
 
-        ExitInfo ensureBlackListIsPropagated();
+        ExitInfo ensureBlackListIsPropagated(int16_t trial = 0);
 
         void ensureMinimumPermission();
 

@@ -77,6 +77,7 @@ DownloadJob::~DownloadJob() {
 
     // If the download job intent is to create a new local file, then there is no downloaded file after cancellation.
     if (_responseHandlingCanceled && _fileDownloadInfo.isCreate) return;
+    if (!_shouldDownload) return;
 
     if (_responseHandlingCanceled) {
         if (const ExitInfo exitInfo = _vfs->setPinState(_fileDownloadInfo.localpath, PinState::OnlineOnly); !exitInfo) {
@@ -144,13 +145,51 @@ ExitInfo DownloadJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo DownloadJob::runJob() noexcept {
-    if (!_fileDownloadInfo.isCreate && _vfs) {
-        // Get hydration status
-        VfsStatus vfsStatus;
-        (void) _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
-        _isHydrated = vfsStatus.isHydrated;
+void DownloadJob::computeHydrationStatus() {
+    VfsStatus vfsStatus;
+    ExitInfo exitInfo = ExitCode::Ok;
+    if (_vfs) exitInfo = _vfs->status(_fileDownloadInfo.localpath, vfsStatus);
+    _isHydrated = !_vfs || (exitInfo && vfsStatus.isHydrated);
+}
 
+ExitInfo DownloadJob::resolveDownloadNeed() {
+    _shouldDownload = true;
+
+    CheckHashMatchJob hashJob(_fileDownloadInfo.driveDbId, _fileDownloadInfo.localpath, _fileDownloadInfo.remoteFileId,
+                              _fileDownloadInfo.expectedSize);
+    if (const ExitInfo exitInfo = hashJob.runSynchronously(); !exitInfo) {
+        LOGW_DEBUG(_logger, L"CheckHashMatchJob failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+        return exitInfo;
+    }
+    _shouldDownload = !hashJob.hashMatch();
+
+    if (!_shouldDownload) {
+        LOGW_DEBUG(_logger, L"Changing last modified date without downloading : hash match");
+        if (const ExitInfo exitInfo = applyFileDatesIfRequired(FileType::Regular); !exitInfo) {
+            LOGW_DEBUG(_logger, L"applyFileDatesIfRequired failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+            _shouldDownload = true;
+            return exitInfo;
+        }
+        if (const ExitInfo exitInfo = setOutputParameters(); !exitInfo) {
+            LOGW_DEBUG(_logger, L"setOutputParameters failed: " << exitInfo << L" Proceeding DownloadJob normally.");
+            _shouldDownload = true;
+            return exitInfo;
+        }
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo DownloadJob::runJob() noexcept {
+    if (_fileDownloadInfo.isCreate) return AbstractTokenNetworkJob::runJob();
+
+    computeHydrationStatus();
+    if (_isHydrated) {
+        const ExitInfo exitInfo = resolveDownloadNeed();
+        if (!_shouldDownload && exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(_logger, L"resolveDownloadNeed: proceeding with download - " << exitInfo);
+    }
+
+    if (_vfs) {
         // Update size on file system
         FileStat filestat;
         IoError ioError = IoError::Success;
@@ -167,13 +206,21 @@ ExitInfo DownloadJob::runJob() noexcept {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
+        if (const ExitInfo exitInfo =
+                    _vfs->updateMetadata(_fileDownloadInfo.localpath, filestat.creationTime, filestat.modificationTime,
+                                         _fileDownloadInfo.expectedSize, std::to_string(filestat.inode));
+            !exitInfo) {
+            LOGW_WARN(_logger,
+                      L"Update metadata failed " << exitInfo << L" " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+            return exitInfo;
+        }
+
         if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isSyncing = true})); !exitInfo) {
             LOGW_WARN(_logger,
                       L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
             return exitInfo;
         }
     }
-
     return AbstractTokenNetworkJob::runJob();
 }
 
@@ -188,18 +235,18 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         mimeType = contentTypeElts[0];
     }
 
-    bool isLink = false;
+    FileType fileType = FileType::Regular;
     std::string linkData;
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder || mimeType == mimeTypeHardlink ||
         (mimeType == mimeTypeFinderAlias && CommonUtility::isMac()) ||
         (mimeType == mimeTypeJunction && CommonUtility::isWindows())) {
         // Read link data
         getStringFromStream(is, linkData);
-        isLink = true;
+        fileType = FileType::IsLink;
     }
 
     // Process download
-    if (isLink) {
+    if (fileType == FileType::IsLink) {
         // Create link
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType);
         if (const ExitInfo exitInfo = createLink(mimeType, linkData); !exitInfo) {
@@ -266,23 +313,30 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
             }
         }
     }
-    if (_dateTimePolicy == DateTimePolicy::ApplyDateTime) {
-        if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
-                                                           _fileDownloadInfo.modificationTime, isLink);
-            ioError == IoError::Unknown) {
-            LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            // Do nothing (remote file will be updated during the next sync)
-            sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
-        } else if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        } else if (ioError == IoError::AccessDenied) {
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-    }
+    if (const ExitInfo exitInfo = applyFileDatesIfRequired(fileType); !exitInfo) return exitInfo;
+    return setOutputParameters();
+}
 
-    // Retrieve inode
+ExitInfo DownloadJob::applyFileDatesIfRequired(const FileType fileType) {
+    if (_dateTimePolicy != DateTimePolicy::ApplyDateTime) return ExitCode::Ok;
+
+    if (const IoError ioError = IoHelper::setFileDates(_fileDownloadInfo.localpath, _fileDownloadInfo.creationTime,
+                                                       _fileDownloadInfo.modificationTime, fileType == FileType::IsLink);
+        ioError == IoError::Unknown) {
+        LOGW_WARN(_logger, L"Error in IoHelper::setFileDates: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        // Do nothing (remote file will be updated during the next sync)
+        sentry::Handler::captureMessage(sentry::Level::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
+    } else if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::NotFound};
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+        return {ExitCode::SystemError, ExitCause::FileAccessError};
+    }
+    return ExitCode::Ok;
+}
+
+ExitInfo DownloadJob::setOutputParameters() {
     FileStat filestat;
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
@@ -566,7 +620,7 @@ ExitInfo DownloadJob::moveTmpFile() {
                     return {};
                 }
 #else
-                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
 #endif
             } else {
                 bool exists = false;

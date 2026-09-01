@@ -26,7 +26,6 @@
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 
 #include "libcommon/utility/utility.h"
@@ -58,7 +57,7 @@ void TestSyncJobManagerSingleton::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -75,13 +74,6 @@ void TestSyncJobManagerSingleton::setUp() {
     const int driveId = atoi(testVariables.driveId.c_str());
     const Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 
     // Setup parameters cache in test mode
     (void) ParametersCache::instance(true);
@@ -361,12 +353,12 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
 
-        const auto job1 = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath,
-                                                               filepath.filename().native(), remoteTmpDir.id(),
-                                                               testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
-        const auto job2 = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath,
-                                                               filepath.filename().native(), remoteTmpDir.id(),
-                                                               testhelpers::defaultTime, testhelpers::defaultTime, false, 3);
+        const auto job1 =
+                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
+                                                     remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, 3);
+        const auto job2 =
+                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
+                                                     remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, 3);
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job1));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
         Utility::msleep(200);
@@ -405,7 +397,8 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             Utility::msleep(100);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
-        CPPUNIT_ASSERT_EQUAL(maxNumberParallelBigDownloads, counter);
+        CPPUNIT_ASSERT_EQUAL(
+                std::min(maxNumberParallelBigDownloads, SyncJobManagerSingleton::instance()->normalPriorityCapacity()), counter);
 
         while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
             Utility::msleep(100);
@@ -467,7 +460,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             } else {
                 auto job = std::make_shared<DriveUploadSession>(
                         nullptr, driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
-                        testhelpers::defaultTime, testhelpers::defaultTime, false,
+                        testhelpers::defaultTime, testhelpers::defaultTime,
                         ParametersCache::instance()->parameters().uploadSessionParallelJobs());
                 job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);

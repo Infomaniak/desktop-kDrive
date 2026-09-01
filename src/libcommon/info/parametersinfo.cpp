@@ -50,7 +50,7 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLogLevel, _logLevel);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo, info2DynamicVar<ProxyConfigInfo>);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfig, info2DynamicVar<ProxyConfig>);
 #ifdef KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
 #endif // KD_MACOS
@@ -88,8 +88,7 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
 
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo,
-                                       dynamicVar2Struct<ProxyConfigInfo>);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfig, dynamicVar2Struct<ProxyConfig>);
 #ifdef KD_MACOS
     CommonUtility::readValueFromStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
 #endif // KD_MACOS
@@ -130,7 +129,7 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
-            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
+            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfig >>
             parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled >>
             parametersInfo._notifyBeforeDelete;
     return in;
@@ -140,7 +139,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
     out << parametersInfo._language << parametersInfo._monoIcons << parametersInfo._autoStart << parametersInfo._moveToTrash
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
-        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
+        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfig
         << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled
         << parametersInfo._notifyBeforeDelete;
     return out;

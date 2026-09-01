@@ -20,6 +20,7 @@
 #include "libcommon/utility/urlhelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/truststorehelper.h"
 
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/Context.h>
@@ -41,8 +42,14 @@ namespace {
 
 Poco::Net::Context::Ptr createSslContext() {
     Poco::Net::Context::Ptr context =
-            new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+            new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_STRICT, 9, false);
     context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+
+    if (!TrustStoreHelper::loadSystemCAs(context->sslContext())) {
+        LOG_ERROR(Log::instance()->getLogger(), "Failed to load system CAs, peer verification may fail");
+        throw HttpDownloader::TrustStoreError("Failed to load system certificate store, cannot verify server identity");
+    }
     return context;
 }
 
@@ -61,7 +68,7 @@ std::unique_ptr<Poco::Net::HTTPSClientSession> createHttpsSession(const std::str
 
 } // namespace
 
-HttpDownloader::Result HttpDownloader::get(const std::string &url) {
+HttpDownloader::Result HttpDownloader::get(const std::string &url, const std::string &accept) {
     Result result;
     try {
         std::string path;
@@ -69,7 +76,7 @@ HttpDownloader::Result HttpDownloader::get(const std::string &url) {
 
         Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, path, Poco::Net::HTTPMessage::HTTP_1_1);
         request.set("User-Agent", CommonUtility::userAgentString());
-        request.set("Accept", "application/json");
+        request.set("Accept", accept);
 
         (void) session->sendRequest(request);
 
@@ -205,10 +212,6 @@ bool HttpDownloader::fetchAppVersion(DistributionChannel channel, const std::str
         }
         if (!JsonParserUtility::extractValue(dataObj, "download_link", outVersionInfo.downloadUrl)) {
             outError = "missing 'download_link'";
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(dataObj, "checksum", outVersionInfo.checksum)) {
-            outError = "missing 'checksum'";
             return false;
         }
         if (!JsonParserUtility::extractValue(dataObj, "min_version", outVersionInfo.minAppVersion)) {

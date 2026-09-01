@@ -28,7 +28,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
-#include "network/proxy.h"
 
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
@@ -52,7 +51,7 @@ void BenchmarkParallelJobs::setUp() {
 
     std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -69,13 +68,6 @@ void BenchmarkParallelJobs::setUp() {
     int driveId = atoi(_testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 }
 
 void BenchmarkParallelJobs::tearDown() {
@@ -215,7 +207,7 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadSession
                 std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
         const auto job = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, dirEntry.path(),
                                                               dirEntry.path().filename().native(), remoteTmpDirId,
-                                                              timeInput.count(), timeInput.count(), false, nbParallelChunkJobs);
+                                                              timeInput.count(), timeInput.count(), nbParallelChunkJobs);
         (void) jobs.push_back(job);
     }
     return jobs;

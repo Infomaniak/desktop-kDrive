@@ -52,7 +52,7 @@ void TestAppServer::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Insert user, account, drive & sync
     const int userId(atoi(testVariables.userId.c_str()));
@@ -333,6 +333,139 @@ void TestAppServer::testResolveErrorsForNode() {
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), errorList.size());
     CPPUNIT_ASSERT_EQUAL(ConflictType::EditEdit, errorList[0].conflictType());
+}
+
+void TestAppServer::testProxyConfigUpdate() {
+    // Set proxy configuration without authentication
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
+
+        ParametersInfo newParametersInfo;
+        const auto oldParameters = ParametersCache::instance()->parameters();
+        ServerRequests::parametersToParametersInfo(oldParameters, newParametersInfo);
+        newParametersInfo.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+
+        Parameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().user().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().pwd().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().keychainKey().empty());
+    }
+
+    // Modify the configuration to require authentication
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "password");
+
+        ParametersInfo newParametersInfo;
+        const auto oldParameters = ParametersCache::instance()->parameters();
+        ServerRequests::parametersToParametersInfo(oldParameters, newParametersInfo);
+        newParametersInfo.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+
+        Parameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.user(), parametersFromDb.proxyConfig().user());
+        CPPUNIT_ASSERT(!parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be set
+
+        std::string pwdFromKeychain;
+        CPPUNIT_ASSERT(
+                KeyChainManager::instance()->readData(parametersFromDb.proxyConfig().keychainKey(), pwdFromKeychain, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.pwd(), pwdFromKeychain); // Password retrieved from keychain should match
+    }
+
+    // Keep the authentication required but change the password
+    std::string previousKeychainKey;
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "newpassword");
+
+        ParametersInfo newParametersInfo;
+        const auto oldParameters = ParametersCache::instance()->parameters();
+        ServerRequests::parametersToParametersInfo(oldParameters, newParametersInfo);
+        newParametersInfo.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+
+        Parameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.user(), parametersFromDb.proxyConfig().user());
+        CPPUNIT_ASSERT(!parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be set
+
+        std::string pwdFromKeychain;
+        CPPUNIT_ASSERT(
+                KeyChainManager::instance()->readData(parametersFromDb.proxyConfig().keychainKey(), pwdFromKeychain, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.pwd(), pwdFromKeychain); // Password retrieved from keychain should match
+        previousKeychainKey = parametersFromDb.proxyConfig().keychainKey();
+    }
+
+    // Disable authentication again
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
+
+        ParametersInfo newParametersInfo;
+        const auto oldParameters = ParametersCache::instance()->parameters();
+        ServerRequests::parametersToParametersInfo(oldParameters, newParametersInfo);
+        newParametersInfo.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+
+        Parameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.hostName(), parametersFromDb.proxyConfig().hostName());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().user().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be cleared
+
+        std::string pwdFromKeychain;
+        CPPUNIT_ASSERT(KeyChainManager::instance()->readData(previousKeychainKey, pwdFromKeychain, found));
+        CPPUNIT_ASSERT(!found);
+        CPPUNIT_ASSERT(pwdFromKeychain.empty());
+    }
+
+    // Disable proxy
+    {
+        const ProxyConfig proxyConfigTest(ProxyType::None, "", 0, false);
+
+        ParametersInfo newParametersInfo;
+        const auto oldParameters = ParametersCache::instance()->parameters();
+        ServerRequests::parametersToParametersInfo(oldParameters, newParametersInfo);
+        newParametersInfo.setProxyConfig(proxyConfigTest);
+
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+
+        Parameters parametersFromDb;
+        auto found = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
+        CPPUNIT_ASSERT(found);
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.type(), parametersFromDb.proxyConfig().type());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().hostName().empty());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.port(), parametersFromDb.proxyConfig().port());
+        CPPUNIT_ASSERT_EQUAL(proxyConfigTest.needsAuth(), parametersFromDb.proxyConfig().needsAuth());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().user().empty());
+        CPPUNIT_ASSERT(parametersFromDb.proxyConfig().keychainKey().empty()); // Keychain key should be cleared
+    }
 }
 
 bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {

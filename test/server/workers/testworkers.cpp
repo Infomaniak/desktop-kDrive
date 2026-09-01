@@ -22,7 +22,6 @@
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 
-#include "libcommonserver/network/proxy.h"
 #include "libcommonserver/io/iohelper.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
@@ -65,7 +64,7 @@ void TestWorkers::setUp() {
     // Insert api token into keystore
     std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
+    KeyChainManager::instance()->writeData(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -96,12 +95,6 @@ void TestWorkers::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     // Create VFS instance
     VfsSetupParams vfsSetupParams;
