@@ -28,7 +28,8 @@ Button {
     enum Role {
         Primary,
         Secondary,
-        Destructive
+        Destructive,
+        Tonal
     }
 
     property int role: IKModalButton.Primary
@@ -39,13 +40,13 @@ Button {
         if (!actionEnabled && !busy) {
             return IKColors.actionDisabled
         }
-        if (role === IKModalButton.Secondary) {
+        if (role === IKModalButton.Secondary || role === IKModalButton.Tonal) {
             return IKColors.actionPrimary
         }
         return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
     }
     readonly property color focusBorderColor: {
-        if (role === IKModalButton.Secondary) {
+        if (role === IKModalButton.Secondary || role === IKModalButton.Tonal) {
             return IKColors.accentPrimary
         }
         return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
@@ -59,6 +60,8 @@ Button {
     leftPadding: IKModalTokens.buttonHorizontalPadding
     rightPadding: IKModalTokens.buttonHorizontalPadding
     focusPolicy: Qt.StrongFocus
+    Accessible.role: Accessible.Button
+    Accessible.name: text
     hoverEnabled: true
     opacity: actionEnabled || busy ? 1 : IKModalTokens.disabledOpacity
 
@@ -92,6 +95,9 @@ Button {
         color: {
             if (root.role === IKModalButton.Secondary) {
                 return root.hovered || root.down ? IKColors.modalSecondaryActionHover : "transparent"
+            }
+            if (root.role === IKModalButton.Tonal) {
+                return IKColors.actionTonalSurface
             }
             if (root.role === IKModalButton.Destructive) {
                 return root.down ? IKColors.actionDestructivePressed : IKColors.actionDestructive
