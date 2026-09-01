@@ -50,7 +50,7 @@ class OnboardingDefaultPathResolver final : public QObject {
                                                QObject *parent = nullptr);
 
         /** True while at least one selected drive still awaits its default folder. */
-        [[nodiscard]] bool hasPendingResolutions() const { return !_pendingKeys.empty(); }
+        [[nodiscard]] bool hasPendingResolutions() const { return _pendingResolutions; }
         void invalidatePendingRequests();
 
     signals:
@@ -62,12 +62,16 @@ class OnboardingDefaultPathResolver final : public QObject {
         void handleGoodPathResult(const AvailableDriveKey &key, uint64_t generation, const ExitInfo &exitInfo,
                                   const GoodPathResult &result);
         void finishRequest(const AvailableDriveKey &key);
+        void updatePendingResolutions();
 
         const AppCache &_appCache;
         OnboardingState &_onboardingState;
         CommService &_commService;
         ServiceEventBus &_serviceEventBus;
+        // Identity of the requests in flight. A key stays here until its callback returns, even once its drive is
+        // unselected, so a late result is still recognised and dropped instead of being applied.
         std::unordered_set<AvailableDriveKey> _pendingKeys;
+        bool _pendingResolutions{false};
         uint64_t _generation{0};
 };
 
