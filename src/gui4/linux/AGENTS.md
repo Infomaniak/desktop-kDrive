@@ -349,7 +349,8 @@
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
       services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
-      feature dialogs supply their own wording, state, and actions.
+      feature dialogs supply their own wording, state, and actions. `IKCheckBox` is the shared tri-state indicator: it
+      renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,
