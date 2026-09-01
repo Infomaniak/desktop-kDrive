@@ -182,6 +182,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKTintedIcon.qml
         ui/components/IKErrorBanner.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
+        ui/features/syncconfiguration/SyncConfigurationDrivePage.qml
         ui/features/syncconfiguration/SyncConfigurationErrorBlock.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
