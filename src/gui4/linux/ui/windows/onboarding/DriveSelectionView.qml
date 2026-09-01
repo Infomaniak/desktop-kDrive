@@ -158,55 +158,38 @@ Item {
             Row {
                 spacing: IKSpacing.s8
 
-                Item {
-                    implicitWidth: advancedButton.implicitWidth
-                    implicitHeight: IKOnboarding.driveSelectionButtonHeight
+                Button {
+                    id: advancedButton
 
-                    Button {
-                        id: advancedButton
+                    enabled: root.selectionController.canOpenAdvancedSettings
+                    hoverEnabled: true
+                    height: IKOnboarding.driveSelectionButtonHeight
+                    text: qsTrId("buttonAdvancedParameters")
+                    onClicked: root.selectionController.requestAdvancedSettings()
 
-                        anchors.fill: parent
-                        enabled: false
-                        text: qsTrId("buttonAdvancedParameters")
-                        onClicked: root.selectionController.requestAdvancedSettings()
-
-                        contentItem: Text {
-                            text: advancedButton.text
-                            color: IKColors.actionDisabled
-                            font.pixelSize: IKFonts.bodySize
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            elide: Text.ElideRight
-                        }
-
-                        background: Rectangle {
-                            implicitWidth: IKOnboarding.driveSelectionSecondaryButtonMinWidth
-                            implicitHeight: IKOnboarding.driveSelectionButtonHeight
-                            radius: IKOnboarding.buttonCornerRadius
-                            color: "transparent"
-                        }
-
-                        padding: 0
-                        leftPadding: IKSpacing.s16
-                        rightPadding: IKSpacing.s16
-                        topPadding: 0
-                        bottomPadding: 0
+                    contentItem: Text {
+                        text: advancedButton.text
+                        color: advancedButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
+                        font.pixelSize: IKFonts.bodySize
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
                     }
 
-                    HoverHandler {
-                        id: advancedButtonHoverHandler
+                    background: Rectangle {
+                        implicitWidth: IKOnboarding.driveSelectionSecondaryButtonMinWidth
+                        implicitHeight: IKOnboarding.driveSelectionButtonHeight
+                        radius: IKOnboarding.buttonCornerRadius
+                        color: advancedButton.hovered && advancedButton.enabled ? IKColors.surfaceSecondary : "transparent"
+                        border.width: advancedButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                        border.color: IKColors.accentPrimary
                     }
 
-                    IKToolTip {
-                        visible: advancedButtonHoverHandler.hovered
-                        delay: IKOnboarding.driveSelectionTooltipDelay
-                        text: qsTr("Not available yet.")
-                        padding: IKOnboarding.driveSelectionTooltipPadding
-                        maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
-                        foregroundColor: IKColors.onboardingTooltipText
-                        surfaceColor: IKColors.onboardingTooltipSurface
-                        textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
-                    }
+                    padding: 0
+                    leftPadding: IKSpacing.s16
+                    rightPadding: IKSpacing.s16
+                    topPadding: 0
+                    bottomPadding: 0
                 }
 
                 Button {
