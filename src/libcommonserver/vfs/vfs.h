@@ -22,7 +22,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommonserver/vfs/workerinfo.h"
-#include "libsyncengine/progress/syncfileitem.h"
+#include "libcommon/data/syncfileitem.h"
 
 #include <memory>
 #include <deque>
@@ -361,7 +361,8 @@ class Vfs : public QObject {
          *  the error provided to the application will only be based on the existence/permission of the file/directory.
          *  If there is no issue with the file/directory, the error will be Vfs::defaultVfsError().         *
          */
-        ExitInfo handleVfsError(const SyncPath &itemPath, const std::source_location &location = std::source_location::current()) const;
+        ExitInfo handleVfsError(const SyncPath &itemPath,
+                                const std::source_location &location = std::source_location::current()) const;
 
         /* Check if a path exists and return an ExitInfo with the appropriate error code.
          *

@@ -844,7 +844,7 @@ void SynthesisPopover::onDriveQuotaUpdated(const DriveDbId driveDbId) {
 
 void SynthesisPopover::onRefreshStatusNeeded() {}
 
-void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileItemInfo &itemInfo) {
+void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileItem &syncFileItem) {
 #ifdef CONSOLE_DEBUG
     std::cout << QTime::currentTime().toString("hh:mm:ss").toStdString() << " - SynthesisPopover::onItemCompleted" << std::endl;
 #endif
@@ -863,8 +863,8 @@ void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileIt
         return;
     }
 
-    if (itemInfo.status() == SyncFileStatus::Unknown || itemInfo.status() == SyncFileStatus::Error ||
-        itemInfo.status() == SyncFileStatus::Ignored) {
+    if (syncFileItem.status() == SyncFileStatus::Unknown || syncFileItem.status() == SyncFileStatus::Error ||
+        syncFileItem.status() == SyncFileStatus::Ignored) {
         return;
     }
 
@@ -884,9 +884,13 @@ void SynthesisPopover::onItemCompleted(const SyncDbId syncDbId, const SyncFileIt
     }
 
     // Add item to synchronized list
-    SynchronizedItem synchronizedItem(syncDbId, itemInfo.path().isEmpty() ? itemInfo.newPath() : itemInfo.path(),
-                                      itemInfo.remoteNodeId(), itemInfo.status(), itemInfo.direction(), itemInfo.type(),
-                                      _gui->folderPath(syncDbId, itemInfo.path()), QDateTime::currentDateTime());
+    const QString path = Path2QStr(syncFileItem.path());
+    const QString newPath = syncFileItem.newPath().has_value() ? Path2QStr(syncFileItem.newPath().value()) : QString();
+    const QString remoteNodeId =
+            syncFileItem.remoteNodeId().has_value() ? QString::fromStdString(syncFileItem.remoteNodeId().value()) : QString();
+    SynchronizedItem synchronizedItem(syncDbId, path.isEmpty() ? newPath : path, remoteNodeId, syncFileItem.status(),
+                                      syncFileItem.direction(), syncFileItem.type(), _gui->folderPath(syncDbId, path),
+                                      QDateTime::currentDateTime());
 
     driveInfoIt->second.synchronizedItemList().prepend(std::move(synchronizedItem));
 
