@@ -31,7 +31,7 @@ Column {
 
     // The tree is the only control of this page, so it takes the focus as soon as the page is loaded.
     Component.onCompleted: Qt.callLater(function() {
-        folderTree.keyboardFocusItem.forceActiveFocus(Qt.TabFocusReason)
+        folderTree.keyboardFocusItem.forceActiveFocus()
     })
 
     Text {
