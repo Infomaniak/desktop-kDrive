@@ -28,14 +28,54 @@ private struct MockMacOSPermissionsProvider: MacOSPermissionsProviding {
     }
 }
 
+private actor SuspendingMacOSPermissionsProvider: MacOSPermissionsProviding {
+    private let subsequentResponse: UtilityCheckMacOsPermissionsResponse?
+    private var firstFetchContinuation:
+        CheckedContinuation<UtilityCheckMacOsPermissionsResponse?, Never>?
+    private var fetchCountWaiter: CheckedContinuation<Void, Never>?
+    private var fetchCount = 0
+
+    init(subsequentResponse: UtilityCheckMacOsPermissionsResponse?) {
+        self.subsequentResponse = subsequentResponse
+    }
+
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse? {
+        fetchCount += 1
+        fetchCountWaiter?.resume()
+        fetchCountWaiter = nil
+
+        guard fetchCount == 1 else {
+            return subsequentResponse
+        }
+
+        return await withCheckedContinuation { continuation in
+            firstFetchContinuation = continuation
+        }
+    }
+
+    func waitForFirstFetch() async {
+        guard fetchCount == 0 else { return }
+
+        await withCheckedContinuation { continuation in
+            fetchCountWaiter = continuation
+        }
+    }
+
+    func completeFirstFetch(with response: UtilityCheckMacOsPermissionsResponse?) {
+        firstFetchContinuation?.resume(returning: response)
+        firstFetchContinuation = nil
+    }
+
+    func numberOfFetches() -> Int {
+        return fetchCount
+    }
+}
+
 @Suite("MacOSPermissionHandler server-backed authorization")
 struct MacOSPermissionHandlerTests {
     private func makeHandler(with response: UtilityCheckMacOsPermissionsResponse?) -> MacOSPermissionHandler {
         let provider = MockMacOSPermissionsProvider(response: response)
-        return MacOSPermissionHandler(authorizationCheckers: [
-            .fullDiskAccess: FullDiskChecker(permissionsProvider: provider),
-            .endpointSecurityExtension: EndpointSecurityExtensionChecker(permissionsProvider: provider)
-        ])
+        return MacOSPermissionHandler(permissionsProvider: provider)
     }
 
     // MARK: - Full Disk Access
@@ -132,5 +172,81 @@ struct MacOSPermissionHandlerTests {
 
         // THEN
         #expect(!isAuthorized)
+    }
+}
+
+@Suite("macOS permissions request serialization")
+struct SingleFlightMacOSPermissionsProviderTests {
+    @Test("Concurrent requests share one underlying fetch")
+    func concurrentRequestsAreCoalesced() async {
+        // GIVEN
+        let response = UtilityCheckMacOsPermissionsResponse(
+            fullDiskAccess: true,
+            liteSyncExtEnabled: true,
+            liteSyncExtFullDiskAccess: false
+        )
+        let underlyingProvider = SuspendingMacOSPermissionsProvider(subsequentResponse: response)
+        let provider = SingleFlightMacOSPermissionsProvider(provider: underlyingProvider)
+
+        let firstFetch = Task {
+            await provider.fetchPermissions()
+        }
+        await underlyingProvider.waitForFirstFetch()
+
+        let concurrentFetches = (0 ..< 20).map { _ in
+            Task {
+                await provider.fetchPermissions()
+            }
+        }
+        for _ in 0 ..< 20 {
+            await Task.yield()
+        }
+
+        // WHEN
+        let fetchesWhileSuspended = await underlyingProvider.numberOfFetches()
+        await underlyingProvider.completeFirstFetch(with: response)
+        let firstResult = await firstFetch.value
+        var concurrentResults = [UtilityCheckMacOsPermissionsResponse?]()
+        for fetch in concurrentFetches {
+            let result = await fetch.value
+            concurrentResults.append(result)
+        }
+
+        // THEN
+        #expect(fetchesWhileSuspended == 1)
+        #expect(await underlyingProvider.numberOfFetches() == 1)
+        #expect(firstResult?.fullDiskAccess == true)
+        #expect(firstResult?.liteSyncExtFullDiskAccess == false)
+        #expect(concurrentResults.allSatisfy { $0?.fullDiskAccess == true })
+        #expect(concurrentResults.allSatisfy { $0?.liteSyncExtFullDiskAccess == false })
+
+        _ = await provider.fetchPermissions()
+        #expect(await underlyingProvider.numberOfFetches() == 2)
+    }
+
+    @Test("A failed fetch does not block later requests")
+    func failedFetchClearsInFlightTask() async {
+        // GIVEN
+        let response = UtilityCheckMacOsPermissionsResponse(
+            fullDiskAccess: true,
+            liteSyncExtEnabled: true,
+            liteSyncExtFullDiskAccess: true
+        )
+        let underlyingProvider = SuspendingMacOSPermissionsProvider(subsequentResponse: response)
+        let provider = SingleFlightMacOSPermissionsProvider(provider: underlyingProvider)
+        let failedFetch = Task {
+            await provider.fetchPermissions()
+        }
+        await underlyingProvider.waitForFirstFetch()
+
+        // WHEN
+        await underlyingProvider.completeFirstFetch(with: nil)
+        let failedResult = await failedFetch.value
+        let retryResult = await provider.fetchPermissions()
+
+        // THEN
+        #expect(failedResult == nil)
+        #expect(retryResult?.fullDiskAccess == true)
+        #expect(await underlyingProvider.numberOfFetches() == 2)
     }
 }

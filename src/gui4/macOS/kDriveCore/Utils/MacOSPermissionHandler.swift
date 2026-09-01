@@ -17,6 +17,7 @@
  */
 
 import Foundation
+import InfomaniakDI
 
 public enum MacOSPermission: Sendable {
     case endpointSecurityExtension
@@ -34,24 +35,31 @@ public protocol MacOSPermissionHandling: Sendable {
 }
 
 public final class MacOSPermissionHandler: MacOSPermissionHandling {
-    private let authorizationCheckers: [MacOSPermission: AuthorizationChecker]
+    @LazyInjectService private var permissionsProvider: MacOSPermissionsProviding
 
-    init(authorizationCheckers: [MacOSPermission: AuthorizationChecker]? = nil) {
-        self.authorizationCheckers = authorizationCheckers ?? [
-            .endpointSecurityExtension: EndpointSecurityExtensionChecker(),
-            .fullDiskAccess: FullDiskChecker()
-        ]
+    private let injectedPermissionsProvider: MacOSPermissionsProviding?
+
+    init(permissionsProvider: MacOSPermissionsProviding? = nil) {
+        injectedPermissionsProvider = permissionsProvider
     }
 
     public func isAuthorized(for permission: MacOSPermission) async -> Bool {
-        guard let checker = authorizationCheckers[permission] else {
-            return false
-        }
+        let checker = authorizationChecker(for: permission)
         return await checker.hasAccess()
     }
 
     public func systemPreferencesURL(for permission: MacOSPermission) -> URL? {
-        return authorizationCheckers[permission]?.systemPreferencesURL
+        return authorizationChecker(for: permission).systemPreferencesURL
+    }
+
+    private func authorizationChecker(for permission: MacOSPermission) -> AuthorizationChecker {
+        let permissionsProvider = injectedPermissionsProvider ?? permissionsProvider
+        switch permission {
+        case .endpointSecurityExtension:
+            return EndpointSecurityExtensionChecker(permissionsProvider: permissionsProvider)
+        case .fullDiskAccess:
+            return FullDiskChecker(permissionsProvider: permissionsProvider)
+        }
     }
 }
 
@@ -77,6 +85,30 @@ struct ServerMacOSPermissionsProvider: MacOSPermissionsProviding {
     }
 }
 
+actor SingleFlightMacOSPermissionsProvider: MacOSPermissionsProviding {
+    private let provider: MacOSPermissionsProviding
+    private var currentFetch: Task<UtilityCheckMacOsPermissionsResponse?, Never>?
+
+    init(provider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+        self.provider = provider
+    }
+
+    func fetchPermissions() async -> UtilityCheckMacOsPermissionsResponse? {
+        if let currentFetch {
+            return await currentFetch.value
+        }
+
+        let fetch = Task {
+            await provider.fetchPermissions()
+        }
+        currentFetch = fetch
+
+        let permissions = await fetch.value
+        currentFetch = nil
+        return permissions
+    }
+}
+
 // MARK: - Full Disk Access
 
 /// Full Disk Access is considered granted only when BOTH the Server process and the Lite Sync extension have been granted it.
@@ -86,7 +118,7 @@ final class FullDiskChecker: AuthorizationChecker {
 
     private let permissionsProvider: MacOSPermissionsProviding
 
-    init(permissionsProvider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+    init(permissionsProvider: MacOSPermissionsProviding) {
         self.permissionsProvider = permissionsProvider
     }
 
@@ -105,7 +137,7 @@ final class EndpointSecurityExtensionChecker: AuthorizationChecker {
 
     private let permissionsProvider: MacOSPermissionsProviding
 
-    init(permissionsProvider: MacOSPermissionsProviding = ServerMacOSPermissionsProvider()) {
+    init(permissionsProvider: MacOSPermissionsProviding) {
         self.permissionsProvider = permissionsProvider
     }
 
