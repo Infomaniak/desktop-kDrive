@@ -1,0 +1,84 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "situationcomparator.h"
+#include "initialsituationsetter.h"
+#include "operationsexecutor.h"
+#include "mocksyncpal.h"
+
+#include <memory>
+
+namespace KDC {
+
+/**
+ * @brief Single entry point for setting up and driving Syncpal-based tests: building an initial
+ * Db/update-tree/filesystem situation from a JSON description (via InitialSituationSetter), applying
+ * operations on top of it (via OperationsExecutor), and (eventually) driving a sync run.
+ *
+ * See Situation (initialsituationsetter.h) for the supported situation JSON formats, and Operations
+ * (operationsexecutor.h) for the supported operations JSON format.
+ */
+class SyncpalTestHelper {
+    public:
+        SyncpalTestHelper() = default;
+        explicit SyncpalTestHelper(std::shared_ptr<MockSyncPal> syncPal);
+        ~SyncpalTestHelper();
+
+        void setSyncpal(std::shared_ptr<MockSyncPal> syncPal);
+
+        // Builds localSituation and remoteSituation independently against the SyncPal; they may differ. Returns false if invalid.
+        bool setInitialSituation(const Situation &localSituation, const Situation &remoteSituation);
+
+        // Compares localSituation/remoteSituation against the real local/remote situations.
+        bool matchesCurrentSituation(const Situation &localSituation, const Situation &remoteSituation) const;
+
+        bool executeSyncUntilEnd(const std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
+        bool executeSyncUpToStep(SyncStep targetStep, const int64_t timeout) const;
+
+        // Waits (polling) up to `timeout` for a real change to be detected by the observers. Returns false if nothing showed up.
+        bool waitForDetectedUpdate(std::chrono::milliseconds timeout = std::chrono::milliseconds(10000)) const;
+
+        // Pauses the running SyncPal, waiting until it actually reaches the paused state. Returns false if no SyncPal or not running.
+        bool pauseSync() const;
+
+        // Resumes a previously paused SyncPal. Returns false if no SyncPal or not running.
+        bool unpauseSync() const;
+
+        // Starts the SyncPal. Returns false if no SyncPal.
+        bool startSync() const;
+
+        // Fully stops the SyncPal, keeping its Db. Returns false if no SyncPal.
+        bool stopSync() const;
+
+        // Applies operations (see OperationsExecutor::execute) on the given side. Returns false if invalid.
+        bool execute(ReplicaSide side, const Operations &operations);
+
+    private:
+        bool setUp();
+        void tearDown();
+
+        std::shared_ptr<MockSyncPal> _syncPal;
+
+        InitialSituationSetter _setInitialSituation;
+        OperationsExecutor _executeOperations;
+        SituationComparator _situationComparator;
+};
+
+} // namespace KDC

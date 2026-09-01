@@ -44,12 +44,15 @@ class SyncPalWorker : public ISyncWorker {
         inline bool pauseAsked() const { return _pauseAsked; }
         inline bool unpauseAsked() const { return _unpauseAsked; }
         void unpause();
-        inline SyncStep step() const { return _step; }
+        inline SyncStep step() const { return _step.load(); }
         inline std::chrono::time_point<std::chrono::steady_clock> pauseTime() const { return _pauseTime; }
         static std::string stepName(SyncStep step);
 
+    protected:
+        std::atomic<SyncStep> _step{SyncStep::Idle};
+        virtual SyncStep nextStep() const;
+
     private:
-        SyncStep _step{SyncStep::Idle};
         std::chrono::time_point<std::chrono::steady_clock> _pauseTime{std::chrono::time_point<std::chrono::steady_clock>()};
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
@@ -69,7 +72,6 @@ class SyncPalWorker : public ISyncWorker {
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
                            bool reset);
-        SyncStep nextStep() const;
         void stopAndWaitForExitOfWorker(std::shared_ptr<ISyncWorker> worker);
         void stopWorkers(std::shared_ptr<ISyncWorker> workers[2]);
         void waitForExitOfWorkers(std::shared_ptr<ISyncWorker> workers[2]);
