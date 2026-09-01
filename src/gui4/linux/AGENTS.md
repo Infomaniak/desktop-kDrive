@@ -345,7 +345,9 @@
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
       becomes reusable from another product window.
-    - `ui/features/`: future reusable product features shared by several windows, such as sync configuration.
+    - `ui/features/syncconfiguration/`: reusable advanced-sync presentation. The remote-folder tree is a single tab
+      stop that moves a current row internally, so tabbing never walks through every checkbox of a large folder list;
+      the current row is a navigation cursor drawn as a tint, kept distinct from the keyboard focus ring.
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
       services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
