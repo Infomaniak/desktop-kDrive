@@ -40,6 +40,7 @@ QtObject {
         readonly property color blue400: "#8AA7EF"
         readonly property color blue500: "#6E88E6"
         readonly property color blue600: "#446FDD"
+        readonly property color blue800: "#2A459C"
         readonly property color blue950: "#1F2547"
         readonly property color bluePale: "#DEE7FD"
 
@@ -114,7 +115,10 @@ QtObject {
     readonly property color actionPrimary: accentPrimary
     readonly property color actionOnPrimary: darkMode ? _p.neutralBlue800 : _p.neutralBlue100
     readonly property color actionDisabled: _p.gray400
-    readonly property color actionTonalSurface: darkMode ? _p.blue950 : _p.blue100
+    // Deep surface with a pale label in both themes. A pale surface in light mode barely separated the button from
+    // the card it sits on, and the accent blue on it fell short of the 4.5:1 contrast ratio expected of body text.
+    readonly property color actionTonalSurface: darkMode ? _p.blue950 : _p.blue800
+    readonly property color actionOnTonal: darkMode ? _p.blue400 : _p.blue100
     readonly property color actionDestructive: _p.red500
     readonly property color actionDestructivePressed: _p.red600
     readonly property color actionOnDestructive: _p.white
