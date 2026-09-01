@@ -3706,6 +3706,14 @@ void AppServer::parseOptions(const QStringList &options) {
     // Parse options; if help or bad option exit
     QStringListIterator it(options);
     it.next(); // File name
+
+    while (it.hasNext()) {
+        QString option = it.next();
+    }
+
+    it.toFront();
+    it.next(); // File name
+
     while (it.hasNext()) {
         QString option = it.next();
         if (option.startsWith(REDIRECT_URI)) {
@@ -4009,8 +4017,13 @@ bool AppServer::startClient() {
             return false;
         }
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                             << (arguments.size() >= 1 ? arguments[0].toStdWString() : L""));
+        if (synthesisAsked()) {
+            arguments << "--synthesis";
+        } else if (settingsAsked()) {
+            arguments << "--settings";
+        }
+
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);

@@ -29,6 +29,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Security.Authentication.OAuth;
 using Microsoft.UI.Xaml;
 using Microsoft.Win32;
+using Microsoft.Windows.AppLifecycle;
 using Sentry;
 using System;
 using System.Diagnostics;
@@ -40,6 +41,7 @@ namespace Infomaniak.kDrive
 {
     public partial class App : Application
     {
+        private AppInstance _mainInstance = AppInstance.FindOrRegisterForKey("com.infomaniak.kdrive.client");
         private Window? _currentWindow;
         private UpdateWindow? _updateWindow;
 
@@ -99,6 +101,8 @@ namespace Infomaniak.kDrive
 
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
+            var isMainInstance = _mainInstance == AppInstance.GetCurrent();
+
             string[] arguments = Environment.GetCommandLineArgs();
             if (arguments.Length > 1)
             {
@@ -114,10 +118,36 @@ namespace Infomaniak.kDrive
                     {
                         Logger.Log(Logger.Level.Warning, "OAuth process failed.");
                     }
-                    Process current = Process.GetCurrentProcess();
-                    current.Kill();
+                    ExitApplication();
                     return;
                 }
+
+                if (!isMainInstance)
+                {
+                    // if this is not the main instance, we should start the server wich will decide to open or not the main window of the main instance
+                    StartServer();
+                    ExitApplication();
+                    return;
+                }
+
+                if (arguments.Contains("--synthesis"))
+                {
+                    Logger.Log(Logger.Level.Info, "--synthesis arg detected, opening Synthesis window in foreground.");
+                    CreateWindow(CreateWindowOptions.Foreground);
+                }
+                else if (arguments.Contains("--settings"))
+                {
+                    Logger.Log(Logger.Level.Info, "--settings arg detected, opening Settings window in foreground.");
+                    CreateWindow(CreateWindowOptions.Foreground);
+                }
+            }
+
+            if (!isMainInstance)
+            {
+                // if this is not the main instance, we should start the server wich will decide to open or not the main window of the main instance
+                StartServer();
+                ExitApplication();
+                return;
             }
 
             // Register oAuth protocol handler
@@ -126,18 +156,18 @@ namespace Infomaniak.kDrive
             // Initialize notifications
             ServiceProvider.GetRequiredService<NotificationManager>().Init();
 
-            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             var serverCommService = ServiceProvider.GetRequiredService<IServerCommService>();
             using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))
             {
                 if (!await serverCommService.Init(cts.Token))
                 {
-                    Logger.Log(Logger.Level.Fatal, "Failed to initialize server communication service, exiting application.");
                     ExitApplication();
                     return;
                 }
             }
+
+            ServiceProvider.GetRequiredService<TrayIconManager>().Initialize();
 
             AppModel appModel = ServiceProvider.GetRequiredService<AppModel>();
             if (!await appModel.InitializeAsync())
@@ -273,6 +303,38 @@ namespace Infomaniak.kDrive
             SentrySdk.Flush(new TimeSpan(0, 0, 5));
             Logger.Log(Logger.Level.Info, "Exiting application.");
             Environment.Exit(0);
+        }
+
+        public static void StartServer()
+        {
+            string serverPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "..", "kDrive.exe");
+            if (!System.IO.File.Exists(serverPath))
+            {
+#if DEBUG
+                Logger.Log(Logger.Level.Info, $"Server executable not found at {serverPath}. Cannot start server.");
+#else
+                Logger.Log(Logger.Level.Error, $"Server executable not found at {serverPath}. Cannot start server.");
+#endif
+                return;
+            }
+
+            try
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = serverPath,
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    Arguments = "--synthesis"
+                };
+                Process.Start(startInfo);
+                Logger.Log(Logger.Level.Info, $"Server started successfully from {serverPath}.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to start server from {serverPath}. Exception: {ex.Message}");
+            }
         }
 
         public static void ExitApplicationAndShutdownServer()
