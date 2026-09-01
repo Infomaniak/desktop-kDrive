@@ -29,6 +29,11 @@ namespace {
 const auto homeShorthand = u"~"_s;
 // Mirrors the give-up threshold of ServerRequests::findGoodPathForNewSync() in src/server/requests/serverrequests.cpp.
 constexpr uint32_t maxUniqueLocalPathAttempts = 100;
+
+// The filesystem root already ends with its separator: appending a second one would build "//" and never match.
+bool containsPath(const QString &ancestor, const QString &path) {
+    return path.startsWith(ancestor.endsWith(u'/') ? ancestor : ancestor + u'/');
+}
 } // namespace
 
 QString displayLocalPath(const QString &localPath) {
@@ -46,7 +51,7 @@ bool localPathsOverlap(const QString &lhs, const QString &rhs) {
     const QString cleanLhs = QDir::cleanPath(lhs);
     const QString cleanRhs = QDir::cleanPath(rhs);
     if (cleanLhs == cleanRhs) return true;
-    return cleanLhs.startsWith(cleanRhs + u'/') || cleanRhs.startsWith(cleanLhs + u'/');
+    return containsPath(cleanRhs, cleanLhs) || containsPath(cleanLhs, cleanRhs);
 }
 
 QString makeUniqueLocalPath(const QString &path, const std::function<bool(const QString &)> &taken) {
