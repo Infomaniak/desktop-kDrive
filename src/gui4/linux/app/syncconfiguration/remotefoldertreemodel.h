@@ -58,7 +58,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         };
         Q_ENUM(Role)
 
-        explicit RemoteFolderTreeModel(AbstractRemoteFolderProvider &provider, QObject *parent = nullptr);
+        explicit RemoteFolderTreeModel(AbstractRemoteFolderProvider &remoteFolderProvider, QObject *parent = nullptr);
 
         [[nodiscard]] QModelIndex index(int row, int column, const QModelIndex &parentIndex = {}) const override;
         [[nodiscard]] QModelIndex parent(const QModelIndex &child) const override;
@@ -146,7 +146,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void handleChildrenResult(TreeNode *node, uint64_t generation, bool success, const std::vector<NodeInfo> &children);
         void excludeNode(TreeNode *node);
         void includeNode(TreeNode *node);
-        void includeFromExcludedAncestor(const TreeNode *node, const TreeNode *excludedAncestor);
+        void includeNodeUnderExcludedAncestor(const TreeNode *node, const TreeNode *excludedAncestor);
         void removeExclusionsAtOrBelow(const TreeNode *node);
         void notifySelectionDataChanged();
         void notifySelectionDataChanged(const TreeNode *parentNode);
@@ -154,7 +154,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void processSizeQueue();
         void handleSizeResult(const QString &nodeId, uint64_t generation, bool success, qint64 size);
 
-        AbstractRemoteFolderProvider &_provider;
+        AbstractRemoteFolderProvider &_remoteFolderProvider;
         std::unique_ptr<TreeNode> _root;
         QHash<QString, TreeNode *> _nodesById;
         QSet<QString> _excludedNodeIds;
