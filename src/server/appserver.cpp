@@ -4046,6 +4046,7 @@ bool AppServer::startClient() {
 #elif defined(KD_LINUX)
         if constexpr (KDRIVE_VERSION_MAJOR >= 4) {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENTV4_EXECUTABLE);
+            useClientV4 = true;
         } else {
             pathToExecutable = QCoreApplication::applicationDirPath() + QString("/%1").arg(APPLICATION_CLIENT_EXECUTABLE);
         }
