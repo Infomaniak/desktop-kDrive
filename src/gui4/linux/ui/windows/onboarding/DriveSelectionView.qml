@@ -219,7 +219,7 @@ Item {
 
                     contentItem: Text {
                         text: continueButton.text
-                        color: continueButton.enabled ? IKColors.actionOnPrimary : IKColors.actionDisabled
+                        color: IKColors.actionOnPrimary
                         font.pixelSize: IKFonts.bodySize
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
