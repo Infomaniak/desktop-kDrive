@@ -249,7 +249,8 @@
   and the configured Home. Closing onboarding or removing the last configured sync selects the unconfigured Home on the
   next activation.
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
-  configs.
+  configs. Advanced-settings validation replaces the complete selected-drive config map atomically so cancelling a
+  modal never leaks a partially edited drive.
 - `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`). It is
   populated during the bootstrap sequence next to the product graph snapshot, but remains separate from `AppCache`
   because the server is still the persistence source of truth for application settings. It stores only the last
@@ -277,8 +278,9 @@
   controller, OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not
   accumulate login-specific workflow logic.
 - `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It
-  derives collision-free local folders, creates selected-drive syncs sequentially at the remote root, preserves only
-  failed and not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a failed `SYNC_ADD`.
+  derives collision-free local folders, creates selected-drive syncs sequentially with the validated remote blacklist,
+  preserves only failed and not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a
+  failed `SYNC_ADD`.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
