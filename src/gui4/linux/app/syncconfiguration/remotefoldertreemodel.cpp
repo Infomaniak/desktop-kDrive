@@ -37,9 +37,9 @@ constexpr uint8_t maxConcurrentSizeRequests = 4;
 const auto unavailableSize = u"—"_s;
 } // namespace
 
-RemoteFolderTreeModel::RemoteFolderTreeModel(AbstractRemoteFolderProvider &provider, QObject *const parent) :
+RemoteFolderTreeModel::RemoteFolderTreeModel(AbstractRemoteFolderProvider &remoteFolderProvider, QObject *const parent) :
     QAbstractItemModel(parent),
-    _provider(provider),
+    _remoteFolderProvider(remoteFolderProvider),
     _root(std::make_unique<TreeNode>()) {}
 
 QModelIndex RemoteFolderTreeModel::index(const int row, const int column, const QModelIndex &parentIndex) const {
@@ -270,7 +270,7 @@ void RemoteFolderTreeModel::resolveInitialExclusionPaths() {
     const uint64_t generation = _generation;
     const QPointer self(this);
     for (const auto &nodeId: QStringList(_excludedNodeIds.cbegin(), _excludedNodeIds.cend())) {
-        _provider.requestNodeInfo(_userDbId, _driveId, QStr2Str(nodeId),
+        _remoteFolderProvider.requestNodeInfo(_userDbId, _driveId, QStr2Str(nodeId),
                                   [self, generation, nodeId](const ExitInfo &exitInfo, const NodeInfo &info) {
                                       if (!self || generation != self->_generation) return;
                                       self->handleInitialExclusionPathResult(nodeId, exitInfo, info);
@@ -313,7 +313,7 @@ void RemoteFolderTreeModel::requestChildren(TreeNode *node) {
 
     const uint64_t generation = _generation;
     const QPointer self(this);
-    _provider.requestChildren(_userDbId, _driveId, QStr2Str(node->nodeId),
+    _remoteFolderProvider.requestChildren(_userDbId, _driveId, QStr2Str(node->nodeId),
                               [self, node, generation](const bool success, const std::vector<NodeInfo> &children) {
                                   if (!self || generation != self->_generation) return;
                                   self->handleChildrenResult(node, generation, success, children);
@@ -373,11 +373,11 @@ void RemoteFolderTreeModel::includeNode(TreeNode *node) {
             break;
         }
     }
-    if (excludedAncestor && excludedAncestor != node) includeFromExcludedAncestor(node, excludedAncestor);
+    if (excludedAncestor && excludedAncestor != node) includeNodeUnderExcludedAncestor(node, excludedAncestor);
     removeExclusionsAtOrBelow(node);
 }
 
-void RemoteFolderTreeModel::includeFromExcludedAncestor(const TreeNode *node, const TreeNode *excludedAncestor) {
+void RemoteFolderTreeModel::includeNodeUnderExcludedAncestor(const TreeNode *node, const TreeNode *excludedAncestor) {
     _excludedNodeIds.remove(excludedAncestor->nodeId);
     _excludedPaths.remove(excludedAncestor->nodeId);
     const TreeNode *cursor = node;
@@ -431,7 +431,7 @@ void RemoteFolderTreeModel::processSizeQueue() {
         ++_activeSizeRequests;
         const uint64_t generation = _generation;
         const QPointer self(this);
-        _provider.requestSize(_userDbId, _driveId, QStr2Str(nodeId),
+        _remoteFolderProvider.requestSize(_userDbId, _driveId, QStr2Str(nodeId),
                               [self, nodeId, generation](const bool success, const int64_t size) {
                                   if (!self) return;
                                   self->handleSizeResult(nodeId, generation, success, size);
