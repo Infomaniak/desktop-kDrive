@@ -32,7 +32,7 @@ Column {
     // The page claims the focus itself: the modal loads it dynamically, so it cannot reach into the page to place it.
     // It lands on the first thing the user can change rather than on the confirmation button.
     Component.onCompleted: Qt.callLater(function() {
-        changeFolderButton.forceActiveFocus(Qt.TabFocusReason)
+        changeFolderButton.forceActiveFocus()
     })
 
     Connections {
@@ -40,7 +40,7 @@ Column {
 
         // Returning from the native picker leaves focus nowhere otherwise, since the dialog is a separate window.
         function onCustomFolderDialogClosed() {
-            changeFolderButton.forceActiveFocus(Qt.TabFocusReason)
+            changeFolderButton.forceActiveFocus()
         }
     }
 
