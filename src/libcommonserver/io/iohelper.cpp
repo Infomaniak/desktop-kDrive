@@ -19,6 +19,7 @@
 #include "log/sentry/handler.h"
 #include "filestat.h"
 #include "iohelper.h"
+#include "cachedirectory.h"
 
 #include "config.h" // APPLICATION
 
@@ -898,6 +899,32 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(path, ioError));
     }
     return ioError == IoError::Success;
+}
+
+ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory) noexcept {
+    SyncPath cacheDirectoryPath;
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
+
+    const SyncPath destPath = cacheDirectoryPath / path.filename();
+    std::error_code ec;
+    std::filesystem::rename(path, destPath, ec);
+
+    IoError ioError = stdError2ioError(ec);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::deleteItemAtomically: " << Utility::formatIoError(path, ioError));
+    }
+
+    switch (ioError) {
+        case IoError::Success:
+            return ExitCode::Ok;
+        case IoError::NoSuchFileOrDirectory:
+            return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
+        case IoError::AccessDenied:
+            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
+        default:
+            return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+    }
 }
 
 bool IoHelper::deleteItem(const SyncPath &path) noexcept {
