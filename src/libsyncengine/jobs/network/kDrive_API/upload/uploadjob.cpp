@@ -102,6 +102,13 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
+ExitInfo UploadJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri) {
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
+}
+
 ExitInfo UploadJob::runJob() noexcept {
     if (!_fileId.empty()) {
         const auto result = KDC::resolveUploadNeed(_logger, driveDbId(), _absoluteFilePath, _fileId, _remoteSize, _creationTimeIn,
@@ -115,6 +122,7 @@ ExitInfo UploadJob::runJob() noexcept {
         if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
         LOGW_DEBUG(_logger, L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
     }
+
     return AbstractTokenNetworkJob::runJob();
 }
 
@@ -125,6 +133,7 @@ ExitInfo UploadJob::handleResponse(std::istream &is) {
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();

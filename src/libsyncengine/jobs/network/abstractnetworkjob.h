@@ -63,6 +63,7 @@ class AbstractNetworkJob : public SyncJob {
         virtual ExitInfo receiveResponseFromSession(StreamVector &stream);
         virtual ExitInfo handleResponse(std::istream &inputStream) = 0;
         virtual ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) = 0;
+        [[nodiscard]] virtual ExitInfo handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri);
 
         virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
@@ -112,7 +113,8 @@ class AbstractNetworkJob : public SyncJob {
         bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode, bool &shouldRetry);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
+        }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }
@@ -146,8 +148,8 @@ class AbstractNetworkJob : public SyncJob {
         static Poco::Net::Context::Ptr _context;
         static TimeoutHelper _timeoutHelper;
 
-        Poco::Net::HTTPResponse _httpResponse;
         Poco::JSON::Object::Ptr _jsonRes{nullptr};
+        Poco::Net::HTTPResponse _httpResponse;
         std::string _octetStreamRes;
 
         std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
