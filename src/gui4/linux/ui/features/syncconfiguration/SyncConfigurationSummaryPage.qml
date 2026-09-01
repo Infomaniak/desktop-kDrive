@@ -27,6 +27,12 @@ Column {
 
     required property var controller
 
+    // A folder name is free text and goes through `Text.StyledText` below, where `&`, `<` and `>` would be read as
+    // markup.
+    function escapedMarkup(value: string): string {
+        return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    }
+
     width: parent ? parent.width : implicitWidth
     spacing: IKSyncConfiguration.sectionSpacing
 
@@ -120,8 +126,8 @@ Column {
 
                         width: parent.width
                         text: qsTrId("onboardingAdvancedSettingsDriveSelectionLocationMac")
-                              .arg("<b>" + (driveRow.customFolder ? driveRow.localPath
-                                                                 : qsTrId("labelByDefault")) + "</b>")
+                              .arg("<b>" + (driveRow.customFolder ? root.escapedMarkup(driveRow.localPath)
+                                                                  : qsTrId("labelByDefault")) + "</b>")
                         textFormat: Text.StyledText
                         color: IKColors.textSecondary
                         font.pixelSize: IKFonts.subheadlineSize
@@ -155,6 +161,8 @@ Column {
 
                     anchors.verticalCenter: parent.verticalCenter
                     text: qsTrId("buttonConfigure")
+                    // Every row repeats the same label, so the drive is what tells them apart.
+                    Accessible.description: driveRow.driveName
                     actionEnabled: !root.controller.busy
                     onClicked: root.controller.configureDrive(driveRow.index)
                 }
