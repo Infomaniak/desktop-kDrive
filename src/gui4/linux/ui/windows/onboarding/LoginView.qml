@@ -129,7 +129,7 @@ Item {
 
                 contentItem: Text {
                     text: loginButton.text
-                    color: loginButton.enabled ? IKColors.actionOnPrimary : IKColors.actionDisabled
+                    color: IKColors.actionOnPrimary
                     font.pixelSize: IKFonts.bodySize
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
