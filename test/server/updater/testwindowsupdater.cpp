@@ -215,22 +215,26 @@ void TestWindowsUpdater::testIsChecksumValid() {
     // Case 1: sha256 sidecar download fails -> update must be blocked.
     {
         const ChecksumVerifier::Sha256Fetcher failingFetcher = [](const std::string &) { return std::string{}; };
-        CPPUNIT_ASSERT(!ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", failingFetcher));
+        CPPUNIT_ASSERT(
+                !ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", failingFetcher));
     }
 
     // Case 2: sha256 sidecar downloaded but is empty -> update must be blocked.
     {
-        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
+        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                             ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         const ChecksumVerifier::Sha256Fetcher emptyFetcher = [](const std::string &) { return std::string{""}; };
-        CPPUNIT_ASSERT(!ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", emptyFetcher));
+        CPPUNIT_ASSERT(
+                !ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", emptyFetcher));
     }
 
     // Case 3: sha256 sidecar downloaded, checksum matches -> verification passes.
     // The file must still exist after the call.
     {
-        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
+        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                             ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         const ChecksumVerifier::Sha256Fetcher validFetcher = [&](const std::string &) { return validChecksumValue; };
@@ -240,11 +244,13 @@ void TestWindowsUpdater::testIsChecksumValid() {
 
     // Case 4: sha256 sidecar downloaded, checksum mismatch -> verification fails, file deleted.
     {
-        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
+        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                             ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
         const ChecksumVerifier::Sha256Fetcher invalidFetcher = [&](const std::string &) { return invalidChecksumValue; };
-        CPPUNIT_ASSERT(!ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", invalidFetcher));
+        CPPUNIT_ASSERT(
+                !ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", invalidFetcher));
         CPPUNIT_ASSERT(!std::filesystem::exists(installerPath));
     }
 }
