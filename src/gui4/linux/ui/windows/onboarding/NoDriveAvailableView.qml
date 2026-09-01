@@ -23,10 +23,13 @@ import kDrive.UI
 Column {
     id: root
 
-    // The step opens on its main action so keyboard users start somewhere instead of from nothing.
-    Component.onCompleted: Qt.callLater(function() {
-        startForFreeButton.forceActiveFocus()
-    })
+    // The view is always instantiated and only its visibility is bound, so it claims the focus when it actually
+    // appears. Taking it on completion would leave the focus on a hidden button, which still receives key events.
+    onVisibleChanged: {
+        if (visible) {
+            startForFreeButton.forceActiveFocus(Qt.TabFocusReason)
+        }
+    }
 
     required property var selectionController
 
