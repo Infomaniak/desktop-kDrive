@@ -169,6 +169,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowResizeHandles.qml
         ui/components/IKBadge.qml
         ui/components/IKAvatar.qml
+        ui/components/IKCheckBox.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLoadingSpinner.qml
         ui/components/IKModal.qml
