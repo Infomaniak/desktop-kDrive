@@ -172,6 +172,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKAvatar.qml
         ui/components/IKCheckBox.qml
         ui/components/IKDriveIcon.qml
+        ui/components/IKLinkButton.qml
         ui/components/IKLoadingSpinner.qml
         ui/components/IKModal.qml
         ui/components/IKModalButton.qml
@@ -181,6 +182,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKTintedIcon.qml
         ui/components/IKErrorBanner.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
+        ui/features/syncconfiguration/SyncConfigurationErrorBlock.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
