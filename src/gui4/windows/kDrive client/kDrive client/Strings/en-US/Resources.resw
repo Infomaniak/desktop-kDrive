@@ -6,7 +6,7 @@
   Locale: en, English
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>My activity only</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Imported</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Imported %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignored</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Moved</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Moved %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Added</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Added %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Moved to trash</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Moved to the trash %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Renamed</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Renamed %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Modified</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Modified %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sync a folder with kDrive</value> 
@@ -314,6 +353,9 @@ You can open them at any time, even without an internet connection.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Open sync settings</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Open the Recycle Bin</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Pause</value> 
@@ -1251,6 +1293,25 @@ Please check and rename files containing unusual characters, then try again.</va
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ version conflicts detected</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>Synchronization is paused to prevent accidental deletion.
+What would you like to do?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Restore the files</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Delete online as well</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>These files can still be recovered from the kDrive Recycle Bin.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Don’t show this warning again</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ items deleted from your folder</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.
