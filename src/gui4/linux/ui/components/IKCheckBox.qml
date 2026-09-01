@@ -54,8 +54,12 @@ AbstractButton {
     hoverEnabled: true
     opacity: enabled ? 1 : IKCheckBoxTokens.disabledOpacity
     Accessible.role: Accessible.CheckBox
+    Accessible.checkable: enabled
     Accessible.checked: checkState === Qt.Checked
     Accessible.checkStateMixed: checkState === Qt.PartiallyChecked
+    // The state belongs to the owner, so an assistive activation reports a click like the pointer and the keyboard do.
+    Accessible.onPressAction: root.clicked()
+    Accessible.onToggleAction: root.clicked()
 
     // The control sizes background and contentItem itself, so neither is anchored here.
     background: Rectangle {
