@@ -185,6 +185,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/features/syncconfiguration/SyncConfigurationDrivePage.qml
         ui/features/syncconfiguration/SyncConfigurationErrorBlock.qml
         ui/features/syncconfiguration/SyncConfigurationFolderPage.qml
+        ui/features/syncconfiguration/SyncConfigurationSummaryPage.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
