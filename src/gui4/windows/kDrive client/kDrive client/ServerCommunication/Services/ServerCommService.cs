@@ -1873,7 +1873,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return false;
                 };
 
-                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
+                // Remove any item with the same remote or local node id which is not syncing or done (ie errored)
                 var toBeRemoved = activities.Where(a => shouldBeRemoved(fileItemInfo, a)).ToList();
                 activities.RemoveMany(toBeRemoved);
 

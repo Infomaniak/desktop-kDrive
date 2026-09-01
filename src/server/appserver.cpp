@@ -3709,13 +3709,6 @@ void AppServer::parseOptions(const QStringList &options) {
 
     while (it.hasNext()) {
         QString option = it.next();
-    }
-
-    it.toFront();
-    it.next(); // File name
-
-    while (it.hasNext()) {
-        QString option = it.next();
         if (option.startsWith(REDIRECT_URI)) {
             const QUrl url(option);
 

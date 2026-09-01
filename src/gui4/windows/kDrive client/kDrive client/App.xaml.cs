@@ -124,7 +124,7 @@ namespace Infomaniak.kDrive
 
                 if (!isMainInstance)
                 {
-                    // if this is not the main instance, we should start the server wich will decide to open or not the main window of the main instance
+                    // if this is not the main instance, we should start the server which will decide to open or not the main window of the main instance
                     StartServer();
                     ExitApplication();
                     return;
@@ -144,7 +144,7 @@ namespace Infomaniak.kDrive
 
             if (!isMainInstance)
             {
-                // if this is not the main instance, we should start the server wich will decide to open or not the main window of the main instance
+                // if this is not the main instance, we should start the server which will decide to open or not the main window of the main instance
                 StartServer();
                 ExitApplication();
                 return;
