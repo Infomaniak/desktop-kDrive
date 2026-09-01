@@ -44,7 +44,11 @@ struct UtilitySignalHandler {
     }
 
     func handleError(_ signal: Data) async throws {
-        guard let errorInfoSignal = try? decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signal) else {
+        let errorInfoSignal: SignalMessage<ErrorInfoSignal>
+        do {
+            errorInfoSignal = try decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signal)
+        } catch {
+            IKLogger.xpc.error("[KD] Failed to decode error-added signal: \(error)")
             throw SignalError.unableToGetErrorInfoFromSignal
         }
 

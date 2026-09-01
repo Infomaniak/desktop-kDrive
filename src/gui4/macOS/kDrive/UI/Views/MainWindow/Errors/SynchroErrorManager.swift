@@ -82,6 +82,27 @@ final class SynchroErrorManager: ObservableObject {
         NSWorkspace.shared.open(url)
     }
 
+    func openRescueFolder(_ error: SynchroError) async {
+        @InjectService var cache: CoherentCache
+        guard !error.metadata.destinationPath.isEmpty else {
+            IKLogger.xpc.error("[KD] Cannot open rescue folder: missing rescue destination path")
+            return
+        }
+
+        guard let synchro = await cache.getSynchro(synchroDbId: Int32(error.metadata.synchroDbId)) else {
+            IKLogger.xpc.error("[KD] Cannot open rescue folder: sync \(error.metadata.synchroDbId) was not found")
+            return
+        }
+
+        let folderURL = Self.rescueFolderURL(
+            destinationPath: error.metadata.destinationPath,
+            synchroPath: synchro.localPath
+        )
+        if !NSWorkspace.shared.open(folderURL) {
+            IKLogger.xpc.error("[KD] Failed to open rescue folder: \(folderURL.path)")
+        }
+    }
+
     func openParentFolder(_ error: SynchroError) {
         let url = URL(fileURLWithPath: error.metadata.path)
         let parentURL = url.deletingLastPathComponent()
@@ -201,5 +222,11 @@ final class SynchroErrorManager: ObservableObject {
         }
 
         return synchroContext.drive
+    }
+
+    nonisolated static func rescueFolderURL(destinationPath: String, synchroPath: String) -> URL {
+        let synchroURL = URL(fileURLWithPath: synchroPath, isDirectory: true)
+        let rescuedItemURL = URL(fileURLWithPath: destinationPath, relativeTo: synchroURL).standardizedFileURL
+        return rescuedItemURL.deletingLastPathComponent()
     }
 }

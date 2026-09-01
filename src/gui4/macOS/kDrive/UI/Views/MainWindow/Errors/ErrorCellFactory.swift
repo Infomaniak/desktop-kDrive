@@ -114,7 +114,7 @@ struct ErrorCellFactory {
                 description: KDriveLocalizable.errFileRescuedDescription,
                 action: .init(title: KDriveLocalizable.buttonOpenFolder) {
                     matomo.track(eventWithCategory: .errors, name: "manageRescuedFile")
-                    manager.openFolder(error)
+                    await manager.openRescueFolder(error)
                 }
             )
         case .fileTooBig:
