@@ -233,6 +233,7 @@
 				Parsing/Signals/VfsConversionCompletedParsingTest.swift,
 				Router/MainViewRouterTests.swift,
 				Signal/SignalProcessorTests.swift,
+				SynchroErrors/SynchroErrorKindTests.swift,
 				UI/BetaOptionTests.swift,
 				UI/LogUploadSessionTrackerTests.swift,
 				UI/SynchroErrorManagerTests.swift,
