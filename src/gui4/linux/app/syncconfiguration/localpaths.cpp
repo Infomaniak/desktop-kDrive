@@ -26,7 +26,7 @@ using namespace Qt::StringLiterals;
 namespace KDC {
 
 namespace {
-const auto homeShorthand = u"~"_s;
+constexpr auto homeShorthand = "~"_L1;
 // Mirrors the give-up threshold of ServerRequests::findGoodPathForNewSync() in src/server/requests/serverrequests.cpp.
 constexpr uint32_t maxUniqueLocalPathAttempts = 100;
 
