@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Wed, 02 Sep 2026 14:32:54 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Solo la mia attività</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importato</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importato %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignorato</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Spostato</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Spostato %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Aggiunto</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Aggiunto %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Spostato nel cestino</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Spostato nel cestino %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Rinominato</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Rinominato %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Modificato</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Modificato %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sincronizza una cartella con kDrive</value> 
@@ -314,6 +353,9 @@ Puoi aprirli in qualsiasi momento, anche senza connessione a internet.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Apri impostazioni di sincronizzazione</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Apri il cestino</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Sospendi</value> 
@@ -726,6 +768,13 @@ Richiedi l’accesso al proprietario o all’amministratore.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Tipo di file non supportato</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Questo collegamento è stato escluso dalla sincronizzazione perché il suo percorso di destinazione non è valido.
+Il percorso deve essere relativo e non può contenere riferimenti a una cartella padre, come « .. ».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Percorso di destinazione non valido</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Questa cartella non è più accessibile nella sua posizione originale.</value> 
   </data> 
@@ -1121,7 +1170,7 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Dal: %@</value> 
+    <value>Da: %@</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 
@@ -1251,6 +1300,25 @@ Verifica e rinomina i file contenenti caratteri insoliti, quindi riprova.</value
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflitti di versione rilevati</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>La sincronizzazione è stata sospesa per evitare una cancellazione involontaria.
+Cosa desideri fare?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Ripristinare i file</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Eliminare anche online</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Questi file rimangono recuperabili nel cestino di kDrive.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Non mostrare più questo avviso</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ elementi eliminati dalla cartella</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.
