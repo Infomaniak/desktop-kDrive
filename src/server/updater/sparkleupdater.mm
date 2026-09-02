@@ -226,14 +226,30 @@ void SparkleUpdater::setQuitCallback(const std::function<void()> &quitCallback) 
 }
 
 void SparkleUpdater::startInstaller() {
-    reset(versionInfo().downloadUrl);
+    // Sparkle and AppKit require all UI operations on the main thread.
+    if (!NSThread.isMainThread) {
+        dispatch_sync(dispatch_get_main_queue(), ^{ startInstaller(); });
+        return;
+    }
 
     if (!d->updater || !d->spuStandardUserDriver) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error!");
         return;
     }
+
+    if ([d->updater sessionInProgress] && [d->updater canCheckForUpdates]) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "An update session is already in progress, bringing it to focus.");
+        [d->spuStandardUserDriver showUpdateInFocus];
+        return;
+    }
+
+    reset(versionInfo().downloadUrl);
+
+    if (!d->updater || !d->spuStandardUserDriver) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Initialization error after reset!");
+        return;
+    }
     [d->updater checkForUpdatesInBackground];
-    [d->spuStandardUserDriver showUpdateInFocus];
 }
 
 bool SparkleUpdater::isUpdateSessionInProgress() const {
