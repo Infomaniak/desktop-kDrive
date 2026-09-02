@@ -21,11 +21,24 @@ Read `references/sentry-projects.md` to route each process to the right Sentry p
 - Do not equate the crash site with the root cause. An abort, allocator failure, `pthread_kill`, `RtlReportFatalFailure`, or destructor frame is usually a terminal symptom.
 - Distinguish a product defect from expected external failures such as disk removal, permission changes, network loss, backend errors, or user termination. Explain why handling of that condition is defective if it leads to a crash.
 - Account for Sentry rate limiting and sampling. Event totals are not guaranteed to equal real-world occurrence counts.
-- If symbols, logs, source for the release, or correlation identifiers are missing, report that limitation explicitly and reduce confidence.
+- If Sentry access, symbols, logs, source for the release, or correlation identifiers are missing, report that limitation explicitly and reduce confidence when it affects the conclusion.
 
 ## Workflow
 
-### 1. Frame The Incident
+### 1. Verify Sentry Access
+
+When the request involves a Sentry issue/event, crash ranking, frequency, regression, or cross-project correlation, verify authenticated access to the self-hosted Sentry instance before making Sentry-backed claims.
+
+If Sentry access is unavailable:
+
+- State that Sentry could not be queried and recommend connecting and authenticating the Sentry MCP for the most accurate analysis.
+- Continue with supplied logs, support archives, stack traces, and repository source when useful rather than blocking the investigation.
+- Clearly distinguish user-supplied evidence from data independently verified in Sentry.
+- Do not infer issue status, event volume, affected users, release distribution, regression state, symbolication quality, or cross-project correlation.
+- Reduce confidence when the unavailable Sentry evidence is material to the conclusion.
+- Do not describe unavailable access as finding no matching issue or event, and do not repeatedly request access after acknowledging the limitation.
+
+### 2. Frame The Incident
 
 Extract or ask for only information that materially narrows the search:
 
@@ -40,7 +53,7 @@ If the user provides a Sentry URL, fetch that exact resource first. Otherwise di
 
 Prefer explicit Sentry query syntax. If the local MCP reports that AI-powered search is unavailable, continue with direct filters and aggregate fields rather than treating it as a connectivity failure.
 
-### 2. Identify Process And Project
+### 3. Identify Process And Project
 
 Classify the failing process before searching source:
 
@@ -52,7 +65,7 @@ Classify the failing process before searching source:
 
 Query the server project as well as the relevant UI project when the symptom crosses IPC, the UI loses its server connection, the server exits/restarts, or either side contains matching timestamps/identifiers. A UI error can be fallout from a server crash; a server error can be triggered by malformed or badly ordered UI requests.
 
-### 3. Build A Timeline
+### 4. Build A Timeline
 
 Record timestamps in chronological order and normalize timezone before correlating sources. Include:
 
@@ -63,7 +76,7 @@ Record timestamps in chronological order and normalize timezone before correlati
 
 Search Sentry breadcrumbs and supplied logs around the event. Use the correlation hierarchy in `references/logs-and-correlation.md`. State which identifiers matched and which did not exist.
 
-### 4. Inspect The Event Deeply
+### 5. Inspect The Event Deeply
 
 Capture evidence from the Sentry event:
 
@@ -76,7 +89,7 @@ Capture evidence from the Sentry event:
 
 For broad issues, compare representative events across major OS/release variants before proposing one cause.
 
-### 5. Trace Into Source
+### 6. Trace Into Source
 
 Search exact function names, assertion text, log messages, enum values, and error strings. Read enough surrounding implementation and callers to reconstruct state and ownership.
 
@@ -88,11 +101,28 @@ Follow the relevant path:
 - Shutdown/cancellation -> worker/thread owner -> destructor/join/stop ordering.
 - VFS callback -> server bridge -> sync operation.
 
-Read the nearest `AGENTS.md` before relying on component behavior. Use `git log`, `git show`, and `git blame` when a release or regression boundary matters. Do not check out, reset, or modify branches. If the event release includes a commit SHA, inspect that commit. Otherwise compare the release against current source and label any mismatch.
+Read the nearest `AGENTS.md` before relying on component behavior.
+
+Before drawing conclusions from source code:
+
+1. Record the current branch and `HEAD` commit.
+2. Extract the application version, build number, release name, or commit SHA from the Sentry event or logs.
+3. Resolve the incident release to a repository tag or commit when possible. Prefer a release tag or exact commit over a branch because branches move.
+4. Compare the incident revision with the current checkout.
+
+Do not check out tags, switch or modify branches, reset the worktree, or otherwise change the user's checkout. Inspect other revisions with read-only Git commands such as `git show`, `git log`, `git diff`, and `git blame`.
+
+When the incident revision differs from the current checkout:
+
+- Prefer source from the exact incident commit or tag for the causal analysis.
+- Compare it with the current implementation when checking whether the defect may already have changed.
+- Cite historical source as `<commit-or-tag>:<path>:<line>` rather than applying current-worktree line numbers to it.
+- Do not claim that the issue is fixed merely because current source differs. Identify the relevant change and verify that it addresses the observed causal sequence.
+- If the incident revision cannot be identified or retrieved, label source-based conclusions as provisional and reduce confidence.
 
 Look for tests that encode the intended invariant. A missing test is supporting evidence, not proof of the bug.
 
-### 6. Test Competing Hypotheses
+### 7. Test Competing Hypotheses
 
 Maintain at least one alternative explanation until evidence rules it out. For every hypothesis, record:
 
@@ -109,7 +139,7 @@ Use these confidence levels:
 
 Never write “root cause” as fact below Confirmed confidence. Use “probable cause” or “leading hypothesis.”
 
-### 7. Report With Progressive Disclosure
+### 8. Report With Progressive Disclosure
 
 Perform the full investigation before answering, but default to a concise initial report useful to both support technicians and developers. Do not expose the entire investigation simply because it was performed.
 
@@ -121,7 +151,7 @@ Unless the user explicitly requests a full RCA, developer analysis, detailed tim
 **Confidence:** Confirmed, High, Medium, or Low.
 **Impact:** Affected process, releases/platforms, and scale when available.
 
-**Why:** Two or three short evidence points, including the exact Sentry issue or event link and the most relevant source area when known.
+**Why:** Two or three short evidence points, including the exact Sentry issue or event link when verified and the most relevant source area when known.
 
 **Fix direction:** One sentence naming the likely correction and component, without implementation details.
 
@@ -136,6 +166,7 @@ Keep the initial report short:
 - Link the primary Sentry issue or event. Mention a correlated server or client issue only when it materially supports the conclusion.
 - Hint at the fix direction, but do not provide a patch design, detailed source walkthrough, or regression-test plan unless requested.
 - Do not include a full timeline, competing-hypothesis analysis, raw stack trace, extensive log excerpts, or exhaustive project-search results.
+- Mention unavailable Sentry access or source-revision mismatch under **Limitations** when it materially affects confidence.
 - End by offering the detailed RCA, including the timeline, source analysis, alternatives, and fix/test proposal.
 
 If the user asks for more detail, provide the full RCA using this structure:
@@ -145,6 +176,7 @@ If the user asks for more detail, provide the full RCA using this structure:
 **Probable cause:** One precise causal statement.
 **Confidence:** High, Medium, or Low. Use Confirmed only with direct proof.
 **Impact:** Affected process, releases/platforms, event count, user count, and time window when available.
+**Source alignment:** Exact incident revision, best matching tag/commit, or current source only.
 
 ## Evidence
 1. Runtime evidence with timestamp and Sentry link.
@@ -157,8 +189,8 @@ If the user asks for more detail, provide the full RCA using this structure:
 3. Crash mechanism and visible symptom.
 
 ## Related Sentry
-- Server: [issue/event title](exact URL), `Searched <project/window> and found no correlated server issue`, or `Not searched because no server symptom indicated correlation`.
-- UI/client: [issue/event title](exact URL), `Searched <projects/window> and found no correlated UI issue`, or `Not searched because no client symptom indicated correlation`.
+- Server: [issue/event title](exact URL), `Searched <project/window> and found no correlated server issue`, `Not searched because no server symptom indicated correlation`, or `Not searched because Sentry access was unavailable`.
+- UI/client: [issue/event title](exact URL), `Searched <projects/window> and found no correlated UI issue`, `Not searched because no client symptom indicated correlation`, or `Not searched because Sentry access was unavailable`.
 - Search/dashboard: [query description](exact URL), when returned by Sentry.
 
 ## Alternatives
@@ -186,7 +218,9 @@ An investigation is complete only when it:
 - Names the affected process and Sentry project.
 - Separates initiating condition, product defect, and terminal crash mechanism.
 - Cites exact runtime and source evidence.
-- Provides server and UI/client links when correlated and explicitly distinguishes no match from a project that was not searched.
+- Verifies relevant Sentry evidence or clearly states that Sentry access was unavailable.
+- Provides server and UI/client links when correlated and explicitly distinguishes no match, an unnecessary search, and unavailable Sentry access.
+- Verifies source against the incident revision or discloses that only mismatched/current source was available.
 - Assigns confidence and lists unresolved alternatives.
 - Proposes a regression test and the smallest plausible fix area.
 - Avoids exposing customer data or credentials.
