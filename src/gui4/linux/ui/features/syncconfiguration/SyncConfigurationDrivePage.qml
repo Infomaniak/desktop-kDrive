@@ -207,7 +207,7 @@ Column {
                 IKModalButton {
                     id: changeFolderButton
 
-                    role: IKModalButton.Tonal
+                    role: IKModalButton.Primary
                     text: qsTrId("buttonChangeFolder")
                     actionEnabled: !root.controller.busy
                     onClicked: root.controller.requestCustomFolder()
@@ -220,7 +220,7 @@ Column {
 
                 IKModalButton {
                     visible: !root.controller.currentUsesDefaultFolder
-                    role: IKModalButton.Tonal
+                    role: IKModalButton.Primary
                     text: qsTrId("buttonReturnToDefaultFolder")
                     actionEnabled: !root.controller.busy
                     onClicked: root.controller.returnToDefaultFolder()
@@ -281,7 +281,7 @@ Column {
                     id: selectFoldersButton
 
                     anchors.verticalCenter: parent.verticalCenter
-                    role: IKModalButton.Tonal
+                    role: IKModalButton.Primary
                     text: qsTrId("buttonSelectFolders")
                     actionEnabled: !root.controller.busy
                     onClicked: root.controller.selectFolders()
