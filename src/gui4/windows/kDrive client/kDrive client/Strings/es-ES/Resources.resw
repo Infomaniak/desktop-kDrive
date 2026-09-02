@@ -6,7 +6,7 @@
   Locale: es, Spanish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Wed, 02 Sep 2026 14:32:54 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Solo mi actividad</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importado</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importado %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignorado</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Movido</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Movido %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Añadido</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Añadido %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Movido a la papelera</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Se ha enviado a la papelera %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Cambiado de nombre</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Renombrado %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Modificado</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Modificado %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sincronizar una carpeta con kDrive</value> 
@@ -314,6 +353,9 @@ Puede abrirlos en cualquier momento, incluso sin conexión a Internet.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Abrir ajustes de sincronización</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Abrir la papelera</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Pausar</value> 
@@ -725,6 +767,13 @@ Solicite acceso al propietario o al administrador.</value>
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Tipo de archivo no admitido</value> 
+  </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Este enlace se ha excluido de la sincronización, ya que su ruta de destino no es válida.
+La ruta debe ser relativa y no puede contener ninguna referencia a una carpeta superior, como «..».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Ruta de destino no válida</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Esta carpeta ya no es accesible en su ubicación original.</value> 
@@ -1251,6 +1300,25 @@ Por favor, verifique y cambie el nombre de los archivos que contengan caracteres
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflictos de versiones detectados</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>La sincronización se ha detenido para evitar un borrado involuntario.
+¿Qué quieres hacer?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Restaurar los archivos</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Eliminar también en línea</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Estos archivos se pueden recuperar de la papelera de kDrive.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>No volver a mostrar este aviso</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ elementos eliminados de tu carpeta</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo es una herramienta de análisis alojada y gestionada exclusivamente por Infomaniak para entender cómo se usa la aplicación.

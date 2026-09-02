@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Wed, 02 Sep 2026 14:32:54 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Mon activité uniquement</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importé</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importé %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignoré</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Déplacé</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Déplacé %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Ajouté</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Ajouté %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Placé dans la corbeille</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Placé dans la corbeille %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Renommé</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Renommé %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Modifié</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Modifié %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Synchroniser un dossier avec kDrive</value> 
@@ -315,6 +354,9 @@ Vous pouvez les ouvrir à tout moment, même sans accès à Internet.</value>
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Ouvrir les paramètres de synchronisation</value> 
   </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Ouvrir la corbeille</value> 
+  </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Pause</value> 
   </data> 
@@ -525,7 +567,7 @@ La synchronisation actuelle reste inchangée. Toutefois, si un comportement anor
     <value>Une erreur s’est produite</value> 
   </data> 
   <data name="dialogSyncModeChangeWarningContent" xml:space="preserve"> 
-    <value>Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du drive pourra être nécessaire.
+    <value>Cette opération peut prendre un certain temps, selon la taille de vos données. En cas d’échec, une nouvelle synchronisation complète du dossier pourra être nécessaire.
 
 Avant de continuer, assurez-vous que tous vos fichiers sont bien à jour et synchronisés.
 
@@ -725,6 +767,13 @@ Demandez l’accès au propriétaire ou à l’administrateur.</value>
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Type de fichier non pris en charge</value> 
+  </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Ce lien a été exclu de la synchronisation, car son chemin de destination n’est pas valide.
+Le chemin doit être relatif et ne peut pas contenir de référence à un dossier parent, comme « .. » .</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Chemin de destination non valide</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Ce dossier n’est plus accessible à son emplacement d’origine.</value> 
@@ -1105,7 +1154,7 @@ Utile si vous savez que le travail important est en ligne sur kDrive.</value>
     <value>Identique au système</value> 
   </data> 
   <data name="labelShortDay" xml:space="preserve"> 
-    <value>d</value> 
+    <value>j</value> 
     <comment>Abbreviated unit for day used in relative timestamps (e.g., 3d ago).</comment> 
   </data> 
   <data name="labelShortHour" xml:space="preserve"> 
@@ -1251,6 +1300,25 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflits de versions détectés</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>La synchronisation est en pause pour éviter une suppression involontaire.
+Que voulez-vous faire ?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Restaurer les fichiers</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Supprimer aussi en ligne</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Ces fichiers restent récupérables dans la corbeille de kDrive.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Ne plus afficher cet avertissement</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ éléments supprimés de votre dossier</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo est un outil d’analyse hébergé et géré exclusivement par Infomaniak pour comprendre comment l’application est utilisée.
