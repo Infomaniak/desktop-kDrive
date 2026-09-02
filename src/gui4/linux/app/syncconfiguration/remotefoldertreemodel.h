@@ -60,13 +60,13 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
 
         explicit RemoteFolderTreeModel(AbstractRemoteFolderProvider &remoteFolderProvider, QObject *parent = nullptr);
 
-        [[nodiscard]] QModelIndex index(int row, int column, const QModelIndex &parentIndex = {}) const override;
+        [[nodiscard]] QModelIndex index(int row, int column, const QModelIndex &parentIndex = QModelIndex()) const override;
         [[nodiscard]] QModelIndex parent(const QModelIndex &child) const override;
-        [[nodiscard]] int rowCount(const QModelIndex &parentIndex = {}) const override;
-        [[nodiscard]] int columnCount(const QModelIndex &parent = {}) const override;
+        [[nodiscard]] int rowCount(const QModelIndex &parentIndex = QModelIndex()) const override;
+        [[nodiscard]] int columnCount(const QModelIndex &parent = QModelIndex()) const override;
         [[nodiscard]] QVariant data(const QModelIndex &index, int role) const override;
         [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
-        [[nodiscard]] bool hasChildren(const QModelIndex &parentIndex = {}) const override;
+        [[nodiscard]] bool hasChildren(const QModelIndex &parentIndex = QModelIndex()) const override;
         [[nodiscard]] bool canFetchMore(const QModelIndex &parentIndex) const override;
         void fetchMore(const QModelIndex &parentIndex) override;
 
@@ -144,7 +144,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void handleInitialExclusionPathResult(const QString &nodeId, const ExitInfo &exitInfo, const NodeInfo &info);
         void requestChildren(TreeNode *node);
         void handleChildrenResult(TreeNode *node, uint64_t generation, bool success, const std::vector<NodeInfo> &children);
-        void excludeNode(TreeNode *node);
+        void excludeNode(const TreeNode *node);
         void includeNode(TreeNode *node);
         void includeNodeUnderExcludedAncestor(const TreeNode *node, const TreeNode *excludedAncestor);
         void removeExclusionsAtOrBelow(const TreeNode *node);
@@ -155,7 +155,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void handleSizeResult(const QString &nodeId, uint64_t generation, bool success, qint64 size);
 
         AbstractRemoteFolderProvider &_remoteFolderProvider;
-        std::unique_ptr<TreeNode> _root;
+        std::unique_ptr<TreeNode> _root{std::make_unique<TreeNode>()};
         QHash<QString, TreeNode *> _nodesById;
         QSet<QString> _excludedNodeIds;
         QHash<QString, QString> _excludedPaths;
