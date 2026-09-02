@@ -55,6 +55,7 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         void prepareSynchronization(const AvailableDriveKey &key);
         void handleGoodPathResult(const AvailableDriveKey &key, const ExitInfo &exitInfo, const GoodPathResult &result);
         void createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config);
+        void discardPendingSynchronizations();
         void discardPendingSynchronization(const AvailableDriveKey &key);
         void handleCreationFailure(bool cacheReconciliationRequired = false);
         void handleCacheReconciliationCompleted();
