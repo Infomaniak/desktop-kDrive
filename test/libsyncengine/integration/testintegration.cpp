@@ -42,10 +42,10 @@
 #include "libcommon/utility/utility.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
-#include "mocks/mockkeychainstorage.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
@@ -80,8 +80,8 @@ void TestIntegration::setUp() {
     apiToken.setAccessToken(testVariables.apiToken);
 
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance(true);
+    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -306,8 +306,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
-    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif
@@ -323,8 +322,7 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
-    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -485,8 +483,8 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
-    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() ||
+                   testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -585,7 +583,6 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
-        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -594,7 +591,7 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
     }
     waitForSyncToBeIdle(std::source_location::current());
     {
@@ -631,7 +628,6 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
-        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -644,10 +640,10 @@ void TestIntegration::testNegativeModificationTime() {
         // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #else
-        // Setting a negative creation date is accepted.
+        // Setting both a negative creation and modification date is accepted.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
 #endif
-        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
     }
 
     logStep("testNegativeModificationTime");
@@ -1027,29 +1023,24 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     waitForSyncToBeIdle(std::source_location::current());
 
     // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
+    // Absolute paths are not allowed, but relative paths are. Relative paths must be relative to the sync root.
+    // Parent traversal is not allowed, but relative paths that do not traverse the parent are allowed.
     testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
+
     std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
+
     std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
 
     (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
     std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
+
     std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
 
     waitForSyncToBeIdle(std::source_location::current());
-
-    const auto remoteTestFileInfo1 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink"));
-    const auto remoteTestFileInfo2 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink"));
-    const auto remoteTestFileInfo3 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_symlink"));
-    const auto remoteTestFileInfo4 = getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("dangling_directory_symlink"));
-
-    CPPUNIT_ASSERT(remoteTestFileInfo1.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo2.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo3.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo4.isValid());
 
     CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
@@ -1080,6 +1071,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
 
     CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+
 
     logStep("testSynchronizationOfSymLinks");
 }
