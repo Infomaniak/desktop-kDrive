@@ -61,6 +61,7 @@ class OnboardingDefaultPathResolver final : public QObject {
         void resolveMissingDefaultPaths();
         void handleGoodPathResult(const AvailableDriveKey &key, uint64_t generation, const ExitInfo &exitInfo,
                                   const GoodPathResult &result);
+        void applyDefaultPath(const AvailableDriveKey &key, const QString &defaultPath, const ExitInfo &exitInfo);
         void finishRequest(const AvailableDriveKey &key);
         void updatePendingResolutions();
 
