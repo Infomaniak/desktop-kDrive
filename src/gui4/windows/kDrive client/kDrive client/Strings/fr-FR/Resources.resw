@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Wed, 02 Sep 2026 14:32:54 +0200 
+  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -770,7 +770,7 @@ Demandez l’accès au propriétaire ou à l’administrateur.</value>
   </data> 
   <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
     <value>Ce lien a été exclu de la synchronisation, car son chemin de destination n’est pas valide.
-Le chemin doit être relatif et ne peut pas contenir de référence à un dossier parent, comme « .. » .</value> 
+Le chemin doit être relatif et ne peut pas contenir de référence à un dossier parent, comme « .. ».</value> 
   </data> 
   <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
     <value>Chemin de destination non valide</value> 
