@@ -43,7 +43,7 @@ public struct UserJobs: Sendable {
 
         let userList = decodedMessage.body.userInfoList
 
-        await userList.asyncForEach { await coherentCache.updateUser($0.userCache, updateOptions: .all) }
+        await userList.asyncForEach { await coherentCache.updateUser($0.userCache, updateOptions: .refresh) }
 
         return userList
     }
