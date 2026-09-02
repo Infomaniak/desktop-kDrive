@@ -31,7 +31,6 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class InvalidLinkTarget : UserControl
     {
-        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public InvalidLinkTarget(Error error)
         {

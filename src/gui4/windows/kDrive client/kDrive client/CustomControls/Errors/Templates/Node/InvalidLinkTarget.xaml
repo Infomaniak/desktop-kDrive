@@ -22,7 +22,6 @@
              xmlns:local="using:Infomaniak.kDrive.CustomControls.Errors"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:converters="using:Infomaniak.kDrive.Converters"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <local:ErrorCard x:Name="ErrorCard"
