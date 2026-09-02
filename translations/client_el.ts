@@ -1873,85 +1873,90 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Το αρχείο τροποποιήθηκε τοπικά ενώ διαγράφηκε στο απομακρυσμένο kDrive.&lt;br&gt;Το τοπικό αντίγραφο αποθηκεύτηκε στον φάκελο ανάκτησης.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="765"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Αυτός ο σύνδεσμος έχει εξαιρεθεί από το συγχρονισμό, καθώς η διαδρομή προορισμού του δεν πληροί τις προδιαγραφές.&lt;br&gt; Οι διαδρομές προορισμού πρέπει να είναι σχετικές. Δεν πρέπει να χρησιμοποιούν διαδρομή προς τον γονικό φάκελο, δηλαδή απαγορεύεται η χρήση στοιχείων όπως το &quot;..&quot;.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="770"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Η λειτουργία που εκτελέστηκε στο στοιχείο απαγορεύεται.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="771"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
         <source>The operation performed on this item failed.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Η λειτουργία στο στοιχείο απέτυχε.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="781"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>Το αρχείο είναι πολύ μεγάλο για μεταφόρτωση. Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="779"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="784"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Έχετε υπερβεί το όριο χώρου. Αυξήστε το όριο για να επανενεργοποιήσετε τη μεταφόρτωση αρχείων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="782"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="787"/>
         <source>Impossible to download the file.</source>
         <translation>Αδύνατη η λήψη του αρχείου.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="785"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="790"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
         <translation>Αυτό το στοιχείο είναι κλειδωμένο από άλλον χρήστη ηλεκτρονικά.&lt;br&gt;Θα επαναπροσπαθήσουμε τη μεταφόρτωση των αλλαγών αργότερα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="795"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
         <source>Synchronization error.</source>
         <translation>Σφάλμα συγχρονισμού.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="810"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="815"/>
         <source>Can&apos;t access item.&lt;br&gt;Please fix the read and write permissions.</source>
         <translation>Δεν είναι δυνατή η πρόσβαση στο στοιχείο.&lt;br&gt;Ελέγξτε τα δικαιώματα ανάγνωσης και εγγραφής.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="814"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="819"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Δεν υπάρχει αρκετός ελεύθερος χώρος στον υπολογιστή.&lt;br&gt;Η λήψη ακυρώθηκε.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="823"/>
         <source>System error.</source>
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε τεχνικό σφάλμα.&lt;br&gt;Εκκαθαρίστε το ιστορικό και αν το σφάλμα επιμείνει, επικοινωνήστε με την υποστήριξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Μεταφορά ολοκληρώθηκε!&lt;br&gt;Χρησιμοποιήστε τον αναγνωριστικό &lt;b&gt;%1&lt;/b&gt; σε αναφορές σφαλμάτων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Αποτυχία μεταφοράς!
 Χρησιμοποιήστε τον ακόλουθο σύνδεσμο για να στείλετε τα αρχεία καταγραφής: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
@@ -2818,47 +2823,47 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="469"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Ο γονικός φάκελος είναι φάκελος συγχρονισμού ή περιέχεται σε έναν</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="503"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Δεν βρέθηκε έγκυρη διαδρομή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2110"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2121"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2126"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2131"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2177"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
