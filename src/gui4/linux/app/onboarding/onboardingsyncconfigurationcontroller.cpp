@@ -242,7 +242,7 @@ void OnboardingSyncConfigurationController::buildDrafts() {
     // modal still open, and what the user has just configured has to survive that retry.
     std::unordered_map<AvailableDriveKey, PendingSyncConfig> editedConfigs;
     editedConfigs.reserve(_drafts.size());
-    for (const auto &draft: _drafts) editedConfigs.emplace(draft.key, draft.config);
+    for (const auto &draft: _drafts) (void) editedConfigs.try_emplace(draft.key, draft.config);
 
     _drafts.clear();
     for (const auto &key: _onboardingState.selectedAvailableDriveKeys()) {
@@ -258,7 +258,7 @@ void OnboardingSyncConfigurationController::buildDrafts() {
                            .driveColor = QColor(QString::fromStdString(availableDrive->color())),
                            .config = config});
     }
-    std::ranges::sort(_drafts, [](const Draft &lhs, const Draft &rhs) {
+    (void) std::ranges::sort(_drafts, [](const Draft &lhs, const Draft &rhs) {
         if (const int nameComparison = QString::compare(lhs.driveName, rhs.driveName, Qt::CaseInsensitive); nameComparison != 0) {
             return nameComparison < 0;
         }
@@ -341,7 +341,7 @@ void OnboardingSyncConfigurationController::closeWithoutCommit() {
 void OnboardingSyncConfigurationController::commitAndClose() {
     std::unordered_map<AvailableDriveKey, PendingSyncConfig> configs;
     configs.reserve(_drafts.size());
-    for (const auto &draft: _drafts) configs.emplace(draft.key, draft.config);
+    for (const auto &draft: _drafts) (void) configs.try_emplace(draft.key, draft.config);
     if (!_onboardingState.replacePendingSyncConfigs(configs)) {
         // The selected drives changed under the modal, so the drafts no longer describe them. Closing here would
         // silently drop everything the user configured.
