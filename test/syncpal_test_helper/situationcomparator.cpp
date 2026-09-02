@@ -235,13 +235,15 @@ SituationMap SituationComparator::getLocalSituation() const {
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
-    bool exceptionOccurred = false;
-
     while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         std::error_code ec;
         const SyncPath relativePath = std::filesystem::relative(entry.path(), rootPath, ec);
-        if (ec || relativePath.empty()) {
-            exceptionOccurred = true;
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::relative " << Utility::formatStdError(rootPath, ec));
+            continue;
+        }
+        if (relativePath.empty()) {
             continue;
         }
 
@@ -249,29 +251,36 @@ SituationMap SituationComparator::getLocalSituation() const {
         if (relativePath.filename().string().starts_with("tmpFile_")) continue;
         if (relativePath.filename().string().starts_with(".kDrive-cache")) continue;
 
+        const auto isDirectory = entry.is_directory(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        const auto isRegularFile = entry.is_regular_file(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
+                                                            << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
         SituationMap::ItemInfo info;
-        if (entry.is_directory(ec)) {
+        if (isDirectory) {
             info.type = NodeType::Directory;
             info.size = testhelpers::defaultDirSize;
-        } else if (entry.is_regular_file(ec)) {
+        } else if (isRegularFile) {
             info.type = NodeType::File;
             info.size = static_cast<int64_t>(entry.file_size(ec));
         } else {
             continue; // Skip symlinks / special files.
         }
 
-        if (ec) {
-            exceptionOccurred = true;
-            continue;
-        }
-
         situationMap.add(relativePath, info);
     }
 
-    const auto exitInfo = IoHelper::checkDirectoryIteratorInterruption(endOfDirectory, ioError, entry, exceptionOccurred);
-    if (!exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Directory iteration did not complete cleanly for local path: " << rootPath.string());
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator for " << Utility::formatIoError(rootPath, ioError));
     }
 
     return situationMap;

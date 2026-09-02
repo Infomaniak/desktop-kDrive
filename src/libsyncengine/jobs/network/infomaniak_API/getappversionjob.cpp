@@ -32,7 +32,6 @@ static const std::string buildVersionKey = "build_version";
 static const std::string downloadUrlKey = "download_link";
 static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string applicationMinVersionKey = "min_version";
-static const std::string checksumKey = "checksum";
 
 GetAppVersionJob::GetAppVersionJob(const DistributionChannel currentChannel, const std::string &appID) :
     GetAppVersionJob(currentChannel, appID, {}) {}
