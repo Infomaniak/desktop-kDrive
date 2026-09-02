@@ -6,7 +6,7 @@
   Locale: sv, Swedish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Wed, 02 Sep 2026 14:32:54 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Endast min aktivitet</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importerad</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importerat %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignorerad</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Flyttad</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Flyttad %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Tillagd</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Lagt till %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Flyttad till papperskorgen</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Flyttad till papperskorgen %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Bytt namn</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Omdöpt till %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Ändrad</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Ändrad %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Synkronisera en mapp med kDrive</value> 
@@ -314,6 +353,9 @@ Du kan öppna dem när som helst, även utan internetanslutning.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Öppna synkroniseringsinstillningar</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Öppna papperskorgen</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Paus</value> 
@@ -725,6 +767,13 @@ Begär åtkomst från ägaren eller administratören.</value>
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Filtypen stöds inte</value> 
+  </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Den här länken har uteslutits från synkroniseringen eftersom dess målväg inte är giltig.
+Vägen måste vara relativ och får inte innehålla någon hänvisning till en överordnad mapp, såsom ”..”.</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Ogiltig målväg</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Den här mappen är inte längre tillgänglig på sin ursprungliga plats.</value> 
@@ -1251,6 +1300,25 @@ Kontrollera och byt namn på filer som innehåller ovanliga tecken och försök 
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versionskonflikt(er) hittades</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>Synkroniseringen är pausad för att förhindra att data raderas av misstag.
+Vad vill du göra?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Återställa filerna</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Ta bort även online</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Dessa filer går fortfarande att återställa från kDrives papperskorg.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Visa inte denna varning igen</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ objekt har tagits bort från din mapp</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo är ett analysverktyg som driftas och hanteras exklusivt av Infomaniak för att förstå hur programmet används.

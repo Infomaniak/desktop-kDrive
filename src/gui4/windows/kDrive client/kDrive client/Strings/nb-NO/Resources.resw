@@ -6,7 +6,7 @@
   Locale: nb, Norwegian Bokmål
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Wed, 02 Sep 2026 14:32:54 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Bare min aktivitet</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importert</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importert %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignorert</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Flyttet</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Flyttet %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Lagt til</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Lagt til %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Flyttet til papirkurven</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Flyttet til papirkurven %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Omdøpt</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Omdøpt til %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Endret</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Endret %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Synkroniser en mappe med kDrive</value> 
@@ -261,7 +300,7 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</value>
     <value>Support</value> 
   </data> 
   <data name="buttonKDriveOnline" xml:space="preserve"> 
-    <value>kDrive på nett</value> 
+    <value>kDrive online</value> 
   </data> 
   <data name="buttonKeepAccount" xml:space="preserve"> 
     <value>Behold konto</value> 
@@ -314,6 +353,9 @@ Du kan åpne dem når som helst, selv uten internettforbindelse.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Åpne synkroniseringsinnstillinger</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Åpne papirkurven</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Pause</value> 
@@ -725,6 +767,13 @@ Be om tilgang fra eieren eller administratoren.</value>
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Filtype støttes ikke</value> 
+  </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Denne lenken er ekskludert fra synkroniseringen, fordi destinasjonsstien ikke er gyldig.
+Stien må være relativ og kan ikke inneholde noen henvisning til en overordnet mappe, som «..».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Ugyldig destinasjonssti</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Denne mappen er ikke lenger tilgjengelig på sin opprinnelige plassering.</value> 
@@ -1251,6 +1300,25 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versjonskonflikt(er) oppdaget</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>Synkroniseringen er satt på pause for å unngå utilsiktet sletting.
+Hva vil du gjøre?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Gjenopprette filene</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Slett også på nettet</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Disse filene kan fortsatt gjenopprettes fra papirkurven i kDrive.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Ikke vis denne advarselen igjen</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ elementer er slettet fra mappen din</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo er et analyseverktøy som er driftet og administrert utelukkende av Infomaniak for å forstå hvordan programmet brukes.
