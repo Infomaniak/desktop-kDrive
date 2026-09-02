@@ -2044,6 +2044,15 @@ safely on your computer.</source>
             <source>All set!</source> 
             <translation>Όλα έτοιμα!</translation> 
         </message> 
+        <message id="onboardingSynchronizationFailedDescription"> 
+            <source>We could not finalize the configuration of your kDrives.
+
+You will be taken back to the kDrive selection.</source> 
+            <extracomment>Shown for a few seconds when creating the synchronizations failed during onboarding, before the user is taken back to the drive selection (Linux only).</extracomment> 
+            <translation>Δεν μπορέσαμε να οριστικοποιήσουμε τη διαμόρφωση των kDrive σας.
+
+Θα επιστρέψετε στην επιλογή kDrive.</translation> 
+        </message> 
         <message id="onboardingSynchronizationInProgressDescription"> 
             <source>We are finalizing the configuration of your kDrives.
 
