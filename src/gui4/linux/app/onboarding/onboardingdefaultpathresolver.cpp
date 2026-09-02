@@ -56,11 +56,13 @@ void OnboardingDefaultPathResolver::invalidatePendingRequests() {
 }
 
 bool OnboardingDefaultPathResolver::pathTakenByAnotherDrive(const QString &path, const AvailableDriveKey &excludedKey) const {
-    return std::ranges::any_of(_onboardingState.selectedAvailableDriveKeys(), [&](const AvailableDriveKey &key) {
-        if (key == excludedKey) return false;
-        const auto config = _onboardingState.pendingSyncConfig(key);
-        return config && !config->localPath.isEmpty() && localPathsOverlap(path, config->localPath);
-    });
+    return std::ranges::any_of(_onboardingState.selectedAvailableDriveKeys(),
+                               [this, &path, &excludedKey](const AvailableDriveKey &key) {
+                                   if (key == excludedKey) return false;
+                                   const auto config = _onboardingState.pendingSyncConfig(key);
+                                   return config && !config->localPath.isEmpty() &&
+                                          localPathsOverlap(path, config->localPath);
+                               });
 }
 
 void OnboardingDefaultPathResolver::resolveMissingDefaultPaths() {
