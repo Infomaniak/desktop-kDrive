@@ -25,6 +25,9 @@ import SwiftUI
 struct SystemSyncDirDiskMissingReasonsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
+    let synchroErrorManager: SynchroErrorManager
+    let error: SynchroError
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding16) {
             Text(KDriveLocalizable.errDialogSystemSyncDirDiskMissingTitle)
@@ -45,10 +48,25 @@ struct SystemSyncDirDiskMissingReasonsSheet: View {
                     dismiss()
                 }
             }
+            ToolbarItem(placement: .primaryAction) {
+                Button(KDriveLocalizable.buttonRestartSync) {
+                    restartSynchro()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+
+    private func restartSynchro() {
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errors, name: "syncDirDiskMissingRestartSync")
+        Task {
+            await synchroErrorManager.tryToRestartSynchro(error)
+            dismiss()
         }
     }
 }
 
 #Preview {
-    SystemSyncDirDiskMissingReasonsSheet()
+    SystemSyncDirDiskMissingReasonsSheet(synchroErrorManager: SynchroErrorManager(), error: PreviewHelper.synchroError)
 }

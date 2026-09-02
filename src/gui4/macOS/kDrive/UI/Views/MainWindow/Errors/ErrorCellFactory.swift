@@ -301,17 +301,17 @@ struct ErrorCellFactory {
                 action: .manageDiskSpace(manager: manager)
             )
         case .systemSyncDirAccess:
-            return makeCell(
+            return makeSynchroRootCell(
                 error: error,
                 title: KDriveLocalizable.errSystemErrorSyncDirAccessTitle,
                 description: KDriveLocalizable.errSystemErrorSyncDirAccessErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonErrorResolutionTip) {
-                    matomo.track(eventWithCategory: .errors, name: "manageInvalidToken")
+                    matomo.track(eventWithCategory: .errors, name: "manageSyncDirAccessError")
                     manager.showResolutionTipsSheet(error)
                 }
             )
         case .systemSyncDirDiskMissing:
-            return makeCell(
+            return makeSynchroRootCell(
                 error: error,
                 title: KDriveLocalizable.errSystemSyncDirMissingTitle,
                 description: KDriveLocalizable.errSystemSyncDirDiskMissingDescription,
@@ -408,6 +408,46 @@ struct ErrorCellFactory {
                 action: action
             )
         )
+    }
+
+    private func makeSynchroRootCell(
+        error: SynchroError,
+        title: String,
+        description: String,
+        action: ErrorCellView.Action? = nil
+    ) -> AnyView {
+        return AnyView(
+            SynchroRootErrorCellView(
+                error: error,
+                title: title,
+                description: description,
+                action: action
+            )
+        )
+    }
+}
+
+private struct SynchroRootErrorCellView: View {
+    @State private var pathInfo: ErrorCellView.PathInfo?
+
+    let error: SynchroError
+    let title: String
+    let description: String
+    let action: ErrorCellView.Action?
+
+    var body: some View {
+        ErrorCellView(title: title, description: description, pathInfo: pathInfo, action: action)
+            .task(id: error.metadata.synchroDbId) {
+                @InjectService var cache: CoherentCache
+                guard let localPath = await SynchroErrorManager.synchroLocalPath(
+                    synchroDbId: error.metadata.synchroDbId,
+                    cache: cache
+                ) else {
+                    return
+                }
+
+                pathInfo = ErrorCellView.PathInfo(path: localPath, nodeType: .directory)
+            }
     }
 }
 

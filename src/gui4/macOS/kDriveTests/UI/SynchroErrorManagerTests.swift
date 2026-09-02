@@ -18,6 +18,7 @@
 
 import Foundation
 @testable import kDrive
+@testable import kDriveCore
 import Testing
 
 struct SynchroErrorManagerTests {
@@ -39,5 +40,21 @@ struct SynchroErrorManagerTests {
         )
 
         #expect(folderURL.path == "/Users/test/kDrive/kDrive Rescue Folder")
+    }
+
+    @Test("Resolves the sync local path from the cache")
+    func synchroLocalPath() async throws {
+        let cache = ServerCoherentCache()
+        await cache.addUser(CacheData.expectedUser)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+
+        let localPath = await SynchroErrorManager.synchroLocalPath(
+            synchroDbId: Int(CacheData.expectedSynchroDbId),
+            cache: cache
+        )
+
+        #expect(localPath == CacheData.expectedSynchroLocalPath)
     }
 }

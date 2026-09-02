@@ -95,8 +95,10 @@ struct SystemSyncDirAccessReasonsSheet: View {
     private func openParentFolder() {
         @InjectService var matomo: MatomoUtils
         matomo.track(eventWithCategory: .errors, name: "syncDirAccessErrorOpenFolder")
-        synchroErrorManager.openParentFolder(error)
-        dismiss()
+        Task {
+            await synchroErrorManager.openSynchroParentFolder(error)
+            dismiss()
+        }
     }
 
     private func navigateToSyncCreation() {
@@ -105,14 +107,10 @@ struct SystemSyncDirAccessReasonsSheet: View {
 
     private func computeCopyablePath() async {
         @InjectService var cache: CoherentCache
-        guard let synchro = await cache.getSynchro(synchroDbId: Int32(error.metadata.synchroDbId)) else {
-            return
-        }
-
-        @InjectService var nodeURLGenerator: NodeURLGenerator
-        let url = nodeURLGenerator.localURL(for: error.metadata.path, synchroPath: URL(fileURLWithPath: synchro.localPath))
-
-        copyablePath = url.path
+        copyablePath = await SynchroErrorManager.synchroLocalPath(
+            synchroDbId: error.metadata.synchroDbId,
+            cache: cache
+        )
     }
 }
 
