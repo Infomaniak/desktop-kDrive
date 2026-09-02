@@ -25,6 +25,7 @@
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/utility.h"
 
+#include <QDir>
 #include <QLoggingCategory>
 #include <QPointer>
 
@@ -92,9 +93,9 @@ void OnboardingDefaultPathResolver::resolveMissingDefaultPaths() {
 void OnboardingDefaultPathResolver::handleGoodPathResult(const AvailableDriveKey &key, const uint64_t generation,
                                                          const ExitInfo &exitInfo, const GoodPathResult &result) {
     if (generation != _generation || !_pendingKeys.contains(key)) return;
-    finishRequest(key);
 
     if (!_onboardingState.isAvailableDriveSelected(key)) {
+        finishRequest(key);
         qCDebug(lcOnboardingDefaultPathResolver)
                 << "Default sync folder dropped: drive unselected meanwhile | driveId:" << key.driveId;
         return;
@@ -105,6 +106,30 @@ void OnboardingDefaultPathResolver::handleGoodPathResult(const AvailableDriveKey
                                                                    return pathTakenByAnotherDrive(candidate, key);
                                                                })
                                          : QString{};
+    if (defaultPath.isEmpty() || defaultPath == QDir::cleanPath(Path2QStr(result.goodPath))) {
+        // Untouched server proposal: it was just vouched for, asking again would only cost a round trip.
+        applyDefaultPath(key, defaultPath, exitInfo);
+        return;
+    }
+
+    // Derived here, so the server has never seen it. Only it can tell a folder free of any sync from one still held
+    // by a sync whose local folder the user deleted by hand, which `QFileInfo::exists()` reports as free.
+    // The key stays pending until the answer comes back: onboarding must keep waiting for it.
+    const QPointer self(this);
+    _commService.requestIsPathValidForNewSync(QStr2Path(defaultPath), SyncConfiguration::Classic,
+                                              [self, key, generation, defaultPath, exitInfo](const ExitInfo &checkInfo,
+                                                                                             const bool valid) {
+                                                  if (!self || generation != self->_generation) return;
+                                                  self->applyDefaultPath(key, checkInfo && valid ? defaultPath : QString{},
+                                                                         exitInfo);
+                                              });
+}
+
+void OnboardingDefaultPathResolver::applyDefaultPath(const AvailableDriveKey &key, const QString &defaultPath,
+                                                     const ExitInfo &exitInfo) {
+    finishRequest(key);
+    if (!_onboardingState.isAvailableDriveSelected(key)) return;
+
     if (defaultPath.isEmpty()) {
         qCWarning(lcOnboardingDefaultPathResolver)
                 << "No default sync folder available, unselecting drive | driveId:" << key.driveId;
