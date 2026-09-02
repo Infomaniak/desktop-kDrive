@@ -34,13 +34,12 @@ namespace KDC {
 
 namespace {
 constexpr uint8_t maxConcurrentSizeRequests = 4;
-const auto unavailableSize = u"—"_s;
+constexpr QStringView unavailableSize = u"—";
 } // namespace
 
 RemoteFolderTreeModel::RemoteFolderTreeModel(AbstractRemoteFolderProvider &remoteFolderProvider, QObject *const parent) :
     QAbstractItemModel(parent),
-    _remoteFolderProvider(remoteFolderProvider),
-    _root(std::make_unique<TreeNode>()) {}
+    _remoteFolderProvider(remoteFolderProvider) {}
 
 QModelIndex RemoteFolderTreeModel::index(const int row, const int column, const QModelIndex &parentIndex) const {
     if (row < 0 || column != 0) return {};
@@ -84,7 +83,7 @@ QVariant RemoteFolderTreeModel::data(const QModelIndex &index, const int role) c
             // A dash until the size is known, whether it is still loading or failed to load: the column then keeps a
             // steady shape while sizes arrive, instead of filling up cell by cell from an empty state.
             return node->sizeState == SizeState::Loaded ? QLocale{}.formattedDataSize(node->size, 1, QLocale::DataSizeSIFormat)
-                                                        : unavailableSize;
+                                                        : unavailableSize.toString();
         case ChildrenLoadingRole:
             return node->childrenState == LoadState::Loading;
         case ChildrenLoadFailedRole:
@@ -151,7 +150,7 @@ void RemoteFolderTreeModel::configure(const UserDbId userDbId, const DriveId dri
     // still occupy the provider, so resetting it here would let this generation start as many again.
     _pendingInitialPathRequests = 0;
     _initialPathsFailed = false;
-    for (const auto &nodeId: initialBlackList) _excludedNodeIds.insert(QString::fromStdString(nodeId));
+    for (const auto &nodeId: initialBlackList) (void) _excludedNodeIds.insert(QString::fromStdString(nodeId));
     endResetModel();
     emit selectionChanged();
     resolveInitialExclusionPaths();
@@ -216,7 +215,7 @@ RemoteFolderTreeModel::TreeNode *RemoteFolderTreeModel::nodeForIndex(const QMode
     return modelIndex.isValid() ? static_cast<TreeNode *>(modelIndex.internalPointer()) : _root.get();
 }
 
-QModelIndex RemoteFolderTreeModel::indexForNode(const TreeNode *node) const {
+QModelIndex RemoteFolderTreeModel::indexForNode(const TreeNode *const node) const {
     if (!node || !node->parent || node == _root.get()) return {};
     const auto &siblings = node->parent->children;
     const auto it = std::ranges::find_if(siblings, [node](const auto &candidate) { return candidate.get() == node; });
@@ -224,19 +223,19 @@ QModelIndex RemoteFolderTreeModel::indexForNode(const TreeNode *node) const {
     return createIndex(static_cast<int>(std::distance(siblings.begin(), it)), 0, node);
 }
 
-Qt::CheckState RemoteFolderTreeModel::checkState(const TreeNode *node) const {
+Qt::CheckState RemoteFolderTreeModel::checkState(const TreeNode *const node) const {
     if (isExcluded(node)) return Qt::Unchecked;
     return hasExcludedDescendant(node) ? Qt::PartiallyChecked : Qt::Checked;
 }
 
-bool RemoteFolderTreeModel::isExcluded(const TreeNode *node) const {
+bool RemoteFolderTreeModel::isExcluded(const TreeNode *const node) const {
     for (const TreeNode *cursor = node; cursor && cursor != _root.get(); cursor = cursor->parent) {
         if (_excludedNodeIds.contains(cursor->nodeId)) return true;
     }
     return false;
 }
 
-bool RemoteFolderTreeModel::hasExcludedDescendant(const TreeNode *node) const {
+bool RemoteFolderTreeModel::hasExcludedDescendant(const TreeNode *const node) const {
     for (auto it = _excludedPaths.cbegin(); it != _excludedPaths.cend(); ++it) {
         if (pathContains(node->path, it.value()) && node->path != it.value()) return true;
     }
@@ -251,7 +250,7 @@ bool RemoteFolderTreeModel::pathContains(const QString &ancestorPath, const QStr
     return descendantPath.startsWith(prefix);
 }
 
-QString RemoteFolderTreeModel::effectivePath(const NodeInfo &info, const TreeNode *parentNode) const {
+QString RemoteFolderTreeModel::effectivePath(const NodeInfo &info, const TreeNode *const parentNode) const {
     if (!info.path().isEmpty()) return info.path();
     if (!parentNode || parentNode == _root.get() || parentNode->path.isEmpty()) return u"/"_s + info.name();
     return parentNode->path + u'/' + info.name();
@@ -283,11 +282,11 @@ void RemoteFolderTreeModel::handleInitialExclusionPathResult(const QString &node
     if (_pendingInitialPathRequests > 0) --_pendingInitialPathRequests;
 
     if (exitInfo && !info.path().isEmpty()) {
-        _excludedPaths.insert(nodeId, info.path());
+        (void) _excludedPaths.insert(nodeId, info.path());
     } else if (!exitInfo && exitInfo.cause() == ExitCause::NotFound) {
         // The folder was deleted remotely since it was blacklisted: dropping it keeps the blacklist canonical.
-        _excludedNodeIds.remove(nodeId);
-        _excludedPaths.remove(nodeId);
+        (void) _excludedNodeIds.remove(nodeId);
+        (void) _excludedPaths.remove(nodeId);
     } else {
         _initialPathsFailed = true;
     }
@@ -303,7 +302,7 @@ void RemoteFolderTreeModel::handleInitialExclusionPathResult(const QString &node
     requestChildren(_root.get());
 }
 
-void RemoteFolderTreeModel::requestChildren(TreeNode *node) {
+void RemoteFolderTreeModel::requestChildren(TreeNode *const node) {
     if (!node || node->childrenState == LoadState::Loading || node->accessDenied) return;
     node->childrenState = LoadState::Loading;
     if (node == _root.get())
@@ -320,7 +319,7 @@ void RemoteFolderTreeModel::requestChildren(TreeNode *node) {
                               });
 }
 
-void RemoteFolderTreeModel::handleChildrenResult(TreeNode *node, const uint64_t generation, const bool success,
+void RemoteFolderTreeModel::handleChildrenResult(TreeNode *const node, const uint64_t generation, const bool success,
                                                  const std::vector<NodeInfo> &children) {
     if (generation != _generation || !node) return;
     if (!success) {
@@ -333,7 +332,7 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *node, const uint64_t 
     }
 
     std::vector<NodeInfo> sortedChildren = children;
-    std::ranges::sort(sortedChildren, [](const NodeInfo &lhs, const NodeInfo &rhs) {
+    (void) std::ranges::sort(sortedChildren, [](const NodeInfo &lhs, const NodeInfo &rhs) {
         return QString::localeAwareCompare(lhs.name(), rhs.name()) < 0;
     });
     const QModelIndex parentIndex = indexForNode(node);
@@ -345,8 +344,8 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *node, const uint64_t 
         child->path = effectivePath(info, node);
         child->parent = node;
         child->accessDenied = info.accessDenied();
-        if (_excludedNodeIds.contains(child->nodeId)) _excludedPaths.insert(child->nodeId, child->path);
-        _nodesById.insert(child->nodeId, child.get());
+        if (_excludedNodeIds.contains(child->nodeId)) (void) _excludedPaths.insert(child->nodeId, child->path);
+        (void) _nodesById.insert(child->nodeId, child.get());
         node->children.push_back(std::move(child));
     }
     if (!sortedChildren.empty()) endInsertRows();
@@ -359,14 +358,14 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *node, const uint64_t 
     notifySelectionDataChanged();
 }
 
-void RemoteFolderTreeModel::excludeNode(TreeNode *node) {
+void RemoteFolderTreeModel::excludeNode(const TreeNode *const node) {
     removeExclusionsAtOrBelow(node);
-    _excludedNodeIds.insert(node->nodeId);
-    _excludedPaths.insert(node->nodeId, node->path);
+    (void) _excludedNodeIds.insert(node->nodeId);
+    (void) _excludedPaths.insert(node->nodeId, node->path);
 }
 
-void RemoteFolderTreeModel::includeNode(TreeNode *node) {
-    TreeNode *excludedAncestor = nullptr;
+void RemoteFolderTreeModel::includeNode(TreeNode *const node) {
+    const TreeNode *excludedAncestor = nullptr;
     for (TreeNode *cursor = node; cursor && cursor != _root.get(); cursor = cursor->parent) {
         if (_excludedNodeIds.contains(cursor->nodeId)) {
             excludedAncestor = cursor;
@@ -377,9 +376,10 @@ void RemoteFolderTreeModel::includeNode(TreeNode *node) {
     removeExclusionsAtOrBelow(node);
 }
 
-void RemoteFolderTreeModel::includeNodeUnderExcludedAncestor(const TreeNode *node, const TreeNode *excludedAncestor) {
-    _excludedNodeIds.remove(excludedAncestor->nodeId);
-    _excludedPaths.remove(excludedAncestor->nodeId);
+void RemoteFolderTreeModel::includeNodeUnderExcludedAncestor(const TreeNode *const node,
+                                                             const TreeNode *const excludedAncestor) {
+    (void) _excludedNodeIds.remove(excludedAncestor->nodeId);
+    (void) _excludedPaths.remove(excludedAncestor->nodeId);
     const TreeNode *cursor = node;
     while (cursor && cursor != excludedAncestor) {
         const TreeNode *const parentNode = cursor->parent;
@@ -391,7 +391,7 @@ void RemoteFolderTreeModel::includeNodeUnderExcludedAncestor(const TreeNode *nod
     }
 }
 
-void RemoteFolderTreeModel::removeExclusionsAtOrBelow(const TreeNode *node) {
+void RemoteFolderTreeModel::removeExclusionsAtOrBelow(const TreeNode *const node) {
     QList<QString> idsToRemove;
     for (auto it = _excludedNodeIds.cbegin(); it != _excludedNodeIds.cend(); ++it) {
         if (const QString path = _excludedPaths.value(*it);
@@ -399,8 +399,8 @@ void RemoteFolderTreeModel::removeExclusionsAtOrBelow(const TreeNode *node) {
             idsToRemove.push_back(*it);
     }
     for (const auto &id: idsToRemove) {
-        _excludedNodeIds.remove(id);
-        _excludedPaths.remove(id);
+        (void) _excludedNodeIds.remove(id);
+        (void) _excludedPaths.remove(id);
     }
 }
 
@@ -408,14 +408,14 @@ void RemoteFolderTreeModel::notifySelectionDataChanged() {
     notifySelectionDataChanged(_root.get());
 }
 
-void RemoteFolderTreeModel::notifySelectionDataChanged(const TreeNode *parentNode) {
+void RemoteFolderTreeModel::notifySelectionDataChanged(const TreeNode *const parentNode) {
     if (!parentNode || parentNode->children.empty()) return;
-    emit dataChanged(indexForNode(parentNode->children.front().get()), indexForNode(parentNode->children.back().get()),
-                     {CheckStateRole});
+    emit dataChanged(indexForNode(parentNode->children.front().get()),
+                     indexForNode(parentNode->children.back().get()), {CheckStateRole});
     for (const auto &child: parentNode->children) notifySelectionDataChanged(child.get());
 }
 
-void RemoteFolderTreeModel::queueSize(TreeNode *node) {
+void RemoteFolderTreeModel::queueSize(TreeNode *const node) {
     if (!node || node->sizeState != SizeState::NotRequested) return;
     node->sizeState = SizeState::Queued;
     _sizeQueue.enqueue(node->nodeId);
