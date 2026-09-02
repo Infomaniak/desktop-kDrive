@@ -49,8 +49,8 @@ OnboardingSyncCreationCoordinator::OnboardingSyncCreationCoordinator(OnboardingF
     _serviceEventBus(serviceEventBus) {
     (void) connect(&_flowController, &OnboardingFlowController::driveSelectionContinueRequested, this,
                    &OnboardingSyncCreationCoordinator::startSynchronization);
-    (void) connect(&_flowController, &OnboardingFlowController::synchronizationRetryRequested, this,
-                   &OnboardingSyncCreationCoordinator::createNextSynchronization);
+    (void) connect(&_flowController, &OnboardingFlowController::driveSelectionReturnRequested, this,
+                   &OnboardingSyncCreationCoordinator::discardPendingSynchronizations);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationCompleted, this,
                    &OnboardingSyncCreationCoordinator::handleCacheReconciliationCompleted);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationFailed, this,
@@ -148,6 +148,17 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
         return;
     }
 
+    // TEST ONLY — do not commit. KDRIVE_FAIL_SYNC_AT=2 makes the 2nd drive of the run fail before SYNC_ADD is sent,
+    // so nothing is created server-side for it and the state stays exactly as after a real rejection.
+    if (const int failAt = qEnvironmentVariableIntValue("KDRIVE_FAIL_SYNC_AT"); failAt > 0) {
+        static int attempt = 0;
+        if (++attempt == failAt) {
+            qCWarning(lcOnboardingSyncCreationCoordinator) << "TEST: forcing a sync creation failure | driveId:" << key.driveId;
+            handleCreationFailure(true);
+            return;
+        }
+    }
+
     SyncAddRequest request;
     request.userDbId = key.userDbId;
     request.accountId = key.accountId;
@@ -180,6 +191,13 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
         }
         self->createNextSynchronization();
     });
+}
+
+void OnboardingSyncCreationCoordinator::discardPendingSynchronizations() {
+    // The queue described a run that failed; the next attempt is rebuilt from the selection by startSynchronization().
+    qCInfo(lcOnboardingSyncCreationCoordinator)
+            << "Dropping the onboarding sync queue | remaining:" << _pendingDriveKeys.size();
+    _pendingDriveKeys.clear();
 }
 
 void OnboardingSyncCreationCoordinator::discardPendingSynchronization(const AvailableDriveKey &key) {
