@@ -28,8 +28,7 @@ Button {
     enum Role {
         Primary,
         Secondary,
-        Destructive,
-        Tonal
+        Destructive
     }
 
     property int role: IKModalButton.Primary
@@ -40,18 +39,12 @@ Button {
         if (!actionEnabled && !busy) {
             return IKColors.actionDisabled
         }
-        if (role === IKModalButton.Tonal) {
-            return IKColors.actionOnTonal
-        }
         if (role === IKModalButton.Secondary) {
             return IKColors.actionPrimary
         }
         return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
     }
     readonly property color focusBorderColor: {
-        if (role === IKModalButton.Tonal) {
-            return IKColors.actionOnTonal
-        }
         if (role === IKModalButton.Secondary) {
             return IKColors.accentPrimary
         }
@@ -101,9 +94,6 @@ Button {
         color: {
             if (root.role === IKModalButton.Secondary) {
                 return root.hovered || root.down ? IKColors.modalSecondaryActionHover : "transparent"
-            }
-            if (root.role === IKModalButton.Tonal) {
-                return IKColors.actionTonalSurface
             }
             if (root.role === IKModalButton.Destructive) {
                 return root.down ? IKColors.actionDestructivePressed : IKColors.actionDestructive
