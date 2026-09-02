@@ -17,7 +17,6 @@
  */
 
 import QtQuick
-import QtQuick.Controls
 import kDrive.UI
 
 Item {
@@ -56,7 +55,7 @@ Item {
             Text {
                 width: parent.width
                 text: root.onboardingFlowController.synchronizationFailed
-                      ? qsTrId("unexpectedErrorTeachingTipContent")
+                      ? qsTrId("onboardingSynchronizationFailedDescription")
                       : qsTrId("onboardingSynchronizationInProgressDescription")
                 color: IKColors.textSecondary
                 font.pixelSize: IKFonts.bodySize
@@ -64,45 +63,6 @@ Item {
                 lineHeight: IKOnboarding.completionBodyLineHeight
                 wrapMode: Text.WordWrap
             }
-        }
-
-        Button {
-            id: retryButton
-
-            visible: root.onboardingFlowController.synchronizationFailed
-            // Retry only exists once the synchronization failed, so it claims the focus when it appears.
-            onVisibleChanged: {
-                if (visible) {
-                    retryButton.forceActiveFocus()
-                }
-            }
-            height: IKOnboarding.completionButtonHeight
-            text: qsTrId("buttonRetry")
-            onClicked: root.onboardingFlowController.retrySynchronization()
-
-            contentItem: Text {
-                text: retryButton.text
-                color: IKColors.actionOnPrimary
-                font.pixelSize: IKFonts.bodySize
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-            }
-
-            background: Rectangle {
-                implicitWidth: IKOnboarding.completionButtonMinWidth
-                implicitHeight: IKOnboarding.completionButtonHeight
-                radius: IKOnboarding.buttonCornerRadius
-                color: IKColors.actionPrimary
-                border.width: retryButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
-                border.color: IKColors.actionOnPrimary
-            }
-
-            padding: 0
-            leftPadding: IKSpacing.s16
-            rightPadding: IKSpacing.s16
-            topPadding: 0
-            bottomPadding: 0
         }
     }
 }
