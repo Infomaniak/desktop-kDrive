@@ -36,8 +36,8 @@ final class SynchroErrorManager: ObservableObject {
                 return "invalidSyncDirAccess_\(synchroError.metadata.dbId)"
             case .systemSyncDirAccess(let synchroError):
                 return "systemSyncDirAccess_\(synchroError.metadata.dbId)"
-            case .systemSyncDirDiskMissing:
-                return "systemSyncDirDiskMissing"
+            case .systemSyncDirDiskMissing(let synchroError):
+                return "systemSyncDirDiskMissing_\(synchroError.metadata.dbId)"
             case .dataSyncDirChanged:
                 return "dataSyncDirChanged"
             }
@@ -45,7 +45,7 @@ final class SynchroErrorManager: ObservableObject {
 
         case invalidSyncDirAccess(SynchroError)
         case systemSyncDirAccess(SynchroError)
-        case systemSyncDirDiskMissing
+        case systemSyncDirDiskMissing(SynchroError)
         case dataSyncDirChanged
     }
 
@@ -107,6 +107,23 @@ final class SynchroErrorManager: ObservableObject {
         let url = URL(fileURLWithPath: error.metadata.path)
         let parentURL = url.deletingLastPathComponent()
         NSWorkspace.shared.open(parentURL)
+    }
+
+    func openSynchroParentFolder(_ error: SynchroError) async {
+        @InjectService var cache: CoherentCache
+        guard let localPath = await Self.synchroLocalPath(
+            synchroDbId: error.metadata.synchroDbId,
+            cache: cache
+        ) else {
+            IKLogger.xpc.error("[KD] Cannot open sync parent folder: sync \(error.metadata.synchroDbId) was not found")
+            return
+        }
+
+        let synchroURL = URL(fileURLWithPath: localPath, isDirectory: true)
+        let parentURL = synchroURL.deletingLastPathComponent()
+        if !NSWorkspace.shared.open(parentURL) {
+            IKLogger.xpc.error("[KD] Failed to open sync parent folder: \(parentURL.path)")
+        }
     }
 
     func openShopURL(_ error: SynchroError) async {
@@ -180,7 +197,7 @@ final class SynchroErrorManager: ObservableObject {
         case .systemSyncDirAccess:
             isShowingResolutionTipsSheet = .systemSyncDirAccess(error)
         case .systemSyncDirDiskMissing:
-            isShowingResolutionTipsSheet = .systemSyncDirDiskMissing
+            isShowingResolutionTipsSheet = .systemSyncDirDiskMissing(error)
         case .dataSyncDirChanged:
             isShowingResolutionTipsSheet = .dataSyncDirChanged
         default:
@@ -228,5 +245,9 @@ final class SynchroErrorManager: ObservableObject {
         let synchroURL = URL(fileURLWithPath: synchroPath, isDirectory: true)
         let rescuedItemURL = URL(fileURLWithPath: destinationPath, relativeTo: synchroURL).standardizedFileURL
         return rescuedItemURL.deletingLastPathComponent()
+    }
+
+    nonisolated static func synchroLocalPath(synchroDbId: Int, cache: CoherentCache) async -> String? {
+        return await cache.getSynchro(synchroDbId: Int32(synchroDbId))?.localPath
     }
 }

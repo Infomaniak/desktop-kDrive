@@ -66,11 +66,7 @@ extension SynchroErrorKind {
         case .backErrorDriveNotRenew:
             return .syncPal(exitCodes: [.BackError], exitCauses: [.DriveNotRenew])
         case .invalidSyncDirAccess:
-            return .syncPal(
-                nodeTypes: [.File, .Directory, .Unknown],
-                exitCodes: [.SystemError],
-                exitCauses: [.SyncDirAccessError]
-            )
+            return .syncPal(exitCodes: [.InvalidSync], exitCauses: [.SyncDirAccessError])
         case .invalidSyncDirNesting:
             return .syncPal(exitCodes: [.InvalidSync], exitCauses: [.SyncDirNestingError])
         case .invalidToken:
@@ -80,7 +76,11 @@ extension SynchroErrorKind {
         case .systemNotEnoughDiskSpace:
             return .syncPal(exitCodes: [.SystemError], exitCauses: [.NotEnoughDiskSpace])
         case .systemSyncDirAccess:
-            return .syncPal(exitCodes: [.InvalidSync], exitCauses: [.SyncDirAccessError])
+            return .syncPal(
+                nodeTypes: [.File, .Directory, .Unknown],
+                exitCodes: [.SystemError],
+                exitCauses: [.SyncDirAccessError]
+            )
         case .systemSyncDirDiskMissing:
             return .syncPal(
                 nodeTypes: [.File, .Directory, .Unknown],
