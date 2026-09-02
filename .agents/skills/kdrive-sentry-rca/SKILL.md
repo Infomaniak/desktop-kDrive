@@ -109,9 +109,36 @@ Use these confidence levels:
 
 Never write “root cause” as fact below Confirmed confidence. Use “probable cause” or “leading hypothesis.”
 
-### 7. Report Explicitly
+### 7. Report With Progressive Disclosure
 
-Lead with the conclusion and use this structure:
+Perform the full investigation before answering, but default to a concise initial report useful to both support technicians and developers. Do not expose the entire investigation simply because it was performed.
+
+Unless the user explicitly requests a full RCA, developer analysis, detailed timeline, or fix proposal, return only:
+
+```markdown
+## RCA Summary
+**Likely cause:** One precise, plain-language causal statement.
+**Confidence:** Confirmed, High, Medium, or Low.
+**Impact:** Affected process, releases/platforms, and scale when available.
+
+**Why:** Two or three short evidence points, including the exact Sentry issue or event link and the most relevant source area when known.
+
+**Fix direction:** One sentence naming the likely correction and component, without implementation details.
+
+**Limitations:** One sentence covering the most important missing evidence, if any.
+```
+
+Keep the initial report short:
+
+- Prefer plain language that support technicians can relay to a customer or escalation team.
+- Use technical terms only when they materially improve precision.
+- Limit evidence to the strongest two or three observations.
+- Link the primary Sentry issue or event. Mention a correlated server or client issue only when it materially supports the conclusion.
+- Hint at the fix direction, but do not provide a patch design, detailed source walkthrough, or regression-test plan unless requested.
+- Do not include a full timeline, competing-hypothesis analysis, raw stack trace, extensive log excerpts, or exhaustive project-search results.
+- End by offering the detailed RCA, including the timeline, source analysis, alternatives, and fix/test proposal.
+
+If the user asks for more detail, provide the full RCA using this structure:
 
 ```markdown
 ## Conclusion
@@ -146,13 +173,15 @@ Lead with the conclusion and use this structure:
 - Missing logs, symbols, event fields, release source, or reproduction steps.
 ```
 
-Include links for both server and UI/client Sentry whenever each has a genuinely correlated event or issue. Do not add an unrelated project homepage just to fill the section. If only one side exists, say so explicitly.
+Include links for both server and UI/client Sentry in the detailed RCA whenever each has a genuinely correlated event or issue. Do not add an unrelated project homepage just to fill the section. If only one side exists, say so explicitly.
 
 For ranking requests, state the ranking metric. If the user says only “biggest,” rank by affected users first and event volume second; include recency and regression state as context. Label uninvestigated rows as **crash issue groups** or **terminal signatures**, not root causes. Provide a compact impact table with exact issue links, then perform a full RCA only for the top issue unless the user asks for every row. If the user explicitly asks to rank **causes**, investigate every reported row sufficiently to establish a cause or group issues by an evidenced common cause; otherwise ask to narrow the number of issues.
 
 ## Completion Standard
 
-An RCA is complete only when it:
+The investigation must satisfy these standards internally, even when the initial user-facing response is concise. Include all findings only when the user requests the detailed RCA.
+
+An investigation is complete only when it:
 
 - Names the affected process and Sentry project.
 - Separates initiating condition, product defect, and terminal crash mechanism.
