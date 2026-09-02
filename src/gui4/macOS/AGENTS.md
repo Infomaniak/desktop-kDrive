@@ -63,6 +63,8 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 
 - `ObservedXxx` property wrappers (in `Cache/Observation/`) wrap Combine publishers for reactive observation
 - `CoherentCacheObservable` provides `usersPublisher` — use extension methods (`.synchroPublisher(...)`, `.allSynchrosPublisher()`, etc.)
+- Server lifecycle signals are authoritative for user/account/drive/synchro additions and removals; jobs must not duplicate those hierarchy mutations optimistically
+- Full cache reconciliation preserves cached available drives, refreshes them per user, and publishes the rebuilt user hierarchy as one snapshot
 - DO: Use `ObservedXxx` wrappers or `usersPublisher` chains for reactive UI updates
 - DON'T: Poll the cache — subscribe reactively
 
