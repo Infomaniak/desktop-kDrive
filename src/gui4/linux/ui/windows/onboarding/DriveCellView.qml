@@ -43,11 +43,6 @@ AbstractButton {
         }
     }
 
-    function driveNameContainsMouse() {
-        const point = root.mapToItem(driveNameText, cellHover.point.position.x, cellHover.point.position.y)
-        return point.x >= 0 && point.x <= driveNameText.width && point.y >= 0 && point.y <= driveNameText.height
-    }
-
     implicitWidth: IKOnboarding.driveSelectionListWidth
     implicitHeight: Math.max(IKOnboarding.driveSelectionCellMinHeight,
                              contentRow.implicitHeight + IKOnboarding.driveSelectionCellPadding * 2)
@@ -140,6 +135,21 @@ AbstractButton {
                 lineHeightMode: Text.FixedHeight
                 lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
                 elide: Text.ElideRight
+
+                HoverHandler {
+                    id: driveNameHover
+                }
+
+                IKToolTip {
+                    visible: root.cellEnabled && driveNameHover.hovered && driveNameText.truncated
+                    delay: IKOnboarding.driveSelectionTooltipDelay
+                    text: root.driveName
+                    padding: IKOnboarding.driveSelectionTooltipPadding
+                    maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
+                    foregroundColor: IKColors.onboardingTooltipText
+                    surfaceColor: IKColors.onboardingTooltipSurface
+                    textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
+                }
             }
 
             Text {
@@ -164,17 +174,6 @@ AbstractButton {
         color: "transparent"
         border.width: IKOnboarding.driveSelectionCellFocusBorderWidth
         border.color: IKColors.accentPrimary
-    }
-
-    IKToolTip {
-        visible: root.cellEnabled && cellHover.hovered && root.driveNameContainsMouse() && driveNameText.truncated
-        delay: IKOnboarding.driveSelectionTooltipDelay
-        text: root.driveName
-        padding: IKOnboarding.driveSelectionTooltipPadding
-        maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
-        foregroundColor: IKColors.onboardingTooltipText
-        surfaceColor: IKColors.onboardingTooltipSurface
-        textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
     }
 
     IKToolTip {
