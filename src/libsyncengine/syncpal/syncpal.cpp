@@ -385,7 +385,7 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
 }
 
 void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const uint64_t nbFiles,
-                                          std::vector<SyncPath> filesPaths) {
+                                          const std::vector<SyncPath> &filesPaths) {
     if (_sendManyDeletesNotification) {
         _sendManyDeletesNotification(syncDbId(), notificationType, nbFiles, filesPaths);
     }
