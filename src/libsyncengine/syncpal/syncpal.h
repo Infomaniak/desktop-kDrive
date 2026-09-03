@@ -1,4 +1,5 @@
 /*
+/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *
@@ -163,7 +164,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         inline void setSendManyDeletesNotification(
-                const std::function<void(SyncDbId, TooManyDeletesNotificationType, uint64_t, const std::vector<SyncPath> &)>
+                const std::function<void(SyncDbId, TooManyDeletesNotificationType, const std::vector<SyncPath> &)>
                         &sendManyDeletesNotification) {
             _sendManyDeletesNotification = sendManyDeletesNotification;
         }
@@ -264,7 +265,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         void resolveSyncErrorsByExitCause(ExitCause cause);
-        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType, uint64_t nbFiles,
+        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType,
                                          const std::vector<SyncPath> &filesPaths);
 
         bool wipeVirtualFiles();
@@ -406,7 +407,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
         std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
-        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles,
+        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
                            const std::vector<SyncPath> &filesPaths)>
                 _sendManyDeletesNotification;
         std::shared_ptr<Vfs> _vfs;
