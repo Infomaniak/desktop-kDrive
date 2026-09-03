@@ -55,7 +55,7 @@ class AbstractNetworkJob : public SyncJob {
         int32_t trials() const noexcept { return _trials; }
         [[nodiscard]] int64_t sleepDuration() const { return _sleepDuration; }
 
-        ExitInfo runJob() noexcept override;
+        ExitInfo runJob() override;
 
     protected:
         void addRawHeader(const std::string &key, const std::string &value);
