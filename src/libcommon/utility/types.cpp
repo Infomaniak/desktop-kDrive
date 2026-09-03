@@ -245,6 +245,10 @@ std::string toString(const ExitCause e) {
             return "FileSystemNotSupported";
         case ExitCause::SyncDeletionFailed:
             return "SyncDeletionFailed";
+        case ExitCause::KeychainAccessError:
+            return "KeychainAccessError";
+        case ExitCause::KeychainAccessTimeout:
+            return "KeychainAccessTimeout";
         default:
             return noConversionStr;
     }
