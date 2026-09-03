@@ -284,6 +284,20 @@
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.
+- `app/syncconfiguration/remotefolderprovider.*`: injectable asynchronous boundary for remote folder metadata,
+  children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
+  same contract without onboarding dependencies.
+- `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
+  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, and the free-folder
+  derivation that appends the attempt count without a separator, as the server does.
+- `app/syncconfiguration/remotefoldertreemodel.*`: reusable lazy `QAbstractItemModel` for selective synchronization. It
+  owns canonical blacklist editing, tri-state propagation, access-denied rows, retryable child loads, and the bounded
+  visible-row size queue. It must remain independent from onboarding state and synchronization database ids. A folder
+  is included or excluded with its complete subtree, as on Windows; the partial state reports that a descendant is
+  excluded and is never a state the user selects, and the drive root itself can never be excluded. A visible row loads
+  its size and its immediate children, so its expand affordance reflects whether the folder really has sub-folders. An
+  initial blacklist whose paths cannot be resolved fails the page instead of displaying ancestors as fully selected;
+  a node the server no longer knows is dropped from the blacklist rather than treated as a failure.
 - `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
   branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
   only after both branches succeed, and overlapping population requests are ignored. It is used at initial connection
