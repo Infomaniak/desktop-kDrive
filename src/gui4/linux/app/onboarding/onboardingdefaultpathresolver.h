@@ -1,0 +1,79 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "app/cache/cachetypes.h"
+
+#include <QObject>
+#include <QString>
+
+#include <unordered_set>
+
+namespace KDC {
+
+class AppCache;
+class CommService;
+class OnboardingState;
+class ServiceEventBus;
+struct ExitInfo;
+struct GoodPathResult;
+
+/**
+ * Resolves the default local folder of a drive as soon as it is selected.
+ *
+ * Preparing the folder here, rather than when advanced settings open, keeps that modal free of blocking requests and
+ * matches the Windows client. A drive whose folder cannot be resolved is unselected, because onboarding has nothing
+ * to synchronize it into.
+ */
+class OnboardingDefaultPathResolver final : public QObject {
+        Q_OBJECT
+
+    public:
+        explicit OnboardingDefaultPathResolver(const AppCache &appCache, OnboardingState &onboardingState,
+                                               CommService &commService, ServiceEventBus &serviceEventBus,
+                                               QObject *parent = nullptr);
+
+        /** True while at least one selected drive still awaits its default folder. */
+        [[nodiscard]] bool hasPendingResolutions() const { return _pendingResolutions; }
+        void invalidatePendingRequests();
+
+    signals:
+        void pendingResolutionsChanged();
+
+    private:
+        [[nodiscard]] bool pathTakenByAnotherDrive(const QString &path, const AvailableDriveKey &excludedKey) const;
+        void resolveMissingDefaultPaths();
+        void handleGoodPathResult(const AvailableDriveKey &key, uint64_t generation, const ExitInfo &exitInfo,
+                                  const GoodPathResult &result);
+        void applyDefaultPath(const AvailableDriveKey &key, const QString &defaultPath, const ExitInfo &exitInfo);
+        void finishRequest(const AvailableDriveKey &key);
+        void updatePendingResolutions();
+
+        const AppCache &_appCache;
+        OnboardingState &_onboardingState;
+        CommService &_commService;
+        ServiceEventBus &_serviceEventBus;
+        // Identity of the requests in flight. A key stays here until its callback returns, even once its drive is
+        // unselected, so a late result is still recognised and dropped instead of being applied.
+        std::unordered_set<AvailableDriveKey> _pendingKeys;
+        bool _pendingResolutions{false};
+        uint64_t _generation{0};
+};
+
+} // namespace KDC
