@@ -64,6 +64,7 @@ public enum SynchroErrorKind: Sendable, Hashable, CaseIterable {
     case excludedByTemplate
     case genericErrForbidden
     case hardLink
+    case invalidLinkTarget
     case localAccess
     case dataSyncDirChanged
     case temporaryDirAccess
