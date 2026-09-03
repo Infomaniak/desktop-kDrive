@@ -277,6 +277,9 @@
 - `app/onboarding/onboardinglogincoordinator.*`: login workflow coordinator for onboarding. It wires the flow
   controller, OAuth service, comm service, user service, app cache, and onboarding state so `AppClientLinux` does not
   accumulate login-specific workflow logic.
+- `app/onboarding/onboardingdefaultpathresolver.*`: resolves the default local folder of a drive as soon as it is
+  selected, so advanced settings never open on a blocking request. A drive whose folder cannot be resolved is
+  unselected, and drive selection cannot continue while a resolution is in flight.
 - `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It
   derives collision-free local folders, creates selected-drive syncs sequentially with the validated remote blacklist,
   preserves only failed and not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a
