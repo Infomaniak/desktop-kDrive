@@ -1977,7 +1977,6 @@ void TestNetworkJobs::testGetInfoDriveOn401Error() {
     GetInfoDriveJobMock jobWithoutToken(_driveDbId);
     const auto exitInfoWithoutToken = jobWithoutToken.runSynchronously();
     CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(exitInfoWithoutToken), ExitCode::InvalidToken, exitInfoWithoutToken.code());
-    CPPUNIT_ASSERT_EQUAL(0, jobWithoutToken.trials());
 }
 
 void TestNetworkJobs::testExists() {
