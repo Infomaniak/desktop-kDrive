@@ -167,6 +167,8 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "Success";
         case IoError::InvalidDirectoryIterator:
             return "Invalid directory iterator";
+        case IoError::TooManySymbolicLinkLevels:
+            return "Too many symbolic link levels";
         default:
             return "Unknown error";
     }

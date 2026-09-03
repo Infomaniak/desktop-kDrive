@@ -901,6 +901,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
         bool isDirectory = false;
         if (!isSymlink) {
+            isDirectory = entry.is_directory(ec);
             if (ec.value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_directory "
                                                    << Utility::formatStdError(entry.path(), ec));

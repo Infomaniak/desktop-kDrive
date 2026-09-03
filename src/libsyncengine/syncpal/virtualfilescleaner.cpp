@@ -234,10 +234,10 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
         IoError ioError = IoError::Success;
         const auto isFile = hasFileType(entry, ioError);
         if (!isFile.has_value()) {
-            if (IoHelper::isExpectedError(ioError))
-                continue;
-            else
-                return false;
+            if (IoHelper::isExpectedError(ioError)) continue;
+
+            _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+            return false;
         } else if (!isFile.value())
             continue;
 
@@ -254,7 +254,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
         const SyncPath &filePath = entry.path();
         if (!IoHelper::deleteItem(filePath, ioError)) {
             LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(filePath, ioError));
-            _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
+            _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
 
             failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
         }
