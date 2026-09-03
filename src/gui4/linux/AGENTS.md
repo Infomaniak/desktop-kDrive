@@ -329,8 +329,8 @@
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
     - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
-      routes; feature queueing remains in the owning C++ controller until several global modal families require shared
-      arbitration.
+      routes and arbitrates presentation across global modal families; feature queueing remains in the owning C++
+      controller.
     - `ui/windows/main/`: main-window shell, remaining temporary tab placeholders, and feature families grouped under
       `activities/`, `home/`, and `sidebar/`. Home presentation is split between its root composition, `shortcuts/`,
       `states/`, and versioned generated `animations/`. The shell is loaded only when `AppRouter` marks the main window
@@ -352,7 +352,8 @@
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
       services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
-      feature dialogs supply their own wording, state, and actions. `IKCheckBox` is the shared tri-state indicator: it
+      feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard cancel/confirm
+      prompts so consumers only provide copy, busy state, and the confirmed/dismissed workflows. `IKCheckBox` is the shared tri-state indicator: it
       renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
