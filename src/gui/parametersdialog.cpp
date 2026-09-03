@@ -320,6 +320,9 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
                 return tr("kDrive needs to have write access to your computer's temporary directory.<br>"
                           "Please restart the kDrive app to resolve this issue.")
                         .arg(err);
+            } else if (exitCause == ExitCause::KeychainAccessError || exitCause == ExitCause::KeychainAccessTimeout) {
+                return tr(
+                        R"(Impossible to access the keychain.<br>Synchronization cannot continue until this issue is resolved.)");
             }
             [[fallthrough]];
         case ExitCode::Unknown:
