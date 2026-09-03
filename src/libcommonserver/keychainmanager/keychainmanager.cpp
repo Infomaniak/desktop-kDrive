@@ -91,7 +91,7 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
         const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
 
         {
-            std::lock_guard lock(state->mutex);
+            const std::lock_guard lock(state->mutex);
             state->ok = ok;
             state->localFound = tmpFound;
             state->localData = std::move(tmpData);
