@@ -303,7 +303,7 @@ void OperationsExecutor::applyLocalEdit(const OperationDesc &desc) const {
 
 void OperationsExecutor::applyLocalDelete(const OperationDesc &desc) const {
     const SyncPath fullPath = _syncPal->localPath() / desc.path;
-    GenericLocalDeleteJob deleteJob(fullPath);
+    GenericLocalDeleteJob deleteJob(fullPath, _syncPal->cacheDirectory());
     checkExitInfo(deleteJob.runSynchronously(), "Delete operation");
 }
 
