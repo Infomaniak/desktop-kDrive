@@ -139,6 +139,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKActivities.qml
         ui/tokens/IKCheckBoxTokens.qml
+        ui/tokens/IKLinkTokens.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
@@ -171,6 +172,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKAvatar.qml
         ui/components/IKCheckBox.qml
         ui/components/IKDriveIcon.qml
+        ui/components/IKLinkButton.qml
         ui/components/IKLoadingSpinner.qml
         ui/components/IKModal.qml
         ui/components/IKModalButton.qml
@@ -180,6 +182,10 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKTintedIcon.qml
         ui/components/IKErrorBanner.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
+        ui/features/syncconfiguration/SyncConfigurationDrivePage.qml
+        ui/features/syncconfiguration/SyncConfigurationErrorBlock.qml
+        ui/features/syncconfiguration/SyncConfigurationFolderPage.qml
+        ui/features/syncconfiguration/SyncConfigurationSummaryPage.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
