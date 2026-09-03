@@ -23,6 +23,11 @@ import kDrive.UI
 Item {
     id: root
 
+    // The step opens on its main action so keyboard users start somewhere instead of from nothing.
+    Component.onCompleted: Qt.callLater(function() {
+        openButton.forceActiveFocus()
+    })
+
     required property var onboardingFlowController
 
     readonly property bool compact: width < IKOnboarding.completionCompactBreakpointWidth
@@ -70,7 +75,7 @@ Item {
 
             contentItem: Text {
                 text: openButton.text
-                color: openButton.enabled ? IKColors.actionOnPrimary : IKColors.actionDisabled
+                color: IKColors.actionOnPrimary
                 font.pixelSize: IKFonts.bodySize
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -82,6 +87,8 @@ Item {
                 implicitHeight: IKOnboarding.completionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
                 color: openButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
+                border.width: openButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                border.color: IKColors.actionOnPrimary
             }
 
             padding: 0

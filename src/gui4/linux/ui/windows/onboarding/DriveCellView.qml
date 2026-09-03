@@ -21,32 +21,54 @@ import QtQuick.Controls
 import QtQuick.Shapes
 import kDrive.UI
 
-Item {
+// A drive is picked with the keyboard as well as with the mouse, so the cell is a control rather than a decorated
+// mouse target: AbstractButton then handles Space, the focus on click, and the focus ring below through `visualFocus`.
+// It stays non-checkable on purpose, because the checked state belongs to the model and a click would overwrite it.
+AbstractButton {
     id: root
 
     property int row: -1
     property string driveName: ""
     property string accountName: ""
     property color driveColor: IKColors.driveDefaultColor
-    property bool checked: false
     property bool cellEnabled: true
     property string disabledTooltip: ""
 
-    signal toggled(int row)
+    // Named apart from AbstractButton's own `toggled()`, which a same-named signal would invalidly override.
+    signal toggleRequested(int row)
 
-    function driveNameContainsMouse() {
-        const point = cellMouseArea.mapToItem(driveNameText, cellMouseArea.mouseX, cellMouseArea.mouseY)
-        return point.x >= 0 && point.x <= driveNameText.width && point.y >= 0 && point.y <= driveNameText.height
+    function requestToggle(): void {
+        if (root.cellEnabled) {
+            root.toggleRequested(root.row)
+        }
     }
 
     implicitWidth: IKOnboarding.driveSelectionListWidth
     implicitHeight: Math.max(IKOnboarding.driveSelectionCellMinHeight,
                              contentRow.implicitHeight + IKOnboarding.driveSelectionCellPadding * 2)
 
+    focusPolicy: root.cellEnabled ? Qt.StrongFocus : Qt.NoFocus
+    onClicked: root.requestToggle()
+
+    Accessible.role: Accessible.CheckBox
+    Accessible.name: root.driveName
+    Accessible.description: root.accountName
+    Accessible.checkable: root.cellEnabled
+    Accessible.checked: root.checked
+    // Assistive technologies invoke either action depending on how they read the cell, so both reach the model.
+    Accessible.onPressAction: root.requestToggle()
+    Accessible.onToggleAction: root.requestToggle()
+
+    HoverHandler {
+        id: cellHover
+
+        cursorShape: root.cellEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: IKOnboarding.driveSelectionCellRadius
-        color: cellMouseArea.containsMouse && root.cellEnabled
+        color: cellHover.hovered && root.cellEnabled
                ? IKColors.surfaceSecondary
                : IKColors.onboardingDriveCellSurface
         opacity: root.cellEnabled ? 1 : 0.5
@@ -113,6 +135,21 @@ Item {
                 lineHeightMode: Text.FixedHeight
                 lineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
                 elide: Text.ElideRight
+
+                HoverHandler {
+                    id: driveNameHover
+                }
+
+                IKToolTip {
+                    visible: root.cellEnabled && driveNameHover.hovered && driveNameText.truncated
+                    delay: IKOnboarding.driveSelectionTooltipDelay
+                    text: root.driveName
+                    padding: IKOnboarding.driveSelectionTooltipPadding
+                    maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
+                    foregroundColor: IKColors.onboardingTooltipText
+                    surfaceColor: IKColors.onboardingTooltipSurface
+                    textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
+                }
             }
 
             Text {
@@ -128,32 +165,19 @@ Item {
         }
     }
 
-    MouseArea {
-        id: cellMouseArea
-
+    // Drawn above the cell content so the focus ring stays visible over the hover and selection fills. It follows
+    // `visualFocus`, so it appears for keyboard navigation only and stays hidden when the cell is clicked.
+    Rectangle {
         anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: root.cellEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-        onClicked: {
-            if (root.cellEnabled) {
-                root.toggled(root.row)
-            }
-        }
+        visible: root.visualFocus
+        radius: IKOnboarding.driveSelectionCellRadius
+        color: "transparent"
+        border.width: IKOnboarding.driveSelectionCellFocusBorderWidth
+        border.color: IKColors.accentPrimary
     }
 
     IKToolTip {
-        visible: root.cellEnabled && cellMouseArea.containsMouse && root.driveNameContainsMouse() && driveNameText.truncated
-        delay: IKOnboarding.driveSelectionTooltipDelay
-        text: root.driveName
-        padding: IKOnboarding.driveSelectionTooltipPadding
-        maximumTextWidth: IKOnboarding.driveSelectionTooltipMaxWidth
-        foregroundColor: IKColors.onboardingTooltipText
-        surfaceColor: IKColors.onboardingTooltipSurface
-        textLineHeight: IKOnboarding.driveSelectionDriveNameLineHeight
-    }
-
-    IKToolTip {
-        visible: !root.cellEnabled && cellMouseArea.containsMouse && root.disabledTooltip.length > 0
+        visible: !root.cellEnabled && cellHover.hovered && root.disabledTooltip.length > 0
         delay: IKOnboarding.driveSelectionTooltipDelay
         text: root.disabledTooltip
         padding: IKOnboarding.driveSelectionTooltipPadding
