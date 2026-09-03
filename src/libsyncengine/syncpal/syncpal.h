@@ -1,5 +1,4 @@
 /*
-/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *

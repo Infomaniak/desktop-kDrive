@@ -39,7 +39,6 @@ void OperationGeneratorWorker::execute() {
     _syncPal->_syncOps->startUpdate();
     _syncPal->_syncOps->clear();
     _bytesToDownload = 0;
-    _nbLocalDeleteOperations = 0;
 
     // Mark all nodes "Unprocessed"
     _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
@@ -375,7 +374,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                        << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
-        if (op->targetSide() == ReplicaSide::Remote) _localDeleteOperationsPaths.push_back(currentNode->getPath());
+        if (op->targetSide() == ReplicaSide::Remote) _localDeleteOperationsPaths.emplace_back(currentNode->getPath());
     }
 
     _deletedNodes.insert(*currentNode->id());
