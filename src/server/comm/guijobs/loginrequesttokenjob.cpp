@@ -70,21 +70,21 @@ ExitInfo LoginRequestTokenJob::serializeOutputParms() {
 ExitInfo LoginRequestTokenJob::process() {
     User user;
     bool userCreated = false;
-    ExitCode exitCode =
-            ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier), user,
-                                         userCreated, _error, _errorDescr);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::requestToken: code=" << exitCode);
-        return exitCode;
+    if (const auto exitInfo =
+                ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier),
+                                             user, userCreated, _error, _errorDescr);
+        !exitInfo) {
+        LOG_WARN(_logger, "Error in ServerRequests::requestToken: " << exitInfo);
+        return exitInfo;
     }
 
     _userDbId = user.dbId();
     _commManager->appServer().updateSentryUser();
     if (userCreated) {
-        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(user);
+        const auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(user);
         _commManager->sendGuiSignal(signalUserAddedJob);
     } else {
-        auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(user);
+        const auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(user);
         _commManager->sendGuiSignal(signalUserUpdatedJob);
     }
 
