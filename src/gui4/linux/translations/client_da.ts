@@ -2827,4 +2827,20 @@ For at fremskynde overførslen anbefaler vi at sende kun den seneste kDrive-sess
             <translation>Send kun seneste session</translation> 
         </message> 
     </context> 
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogDescription">
+            <source>Your files will stop syncing until the next time you open the application.</source>
+            <extracomment>Explain that quitting kDrive interrupts file synchronization until the application is opened again.</extracomment>
+            <translation>Synkroniseringen af dine filer afbrydes, indtil du åbner appen igen.</translation>
+        </message>
+    </context>
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogTitle">
+            <source>Do you really want to quit kDrive?</source>
+            <extracomment>Ask whether the user wants to quit kDrive completely. Keep the product name spelled kDrive.</extracomment>
+            <translation>Vil du virkelig afslutte kDrive?</translation>
+        </message>
+    </context>
 </TS>
