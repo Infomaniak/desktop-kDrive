@@ -23,6 +23,11 @@ import kDrive.UI
 Item {
     id: root
 
+    // The step opens on its main action so keyboard users start somewhere instead of from nothing.
+    Component.onCompleted: Qt.callLater(function() {
+        loginButton.forceActiveFocus()
+    })
+
     required property var onboardingFlowController
 
     readonly property bool compact: width < IKOnboarding.loginCompactBreakpointWidth
@@ -103,6 +108,8 @@ Item {
                     implicitHeight: IKOnboarding.loginButtonHeight
                     radius: IKOnboarding.loginButtonCornerRadius
                     color: "transparent"
+                    border.width: createAccountButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                    border.color: IKColors.accentPrimary
                 }
 
                 padding: 0
@@ -122,7 +129,7 @@ Item {
 
                 contentItem: Text {
                     text: loginButton.text
-                    color: loginButton.enabled ? IKColors.actionOnPrimary : IKColors.actionDisabled
+                    color: IKColors.actionOnPrimary
                     font.pixelSize: IKFonts.bodySize
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
@@ -134,6 +141,8 @@ Item {
                     implicitHeight: IKOnboarding.loginButtonHeight
                     radius: IKOnboarding.loginButtonCornerRadius
                     color: loginButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
+                    border.width: loginButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                    border.color: IKColors.actionOnPrimary
                 }
 
                 padding: 0
