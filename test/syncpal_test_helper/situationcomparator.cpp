@@ -59,17 +59,17 @@ void flatten(const Poco::JSON::Object::Ptr &obj, const SyncPath &parentPath, Sit
 }
 
 void flatten(const Poco::JSON::Array::Ptr &arr, const SyncPath &parentPath, SituationMap &out) {
-    for (size_t i = 0; i < arr->size(); ++i) {
-        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
+    for (uint32_t i = 0; i < arr->size(); ++i) {
+        const auto &itemObj = arr->getObject(i);
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
 
-        const std::string typeStr = itemObj->optValue<std::string>("type", "File");
+        const auto typeStr = itemObj->optValue<std::string>("type", "File");
         const NodeType type = (typeStr == "Directory") ? NodeType::Directory : NodeType::File;
-        const std::string nameStr = itemObj->optValue<std::string>("name", "");
+        const auto nameStr = itemObj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
 
         const SyncPath path = parentPath / Str2SyncName(nameStr);
-        const int64_t size = itemObj->optValue<int64_t>(
+        const auto size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
         out.add(path, {type, size});
 
@@ -289,7 +289,8 @@ bool SituationComparator::compareRemote(const Situation &expectedRemoteSituation
     return expected == actual;
 }
 
-bool SituationComparator::compareSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation) const {
+bool SituationComparator::compareSituation(const Situation &expectedLocalSituation,
+                                           const Situation &expectedRemoteSituation) const {
     return compareLocal(expectedLocalSituation) && compareRemote(expectedRemoteSituation);
 }
 

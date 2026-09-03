@@ -568,7 +568,7 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
 
     const QString host = settings.value(QString(proxyHostC)).toString();
     const bool needsAuth = settings.value(QString(proxyNeedsAuthC)).toBool();
-    const Port port = settings.value(QString(proxyPortC)).toInt();
+    const auto port = static_cast<Port>(settings.value(QString(proxyPortC)).toInt());
     ProxyType pType = intToProxyType(settings.value(QString(proxyTypeC)).toInt());
 
     // SOCKS5 is not supported
