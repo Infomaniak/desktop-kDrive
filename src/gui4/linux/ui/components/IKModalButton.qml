@@ -59,6 +59,8 @@ Button {
     leftPadding: IKModalTokens.buttonHorizontalPadding
     rightPadding: IKModalTokens.buttonHorizontalPadding
     focusPolicy: Qt.StrongFocus
+    Accessible.role: Accessible.Button
+    Accessible.name: text
     hoverEnabled: true
     opacity: actionEnabled || busy ? 1 : IKModalTokens.disabledOpacity
 
