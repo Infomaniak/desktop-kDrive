@@ -42,6 +42,7 @@ OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commServic
     _loginCoordinator(_flowController, commService, userService, appCache, _onboardingState),
     _defaultPathResolver(appCache, _onboardingState, commService, serviceEventBus),
     _driveSelectionController(appCache, _onboardingState, userService, _flowController, _defaultPathResolver),
+    _syncConfigurationController(appCache, _onboardingState, _flowController, commService),
     _syncCreationCoordinator(_flowController, _onboardingState, appCache, commService, cachePopulator, serviceEventBus),
     _generation(generation) {
     (void) connect(&_loginCoordinator, &OnboardingLoginCoordinator::openWindowRequested, this,
