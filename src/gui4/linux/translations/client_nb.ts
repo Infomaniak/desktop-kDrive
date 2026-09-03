@@ -2827,4 +2827,20 @@ For å fremskynde opplastingen anbefaler vi å sende bare den siste kDrive-sesjo
             <translation>Send bare siste sesjon</translation> 
         </message> 
     </context> 
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogDescription">
+            <source>Your files will stop syncing until the next time you open the application.</source>
+            <extracomment>Explain that quitting kDrive interrupts file synchronization until the application is opened again.</extracomment>
+            <translation>Synkroniseringen av filene dine avbrytes frem til neste gang du åpner programmet.</translation>
+        </message>
+    </context>
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogTitle">
+            <source>Do you really want to quit kDrive?</source>
+            <extracomment>Ask whether the user wants to quit kDrive completely. Keep the product name spelled kDrive.</extracomment>
+            <translation>Er du sikker på at du vil avslutte kDrive?</translation>
+        </message>
+    </context>
 </TS>
