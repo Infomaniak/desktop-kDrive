@@ -280,6 +280,12 @@
 - `app/onboarding/onboardingdefaultpathresolver.*`: resolves the default local folder of a drive as soon as it is
   selected, so advanced settings never open on a blocking request. A drive whose folder cannot be resolved is
   unselected, and drive selection cannot continue while a resolution is in flight.
+- `app/onboarding/onboardingsyncconfigurationcontroller.*`: session-scoped transactional editor for advanced onboarding
+  synchronization settings. It owns global and per-drive draft snapshots, validates custom paths against the server and
+  against the other drafts, and commits all selected-drive configs only from the final confirmation. A rejected commit
+  keeps the modal open, because closing would silently drop everything the user configured.
+- `app/onboarding/selectedsyncconfigurationsmodel.*`: flat presentation model for the multi-drive advanced-settings
+  summary. It exposes display values only; stable backend identifiers remain in the controller drafts.
 - `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It
   derives collision-free local folders, creates selected-drive syncs sequentially with the validated remote blacklist,
   preserves only failed and not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a
