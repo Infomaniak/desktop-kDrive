@@ -118,10 +118,10 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 
         // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.
-        void loadUserInfoFromDriveDbId();
+        [[nodiscard]] ExitInfo loadUserInfoFromDriveDbId();
 
         // Load user information, including the API token, based on the value of `_userDbId`, assuming it has been set.
-        ExitInfo loadUserInfoFromUserDbId();
+        [[nodiscard]] ExitInfo loadUserInfoFromUserDbId();
 
         ExitInfo retrieveApiTokenFromUserCache(ApiToken &apiToken);
         Account getAccount(const Drive &drive) const;
