@@ -138,10 +138,12 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKFonts.qml
         ui/tokens/IKIconSizes.qml
         ui/tokens/IKActivities.qml
+        ui/tokens/IKCheckBoxTokens.qml
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
         ui/tokens/IKStorage.qml
+        ui/tokens/IKSyncConfiguration.qml
         ui/tokens/IKWaiting.qml
 )
 
@@ -167,6 +169,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/chrome/IKWindowResizeHandles.qml
         ui/components/IKBadge.qml
         ui/components/IKAvatar.qml
+        ui/components/IKCheckBox.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLoadingSpinner.qml
         ui/components/IKModal.qml
@@ -176,6 +179,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
         ui/components/IKErrorBanner.qml
+        ui/features/syncconfiguration/RemoteFolderTree.qml
         ui/dialogs/GlobalModalHost.qml
         ui/dialogs/ManyDeletesDialog.qml
         ui/windows/main/BlockingErrorPlaceholder.qml
