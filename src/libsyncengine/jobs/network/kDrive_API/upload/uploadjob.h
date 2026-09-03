@@ -46,6 +46,7 @@ class UploadJob : public AbstractTokenNetworkJob {
     protected:
         ExitInfo canRun() override;
         ExitInfo handleResponse(std::istream &is) override;
+        [[nodiscard]] ExitInfo handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri) override;
 
     private:
         std::string getSpecificUrl() override;

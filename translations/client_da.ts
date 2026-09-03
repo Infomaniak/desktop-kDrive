@@ -1888,6 +1888,11 @@ Vælg venligst en anden mappe. Hvis du fortsætter, deaktiveres Lite Sync.&lt;br
         <translation>Filen er blevet ændret lokalt, mens den er blevet slettet på den fjernliggende kDrive.&lt;br&gt;Den lokale kopi er gemt i redningmappen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Dette link er udelukket fra synkroniseringen, da dets målsti ikke overholder reglerne.&lt;br&gt; Målstier skal være relative. De må ikke indeholde opadgående stiangivelser, dvs. at komponenter som &quot;..&quot; er forbudt.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="767"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Handlingen udført på elementet er forbudt.&lt;br&gt;Elementet er midlertidigt sortlistet.</translation>

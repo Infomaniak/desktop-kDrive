@@ -75,24 +75,24 @@ ExitInfo LocalCopyJob::runJob() {
         return exitInfo;
     }
 
-    ExitInfo exitInfo = ExitCode::Ok;
-    try {
-        std::filesystem::copy(_source, _dest);
-        LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" copied to " << Path2WStr(_dest));
-    } catch (std::filesystem::filesystem_error &fsError) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L": "
-                                                   << CommonUtility::s2ws(fsError.what()) << L" (" << fsError.code().value()
-                                                   << L")");
-        exitInfo = ExitCode::SystemError;
-        if (IoHelper::stdError2ioError(fsError.code()) == IoError::AccessDenied) {
-            exitInfo.setCause(ExitCause::FileAccessError);
+    IoError ioError = IoError::Success;
+    if (!IoHelper::copyFileOrDirectory(_source, _dest, ioError)) {
+        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L", error="
+                                                   << Utility::formatIoError(ioError));
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else if (ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_source));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        } else {
+            return ExitCode::SystemError;
         }
-    } catch (...) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Utility::formatSyncPath(_source) << L" to "
-                                                   << Utility::formatSyncPath(_dest) << L": Unknown error");
-        exitInfo = ExitCode::SystemError;
     }
-    return exitInfo;
+
+    LOGW_INFO(_logger, L"Item " << Path2WStr(_source) << L" copied to " << Path2WStr(_dest));
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

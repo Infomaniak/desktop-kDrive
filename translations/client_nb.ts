@@ -1792,6 +1792,11 @@ Bruk følgende lenke for å sende loggfilene til kundestøtte: &lt;a style=&quot
         <translation>Du har ikke tillatelse til å flytte elementet til «%1».&lt;br&gt;Det vil bli gjenopprettet i den opprinnelige overordnede mappen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Denne lenken er utelatt fra synkroniseringen fordi målstien ikke oppfyller kravene.&lt;br&gt; Målstier skal være relative. De skal ikke inneholde oppadgående navigasjon, dvs. at komponenter som «..» er forbudt.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Det er ikke nok ledig plass på datamaskinen din.&lt;br&gt;Nedlastingen er avbrutt.</translation>

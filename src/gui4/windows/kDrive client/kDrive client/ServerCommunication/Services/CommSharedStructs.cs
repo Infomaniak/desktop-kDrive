@@ -300,7 +300,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             {
                 target.UseLog = true;
                 target.ExtendedLog = true;
-                target.LogLevel = Logger.Level.Info;
+                target.LogLevel = Logger.Level.Debug;
             }
             else
             {
@@ -400,6 +400,11 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public InconsistencyType? InconsistencyType { get; set; }
         public CancelType? CancelType { get; set; }
         public bool? AutoResolved { get; set; }
+
+        public override String ToString()
+        {
+            return $"ErrorInfo: DbId={DbId}, Time={Time}, Level={Level}, SyncDbId={SyncDbId}, ExitCode={ExitCode}, ExitCause={ExitCause}, NodeType={NodeType}, Path={Path}, DestinationPath={DestinationPath}, LocalNodeId={LocalNodeId}, RemoteNodeId={RemoteNodeId}, ConflictType={ConflictType}, InconsistencyType={InconsistencyType}, CancelType={CancelType}, AutoResolved={AutoResolved}";
+        }
     }
 
     public static partial class ConversionHelper

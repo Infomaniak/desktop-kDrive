@@ -1792,6 +1792,11 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Es ist Ihnen nicht erlaubt, das Element nach &quot;%1&quot; zu verschieben.&lt;br&gt;Es wird in seinen ursprünglichen übergeordneten Ordner wiederhergestellt.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Dieser Link wurde von der Synchronisierung ausgeschlossen, da sein Zielpfad nicht den Vorgaben entspricht.&lt;br&gt; Zielpfade sollten relativ sein. Sie dürfen keine übergeordneten Verzeichnisebenen durchlaufen, d.&#x202f;h., Komponenten wie „..“ sind nicht zulässig.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Der Speicherplatz auf Ihrem Computer reicht nicht mehr aus.&lt;br&gt;Der Download wurde abgebrochen.</translation>

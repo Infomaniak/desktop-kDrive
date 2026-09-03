@@ -1790,6 +1790,11 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
         <translation>No tiene permitido mover el elemento a &quot;%1&quot;.&lt;br&gt;Se restaurará en su carpeta principal original.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Este enlace se ha excluido de la sincronización porque su ruta de destino no cumple los requisitos. &lt;br&gt; Las rutas de destino deben ser relativas. No deben utilizar el recorrido hacia arriba, es decir, están prohibidos los componentes como «..».</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>No queda espacio suficiente en su ordenador.&lt;br&gt;Se ha cancelado la descarga.</translation>

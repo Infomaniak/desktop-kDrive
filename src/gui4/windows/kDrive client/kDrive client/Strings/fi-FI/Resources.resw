@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Tue, 28 Jul 2026 09:52:22 +0200 
+  Exported at: Wed, 02 Sep 2026 16:24:21 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Vain oma toimintani</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Tuotu</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Tuotu %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ohitettu</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Siirretty</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Siirretty %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Lisätty</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Lisätty %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Siirretty roskakoriin</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Siirretty roskakoriin %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Nimetty uudelleen</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Uudelleennimetty %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Muokattu</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Muokattu %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Synkronoi kansio kDriven kanssa</value> 
@@ -314,6 +353,9 @@ Voit avata ne milloin tahansa, jopa ilman internet-yhteyttä.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Avaa synkronointiasetukset</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Avaa roskakori</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Keskeytä</value> 
@@ -725,6 +767,13 @@ Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value>
   </data> 
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Ei-tuettu tiedostotyyppi</value> 
+  </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Tämä linkki on suljettu pois synkronoinnista, koska sen kohdepolku ei ole kelvollinen.
+Polun on oltava suhteellinen, eikä se saa sisältää viittausta ylätasoon, kuten ”..”.</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Virheellinen kohdepolku</value> 
   </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Tämä kansio ei ole enää käytettävissä alkuperäisessä sijainnissaan.</value> 
@@ -1251,6 +1300,25 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versioristiriitaa havaittu</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>Synkronointi on keskeytetty, jotta vältetään tahaton poisto.
+Mitä haluat tehdä?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Tiedostojen palauttaminen</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Poista myös verkosta</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Nämä tiedostot ovat edelleen palautettavissa kDrive-roskakorista.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Älä näytä tätä varoitusta enää</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ kohdetta on poistettu kansiostasi</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo on Infomaniakin yksinomaan isännöimä ja hallinnoima analytiikkatyökalu sovelluksen käytön ymmärtämiseksi.

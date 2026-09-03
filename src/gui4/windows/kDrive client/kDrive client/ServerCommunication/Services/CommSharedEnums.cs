@@ -348,7 +348,8 @@ namespace Infomaniak.kDrive.Types
         TmpBlacklisted,
         ExcludedByTemplate,
         Hardlink,
-        FileRescued
+        FileRescued,
+        InvalidLinkTarget
     };
 
     public enum InconsistencyType

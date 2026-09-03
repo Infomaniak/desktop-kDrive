@@ -1791,6 +1791,11 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
         <translation>Non è consentito spostare l&apos;elemento in &quot;%1&quot;.&lt;br&gt;Verrà ripristinato nella sua cartella principale originale.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Questo link è stato escluso dalla sincronizzazione perché il percorso di destinazione non è conforme. &lt;br&gt; I percorsi di destinazione devono essere relativi. Non devono utilizzare la navigazione verso i livelli superiori, ovvero sono vietati elementi come &quot;..&quot;.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Lo spazio disponibile sul computer è insufficiente.&lt;br&gt;Il download è stato annullato.</translation>

@@ -16,12 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.Diagnostics.Utilities;
-using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
 
@@ -59,7 +56,7 @@ namespace Infomaniak.kDrive
         {
             if (Availability != AppNotificationAvailability.Available)
             {
-                Logger.Log(Logger.Level.Warning, $"App notifications are not available: {Availability}");
+                Logger.Log(Logger.Level.Info, $"App notifications are not available: {Availability} ({AppNotificationManager.Default.Setting})");
                 return;
             }
 
@@ -109,7 +106,7 @@ namespace Infomaniak.kDrive
                 Init(); // The Notifications might have been enabled after the app start in system settings
                 if (!m_isRegistered)
                 {
-                    Logger.Log(Logger.Level.Warning, "Attempted to show a notification while not registered. Call Init() first.");
+                    Logger.Log(Logger.Level.Info, "Attempted to show a notification while not registered. Call Init() first.");
                     return 0;
                 }
             }

@@ -1792,6 +1792,11 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Du får inte flytta objektet till &amp;quot;%1&amp;quot;.&lt;br&gt;Det kommer att återställas till sin ursprungliga överordnade mapp.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Den här länken har uteslutits från synkroniseringen eftersom dess målväg inte uppfyller kraven.&lt;br&gt; Målvägar ska vara relativa. De får inte använda uppåtgående sökning, dvs. komponenter som ”..” är förbjudna.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Det finns inte tillräckligt med utrymme kvar på din dator.&lt;br&gt;Nedladdningen har avbrutits.</translation>

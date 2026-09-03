@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
         public event EventHandler ConnectionLost = delegate { };
 
-        public TcpServerCommClient() {}
+        public TcpServerCommClient() { }
 
         ~TcpServerCommClient()
         {
@@ -248,9 +248,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                 }
 
-                _pendingRequests[requestId] = new TaskCompletionSource<CommData>(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
-
+                var replySource = new TaskCompletionSource<CommData>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _pendingRequests[requestId] = replySource;
                 // Create the JSON object
                 var requestObj = new JsonObject
                 {
@@ -274,7 +273,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
-                CommData reply = await WaitForReplyAsync(requestId, cancellationToken).ConfigureAwait(false);
+                CommData reply = await WaitForReplyAsync(requestId, replySource, cancellationToken).ConfigureAwait(false);
                 if (reply.RequestNum == RequestNum.Unknown)
                 {
                     Logger.Log(Logger.Level.Debug, "Request not implemented server-side");
@@ -297,15 +296,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return new CommData();
             }
         }
-        private Task<CommData> WaitForReplyAsync(long requestId, CancellationToken ct = default)
+        private Task<CommData> WaitForReplyAsync(long requestId, TaskCompletionSource<CommData> tcs, CancellationToken ct = default)
         {
-
-            if (!_pendingRequests.TryGetValue(requestId, out var tcs))
-            {
-                Logger.Log(Logger.Level.Error, $"RequestId {requestId} not found in pending requests.");
-                return Task.FromResult(new CommData());
-            }
-
             // Tie cancellation to the task
             if (ct.CanBeCanceled)
             {
@@ -425,7 +417,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Warning, $"Received reply for unknown request ID {data.Id}");
+                        Logger.Log(Logger.Level.Debug, $"Received reply for unknown or canceled request ID {data.Id}");
                     }
                     break;
                 case CommMessageType.Signal:

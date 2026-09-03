@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>4.0.0.9</AssemblyVersion>
+    <AssemblyVersion>4.0.0.13</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -137,6 +137,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\InvalidLinkTarget.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ConflictError.xaml">

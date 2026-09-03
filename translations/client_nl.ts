@@ -1791,6 +1791,11 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
         <translation>U mag het item niet verplaatsen naar &quot;%1&quot;.&lt;br&gt;Het wordt hersteld in de oorspronkelijke bovenliggende map.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Er is niet genoeg ruimte over op uw computer.&lt;br&gt;De download is geannuleerd.</translation>

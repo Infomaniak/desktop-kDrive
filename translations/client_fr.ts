@@ -1791,6 +1791,11 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Vous n&apos;êtes pas autorisé à déplacer l&apos;élément vers &quot;%1&quot;.&lt;br&gt;Il sera restauré dans son dossier parent d&apos;origine.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Ce lien a été exclu de la synchronisation car son chemin cible n&apos;est pas conforme. &lt;br&gt; Les chemins cibles doivent être relatifs. Ils ne doivent pas utiliser de traversée vers les répertoires supérieurs ; en d&apos;autres termes, les éléments tels que « .. » sont interdits.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>L&apos;espace disponible sur votre ordinateur est insuffisant.&lt;br&gt;Le téléchargement a été annulé.</translation>

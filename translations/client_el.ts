@@ -1888,6 +1888,11 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Το αρχείο τροποποιήθηκε τοπικά ενώ διαγράφηκε στο απομακρυσμένο kDrive.&lt;br&gt;Το τοπικό αντίγραφο αποθηκεύτηκε στον φάκελο ανάκτησης.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Αυτός ο σύνδεσμος έχει εξαιρεθεί από το συγχρονισμό, καθώς η διαδρομή προορισμού του δεν πληροί τις προδιαγραφές.&lt;br&gt; Οι διαδρομές προορισμού πρέπει να είναι σχετικές. Δεν πρέπει να χρησιμοποιούν διαδρομή προς τον γονικό φάκελο, δηλαδή απαγορεύεται η χρήση στοιχείων όπως το &quot;..&quot;.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="767"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Η λειτουργία που εκτελέστηκε στο στοιχείο απαγορεύεται.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>

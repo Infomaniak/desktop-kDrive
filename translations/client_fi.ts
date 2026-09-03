@@ -1888,6 +1888,11 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         <translation>Tiedostoa on muokattu paikallisesti, kun se on poistettu etä-kDrivesta.&lt;br&gt;Paikallinen kopio on tallennettu pelastuskansioon.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Tämä linkki on jätetty synkronoinnin ulkopuolelle, koska sen kohdepolku ei ole sääntöjen mukainen.&lt;br&gt; Kohdepolkujen tulee olla suhteellisia. Niissä ei saa käyttää ylätason polkuja, eli ”..”-tyyppiset komponentit ovat kiellettyjä.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="767"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Kohteelle suoritettu toiminto on kielletty.&lt;br&gt;Kohde on lisätty väliaikaisesti estolistalle.</translation>

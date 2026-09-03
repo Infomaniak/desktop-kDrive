@@ -1797,6 +1797,11 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
         <translation>Nie można przenieść elementu do folderu „%1”. Zostanie&lt;br&gt;on przywrócony do pierwotnego folderu nadrzędnego.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Ten link został wykluczony z synchronizacji, ponieważ ścieżka docelowa nie jest zgodna z zasadami.&lt;br&gt; Ścieżki docelowe powinny być względne. Nie powinny zawierać elementów odwołujących się do nadrzędnych katalogów, tzn. elementy takie jak „..” są niedozwolone.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="816"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Na komputerze zabrakło miejsca.&lt;br&gt;Pobieranie zostało przerwane.</translation>
