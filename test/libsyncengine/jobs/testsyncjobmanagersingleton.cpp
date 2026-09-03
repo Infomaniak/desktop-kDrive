@@ -38,8 +38,11 @@
 #include "test_utility/dataextractor.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
+#include "test_utility/timeouthelper.h"
 
+#include <algorithm>
 #include <unordered_set>
+#include <vector>
 #include <Poco/Net/HTTPRequest.h>
 
 using namespace CppUnit;
@@ -81,10 +84,28 @@ void TestSyncJobManagerSingleton::setUp() {
 }
 
 void KDC::TestSyncJobManagerSingleton::tearDown() {
+    // Stop the job manager first, so that queued jobs are never started and can be safely destroyed by clear()
+    SyncJobManagerSingleton::instance()->stop();
+
+    // Abort the jobs that are still running. SyncJobManagerSingleton::clear() destroys the job objects, which
+    // would result in a use-after-free if a job is still executing in the thread pool.
+    for (const auto &jobId: SyncJobManagerSingleton::instance()->data().runningJobs()) {
+        if (const auto job = SyncJobManagerSingleton::instance()->getJob(jobId)) job->abort();
+    }
+
+    // Wait max 1 min for the aborted jobs to finish and self-erase. Aborts are re-applied to jobs that would
+    // start running while waiting (race with the last dispatch loop iteration of the job manager).
+    (void) TimeoutHelper::waitFor([]() { return SyncJobManagerSingleton::instance()->data().runningJobs().empty(); },
+                                  []() {
+                                      for (const auto &jobId: SyncJobManagerSingleton::instance()->data().runningJobs()) {
+                                          if (const auto job = SyncJobManagerSingleton::instance()->getJob(jobId)) job->abort();
+                                      }
+                                  },
+                                  std::chrono::minutes(1), std::chrono::milliseconds(100));
+
     ParmsDb::instance()->close();
     ParmsDb::reset();
     ParametersCache::reset();
-    SyncJobManagerSingleton::instance()->stop();
     SyncJobManagerSingleton::clear();
     TestBase::stop();
 }
@@ -335,16 +356,25 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const RemoteTemporaryDirectory remoteTmpDir(driveDbId, _testVariables.remoteDirId, "testCanRunjob");
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 1 MB
+        std::vector<UniqueId> jobIds;
         for (auto i = 0; i < 20; i++) {
             const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, filepath, filepath.filename().native(),
                                                          remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime);
             CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job));
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+            jobIds.push_back(job->jobId());
         }
 
-        while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            Utility::msleep(100);
-        }
+        // Wait max 5 min for all jobs to finish. Use the thread safe public API instead of accessing the job
+        // manager internal maps directly.
+        CPPUNIT_ASSERT_MESSAGE("Small file uploads have not all finished in 5 minutes",
+                               TimeoutHelper::waitFor(
+                                       [&jobIds]() {
+                                           return std::ranges::all_of(jobIds.cbegin(), jobIds.cend(), [](const UniqueId jobId) {
+                                               return SyncJobManagerSingleton::instance()->isJobFinished(jobId);
+                                           });
+                                       },
+                                       std::chrono::minutes(5), std::chrono::milliseconds(100)));
     }
     // Upload sessions
     {
@@ -352,25 +382,42 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
 
         const LocalTemporaryDirectory localTmpDir("testCanRunjob");
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
+        const auto createUploadSessionJob = [](const DriveDbId driveDbId_, const SyncPath &path,
+                                               const RemoteNodeId &remoteDirNodeId) {
+            return std::make_shared<DriveUploadSession>(nullptr, driveDbId_, nullptr, path, path.filename().native(),
+                                                        remoteDirNodeId, testhelpers::defaultTime, testhelpers::defaultTime, 3);
+        };
 
-        const auto job1 =
-                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
-                                                     remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, 3);
-        const auto job2 =
-                std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, filepath, filepath.filename().native(),
-                                                     remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime, 3);
+        const auto job1 = createUploadSessionJob(driveDbId, filepath, remoteTmpDir.id());
+        const auto job2 = createUploadSessionJob(driveDbId, filepath, remoteTmpDir.id());
+
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job1));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
-        Utility::msleep(200);
-        CPPUNIT_ASSERT_EQUAL(false, SyncJobManagerSingleton::instance()->canRunJob(job2));
-        while (!SyncJobManagerSingleton::instance()->isJobFinished(job1->jobId())) {
-            Utility::msleep(100);
-        }
-        CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job2));
 
-        while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            Utility::msleep(100);
+        // Wait max 1 min until job1 is running. The job manager dispatch loop ticks every 100 ms, so this can
+        // take longer than a few milliseconds on a loaded CI runner.
+        CPPUNIT_ASSERT_MESSAGE(
+                "Upload session has neither started nor finished in 1 minute",
+                TimeoutHelper::waitFor(
+                        [&job1]() {
+                            return SyncJobManagerSingleton::instance()->isJobFinished(job1->jobId()) ||
+                                   SyncJobManagerSingleton::instance()->data().runningJobs().contains(job1->jobId());
+                        },
+                        std::chrono::minutes(1), std::chrono::milliseconds(100)));
+
+        // job1 (50 MB file) is expected to still be running at this point. If it finished immediately (e.g.
+        // because of a network error), the 'canRunJob' check below would legitimately return true.
+        if (SyncJobManagerSingleton::instance()->data().runningJobs().contains(job1->jobId())) {
+            // An upload session is already running, no other upload session can be started
+            CPPUNIT_ASSERT_EQUAL(false, SyncJobManagerSingleton::instance()->canRunJob(job2));
         }
+
+        // Wait max 10 min for job1 to finish
+        CPPUNIT_ASSERT_MESSAGE(
+                "Upload session has not finished in 10 minutes",
+                TimeoutHelper::waitFor([&job1]() { return SyncJobManagerSingleton::instance()->isJobFinished(job1->jobId()); },
+                                       std::chrono::minutes(10), std::chrono::milliseconds(100)));
+        CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job2));
     }
     // Big files download
     {
@@ -381,6 +428,7 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
 
         bool noMoreRun = false;
         uint64_t counter = 0;
+        std::vector<UniqueId> jobIds;
         const NodeId testBigFileRemoteId = "97601"; // test_ci/big_file_dir/big_text_file.txt
         for (auto i = 0; i < 20; i++) {
             const auto job = std::make_shared<DownloadJob>(
@@ -394,17 +442,34 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
             }
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
             counter++;
-            Utility::msleep(100);
+            jobIds.push_back(job->jobId());
+
+            // Wait max 30 sec until the job is actually running, so that the number of started big downloads is
+            // deterministic. If the job already finished (e.g. because of a network error), continue anyway.
+            const bool isRunning = TimeoutHelper::waitFor(
+                    [&job]() {
+                        return SyncJobManagerSingleton::instance()->isJobFinished(job->jobId()) ||
+                               SyncJobManagerSingleton::instance()->data().runningJobs().contains(job->jobId());
+                    },
+                    std::chrono::seconds(30), std::chrono::milliseconds(100));
+            CPPUNIT_ASSERT_MESSAGE("Big download job has neither started nor finished in 30 seconds", isRunning);
         }
         CPPUNIT_ASSERT_EQUAL(true, noMoreRun);
         CPPUNIT_ASSERT_EQUAL(
                 std::min(maxNumberParallelBigDownloads, SyncJobManagerSingleton::instance()->normalPriorityCapacity()), counter);
 
-        while (!SyncJobManagerSingleton::instance()->_data._managedJobs.empty()) {
-            Utility::msleep(100);
-        }
+        // Wait max 10 min for all jobs to finish
+        CPPUNIT_ASSERT_MESSAGE("Big file downloads have not all finished in 10 minutes",
+                               TimeoutHelper::waitFor(
+                                       [&jobIds]() {
+                                           return std::ranges::all_of(jobIds.cbegin(), jobIds.cend(), [](const UniqueId jobId) {
+                                               return SyncJobManagerSingleton::instance()->isJobFinished(jobId);
+                                           });
+                                       },
+                                       std::chrono::minutes(10), std::chrono::milliseconds(100)));
     }
 }
+
 void TestSyncJobManagerSingleton::callback(const UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
 
