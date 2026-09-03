@@ -176,6 +176,11 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
         if (!isSymlink && isDirectory) fullList.push_back(entry.path());
     }
 
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(dir, ioError));
+        return false;
+    }
+
     return true;
 }
 

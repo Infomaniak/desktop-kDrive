@@ -41,7 +41,7 @@ bool AbstractOsUpdater::verifyChecksum(const SyncPath &filepath, const std::stri
 
 bool AbstractOsUpdater::createDownloadDirectory(SyncPath &outDir) {
     SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
         return false;
     }
 
