@@ -462,6 +462,10 @@ public enum KDriveLocalizable {
   public static let errHardlinkDescription = KDriveLocalizable.tr("Localizable", "errHardlinkDescription", fallback: "This file is a hard link that cannot be synced.")
   /// loco:699c56147f87ce6dc70c3e02
   public static let errHardlinkTitle = KDriveLocalizable.tr("Localizable", "errHardlinkTitle", fallback: "Unsupported file type")
+  /// loco:6a9802676f9a7de7c7070232
+  public static let errInvalidLinkTargetDescription = KDriveLocalizable.tr("Localizable", "errInvalidLinkTargetDescription", fallback: "This link has been excluded from synchronization because its destination path is invalid.\nThe path must be relative and cannot contain a reference to a parent folder, such as \"..\".")
+  /// loco:6a9802596d8766bc100cf653
+  public static let errInvalidLinkTargetTitle = KDriveLocalizable.tr("Localizable", "errInvalidLinkTargetTitle", fallback: "Invalid destination path")
   /// loco:699dad0f767bc678ce0a7e62
   public static let errInvalidSyncSyncDirAccessDescription = KDriveLocalizable.tr("Localizable", "errInvalidSyncSyncDirAccessDescription", fallback: "This folder is no longer accessible at its original location.")
   /// loco:699dacde9cc743edb40cc832

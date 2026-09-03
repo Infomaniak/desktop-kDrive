@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Nieobsługiwany typ pliku";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Ten link został wykluczony z synchronizacji, ponieważ jego ścieżka docelowa jest nieprawidłowa.\nŚcieżka musi być względna i nie może zawierać odniesienia do folderu nadrzędnego, takiego jak „..”.";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Nieprawidłowa ścieżka docelowa";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Ten folder nie jest już dostępny w swojej pierwotnej lokalizacji.";
 

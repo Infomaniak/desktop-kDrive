@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Nicht unterstützter Dateityp";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Dieser Link wurde von der Synchronisierung ausgeschlossen, da sein Zielpfad ungültig ist.\nDer Pfad muss relativ sein und darf keinen Verweis auf einen übergeordneten Ordner enthalten, wie beispielsweise „..“.";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Ungültiger Zielpfad";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Dieser Ordner ist an seinem ursprünglichen Speicherort nicht mehr zugänglich.";
 

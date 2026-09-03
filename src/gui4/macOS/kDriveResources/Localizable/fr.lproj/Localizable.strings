@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Type de fichier non pris en charge";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Ce lien a été exclu de la synchronisation, car son chemin de destination n’est pas valide.\nLe chemin doit être relatif et ne peut pas contenir de référence à un dossier parent, comme « .. ».";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Chemin de destination non valide";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Ce dossier n’est plus accessible à son emplacement d’origine.";
 

@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Ei-tuettu tiedostotyyppi";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Tämä linkki on suljettu pois synkronoinnista, koska sen kohdepolku ei ole kelvollinen.\nPolun on oltava suhteellinen, eikä se saa sisältää viittausta ylätasoon, kuten ”..”.";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Virheellinen kohdepolku";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Tämä kansio ei ole enää käytettävissä alkuperäisessä sijainnissaan.";
 
