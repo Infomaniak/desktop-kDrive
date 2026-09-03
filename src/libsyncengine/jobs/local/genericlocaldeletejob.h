@@ -43,8 +43,8 @@ class GenericLocalDeleteJob : public SyncJob {
 
     private:
         SyncPath _absoluteLocalPath;
-        bool _forceHardDelete{false};
         std::shared_ptr<CacheDirectory> _cacheDirectory{nullptr};
+        bool _forceHardDelete{false};
 };
 
 } // namespace KDC
