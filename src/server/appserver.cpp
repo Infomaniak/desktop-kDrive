@@ -1086,10 +1086,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool userCreated = false;
             std::string error;
             std::string errorDescr;
-            ExitCode exitCode = ServerRequests::requestToken(code, codeVerifier, user, userCreated, error, errorDescr);
-            if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in Requests::requestToken: code=" << exitCode);
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+            const auto exitInfo = ServerRequests::requestToken(code, codeVerifier, user, userCreated, error, errorDescr);
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in Requests::requestToken: " << exitInfo);
+                addError(Error(ERR_ID, exitInfo));
             }
             updateSentryUser();
             if (userCreated) {
@@ -1098,8 +1098,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 sendUserUpdated(user);
             }
 
-            resultStream << toInt(exitCode);
-            if (exitCode == ExitCode::Ok) {
+            resultStream << toInt(exitInfo.code());
+            if (exitInfo) {
                 resultStream << static_cast<qint64>(user.dbId());
             } else {
                 resultStream << QString::fromStdString(error);
