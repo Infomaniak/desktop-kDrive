@@ -887,17 +887,21 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
     std::error_code ec;
     _rename(sourcePath, destinationPath, ec);
     ioError = stdError2ioError(ec);
+
     return ioError == IoError::Success;
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     // NB: Symlinks are not followed (symlink is removed, not its target).
     std::error_code ec;
-    (void) std::filesystem::remove_all(path, ec);
+    (void) std::filesystem::remove_all(
+            path,
+            ec); // No error is raised if the path does not exist, see https://en.cppreference.com/w/cpp/filesystem/remove_all
     ioError = stdError2ioError(ec);
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(path, ioError));
     }
+
     return ioError == IoError::Success;
 }
 
@@ -906,20 +910,19 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
 
     const SyncPath destPath = cacheDirectoryPath / path.filename();
-    std::error_code ec;
-    std::filesystem::rename(path, destPath, ec);
+    auto ioError = IoError::Success;
+    IoHelper::renameItem(path, destPath, ioError);
 
-    IoError ioError = stdError2ioError(ec);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::deleteItemAtomically: " << Utility::formatIoError(path, ioError));
+    if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::renameItem: " << Utility::formatIoError(path, ioError));
     }
 
     switch (ioError) {
-        case IoError::Success:
-            return ExitCode::Ok;
         case IoError::NoSuchFileOrDirectory:
-            return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
+        case IoError::Success: {
+            (void) deleteItem(destPath, ioError);
+            return ExitCode::Ok;
+        }
         case IoError::AccessDenied:
             return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
         default:
