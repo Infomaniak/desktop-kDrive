@@ -72,7 +72,7 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
 }
 
 ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
-    constexpr auto keychainReadTimeout = std::chrono::seconds(10);
+    constexpr auto keychainReadTimeout = std::chrono::seconds(60);
 
     struct ReadState {
             std::mutex mutex;
@@ -86,8 +86,6 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
     const auto state = std::make_shared<ReadState>();
 
     std::thread([this, keychainKey, state]() {
-        Utility::msleep(15000);
-
         std::string tmpData;
         bool tmpFound = false;
         const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
