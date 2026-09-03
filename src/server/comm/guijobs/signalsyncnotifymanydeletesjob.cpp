@@ -22,15 +22,17 @@
 static const auto outParamsSyncDbId = "syncDbId";
 static const auto outParamsNotificationType = "notificationType";
 static const auto outParamsNbFiles = "nbFiles";
+static const auto outParamsFilesPaths = "filesPaths";
 
 namespace KDC {
 
 SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId syncDbId,
                                                                const TooManyDeletesNotificationType notificationType,
-                                                               uint64_t nbFiles) :
+                                                               uint64_t nbFiles, std::vector<SyncPath> filesPaths) :
     _syncDbId(syncDbId),
     _notificationType(notificationType),
-    _nbFiles(nbFiles) {
+    _nbFiles(nbFiles),
+    _filesPaths(std::move(filesPaths)) {
     _signalNum = SignalNum::SYNC_NOTIFY_MANY_DELETES;
 }
 
@@ -38,6 +40,7 @@ ExitInfo SignalSyncNotifyManyDeletesJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsNotificationType, _notificationType);
     writeParamValue(outParamsNbFiles, _nbFiles);
+    writeParamValue(outParamsFilesPaths, _filesPaths);
     return ExitCode::Ok;
 }
 

@@ -163,7 +163,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         inline void setSendManyDeletesNotification(
-                const std::function<void(SyncDbId, TooManyDeletesNotificationType, uint64_t)> &sendManyDeletesNotification) {
+                const std::function<void(SyncDbId, TooManyDeletesNotificationType, uint64_t, std::vector<SyncPath>)>
+                        &sendManyDeletesNotification) {
             _sendManyDeletesNotification = sendManyDeletesNotification;
         }
 
@@ -263,7 +264,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
         void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
         void resolveSyncErrorsByExitCause(ExitCause cause);
-        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType, uint64_t nbFiles);
+        void sendManyDeletesNotification(TooManyDeletesNotificationType notificationType, uint64_t nbFiles,
+                                         std::vector<SyncPath> filesPaths);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -404,7 +406,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
         std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
         std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
-        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles)>
+        std::function<void(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, uint64_t nbFiles,
+                           std::vector<SyncPath> filesPaths)>
                 _sendManyDeletesNotification;
         std::shared_ptr<Vfs> _vfs;
 

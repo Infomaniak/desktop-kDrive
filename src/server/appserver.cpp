@@ -4929,7 +4929,7 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
 }
 
 void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
-                                            uint64_t nbFiles) const {
+                                            uint64_t nbFiles, std::vector<SyncPath> filesPaths) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params =
@@ -4938,7 +4938,7 @@ void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooMa
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbFiles));
+        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbFiles, filesPaths));
     }
 }
 
