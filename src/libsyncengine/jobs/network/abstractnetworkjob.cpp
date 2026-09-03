@@ -183,7 +183,7 @@ int64_t AbstractNetworkJob::extractWaitingTime() {
     return -1;
 }
 
-ExitInfo AbstractNetworkJob::runJob() noexcept {
+ExitInfo AbstractNetworkJob::runJob() {
     std::string url = getUrl();
     if (url.empty()) {
         LOG_WARN(_logger, "URL is not set");
