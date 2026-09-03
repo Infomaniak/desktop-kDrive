@@ -134,9 +134,9 @@ class Node : public std::enable_shared_from_this<Node> {
         std::shared_ptr<Node> findChild(const SyncName &name, const NodeId &nodeId = "");
 
         std::shared_ptr<Node> findChildById(const NodeId &nodeId);
-        [[nodiscard]] bool insertChildren(std::shared_ptr<Node> child);
-        size_t deleteChildren(std::shared_ptr<Node> child);
-        size_t deleteChildren(const NodeId &childId);
+        [[nodiscard]] bool insertChild(std::shared_ptr<Node> child);
+        size_t deleteChild(std::shared_ptr<Node> child);
+        size_t deleteChild(const NodeId &childId);
 
         /**
          * @brief Retrieve the child node based on its name, which is assumed to be normalized. Filter out the nodes with change

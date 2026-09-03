@@ -603,7 +603,7 @@ void TestExecutorWorker::testInitSyncFileItem() {
                                        _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
         CPPUNIT_ASSERT(remoteNode->setParentNode(remoteParentNode));
-        CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNode));
+        CPPUNIT_ASSERT(remoteParentNode->insertChild(remoteNode));
 
         // Local move from parent_dir/test_file.txt to /test_file.txt
         localNode->setMoveOriginInfos({"parent_dir/test_file.txt", localParentNode->id().value()});
