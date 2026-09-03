@@ -138,17 +138,17 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (sender is HyperlinkButton btn && btn.DataContext is SyncFileItem activity)
             {
-                if (Directory.Exists(activity.ParentFolderPath))
+                if (Directory.Exists(activity.RelevantParentFolderPath))
                 {
                     btn.IsEnabled = false;
-                    await Utility.OpenFolderSecurely(activity.ParentFolderPath);
+                    await Utility.OpenFolderSecurely(activity.RelevantParentFolderPath);
                     _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemFolder);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, $"Directory does not exist: {activity.ParentFolderPath}");
+                    Logger.Log(Logger.Level.Warning, $"Directory does not exist: {activity.RelevantParentFolderPath}");
                 }
             }
             else

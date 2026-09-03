@@ -62,11 +62,11 @@ struct ApplyFileDatesResult {
         LOGW_WARN(logger, L"Unable to read file size for " << Utility::formatIoError(filePath, ioError));
         result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::NotFound);
         return result;
-    }else if (ioError == IoError::AccessDenied) {
+    } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(logger, L"Unable to read file size for " << Utility::formatIoError(filePath, ioError));
         result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError);
         return result;
-    }else if (ioError != IoError::Success) {
+    } else if (ioError != IoError::Success) {
         LOGW_WARN(logger, L"Unable to read file size for " << Utility::formatIoError(filePath, ioError));
         result.exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
         return result;

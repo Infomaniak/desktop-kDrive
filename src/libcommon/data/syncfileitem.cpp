@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "syncfileiteminfo.h"
+#include "data/syncfileitem.h"
+
 #include "utility/utility.h"
 
 static const auto outParamsType = "type";
@@ -35,13 +36,12 @@ static const auto outParamsSize = "size";
 static const auto outParamsProgress = "progress";
 static const auto outParamsOperationId = "operationId";
 
-
 namespace KDC {
 
-SyncFileItemInfo::SyncFileItemInfo(NodeType type, const QString &path, const QString &newPath, const QString &localNodeId,
-                                   const QString &remoteNodeId, SyncDirection direction, SyncFileInstruction instruction,
-                                   SyncFileStatus status, ConflictType conflict, InconsistencyType inconsistency,
-                                   CancelType cancelType) :
+SyncFileItem::SyncFileItem(NodeType type, const SyncPath &path, const std::optional<SyncPath> &newPath,
+                           const std::optional<NodeId> &localNodeId, const std::optional<NodeId> &remoteNodeId,
+                           SyncDirection direction, SyncFileInstruction instruction, SyncFileStatus status, ConflictType conflict,
+                           InconsistencyType inconsistency, CancelType cancelType, int64_t size, bool dehydrated) :
     _type(type),
     _path(path),
     _newPath(newPath),
@@ -52,61 +52,41 @@ SyncFileItemInfo::SyncFileItemInfo(NodeType type, const QString &path, const QSt
     _status(status),
     _conflict(conflict),
     _inconsistency(inconsistency),
-    _cancelType(cancelType) {}
+    _cancelType(cancelType),
+    _size(size),
+    _dehydrated(dehydrated) {}
 
-SyncFileItemInfo::SyncFileItemInfo() {}
+SyncFileItem::SyncFileItem(NodeType type, const SyncPath &path, const std::optional<NodeId> &localNodeId,
+                           const std::optional<NodeId> &remoteNodeId, SyncDirection direction, SyncFileInstruction instruction,
+                           ConflictType conflict, int64_t size) :
+    _type(type),
+    _path(path),
+    _localNodeId(localNodeId),
+    _remoteNodeId(remoteNodeId),
+    _direction(direction),
+    _instruction(instruction),
+    _conflict(conflict),
+    _size(size) {}
 
-void SyncFileItemInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
+void SyncFileItem::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, outParamsType, _type);
-    CommonUtility::writeValueToStruct(dstruct, outParamsPath, _path.toStdString());
-    CommonUtility::writeValueToStruct(dstruct, outParamsNewPath, _newPath.toStdString());
-    CommonUtility::writeValueToStruct(dstruct, outParamsLocalNodeId, _localNodeId.toStdString());
-    CommonUtility::writeValueToStruct(dstruct, outParamsRemoteNodeId, _remoteNodeId.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsPath, Path2QStr(_path).toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsNewPath,
+                                      _newPath.has_value() ? Path2QStr(_newPath.value()).toStdString() : std::string());
+    CommonUtility::writeValueToStruct(dstruct, outParamsLocalNodeId,
+                                      _localNodeId.has_value() ? _localNodeId.value() : std::string());
+    CommonUtility::writeValueToStruct(dstruct, outParamsRemoteNodeId,
+                                      _remoteNodeId.has_value() ? _remoteNodeId.value() : std::string());
     CommonUtility::writeValueToStruct(dstruct, outParamsDirection, _direction);
     CommonUtility::writeValueToStruct(dstruct, outParamsInstruction, _instruction);
     CommonUtility::writeValueToStruct(dstruct, outParamsStatus, _status);
     CommonUtility::writeValueToStruct(dstruct, outParamsConflict, _conflict);
     CommonUtility::writeValueToStruct(dstruct, outParamsInconsistency, _inconsistency);
     CommonUtility::writeValueToStruct(dstruct, outParamsCancelType, _cancelType);
-    CommonUtility::writeValueToStruct(dstruct, outParamsError, _error.toStdString());
+    CommonUtility::writeValueToStruct(dstruct, outParamsError, _error);
     CommonUtility::writeValueToStruct(dstruct, outParamsSize, _size);
     CommonUtility::writeValueToStruct(dstruct, outParamsProgress, _progress);
     CommonUtility::writeValueToStruct(dstruct, outParamsOperationId, _operationId);
 }
-
-QDataStream &operator>>(QDataStream &in, SyncFileItemInfo &info) {
-    in >> info._type >> info._path >> info._newPath >> info._localNodeId >> info._remoteNodeId >> info._direction >>
-            info._instruction >> info._status >> info._conflict >> info._inconsistency >> info._cancelType;
-    return in;
-}
-
-QDataStream &operator<<(QDataStream &out, const SyncFileItemInfo &info) {
-    out << info._type << info._path << info._newPath << info._localNodeId << info._remoteNodeId << info._direction
-        << info._instruction << info._status << info._conflict << info._inconsistency << info._cancelType;
-
-    return out;
-}
-
-QDataStream &operator<<(QDataStream &out, const QList<SyncFileItemInfo> &list) {
-    int count = static_cast<int>(list.size());
-    out << count;
-    for (int i = 0; i < count; i++) {
-        SyncFileItemInfo info = list[i];
-        out << info;
-    }
-    return out;
-}
-
-QDataStream &operator>>(QDataStream &in, QList<SyncFileItemInfo> &list) {
-    int count = 0;
-    in >> count;
-    for (int i = 0; i < count; i++) {
-        SyncFileItemInfo info;
-        in >> info;
-        list.push_back(info);
-    }
-    return in;
-}
-
 
 } // namespace KDC

@@ -26,8 +26,8 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testGetFileChecksum() {
-    // The coherance between backend and client hash calculation is verified in the syncengine unit tests. Here we just verify that
-    // the checksum is correctly calculated on the client side.
+    // The coherance between backend and client hash calculation is verified in the syncengine unit tests. Here we just verify
+    // that the checksum is correctly calculated on the client side.
 
     constexpr std::string_view hash1 = "xxh3:5dcc477e35136516";
     constexpr std::string_view hash1N = "N:xxh3:dda9955597f24762";

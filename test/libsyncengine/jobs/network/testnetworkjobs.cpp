@@ -1438,7 +1438,8 @@ void TestNetworkJobs::testUploadSessionChecksum() {
         CPPUNIT_ASSERT(!nodeId.empty());
         uploadedSize = createJob.size();
 
-        // Verify server-side checksum and client-side checksum match for the uploaded file ( file size > 100MB → "N:xxhash" format)
+        // Verify server-side checksum and client-side checksum match for the uploaded file ( file size > 100MB → "N:xxhash"
+        // format)
         CheckHashMatchJob verifyJob(_driveDbId, localFilePath, nodeId, uploadedSize);
         verifyJob.runSynchronously();
         CPPUNIT_ASSERT_EQUAL_MESSAGE("Hash mismatch", true, verifyJob.hashMatch());

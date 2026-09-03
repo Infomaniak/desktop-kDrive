@@ -368,6 +368,7 @@ void SocketCommServer::execute() {
             continue;
         }
 
+#ifndef NDEBUG
         // All TLS material in the keychain (server cert, client cert, client private key) has been
         // consumed: the handshake verified the client, and the client already pinned the server cert
         // before connecting. Erase them to avoid leaving sensitive material accessible.
@@ -376,6 +377,7 @@ void SocketCommServer::execute() {
             (void) keychain->deleteData(std::string(clientCertKeychainKey));
             (void) keychain->deleteData(std::string(clientKeyKeychainKey));
         }
+#endif // DEBUG
 
         // Keep a bounded receive timeout for the channel's lifetime: SSL_read() must never park on
         // _socketMutex forever (see the comment on readData).

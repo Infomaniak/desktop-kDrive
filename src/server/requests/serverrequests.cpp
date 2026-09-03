@@ -2112,24 +2112,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     return ExitCode::Ok;
 }
 
-void ServerRequests::syncFileItemToSyncFileItemInfo(const SyncFileItem &item, SyncFileItemInfo &itemInfo) {
-    itemInfo.setType(item.type());
-    itemInfo.setPath(SyncName2QStr(item.path().native()));
-    itemInfo.setNewPath(item.newPath().has_value() ? SyncName2QStr(item.newPath().value().native()) : "");
-    itemInfo.setLocalNodeId(item.localNodeId().has_value() ? QString::fromStdString(item.localNodeId().value()) : QString());
-    itemInfo.setRemoteNodeId(item.remoteNodeId().has_value() ? QString::fromStdString(item.remoteNodeId().value()) : QString());
-    itemInfo.setDirection(item.direction());
-    itemInfo.setInstruction(item.instruction());
-    itemInfo.setStatus(item.status());
-    itemInfo.setConflict(item.conflict());
-    itemInfo.setInconsistency(item.inconsistency());
-    itemInfo.setCancelType(item.cancelType());
-    itemInfo.setError(QString::fromStdString(item.error()));
-    itemInfo.setSize(item.size());
-    itemInfo.setProgress(item.progress());
-    itemInfo.setOperationId(item.operationId());
-}
-
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {
     parametersInfo.setLanguage(parameters.language());
     parametersInfo.setAutoStart(parameters.autoStart());

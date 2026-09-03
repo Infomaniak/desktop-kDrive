@@ -151,7 +151,6 @@ set(syncengine_SRCS
     # Progress Dispatcher
     progress/estimates.h
     progress/progressitem.h
-    progress/syncfileitem.h progress/syncfileitem.cpp
     progress/progress.h progress/progress.cpp
     progress/progressinfo.h progress/progressinfo.cpp
     # Requests
@@ -243,3 +242,4 @@ target_link_libraries(${libsyncengine_NAME}
         ${libparms_NAME}
         Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
         OpenSSL::SSL OpenSSL::Crypto)
+

@@ -126,8 +126,8 @@ void TestIntegration::setUp() {
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
-                                         KDRIVE_VERSION_STRING);
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
     _syncPal->syncDb()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true); // Enable extended log to see more details in the logs
@@ -966,7 +966,7 @@ void TestIntegration::logStep(const std::string &str) {
     LOG_DEBUG(_logger, ss.str());
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const int driveDbId, const NodeId &parentId,
+TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const DriveDbId driveDbId, const NodeId &parentId,
                                                                          const SyncName &name) const {
     RemoteFileInfo fileInfo;
 
@@ -997,7 +997,19 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const i
     return fileInfo;
 }
 
-int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &parentId) const {
+TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByPath(const DriveDbId driveDbId, const NodeId &rootParentId,
+                                                                         const SyncPath &relativePath) const {
+    RemoteFileInfo fileInfo;
+    NodeId currentParentId = rootParentId;
+    for (const auto &part: relativePath) {
+        fileInfo = getRemoteFileInfoByName(driveDbId, currentParentId, part.native());
+        if (!fileInfo.isValid()) return {};
+        currentParentId = fileInfo.id;
+    }
+    return fileInfo;
+}
+
+int64_t TestIntegration::countItemsInRemoteDir(const DriveDbId driveDbId, const NodeId &parentId) const {
     GetFileListJob job(driveDbId, parentId);
     (void) job.runSynchronously();
 
@@ -1011,7 +1023,7 @@ int64_t TestIntegration::countItemsInRemoteDir(int driveDbId, const NodeId &pare
 }
 
 void TestIntegration::testSynchronizationOfSymLinks() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1045,7 +1057,7 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 }
 
 void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
 
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -1065,7 +1077,7 @@ void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
 }
 
 void TestIntegration::testDirSymLinkWithTooManySymbolicLevels() {
-    RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
+    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
 
     waitForSyncToBeIdle(std::source_location::current());
 

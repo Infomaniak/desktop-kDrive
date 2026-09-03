@@ -620,7 +620,7 @@ ExitInfo DownloadJob::moveTmpFile() {
                     return {};
                 }
 #else
-                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
 #endif
             } else {
                 bool exists = false;
