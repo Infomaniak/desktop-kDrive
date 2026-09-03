@@ -899,14 +899,16 @@ void SyncPalWorker::resetVfsFilesStatus() {
             continue;
         }
 
-        const auto isDirectory = entry.is_directory(ec);
-        if (ec.value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_directory "
-                                               << Utility::formatStdError(entry.path(), ec));
-            continue;
+        bool isDirectory = false;
+        if (!isSymlink) {
+            if (ec.value()) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_directory "
+                                                   << Utility::formatStdError(entry.path(), ec));
+                continue;
+            }
         }
 
-        if (!isSymlink && isDirectory) {
+        if (isDirectory) {
 #ifdef KD_WINDOWS
             if (std::optional<NodeId> localNodeId; isLocalItemInSyncWithDb(entry.path(), localNodeId)) {
                 // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.

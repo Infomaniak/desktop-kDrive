@@ -136,7 +136,7 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialFolder::Private)) return;
 
     std::error_code ec;
-    remotePath = std::filesystem::relative(remotePath, v3SpecialFolderNames.at(SpecialFolder::Private), ec);
+    remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialFolder::Private));
     if (ec.value()) remotePath = SyncPath{};
 
     if (remotePath == ".") remotePath = SyncPath{};

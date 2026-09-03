@@ -45,7 +45,7 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
     // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
     // We remove the "/" at the beginning to compare it with a reconstructed relative path.
     std::error_code ec;
-    const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path(), ec);
+    const auto relativeRemoteTargetPath = remoteTargetPath.lexically_relative(remoteTargetPath.root_path());
 
     if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
         return remoteRelativePath == localRelativePath;
@@ -227,11 +227,14 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
             continue;
         }
 
-        const auto isRegularFile = entry.is_regular_file(ec);
-        if (ec.value()) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
-                                                            << Utility::formatStdError(entry.path(), ec));
-            continue;
+        bool isRegularFile = false;
+        if (!isSymlink) {
+            isRegularFile = entry.is_regular_file(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
+                                                                << Utility::formatStdError(entry.path(), ec));
+                continue;
+            }
         }
 
         if ((isSymlink || isRegularFile) && isFileDehydrated(entry.path(), _logger)) {

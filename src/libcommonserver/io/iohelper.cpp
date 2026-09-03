@@ -1078,7 +1078,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (!_firstElement) {
-        const auto &prevEntry = *_dirIterator;
+        const auto prevEntryPath = (*_dirIterator).path();
 
         std::error_code ec;
         try {
@@ -1098,7 +1098,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
         if (ec) {
             LOGW_WARN(logger(), L"Error in recursive_directory_iterator::increment: previous "
-                                        << Utility::formatStdError(prevEntry.path(), ec));
+                                        << Utility::formatStdError(prevEntryPath, ec));
             ioError = IoHelper::stdError2ioError(ec);
             if (ioError == IoError::Unknown) {
                 // TODO: once known, manage this error in IoHelper::stdError2ioError

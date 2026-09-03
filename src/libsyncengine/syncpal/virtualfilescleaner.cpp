@@ -90,10 +90,10 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
         const auto entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus, entryIoError);
         if (!entryShouldBeKeptOnDisk.has_value()) {
             LOGW_DEBUG(_logger, L"Error in shouldBeKeptOnDisk " << Utility::formatIoError(entry.path(), entryIoError));
-            if (IoHelper::isExpectedError(entryIoError))
-                continue;
-            else
-                return false;
+            if (IoHelper::isExpectedError(entryIoError)) continue;
+
+            _exitInfo = IoHelper::directoryIteratorExitCode(entryIoError);
+            return false;
         }
 
         if (entryShouldBeKeptOnDisk.value()) {
@@ -183,6 +183,8 @@ std::optional<bool> VirtualFilesCleaner::hasFileType(const std::filesystem::dire
         return std::nullopt;
     }
 
+    if (isSymlink) return std::make_optional(true);
+
     const auto isDirectory = entry.is_directory(ec);
     if (ec.value()) {
         LOGW_WARN(_logger,
@@ -191,7 +193,7 @@ std::optional<bool> VirtualFilesCleaner::hasFileType(const std::filesystem::dire
         return std::nullopt;
     }
 
-    return std::make_optional(isSymlink || !isDirectory);
+    return std::make_optional(!isDirectory);
 }
 
 std::optional<bool> VirtualFilesCleaner::shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry,

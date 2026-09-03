@@ -271,7 +271,13 @@ SituationMap SituationComparator::getLocalSituation() const {
             info.size = testhelpers::defaultDirSize;
         } else if (isRegularFile) {
             info.type = NodeType::File;
-            info.size = static_cast<int64_t>(entry.file_size(ec));
+            const auto fileSize = entry.file_size(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in std::filesystem::directory_entry::file_size " << Utility::formatStdError(entry.path(), ec));
+                continue;
+            }
+            info.size = static_cast<int64_t>(fileSize);
         } else {
             continue; // Skip symlinks / special files.
         }
