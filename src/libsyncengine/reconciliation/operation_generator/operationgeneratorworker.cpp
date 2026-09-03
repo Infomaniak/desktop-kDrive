@@ -149,15 +149,13 @@ void OperationGeneratorWorker::execute() {
     }
 
     if (_syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::None) {
-        if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
+        if (_localDeleteOperationsPaths.size() >= maxNbOfDeleteOperationHardLimit) {
             LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
             exitCode = ExitCode::TooManyDeleteOperations;
-            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit, _nbLocalDeleteOperations,
-                                                  getLocalDeletedNodePaths());
-        } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit && std::get<bool>(notifyBeforeDelete)) {
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit, _localDeleteOperationsPaths);
+        } else if (_localDeleteOperationsPaths.size() >= maxNbOfDeleteOperationSoftLimit && std::get<bool>(notifyBeforeDelete)) {
             LOGW_SYNCPAL_INFO(_logger, L"Local delete operations detected: soft limit triggered!");
-            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit, _nbLocalDeleteOperations,
-                                                  getLocalDeletedNodePaths());
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit, _localDeleteOperationsPaths);
         }
     }
 
@@ -377,7 +375,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                        << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
-        if (op->targetSide() == ReplicaSide::Remote) _nbLocalDeleteOperations++;
+        if (op->targetSide() == ReplicaSide::Remote) _localDeleteOperationsPaths.push_back(currentNode->getPath());
     }
 
     _deletedNodes.insert(*currentNode->id());
@@ -391,16 +389,4 @@ void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> pa
         childNode.second->setStatus(NodeStatus::Processed);
     }
 }
-
-std::vector<SyncPath> OperationGeneratorWorker::getLocalDeletedNodePaths() {
-    std::vector<SyncPath> deletedPaths;
-    deletedPaths.reserve(_nbLocalDeleteOperations);
-    for (const auto &nodeId: _deletedNodes) {
-        auto node = _syncPal->updateTree(ReplicaSide::Local)->getNodeById(nodeId);
-        if (!node) continue; // This is expected for remote nodes
-        deletedPaths.push_back(node->getPath().native());
-    }
-    return deletedPaths;
-}
-
 } // namespace KDC
