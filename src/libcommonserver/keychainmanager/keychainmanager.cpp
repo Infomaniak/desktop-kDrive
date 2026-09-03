@@ -72,43 +72,49 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
 }
 
 ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
-    constexpr auto keychainReadTimeout = std::chrono::seconds(60);
+    constexpr auto keychainReadTimeout = std::chrono::seconds(10);
 
-    std::mutex mutex;
-    std::condition_variable conditionVariable;
-    bool done = false;
-    bool localOk = false;
-    bool localFound = false;
-    std::string localData;
+    struct ReadState {
+            std::mutex mutex;
+            std::condition_variable conditionVariable;
+            bool done = false;
+            bool ok = false;
+            bool localFound = false;
+            std::string localData;
+    };
 
-    std::thread([this, keychainKey, &mutex, &conditionVariable, &done, &localOk, &localFound, &localData]() {
+    const auto state = std::make_shared<ReadState>();
+
+    std::thread([this, keychainKey, state]() {
+        Utility::msleep(15000);
+
         std::string tmpData;
         bool tmpFound = false;
         const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
 
         {
-            std::lock_guard<std::mutex> lock(mutex);
-            localOk = ok;
-            localFound = tmpFound;
-            localData = std::move(tmpData);
-            done = true;
+            std::lock_guard<std::mutex> lock(state->mutex);
+            state->ok = ok;
+            state->localFound = tmpFound;
+            state->localData = std::move(tmpData);
+            state->done = true;
         }
-        conditionVariable.notify_one();
+        state->conditionVariable.notify_one();
     }).detach();
 
-    std::unique_lock<std::mutex> lock(mutex);
-    if (!conditionVariable.wait_for(lock, keychainReadTimeout, [&done]() { return done; })) {
+    std::unique_lock<std::mutex> lock(state->mutex);
+    if (!state->conditionVariable.wait_for(lock, keychainReadTimeout, [&state]() { return state->done; })) {
         LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain");
         found = false;
         return {ExitCode::SystemError, ExitCause::KeychainAccessTimeout};
     }
-    if (!localOk) {
+    if (!state->ok) {
         found = false;
         return {ExitCode::SystemError, ExitCause::KeychainAccessError};
     }
 
-    data = std::move(localData);
-    found = localFound;
+    data = std::move(state->localData);
+    found = state->localFound;
     return ExitCode::Ok;
 }
 
