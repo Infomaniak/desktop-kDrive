@@ -108,22 +108,23 @@ IKShadowedWindow {
     }
 
     onClosing: close => {
+        close.accepted = false;
+
         if (mainWindow.manyDeletesPresentationAllowed
                 && mainWindow.manyDeletesController.visible
-                && mainWindow.manyDeletesController.severity === ManyDeletesController.Hard) {
-            close.accepted = false
-            return
+                && mainWindow.manyDeletesController.severity === mainWindow.manyDeletesController.Hard) {
+            mainWindow.systemTrayController.showMainWindow();
+            return;
         }
 
         if (mainWindow.systemTrayController.trayModeActive) {
-            close.accepted = false;
             if (mainWindow.onboardingActive) {
                 mainWindow.onboardingSessionManager.cancelActiveSession();
+            } else {
+                mainWindow.systemTrayController.hideMainWindow();
             }
-            mainWindow.systemTrayController.hideMainWindow();
         } else {
-            close.accepted = true;
-            Qt.quit();
+            globalModalHost.requestQuitConfirmation();
         }
     }
 
@@ -172,8 +173,11 @@ IKShadowedWindow {
     }
 
     GlobalModalHost {
+        id: globalModalHost
+
         anchors.fill: parent
         manyDeletesController: mainWindow.manyDeletesController
+        systemTrayController: mainWindow.systemTrayController
         presentationAllowed: mainWindow.manyDeletesPresentationAllowed
         surfaceInset: mainWindow.effectiveShadowMargin
         surfaceRadius: mainWindow.surfaceRadius

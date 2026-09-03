@@ -29,23 +29,66 @@ Item {
     required property bool presentationAllowed
     required property real surfaceInset
     required property real surfaceRadius
+    required property var systemTrayController
     required property var targetWindow
     required property rect windowMoveArea
+    readonly property bool modalVisible: manyDeletesDialog.visible || quitConfirmationDialog.visible
+    property bool quitPending: false
+
+    function requestQuitConfirmation() {
+        root.systemTrayController.showMainWindow();
+
+        if (quitConfirmationDialog.visible || root.quitPending) {
+            return;
+        }
+
+        if (manyDeletesDialog.visible
+                && root.manyDeletesController.severity === root.manyDeletesController.Hard) {
+            return;
+        }
+
+        quitConfirmationDialog.open();
+    }
 
     ManyDeletesDialog {
         id: manyDeletesDialog
 
         controller: root.manyDeletesController
-        presentationAllowed: root.presentationAllowed
+        presentationAllowed: root.presentationAllowed && !quitConfirmationDialog.visible
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
+    }
+
+    IKConfirmationDialog {
+        id: quitConfirmationDialog
+
+        busy: root.quitPending
+        cancelText: qsTrId("buttonCancel")
+        confirmText: qsTrId("statusBarQuitApp")
+        description: qsTrId("quitConfirmationDialogDescription")
+        scrimInset: root.surfaceInset
+        scrimRadius: root.surfaceRadius
+        title: qsTrId("quitConfirmationDialogTitle")
+
+        onConfirmed: {
+            root.quitPending = true;
+            root.systemTrayController.requestApplicationQuit();
+        }
+    }
+
+    Connections {
+        target: root.systemTrayController
+
+        function onQuitConfirmationRequested() {
+            root.requestQuitConfirmation();
+        }
     }
 
     Item {
         parent: Overlay.overlay
         anchors.fill: parent
-        z: manyDeletesDialog.z + 1
-        visible: manyDeletesDialog.visible
+        z: Math.max(manyDeletesDialog.z, quitConfirmationDialog.z) + 1
+        visible: root.modalVisible
 
         Item {
             id: modalWindowMoveArea
