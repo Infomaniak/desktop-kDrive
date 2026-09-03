@@ -70,6 +70,12 @@ Item {
             id: retryButton
 
             visible: root.onboardingFlowController.synchronizationFailed
+            // Retry only exists once the synchronization failed, so it claims the focus when it appears.
+            onVisibleChanged: {
+                if (visible) {
+                    retryButton.forceActiveFocus()
+                }
+            }
             height: IKOnboarding.completionButtonHeight
             text: qsTrId("buttonRetry")
             onClicked: root.onboardingFlowController.retrySynchronization()
@@ -88,6 +94,8 @@ Item {
                 implicitHeight: IKOnboarding.completionButtonHeight
                 radius: IKOnboarding.buttonCornerRadius
                 color: IKColors.actionPrimary
+                border.width: retryButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                border.color: IKColors.actionOnPrimary
             }
 
             padding: 0
