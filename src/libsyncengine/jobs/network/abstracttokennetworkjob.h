@@ -67,7 +67,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
 
-        ExitInfo runJob() noexcept override;
+        ExitInfo runJob() override;
 
     protected:
         std::string getSpecificUrl() override;
