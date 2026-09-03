@@ -37,7 +37,10 @@ SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId sy
 ExitInfo SignalSyncNotifyManyDeletesJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
     writeParamValue(outParamsNotificationType, _notificationType);
-    writeParamValue(outParamsFilesPaths, _filesPaths);
+    std::vector<CommString> filesPaths;
+    std::transform(_filesPaths.begin(), _filesPaths.end(), std::back_inserter(filesPaths),
+                   [](const SyncPath &syncPath) { return CommonUtility::syncPath2CommString(syncPath); });
+    writeParamValues(outParamsFilesPaths, filesPaths);
     return ExitCode::Ok;
 }
 
