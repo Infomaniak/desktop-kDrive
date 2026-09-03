@@ -47,7 +47,7 @@ void TestKeychainManager::testTimeOut() {
 
     std::string data;
     bool found = false;
-    KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
     const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
     CPPUNIT_ASSERT(!exitInfo);
 }
