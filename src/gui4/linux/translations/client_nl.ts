@@ -2827,4 +2827,20 @@ Om het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te v
             <translation>Alleen de laatste sessie verzenden</translation> 
         </message> 
     </context> 
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogDescription">
+            <source>Your files will stop syncing until the next time you open the application.</source>
+            <extracomment>Explain that quitting kDrive interrupts file synchronization until the application is opened again.</extracomment>
+            <translation>De synchronisatie van je bestanden wordt onderbroken totdat je de toepassing opnieuw opent.</translation>
+        </message>
+    </context>
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogTitle">
+            <source>Do you really want to quit kDrive?</source>
+            <extracomment>Ask whether the user wants to quit kDrive completely. Keep the product name spelled kDrive.</extracomment>
+            <translation>Weet je zeker dat je kDrive wilt afsluiten?</translation>
+        </message>
+    </context>
 </TS>
