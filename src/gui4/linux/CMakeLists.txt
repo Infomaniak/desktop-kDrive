@@ -82,6 +82,12 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/onboarding/onboardingsynccreationcoordinator.h
         app/onboarding/oauthloginservice.cpp
         app/onboarding/oauthloginservice.h
+        app/syncconfiguration/localpaths.cpp
+        app/syncconfiguration/localpaths.h
+        app/syncconfiguration/remotefoldertreemodel.cpp
+        app/syncconfiguration/remotefoldertreemodel.h
+        app/syncconfiguration/remotefolderprovider.cpp
+        app/syncconfiguration/remotefolderprovider.h
         communicationlayer/ipcclient.cpp
         communicationlayer/ipcclient.h
         communicationlayer/serversignalsequencer.cpp
