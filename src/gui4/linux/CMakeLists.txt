@@ -171,6 +171,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKBadge.qml
         ui/components/IKAvatar.qml
         ui/components/IKCheckBox.qml
+        ui/components/IKConfirmationDialog.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLinkButton.qml
         ui/components/IKLoadingSpinner.qml
