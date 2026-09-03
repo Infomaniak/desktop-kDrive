@@ -85,13 +85,13 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
 
     const auto state = std::make_shared<ReadState>();
 
-    auto readFuture = std::async(std::launch::async, [_storage = _storage, keychainKey, state]() {
+    const auto readFuture = std::async(std::launch::async, [_storage = _storage, keychainKey, state]() {
         std::string tmpData;
         bool tmpFound = false;
         const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
 
         {
-            std::lock_guard<std::mutex> lock(state->mutex);
+            std::lock_guard lock(state->mutex);
             state->ok = ok;
             state->localFound = tmpFound;
             state->localData = std::move(tmpData);
@@ -100,7 +100,7 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
         state->conditionVariable.notify_one();
     });
 
-    std::unique_lock<std::mutex> lock(state->mutex);
+    std::unique_lock lock(state->mutex);
     if (!state->conditionVariable.wait_for(lock, keychainReadTimeout, [&state]() { return state->done; })) {
         LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain");
         found = false;
