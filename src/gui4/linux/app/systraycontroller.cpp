@@ -23,7 +23,6 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QCoreApplication>
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QWindow>
@@ -33,7 +32,9 @@
 
 namespace KDC {
 
+namespace {
 Q_LOGGING_CATEGORY(lcSystemTrayController, "gui.v4.systray", QtInfoMsg)
+} // namespace
 
 namespace {
 constexpr uint8_t trayAvailabilityRetryLimit = 60;
@@ -128,7 +129,7 @@ void SystemTrayController::initialize() {
 
     (void) connect(_openAction, &QAction::triggered, this, &SystemTrayController::openMainWindowRequested);
     (void) connect(_settingsAction, &QAction::triggered, this, &SystemTrayController::showSettingsWindow);
-    (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::quitRequested);
+    (void) connect(_quitAction, &QAction::triggered, this, &SystemTrayController::requestApplicationQuit);
     (void) connect(&_trayIcon, &QSystemTrayIcon::activated, this, &SystemTrayController::onTrayActivated);
 
     if (_isTrayAvailable) {
@@ -240,8 +241,12 @@ void SystemTrayController::showMainWindow() const {
         return;
     }
 
-    qCInfo(lcSystemTrayController) << "Showing main window from system tray";
-    _mainWindow->show();
+    qCInfo(lcSystemTrayController) << "Showing main window";
+    if (_mainWindow->windowState() == Qt::WindowMinimized) {
+        _mainWindow->showNormal();
+    } else {
+        _mainWindow->show();
+    }
     _mainWindow->raise();
     _mainWindow->requestActivate();
 }
@@ -250,20 +255,32 @@ void SystemTrayController::showSettingsWindow() {
     qCWarning(lcSystemTrayController) << "Settings window action triggered from system tray, but not implemented yet";
 }
 
-void SystemTrayController::hideMainWindow() const {
+void SystemTrayController::hideMainWindow() {
     if (_mainWindow == nullptr) {
         qCWarning(lcSystemTrayController) << "Cannot hide main window: no window registered";
         return;
     }
 
     if (!_isTrayModeActive) {
-        qCWarning(lcSystemTrayController) << "Cannot hide main window in fallback mode, quitting application instead";
-        QCoreApplication::quit();
+        qCWarning(lcSystemTrayController)
+                << "Cannot hide main window in fallback mode, requesting application quit confirmation instead";
+        emit quitConfirmationRequested();
         return;
     }
 
     qCInfo(lcSystemTrayController) << "Hiding main window instead of quitting";
     _mainWindow->hide();
+}
+
+void SystemTrayController::requestApplicationQuit() {
+    if (_quitRequestIssued) {
+        qCDebug(lcSystemTrayController) << "Ignoring duplicate application quit request";
+        return;
+    }
+
+    _quitRequestIssued = true;
+    qCInfo(lcSystemTrayController) << "Application quit requested";
+    emit quitRequested();
 }
 
 void SystemTrayController::startTrayAvailabilityRetry() {
