@@ -41,22 +41,54 @@ struct SynchroErrorKindTests {
         #expect(SynchroErrorKind(errorInfo: errorInfo) == .systemSyncDirDiskMissing)
     }
 
-    private func makeErrorInfo(exitCode: KDC.ExitCode, exitCause: KDC.ExitCause) -> ErrorInfo {
+    @Test("Classifies an invalid file link target error")
+    func invalidFileLinkTargetError() {
+        let errorInfo = makeErrorInfo(
+            exitCode: .Unknown,
+            exitCause: .Unknown,
+            level: .Node,
+            nodeType: .File,
+            cancelType: .InvalidLinkTarget
+        )
+
+        #expect(SynchroErrorKind(errorInfo: errorInfo) == .invalidLinkTarget)
+    }
+
+    @Test("Classifies an invalid directory link target error")
+    func invalidDirectoryLinkTargetError() {
+        let errorInfo = makeErrorInfo(
+            exitCode: .Unknown,
+            exitCause: .Unknown,
+            level: .Node,
+            nodeType: .Directory,
+            cancelType: .InvalidLinkTarget
+        )
+
+        #expect(SynchroErrorKind(errorInfo: errorInfo) == .invalidLinkTarget)
+    }
+
+    private func makeErrorInfo(
+        exitCode: KDC.ExitCode,
+        exitCause: KDC.ExitCause,
+        level: KDC.ErrorLevel = .SyncPal,
+        nodeType: KDC.NodeType = .Unknown,
+        cancelType: KDC.CancelType = .None
+    ) -> ErrorInfo {
         return ErrorInfo(
             dbId: 1,
             synchroDbId: 2,
             time: 0,
-            level: .SyncPal,
+            level: level,
             functionName: "",
             workerName: "",
             exitCode: exitCode,
             exitCause: exitCause,
             localNodeId: "",
             remoteNodeId: "",
-            nodeType: .Unknown,
+            nodeType: nodeType,
             path: "",
             conflictType: .None,
-            cancelType: .None,
+            cancelType: cancelType,
             inconsistencyType: .None,
             destinationPath: "",
             autoResolved: false

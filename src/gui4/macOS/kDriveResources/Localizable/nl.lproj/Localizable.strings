@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Niet-ondersteund bestandstype";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Deze link is uitgesloten van de synchronisatie, omdat het bestemmingspad ongeldig is.\nHet pad moet relatief zijn en mag geen verwijzing naar een bovenliggende map bevatten, zoals „..“.";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Ongeldig bestemmingspad";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Deze map is niet meer toegankelijk op de oorspronkelijke locatie.";
 

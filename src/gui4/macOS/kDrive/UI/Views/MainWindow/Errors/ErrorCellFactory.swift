@@ -359,6 +359,12 @@ struct ErrorCellFactory {
                 title: KDriveLocalizable.errHardlinkTitle,
                 description: KDriveLocalizable.errHardlinkDescription
             )
+        case .invalidLinkTarget:
+            return makeCell(
+                error: error,
+                title: KDriveLocalizable.errInvalidLinkTargetTitle,
+                description: KDriveLocalizable.errInvalidLinkTargetDescription
+            )
         case .localAccess:
             return makeCell(
                 error: error,

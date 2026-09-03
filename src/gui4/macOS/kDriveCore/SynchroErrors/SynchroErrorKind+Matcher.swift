@@ -97,6 +97,8 @@ extension SynchroErrorKind {
             return .node(exitCodes: [.BackError], exitCauses: [.HttpErrForbidden])
         case .hardLink:
             return .node(cancelTypes: [.Hardlink])
+        case .invalidLinkTarget:
+            return .node(cancelTypes: [.InvalidLinkTarget])
         case .localAccess:
             return .node(exitCodes: [.SystemError], exitCauses: [.FileAccessError])
         case .dataSyncDirChanged:

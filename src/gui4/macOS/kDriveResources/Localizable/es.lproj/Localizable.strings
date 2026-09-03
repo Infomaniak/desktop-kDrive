@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Tipo de archivo no admitido";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Este enlace se ha excluido de la sincronización, ya que su ruta de destino no es válida.\nLa ruta debe ser relativa y no puede contener ninguna referencia a una carpeta superior, como «..».";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Ruta de destino no válida";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Esta carpeta ya no es accesible en su ubicación original.";
 

@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Tipo di file non supportato";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Questo collegamento è stato escluso dalla sincronizzazione perché il suo percorso di destinazione non è valido.\nIl percorso deve essere relativo e non può contenere riferimenti a una cartella padre, come « .. ».";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Percorso di destinazione non valido";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Questa cartella non è più accessibile nella sua posizione originale.";
 

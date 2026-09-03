@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Tipo de ficheiro não suportado";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Esta ligação foi excluída da sincronização, uma vez que o seu caminho de destino não é válido.\nO caminho deve ser relativo e não pode conter nenhuma referência a uma pasta pai, como «..».";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Caminho de destino inválido";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Esta pasta já não está acessível na sua localização original.";
 

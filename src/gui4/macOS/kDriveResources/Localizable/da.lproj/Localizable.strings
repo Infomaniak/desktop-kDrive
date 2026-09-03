@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Ikke-understøttet filtype";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Dette link er blevet udelukket fra synkroniseringen, da dets målsti ikke er gyldig.\nStien skal være relativ og må ikke indeholde en henvisning til en overordnet mappe, såsom »..«.";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Ugyldig destinationssti";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Denne mappe er ikke længere tilgængelig på sin oprindelige placering.";
 

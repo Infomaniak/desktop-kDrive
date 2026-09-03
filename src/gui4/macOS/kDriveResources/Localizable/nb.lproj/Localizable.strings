@@ -622,6 +622,12 @@
 /* loco:699c56147f87ce6dc70c3e02 */
 "errHardlinkTitle" = "Filtype støttes ikke";
 
+/* loco:6a9802676f9a7de7c7070232 */
+"errInvalidLinkTargetDescription" = "Denne lenken er ekskludert fra synkroniseringen, fordi destinasjonsstien ikke er gyldig.\nStien må være relativ og kan ikke inneholde noen henvisning til en overordnet mappe, som «..».";
+
+/* loco:6a9802596d8766bc100cf653 */
+"errInvalidLinkTargetTitle" = "Ugyldig destinasjonssti";
+
 /* loco:699dad0f767bc678ce0a7e62 */
 "errInvalidSyncSyncDirAccessDescription" = "Denne mappen er ikke lenger tilgjengelig på sin opprinnelige plassering.";
 
