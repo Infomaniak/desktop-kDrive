@@ -66,9 +66,14 @@ class SystemTrayController final : public QObject {
 
         Q_INVOKABLE void showMainWindow() const;
         Q_INVOKABLE static void showSettingsWindow();
-        Q_INVOKABLE void hideMainWindow() const;
+        Q_INVOKABLE void hideMainWindow();
+
+        /** Requests a complete application shutdown at most once. */
+        Q_INVOKABLE void requestApplicationQuit();
 
     signals:
+        /** Requests confirmation before quitting because the main window cannot be hidden without a system tray. */
+        void quitConfirmationRequested();
         void quitRequested();
         void openMainWindowRequested();
         void trayModeActiveChanged(bool active);
@@ -97,6 +102,7 @@ class SystemTrayController final : public QObject {
         bool _isTrayAvailable = false;
         bool _isTrayModeActive = false;
         bool _isInitialized = false;
+        bool _quitRequestIssued = false;
 };
 
 } // namespace KDC
