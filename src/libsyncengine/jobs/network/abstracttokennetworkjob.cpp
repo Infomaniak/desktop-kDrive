@@ -120,7 +120,7 @@ void AbstractTokenNetworkJob::clearCache() {
     _userToApiKeyMap.clear();
 }
 
-ExitInfo AbstractTokenNetworkJob::runJob() noexcept {
+ExitInfo AbstractTokenNetworkJob::runJob() {
     if (const auto exitInfo = loadApiToken(_apiToken); !exitInfo) {
         return exitInfo;
     }
