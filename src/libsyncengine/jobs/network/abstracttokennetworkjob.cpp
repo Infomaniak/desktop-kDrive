@@ -496,7 +496,7 @@ Account AbstractTokenNetworkJob::getAccount(const Drive &drive) const {
     return account;
 }
 
-void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
+ExitInfo AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
     assert(_driveDbId > 0 && "Invalid drive DB ID.");
 
     {
@@ -505,8 +505,7 @@ void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
         if (const auto it = _driveToApiKeyMap.find(_driveDbId); it != _driveToApiKeyMap.end()) {
             _userDbId = it->second.userDbId;
             _driveId = it->second.driveId;
-
-            return;
+            return ExitCode::Ok;
         }
     }
 
@@ -518,10 +517,13 @@ void AbstractTokenNetworkJob::loadUserInfoFromDriveDbId() {
     const Account &account = getAccount(drive);
     _userDbId = account.userDbId();
 
-    loadUserInfoFromUserDbId();
+    if (const auto exitInfo = loadUserInfoFromUserDbId(); !exitInfo) {
+        return exitInfo;
+    }
 
     const std::scoped_lock lock(_cacheMutex);
     _driveToApiKeyMap[_driveDbId] = {_userDbId, _driveId};
+    return ExitCode::Ok;
 }
 
 ExitInfo AbstractTokenNetworkJob::retrieveApiTokenFromUserCache(ApiToken &apiToken) {
@@ -613,13 +615,19 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
         case ApiType::Drive:
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
-            if (_driveDbId) loadUserInfoFromDriveDbId();
+            if (_driveDbId) {
+                if (const auto exitInfo = loadUserInfoFromDriveDbId(); !exitInfo) {
+                    return exitInfo;
+                }
+            }
             return retrieveAndValidateApiToken();
         }
         case ApiType::Profile:
         case ApiType::DriveByUser:
         case ApiType::Internal: {
-            loadUserInfoFromUserDbId();
+            if (const auto exitInfo = loadUserInfoFromUserDbId(); !exitInfo) {
+                return exitInfo;
+            }
             return retrieveAndValidateApiToken();
         }
         case ApiType::InternalUnauthenticated:
