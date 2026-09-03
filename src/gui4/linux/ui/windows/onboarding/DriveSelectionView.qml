@@ -122,6 +122,8 @@ Item {
                     implicitHeight: IKOnboarding.driveSelectionButtonHeight
                     radius: IKOnboarding.buttonCornerRadius
                     color: IKColors.actionPrimary
+                    border.width: retryButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                    border.color: IKColors.actionOnPrimary
                 }
 
                 padding: 0
@@ -217,7 +219,7 @@ Item {
 
                     contentItem: Text {
                         text: continueButton.text
-                        color: continueButton.enabled ? IKColors.actionOnPrimary : IKColors.actionDisabled
+                        color: IKColors.actionOnPrimary
                         font.pixelSize: IKFonts.bodySize
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -229,6 +231,8 @@ Item {
                         implicitHeight: IKOnboarding.driveSelectionButtonHeight
                         radius: IKOnboarding.buttonCornerRadius
                         color: continueButton.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
+                        border.width: continueButton.visualFocus ? IKOnboarding.buttonFocusBorderWidth : 0
+                        border.color: IKColors.actionOnPrimary
                     }
 
                     padding: 0
