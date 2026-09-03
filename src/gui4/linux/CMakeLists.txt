@@ -76,12 +76,16 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/onboarding/onboardingflowcontroller.h
         app/onboarding/onboardinglogincoordinator.cpp
         app/onboarding/onboardinglogincoordinator.h
+        app/onboarding/onboardingsyncconfigurationcontroller.cpp
+        app/onboarding/onboardingsyncconfigurationcontroller.h
         app/onboarding/onboardingsession.cpp
         app/onboarding/onboardingsession.h
         app/onboarding/onboardingsessionmanager.cpp
         app/onboarding/onboardingsessionmanager.h
         app/onboarding/onboardingsynccreationcoordinator.cpp
         app/onboarding/onboardingsynccreationcoordinator.h
+        app/onboarding/selectedsyncconfigurationsmodel.cpp
+        app/onboarding/selectedsyncconfigurationsmodel.h
         app/onboarding/oauthloginservice.cpp
         app/onboarding/oauthloginservice.h
         app/syncconfiguration/localpaths.cpp
