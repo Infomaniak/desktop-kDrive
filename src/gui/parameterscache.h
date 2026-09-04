@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 
 #include <memory>
 
@@ -27,17 +27,17 @@ namespace KDC {
 class ParametersCache {
     public:
         static std::shared_ptr<ParametersCache> instance() noexcept;
-        static bool isExtendedLogEnabled() noexcept { return instance()->_parametersInfo.extendedLog(); }
+        static bool isExtendedLogEnabled() noexcept { return instance()->_parameters.extendedLog(); }
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
 
-        ParametersInfo &parametersInfo() { return _parametersInfo; }
+        Parameters &parameters() { return _parameters; }
         bool saveParametersInfo(bool displayMessageBoxOnError = true);
 
     private:
         static std::shared_ptr<ParametersCache> _instance;
-        ParametersInfo _parametersInfo;
+        Parameters _parameters;
 
         ParametersCache();
 };

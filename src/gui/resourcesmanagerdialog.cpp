@@ -104,7 +104,7 @@ void ResourcesManagerDialog::initUI() {
     buttonsHBox->addWidget(cancelButton);
     buttonsHBox->addStretch();
 
-    int maxAllowCpuDbValue = ParametersCache::instance()->parametersInfo().maxAllowedCpu();
+    int maxAllowCpuDbValue = ParametersCache::instance()->parameters().maxAllowedCpu();
 
     _slideBarResources->setValue(maxAllowCpuDbValue);
     updateLabel(maxAllowCpuDbValue);
@@ -136,14 +136,14 @@ void ResourcesManagerDialog::onExit() {
 }
 
 void ResourcesManagerDialog::setNeedToSave(bool value) {
-    if (_slideBarResources->value() != ParametersCache::instance()->parametersInfo().maxAllowedCpu()) {
+    if (_slideBarResources->value() != ParametersCache::instance()->parameters().maxAllowedCpu()) {
         _needToSave = value;
         _saveButton->setEnabled(value);
     }
 }
 
 void ResourcesManagerDialog::onSaveButtonTriggered() {
-    ParametersCache::instance()->parametersInfo().setMaxAllowedCpu(_slideBarResources->value());
+    ParametersCache::instance()->parameters().setMaxAllowedCpu(_slideBarResources->value());
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }

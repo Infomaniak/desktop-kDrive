@@ -40,9 +40,9 @@ set(libcommon_SRCS
     data/exclusionapp.h data/exclusionapp.cpp
     data/proxyconfig.h data/proxyconfig.cpp
     data/syncfileitem.h data/syncfileitem.cpp
+    data/parameters.h data/parameters.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
-    info/parametersinfo.h info/parametersinfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
     info/maintenanceinfo.h info/maintenanceinfo.cpp
