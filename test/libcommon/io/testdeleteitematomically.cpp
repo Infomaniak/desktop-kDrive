@@ -56,8 +56,7 @@ void TestDeleteItemAtomically::testDeleteDirectory() {
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(dirPath, cacheDirectory));
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
-    CPPUNIT_ASSERT(
-            !IoHelperTestUtilities::hasFileWithPrefix(cacheDirectoryPath, dirPath.filename().string() + Str("_deleted_item_")));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 }
 
 void TestDeleteItemAtomically::testDeleteNonExistingItem() {
@@ -101,12 +100,10 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!IoHelperTestUtilities::hasFileWithPrefix(cacheDirectoryPath,
-                                                             filePathInSubdir.filename().string() + Str("_deleted_item_")));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!IoHelperTestUtilities::hasFileWithPrefix(cacheDirectoryPath,
-                                                             filePathInSubdir.filename().string() + Str("_deleted_item_")));
+    CPPUNIT_ASSERT(!std::filesystem::is_empty(cacheDirectoryPath));
 #endif
 }
 

@@ -31,9 +31,6 @@ struct IoHelperTestUtilities : public IoHelper {
         static void setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f);
 #endif
 
-        static bool hasFileWithPrefix(const SyncPath &directory, const SyncName &prefix);
-
-
         static void resetFunctions();
 };
 } // namespace KDC
