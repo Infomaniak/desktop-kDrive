@@ -47,7 +47,7 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
     SyncPath relativeRemoteTargetPath;
     try {
         relativeRemoteTargetPath = remoteTargetPath.lexically_relative(remoteTargetPath.root_path());
-    } catch (const std::exception &e) {
+    } catch (const std::exception &) {
         return false;
     }
 

@@ -774,7 +774,6 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
             chunkSize = defaultBufferSize;
         }
 
-        IoError openError = Success;
         std::ifstream ifs;
         if (auto openError = IoError::Success; !IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
