@@ -186,7 +186,8 @@ namespace Infomaniak.kDrive
         }
 
         public enum CreateWindowOptions
-        {   None = 1,
+        {
+            None = 1,
             Foreground = 2,
             CancelOnboarding = 4,
             OpenSettings = 8
@@ -328,6 +329,12 @@ namespace Infomaniak.kDrive
                     WindowStyle = ProcessWindowStyle.Hidden,
                     Arguments = "--synthesis"
                 };
+
+                if (App.Current is App app && app._mainInstance?.IsCurrent == true)
+                {
+                    AppInstance.GetCurrent().UnregisterKey();
+                }
+
                 Process.Start(startInfo);
                 Logger.Log(Logger.Level.Info, $"Server started successfully from {serverPath}.");
             }
@@ -372,7 +379,8 @@ namespace Infomaniak.kDrive
                 if (_updateWindow is null)
                 {
                     _updateWindow = new UpdateWindow();
-                    _updateWindow.Closed += (s, e) => {
+                    _updateWindow.Closed += (s, e) =>
+                    {
                         CreateWindow(CreateWindowOptions.None);
                         _updateWindow = null;
                     };
