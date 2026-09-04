@@ -408,6 +408,7 @@ namespace Infomaniak.kDrive.Types
     public enum TooManyDeletesUserChoice
     {
         None,
+        IgnoreNext,
         Continue,
         Revert,
         EnumEnd

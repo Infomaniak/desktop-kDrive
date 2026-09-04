@@ -63,7 +63,7 @@ namespace Infomaniak.kDrive.ViewModels
         // The list of server level error
         public ObservableCollection<Error> AppErrors = [];
 
-        public Queue<ManyDeletesInfo> ManyDeletesQueue { get; set; } = new();
+        public ManyDeletesController ManyDeletesController { get; } = new();
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
         *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
