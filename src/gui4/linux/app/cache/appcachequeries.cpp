@@ -348,6 +348,21 @@ std::vector<DriveContext> AppCache::driveContexts() const {
     return contexts;
 }
 
+bool AppCache::isAvailableDriveConfigured(const AvailableDriveKey &key) const {
+    const auto accountInfo = accountForAvailableDrive(key.userDbId, key.accountId);
+    if (!accountInfo) {
+        return false;
+    }
+
+    const auto configuredDrive = configuredDriveForAvailableDrive(accountInfo->dbId(), key.driveId);
+    if (!configuredDrive) {
+        return false;
+    }
+
+    const auto syncInfos = syncsForDrive(configuredDrive->dbId());
+    return std::ranges::any_of(syncInfos, [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); });
+}
+
 std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDbId userDbId) const {
     if (const auto userInfo = user(userDbId); !userInfo) {
         return {};
@@ -361,7 +376,11 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDb
         context.accountInfo = accountForAvailableDrive(userDbId, availableDrive.accountId());
         if (context.accountInfo) {
             context.configuredDrive = configuredDriveForAvailableDrive(context.accountInfo->dbId(), availableDrive.driveId());
-            context.alreadyConfigured = context.configuredDrive.has_value();
+            context.alreadyConfigured = isAvailableDriveConfigured(AvailableDriveKey{
+                    .userDbId = userDbId,
+                    .accountId = availableDrive.accountId(),
+                    .driveId = availableDrive.driveId(),
+            });
         }
         contexts.push_back(context);
     }
