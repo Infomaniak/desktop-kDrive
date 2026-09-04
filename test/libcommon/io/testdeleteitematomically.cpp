@@ -96,8 +96,13 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     // Restore the rights so that the temporary directory can be inspected and then deleted.
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, true, true, true, rightsError));
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(std::filesystem::exists(filePathInSubdir));
     CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
+    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
+#endif
 }
 
 } // namespace KDC
