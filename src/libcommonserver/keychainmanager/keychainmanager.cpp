@@ -21,8 +21,8 @@
 
 #include <chrono>
 #include <condition_variable>
-#include <future>
 #include <mutex>
+#include <thread>
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -85,7 +85,7 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
 
     const auto state = std::make_shared<ReadState>();
 
-    const auto readFuture = std::async(std::launch::async, [_storage = _storage, keychainKey, state]() {
+    std::thread([this, keychainKey, state]() {
         std::string tmpData;
         bool tmpFound = false;
         const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
@@ -98,13 +98,12 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
             state->done = true;
         }
         state->conditionVariable.notify_one();
-    });
+    }).detach();
 
     std::unique_lock lock(state->mutex);
     if (!state->conditionVariable.wait_for(lock, keychainReadTimeout, [&state]() { return state->done; })) {
         LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain");
         found = false;
-        (void) readFuture;
         return {ExitCode::SystemError, ExitCause::KeychainAccessTimeout};
     }
     if (!state->ok) {
