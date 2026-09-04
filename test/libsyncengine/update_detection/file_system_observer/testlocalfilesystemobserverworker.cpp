@@ -269,7 +269,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // Create two files with the same name, up to encoding (NFC vs NFD).
     // On Windows and Linux systems, we expect to find two distinct items. But we will only consider one in the local snapshot and
     // we do not guarantee that it will always be the same one. However, during a synchronisation, we should always synchronize
-    // the item for wich we detected a change last time. On MacOSX, a single item is expected as the system creates a single file
+    // the item for which we detected a change last time. On MacOSX, a single item is expected as the system creates a single file
     // (overwrite).
 #ifndef KD_MACOS // Duplicate file names are not allowed.
     using namespace testhelpers;

@@ -61,11 +61,11 @@ jobs:
     runs-on: [self-hosted, Windows ]
     steps:
       - name: Checkout the PR
-        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build' }}
         uses: actions/checkout@v6.0.2
 
       - name: Check translations
-        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build' }}
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
@@ -92,7 +92,7 @@ jobs:
              }
 
       - name: Skip translations check
-        if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        if: ${{ !(inputs.enable_safety_checks_and_upload_builds_to_kdrive && inputs.build_linux != 'Do not build') }}
         run: |
              Write-Host "Safety checks and uploads are disabled: translations check skipped."
              "<h1>:warning: Safety checks disabled: translations check skipped.</h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append

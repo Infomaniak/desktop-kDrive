@@ -81,7 +81,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
 
         public event EventHandler<SignalEventArgs> SignalReceived = delegate { };
-        public event EventHandler ConnectionLost = delegate { };
+        public event EventHandler<ConnectionLostArgs> ConnectionLost = delegate { };
 
         public TcpServerCommClient(IKeychainStore keychainStore)
         {
@@ -104,6 +104,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (FileNotFoundException)
             {
+                Logger.Log(Logger.Level.Info, $".comm file not found at {_commPortFilePath}. The server may not be running.");
                 return null;
             }
             catch (Exception ex)
@@ -114,8 +115,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 #else
             if (!TryParseServerPortFromArguments(Environment.GetCommandLineArgs(), out int port, out string errorMessage))
             {
-                Logger.Log(Logger.Level.Fatal, errorMessage);
-                ConnectionLost?.Invoke(this, new EventArgs());
+                Logger.Log(Logger.Level.Info, errorMessage);
                 return null;
             }
 
@@ -184,76 +184,59 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return false;
             }
 
-            while (!_stopRequested && !cancellationToken.IsCancellationRequested)
+            if (_stopRequested || cancellationToken.IsCancellationRequested) return false;
+
+            if (_stream is not null && _stream.IsAuthenticated)
+                return true;
+
+            int? port = GetServerPort();
+
+            if (port is null)
             {
-                if (_stream is not null && _stream.IsAuthenticated)
-                    return true;
+                Logger.Log(Logger.Level.Info, "Failed to get server port, starting a server and closing.");
+                ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerUnreachable));
+                return false;
+            }
 
-                int? port = GetServerPort();
-                try
+            try
+            {
+                X509Certificate2? serverCertificate = LoadServerCertificate();
+                if (serverCertificate is null)
                 {
-                    if (port is null)
-                    {
-#if DEBUG
-                        // In debug mode, the client can start before the server, so we wait and retry until the .comm file is available
-                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
-                        continue;
-#else
-                        Logger.Log(Logger.Level.Fatal, "Failed to get server port.");
-                        return false;
-#endif
-                    }
-
-                    X509Certificate2? serverCertificate = LoadServerCertificate();
-                    if (serverCertificate is null)
-                    {
-                        // The server may not have published its certificate yet; retry.
-                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    X509Certificate2? clientCertificate = LoadClientCertificate();
-                    if (clientCertificate is null)
-                    {
-                        // The server may not have published the client certificate/key yet, or the
-                        // material is incomplete; the server requires it, so retry until it is available.
-                        serverCertificate.Dispose();
-                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
-                    DisposeConnection();
-                    using (serverCertificate)
-                    using (clientCertificate)
-                    {
-                        _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, serverCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
-                    }
-                    Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
-                    _pollingTask = Task.Run(PollingLoop);
-                    return true;
-                }
-                catch (OperationCanceledException)
-                {
-                    Logger.Log(Logger.Level.Info, "Connection initialization was canceled.");
+                    ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerUnreachable));
                     return false;
                 }
-                catch (Exception ex) when (ex is SocketException or System.Security.Authentication.AuthenticationException or IOException)
+
+                X509Certificate2? clientCertificate = LoadClientCertificate();
+                if (clientCertificate is null)
                 {
-                    Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}. Retrying in 0.5 seconds...");
-                    DisposeConnection();
-                    try
-                    {
-                        await Task.Delay(500, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Logger.Log(Logger.Level.Info, "Connection retry delay was canceled.");
-                        return false;
-                    }
-                    continue;
+                    serverCertificate.Dispose();
+                    ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerUnreachable));
+                    return false;
                 }
+
+                Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
+                DisposeConnection();
+                using (serverCertificate)
+                using (clientCertificate)
+                {
+                    _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, serverCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
+                }
+                Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
+                _pollingTask = Task.Run(PollingLoop);
+                return true;
             }
+            catch (OperationCanceledException)
+            {
+                Logger.Log(Logger.Level.Info, "Connection initialization was canceled.");
+                
+            }
+            catch (Exception ex) when (ex is SocketException or System.Security.Authentication.AuthenticationException or IOException)
+            {
+                Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}");
+             
+            }
+            ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerUnreachable));
             return false;
         }
 
@@ -280,7 +263,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     {
                         Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
                         DisposeConnection();
-                        ConnectionLost?.Invoke(this, EventArgs.Empty);
+                        ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                         return;
                     }
 
@@ -296,7 +279,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     Logger.Log(Logger.Level.Error, $"Socket poll error: {ex.Message}");
                     DisposeConnection();
-                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
                 catch (Exception ex)
@@ -373,7 +356,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (_pendingRequests.TryRemove(requestId, out var tcs))
                     tcs.SetResult(new CommData());
-                ConnectionLost?.Invoke(this, EventArgs.Empty);
+                ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                 Logger.Log(Logger.Level.Error, $"Socket write error: {ex.Message}");
                 return new CommData();
             }
@@ -413,7 +396,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (!CheckBufferConsistency())
                 {
-                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
 
@@ -431,7 +414,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (!jsonSpan.EndsWith("}"))
                 {
                     Logger.Log(Logger.Level.Error, "Unexpected end character");
-                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
 
@@ -443,7 +426,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (messageObj is null)
                 {
                     Logger.Log(Logger.Level.Error, "Invalid message format.");
-                    ConnectionLost?.Invoke(this, EventArgs.Empty);
+                    ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
 
