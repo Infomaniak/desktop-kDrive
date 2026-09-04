@@ -1028,15 +1028,15 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     waitForSyncToBeIdle(std::source_location::current());
 
     testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
-    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
+    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
-    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_file.txt",
+    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
 
     (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
-    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "directory",
+    std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
-    std::filesystem::create_directory_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "non_existing_directory",
+    std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_directory",
                                               _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
 
     waitForSyncToBeIdle(std::source_location::current());
