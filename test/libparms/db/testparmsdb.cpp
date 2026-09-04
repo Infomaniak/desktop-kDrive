@@ -637,6 +637,20 @@ void TestParmsDb::testAppStateShowV4Onboarding() {
     CPPUNIT_ASSERT_EQUAL(std::string("0"), std::get<std::string>(preservedValue));
 }
 
+void TestParmsDb::testAppUID() {
+    // The application UID is generated when the DB is initialized and must be retrievable via the helper.
+    bool found = false;
+    AppStateValue value;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::AppUid, value, found) && found);
+    const auto &expectedAppUID = std::get<std::string>(value);
+    CPPUNIT_ASSERT(!expectedAppUID.empty());
+    CPPUNIT_ASSERT_EQUAL(expectedAppUID, ParmsDb::appUID());
+
+    // A missing key must yield an empty UID.
+    CPPUNIT_ASSERT(deleteAppState(AppStateKey::AppUid));
+    CPPUNIT_ASSERT(ParmsDb::appUID().empty());
+}
+
 #if defined(KD_MACOS)
 void TestParmsDb::testExclusionApp() {
     ExclusionApp exclusionApp1("app id 1", "description 1");
