@@ -23,6 +23,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -72,6 +73,22 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
 ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
     constexpr auto keychainReadTimeout = std::chrono::seconds(60);
 
+    if (_inFlightReadThreads.load(std::memory_order_acquire) >= maxConcurrentKeychainReads) {
+        LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
+
+    uint16_t expectedReads = _inFlightReadThreads.load(std::memory_order_relaxed);
+    while (expectedReads < maxConcurrentKeychainReads &&
+           !_inFlightReadThreads.compare_exchange_weak(expectedReads, static_cast<uint16_t>(expectedReads + 1),
+                                                       std::memory_order_acq_rel, std::memory_order_relaxed)) {}
+    if (expectedReads >= maxConcurrentKeychainReads) {
+        LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
+
     struct ReadState {
             std::mutex mutex;
             std::condition_variable conditionVariable;
@@ -96,6 +113,7 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
             state->done = true;
         }
         state->conditionVariable.notify_one();
+        (void) _inFlightReadThreads.fetch_sub(1, std::memory_order_acq_rel);
     }).detach();
 
     std::unique_lock lock(state->mutex);
