@@ -25,11 +25,13 @@ IKModal {
     id: root
 
     required property var controller
+    property real summaryContentY: 0
 
     preferredWidth: IKSyncConfiguration.modalWidth
     // Escape cancels the current page, but never while a request the user cannot see is still running.
     escapeDismissible: !root.controller.busy
     visible: root.controller.visible
+    onClosed: root.summaryContentY = 0
     title: {
         if (root.controller.driveConfigurationPage) {
             return qsTrId("onBoardingAdvancedSettingsDriveTitle")
@@ -79,6 +81,8 @@ IKModal {
 
         SyncConfigurationSummaryPage {
             controller: root.controller
+            initialContentY: root.summaryContentY
+            onContentYUpdated: contentY => root.summaryContentY = contentY
         }
     }
 
