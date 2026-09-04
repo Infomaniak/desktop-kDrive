@@ -716,7 +716,7 @@ ExitCode GuiRequests::setLaunchOnStartup(const bool enabled) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getAppState(const AppStateKey key, AppStateValue &value) {
+ExitInfo GuiRequests::getAppState(const AppStateKey key, AppStateValue &value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
@@ -742,7 +742,7 @@ ExitCode GuiRequests::getAppState(const AppStateKey key, AppStateValue &value) {
     return exitCode;
 }
 
-ExitCode GuiRequests::updateAppState(const AppStateKey key, const AppStateValue &value) {
+ExitInfo GuiRequests::updateAppState(const AppStateKey key, const AppStateValue &value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
