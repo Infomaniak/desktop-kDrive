@@ -500,7 +500,7 @@ ExitInfo ServerRequests::requestToken(const std::string &code, const std::string
     Login login;
     if (const auto exitInfo = login.loadTokenFromKeychain(keychainKey); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Login::loadTokenFromKeychain: " << exitInfo);
-        return exitInfo.code();
+        return exitInfo;
     }
     if (const auto exitInfo = login.requestToken(code, codeVerifier); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken: " << exitInfo);
