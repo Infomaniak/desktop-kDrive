@@ -44,8 +44,12 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
     // Case of an advanced synchronization.
     // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
     // We remove the "/" at the beginning to compare it with a reconstructed relative path.
-    std::error_code ec;
-    const auto relativeRemoteTargetPath = remoteTargetPath.lexically_relative(remoteTargetPath.root_path());
+    SyncPath relativeRemoteTargetPath;
+    try {
+        relativeRemoteTargetPath = remoteTargetPath.lexically_relative(remoteTargetPath.root_path());
+    } catch (const std::exception &e) {
+        return false;
+    }
 
     if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
         return remoteRelativePath == localRelativePath;
