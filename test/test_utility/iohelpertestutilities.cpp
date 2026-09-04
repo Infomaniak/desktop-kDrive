@@ -63,7 +63,10 @@ void IoHelperTestUtilities::resetFunctions() {
 
 bool IoHelperTestUtilities::hasFileWithPrefix(const SyncPath &directory, const SyncName &prefix) {
     for (const auto &entry: std::filesystem::directory_iterator(directory)) {
-        if (entry.is_regular_file() && entry.path().filename().string().rfind(prefix, 0) == 0) return true;
+        if (!entry.is_regular_file()) continue;
+
+        const auto &filename = entry.path().filename().string();
+        if (filename.find(prefix, 0) == 0) return true;
     }
 
     return false;
