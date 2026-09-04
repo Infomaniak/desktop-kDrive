@@ -27,7 +27,7 @@ namespace KDC {
 
 class TestKeychainManager : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestKeychainManager);
-        // CPPUNIT_TEST(testTimeOut);
+        CPPUNIT_TEST(testTimeOut);
         CPPUNIT_TEST(testConcurrentReadLimit);
         CPPUNIT_TEST_SUITE_END();
 
