@@ -821,7 +821,7 @@ void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled)
     LOG_INFO(_logger, msg);
 }
 
-ExitInfo AppServer::updateParametersAndPropagateChanges(const ParametersInfo &parametersInfo) {
+ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &parametersInfo) {
     auto newParametersInfo = parametersInfo;
 
     // Retrieve current settings
@@ -2213,7 +2213,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
 #endif
         case RequestNum::PARAMETERS_INFO: {
-            ParametersInfo parametersInfo;
+            Parameters parametersInfo;
             const auto exitCode = ServerRequests::getParameters(parametersInfo);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getParameters");
@@ -2225,7 +2225,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::PARAMETERS_UPDATE: {
-            ParametersInfo parametersInfo;
+            Parameters parametersInfo;
             QDataStream paramsStream(params);
             paramsStream >> parametersInfo;
 

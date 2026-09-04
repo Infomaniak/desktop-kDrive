@@ -56,7 +56,7 @@ ProxyServerDialog::ProxyServerDialog(QWidget *parent) :
     _portValidator(new PortValidator(this)) {
     initUI();
 
-    _proxyConfig = ParametersCache::instance()->parametersInfo().proxyConfig();
+    _proxyConfig = ParametersCache::instance()->parameters().proxyConfig();
 
     updateUI();
 }
@@ -324,7 +324,7 @@ void ProxyServerDialog::onSaveButtonTriggered(const bool checked) {
         }
     }
 
-    ParametersCache::instance()->parametersInfo().setProxyConfig(_proxyConfig);
+    ParametersCache::instance()->parameters().setProxyConfig(_proxyConfig);
     (void) ParametersCache::instance()->saveParametersInfo();
 
     accept();
