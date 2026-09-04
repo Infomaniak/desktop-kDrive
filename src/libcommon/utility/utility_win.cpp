@@ -198,7 +198,7 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
 
 ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
     // Generate directory path
-    if (const auto exitInfo = deviceTempDirectoryPath(directoryPath); !exitInfo) {
+    if (const auto exitInfo = tempDirectoryPath(directoryPath); !exitInfo) {
         return exitInfo;
     }
 

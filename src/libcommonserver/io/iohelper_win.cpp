@@ -502,8 +502,8 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
-        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        LOGW_WARN(logger(), L"Error in CommonUtility::tempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
         return;
     }
 
