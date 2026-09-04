@@ -14,6 +14,8 @@
 ### Local Norms (Linux v4)
 
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
+- Treat Qt 6.11.1 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing behavior
+  to an older Qt release.
 - Do not add links to `.md` files that are not versioned in git.
 - Use Swiss German orthography for German Linux v4 translations: write `ss` instead of `ß`.
 - Never launch a build unless explicitly asked by the user.
@@ -52,6 +54,10 @@
   old type names, then validate at least the `kdrive_qml` target.
 - For tray fallback testing, `KDRIVE_FORCE_NO_TRAY=1` is Debug-only and forces the startup tray probe to stay disabled.
 - Avoid magic layout values in QML; put reusable or semantic dimensions and ratios in `ui/tokens/` with explicit names.
+- Give an in-app modal its hosting window's `effectiveShadowMargin` and `surfaceRadius` as `scrimInset`/`scrimRadius`.
+  The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
+- Do not place a `Secondary` `IKModalButton` on a card surface: its outline is too close to that surface in both
+  themes. Use the `Tonal` role there, and keep `Secondary` for a plain modal or page background.
 - Size Home Quick Access from the widest translated shortcut label or the drive name capped to the Windows-aligned
   display width. Keep shortcut labels fully visible, while the drive name wraps to two lines before eliding. Let the
   Home status panel consume the remaining horizontal space.
@@ -154,7 +160,7 @@
 
 ## Scope
 
-- Linux-only v4 frontend based on Qt 6.8 (QML + C++).
+- Linux-only v4 frontend based on Qt 6.11.1 (QML + C++).
 - This package handles UI bootstrap and server communication only.
 - Sync business logic stays in `src/libsyncengine/` and server-side jobs.
 
@@ -353,7 +359,8 @@
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
       services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
       feature dialogs supply their own wording, state, and actions. `IKCheckBox` is the shared tri-state indicator: it
-      renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
+      renders the state it is given and only reports clicks, so a model owning the selection stays authoritative. `IKLinkButton` is the
+      inline textual action for rows and cards that must not carry a button surface of their own.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
       accept page-specific header visuals and content while preserving the standard move, resize, minimize, maximize,

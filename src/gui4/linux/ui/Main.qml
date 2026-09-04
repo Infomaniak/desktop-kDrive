@@ -186,6 +186,8 @@ IKShadowedWindow {
 
         OnboardingWindow {
             session: onboardingLoader.session
+            surfaceInset: mainWindow.effectiveShadowMargin
+            surfaceRadius: mainWindow.surfaceRadius
         }
     }
 
