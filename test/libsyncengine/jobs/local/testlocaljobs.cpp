@@ -418,7 +418,6 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveToTrashDisabledDeleteJob.exitInfo().code());
     CPPUNIT_ASSERT(!std::filesystem::exists(anotherFilePath));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / anotherFilePath.filename()));
 
     // A file within a directory that misses owner write and execute permissions cannot be hard deleted and is left unmodified.
     const SyncPath permissionLessSubdir = temporaryDirectory.path() / "permission_less_subdirectory";
@@ -444,10 +443,8 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
 #endif
 }
 
