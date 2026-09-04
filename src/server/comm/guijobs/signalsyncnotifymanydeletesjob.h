@@ -24,7 +24,8 @@ namespace KDC {
 
 class SignalSyncNotifyManyDeletesJob : public AbstractGuiJob {
     public:
-        explicit SignalSyncNotifyManyDeletesJob(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, std::vector<SyncPath> filesPaths);
+        explicit SignalSyncNotifyManyDeletesJob(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
+                                                std::vector<SyncPath> filesPaths);
 
     private:
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; }

@@ -4928,7 +4928,8 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
     }
 }
 
-void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType, const std::vector<SyncPath> &filesPaths) const {
+void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
+                                            const std::vector<SyncPath> &filesPaths) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params =
