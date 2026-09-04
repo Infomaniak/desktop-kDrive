@@ -422,7 +422,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> _remoteUpdateTree{nullptr};
         std::shared_ptr<ConflictQueue> _conflictQueue{nullptr};
         std::shared_ptr<SyncOperationList> _syncOps{nullptr};
-        mutable std::mutex _progressInfoMutex;
         std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
         // Workers
@@ -482,6 +481,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
+
+        mutable std::mutex _progressInfoMutex;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
