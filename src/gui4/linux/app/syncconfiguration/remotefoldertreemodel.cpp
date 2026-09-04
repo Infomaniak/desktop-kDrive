@@ -297,7 +297,6 @@ void RemoteFolderTreeModel::handleInitialExclusionPathResult(const QString &node
         emit stateChanged();
         return;
     }
-    emit stateChanged();
     emit selectionChanged();
     requestChildren(_root.get());
 }
