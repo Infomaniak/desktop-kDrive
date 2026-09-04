@@ -35,6 +35,7 @@ OnboardingState::OnboardingState(AppCache &cache, QObject *const parent) :
         }
     });
     (void) connect(&_cache, &AppCache::allAvailableDrivesChanged, this, &OnboardingState::pruneSelectedAvailableDrives);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &OnboardingState::pruneSelectedAvailableDrives);
 }
 
 qint64 OnboardingState::selectedUserDbId() const {
@@ -195,12 +196,14 @@ void OnboardingState::pruneSelectedAvailableDrives() {
     bool selectionChanged = false;
     bool pendingConfigsChanged = false;
     for (auto it = _selectedAvailableDriveKeys.begin(); it != _selectedAvailableDriveKeys.end();) {
-        if (_cache.availableDrive(*it)) {
+        const bool available = _cache.availableDrive(*it).has_value();
+        const bool configured = available && _cache.isAvailableDriveConfigured(*it);
+        if (available && !configured) {
             ++it;
             continue;
         }
-        qCDebug(lcOnboardingState) << "Selected drive pruned (no longer available) | userDbId:" << it->userDbId
-                                   << "/ driveId:" << it->driveId;
+        qCDebug(lcOnboardingState) << "Selected drive pruned | userDbId:" << it->userDbId << "/ driveId:" << it->driveId
+                                   << "/ available:" << available << "/ configured:" << configured;
         pendingConfigsChanged = _pendingSyncConfigs.erase(*it) > 0 || pendingConfigsChanged;
         it = _selectedAvailableDriveKeys.erase(it);
         selectionChanged = true;
