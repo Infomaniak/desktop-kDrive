@@ -45,7 +45,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath) {};
+            SyncLocalDeleteJob(syncPal, absolutePath){};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -273,7 +273,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
@@ -433,13 +433,22 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
                                                   GenericLocalDeleteJob::ForceHardDelete::Yes);
     permissionLessDeleteJob.runSynchronously();
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), permissionLessDeleteJob.exitInfo());
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), permissionLessDeleteJob.exitInfo());
+#endif
 
     // Restore the rights so that the temporary directory can be inspected and then deleted.
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, true, true, true, rightsError));
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(std::filesystem::exists(filePathInSubdir));
     CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
+    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
+#endif
 }
 
 } // namespace KDC
