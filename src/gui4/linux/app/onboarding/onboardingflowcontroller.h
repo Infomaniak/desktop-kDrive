@@ -85,7 +85,6 @@ class OnboardingFlowController final : public QObject {
         Q_INVOKABLE void requestFreeDriveOrder() const;
         Q_INVOKABLE void requestAdvancedSettings();
         Q_INVOKABLE void requestDriveSelectionContinue();
-        Q_INVOKABLE void retrySynchronization();
         Q_INVOKABLE void completeOnboarding();
         Q_INVOKABLE void cancel();
         Q_INVOKABLE void setCurrentStep(Step step);
@@ -106,7 +105,7 @@ class OnboardingFlowController final : public QObject {
         void cancelRequested();
         void advancedSettingsRequested();
         void driveSelectionContinueRequested();
-        void synchronizationRetryRequested();
+        void driveSelectionReturnRequested();
         void synchronizationFailedChanged();
         void readyActionEnabledChanged();
         void completed();
@@ -115,6 +114,7 @@ class OnboardingFlowController final : public QObject {
         static constexpr qint32 stepCountValue{4};
 
         void setLoginState(LoginState loginState);
+        void returnToDriveSelection();
 
         Step _currentStep{Login};
         LoginState _loginState{LoginIdle};
