@@ -875,8 +875,9 @@ void SyncPalWorker::resetVfsFilesStatus() {
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator.");
+    if (!IoHelper::getRecursiveDirectoryIterator(_syncPal->localPath(), ioError, dirIt)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(_syncPal->localPath(), ioError));
         return;
     }
 

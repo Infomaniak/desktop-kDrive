@@ -110,9 +110,10 @@ ExitInfo ExcludeListPropagator::checkItems() {
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    if (!IoHelper::recursiveDirectoryIterator(_syncPal->localPath(), dirIt)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
-        return ExitCode::SystemError;
+    if (!IoHelper::getRecursiveDirectoryIterator(_syncPal->localPath(), ioError, dirIt)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: "
+                                   << Utility::formatIoError(_syncPal->localPath(), ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {

@@ -1203,7 +1203,7 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
             DirectoryEntry entry;
 
             if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
-                LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+                LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator");
                 continue;
             }
 

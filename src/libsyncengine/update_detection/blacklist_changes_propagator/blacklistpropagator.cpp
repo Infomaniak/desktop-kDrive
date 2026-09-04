@@ -125,9 +125,10 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    if (!IoHelper::recursiveDirectoryIterator(absoluteLocalPath, dirIt)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
-        return ExitCode::SystemError;
+    if (!IoHelper::getRecursiveDirectoryIterator(absoluteLocalPath, ioError, dirIt)) {
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(absoluteLocalPath, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {

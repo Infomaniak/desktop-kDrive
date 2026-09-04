@@ -375,8 +375,8 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    if (!IoHelper::recursiveDirectoryIterator(QStr2Path(dirPath), dirIt)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::recursiveDirectoryIterator");
+    if (!IoHelper::getRecursiveDirectoryIterator(QStr2Path(dirPath), ioError, dirIt)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(dirPath, ioError));
         return;
     }
 

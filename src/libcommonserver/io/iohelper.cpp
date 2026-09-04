@@ -145,10 +145,14 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
 
 std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     switch (ioError) {
+        case IoError::Success:
+            return "Success";
         case IoError::AccessDenied:
             return "Access denied";
         case IoError::AttrNotFound:
             return "Attribute not found";
+        case IoError::DirectoryExists:
+            return "Directory exists";
         case IoError::DiskFull:
             return "Disk full";
         case IoError::FileExists:
@@ -157,20 +161,29 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "File name too long";
         case IoError::InvalidArgument:
             return "Invalid argument";
+        case IoError::InvalidDirectoryIterator:
+            return "Invalid directory iterator";
+        case IoError::InvalidFileName:
+            return "Invalid file name";
         case IoError::IsADirectory:
             return "Is a directory";
+        case IoError::IsAFile:
+            return "Is a file";
+        case IoError::MaxDepthExceeded:
+            return "Max depth exceeded";
         case IoError::NoSuchFileOrDirectory:
             return "No such file or directory";
         case IoError::ResultOutOfRange:
             return "Result out of range";
-        case IoError::Success:
-            return "Success";
-        case IoError::InvalidDirectoryIterator:
-            return "Invalid directory iterator";
+        case IoError::CrossDeviceLink:
+            return "Cross device link";
+        case IoError::FileOrDirectoryCorrupted:
+            return "File or directory corrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "Too many symbolic link levels";
+        case IoError::Unknown:
         default:
-            return "Unknown error";
+            return "Unknown";
     }
 }
 
@@ -1137,18 +1150,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 
 void IoHelper::DirectoryIterator::disableRecursionPending() {
     if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
-}
-
-bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
-    auto ioError = IoError::Success;
-    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
-
-    if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
-        return false;
-    }
-
-    return true;
 }
 
 ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
