@@ -375,7 +375,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                        << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
-        if (op->targetSide() == ReplicaSide::Remote) _localDeleteOperationsPaths.emplace_back(currentNode->getPath());
+        if (op->targetSide() == ReplicaSide::Remote) (void) _localDeleteOperationsPaths.emplace_back(currentNode->getPath());
     }
 
     _deletedNodes.insert(*currentNode->id());
