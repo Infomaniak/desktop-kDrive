@@ -45,8 +45,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         Q_PROPERTY(bool folderSelectionPage READ folderSelectionPage NOTIFY pageChanged)
         Q_PROPERTY(bool busy READ busy NOTIFY presentationChanged)
         Q_PROPERTY(bool canValidate READ canValidate NOTIFY presentationChanged)
-        Q_PROPERTY(QString errorTitle READ errorTitle NOTIFY presentationChanged)
-        Q_PROPERTY(QString errorText READ errorText NOTIFY presentationChanged)
+        Q_PROPERTY(QString localFolderErrorText READ localFolderErrorText NOTIFY presentationChanged)
         Q_PROPERTY(QString currentDriveName READ currentDriveName NOTIFY presentationChanged)
         Q_PROPERTY(QColor currentDriveColor READ currentDriveColor NOTIFY presentationChanged)
         Q_PROPERTY(QString currentLocalPath READ currentLocalPath NOTIFY presentationChanged)
@@ -73,8 +72,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         [[nodiscard]] bool folderSelectionPage() const { return _page == FolderSelection; }
         [[nodiscard]] bool busy() const { return _busy; }
         [[nodiscard]] bool canValidate() const;
-        [[nodiscard]] QString errorTitle() const { return _errorTitle; }
-        [[nodiscard]] QString errorText() const { return _errorText; }
+        [[nodiscard]] QString localFolderErrorText() const { return _localFolderErrorText; }
         [[nodiscard]] QString currentDriveName() const;
         [[nodiscard]] QColor currentDriveColor() const;
         /** Local folder of the drive being configured, in its `~`-shortened display form. */
@@ -120,8 +118,8 @@ class OnboardingSyncConfigurationController final : public QObject {
         void refreshSummaryModel();
         void setBusy(bool busy);
         void abortPendingRequest();
-        void clearError();
-        void setError(const QString &title, const QString &text);
+        void clearLocalFolderError();
+        void setLocalFolderError(const QString &text);
         void closeWithoutCommit();
         void commitAndClose();
 
@@ -138,8 +136,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         Page _page{Summary};
         bool _visible{false};
         bool _busy{false};
-        QString _errorTitle;
-        QString _errorText;
+        QString _localFolderErrorText;
         uint64_t _requestGeneration{0};
 };
 
