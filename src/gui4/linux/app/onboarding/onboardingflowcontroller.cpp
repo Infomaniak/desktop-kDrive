@@ -23,12 +23,19 @@
 #include <QCoreApplication>
 #include <QDesktopServices>
 #include <QMetaEnum>
+#include <QTimer>
+
+#include <chrono>
 
 Q_LOGGING_CATEGORY(lcOnboardingFlowController, "gui.v4.onboardingflow", QtInfoMsg)
 
 namespace KDC {
 
 namespace {
+// Long enough to read the failure, short enough not to strand the user on a screen they cannot act on. Shorter than
+// the Windows teaching tip, which overlays the selection rather than holding the whole view.
+constexpr std::chrono::seconds errorDisplayDuration{3};
+
 [[nodiscard]] qint32 stepToIndex(const OnboardingFlowController::Step step) {
     return static_cast<uint8_t>(step);
 }
@@ -140,15 +147,17 @@ void OnboardingFlowController::requestDriveSelectionContinue() {
     emit driveSelectionContinueRequested();
 }
 
-void OnboardingFlowController::retrySynchronization() {
+void OnboardingFlowController::returnToDriveSelection() {
+    // The step may have moved on while the error was displayed, through a cancellation or a window closing.
     if (_currentStep != Synchronization || !_synchronizationFailed) {
         return;
     }
 
-    qCInfo(lcOnboardingFlowController) << "Onboarding synchronization retry requested";
+    qCInfo(lcOnboardingFlowController) << "Onboarding returning to drive selection after a failed synchronization";
     _synchronizationFailed = false;
     emit synchronizationFailedChanged();
-    emit synchronizationRetryRequested();
+    emit driveSelectionReturnRequested();
+    setCurrentStep(DriveSelection);
 }
 
 void OnboardingFlowController::cancel() {
@@ -200,6 +209,9 @@ void OnboardingFlowController::failSynchronization() {
     qCWarning(lcOnboardingFlowController) << "Onboarding synchronization creation failed";
     _synchronizationFailed = true;
     emit synchronizationFailedChanged();
+    // The error stays up long enough to be read, then the selection takes over. Offering a retry here would only
+    // replay a request the server has already rejected, with a configuration only the selection can change.
+    QTimer::singleShot(errorDisplayDuration, this, &OnboardingFlowController::returnToDriveSelection);
 }
 
 void OnboardingFlowController::completeSynchronization() {
