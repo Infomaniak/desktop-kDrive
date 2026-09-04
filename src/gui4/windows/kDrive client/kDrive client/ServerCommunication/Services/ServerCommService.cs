@@ -112,10 +112,24 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             _getSubFolderQueue = new RequestQueue(_commClient, 5);
         }
 
-        private void OnConnectionLost(object? sender, EventArgs e)
+        private void OnConnectionLost(object? sender, ConnectionLostArgs e)
         {
-            Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
-            App.ExitApplication();
+            if(e.Reason == ConnectionLostArgs.ConnectionLostReason.ServerDisconnected)
+            {
+                Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
+                App.ExitApplication();
+            }
+            else if(e.Reason == ConnectionLostArgs.ConnectionLostReason.ServerUnreachable)
+            {
+                Logger.Log(Logger.Level.Info, "Connection to server lost due to server being unreachable. Starting it");
+                App.StartServer();
+                App.ExitApplication();
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "Connection to server lost due to unknown reason.");
+                App.ExitApplication();
+            }
         }
 
         public async Task<bool> Init(CancellationToken cancellationToken)
@@ -1859,7 +1873,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return false;
                 };
 
-                // Remove any item with the same remote or local node id wich is not syncing or done (ie errored)
+                // Remove any item with the same remote or local node id which is not syncing or done (ie errored)
                 var toBeRemoved = activities.Where(a => shouldBeRemoved(fileItemInfo, a)).ToList();
                 activities.RemoveMany(toBeRemoved);
 
