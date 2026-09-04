@@ -125,6 +125,7 @@ void TestIntegration::setUp() {
     const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
     sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
+
     _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
                                              KDRIVE_VERSION_STRING);
     _syncPal->createSharedObjects();
@@ -306,7 +307,8 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(dirpath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(dirpath));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(dirpath.filename()));
 #endif
@@ -322,7 +324,8 @@ void TestIntegration::testBlacklist() {
 
     CPPUNIT_ASSERT(!std::filesystem::exists(_syncPal->localPath() / filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(_syncPal->localPath() / filename));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -483,8 +486,8 @@ void TestIntegration::testExclusionTemplates() {
                                             filename)); // The local file has been moved to trash.
     CPPUNIT_ASSERT(!std::filesystem::exists(filename));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() ||
-                   testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
+    CPPUNIT_ASSERT(testhelpers::hasTrashInfo());
+    CPPUNIT_ASSERT(testhelpers::isInTrash(_syncPal->localPath() / tmpRemoteDir.name() / filename));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(filename));
 #endif
@@ -583,6 +586,7 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, fileStat.creationTime, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -591,7 +595,7 @@ void TestIntegration::testNegativeModificationTime() {
 
         GetFileInfoJob fileInfoJob(_driveDbId, *dbNode.nodeIdRemote());
         (void) fileInfoJob.runSynchronously();
-        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
     }
     waitForSyncToBeIdle(std::source_location::current());
     {
@@ -628,6 +632,7 @@ void TestIntegration::testNegativeModificationTime() {
         FileStat fileStat;
         bool found = false;
         IoHelper::getFileStat(filepath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        const SyncTime beforeComputeFsOperationsTime = CommonUtility::getCurrentSyncTime();
         (void) IoHelper::setFileDates(filepath, timeInput, timeInput, false);
         waitForSyncToBeIdle(std::source_location::current());
 
@@ -640,10 +645,10 @@ void TestIntegration::testNegativeModificationTime() {
         // Linux: Creation date cannot be changed.
         CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileInfoJob.creationTime());
 #else
-        // Setting both a negative creation and modification date is accepted.
+        // Setting a negative creation date is accepted.
         CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.creationTime());
 #endif
-        CPPUNIT_ASSERT_EQUAL(timeInput, fileInfoJob.modificationTime());
+        CPPUNIT_ASSERT_GREATEREQUAL(beforeComputeFsOperationsTime, fileInfoJob.modificationTime());
     }
 
     logStep("testNegativeModificationTime");
@@ -1018,62 +1023,64 @@ int64_t TestIntegration::countItemsInRemoteDir(const DriveDbId driveDbId, const 
 }
 
 void TestIntegration::testSynchronizationOfSymLinks() {
-    const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
+    void TestIntegration::testSynchronizationOfSymLinks() {
+        const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id(), "test_sym_link_sync");
 
-    waitForSyncToBeIdle(std::source_location::current());
+        waitForSyncToBeIdle(std::source_location::current());
 
-    // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
-    // Absolute paths are not allowed, but relative paths are. Relative paths must be relative to the sync root.
-    // Parent traversal is not allowed, but relative paths that do not traverse the parent are allowed.
-    testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
+        // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
+        // Absolute paths are not allowed, but relative paths are. Relative paths must be relative to the sync root.
+        // Parent traversal is not allowed, but relative paths that do not traverse the parent are allowed.
+        testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
 
-    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
-                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
+        std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
+                                        _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink");
 
-    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_file.txt",
-                                    _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
+        std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_file.txt",
+                                        _syncPal->localPath() / tmpRemoteDir.name() / "dangling_symlink");
 
-    (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
-    std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "directory",
-                                              _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
+        (void) std::filesystem::create_directories(_syncPal->localPath() / tmpRemoteDir.name() / "directory");
+        std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "directory",
+                                                  _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink");
 
-    std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_directory",
-                                              _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
+        std::filesystem::create_directory_symlink(SyncPath(tmpRemoteDir.name()) / "non_existing_directory",
+                                                  _syncPal->localPath() / tmpRemoteDir.name() / "dangling_directory_symlink");
 
-    waitForSyncToBeIdle(std::source_location::current());
+        waitForSyncToBeIdle(std::source_location::current());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+        CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
-    waitForSyncToBeIdle(std::source_location::current());
+        waitForSyncToBeIdle(std::source_location::current());
 
-    // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
-    std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
-                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
+        // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
+        std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
+                                        _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
 
-    std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "../file.txt",
-                                    _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_parent_traversal");
+        std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "../file.txt",
+                                        _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_parent_traversal");
 
-    std::filesystem::create_directory_symlink(
-            _syncPal->localPath() / tmpRemoteDir.name() / "directory",
-            _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink_with_absolute_target_path");
+        std::filesystem::create_directory_symlink(
+                _syncPal->localPath() / tmpRemoteDir.name() / "directory",
+                _syncPal->localPath() / tmpRemoteDir.name() / "directory_symlink_with_absolute_target_path");
 
-    waitForSyncToBeIdle(std::source_location::current());
+        waitForSyncToBeIdle(std::source_location::current());
 
-    const auto remoteTestFileInfo5 =
-            getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_with_absolute_target_path"));
-    const auto remoteTestFileInfo6 =
-            getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_with_parent_traversal"));
-    const auto remoteTestFileInfo7 =
-            getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
+        const auto remoteTestFileInfo5 =
+                getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_with_absolute_target_path"));
+        const auto remoteTestFileInfo6 =
+                getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("file_symlink_with_parent_traversal"));
+        const auto remoteTestFileInfo7 =
+                getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
 
-    CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
+        CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
+        CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
+        CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+        CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
 
-    logStep("testSynchronizationOfSymLinks");
+        logStep("testSynchronizationOfSymLinks");
+    }
 }
 
 void TestIntegration::testSymLinkWithTooManySymbolicLevels() {
