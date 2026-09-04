@@ -20,8 +20,8 @@ import QtQuick
 import QtQuick.Controls
 import kDrive.UI
 
-// Always-alive composition point for app-global dialogs. Feature-specific queueing remains in each controller; a
-// cross-feature arbiter can be introduced here later if simultaneous global modal families become a real requirement.
+// Always-alive composition point for app-global dialogs. Feature-specific queueing remains in each controller; this
+// host only arbitrates across global modal families: a hard mass deletion warning outranks the quit confirmation.
 Item {
     id: root
 
@@ -29,23 +29,71 @@ Item {
     required property bool presentationAllowed
     required property real surfaceInset
     required property real surfaceRadius
+    required property var systemTrayController
     required property var targetWindow
     required property rect windowMoveArea
+    // Read from the controller so the priority does not depend on which dialog happens to be visible.
+    readonly property bool hardDeletePending: root.presentationAllowed && root.manyDeletesController.visible
+                                              && root.manyDeletesController.severity === ManyDeletesController.Hard
+    readonly property bool modalVisible: manyDeletesDialog.visible || quitConfirmationDialog.visible
+    property bool quitPending: false
+
+    function requestQuitConfirmation() {
+        root.systemTrayController.showMainWindow();
+
+        if (quitConfirmationDialog.visible || root.quitPending || root.hardDeletePending) {
+            return;
+        }
+
+        quitConfirmationDialog.open();
+    }
+
+    // A hard warning raised after the quit prompt opened cancels it: the warning must be resolved first.
+    onHardDeletePendingChanged: {
+        if (root.hardDeletePending && !root.quitPending) {
+            quitConfirmationDialog.close();
+        }
+    }
 
     ManyDeletesDialog {
         id: manyDeletesDialog
 
         controller: root.manyDeletesController
-        presentationAllowed: root.presentationAllowed
+        presentationAllowed: root.presentationAllowed && !quitConfirmationDialog.visible
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
+    }
+
+    IKConfirmationDialog {
+        id: quitConfirmationDialog
+
+        busy: root.quitPending
+        cancelText: qsTrId("buttonCancel")
+        confirmText: qsTrId("statusBarQuitApp")
+        description: qsTrId("quitConfirmationDialogDescription")
+        scrimInset: root.surfaceInset
+        scrimRadius: root.surfaceRadius
+        title: qsTrId("quitConfirmationDialogTitle")
+
+        onConfirmed: {
+            root.quitPending = true;
+            root.systemTrayController.requestApplicationQuit();
+        }
+    }
+
+    Connections {
+        target: root.systemTrayController
+
+        function onQuitConfirmationRequested() {
+            root.requestQuitConfirmation();
+        }
     }
 
     Item {
         parent: Overlay.overlay
         anchors.fill: parent
-        z: manyDeletesDialog.z + 1
-        visible: manyDeletesDialog.visible
+        z: Math.max(manyDeletesDialog.z, quitConfirmationDialog.z) + 1
+        visible: root.modalVisible
 
         Item {
             id: modalWindowMoveArea
