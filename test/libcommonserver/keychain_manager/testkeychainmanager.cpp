@@ -21,10 +21,12 @@
 #include "keychainmanager/keychainmanager.h"
 #include "keychainmanager/keychainstorage.h"
 #include "test_utility/testhelpers.h"
+#include "utility/timerutility.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
+namespace {
 class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
     public:
         bool writePassword([[maybe_unused]] const std::string &keychainKey,
@@ -41,15 +43,21 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
 
         bool isTesting() override { return true; }
 };
+} // namespace
 
 void TestKeychainManager::testTimeOut() {
-    if (!testhelpers::isExtendedTest()) return;
+    // if (!testhelpers::isExtendedTest()) return;
+
+    const TimerUtility timer;
 
     std::string data;
     bool found = false;
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
     const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
-    CPPUNIT_ASSERT(!exitInfo);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessTimeout), exitInfo);
+    // Ensure that the timeout occurred after 60 seconds before 90 seconds
+    CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60), timer.elapsed<std::chrono::seconds>());
+    CPPUNIT_ASSERT_LESS(timer.elapsed<std::chrono::seconds>(), std::chrono::seconds(90));
 }
 
 } // namespace KDC
