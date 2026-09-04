@@ -22,6 +22,7 @@
 
 #include "kDrive_API/backerror.h"
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <queue>
@@ -117,7 +118,7 @@ class AbstractNetworkJob : public SyncJob {
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }
 
-        void createSession(const Poco::URI &uri);
+        ExitInfo createSession(const Poco::URI &uri);
         void clearSession();
         void abortSession();
         ExitInfo sendRequest(const Poco::URI &uri);
@@ -144,6 +145,7 @@ class AbstractNetworkJob : public SyncJob {
 
         static const std::string _userAgent;
         static Poco::Net::Context::Ptr _context;
+        static std::mutex _contextMutex;
         static TimeoutHelper _timeoutHelper;
 
         Poco::Net::HTTPResponse _httpResponse;
