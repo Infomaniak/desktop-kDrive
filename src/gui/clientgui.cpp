@@ -1426,8 +1426,9 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     msgBox->setCheckBoxText(tr("Don't show again"));
     (void) msgBox->exec();
 
-    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
-    (void) ParametersCache::instance()->saveParametersInfo();
+    if (const auto exitInfo = GuiRequests::updateAppState(AppStateKey::NotifyBeforeDelete, !msgBox->isChecked()); !exitInfo) {
+        qCWarning(lcClientGui()) << "Failed to save notify before delete parameter to AppState table";
+    }
 
     cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
 }
