@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -24,6 +25,8 @@ import OrderedCollections
 import SwiftUI
 
 struct AdvancedSynchroView: View {
+    @InjectService private var cacheObservable: CoherentCacheObservable
+
     let drive: UIDrive
 
     @State private var isLoading = true
@@ -35,6 +38,10 @@ struct AdvancedSynchroView: View {
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingAddSynchroSheet = false
     @State private var isShowingGenericError = false
+
+    private var drivePublisher: AnyPublisher<Drive?, Never> {
+        cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(drive.dbId))
+    }
 
     var body: some View {
         Form {
@@ -76,6 +83,7 @@ struct AdvancedSynchroView: View {
             await fetchSynchros()
             withAnimation { isLoading = false }
         }
+        .onReceive(drivePublisher.receive(on: RunLoop.main), perform: updateSynchros)
         .sheet(isPresented: $isShowingAddSynchroSheet) {
             AddAdvancedSynchroFlowView(drive: drive, completion: handleSynchroIsAdded)
         }
@@ -87,16 +95,17 @@ struct AdvancedSynchroView: View {
 
     private func fetchSynchros() async {
         @InjectService var coherentCache: CoherentCache
-        guard let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId)) else {
-            return
-        }
+        let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId))
+        updateSynchros(cachedDrive)
+    }
 
-        userDbId = Int(cachedDrive.userDbId)
-        driveId = Int(cachedDrive.driveId)
+    private func updateSynchros(_ cachedDrive: Drive?) {
+        userDbId = cachedDrive.map { Int($0.userDbId) }
+        driveId = cachedDrive.map { Int($0.driveId) }
 
-        let freshAdvancedSynchros = cachedDrive.synchros.values
+        let freshAdvancedSynchros = cachedDrive?.synchros.values
             .map { UISynchro(synchro: $0) }
-            .filter { $0.targetNodeId != nil }
+            .filter { $0.targetNodeId != nil } ?? []
 
         withAnimation {
             advancedSynchros = freshAdvancedSynchros
@@ -114,10 +123,6 @@ struct AdvancedSynchroView: View {
         guard error == nil else {
             isShowingGenericError = true
             return
-        }
-
-        Task {
-            await fetchSynchros()
         }
     }
 }
