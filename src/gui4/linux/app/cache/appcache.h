@@ -80,6 +80,8 @@ class AppCache : public QObject {
         [[nodiscard]] std::optional<DriveContext> driveContext(DriveDbId driveDbId) const;
         [[nodiscard]] std::vector<DriveContext> driveContexts() const;
         // Available-drive contexts reconcile addable drives with configured drives for display/disable decisions.
+        // A drive is configured for onboarding only when it owns a classic synchronization.
+        [[nodiscard]] bool isAvailableDriveConfigured(const AvailableDriveKey &key) const;
         [[nodiscard]] std::vector<AvailableDriveContext> availableDriveContexts(UserDbId userDbId) const;
         [[nodiscard]] std::vector<AvailableDriveContext> availableDriveContexts() const;
 
