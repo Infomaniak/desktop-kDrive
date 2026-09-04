@@ -76,6 +76,7 @@ AvailableDrivesModel::AvailableDrivesModel(const AppCache &cache, OnboardingStat
     (void) connect(&_cache, &AppCache::allAvailableDrivesChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_cache, &AppCache::accountsChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_cache, &AppCache::drivesChanged, this, &AvailableDrivesModel::rebuild);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_onboardingState, &OnboardingState::selectedUserDbIdChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_onboardingState, &OnboardingState::selectedAvailableDrivesChanged, this, [this] {
         if (!_contexts.empty()) {
