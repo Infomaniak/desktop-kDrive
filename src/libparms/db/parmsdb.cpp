@@ -2821,10 +2821,6 @@ bool ParmsDb::selectAllSyncs(const DriveDbId driveDbId, std::vector<Sync> &syncL
         LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursor));
         int64_t listingCursorTimestamp;
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
-<<<<<<< HEAD
-
-=======
->>>>>>> 24da30e05 (fix(parms-db): Fixes the size of the newly introduced toDelete variables)
         int32_t toDelete = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 14, toDelete));
 
