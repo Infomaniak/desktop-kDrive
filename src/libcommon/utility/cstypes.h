@@ -168,6 +168,8 @@ enum class ExitCause {
     BlackListPropagationError,
     FileSystemNotSupported,
     SyncDeletionFailed,
+    KeychainAccessError,
+    KeychainAccessTimeout,
     EnumEnd
 };
 

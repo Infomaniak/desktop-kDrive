@@ -67,6 +67,8 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
 
+        ExitInfo runJob() override;
+
     protected:
         std::string getSpecificUrl() override;
         std::string contentType() override;
@@ -107,7 +109,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         void fetchDriveDbIdFromSync();
         void fetchFirstUserDbId();
-        virtual ApiToken loadApiToken();
+        virtual ExitInfo loadApiToken(ApiToken &apiToken);
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
@@ -116,12 +118,12 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         void defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri, ExitCause &exitCause);
 
         // Load user information, including the API token, based on the record associated `_driveDbId`, provided it does exist.
-        void loadUserInfoFromDriveDbId();
+        [[nodiscard]] ExitInfo loadUserInfoFromDriveDbId();
 
         // Load user information, including the API token, based on the value of `_userDbId`, assuming it has been set.
-        void loadUserInfoFromUserDbId();
+        [[nodiscard]] ExitInfo loadUserInfoFromUserDbId();
 
-        ApiToken retrieveApiTokenFromUserCache();
+        ExitInfo retrieveApiTokenFromUserCache(ApiToken &apiToken);
         Account getAccount(const Drive &drive) const;
         Drive getDrive(DriveDbId driveDbId) const;
 

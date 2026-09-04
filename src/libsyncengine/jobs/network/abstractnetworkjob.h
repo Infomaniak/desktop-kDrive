@@ -55,8 +55,9 @@ class AbstractNetworkJob : public SyncJob {
         int32_t trials() const noexcept { return _trials; }
         [[nodiscard]] int64_t sleepDuration() const { return _sleepDuration; }
 
+        ExitInfo runJob() override;
+
     protected:
-        ExitInfo runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
 
         using StreamVector = std::vector<std::reference_wrapper<std::istream>>;

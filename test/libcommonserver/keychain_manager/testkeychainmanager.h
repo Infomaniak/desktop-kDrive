@@ -16,26 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 
-#include "jobexceptions.h"
+#include "test_utility/testbase.h"
+
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace KDC {
 
-ExitCode exception2ExitCode(const std::exception &exc) {
-    if (dynamic_cast<const DbError *>(&exc)) {
-        return ExitCode::DbError;
-    }
-    if (dynamic_cast<const DataError *>(&exc)) {
-        return ExitCode::DataError;
-    }
-    if (dynamic_cast<const InvalidArgumentError *>(&exc)) {
-        return ExitCode::LogicError;
-    }
-    if (dynamic_cast<const std::bad_alloc *>(&exc)) {
-        return ExitCode::SystemError;
-    }
+class TestKeychainManager : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestKeychainManager);
+        CPPUNIT_TEST(testTimeOut);
+        CPPUNIT_TEST(testConcurrentReadLimit);
+        CPPUNIT_TEST_SUITE_END();
 
-    return ExitCode::Unknown;
-}
+    public:
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
+
+    protected:
+        void testTimeOut();
+        void testConcurrentReadLimit();
+};
 
 } // namespace KDC

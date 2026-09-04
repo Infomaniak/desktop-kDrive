@@ -19,6 +19,11 @@
 #include "keychainmanager.h"
 #include "log/log.h"
 
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -48,12 +53,10 @@ KeyChainManager::KeyChainManager(const std::shared_ptr<IKeyChainStorage> storage
     _storage(storage) {}
 
 bool KeyChainManager::writeDummyTest() {
-    // First, we check that we can write into the keychain
     if (!writeData(dummyKeychainKey, dummyData)) {
-        std::string error = "Test writing into the keychain failed. Token not refreshed.";
+        const std::string error = "Test writing into the keychain failed. Token not refreshed.";
         LOG_WARN(Log::instance()->getLogger(), error);
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeDummyTest", error);
-
         return false;
     }
     return true;
@@ -67,18 +70,76 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
     return _storage->writePassword(keychainKey, rawData);
 }
 
-bool KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
-    return _storage->readPassword(keychainKey, data, found);
+ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
+    constexpr auto keychainReadTimeout = std::chrono::seconds(60);
+
+    if (_inFlightReadThreads.load(std::memory_order_acquire) >= maxConcurrentKeychainReads) {
+        LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
+
+    uint16_t expectedReads = _inFlightReadThreads.load(std::memory_order_relaxed);
+    while (expectedReads < maxConcurrentKeychainReads &&
+           !_inFlightReadThreads.compare_exchange_weak(expectedReads, static_cast<uint16_t>(expectedReads + 1),
+                                                       std::memory_order_acq_rel, std::memory_order_relaxed)) {}
+    if (expectedReads >= maxConcurrentKeychainReads) {
+        LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
+
+    struct ReadState {
+            std::mutex mutex;
+            std::condition_variable conditionVariable;
+            bool done = false;
+            bool ok = false;
+            bool localFound = false;
+            std::string localData;
+    };
+
+    const auto state = std::make_shared<ReadState>();
+
+    std::thread([this, keychainKey, state]() {
+        std::string tmpData;
+        bool tmpFound = false;
+        const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
+
+        {
+            const std::lock_guard lock(state->mutex);
+            state->ok = ok;
+            state->localFound = tmpFound;
+            state->localData = std::move(tmpData);
+            state->done = true;
+        }
+        state->conditionVariable.notify_one();
+        (void) _inFlightReadThreads.fetch_sub(1, std::memory_order_acq_rel);
+    }).detach();
+
+    std::unique_lock lock(state->mutex);
+    if (!state->conditionVariable.wait_for(lock, keychainReadTimeout, [&state]() { return state->done; })) {
+        LOG_WARN(Log::instance()->getLogger(), "Timeout while reading data from keychain");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessTimeout};
+    }
+    if (!state->ok) {
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
+
+    data = std::move(state->localData);
+    found = state->localFound;
+    return ExitCode::Ok;
 }
 
-bool KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
+ExitInfo KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
     std::string token;
-    const bool returnValue = readData(keychainKey, token, found);
-    if (returnValue && found) {
+    const auto exitInfo = readData(keychainKey, token, found);
+    if (exitInfo && found) {
         apiToken = ApiToken(token);
     }
 
-    return returnValue;
+    return exitInfo;
 }
 
 bool KeyChainManager::deleteData(const std::string &keychainKey) {
