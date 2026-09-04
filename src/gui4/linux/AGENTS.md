@@ -288,8 +288,9 @@
   summary. It exposes display values only; stable backend identifiers remain in the controller drafts.
 - `app/onboarding/onboardingsynccreationcoordinator.*`: automatic end-of-onboarding sync creation coordinator. It
   derives collision-free local folders, creates selected-drive syncs sequentially with the validated remote blacklist,
-  preserves only failed and not-yet-attempted work for retry, and reconciles the parent-first cache snapshot after a
-  failed `SYNC_ADD`.
+  stops at the first failure, reconciles the parent-first cache snapshot after a failed `SYNC_ADD`, and automatically
+  returns to drive selection after displaying the failure for three seconds. The failed execution queue is discarded;
+  the next run is rebuilt from the remaining selections after pruning drives that now own a classic synchronization.
 - `app/onboarding/oauthloginservice.*`: Linux v4 OAuth browser-launch service. It owns PKCE/state generation, idempotent
   browser relaunch during an active authorization, callback validation, and emits the authorization code to app wiring.
   Do not expose OAuth details to QML.

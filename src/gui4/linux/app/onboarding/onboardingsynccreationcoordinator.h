@@ -39,7 +39,8 @@ struct GoodPathResult;
  * Coordinates automatic sync creation at the end of Linux v4 onboarding.
  *
  * Selected drives are configured sequentially with a collision-free local path and the kDrive root as remote target.
- * Successful creations are removed from the retry queue, while failed and not-yet-attempted creations remain pending.
+ * Successful creations leave OnboardingState immediately. After a failure, returning to drive selection discards the
+ * execution queue; the next run is rebuilt from the remaining user selection.
  */
 class OnboardingSyncCreationCoordinator final : public QObject {
         Q_OBJECT
@@ -55,6 +56,7 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         void prepareSynchronization(const AvailableDriveKey &key);
         void handleGoodPathResult(const AvailableDriveKey &key, const ExitInfo &exitInfo, const GoodPathResult &result);
         void createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config);
+        void discardPendingSynchronizations();
         void discardPendingSynchronization(const AvailableDriveKey &key);
         void handleCreationFailure(bool cacheReconciliationRequired = false);
         void handleCacheReconciliationCompleted();
