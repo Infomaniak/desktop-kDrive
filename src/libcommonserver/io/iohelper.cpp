@@ -909,7 +909,9 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     SyncPath cacheDirectoryPath;
     if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
 
-    const SyncPath destPath = cacheDirectoryPath / path.filename();
+    const SyncName suffixedName =
+            path.filename().string() + Str("_delete_item") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum());
+    const SyncPath destPath = cacheDirectoryPath / suffixedName;
     auto ioError = IoError::Success;
     IoHelper::renameItem(path, destPath, ioError);
 
