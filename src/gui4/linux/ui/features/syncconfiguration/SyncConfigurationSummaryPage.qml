@@ -44,12 +44,6 @@ Column {
         wrapMode: Text.WordWrap
     }
 
-    SyncConfigurationErrorBlock {
-        width: parent.width
-        errorTitle: root.controller.errorTitle
-        errorText: root.controller.errorText
-    }
-
     ListView {
         id: drivesList
 
