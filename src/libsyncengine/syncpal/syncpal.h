@@ -483,8 +483,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
-        mutable std::mutex _progressInfoMutex;
-
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
         friend class FileSystemObserverWorker;
