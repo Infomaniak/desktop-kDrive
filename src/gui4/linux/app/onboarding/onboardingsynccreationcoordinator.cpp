@@ -49,8 +49,8 @@ OnboardingSyncCreationCoordinator::OnboardingSyncCreationCoordinator(OnboardingF
     _serviceEventBus(serviceEventBus) {
     (void) connect(&_flowController, &OnboardingFlowController::driveSelectionContinueRequested, this,
                    &OnboardingSyncCreationCoordinator::startSynchronization);
-    (void) connect(&_flowController, &OnboardingFlowController::synchronizationRetryRequested, this,
-                   &OnboardingSyncCreationCoordinator::createNextSynchronization);
+    (void) connect(&_flowController, &OnboardingFlowController::driveSelectionReturnRequested, this,
+                   &OnboardingSyncCreationCoordinator::discardPendingSynchronizations);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationCompleted, this,
                    &OnboardingSyncCreationCoordinator::handleCacheReconciliationCompleted);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationFailed, this,
@@ -87,7 +87,8 @@ void OnboardingSyncCreationCoordinator::createNextSynchronization() {
 
 void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDriveKey &key) {
     const auto availableDrive = _appCache.availableDrive(key);
-    if (!availableDrive.has_value() || !_onboardingState.isAvailableDriveSelected(key)) {
+    if (!availableDrive.has_value() || !_onboardingState.isAvailableDriveSelected(key) ||
+        _appCache.isAvailableDriveConfigured(key)) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Skipping onboarding sync: available drive is no longer selectable | userDbId:" << key.userDbId
                 << "/ driveId:" << key.driveId;
@@ -140,7 +141,8 @@ void OnboardingSyncCreationCoordinator::handleGoodPathResult(const AvailableDriv
 }
 
 void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config) {
-    if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value()) {
+    if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value() ||
+        _appCache.isAvailableDriveConfigured(key)) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Skipping onboarding sync creation: drive is no longer selectable | userDbId:" << key.userDbId
                 << "/ driveId:" << key.driveId;
@@ -182,6 +184,12 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
     });
 }
 
+void OnboardingSyncCreationCoordinator::discardPendingSynchronizations() {
+    // The queue described a run that failed; the next attempt is rebuilt from the selection by startSynchronization().
+    qCInfo(lcOnboardingSyncCreationCoordinator) << "Dropping the onboarding sync queue | remaining:" << _pendingDriveKeys.size();
+    _pendingDriveKeys.clear();
+}
+
 void OnboardingSyncCreationCoordinator::discardPendingSynchronization(const AvailableDriveKey &key) {
     _onboardingState.unselectAvailableDrive(key);
     if (!_pendingDriveKeys.empty() && _pendingDriveKeys.front() == key) {
@@ -200,18 +208,16 @@ void OnboardingSyncCreationCoordinator::handleCreationFailure(const bool cacheRe
      * original selection would risk creating duplicate syncs or choosing new suffixed local folders.
      *
      * Account and drive creation also happen before sync creation and are not one database transaction. A failed SYNC_ADD
-     * can therefore leave a newly persisted parent that was not emitted through ACCOUNT_ADDED or DRIVE_ADDED because the
-     * job reports its signals only after complete success. Before exposing Retry, the coordinator asks CachePopulator to
-     * rebuild the graph parent-first so a successful retry cannot emit DRIVE_ADDED/SYNC_ADDED into a cache that still lacks
-     * their account parent.
+     * can therefore leave a newly persisted parent without a synchronization and without its normal ACCOUNT_ADDED or
+     * DRIVE_ADDED push. The coordinator asks CachePopulator to rebuild the graph parent-first so drive selection can
+     * distinguish an actual classic synchronization from a partially persisted parent.
      *
-     * The coordinator stops at the first failure and keeps the current key plus every not-yet-attempted key in
-     * _pendingDriveKeys. Keys that completed successfully were already removed from both this queue and OnboardingState.
-     * The pending config of the failed key is deliberately preserved so Retry reuses the exact same local path instead of
-     * asking the server for another candidate. Retry resumes from the queue front and Ready is reached only after the queue
-     * is empty.
+     * The coordinator stops at the first failure. Keys that completed successfully were already removed from the queue and
+     * OnboardingState. Failed and not-yet-attempted selections stay in OnboardingState so the user can review them. Returning
+     * to drive selection discards this execution queue; the next Continue rebuilds it from the current selection. Cache
+     * reconciliation prunes any key for which a classic synchronization was persisted despite the failed response.
      *
-     * Transport failures cannot reach this retry path: IpcClient treats every post-connection socket error as fatal. An
+     * Transport failures cannot reach this failure path: IpcClient treats every post-connection socket error as fatal. An
      * error callback here is therefore a server response, not an ambiguous timeout after a successful response was lost.
      */
     qCWarning(lcOnboardingSyncCreationCoordinator) << "Onboarding sync creation paused | remaining:" << _pendingDriveKeys.size();
