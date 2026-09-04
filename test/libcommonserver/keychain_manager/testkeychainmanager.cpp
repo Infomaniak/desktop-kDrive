@@ -57,7 +57,7 @@ void TestKeychainManager::testTimeOut() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessTimeout), exitInfo);
     // Ensure that the timeout occurred after 60 seconds before 90 seconds
     CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60), timer.elapsed<std::chrono::seconds>());
-    CPPUNIT_ASSERT_LESS(timer.elapsed<std::chrono::seconds>(), std::chrono::seconds(90));
+    CPPUNIT_ASSERT_LESS(std::chrono::seconds(90), timer.elapsed<std::chrono::seconds>());
 }
 
 } // namespace KDC
