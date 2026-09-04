@@ -51,7 +51,7 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
 } // namespace
 
 void TestKeychainManager::testTimeOut() {
-    // if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest()) return;
 
     const TimerUtility timer;
 
@@ -77,6 +77,8 @@ void TestKeychainManager::testConcurrentReadLimit() {
             const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
         }).detach();
     }
+
+    Utility::msleep(100); // Give some time for the threads to start
 
     std::string data;
     bool found = false;
