@@ -33,8 +33,7 @@ namespace KDC {
 void CommonGuiUtility::setupFavLink(const QString &folder) {
     // First create a Desktop.ini so that the folder and favorite link show our application's icon.
     QFile desktopIni(folder + QLatin1String("/Desktop.ini"));
-    if (!desktopIni.exists()) {
-        (void) desktopIni.open(QFile::WriteOnly);
+    if (!desktopIni.exists() && desktopIni.open(QFile::WriteOnly)) {
         desktopIni.write("[.ShellClassInfo]\r\nIconResource=");
         desktopIni.write(QDir::toNativeSeparators(qApp->applicationFilePath()).toUtf8());
         desktopIni.write(",0\r\n");
