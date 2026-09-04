@@ -37,6 +37,7 @@ namespace Infomaniak.kDrive.ViewModels
         private ProxyConfig _proxyConfig = new ProxyConfig();
         private bool _matomoEnabled = false;
         private bool _sentryEnabled = false;
+        private bool _notifyBeforeDelete = true;
         public UpdateManager UpdateManager { get; } = new UpdateManager();
         public LogUploadManager LogUploadManager { get; } = new LogUploadManager();
 
@@ -121,6 +122,11 @@ namespace Infomaniak.kDrive.ViewModels
             }
         }
 
+        public bool AskBeforeDelete
+        {
+            get => _notifyBeforeDelete;
+            set => SetPropertyInUIThread(ref _notifyBeforeDelete, value);
+        }
         public AppNotificationAvailability AppNotificationAvailability => App.ServiceProvider.GetRequiredService<NotificationManager>().Availability;
 
         public bool ShowNotificationsSettings => AppNotificationAvailability != AppNotificationAvailability.NotSupportedByOS;
@@ -192,6 +198,20 @@ namespace Infomaniak.kDrive.ViewModels
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
                 SentryEnabled = !enabled;
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<bool> ChangeNotifyBeforeDelete(bool enabled)
+        {
+            if (AskBeforeDelete == enabled)
+                return true;
+
+            AskBeforeDelete = enabled;
+            if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
+            {
+                AskBeforeDelete = !enabled;
                 return false;
             }
             return true;

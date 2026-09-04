@@ -60,5 +60,30 @@
         <!-- NavigationView -->
         <controls:AppNavigationView x:Name="NavView"
                                     Grid.Row="1" />
+
+        <!-- These dialogs are not part of the visual layout; they only render as popups when ShowAsync() is called. -->
+        <ContentDialog x:Name="HardLimitManyDeleteDialog"
+                       Title="{x:Bind local:Localizer.Instance.GetString1i('manyDeleteDialogTitle', ManyDeletesNbFiles), Mode=OneWay}"
+                       PrimaryButtonText="{x:Bind local:Localizer.Instance.GetString('manyDeleteDialogHardLimitPrimary')}"
+                       SecondaryButtonText="{x:Bind local:Localizer.Instance.GetString('manyDeleteDialogHardLimitSecondary')}"
+                       DefaultButton="Primary"
+                       Content="{x:Bind local:Localizer.Instance.GetString('manyDeleteDialogHardLimitContent')}"
+                       Closing="PreventDialogLightDismiss" />
+
+        <ContentDialog x:Name="SoftLimitManyDeleteDialog"
+                       Title="{x:Bind local:Localizer.Instance.GetString1i('manyDeleteDialogTitle', ManyDeletesNbFiles), Mode=OneWay}"
+                       PrimaryButtonText="{x:Bind local:Localizer.Instance.GetString('buttonClose')}"
+                       SecondaryButtonText="{x:Bind local:Localizer.Instance.GetString('buttonOpenTrash')}"
+                       DefaultButton="Primary"
+                       Closing="PreventSoftLimitDialogLightDismiss">
+            <StackPanel VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
+                <TextBlock Text="{x:Bind local:Localizer.Instance.GetString('manyDeleteDialogSoftLimitContent')}"
+                           TextWrapping="Wrap" />
+                <CheckBox x:Name="SoftLimitDoNotShowAgainCheckBox"
+                          Content="{x:Bind local:Localizer.Instance.GetString('manyDeleteDialogSoftLimitDoNotShowAgain')}" />
+            </StackPanel>
+        </ContentDialog>
     </Grid>
 </Window>

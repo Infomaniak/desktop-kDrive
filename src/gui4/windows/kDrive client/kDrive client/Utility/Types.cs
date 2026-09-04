@@ -149,5 +149,19 @@ namespace Infomaniak.kDrive.Types
 
         public Task<List<NodeId>?> GetExcludedNodeIds();
     }
+
+    public struct ManyDeletesInfo
+    {
+        public DbId SyncDbId { get; }
+        public TooManyDeletesNotificationType NotificationType { get; }
+        public List<string> FilesPaths { get; }
+
+        public ManyDeletesInfo(DbId syncDbId, TooManyDeletesNotificationType notificationType, List<string> filesPaths)
+        {
+            SyncDbId = syncDbId;
+            NotificationType = notificationType;
+            FilesPaths = filesPaths;
+        }
+    }
 }
 

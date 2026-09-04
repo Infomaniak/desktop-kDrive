@@ -24,6 +24,8 @@ using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
@@ -61,6 +63,7 @@ namespace Infomaniak.kDrive.ViewModels
         // The list of server level error
         public ObservableCollection<Error> AppErrors = [];
 
+        public Queue<ManyDeletesInfo> ManyDeletesQueue { get; set; } = new();
         // Helpers - Agregated collections
         /** The list of active syncs across all users.
         *  This is a read-only observable collection, so the UI can bind to it and be notified of changes.
@@ -367,7 +370,7 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task ClearAllErrorsAsync()
         {
             Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
-            
+
             await Utility.RunOnUIThread(() => AppErrors.Clear());
             await RefreshErrorState();
             foreach (var sync in AllSyncs)

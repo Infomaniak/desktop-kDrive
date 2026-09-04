@@ -398,4 +398,19 @@ namespace Infomaniak.kDrive.Types
         Classic,
         Advanced
     };
+    public enum TooManyDeletesNotificationType
+    {
+        Unknown,
+        SoftLimit,
+        HardLimit,
+        EnumEnd
+    };
+    public enum TooManyDeletesUserChoice
+    {
+        None,
+        Continue,
+        Revert,
+        EnumEnd
+    };
+
 }
