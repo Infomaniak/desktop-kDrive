@@ -90,7 +90,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
          * descendant is excluded, it is never a state the user selects.
          */
         Q_INVOKABLE void toggleSelection(const QModelIndex &modelIndex);
-        /** Restores a complete selection. The drive root itself can never be excluded. */
+        /** Selects or deselects every folder directly below the drive root. The drive root itself can never be excluded. */
         Q_INVOKABLE void toggleRootSelection();
         /**
          * Reports that a row entered or left the viewport.
