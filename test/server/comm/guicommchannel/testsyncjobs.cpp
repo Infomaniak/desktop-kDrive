@@ -643,7 +643,7 @@ void TestGuiCommChannel::testSyncOfflineFilesSizeJob() {
 void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     const SyncDbId syncDbId = 1;
     const TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::HardLimit;
-    const std::vector<SyncPath> filesPaths = {SyncPath("file1"), SyncPath("file2"), SyncPath("file3")};
+    const std::vector<SyncPath> filesPaths = {"file1", "file2", "file3"};
     SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, filesPaths);
 
     checkSignalCommonMethods(job, SignalNum::SYNC_NOTIFY_MANY_DELETES);
