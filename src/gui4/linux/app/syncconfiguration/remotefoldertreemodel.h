@@ -112,6 +112,12 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
             Failed,
         };
 
+        enum class InitialPathsState : uint8_t {
+            Ready,
+            Resolving,
+            Failed,
+        };
+
         enum class SizeState : uint8_t {
             NotRequested,
             Queued,
@@ -165,7 +171,8 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         uint64_t _generation{0};
         uint8_t _activeSizeRequests{0};
         uint32_t _pendingInitialPathRequests{0};
-        bool _initialPathsFailed{false};
+        InitialPathsState _initialPathsState{InitialPathsState::Ready};
+        bool _initialPathRequestFailed{false};
 };
 
 } // namespace KDC
