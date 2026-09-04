@@ -46,7 +46,6 @@ namespace Infomaniak.kDrive
         public AppNavigationView AppNavView { get { return NavView; } }
         public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
 
-        // Bound (OneWay) to the ManyDeletes dialogs' Title so it can be updated after the dialogs are shown.
         private int _manyDeletesNbFiles;
         public int ManyDeletesNbFiles
         {

@@ -2092,19 +2092,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.NotificationType} not found in parameters.");
                 return;
             }
-            if (signalData == null || !signalData.ContainsKey(JsonKeys.NbFiles))
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.FilesPaths))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.NbFiles} not found in parameters.");
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.FilesPaths} not found in parameters.");
                 return;
             }
 
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
             TooManyDeletesNotificationType? notificationType = signalData[JsonKeys.NotificationType]?.Deserialize<TooManyDeletesNotificationType>();
-            int? nbFiles = signalData[JsonKeys.NbFiles]?.AsValue().GetValue<int>();
-
-            if (syncDbID is null || notificationType is null || nbFiles is null)
+            List<string>? filesPaths = null;
+            if (signalData[JsonKeys.FilesPaths]?.AsArray() is { } filesPathsArray)
             {
-                Logger.Log(Logger.Level.Error, $"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, nbFiles={nbFiles}");
+                filesPaths = new List<string>(filesPathsArray.Count);
+                foreach (var node in filesPathsArray)
+                {
+                    var decoded = Utility.FromBase64String(node!.GetValue<string>());
+                    if (!string.IsNullOrEmpty(decoded))
+                    {
+                        filesPaths.Add(decoded);
+                    }
+                }
+            }
+            if (syncDbID is null || notificationType is null || filesPaths is null)
+            {
+                Logger.Log(Logger.Level.Error, $"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, filesPaths.Count={filesPaths?.Count}");
                 return;
             }
 
@@ -2113,24 +2124,26 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 _viewModel.ManyDeletesQueue.Enqueue(new ManyDeletesInfo(
                     syncDbID.Value,
                     notificationType.Value,
-                    nbFiles.Value
+                    filesPaths
                 ));
 
                 if (App.Current is not App app)
                     return;
 
-                if (app.CurrentWindow is OnBoardingWindow)
-                    return;
-
-                if (app.CurrentWindow is not MainWindow mainWindow)
+                if (app.CurrentWindow is null)
                 {
                     // MainWindow.MainContent_Loaded will process the queue once XamlRoot is ready.
                     app.CreateWindow(App.CreateWindowOptions.Foreground);
                     return;
                 }
 
-                Utility.BringWindowToFront(mainWindow);
-                await mainWindow.ProcessManyDeleteQueue();
+                if (app.CurrentWindow is MainWindow mainWindow)
+                {
+                    Utility.BringWindowToFront(mainWindow);
+                    await mainWindow.ProcessManyDeleteQueue();
+                }
+
+                // If the current window is not MainWindow, the ManyDeletesQueue will be processed when the user navigates to the main window.
             });
         }
 

@@ -52,7 +52,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string SyncFileItemInfo = "itemInfo";
         static public string RestartSync = "restartSync";
         static public string NotificationType = "notificationType";
-        static public string NbFiles = "nbFiles";
+        static public string FilesPaths = "filesPaths";
         static public string UserChoice = "userChoice";
 
         static public string ErrorDbId = "errorDbId";
