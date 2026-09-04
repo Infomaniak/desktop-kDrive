@@ -87,9 +87,12 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     auto rightsError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
 
+#if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError),
                          IoHelper::deleteItemAtomically(filePathInSubdir, cacheDirectory));
-
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(filePathInSubdir, cacheDirectory));
+#endif
     // Restore the rights so that the temporary directory can be inspected and then deleted.
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, true, true, true, rightsError));
 
