@@ -35,7 +35,7 @@ ParametersInfoJob::ParametersInfoJob(std::shared_ptr<CommManager> commManager, i
 }
 
 ExitInfo ParametersInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsParametersInfo, _parametersInfo, info2DynamicVar<ParametersInfo>);
+    writeParamValue(outParamsParametersInfo, _parametersInfo, info2DynamicVar<Parameters>);
 
     return ExitCode::Ok;
 }

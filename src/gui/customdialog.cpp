@@ -281,7 +281,7 @@ void CustomDialog::mouseReleaseEvent(QMouseEvent *event) {
     if (!_isResizable) return;
 
     _resizeMode = false;
-    ParametersCache::instance()->parametersInfo().setDialogGeometry(this->objectName(), this->saveGeometry());
+    ParametersCache::instance()->parameters().setDialogGeometry(this->objectName(), this->saveGeometry());
     ParametersCache::instance()->saveParametersInfo(false);
 }
 

@@ -79,8 +79,7 @@ void TestParmsDb::testParameters() {
     parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 4444, true, "user", "token"));
     parameters2.setDarkTheme(true);
     std::string geometryStr("XXXXXXXXXX");
-    parameters2.setDialogGeometry(
-            std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
+    parameters2.setDialogGeometry("preferencesWindow", QByteArray::fromStdString(geometryStr));
     parameters2.setSentryEnabled(true);
     parameters2.setMatomoEnabled(true);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
@@ -101,7 +100,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == parameters2.proxyConfig().user());
     CPPUNIT_ASSERT(parameters.proxyConfig().keychainKey() == parameters2.proxyConfig().keychainKey());
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
-    CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());
+    CPPUNIT_ASSERT(parameters.dialogGeometry() == parameters2.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == parameters2.matomoEnabled());
 }

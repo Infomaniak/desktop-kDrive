@@ -19,7 +19,7 @@
 #pragma once
 
 #include "syncenginelib.h"
-#include "libparms/db/parameters.h"
+#include "libcommon/data/parameters.h"
 #include "libcommon/utility/types.h"
 
 #include <memory>

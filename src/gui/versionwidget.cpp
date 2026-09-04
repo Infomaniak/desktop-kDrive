@@ -112,7 +112,7 @@ void VersionWidget::showReleaseNotes() const {
     VersionInfo versionInfo;
     GuiRequests::versionInfo(versionInfo);
 
-    const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
+    const Language &appLanguage = ParametersCache::instance()->parameters().language();
     QString languageCode = CommonUtility::languageCode(appLanguage);
     if (languageCode.isEmpty()) languageCode = CommonUtility::englishCode;
     QDesktopServices::openUrl(
@@ -157,7 +157,7 @@ void VersionWidget::onJoinBetaButtonClicked() {
     MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "joinBetaButton");
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Beta);
     if (auto dialog = BetaProgramDialog(
-                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, _isStaff, this);
+                ParametersCache::instance()->parameters().distributionChannel() != DistributionChannel::Prod, _isStaff, this);
         dialog.exec() == QDialog::Accepted) {
         saveDistributionChannel(dialog.selectedDistributionChannel());
         refresh();
@@ -252,7 +252,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         _betaVersionLabel->setText(tr("Beta program"));
         _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
 
-        if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
+        if (const auto channel = ParametersCache::instance()->parameters().distributionChannel();
             channel == DistributionChannel::Prod) {
             _joinBetaButton->setText(tr("Join"));
             _betaTag->setVisible(false);
@@ -360,7 +360,7 @@ void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
 
 void VersionWidget::saveDistributionChannel(const DistributionChannel channel) const {
     GuiRequests::changeDistributionChannel(channel);
-    ParametersCache::instance()->parametersInfo().setDistributionChannel(channel);
+    ParametersCache::instance()->parameters().setDistributionChannel(channel);
     ParametersCache::instance()->saveParametersInfo();
 }
 

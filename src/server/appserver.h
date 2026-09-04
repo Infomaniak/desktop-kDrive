@@ -202,7 +202,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
-        [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const ParametersInfo &);
+        [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const Parameters &);
         [[nodiscard]] ExitInfo sendAppStartTrace();
 
         // Ask the Finder/File explorer Extension to register the folder
