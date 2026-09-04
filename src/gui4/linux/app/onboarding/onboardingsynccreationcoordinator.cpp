@@ -87,7 +87,8 @@ void OnboardingSyncCreationCoordinator::createNextSynchronization() {
 
 void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDriveKey &key) {
     const auto availableDrive = _appCache.availableDrive(key);
-    if (!availableDrive.has_value() || !_onboardingState.isAvailableDriveSelected(key)) {
+    if (!availableDrive.has_value() || !_onboardingState.isAvailableDriveSelected(key) ||
+        _appCache.isAvailableDriveConfigured(key)) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Skipping onboarding sync: available drive is no longer selectable | userDbId:" << key.userDbId
                 << "/ driveId:" << key.driveId;
@@ -140,7 +141,8 @@ void OnboardingSyncCreationCoordinator::handleGoodPathResult(const AvailableDriv
 }
 
 void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config) {
-    if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value()) {
+    if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value() ||
+        _appCache.isAvailableDriveConfigured(key)) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Skipping onboarding sync creation: drive is no longer selectable | userDbId:" << key.userDbId
                 << "/ driveId:" << key.driveId;
