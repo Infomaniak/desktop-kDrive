@@ -153,6 +153,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
+        /// @brief Returns the application UID stored in the app_state table. Returns an empty string if it cannot be
+        /// retrieved (DB not initialized, DB error, or key not found).
+        static std::string appUID();
+
         bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
         bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found); // update or insert
 

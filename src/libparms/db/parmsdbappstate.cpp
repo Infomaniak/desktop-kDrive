@@ -17,6 +17,7 @@
  */
 
 #include "parmsdb.h"
+#include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/types.h"
@@ -116,7 +117,7 @@ bool ParmsDb::insertDefaultAppState() {
 
     // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
     // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
-    // no need to display the banner. 
+    // no need to display the banner.
     if (!insertAppState(AppStateKey::ShowV4Onboarding, _versionUpdated ? "1" : "0")) {
         LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
         return false;
@@ -228,4 +229,23 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
     return true;
 };
+
+std::string ParmsDb::appUID() {
+    const auto instance = ParmsDb::instance();
+    if (!instance) {
+        LOG_WARN(Log::instance()->getLogger(), "ParmsDb is not initialized, cannot retrieve " << AppStateKey::AppUid);
+        return {};
+    }
+
+    AppStateValue appStateValue = "";
+    if (bool found = false; !instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        return {};
+    } else if (!found) {
+        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+        return {};
+    }
+
+    return std::get<std::string>(appStateValue);
+}
 } // namespace KDC
