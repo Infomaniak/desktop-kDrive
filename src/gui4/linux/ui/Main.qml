@@ -110,9 +110,7 @@ IKShadowedWindow {
     onClosing: close => {
         close.accepted = false;
 
-        if (mainWindow.manyDeletesPresentationAllowed
-                && mainWindow.manyDeletesController.visible
-                && mainWindow.manyDeletesController.severity === mainWindow.manyDeletesController.Hard) {
+        if (globalModalHost.hardDeletePending) {
             mainWindow.systemTrayController.showMainWindow();
             return;
         }
