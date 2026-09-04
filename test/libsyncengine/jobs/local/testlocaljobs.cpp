@@ -19,6 +19,8 @@
 #include "testlocaljobs.h"
 
 #include "config.h"
+#include "io/cachedirectory.h"
+#include "jobs/local/genericlocaldeletejob.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/synclocaldeletejob.h"
 #include "jobs/local/localmovejob.h"
@@ -26,6 +28,7 @@
 #include "jobs/local/localcopyjob.h"
 #include "keychainmanager/apitoken.h"
 #include "keychainmanager/keychainmanager.h"
+#include "libcommonserver/io/iohelper.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "requests/parameterscache.h"
@@ -42,7 +45,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath) {};
+            SyncLocalDeleteJob(syncPal, absolutePath){};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -229,7 +232,7 @@ void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
 }
 
 void KDC::TestLocalJobs::testLocalDeleteJob() {
-    SyncLocalDeleteJob dummyJob(nullptr, "");
+    SyncLocalDeleteJob dummyJob(_syncPal, "");
     {
         const SyncPath targetPath = {};
         const SyncPath localRelativePath = SyncPath("Commons") / "me" / "secrets" / "nothing";
@@ -270,7 +273,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
@@ -349,7 +352,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
@@ -383,5 +386,66 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
     CPPUNIT_ASSERT(!std::filesystem::exists(localDirPath / excludedDehydratedPlaceholderName));
 }
 #endif
+
+void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testGenericLocalDeleteJobHardDelete");
+    SyncPath cacheDirectoryPath;
+    CPPUNIT_ASSERT(_syncPal->cacheDirectory()->path(cacheDirectoryPath));
+
+    // A regular file is first atomically moved to the cache directory by the delete job and is then deleted from it.
+    const SyncPath filePath = temporaryDirectory.path() / "test_file.txt";
+    { std::ofstream ofs(filePath); }
+    GenericLocalDeleteJob deleteJob(filePath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes);
+    deleteJob.runSynchronously();
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, deleteJob.exitInfo().code());
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
+    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePath.filename()));
+
+    // Non-existing items do not raise deletion errors.
+    const SyncPath nonExistingPath = temporaryDirectory.path() / "non-existing-item.txt";
+    GenericLocalDeleteJob nonExistingItemDeleteJob(nonExistingPath, _syncPal->cacheDirectory(),
+                                                   GenericLocalDeleteJob::ForceHardDelete::Yes);
+    nonExistingItemDeleteJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), nonExistingItemDeleteJob.exitInfo());
+
+    // With the "move to trash" parameter disabled, the deletion also relies on GenericLocalDeleteJob::hardDelete.
+    ParametersCache::instance()->parameters().setMoveToTrash(false);
+    const SyncPath anotherFilePath = temporaryDirectory.path() / "another_test_file.txt";
+    { std::ofstream ofs(anotherFilePath); }
+    GenericLocalDeleteJob moveToTrashDisabledDeleteJob(anotherFilePath, _syncPal->cacheDirectory());
+    moveToTrashDisabledDeleteJob.runSynchronously();
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveToTrashDisabledDeleteJob.exitInfo().code());
+    CPPUNIT_ASSERT(!std::filesystem::exists(anotherFilePath));
+
+    // A file within a directory that misses owner write and execute permissions cannot be hard deleted and is left unmodified.
+    const SyncPath permissionLessSubdir = temporaryDirectory.path() / "permission_less_subdirectory";
+    CPPUNIT_ASSERT(std::filesystem::create_directory(permissionLessSubdir));
+    const SyncPath filePathInSubdir = permissionLessSubdir / "test_file.txt";
+    { std::ofstream ofs(filePathInSubdir); }
+    const testhelpers::RightsSet rightSet(true, true, false);
+    auto rightsError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
+
+    GenericLocalDeleteJob permissionLessDeleteJob(filePathInSubdir, _syncPal->cacheDirectory(),
+                                                  GenericLocalDeleteJob::ForceHardDelete::Yes);
+    permissionLessDeleteJob.runSynchronously();
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError), permissionLessDeleteJob.exitInfo());
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), permissionLessDeleteJob.exitInfo());
+#endif
+
+    // Restore the rights so that the temporary directory can be inspected and then deleted.
+    CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, true, true, true, rightsError));
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+    CPPUNIT_ASSERT(std::filesystem::exists(filePathInSubdir));
+#elif defined(KD_WINDOWS)
+    CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
+#endif
+}
 
 } // namespace KDC

@@ -60,4 +60,5 @@ void IoHelperTestUtilities::resetFunctions() {
     });
 #endif
 }
+
 } // namespace KDC

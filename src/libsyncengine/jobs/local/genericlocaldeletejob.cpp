@@ -18,11 +18,14 @@
 
 #include "genericlocaldeletejob.h"
 
+#include "io/cachedirectory.h"
+
 namespace KDC {
 
-GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath,
+GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath, const std::shared_ptr<CacheDirectory> cacheDirectory,
                                              ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
     _absoluteLocalPath(std::move(absoluteLocalPath)),
+    _cacheDirectory(cacheDirectory),
     _forceHardDelete(forceHardDelete == ForceHardDelete::Yes) {}
 
 ExitInfo GenericLocalDeleteJob::runJob() {
@@ -47,17 +50,10 @@ ExitInfo GenericLocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &
 ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
-    if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(path, ioError)) {
-        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatIoError(path, ioError));
-        if (ioError == IoError::AccessDenied) return {ExitCode::SystemError, ExitCause::FileAccessError};
+    if (const auto exitInfo = IoHelper::deleteItemAtomically(path, _cacheDirectory); !exitInfo) {
+        LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatExitInfo(path, exitInfo));
 
-
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(path));
-            return {ExitCode::SystemError, ExitCause::NotFound};
-        }
-
-        return ExitCode::SystemError;
+        return exitInfo;
     }
 
     if (ParametersCache::isExtendedLogEnabled()) {

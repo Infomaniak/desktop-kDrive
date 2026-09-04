@@ -27,6 +27,7 @@
 #include "log/testlog.h"
 #include "io/testio.h"
 #include "io/testcachedirectory.h"
+#include "io/testdeleteitematomically.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
@@ -38,6 +39,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestJsonParserUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestCacheDirectory);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestDeleteItemAtomically);
 } // namespace KDC
 
 int main(int, char **) {
