@@ -633,7 +633,10 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
-    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+
+    [[maybe_unused]] const auto status =
+            std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;

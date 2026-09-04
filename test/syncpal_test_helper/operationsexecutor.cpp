@@ -117,8 +117,8 @@ void OperationsExecutor::execute(const ReplicaSide side, const Operations &opera
     _remoteOperationsTemporaryDir.reset();
 
     const auto &arr = operations.operationsArray();
-    for (size_t i = 0; i < arr->size(); ++i) {
-        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
+    for (uint32_t i = 0; i < arr->size(); ++i) {
+        const auto &itemObj = arr->getObject(i);
         const OperationDesc desc = parseOperation(itemObj);
         applyOperation(side, desc);
     }

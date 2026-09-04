@@ -306,7 +306,6 @@ void TestIntegration::testGlobalFramework() {
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Note: SyncTime is a real Unix epoch (seconds since 1970), not a "YYYYMMDDHHMMSS"-formatted number.
-    const SyncTime dirTime = testhelpers::defaultTime - 3600; // 1 hour ago
     const Situation situation{Str2SyncName(R"({
         "content" : [
             {
@@ -457,9 +456,8 @@ void TestIntegration::testExecuteSyncUpToStep() {
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     const std::vector stepsToTest = {
-            SyncStep::UpdateDetection1, SyncStep::UpdateDetection2, SyncStep::Reconciliation1,
-            SyncStep::Reconciliation2,  SyncStep::Reconciliation4,  SyncStep::Propagation1,
-            SyncStep::Propagation2,     SyncStep::Done,
+            SyncStep::UpdateDetection1, SyncStep::UpdateDetection2, SyncStep::Reconciliation1, SyncStep::Reconciliation2,
+            SyncStep::Reconciliation4,  SyncStep::Propagation1,     SyncStep::Propagation2,    SyncStep::Done,
     };
 
     for (const auto step: stepsToTest) {
