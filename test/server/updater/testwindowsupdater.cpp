@@ -152,7 +152,7 @@ void TestWindowsUpdater::testIsSignatureValid() {
         const auto signedFilePath = tmpDir.path() / "testfile.exe";
         DownloadJob job(nullptr, cacheDirectory, DownloadJob::FileDownloadInfo{_driveDbId, signedFileId, signedFilePath, 0},
                         DownloadJob::DateTimePolicy::ApplyDateTime);
-        (void) job.runSynchronously();
+        CPPUNIT_ASSERT(job.runSynchronously());
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
     }
 }

@@ -2578,6 +2578,7 @@ bool ParmsDb::setSyncToDelete(const SyncDbId dbId, bool value, bool &found) {
     LOG_IF_FAIL(queryBindValue(requestId, 2, dbId));
     if (!queryExec(requestId, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << requestId);
+
         return false;
     }
     if (numRowsAffected() == 1) {

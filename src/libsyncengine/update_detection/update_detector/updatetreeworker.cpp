@@ -1250,11 +1250,14 @@ bool UpdateTreeWorker::checkTreeIntegrity() {
 }
 
 bool UpdateTreeWorker::checkNodeIntegrity(const std::shared_ptr<Node> node) {
+    if (!node->id().has_value()) throw IntegrityError("checkNodeIntegrity failed");
+
     const bool tmpFlagIsConsistent =
             (node->isTmp() && CommonUtility::startsWith(*node->id(), "tmp_")) ||
             (!node->isTmp() &&
              !CommonUtility::startsWith(*node->id(), "tmp_")); // Check that the ID is consistent with the "_isTmp" flag
-    if (!node->id().has_value() || !tmpFlagIsConsistent) throw IntegrityError("checkNodeIntegrity failed");
+
+    if (!tmpFlagIsConsistent) throw IntegrityError("checkNodeIntegrity failed");
 
     const bool hasTempPrefix = node->id().has_value() && CommonUtility::startsWith(node->id().value(), "tmp_");
     if (!node->isValid() || hasTempPrefix) {
