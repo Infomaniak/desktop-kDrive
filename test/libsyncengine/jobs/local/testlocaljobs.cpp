@@ -287,6 +287,13 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
     const bool liteSyncIsEnabled = false;
     _syncPal->_syncInfo.targetPath = SyncPath{}; // Standard synchronisation.
 
+    // The local file does not exist: cannot run, returns ExitCode::SystemError and ExitCause::NotFound
+    {
+        LocalDeleteJobMock deleteJob(_syncPal, "non-existing-file.txt", liteSyncIsEnabled, NodeId{});
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::NotFound), deleteJob.canRun());
+    }
+
+
     _syncPal->setLocalPath(temporaryDirectory.path());
     {
         LocalDeleteJobMock deleteJob(_syncPal, SyncPath{localDirPath.filename()}, liteSyncIsEnabled, NodeId{});
@@ -342,7 +349,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {

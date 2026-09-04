@@ -26,16 +26,16 @@ static const auto outParamsItemInfo = "itemInfo";
 
 namespace KDC {
 
-SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(int syncDbId, const SyncFileItemInfo &itemInfo) :
+SignalSyncCompletedItemJob::SignalSyncCompletedItemJob(const SyncDbId syncDbId, const SyncFileItem &syncFileItem) :
     _syncDbId(syncDbId),
-    _itemInfo(itemInfo) {
+    _syncFileItem(syncFileItem) {
     _signalNum = SignalNum::SYNC_COMPLETEDITEM;
     setJobPriority(Poco::Thread::PRIO_LOWEST);
 }
 
 ExitInfo SignalSyncCompletedItemJob::serializeOutputParms() {
     writeParamValue(outParamsSyncDbId, _syncDbId);
-    writeParamValue(outParamsItemInfo, _itemInfo, info2DynamicVar<SyncFileItemInfo>);
+    writeParamValue(outParamsItemInfo, _syncFileItem, info2DynamicVar<SyncFileItem>);
     return ExitCode::Ok;
 }
 

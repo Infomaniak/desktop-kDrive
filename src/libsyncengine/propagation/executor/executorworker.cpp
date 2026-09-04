@@ -103,7 +103,7 @@ void ExecutorWorker::execute() {
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
     initProgressManager();
-    uint64_t changesCounter = 0;
+    uint64_t scheduledLocalChangesCounter = 0;
 
     // Create all the jobs
     sentry::pTraces::scoped::JobGeneration perfMonitor(syncDbId());
@@ -134,7 +134,10 @@ void ExecutorWorker::execute() {
             continue;
         }
 
-        changesCounter++;
+        // Count the number of local changes to be propagated to the local filesystem. If there are too many, we will force a
+        // local snapshot reconstruction at the end of the execution. This is to avoid a situation where the OS stops sending
+        // events after too many changes.
+        if (syncOp->targetSide() == ReplicaSide::Local) ++scheduledLocalChangesCounter;
 
         syncOp->setPropagationStatus(SyncOperation::PropagationStatus::InProgress);
 
@@ -220,8 +223,8 @@ void ExecutorWorker::execute() {
     _syncPal->_syncOps->clear();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
 
-    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
-        // If there are too many changes on the local filesystem, the OS stops sending events at some point.
+    if (scheduledLocalChangesCounter > SNAPSHOT_INVALIDATION_THRESHOLD || _snapshotToInvalidate) {
+        // If there are too many changes propagated on the local filesystem, the OS stops sending events at some point.
         // Also, on some specific errors, we want to force the snapshot reconstruction.
         LOG_SYNCPAL_INFO(_logger, "Forcing local snapshot invalidation.");
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
@@ -355,30 +358,27 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         }
 
         if (!isValidDestination(syncOp)) {
-            if (syncOp->targetSide() == ReplicaSide::Remote) {
-                bool exists = false;
-                if (auto ioError = IoError::Success; !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError,
-                                                                                  IoHelper::PathCheckOption::Insensitive)) {
-                    LOGW_WARN(_logger,
-                              L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
-                    return ExitCode::SystemError;
-                }
-                if (!exists) return {ExitCode::DataError, ExitCause::NotFound};
+            bool exists = false;
+            if (auto ioError = IoError::Success;
+                !IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+                LOGW_WARN(_logger, L"Error in Utility::checkIfPathExists: " << Utility::formatSyncPath(absoluteLocalFilePath));
+                return ExitCode::SystemError;
+            }
+            if (!exists) return {ExitCode::DataError, ExitCause::NotFound};
 
-                // Ignore operation
-                if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
-                    const Error err(_syncPal->syncDbId(), syncItem.localNodeId().value_or(""),
-                                    syncItem.remoteNodeId().value_or(""), syncItem.type(), syncItem.path(), syncItem.conflict(),
-                                    syncItem.inconsistency(), CancelType::Create);
-                    _syncPal->addError(err);
-                }
+            // Ignore operation
+            if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
+                const Error err(_syncPal->syncDbId(), syncItem.localNodeId().value_or(""), syncItem.remoteNodeId().value_or(""),
+                                syncItem.type(), syncItem.path(), syncItem.conflict(), syncItem.inconsistency(),
+                                CancelType::Create);
+                _syncPal->addError(err);
+            }
 
-                if (const std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
-                    !sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
-                                                       << Utility::formatSyncName(syncOp->affectedNode()->name()));
-                    return ExitCode::DataError;
-                }
+            if (const std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
+                !sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node "
+                                                   << Utility::formatSyncName(syncOp->affectedNode()->name()));
+                return ExitCode::DataError;
             }
 
             ignored = true;
@@ -403,8 +403,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -654,12 +654,11 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             if (filesize > bigFileThreshold) {
                 try {
                     const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
-                    job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
-                                                               absoluteLocalFilePath, syncOp->affectedNode()->name(),
-                                                               newCorrespondingParentNode->id().value_or(""),
-                                                               syncOp->affectedNode()->createdAt().value_or(0),
-                                                               syncOp->affectedNode()->modificationTime().value_or(0),
-                                                               isLiteSyncActivated(), uploadSessionParallelJobs);
+                    job = std::make_shared<DriveUploadSession>(
+                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
+                            syncOp->affectedNode()->name(), newCorrespondingParentNode->id().value_or(""),
+                            syncOp->affectedNode()->createdAt().value_or(0),
+                            syncOp->affectedNode()->modificationTime().value_or(0), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
@@ -877,7 +876,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
                 job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
                                                            absoluteLocalFilePath, syncOp->correspondingNode()->id().value_or(""),
                                                            syncOp->affectedNode()->modificationTime().value_or(0),
-                                                           isLiteSyncActivated(), uploadSessionParallelJobs);
+                                                           uploadSessionParallelJobs, syncOp->correspondingNode()->size());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession: " << CommonUtility::s2ws(e.what()));
                 return ExitCode::DataError;
@@ -886,7 +885,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
             try {
                 job = std::make_shared<UploadJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath,
                                                   syncOp->correspondingNode()->id().value_or(""),
-                                                  syncOp->affectedNode()->modificationTime().value_or(0));
+                                                  syncOp->affectedNode()->modificationTime().value_or(0),
+                                                  syncOp->correspondingNode()->size());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));
@@ -1262,37 +1262,42 @@ ExitInfo ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool
 }
 
 bool ExecutorWorker::isValidDestination(const SyncOpPtr syncOp) {
-    if (syncOp->targetSide() == ReplicaSide::Remote && syncOp->type() == OperationType::Create) {
-        std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
-        if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
-            newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
-        } else {
-            newCorrespondingParentNode = correspondingNodeInOtherTree(syncOp->affectedNode()->parentNode());
-        }
+    if (syncOp->targetSide() != ReplicaSide::Remote || syncOp->type() != OperationType::Create) return true;
 
-        if (!newCorrespondingParentNode || !newCorrespondingParentNode->id().has_value()) {
-            return false;
-        }
+    std::shared_ptr<Node> newCorrespondingParentNode = nullptr;
+    if (affectedUpdateTree(syncOp)->rootNode() == syncOp->affectedNode()->parentNode()) {
+        newCorrespondingParentNode = targetUpdateTree(syncOp)->rootNode();
+    } else {
+        newCorrespondingParentNode = correspondingNodeInOtherTree(syncOp->affectedNode()->parentNode());
+    }
 
-        if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
-            return false;
-        }
-        if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::commonDocumentsFolderPath() &&
-            newCorrespondingParentNode->isRoot() && syncOp->nodeType() != NodeType::Directory) {
-            return false;
-        }
+    if (!newCorrespondingParentNode || !newCorrespondingParentNode->id().has_value()) {
+        LOGW_WARN(_logger, L"Failed to retrieve corresponding parent node for "
+                                   << Utility::formatSyncPath(syncOp->affectedNode()->parentNode()->getPath()));
+        return false;
+    }
 
-        if (newCorrespondingParentNode->isSharedFolder()) {
-            return false;
-        }
-        if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::sharedFolderPath() &&
-            newCorrespondingParentNode->isRoot()) {
-            return false;
-        }
+    if (newCorrespondingParentNode->isCommonDocumentsFolder() && syncOp->nodeType() != NodeType::Directory) {
+        return false;
+    }
+
+    if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::commonDocumentsFolderPath() &&
+        newCorrespondingParentNode->isRoot() && syncOp->nodeType() != NodeType::Directory) {
+        return false;
+    }
+
+    if (newCorrespondingParentNode->isSharedFolder()) {
+        return false;
+    }
+
+    if (_syncPal->syncInfo().isAdvancedSync() && _syncPal->syncInfo().targetPath == Utility::sharedFolderPath() &&
+        newCorrespondingParentNode->isRoot()) {
+        return false;
     }
 
     return true;
 }
+
 
 bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
     if (syncOp->targetSide() != ReplicaSide::Local) {
@@ -1933,6 +1938,7 @@ ExitInfo ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId
         }
         syncOp->correspondingNode()->setCreatedAt(newCreationTime);
         syncOp->correspondingNode()->setModificationTime(newLastModificationTime);
+        syncOp->correspondingNode()->setSize(size);
     }
     node = syncOp->correspondingNode();
 

@@ -71,10 +71,10 @@ class AbstractUploadSession : public SyncJob {
         SyncName getFileName() const { return _filename; }
         std::string getSessionToken() const { return _sessionToken; }
         bool isCancelled() const noexcept { return _sessionCancelled; }
+        ExitInfo runJob() override;
 
     private:
         ExitInfo canRun() override;
-        ExitInfo runJob() override;
 
         ExitInfo initChunks();
         ExitInfo startSession();
