@@ -194,9 +194,13 @@ void RemoteFolderTreeModel::toggleSelection(const QModelIndex &modelIndex) {
 }
 
 void RemoteFolderTreeModel::toggleRootSelection() {
-    if (_excludedNodeIds.isEmpty()) return;
-    _excludedNodeIds.clear();
-    _excludedPaths.clear();
+    if (_root->children.empty()) return;
+    if (_excludedNodeIds.isEmpty()) {
+        for (const auto &child: _root->children) excludeNode(child.get());
+    } else {
+        _excludedNodeIds.clear();
+        _excludedPaths.clear();
+    }
     notifySelectionDataChanged();
     emit selectionChanged();
 }
