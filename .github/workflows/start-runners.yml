@@ -87,6 +87,11 @@ jobs:
           for i in $(seq 1 "$COUNT"); do
             NAME="ci-runner-win-${RUN_ID}-${i}"
             USERDATA="userdata-${NAME}.ps1"
+            LABELS="${{ steps.params.outputs.labels }}"
+            if [[ "$LABELS" == *"|"* ]]; then
+              echo "::error::Labels must not contain a '|' character (found in: $LABELS)"
+              exit 1
+            fi
 
             sed \
               -e "s|__REPO_URL__|https://github.com/${REPO}|" \
