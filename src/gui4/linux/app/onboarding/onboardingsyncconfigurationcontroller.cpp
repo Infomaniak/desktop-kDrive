@@ -91,8 +91,8 @@ void OnboardingSyncConfigurationController::open() {
     _busy = false;
     _errorTitle.clear();
     _errorText.clear();
-    _page = Summary;
     _currentRow = -1;
+    setPage(Summary);
     emit visibleChanged();
     showInitialPage();
 }
@@ -107,7 +107,7 @@ void OnboardingSyncConfigurationController::cancelCurrentPage() {
     abortPendingRequest();
     clearError();
     if (_page == FolderSelection) {
-        _page = DriveConfiguration;
+        setPage(DriveConfiguration);
         emit presentationChanged();
         return;
     }
@@ -117,8 +117,8 @@ void OnboardingSyncConfigurationController::cancelCurrentPage() {
         if (_drafts.size() == 1) {
             closeWithoutCommit();
         } else {
-            _page = Summary;
             _currentRow = -1;
+            setPage(Summary);
             emit presentationChanged();
         }
         return;
@@ -131,7 +131,7 @@ void OnboardingSyncConfigurationController::validateCurrentPage() {
     if (!canValidate()) return;
     if (_page == FolderSelection) {
         if (Draft *const draft = currentDraft()) draft->config.blackList = _folderTreeModel.blackList();
-        _page = DriveConfiguration;
+        setPage(DriveConfiguration);
         refreshSummaryModel();
         emit presentationChanged();
         return;
@@ -141,8 +141,8 @@ void OnboardingSyncConfigurationController::validateCurrentPage() {
         if (_drafts.size() == 1) {
             commitAndClose();
         } else {
-            _page = Summary;
             _currentRow = -1;
+            setPage(Summary);
             emit presentationChanged();
         }
         return;
@@ -212,8 +212,8 @@ void OnboardingSyncConfigurationController::selectFolders() {
     if (!draft || _busy) return;
     _folderTreeModel.configure(draft->key.userDbId, draft->key.driveId, QStr2Str(draft->config.targetNodeId),
                                draft->config.blackList);
-    _page = FolderSelection;
     clearError();
+    setPage(FolderSelection);
     emit presentationChanged();
 }
 
@@ -274,8 +274,8 @@ void OnboardingSyncConfigurationController::showInitialPage() {
     if (_drafts.size() == 1) {
         openDrive(0);
     } else {
-        _page = Summary;
         _currentRow = -1;
+        setPage(Summary);
         emit presentationChanged();
     }
 }
@@ -283,9 +283,15 @@ void OnboardingSyncConfigurationController::showInitialPage() {
 void OnboardingSyncConfigurationController::openDrive(const int32_t row) {
     _currentRow = row;
     _driveSnapshot = _drafts[static_cast<std::size_t>(row)].config;
-    _page = DriveConfiguration;
     clearError();
+    setPage(DriveConfiguration);
     emit presentationChanged();
+}
+
+void OnboardingSyncConfigurationController::setPage(const Page page) {
+    if (_page == page) return;
+    _page = page;
+    emit pageChanged();
 }
 
 void OnboardingSyncConfigurationController::refreshSummaryModel() {
@@ -331,7 +337,7 @@ void OnboardingSyncConfigurationController::closeWithoutCommit() {
     _drafts.clear();
     _driveSnapshot.reset();
     _currentRow = -1;
-    _page = Summary;
+    setPage(Summary);
     _errorTitle.clear();
     _errorText.clear();
     emit visibleChanged();
@@ -351,8 +357,8 @@ void OnboardingSyncConfigurationController::commitAndClose() {
             closeWithoutCommit();
             return;
         }
-        _page = Summary;
         _currentRow = -1;
+        setPage(Summary);
         emit presentationChanged();
         return;
     }
