@@ -39,6 +39,7 @@ void OperationGeneratorWorker::execute() {
     _syncPal->_syncOps->startUpdate();
     _syncPal->_syncOps->clear();
     _bytesToDownload = 0;
+    _localDeleteOperationsPaths.clear();
 
     // Mark all nodes "Unprocessed"
     _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
