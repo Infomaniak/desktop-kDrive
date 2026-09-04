@@ -26,6 +26,9 @@ Column {
     id: root
 
     required property var controller
+    required property real initialContentY
+
+    signal contentYUpdated(real contentY)
 
     // A folder name is free text and goes through `Text.StyledText` below, where `&`, `<` and `>` would be read as
     // markup.
@@ -47,12 +50,20 @@ Column {
     ListView {
         id: drivesList
 
+        function restoreContentY(): void {
+            const maximumContentY = Math.max(originY, originY + contentHeight - height)
+            contentY = Math.max(originY, Math.min(root.initialContentY, maximumContentY))
+        }
+
         width: parent.width
         height: Math.min(contentHeight, IKSyncConfiguration.summaryListMaximumHeight)
         model: root.controller.selectedDrivesModel
         spacing: IKSyncConfiguration.summaryListSpacing
         clip: true
         boundsBehavior: Flickable.StopAtBounds
+        onContentHeightChanged: Qt.callLater(function() {
+            drivesList.restoreContentY()
+        })
 
         ScrollBar.vertical: ScrollBar {
             policy: drivesList.contentHeight > drivesList.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
@@ -158,7 +169,10 @@ Column {
                     // Every row repeats the same label, so the drive is what tells them apart.
                     Accessible.description: driveRow.driveName
                     actionEnabled: !root.controller.busy
-                    onClicked: root.controller.configureDrive(driveRow.index)
+                    onClicked: {
+                        root.contentYUpdated(drivesList.contentY)
+                        root.controller.configureDrive(driveRow.index)
+                    }
                 }
             }
         }
