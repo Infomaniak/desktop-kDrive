@@ -154,13 +154,13 @@ namespace Infomaniak.kDrive.Types
     {
         public DbId SyncDbId { get; }
         public TooManyDeletesNotificationType NotificationType { get; }
-        public int NbFiles { get; }
+        public List<string> FilesPaths { get; }
 
-        public ManyDeletesInfo(DbId syncDbId, TooManyDeletesNotificationType notificationType, int nbFiles)
+        public ManyDeletesInfo(DbId syncDbId, TooManyDeletesNotificationType notificationType, List<string> filesPaths)
         {
             SyncDbId = syncDbId;
             NotificationType = notificationType;
-            NbFiles = nbFiles;
+            FilesPaths = filesPaths;
         }
     }
 }
