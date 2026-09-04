@@ -40,9 +40,9 @@ class OnboardingState;
 class OnboardingSyncConfigurationController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged)
-        Q_PROPERTY(Page page READ page NOTIFY presentationChanged)
-        Q_PROPERTY(bool driveConfigurationPage READ driveConfigurationPage NOTIFY presentationChanged)
-        Q_PROPERTY(bool folderSelectionPage READ folderSelectionPage NOTIFY presentationChanged)
+        Q_PROPERTY(Page page READ page NOTIFY pageChanged)
+        Q_PROPERTY(bool driveConfigurationPage READ driveConfigurationPage NOTIFY pageChanged)
+        Q_PROPERTY(bool folderSelectionPage READ folderSelectionPage NOTIFY pageChanged)
         Q_PROPERTY(bool busy READ busy NOTIFY presentationChanged)
         Q_PROPERTY(bool canValidate READ canValidate NOTIFY presentationChanged)
         Q_PROPERTY(QString errorTitle READ errorTitle NOTIFY presentationChanged)
@@ -97,6 +97,7 @@ class OnboardingSyncConfigurationController final : public QObject {
 
     signals:
         void visibleChanged();
+        void pageChanged();
         void presentationChanged();
         void customFolderRequested(const QUrl &initialFolder);
         void customFolderDialogClosed();
@@ -115,6 +116,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         void buildDrafts();
         void showInitialPage();
         void openDrive(int32_t row);
+        void setPage(Page page);
         void refreshSummaryModel();
         void setBusy(bool busy);
         void abortPendingRequest();
