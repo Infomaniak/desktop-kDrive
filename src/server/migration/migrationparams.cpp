@@ -206,9 +206,9 @@ ExitCode MigrationParams::migrateGeneralParams() {
     }
     ParametersCache::instance()->parameters().setPurgeOldLogs(purgeOldLogs);
 
-    std::shared_ptr<std::vector<char>> geometry;
-    migrateGeometry(geometry);
-    ParametersCache::instance()->parameters().setDialogGeometry(geometry);
+    Parameters::DialogGeometry dialogGeometry;
+    migrateGeometry(dialogGeometry);
+    ParametersCache::instance()->parameters().setDialogGeometry(dialogGeometry);
 
     ProxyConfig proxyConfig;
     ExitCode exitCode = migrateProxySettings(proxyConfig);
@@ -547,8 +547,7 @@ ExitCode MigrationParams::migrateAppExclusion() {
 }
 #endif
 
-void MigrationParams::migrateGeometry(std::shared_ptr<std::vector<char>> &geometry) {
-    std::string geometryStr;
+void MigrationParams::migrateGeometry(Parameters::DialogGeometry &dialogGeometry) {
     QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
 
     for (auto dialog: geometryDialog) {
@@ -556,11 +555,10 @@ void MigrationParams::migrateGeometry(std::shared_ptr<std::vector<char>> &geomet
         QByteArray dialogGeo = settings.value(geometryC).toByteArray();
 
         if (!dialogGeo.isEmpty()) {
-            geometryStr.append(dialog + ";" + dialogGeo.toStdString() + "\n");
+            dialogGeometry.insert(QString::fromStdString(dialog), dialogGeo);
         }
         settings.endGroup();
     }
-    geometry = std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end()));
 }
 
 ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {

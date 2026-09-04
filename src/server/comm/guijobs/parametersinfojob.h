@@ -20,7 +20,7 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ class ParametersInfoJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        ParametersInfo _parametersInfo;
+        Parameters _parametersInfo;
 
 
         ExitInfo deserializeInputParms() override { return ExitCode::Ok; };

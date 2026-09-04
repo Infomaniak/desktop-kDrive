@@ -1098,7 +1098,7 @@ void ParametersDialog::onOpenFolder(const QString &filePath) {
 void ParametersDialog::onDebugReporterDone(bool retCode, const QString &debugId) {
     EnableStateHolder _(this);
 
-    Language language = ParametersCache::instance()->parametersInfo().language();
+    Language language = ParametersCache::instance()->parameters().language();
     QString languageCode = CommonUtility::languageCode(language);
     QString swistranferUrl = QString(MANUALTRANSFER_URL).arg(languageCode.left(2));
 

@@ -75,7 +75,7 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     subLayout->addWidget(releaseNoteContentWidget);
 
     auto *manager = new QNetworkAccessManager(this);
-    const Language language = ParametersCache::instance()->parametersInfo().language();
+    const Language language = ParametersCache::instance()->parameters().language();
     QString languageCode = CommonUtility::languageCode(language);
     if (languageCode.isEmpty()) languageCode = "en";
     const QUrl notesUrl(QString("%1-%2-win-%3.html").arg(APPLICATION_STORAGE_URL, versionInfo.tag.c_str(), languageCode.left(2)));
