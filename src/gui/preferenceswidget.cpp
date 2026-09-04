@@ -40,7 +40,7 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #ifdef Q_OS_WIN
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 #endif
 
 #include <QBoxLayout>
@@ -159,7 +159,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
         darkThemeSwitch = new CustomSwitch();
         darkThemeSwitch->setLayoutDirection(Qt::RightToLeft);
         darkThemeSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-        darkThemeSwitch->setCheckState(ParametersCache::instance()->parametersInfo().darkTheme() ? Qt::Checked : Qt::Unchecked);
+        darkThemeSwitch->setCheckState(ParametersCache::instance()->parameters().darkTheme() ? Qt::Checked : Qt::Unchecked);
         darkThemeBox->addWidget(darkThemeSwitch);
         generalBloc->addSeparator();
     }
@@ -173,7 +173,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     const auto monochromeSwitch = new CustomSwitch();
     monochromeSwitch->setLayoutDirection(Qt::RightToLeft);
     monochromeSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-    monochromeSwitch->setCheckState(ParametersCache::instance()->parametersInfo().monoIcons() ? Qt::Checked : Qt::Unchecked);
+    monochromeSwitch->setCheckState(ParametersCache::instance()->parameters().monoIcons() ? Qt::Checked : Qt::Unchecked);
     monochromeIconsBox->addWidget(monochromeSwitch);
     generalBloc->addSeparator();
 
@@ -220,7 +220,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     const auto moveToTrashSwitch = new CustomSwitch();
     moveToTrashSwitch->setLayoutDirection(Qt::RightToLeft);
     moveToTrashSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-    moveToTrashSwitch->setCheckState(ParametersCache::instance()->parametersInfo().moveToTrash() ? Qt::Checked : Qt::Unchecked);
+    moveToTrashSwitch->setCheckState(ParametersCache::instance()->parameters().moveToTrash() ? Qt::Checked : Qt::Unchecked);
     moveToTrashSwitch->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     moveToTrashBox->addWidget(moveToTrashSwitch);
 
@@ -275,7 +275,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     debuggingVBox->addWidget(_debuggingLabel);
 
-    _debuggingFolderLabel->setVisible(ParametersCache::instance()->parametersInfo().useLog());
+    _debuggingFolderLabel->setVisible(ParametersCache::instance()->parameters().useLog());
     _debuggingFolderLabel->setAttribute(Qt::WA_NoMousePropagation);
     _debuggingFolderLabel->setContextMenuPolicy(Qt::PreventContextMenu);
     debuggingVBox->addWidget(_debuggingFolderLabel);
@@ -360,7 +360,7 @@ void PreferencesWidget::onDarkThemeSwitchClicked(bool checked) {
 }
 
 void PreferencesWidget::onMonochromeSwitchClicked(bool checked) {
-    ParametersCache::instance()->parametersInfo().setMonoIcons(checked);
+    ParametersCache::instance()->parameters().setMonoIcons(checked);
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
@@ -370,7 +370,7 @@ void PreferencesWidget::onMonochromeSwitchClicked(bool checked) {
 }
 
 void PreferencesWidget::onLaunchAtStartupSwitchClicked(bool checked) {
-    ParametersCache::instance()->parametersInfo().setAutoStart(checked);
+    ParametersCache::instance()->parameters().setAutoStart(checked);
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
@@ -388,7 +388,7 @@ void PreferencesWidget::onLanguageChange() {
 
     const auto language = static_cast<Language>(combo->currentData().toInt());
 
-    ParametersCache::instance()->parametersInfo().setLanguage(language);
+    ParametersCache::instance()->parameters().setLanguage(language);
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
@@ -401,7 +401,7 @@ void PreferencesWidget::onLanguageChange() {
 }
 
 void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
-    ParametersCache::instance()->parametersInfo().setMoveToTrash(checked);
+    ParametersCache::instance()->parameters().setMoveToTrash(checked);
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
     }
@@ -415,7 +415,7 @@ void PreferencesWidget::onDebuggingWidgetClicked() {
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "debuggingPopup");
     DebuggingDialog dialog(_gui, this);
     dialog.exec();
-    _debuggingFolderLabel->setVisible(ParametersCache::instance()->parametersInfo().useLog());
+    _debuggingFolderLabel->setVisible(ParametersCache::instance()->parameters().useLog());
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Debugging);
     repaint();
 }
@@ -510,8 +510,7 @@ void PreferencesWidget::retranslateUi() const {
     _languageSelectorComboBox->addItem(tr("Danish"), toInt(Language::Danish));
     _languageSelectorComboBox->addItem(tr("Greek"), toInt(Language::Greek));
     _languageSelectorComboBox->addItem(tr("Dutch"), toInt(Language::Dutch));
-    const int languageIndex =
-            _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
+    const int languageIndex = _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parameters().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 

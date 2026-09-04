@@ -435,7 +435,7 @@ bool GuiUtility::isDarkTheme() {
     if (CommonUtility::isMac()) {
         darkTheme = CommonUtility::hasDarkSystray();
     } else {
-        darkTheme = ParametersCache::instance()->parametersInfo().darkTheme();
+        darkTheme = ParametersCache::instance()->parameters().darkTheme();
     }
 
     return darkTheme;
@@ -673,7 +673,7 @@ QLocale GuiUtility::languageToQLocale(Language language) {
 }
 
 QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat) {
-    const Language lang = ParametersCache::instance()->parametersInfo().language();
+    const Language lang = ParametersCache::instance()->parameters().language();
     return languageToQLocale(lang).toString(dateTime, dateFormat);
 }
 

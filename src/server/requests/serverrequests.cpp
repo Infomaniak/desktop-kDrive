@@ -278,13 +278,13 @@ ExitCode ServerRequests::getSyncList(std::vector<Sync> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getParameters(ParametersInfo &parametersInfo) {
-    parametersToParametersInfo(ParametersCache::instance()->parameters(), parametersInfo);
+ExitCode ServerRequests::getParameters(Parameters &parametersInfo) {
+    parametersInfo = ParametersCache::instance()->parameters();
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) {
-    parametersInfoToParameters(parametersInfo, ParametersCache::instance()->parameters());
+ExitCode ServerRequests::updateParameters(const Parameters &parametersInfo) {
+    ParametersCache::instance()->parameters() = parametersInfo;
     auto exitCode = ExitCode::Ok;
     ParametersCache::instance()->save(&exitCode);
     return exitCode;
@@ -2110,69 +2110,6 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
     }
 
     return ExitCode::Ok;
-}
-
-void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {
-    parametersInfo.setLanguage(parameters.language());
-    parametersInfo.setAutoStart(parameters.autoStart());
-    parametersInfo.setMonoIcons(parameters.monoIcons());
-    parametersInfo.setMoveToTrash(parameters.moveToTrash());
-    parametersInfo.setNotificationsDisabled(parameters.notificationsDisabled());
-    parametersInfo.setUseLog(parameters.useLog());
-    parametersInfo.setLogLevel(parameters.logLevel());
-    parametersInfo.setExtendedLog(parameters.extendedLog());
-    parametersInfo.setPurgeOldLogs(parameters.purgeOldLogs());
-    parametersInfo.setProxyConfig(parameters.proxyConfig());
-    parametersInfo.setDarkTheme(parameters.darkTheme());
-
-    if (parameters.dialogGeometry()) {
-        QByteArray dialogGeometryArr;
-        std::copy(parameters.dialogGeometry()->begin(), parameters.dialogGeometry()->end(),
-                  std::back_inserter(dialogGeometryArr));
-        QList<QByteArray> dialogGeometryLines = dialogGeometryArr.split('\n');
-        for (const QByteArray &dialogGeometryLine: dialogGeometryLines) {
-            QList<QByteArray> dialogGeometryElts = dialogGeometryLine.split(';');
-            if (dialogGeometryElts.size() == 2) {
-                parametersInfo.setDialogGeometry(QString(dialogGeometryElts[0]), dialogGeometryElts[1]);
-            }
-        }
-    }
-    parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
-    parametersInfo.setDistributionChannel(parameters.distributionChannel());
-    parametersInfo.setSentryEnabled(parameters.sentryEnabled());
-    parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
-    parametersInfo.setNotifyBeforeDelete(parameters.notifyBeforeDelete());
-}
-
-void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
-    parameters.setLanguage(parametersInfo.language());
-    parameters.setMonoIcons(parametersInfo.monoIcons());
-    parameters.setAutoStart(parametersInfo.autoStart());
-    parameters.setNotificationsDisabled(parametersInfo.notificationsDisabled());
-    parameters.setUseLog(parametersInfo.useLog());
-    parameters.setLogLevel(parametersInfo.logLevel());
-    parameters.setExtendedLog(parametersInfo.extendedLog());
-    parameters.setPurgeOldLogs(parametersInfo.purgeOldLogs());
-    parameters.setProxyConfig(parametersInfo.proxyConfig());
-    parameters.setDarkTheme(parametersInfo.darkTheme());
-    parameters.setMoveToTrash(parametersInfo.moveToTrash());
-
-    if (!parametersInfo.dialogGeometry().isEmpty()) {
-        QByteArray dialogGeometryArr;
-        for (const QString &objectName: parametersInfo.dialogGeometry().keys()) {
-            dialogGeometryArr += objectName.toUtf8();
-            dialogGeometryArr += ";";
-            dialogGeometryArr += parametersInfo.dialogGeometry().value(objectName);
-            dialogGeometryArr += "\n";
-        }
-        parameters.setDialogGeometry(
-                std::shared_ptr<std::vector<char>>(new std::vector<char>(dialogGeometryArr.begin(), dialogGeometryArr.end())));
-    }
-    parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
-    parameters.setDistributionChannel(parametersInfo.distributionChannel());
-    parameters.setSentryEnabled(parametersInfo.sentryEnabled());
-    parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
-    parameters.setNotifyBeforeDelete(parametersInfo.notifyBeforeDelete());
 }
 
 } // namespace KDC

@@ -135,7 +135,7 @@ AppClient::AppClient(int &argc, char **argv) :
     // Set style
     KDC::GuiUtility::setStyle(qApp);
 
-    CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
+    CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parameters().language());
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path
@@ -151,7 +151,7 @@ AppClient::AppClient(int &argc, char **argv) :
     setQuitOnLastWindowClosed(false);
 
     // Setup translations
-    CommonUtility::setupTranslations(this, ParametersCache::instance()->parametersInfo().language());
+    CommonUtility::setupTranslations(this, ParametersCache::instance()->parameters().language());
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
@@ -176,7 +176,7 @@ AppClient::AppClient(int &argc, char **argv) :
     _gui->init();
     GuiRequests::reportClientDisplayed();
 
-    _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parametersInfo().monoIcons());
+    _theme->setSystrayUseMonoIcons(ParametersCache::instance()->parameters().monoIcons());
     connect(_theme, &Theme::systrayUseMonoIconsChanged, this, &AppClient::onUseMonoIconsChanged);
 
     // Cleanup at Quit
@@ -574,14 +574,14 @@ void AppClient::setupLogging() {
     auto logger = KDC::Logger::instance();
     logger->setIsCLientLog(true);
     logger->enterNextLogFile();
-    logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
+    logger->setMinLogLevel(toInt(ParametersCache::instance()->parameters().logLevel()));
 
-    if (ParametersCache::instance()->parametersInfo().useLog()) {
+    if (ParametersCache::instance()->parameters().useLog()) {
         // Don't override other configured logging
         if (logger->isLoggingToFile()) return;
 
         logger->setupLogDir();
-        if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
+        if (ParametersCache::instance()->parameters().purgeOldLogs()) {
             logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
         } else {
             logger->setLogExpire(std::chrono::days(0));

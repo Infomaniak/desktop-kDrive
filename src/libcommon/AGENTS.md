@@ -10,8 +10,8 @@ Foundational shared library. **Everything depends on it** (`libcommonserver` →
 | `utility/cstypes.h` | All primitive enums — **no Qt/Poco dependency** |
 | `utility/types.h` | Type aliases, `ExitInfo`, concepts, bitwise ops, string conversion macros |
 | `comm.h` | Full IPC protocol: `RequestNum`, `SignalNum`, timeout constants |
-| `info/*.h` | Remaining DTO classes (ErrorInfo, ParametersInfo, …) |
-| `data/*.h` | Unified entity classes (User, Account, Drive, DriveAvailable, Sync, …) |
+| `info/*.h` | Remaining DTO classes (ErrorInfo, …) |
+| `data/*.h` | Unified entity classes (User, Account, Drive, DriveAvailable, Sync, Parameters, …) |
 | `utility/utility.h` | `CommonUtility` — static helpers (paths, strings, UUID, disk space, URL, …) |
 | `utility/urlhelper.h` | `UrlHelper` — all Infomaniak API base URLs |
 | `log/customlogstreams.h` | `CustomLogStream` / `CustomLogWStream` — typed log stream wrappers |
@@ -66,7 +66,7 @@ Key info classes:
 - `User` → `Account` → `Drive` → `Sync` (ownership chain)
 - `ErrorInfo` — full error record with all context fields
 - `SyncFileItem` (`data/syncfileitem.h`) — live sync progress event shared by sync engine and IPC
-- `ParametersInfo` + `ProxyConfigInfo` — all app settings
+- `Parameters` (`data/parameters.h`) — merged server/GUI app settings DTO, mirroring the `Drive`/`DriveInfo` unification pattern
 
 **Adding a new entity:** copy the pattern from `userinfo.h`. Register both `toDynamicStruct` and the `QDataStream` operators.
 

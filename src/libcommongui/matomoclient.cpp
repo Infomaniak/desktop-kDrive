@@ -82,7 +82,7 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
                     }
                 }
             });
-            if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+            if (ParametersCache::instance()->parameters().extendedLog()) {
                 qDebug(lcMatomoClient) << "Transfer timeout set to" << matomoTimeout << "ms.";
             }
         }
@@ -98,7 +98,7 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
         QString action;
         instance().getPathAndAction(page, path, action);
 
-        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+        if (ParametersCache::instance()->parameters().extendedLog()) {
             qCDebug(lcMatomoClient()) << "MatomoClient::sendVisit(path=" << path << ", action=" << action << ")"
                                       << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");
         }
@@ -130,7 +130,7 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
                 break;
         }
 
-        if (ParametersCache::instance()->parametersInfo().extendedLog()) {
+        if (ParametersCache::instance()->parameters().extendedLog()) {
             qCDebug(lcMatomoClient()) << "MatomoClient::sendEvent(category=" << category << ", action=" << actionStr
                                       << ", name=" << name << ", value=" << value << ")"
                                       << (matomoDisabled ? " => Trigger but not sent, tracking disabled" : "");

@@ -770,7 +770,7 @@ void ClientGui::onShowTrayMessage(const QString &title, const QString &msg) {
 }
 
 void ClientGui::onShowOptionalTrayMessage(const QString &title, const QString &msg) {
-    if (ParametersCache::instance()->parametersInfo().notificationsDisabled() != NotificationsDisabled::Never) {
+    if (ParametersCache::instance()->parameters().notificationsDisabled() != NotificationsDisabled::Never) {
         if (_notificationEnableDate != QDateTime() && _notificationEnableDate > QDateTime::currentDateTime()) {
             return;
         }
@@ -813,7 +813,7 @@ void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const 
 }
 
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {
-    ParametersCache::instance()->parametersInfo().setNotificationsDisabled(type);
+    ParametersCache::instance()->parameters().setNotificationsDisabled(type);
     ParametersCache::instance()->saveParametersInfo();
 
     if (type == NotificationsDisabled::Never) {
@@ -830,7 +830,7 @@ void ClientGui::onApplyStyle() {
 }
 
 void ClientGui::onSetStyle(bool darkTheme) {
-    ParametersCache::instance()->parametersInfo().setDarkTheme(darkTheme);
+    ParametersCache::instance()->parameters().setDarkTheme(darkTheme);
     KDC::GuiUtility::setStyle(qApp, darkTheme);
 
     // Force apply style
@@ -1426,7 +1426,7 @@ void ClientGui::onTooManyDeletesNotificationSoftLimit(const SyncDbId syncDbId) {
     msgBox->setCheckBoxText(tr("Don't show again"));
     (void) msgBox->exec();
 
-    ParametersCache::instance()->parametersInfo().setNotifyBeforeDelete(!msgBox->isChecked());
+    ParametersCache::instance()->parameters().setNotifyBeforeDelete(!msgBox->isChecked());
     (void) ParametersCache::instance()->saveParametersInfo();
 
     cleanUpMsgBox(syncDbId, _tooManyDeletesNotificationPopupMap);
@@ -1680,7 +1680,7 @@ void ClientGui::openLoginDialog(const UserDbId userDbId, bool invalidTokenError)
 }
 
 void ClientGui::restoreGeometry(QWidget *w) {
-    QByteArray dialogGeometry = ParametersCache::instance()->parametersInfo().dialogGeometry(w->objectName());
+    QByteArray dialogGeometry = ParametersCache::instance()->parameters().dialogGeometry(w->objectName());
     if (!dialogGeometry.isEmpty()) {
         if (!w->restoreGeometry(dialogGeometry)) {
             qCWarning(lcClientGui()) << "Error in QWidget::restoreGeometry for objectName=" << w->objectName();
