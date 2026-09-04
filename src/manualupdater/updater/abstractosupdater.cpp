@@ -41,18 +41,16 @@ bool AbstractOsUpdater::verifyChecksum(const SyncPath &filepath, const std::stri
 
 bool AbstractOsUpdater::createDownloadDirectory(SyncPath &outDir) {
     SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
         return false;
     }
 
-    try {
-        const auto subDir = tmpDir / ("kDrive_" + CommonUtility::generateRandomStringAlphaNum(10));
-        (void) std::filesystem::create_directories(subDir);
-        outDir = subDir;
-        return true;
-    } catch (...) {
-        return false;
-    }
+    const auto subDir = tmpDir / ("kDrive_" + CommonUtility::generateRandomStringAlphaNum(10));
+    std::error_code ec;
+    (void) std::filesystem::create_directories(subDir, ec);
+    if (ec.value()) return false;
+    outDir = subDir;
+    return true;
 }
 
 } // namespace KDC

@@ -48,22 +48,6 @@ bool VirtualFilesCleaner::run() {
     return removePlaceholdersRecursively(_rootPath);
 }
 
-namespace {
-bool hasFileType(const std::filesystem::directory_entry &entry) {
-    return entry.is_symlink() || (!entry.is_directory());
-}
-
-bool shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry, const VfsStatus &vfsStatus) {
-    if (!hasFileType(entry)) return true; // Folders are kept on disk.
-    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) return true; // Hydrated placeholders are kept on disk.
-    if (!vfsStatus.isPlaceholder) return true; // Non-placeholder files are kept on disk.
-
-    return false;
-}
-
-} // namespace
-
-
 bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPath) {
     bool directoryIterationException = false;
     IoError ioError = IoError::Success;
@@ -71,113 +55,110 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    try {
-        if (!IoHelper::recursiveDirectoryIterator(parentPath, dirIt)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+    if (!IoHelper::getRecursiveDirectoryIterator(parentPath, ioError, dirIt)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(parentPath, ioError));
+        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+        return false;
+    }
+
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        if (!folderCanBeProcessed(entry)) {
+            dirIt.disableRecursionPending();
+            continue;
+        }
+        const SyncPath &absolutePath = entry.path();
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << Utility::formatSyncPath(absolutePath));
+        }
+
+        const SyncPath relativePath = CommonUtility::relativePath(_rootPath, absolutePath);
+        if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
+            LOGW_DEBUG(_logger, L"Ignore " << Utility::formatSyncPath(absolutePath) << L" because it is excluded");
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        // Check file system
+        VfsStatus vfsStatus;
+        assert(_vfs && "Missing VFS.");
+        _exitInfo = _vfs->status(absolutePath, vfsStatus);
+        if (!_exitInfo) {
+            LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(absolutePath) << L": " << _exitInfo);
             return false;
         }
 
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (!folderCanBeProcessed(entry)) {
-                dirIt.disableRecursionPending();
-                continue;
-            }
-            const SyncPath &absolutePath = entry.path();
+        auto entryIoError = IoError::Success;
+        const auto entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus, entryIoError);
+        if (!entryShouldBeKeptOnDisk.has_value()) {
+            LOGW_DEBUG(_logger, L"Error in shouldBeKeptOnDisk " << Utility::formatIoError(entry.path(), entryIoError));
+            if (IoHelper::isExpectedError(entryIoError)) continue;
+
+            _exitInfo = IoHelper::directoryIteratorExitCode(entryIoError);
+            return false;
+        }
+
+        if (entryShouldBeKeptOnDisk.value()) {
+            // Keep file on file system.
             if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << Utility::formatSyncPath(absolutePath));
+                LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item with " << Utility::formatSyncPath(absolutePath)
+                                                                       << L" is either a folder, a hydrated placeholder or a "
+                                                                          L"file that is not synchronized yet. Keeping it.");
+            }
+        } else { // Remove file from file system.
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
+                                                                           << L" from file system");
             }
 
-            const SyncPath relativePath = CommonUtility::relativePath(_rootPath, absolutePath);
-            if (ExclusionTemplateCache::instance()->isExcluded(relativePath)) {
-                LOGW_DEBUG(_logger, L"Ignore " << Utility::formatSyncPath(absolutePath) << L" because it is excluded");
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            // Check file system
-            VfsStatus vfsStatus;
-            assert(_vfs && "Missing VFS.");
-            if (ExitInfo exitInfo = _vfs->status(absolutePath, vfsStatus); !exitInfo) {
-                LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(absolutePath) << L": " << exitInfo);
-                _exitCode = exitInfo.code();
-                _exitCause = exitInfo.cause();
+            if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), tmpIoError)) {
+                LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatIoError(absolutePath, tmpIoError));
+                _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
                 return false;
             }
 
-            if (const bool entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus); entryShouldBeKeptOnDisk) {
-                // Keep file on file system.
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item with " << Utility::formatSyncPath(absolutePath)
-                                                                           << L" is either a folder, a hydrated placeholder or a "
-                                                                              L"file that is not synchronized yet. Keeping it.");
-                }
-            } else { // Remove file from file system.
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath)
-                                                                               << L" from file system");
-                }
-
-                if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), ioError)) {
-                    LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatIoError(absolutePath, tmpIoError));
-                    _exitCode = ExitCode::SystemError;
-                    _exitCause = ExitCause::FileAccessError;
-                    return false;
-                }
-
-                // Remove item from db
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger,
-                               L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath) << L" from DB");
-                }
-
-                DbNodeId dbId = -1;
-                bool found = false;
-                if (!_syncDb->dbId(ReplicaSide::Local, relativePath, dbId, found)) {
-                    LOG_WARN(_logger, "Error in SyncDb::dbId");
-                    _exitCode = ExitCode::DbError;
-                    _exitCause = ExitCause::DbAccessError;
-                    return false;
-                }
-                if (!found) {
-                    // We don't care that it is not found, we wanted to delete it anyway
-                    continue;
-                }
-
-                // Remove node and its children by cascade from DB
-                if (!_syncDb->deleteNode(dbId, found)) {
-                    LOG_WARN(_logger, "Error in SyncDb::deleteNode");
-                    _exitCode = ExitCode::DbError;
-                    _exitCause = ExitCause::DbAccessError;
-                    return false;
-                }
-                if (!found) {
-                    // We don't care that it is not found, we wanted to delete it anyway
-                    continue;
-                }
+            // Remove item from db
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOGW_DEBUG(_logger,
+                           L"VirtualFilesCleaner: removing item " << Utility::formatSyncPath(absolutePath) << L" from DB");
             }
 
-            // Clear xattr
-            assert(_vfs);
-            _vfs->clearFileAttributes(absolutePath);
+            DbNodeId dbId = -1;
+            bool found = false;
+            if (!_syncDb->dbId(ReplicaSide::Local, relativePath, dbId, found)) {
+                LOG_WARN(_logger, "Error in SyncDb::dbId");
+                _exitInfo = {ExitCode::DbError, ExitCause::DbAccessError};
+                return false;
+            }
+            if (!found) {
+                // We don't care that it is not found, we wanted to delete it anyway
+                continue;
+            }
+
+            // Remove node and its children by cascade from DB
+            if (!_syncDb->deleteNode(dbId, found)) {
+                LOG_WARN(_logger, "Error in SyncDb::deleteNode");
+                _exitInfo = {ExitCode::DbError, ExitCause::DbAccessError};
+                return false;
+            }
+            if (!found) {
+                // We don't care that it is not found, we wanted to delete it anyway
+                continue;
+            }
         }
-    } catch (std::filesystem::filesystem_error &e) {
-        LOGW_WARN(_logger,
-                  L"Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively: " << Utility::formatSystemError(e));
-        directoryIterationException = true;
-    } catch (...) {
-        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removePlaceholdersRecursively");
-        directoryIterationException = true;
+
+        // Clear xattr
+        assert(_vfs);
+        _vfs->clearFileAttributes(absolutePath);
     }
 
-    if (!endOfDir || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << Utility::formatIoError(entry.path(), ioError));
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator: " << Utility::formatIoError(parentPath, ioError));
+        directoryIterationException = true;
     }
 
     const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException;
     if (!success) {
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileOrDirectoryCorrupted;
+        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
     }
 
     return success;
@@ -193,6 +174,45 @@ bool VirtualFilesCleaner::folderCanBeProcessed(const DirectoryEntry &directoryEn
     return true;
 }
 
+std::optional<bool> VirtualFilesCleaner::hasFileType(const std::filesystem::directory_entry &entry, IoError &ioError) {
+    std::error_code ec;
+    const auto isSymlink = entry.is_symlink(ec);
+    if (ec.value()) {
+        LOGW_WARN(_logger,
+                  L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+        ioError = IoHelper::stdError2ioError(ec);
+        return std::nullopt;
+    }
+
+    if (isSymlink) return std::make_optional(true);
+
+    const auto isDirectory = entry.is_directory(ec);
+    if (ec.value()) {
+        LOGW_WARN(_logger,
+                  L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+        ioError = IoHelper::stdError2ioError(ec);
+        return std::nullopt;
+    }
+
+    return std::make_optional(!isDirectory);
+}
+
+std::optional<bool> VirtualFilesCleaner::shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry,
+                                                            const VfsStatus &vfsStatus, IoError &ioError) {
+    ioError = IoError::Success;
+    const auto isFile = hasFileType(entry, ioError);
+    if (!isFile.has_value()) {
+        LOGW_WARN(_logger, L"Error in hasFileType " << Utility::formatIoError(entry.path(), ioError));
+        return std::nullopt;
+    } else if (!isFile.value())
+        return true; // Folders are kept on disk.
+
+    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) return true; // Hydrated placeholders are kept on disk.
+    if (!vfsStatus.isPlaceholder) return true; // Non-placeholder files are kept on disk.
+
+    return false;
+}
+
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
     bool directoryIterationException = false;
 
@@ -201,63 +221,60 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    try {
-        if (!IoHelper::recursiveDirectoryIterator(_rootPath, dirIt)) {
-            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
-            return false;
-        }
-
-        while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir) {
-            if (!folderCanBeProcessed(entry)) {
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (!hasFileType(entry)) continue;
-
-            bool isDehydrated = false;
-            auto ioError = IoError::Unknown;
-            if (const bool success = IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError);
-                !success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger,
-                          L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(entry.path(), ioError));
-                continue;
-            }
-
-            if (!isDehydrated) continue;
-
-            const SyncPath &filePath = entry.path();
-            if (!IoHelper::deleteItem(filePath, ioError)) {
-                LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(filePath, ioError));
-                _exitCode = ExitCode::SystemError;
-                _exitCause = ExitCause::FileAccessError;
-
-                failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
-            }
-
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_DEBUG(_logger,
-                           L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
-            }
-        }
-    } catch (std::filesystem::filesystem_error &e) {
-        LOGW_WARN(_logger,
-                  L"Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders: " << Utility::formatSystemError(e));
-        directoryIterationException = true;
-    } catch (...) {
-        LOG_WARN(_logger, "Exception caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
-        directoryIterationException = true;
+    if (auto ioError = IoError::Success; !IoHelper::getRecursiveDirectoryIterator(_rootPath, ioError, dirIt)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(_rootPath, ioError));
+        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+        return false;
     }
 
-    if (!endOfDir || iterationIoError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << Utility::formatIoError(entry.path(), iterationIoError));
+    while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir) {
+        if (!folderCanBeProcessed(entry)) {
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        IoError ioError = IoError::Success;
+        const auto isFile = hasFileType(entry, ioError);
+        if (!isFile.has_value()) {
+            if (IoHelper::isExpectedError(ioError)) continue;
+
+            _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+            return false;
+        } else if (!isFile.value())
+            continue;
+
+        bool isDehydrated = false;
+        ioError = IoError::Success;
+        if (const bool success = IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError);
+            !success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(entry.path(), ioError));
+            continue;
+        }
+
+        if (!isDehydrated) continue;
+
+        const SyncPath &filePath = entry.path();
+        if (!IoHelper::deleteItem(filePath, ioError)) {
+            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(filePath, ioError));
+            _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+
+            failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
+        }
+
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(_logger, L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
+        }
+    }
+
+    if (iterationIoError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(_rootPath, iterationIoError));
+        directoryIterationException = true;
     }
 
     const bool iterationSuccess = (iterationIoError == IoError::Success) && endOfDir && !directoryIterationException;
     if (!iterationSuccess) {
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileOrDirectoryCorrupted;
+        _exitInfo = IoHelper::directoryIteratorExitCode(iterationIoError);
     }
 
     return iterationSuccess && failedToRemovePlaceholders.empty();

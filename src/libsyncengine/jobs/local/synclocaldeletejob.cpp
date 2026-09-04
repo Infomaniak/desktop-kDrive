@@ -44,7 +44,12 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
     // Case of an advanced synchronization.
     // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
     // We remove the "/" at the beginning to compare it with a reconstructed relative path.
-    const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path());
+    SyncPath relativeRemoteTargetPath;
+    try {
+        relativeRemoteTargetPath = remoteTargetPath.lexically_relative(remoteTargetPath.root_path());
+    } catch (const std::exception &) {
+        return false;
+    }
 
     if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
         return remoteRelativePath == localRelativePath;
@@ -218,7 +223,25 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     DirectoryEntry entry;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if ((entry.is_symlink() || entry.is_regular_file()) && isFileDehydrated(entry.path(), _logger)) {
+        std::error_code ec;
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        bool isRegularFile = false;
+        if (!isSymlink) {
+            isRegularFile = entry.is_regular_file(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
+                                                                << Utility::formatStdError(entry.path(), ec));
+                continue;
+            }
+        }
+
+        if ((isSymlink || isRegularFile) && isFileDehydrated(entry.path(), _logger)) {
             if (const auto exitInfo = hardDelete(entry.path()); !exitInfo) return exitInfo;
 
             const auto relativeLocalPath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
@@ -233,9 +256,10 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
         }
     }
 
-    if (!endOfDirectory) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
-        return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                   << Utility::formatIoError(absoluteLocalPath(), ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     return ExitCode::Ok;

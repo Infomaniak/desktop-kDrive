@@ -19,7 +19,6 @@
 #include "log/sentry/handler.h"
 #include "filestat.h"
 #include "iohelper.h"
-
 #include "config.h" // APPLICATION
 
 #include <filesystem>
@@ -29,10 +28,12 @@
 #include <sys/stat.h>
 #endif
 #include <fstream>
-#include <log4cplus/loggingmacros.h> // LOGW_WARN
 
+#include <new>
 #include <vector>
 #include <xxhash.h>
+
+#include <log4cplus/loggingmacros.h> // LOGW_WARN
 
 namespace KDC {
 
@@ -91,6 +92,8 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
             return IoError::AccessDenied;
         case static_cast<int>(std::errc::cross_device_link):
             return IoError::CrossDeviceLink;
+        case static_cast<int>(std::errc::too_many_symbolic_link_levels):
+            return IoError::TooManySymbolicLinkLevels;
         default:
             return IoError::Unknown;
     }
@@ -142,10 +145,14 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
 
 std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     switch (ioError) {
+        case IoError::Success:
+            return "Success";
         case IoError::AccessDenied:
             return "Access denied";
         case IoError::AttrNotFound:
             return "Attribute not found";
+        case IoError::DirectoryExists:
+            return "Directory exists";
         case IoError::DiskFull:
             return "Disk full";
         case IoError::FileExists:
@@ -154,18 +161,29 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "File name too long";
         case IoError::InvalidArgument:
             return "Invalid argument";
+        case IoError::InvalidDirectoryIterator:
+            return "Invalid directory iterator";
+        case IoError::InvalidFileName:
+            return "Invalid file name";
         case IoError::IsADirectory:
             return "Is a directory";
+        case IoError::IsAFile:
+            return "Is a file";
+        case IoError::MaxDepthExceeded:
+            return "Max depth exceeded";
         case IoError::NoSuchFileOrDirectory:
             return "No such file or directory";
         case IoError::ResultOutOfRange:
             return "Result out of range";
-        case IoError::Success:
-            return "Success";
-        case IoError::InvalidDirectoryIterator:
-            return "Invalid directory iterator";
+        case IoError::CrossDeviceLink:
+            return "Cross device link";
+        case IoError::FileOrDirectoryCorrupted:
+            return "File or directory corrupted";
+        case IoError::TooManySymbolicLinkLevels:
+            return "Too many symbolic link levels";
+        case IoError::Unknown:
         default:
-            return "Unknown error";
+            return "Unknown";
     }
 }
 
@@ -222,7 +240,7 @@ ExitInfo IoHelper::openFile(const SyncPath &path, std::ifstream &file, int timeO
 }
 
 bool IoHelper::isExpectedError(IoError ioError) noexcept {
-    return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
+    return ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied;
 }
 //! Set the target type of link item.
 /*!
@@ -572,7 +590,34 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ioError = IoError::Success;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (!entry.is_symlink() && entry.is_directory()) {
+        std::error_code ec;
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_WARN(logger(),
+                      L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+            const auto entryIoError = stdError2ioError(ec);
+            if (isExpectedError(entryIoError))
+                continue;
+            else {
+                ioError = entryIoError;
+                return false;
+            }
+        }
+
+        const auto isDirectory = entry.is_directory(ec);
+        if (ec.value()) {
+            LOGW_WARN(logger(),
+                      L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+            const auto entryIoError = stdError2ioError(ec);
+            if (isExpectedError(entryIoError))
+                continue;
+            else {
+                ioError = entryIoError;
+                return false;
+            }
+        }
+
+        if (!isSymlink && isDirectory) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                             << Utility::formatSyncPath(path));
@@ -620,7 +665,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         size += entrySize;
     }
 
-    if (!endOfDirectory) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
         return isExpectedError(ioError);
     }
@@ -715,6 +760,7 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
     if (!getFileStat(path, buf, ioError, option)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
+
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
 }
@@ -726,8 +772,8 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
     try {
         std::error_code ec;
         const bool isSymlink = _isSymlink(path, ec);
-        if (const IoError ioError = stdError2ioError(ec); ioError != Success) return ioError;
-        if (isSymlink) return InvalidArgument;
+        if (const IoError ioError = stdError2ioError(ec); ioError != IoError::Success) return ioError;
+        if (isSymlink) return IoError::InvalidArgument;
 
 #if defined(KD_MACOS)
         bool isAlias = false;
@@ -741,15 +787,14 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
             chunkSize = defaultBufferSize;
         }
 
-        IoError openError = Success;
         std::ifstream ifs;
-        if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
+        if (auto openError = IoError::Success; !IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
 
         std::vector<char> buffer(chunkSize);
 
         XXH3_state_t *state = XXH3_createState();
         if (state == nullptr) {
-            return Unknown;
+            return IoError::Unknown;
         }
 
         if (XXH3_64bits_reset(state) == XXH_ERROR) {
@@ -785,14 +830,16 @@ IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, s
         return Success;
     } catch (const std::bad_alloc &) {
         LOGW_WARN(logger(), L"Memory allocation failed in getFileChecksum");
-        return Unknown;
+        return IoError::Unknown;
     } catch (const std::exception &e) {
         LOGW_WARN(logger(), L"Exception in getFileChecksum: " << CommonUtility::s2ws(e.what()));
-        return Unknown;
+        return IoError::Unknown;
     } catch (...) {
         LOGW_WARN(logger(), L"Unknown exception in getFileChecksum");
-        return Unknown;
+        return IoError::Unknown;
     }
+
+    return IoError::Success;
 }
 
 bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, SyncTime previousMtime,
@@ -992,11 +1039,31 @@ IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bo
                                                bool skipPermissionDenied) :
     _recursive(recursive),
     _directoryPath(directoryPath) {
-    std::error_code ec;
-    const auto option = skipPermissionDenied ? DirectoryOptions::skip_permission_denied : DirectoryOptions::none;
+    ioError = IoError::Success;
 
-    _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
-    ioError = IoHelper::stdError2ioError(ec);
+    const auto option = skipPermissionDenied ? DirectoryOptions::skip_permission_denied : DirectoryOptions::none;
+    std::error_code ec;
+
+    try {
+        _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
+    } catch (const std::bad_alloc &e) {
+        LOG_WARN(logger(), "Exception caught in std::filesystem::recursive_directory_iterator: error=" << e.what());
+        ioError = IoError::InvalidDirectoryIterator;
+        _invalid = true;
+        return;
+    } catch (...) {
+        LOG_WARN(logger(), "Exception caught in std::filesystem::recursive_directory_iterator.");
+        ioError = IoError::InvalidDirectoryIterator;
+        _invalid = true;
+        return;
+    }
+
+    if (ec) {
+        LOGW_WARN(logger(),
+                  L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(directoryPath, ec));
+        ioError = IoHelper::stdError2ioError(ec);
+        _invalid = true;
+    }
 }
 
 
@@ -1025,14 +1092,36 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     }
 
     if (!_firstElement) {
+        const auto prevEntryPath = (*_dirIterator).path();
+
         std::error_code ec;
-        _dirIterator.increment(ec);
+        try {
+            (void) _dirIterator.increment(ec);
+        } catch (const std::bad_alloc &e) {
+            LOG_WARN(logger(),
+                     "Exception caught in std::filesystem::recursive_directory_iterator::increment: error=" << e.what());
+            ioError = IoError::InvalidDirectoryIterator;
+            _invalid = true;
+            return false;
+        } catch (...) {
+            LOG_WARN(logger(), "Exception caught in std::filesystem::recursive_directory_iterator::increment.");
+            ioError = IoError::InvalidDirectoryIterator;
+            _invalid = true;
+            return false;
+        }
+
         if (ec) {
+            LOGW_WARN(logger(), L"Error in recursive_directory_iterator::increment: previous "
+                                        << Utility::formatStdError(prevEntryPath, ec));
             ioError = IoHelper::stdError2ioError(ec);
-            if (ioError != IoError::Success) {
-                _invalid = true;
-                return false;
+            if (ioError == IoError::Unknown) {
+                // TODO: once known, manage this error in IoHelper::stdError2ioError
+                const std::string message = "ec=" + std::to_string(ec.value());
+                sentry::Handler::captureMessage(sentry::Level::Warning, "recursive_directory_iterator::increment error", message);
+                ioError = IoError::FileOrDirectoryCorrupted;
             }
+            _invalid = true;
+            return false;
         }
     } else {
         _firstElement = false;
@@ -1050,7 +1139,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
             disableRecursionPending();
             return next(nextEntry, endOfDirectory, ioError);
         }
-
 #endif
         nextEntry = *_dirIterator;
     } else {
@@ -1061,33 +1149,20 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 }
 
 void IoHelper::DirectoryIterator::disableRecursionPending() {
-    _dirIterator.disable_recursion_pending();
+    if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
 }
 
-bool IoHelper::recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt) {
-    auto ioError = IoError::Success;
-    dirIt = IoHelper::DirectoryIterator(path, true, ioError);
-
-    if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
-        return false;
+ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
+    switch (ioError) {
+        case IoError::Success:
+            return ExitCode::Ok;
+        case IoError::AccessDenied:
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        case IoError::FileOrDirectoryCorrupted:
+            return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+        default:
+            return ExitCode::SystemError;
     }
-
-    return true;
-}
-
-ExitInfo IoHelper::checkDirectoryIteratorInterruption(const bool endOfDir, const IoError ioError, const DirectoryEntry &entry,
-                                                      const bool directoryIterationException) {
-    if (!endOfDir || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in IoHelper::DirectoryIterator causing early interruption: "
-                                   << Utility::formatIoError(entry.path(), ioError));
-    }
-
-    if (const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException; !success) {
-        return ExitCode::SystemError;
-    }
-
-    return ExitCode::Ok;
 }
 
 #ifndef KD_WINDOWS

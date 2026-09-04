@@ -416,10 +416,10 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
         }
     }
 
-    if (!endOfDirectory || ioError != IoError::Success) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error iterating directory with IoHelper::DirectoryIterator " << Utility::formatIoError(path, ioError));
-        return ExitCode::SystemError;
+                  L"Error iterating directory with IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     return ExitCode::Ok;

@@ -723,53 +723,45 @@ bool SyncDb::dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds) {
 bool SyncDb::fsFileLocalNodeIds(const SyncPath &localSyncPath, std::unordered_set<NodeId> &localFSNodeIds) {
     IoError ioError = IoError::Unknown;
 
-    try {
-        IoHelper::DirectoryIterator dirIt;
-        if (!IoHelper::getRecursiveDirectoryIterator(localSyncPath, ioError, dirIt) || ioError != IoError::Success) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::getDirectoryIterator: Local " << Utility::formatIoError(localSyncPath, ioError));
-            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
-                                                 "Error in IoHelper::getRecursiveDirectoryIterator, aborting safely");
-            return false;
-        }
-
-        DirectoryEntry entry;
-        bool endOfDirectory = false;
-        while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
-            auto entryIoError = IoError::Success;
-
-            const auto &absolutePath = entry.path();
-            FileStat fileStat;
-            if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError, IoHelper::PathCheckOption::Insensitive)) {
-                LOGW_DEBUG(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
-                KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
-                                                     "Error in IoHelper::getFileStat, aborting safely");
-                continue;
-            }
-
-            if (entryIoError != IoError::Success) {
-                LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
-                KDC::sentry::Handler::captureMessage(
-                        KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
-                        "Error in IoHelper::getFileStat for path: " + absolutePath.string() + ", skipping it.");
-                continue;
-            }
-
-            if (fileStat.nodeType == NodeType::Directory) {
-                continue;
-            }
-
-            (void) localFSNodeIds.insert(std::to_string(fileStat.inode));
-        }
-    } catch (std::exception &e) {
-        LOG_WARN(_logger, "Exception caught in SyncDb::fsFileLocalNodeIds: " << e.what());
+    IoHelper::DirectoryIterator dirIt;
+    if (!IoHelper::getRecursiveDirectoryIterator(localSyncPath, ioError, dirIt) || ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getDirectoryIterator: Local " << Utility::formatIoError(localSyncPath, ioError));
         KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
-                                             std::string("Exception caught in SyncDb::fsFileLocalNodeIds: ") + e.what());
+                                             "Error in IoHelper::getRecursiveDirectoryIterator, aborting safely");
         return false;
-    } catch (...) {
-        LOG_WARN(_logger, "Exception caught in SyncDb::fsFileLocalNodeIds");
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
-                                             "Unknown exception caught in SyncDb::fsFileLocalNodeIds");
+    }
+
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        auto entryIoError = IoError::Success;
+
+        const auto &absolutePath = entry.path();
+        FileStat fileStat;
+        if (!IoHelper::getFileStat(absolutePath, &fileStat, entryIoError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_DEBUG(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
+            KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                                                 "Error in IoHelper::getFileStat, aborting safely");
+            continue;
+        }
+
+        if (entryIoError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, entryIoError));
+            KDC::sentry::Handler::captureMessage(
+                    KDC::sentry::Level::Error, "SyncDb::fsFileLocalNodeIds",
+                    "Error in IoHelper::getFileStat for path: " + absolutePath.string() + ", skipping it.");
+            continue;
+        }
+
+        if (fileStat.nodeType == NodeType::Directory) {
+            continue;
+        }
+
+        (void) localFSNodeIds.insert(std::to_string(fileStat.inode));
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(localSyncPath, ioError));
         return false;
     }
 
@@ -2834,6 +2826,11 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
         if (actualLocalName != namedNodeMap[intNodeId].localName) {
             localNames.try_emplace(namedNodeMap[intNodeId].dbNodeId, std::move(actualLocalName));
         }
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(localDrivePath, ioError));
+        return false;
     }
 
     LOG_INFO(_logger, "Node ids retrieved successfully from disk.");

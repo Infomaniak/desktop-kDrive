@@ -733,6 +733,8 @@ std::string toString(const IoError e) {
             return "CrossDeviceLink";
         case IoError::FileOrDirectoryCorrupted:
             return "FileOrDirectoryCorrupted";
+        case IoError::TooManySymbolicLinkLevels:
+            return "TooManySymbolicLinkLevels";
         case IoError::Unknown:
             return "Unknown";
         default:

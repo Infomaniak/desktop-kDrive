@@ -183,7 +183,7 @@ bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     const auto pos = url.find_last_of('/');
     const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) {
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDirPath); !exitInfo) {
         sentry::Handler::captureMessage(sentry::Level::Warning, "WindowsUpdater::getInstallerPath",
                                         "Impossible to retrieve installer destination directory.");
         return false;
@@ -205,7 +205,7 @@ bool WindowsUpdater::verifyInstallerChecksum(const SyncPath &filepath) {
         // First call: download the .sha256 sidecar and cache the result.
         fetcher = [this](const std::string &sha256Url) -> std::string {
             SyncPath tmpDirPath;
-            if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDirPath); !exitInfo) return "";
+            if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDirPath); !exitInfo) return "";
             const SyncPath sha256FilePath = tmpDirPath / "kDrive_updater_checksum.sha256";
 
             auto ioError = IoError::Success;

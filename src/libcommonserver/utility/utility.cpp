@@ -351,8 +351,10 @@ void Utility::unzipStream(std::istream &inputStream, std::stringstream &ss,
 SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
     if (test) return excludedAppFileName;
 
-    auto canonicalPath =
-            std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName);
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(
+            CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedAppFileName, ec);
+    if (ec.value()) return {};
 
     return canonicalPath.make_preferred();
 }
@@ -360,8 +362,9 @@ SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
 
 SyncPath Utility::getExcludedTemplateFilePath(const bool test /*= false*/) {
     if (test) return excludedTemplateFileName;
-    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
-                                                           excludedTemplateFileName);
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(
+            CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedTemplateFileName, ec);
     return canonicalPath.make_preferred();
 }
 
@@ -438,8 +441,9 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
 }
 SyncPath Utility::getSyncFolderRulesFilePath(const bool test) {
     if (test) return syncFolderRulesFileName;
-    auto canonicalPath = std::filesystem::weakly_canonical(CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} /
-                                                           syncFolderRulesFileName);
+    std::error_code ec;
+    auto canonicalPath = std::filesystem::weakly_canonical(
+            CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / syncFolderRulesFileName, ec);
     return canonicalPath.make_preferred();
 }
 
@@ -447,48 +451,43 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
                                        const ItemType &itemType) {
     isManaged = false;
     ioError = IoError::Success;
+
     if (dirEntry.path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path()) << L" because size > "
                                        << CommonUtility::maxPathLength());
         return true;
     }
 
-    std::error_code ec;
-    const bool isSpecialItem = !dirEntry.is_regular_file(ec) && !dirEntry.is_directory(ec);
-    const bool isSymLinkWithTooManyLevels = utility_base::isLikeTooManySymbolicLinkLevelsError(ec);
-
-    if (isSymLinkWithTooManyLevels) {
-        LOGW_DEBUG(logger(), L"Synchronizing invalid symbolic link with " << Utility::formatSyncPath(dirEntry.path())
-                                                                          << L" although it has too many levels of indirection.")
-    }
-
-    if (isSymLinkWithTooManyLevels || !isSpecialItem) {
-        isManaged = true;
-        return true;
-    }
-
     auto tmpItemType = itemType;
     if (tmpItemType == ItemType()) {
-        bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
+        const bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
         ioError = tmpItemType.ioError;
         if (!result) {
+            if (ioError == IoError::TooManySymbolicLinkLevels) {
+                LOGW_DEBUG(logger(), L"Invalid symbolic link with "
+                                             << Utility::formatSyncPath(dirEntry.path())
+                                             << L" is managed although it has too many levels of indirection.")
+                isManaged = true;
+                return true;
+            }
+
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
             return false;
         }
 
-        if (ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
-            LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
+        if (IoHelper::isExpectedError(ioError)) {
             return true;
         }
     }
-    if (tmpItemType.linkType == LinkType::None) {
-        LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path())
-                                       << L" because it is not a directory, a regular file or a symlink.");
+
+    if (tmpItemType.nodeType == NodeType::Directory || tmpItemType.nodeType == NodeType::File) {
+        // Directory, regular file or symlink
+        isManaged = true;
         return true;
     }
 
-    isManaged = true;
-
+    LOGW_WARN(logger(), L"Ignore " << Utility::formatSyncPath(dirEntry.path())
+                                   << L" because it is not a directory, a regular file or a symlink.");
     return true;
 }
 

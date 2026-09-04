@@ -77,6 +77,8 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_FILE_CORRUPT:
         case ERROR_DISK_CORRUPT:
             return IoError::FileOrDirectoryCorrupted;
+        case ERROR_CANT_RESOLVE_FILENAME:
+            return IoError::TooManySymbolicLinkLevels;
         default:
             if (Log::isSet()) {
                 LOGW_WARN(logger, L"Unhandled DWORD error: " << utility_base::getErrorMessage(error));
@@ -500,8 +502,8 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
-        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        LOGW_WARN(logger(), L"Error in CommonUtility::tempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
         return;
     }
 
