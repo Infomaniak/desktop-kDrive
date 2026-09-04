@@ -60,9 +60,9 @@ void TestKeychainManager::testTimeOut() {
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
     const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessTimeout), exitInfo);
-    // Ensure that the timeout occurred after 60 seconds before 90 seconds
-    CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60), timer.elapsed<std::chrono::seconds>());
-    CPPUNIT_ASSERT_LESS(std::chrono::seconds(90), timer.elapsed<std::chrono::seconds>());
+    // Ensure that the timeout occurred after 60 seconds and before 90 seconds
+    CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60).count(), timer.elapsed<std::chrono::seconds>().count());
+    CPPUNIT_ASSERT_LESS(std::chrono::seconds(90).count(), timer.elapsed<std::chrono::seconds>().count());
 }
 
 void TestKeychainManager::testConcurrentReadLimit() {
