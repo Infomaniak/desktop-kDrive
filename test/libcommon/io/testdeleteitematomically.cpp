@@ -18,10 +18,12 @@
 
 #include "testdeleteitematomically.h"
 
-#include "io/cachedirectory.h"
-#include "io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/iohelpertestutilities.h"
+
+#include "io/cachedirectory.h"
+#include "io/iohelper.h"
 
 namespace KDC {
 
@@ -54,7 +56,8 @@ void TestDeleteItemAtomically::testDeleteDirectory() {
 
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(dirPath, cacheDirectory));
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / dirPath.filename()));
+    CPPUNIT_ASSERT(
+            !IoHelperTestUtilities::hasFileWithPrefix(cacheDirectoryPath, dirPath.filename().string() + Str("_deleted_item_")));
 }
 
 void TestDeleteItemAtomically::testDeleteNonExistingItem() {
@@ -98,10 +101,12 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT(std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
+    CPPUNIT_ASSERT(!IoHelperTestUtilities::hasFileWithPrefix(cacheDirectoryPath,
+                                                             filePathInSubdir.filename().string() + Str("_deleted_item_")));
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePathInSubdir.filename()));
+    CPPUNIT_ASSERT(!IoHelperTestUtilities::hasFileWithPrefix(cacheDirectoryPath,
+                                                             filePathInSubdir.filename().string() + Str("_deleted_item_")));
 #endif
 }
 
