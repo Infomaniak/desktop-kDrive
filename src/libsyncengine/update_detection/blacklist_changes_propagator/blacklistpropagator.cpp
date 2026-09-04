@@ -152,7 +152,7 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
             continue;
         }
 
-        if (ioError == IoError::AccessDenied) {
+        if (managedDirEntryError == IoError::AccessDenied) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                L"Directory misses search permission: " << Utility::formatSyncPath(absoluteLocalPath_));
             dirIt.disableRecursionPending();

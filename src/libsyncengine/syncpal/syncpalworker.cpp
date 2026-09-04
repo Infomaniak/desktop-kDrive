@@ -897,6 +897,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
         if (ec.value()) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_symlink "
                                                << Utility::formatStdError(entry.path(), ec));
+            dirIt.disableRecursionPending();
             continue;
         }
 
@@ -906,6 +907,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
             if (ec.value()) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in std::filesystem::directory_entry::is_directory "
                                                    << Utility::formatStdError(entry.path(), ec));
+                dirIt.disableRecursionPending();
                 continue;
             }
         }
