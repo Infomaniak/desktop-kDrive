@@ -24,6 +24,11 @@
 #include "utility/timerutility.h"
 #include "utility/utility.h"
 
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <vector>
+
 namespace KDC {
 
 namespace {
@@ -58,6 +63,26 @@ void TestKeychainManager::testTimeOut() {
     // Ensure that the timeout occurred after 60 seconds before 90 seconds
     CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60), timer.elapsed<std::chrono::seconds>());
     CPPUNIT_ASSERT_LESS(std::chrono::seconds(90), timer.elapsed<std::chrono::seconds>());
+}
+
+void TestKeychainManager::testConcurrentReadLimit() {
+    const auto storage = std::make_shared<MockKeyChainStorageWithTimeout>();
+    (void) KeyChainManager::instance(storage);
+
+    constexpr std::size_t concurrentReads = 10;
+    for (std::size_t index = 0; index < concurrentReads; ++index) {
+        std::thread([&]() {
+            std::string data;
+            bool found = false;
+            const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
+        }).detach();
+    }
+
+    std::string data;
+    bool found = false;
+    const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessError), exitInfo);
+    CPPUNIT_ASSERT(!found);
 }
 
 } // namespace KDC

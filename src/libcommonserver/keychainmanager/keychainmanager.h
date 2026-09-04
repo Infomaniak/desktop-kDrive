@@ -23,7 +23,9 @@
 #include "apitoken.h"
 #include "libcommon/utility/types.h"
 
+#include <atomic>
 #include <memory>
+#include <thread>
 
 #include <QObject>
 
@@ -52,8 +54,10 @@ class COMMON_EXPORT KeyChainManager : public QObject {
 
     private:
         static std::shared_ptr<KeyChainManager> _instance;
+        static constexpr uint16_t maxConcurrentKeychainReads = 10;
 
         std::shared_ptr<IKeyChainStorage> _storage;
+        std::atomic<uint16_t> _inFlightReadThreads = 0;
 
         explicit KeyChainManager(std::shared_ptr<IKeyChainStorage> storage);
 };

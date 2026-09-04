@@ -23,6 +23,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -52,12 +53,10 @@ KeyChainManager::KeyChainManager(const std::shared_ptr<IKeyChainStorage> storage
     _storage(storage) {}
 
 bool KeyChainManager::writeDummyTest() {
-    // First, we check that we can write into the keychain
     if (!writeData(dummyKeychainKey, dummyData)) {
-        std::string error = "Test writing into the keychain failed. Token not refreshed.";
+        const std::string error = "Test writing into the keychain failed. Token not refreshed.";
         LOG_WARN(Log::instance()->getLogger(), error);
         sentry::Handler::captureMessage(sentry::Level::Warning, "KeyChain::writeDummyTest", error);
-
         return false;
     }
     return true;
@@ -73,6 +72,22 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
 
 ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
     constexpr auto keychainReadTimeout = std::chrono::seconds(60);
+
+    if (_inFlightReadThreads.load(std::memory_order_acquire) >= maxConcurrentKeychainReads) {
+        LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
+
+    uint16_t expectedReads = _inFlightReadThreads.load(std::memory_order_relaxed);
+    while (expectedReads < maxConcurrentKeychainReads &&
+           !_inFlightReadThreads.compare_exchange_weak(expectedReads, static_cast<uint16_t>(expectedReads + 1),
+                                                       std::memory_order_acq_rel, std::memory_order_relaxed)) {}
+    if (expectedReads >= maxConcurrentKeychainReads) {
+        LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
+        found = false;
+        return {ExitCode::SystemError, ExitCause::KeychainAccessError};
+    }
 
     struct ReadState {
             std::mutex mutex;
@@ -98,6 +113,7 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
             state->done = true;
         }
         state->conditionVariable.notify_one();
+        (void) _inFlightReadThreads.fetch_sub(1, std::memory_order_acq_rel);
     }).detach();
 
     std::unique_lock lock(state->mutex);
@@ -118,12 +134,12 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
 
 ExitInfo KeyChainManager::readApiToken(const std::string &keychainKey, ApiToken &apiToken, bool &found) {
     std::string token;
-    const auto returnValue = readData(keychainKey, token, found);
-    if (returnValue && found) {
+    const auto exitInfo = readData(keychainKey, token, found);
+    if (exitInfo && found) {
         apiToken = ApiToken(token);
     }
 
-    return returnValue;
+    return exitInfo;
 }
 
 bool KeyChainManager::deleteData(const std::string &keychainKey) {
