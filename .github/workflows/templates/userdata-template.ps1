@@ -7,7 +7,7 @@ $MarkerFile = Join-Path $RunnerDir ".registered"
 $RepoUrl    = "__REPO_URL__"
 $Token      = "__REG_TOKEN__"
 $Labels     = "__TAGS__"
-$RunnerName = "ci-runner-win-__REG_NAME__"
+$RunnerName = "__REG_NAME__"
 
 # Local Administrator account (consistent with the AutoLogon set in the unattend file).
 $AdminAccount = "Administrateur"
