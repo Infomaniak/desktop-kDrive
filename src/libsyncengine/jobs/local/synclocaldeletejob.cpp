@@ -68,7 +68,7 @@ SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, c
     _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absoluteLocalPath) :
-    GenericLocalDeleteJob(absoluteLocalPath, syncPal->cacheDirectory()),
+    GenericLocalDeleteJob(absoluteLocalPath, syncPal ? syncPal->cacheDirectory() : nullptr),
     _syncPal(syncPal) {
     setBypassCheck(true);
 }

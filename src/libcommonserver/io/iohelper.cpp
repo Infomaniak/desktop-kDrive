@@ -968,20 +968,18 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::renameItem: " << Utility::formatIoError(path, ioError));
     }
 
-    bool sourceItemExists = true;
     if (ioError == IoError::NoSuchFileOrDirectory) {
+        bool sourceItemExists = true;
         if (!checkIfPathExists(path, sourceItemExists, ioError, PathCheckOption::Sensitive)) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+            return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
         }
+        if (!sourceItemExists) return ExitCode::Ok;
     }
 
     switch (ioError) {
-        case IoError::NoSuchFileOrDirectory:
-            return ExitCode::Ok;
         case IoError::Success: {
-            if (sourceItemExists) {
-                (void) deleteItem(destPath, ioError);
-            }
+            (void) deleteItem(destPath, ioError);
             return ExitCode::Ok;
         }
         case IoError::AccessDenied:
