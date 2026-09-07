@@ -61,9 +61,15 @@ Column {
         spacing: IKSyncConfiguration.summaryListSpacing
         clip: true
         boundsBehavior: Flickable.StopAtBounds
-        onContentHeightChanged: Qt.callLater(function() {
-            drivesList.restoreContentY()
-        })
+        acceptedButtons: Qt.NoButton
+        onContentHeightChanged: restoreContentYTimer.restart()
+
+        Timer {
+            id: restoreContentYTimer
+
+            interval: 0
+            onTriggered: drivesList.restoreContentY()
+        }
 
         ScrollBar.vertical: ScrollBar {
             policy: drivesList.contentHeight > drivesList.height ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
