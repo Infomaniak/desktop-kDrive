@@ -949,8 +949,8 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
             path,
             ec); // No error is raised if the path does not exist, see https://en.cppreference.com/w/cpp/filesystem/remove_all
     ioError = stdError2ioError(ec);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(path, ioError));
+    if (ec) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::remove_all: " << Utility::formatStdError(path, ec));
     }
 
     return ioError == IoError::Success;
@@ -981,11 +981,18 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
         if (!sourceItemExists) return ExitCode::Ok;
     }
 
+    if (ioError != IoError::Success) {
+        return ExitInfo{ExitCode::SystemError,
+                        ioError == IoError::AccessDenied ? ExitCause::FileAccessError : ExitCause::Unknown};
+    }
+
+    if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destPath, ioError));
+    }
+
     switch (ioError) {
-        case IoError::Success: {
-            (void) deleteItem(destPath, ioError);
+        case IoError::Success:
             return ExitCode::Ok;
-        }
         case IoError::AccessDenied:
             return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
         default:
