@@ -967,7 +967,7 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     (void) IoHelper::renameItem(path, destPath, ioError);
 
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::renameItem: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::renameItem: " << Utility::formatIoError(path, ioError));
     }
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -987,7 +987,7 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     }
 
     if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destPath, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destPath, ioError));
     }
 
     switch (ioError) {
