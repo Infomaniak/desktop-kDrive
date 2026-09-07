@@ -32,7 +32,7 @@ ListView {
     spacing: IKSpacing.s8
     clip: true
     boundsBehavior: Flickable.StopAtBounds
-    acceptedButtons: Qt.NoButton // remove the
+    acceptedButtons: Qt.NoButton // without this, a click after a scroll is taken to stop the scroll and is not forwarded to the button
 
     model: root.drivesModel
 
