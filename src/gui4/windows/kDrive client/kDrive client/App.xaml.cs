@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive
             services.AddSingleton<IAnalyticsService, MatomoService>();
             _serviceProvider = services.BuildServiceProvider();
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
-
+            _serviceProvider.GetRequiredService<AppModel>();
             Logger.StartSentry();
             InitializeComponent();
             Logger.Log(Logger.Level.Info, "Application started");

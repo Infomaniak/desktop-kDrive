@@ -2119,9 +2119,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
 
-            await Utility.RunOnUIThread(async () =>
+            await Utility.RunOnUIThread(() =>
             {
-                _viewModel.ManyDeletesQueue.Enqueue(new ManyDeletesInfo(
+                _viewModel.ManyDeletesController.AddOrMergeManyDeletes(new ManyDeletesInfo(
                     syncDbID.Value,
                     notificationType.Value,
                     filesPaths
@@ -2130,20 +2130,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (App.Current is not App app)
                     return;
 
+                // The ManyDeletesDialogHost, hosted by the main window, displays the notification as
+                // soon as it is loaded. We only need to make sure that window exists and is visible.
                 if (app.CurrentWindow is null)
-                {
-                    // MainWindow.MainContent_Loaded will process the queue once XamlRoot is ready.
                     app.CreateWindow(App.CreateWindowOptions.Foreground);
-                    return;
-                }
-
-                if (app.CurrentWindow is MainWindow mainWindow)
-                {
+                else if (app.CurrentWindow is MainWindow mainWindow)
                     Utility.BringWindowToFront(mainWindow);
-                    await mainWindow.ProcessManyDeleteQueue();
-                }
-
-                // If the current window is not MainWindow, the ManyDeletesQueue will be processed when the user navigates to the main window.
             });
         }
 
