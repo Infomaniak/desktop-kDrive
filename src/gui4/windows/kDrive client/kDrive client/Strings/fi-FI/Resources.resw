@@ -6,7 +6,7 @@
   Locale: fi, Finnish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 07 Sep 2026 14:17:27 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Pyydä käyttöoikeutta omistajalta tai järjestelmänvalvojalta.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Ei-tuettu tiedostotyyppi</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Tämä linkki on suljettu pois synkronoinnista, koska sen kohdepolku ei ole kelvollinen.
+Polun on oltava suhteellinen, eikä se saa sisältää viittausta ylätasoon, kuten ”..”.</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Virheellinen kohdepolku</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Tämä kansio ei ole enää käytettävissä alkuperäisessä sijainnissaan.</value> 
   </data> 
@@ -960,8 +967,8 @@ Synkronointi jatkuu automaattisesti, kun yhteys on palautettu.</value>
     <value>Yhteys kDriveen keskeytyi</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Tämä kohde ei ole käytettävissä tällä laitteella.
-Se avautuu selaimessasi.</value> 
+    <value>Tätä ominaisuutta ei ole käytettävissä tässä laitteessa.
+Se avautuu kDrive-verkkopalvelussa.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1293,6 +1300,9 @@ Tarkista ja nimeä tiedostot, joissa on epätavallisia merkkejä, uudelleen ja y
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versioristiriitaa havaittu</value> 
+  </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ poistettua kohdetta</value> 
   </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkronointi on keskeytetty, jotta vältetään tahaton poisto.

@@ -6,7 +6,7 @@
   Locale: pt, Portuguese
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 07 Sep 2026 14:17:27 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Peça acesso ao proprietário ou administrador.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Tipo de ficheiro não suportado</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Esta ligação foi excluída da sincronização, uma vez que o seu caminho de destino não é válido.
+O caminho deve ser relativo e não pode conter nenhuma referência a uma pasta pai, como «..».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Caminho de destino inválido</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Esta pasta já não está acessível na sua localização original.</value> 
   </data> 
@@ -960,8 +967,8 @@ A sincronização será retomada automaticamente quando a ligação for restabel
     <value>Ligação ao kDrive interrompida</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Este item não está disponível neste dispositivo.
-Será aberto no seu navegador.</value> 
+    <value>Este elemento não está disponível neste dispositivo.
+Será aberto no kDrive online.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1293,6 +1300,9 @@ Verifique e renomeie os ficheiros que contenham caracteres incomuns e tente nova
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflitos de versões detetados</value> 
+  </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ elementos eliminados</value> 
   </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>A sincronização está em pausa para evitar uma eliminação acidental.
