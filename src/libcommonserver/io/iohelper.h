@@ -310,8 +310,8 @@ struct IoHelper {
         static bool deleteItem(const SyncPath &path) noexcept;
 
         //! Remove an item located under the specified path.
-        //! If the function fails, the item is left unmodified and the function returns false
-        //! If it succeeds, the item is removed and the function returns true.
+        //! If the function fails, the item is left unmodified and an error ExitInfo is returned.
+        //! If it succeeds, the item is removed from its original path and ExitCode::Ok is returned.
         /*!
          \param path is the file system path of the item to remove.
          \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
