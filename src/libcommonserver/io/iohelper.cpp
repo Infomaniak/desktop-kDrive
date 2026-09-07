@@ -971,8 +971,10 @@ if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     if (ioError == IoError::NoSuchFileOrDirectory) {
         bool sourceItemExists = true;
-        if (!checkIfPathExists(path, sourceItemExists, ioError, PathCheckOption::Sensitive)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+        if (auto checkIfPathExistsError = IoError::Success;
+            !checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, PathCheckOption::Sensitive)) {
+            LOGW_WARN(logger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, checkIfPathExistsError));
             return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
         }
         if (!sourceItemExists) return ExitCode::Ok;
