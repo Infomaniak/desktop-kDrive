@@ -68,6 +68,7 @@ void ExecutorWorker::setJobCallbacks(const std::shared_ptr<SyncJob> &job) {
     // The callbacks must not keep either the job or its executor alive. Jobs can finish after a SyncPal stop has released its
     // workers and progress state.
     const std::weak_ptr<SyncJob> weakJob = job;
+
     const auto progressPercentCallback = [weakExecutor, weakJob]([[maybe_unused]] UniqueId, int16_t progress /* % */) {
         const auto executor = weakExecutor.lock();
         const auto currentJob = weakJob.lock();
@@ -430,6 +431,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
             job.reset();
         }
     }
+
     return ExitCode::Ok;
 }
 
@@ -560,7 +562,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
 
         } else {
             if (syncOp->affectedNode()->type() == NodeType::Directory) {
-                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath, syncOp->affectedNode()->isSharedFolder());
+                job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
             } else {
                 bool exists = false;
                 IoError ioError = IoError::Success;
@@ -1429,7 +1431,12 @@ ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, con
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
     }
-    if (jobExitInfo.cause() != ExitCause::NotFound) {
+
+    if (jobExitInfo.cause() == ExitCause::InvalidLinkTarget) {
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
+                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None,
+                      CancelType::InvalidLinkTarget);
+    } else if (jobExitInfo.cause() != ExitCause::NotFound) {
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
                       jobExitInfo.code(), jobExitInfo.cause());
@@ -1441,9 +1448,10 @@ ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, con
 
 namespace details {
 bool isManagedBackError(const ExitCause exitCause) {
-    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,   ExitCause::ApiErr,
-                                                          ExitCause::FileTooBig,    ExitCause::NotFound,
-                                                          ExitCause::QuotaExceeded, ExitCause::UploadNotTerminated};
+    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,      ExitCause::ApiErr,
+                                                          ExitCause::FileTooBig,       ExitCause::NotFound,
+                                                          ExitCause::QuotaExceeded,    ExitCause::UploadNotTerminated,
+                                                          ExitCause::InvalidLinkTarget};
 
     return managedExitCauses.contains(exitCause);
 }

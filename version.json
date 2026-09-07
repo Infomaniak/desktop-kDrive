@@ -3,15 +3,15 @@
     "Linux": {
       "major": 3,
       "minor": 8,
-      "patch": 6,
-      "build": 4,
+      "patch": 7,
+      "build": 1,
       "year": 2026
     },
     "macOS": {
       "major": 3,
       "minor": 8,
-      "patch": 6,
-      "build": 4,
+      "patch": 7,
+      "build": 1,
       "year": 2026
     },
     "Windows": {
