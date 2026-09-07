@@ -58,6 +58,7 @@ class AbstractNetworkJob : public SyncJob {
     protected:
         ExitInfo runJob() noexcept override;
         void addRawHeader(const std::string &key, const std::string &value);
+        void setHeaders(Poco::Net::HTTPRequest &req);
 
         using StreamVector = std::vector<std::reference_wrapper<std::istream>>;
         virtual ExitInfo receiveResponseFromSession(StreamVector &stream);
@@ -123,7 +124,6 @@ class AbstractNetworkJob : public SyncJob {
         void clearSession();
         void abortSession();
         ExitInfo sendRequest(const Poco::URI &uri);
-        void setHeaders(Poco::Net::HTTPRequest &req);
         ExitInfo followRedirect();
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId);
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);
