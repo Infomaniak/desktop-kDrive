@@ -6,7 +6,7 @@
   Locale: nb, Norwegian Bokmål
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 07 Sep 2026 14:17:27 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Be om tilgang fra eieren eller administratoren.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Filtype støttes ikke</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Denne lenken er ekskludert fra synkroniseringen, fordi destinasjonsstien ikke er gyldig.
+Stien må være relativ og kan ikke inneholde noen henvisning til en overordnet mappe, som «..».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Ugyldig destinasjonssti</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Denne mappen er ikke lenger tilgjengelig på sin opprinnelige plassering.</value> 
   </data> 
@@ -960,8 +967,8 @@ Synkroniseringen gjenopptas automatisk når tilkoblingen er gjenopprettet.</valu
     <value>Tilkobling til kDrive avbrutt</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Dette elementet er ikke tilgjengelig på denne enheten.
-Det vil åpnes i nettleseren din.</value> 
+    <value>Denne funksjonen er ikke tilgjengelig på denne enheten.
+Den åpnes i kDrive på nettet.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1293,6 +1300,9 @@ Kontroller og gi nytt navn til filer som inneholder uvanlige tegn, og prøv dere
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versjonskonflikt(er) oppdaget</value> 
+  </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ elementer slettet</value> 
   </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Synkroniseringen er satt på pause for å unngå utilsiktet sletting.

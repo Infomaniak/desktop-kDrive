@@ -6,7 +6,7 @@
   Locale: de, German
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 07 Sep 2026 14:17:27 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Fordern Sie den Zugriff beim Eigentümer oder Administrator an.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Nicht unterstützter Dateityp</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Dieser Link wurde von der Synchronisierung ausgeschlossen, da sein Zielpfad ungültig ist.
+Der Pfad muss relativ sein und darf keinen Verweis auf einen übergeordneten Ordner enthalten, wie beispielsweise „..“.</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Ungültiger Zielpfad</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Dieser Ordner ist an seinem ursprünglichen Speicherort nicht mehr zugänglich.</value> 
   </data> 
@@ -961,7 +968,7 @@ Die Synchronisierung wird automatisch fortgesetzt, sobald die Verbindung wiederh
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Dieses Element ist auf diesem Gerät nicht verfügbar.
-Es wird in Ihrem Browser geöffnet.</value> 
+Es wird in kDrive online geöffnet.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/de/ksuite</value> 
@@ -1293,6 +1300,9 @@ Bitte überprüfen und benennen Sie Dateien mit ungewöhnlichen Zeichen um und v
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ Versionskonflikte erkannt</value> 
+  </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ Elemente gelöscht</value> 
   </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Die Synchronisierung wurde angehalten, um ein versehentliches Löschen zu vermeiden.

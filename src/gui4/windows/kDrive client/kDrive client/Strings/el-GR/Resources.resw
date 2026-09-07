@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 07 Sep 2026 14:17:27 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Μη υποστηριζόμενος τύπος αρχείου</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Αυτός ο σύνδεσμος εξαιρέθηκε από τον συγχρονισμό, καθώς η διαδρομή προορισμού του δεν είναι έγκυρη.
+Η διαδρομή πρέπει να είναι σχετική και δεν μπορεί να περιέχει αναφορά σε γονικό φάκελο, όπως «..».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Μη έγκυρη διαδρομή προορισμού</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Αυτός ο φάκελος δεν είναι πλέον προσβάσιμος στην αρχική του τοποθεσία.</value> 
   </data> 
@@ -960,8 +967,8 @@
     <value>Διακόπηκε η σύνδεση με το kDrive</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Αυτό το στοιχείο δεν είναι διαθέσιμο σε αυτή τη συσκευή.
-Θα ανοίξει στο πρόγραμμα περιήγησής σας.</value> 
+    <value>Αυτή η λειτουργία δεν είναι διαθέσιμη σε αυτή τη συσκευή.
+Θα ανοίξει στο kDrive στο διαδίκτυο.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1293,6 +1300,9 @@
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ συγκρούσεις εκδόσεων εντοπίστηκαν</value> 
+  </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ στοιχεία που διαγράφηκαν</value> 
   </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>Ο συγχρονισμός έχει τεθεί σε παύση για να αποφευχθεί η ακούσια διαγραφή.

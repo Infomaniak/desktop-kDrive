@@ -114,6 +114,11 @@ namespace Infomaniak.kDrive.TrayIcon
             // Subscribe to changes in the available update
             _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.ShowNotification)
                 .Subscribe(_ => UpdateTrayIcon()));
+
+            // subscribe to changes on the mass deletion controller
+            _subscriptions.Add(_appModel.ManyDeletesController.WhenPropertyChanged(manyDeletesController => manyDeletesController.CurrentManyDeleteNotification)
+                .Subscribe(_ => UpdateTrayIcon()));
+
         }
 
         private void UpdateTrayIcon()
@@ -121,6 +126,12 @@ namespace Infomaniak.kDrive.TrayIcon
             if (!_appModel.IsInitialized)
             {
                 SetIconNeutral();
+                return;
+            }
+
+            if (_appModel.ManyDeletesController.CurrentManyDeleteNotification is not null)
+            {
+                SetIconError();
                 return;
             }
 

@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 07 Sep 2026 14:17:27 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Richiedi l’accesso al proprietario o all’amministratore.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Tipo di file non supportato</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Questo collegamento è stato escluso dalla sincronizzazione perché il suo percorso di destinazione non è valido.
+Il percorso deve essere relativo e non può contenere riferimenti a una cartella padre, come « .. ».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Percorso di destinazione non valido</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Questa cartella non è più accessibile nella sua posizione originale.</value> 
   </data> 
@@ -960,8 +967,8 @@ La sincronizzazione riprenderà automaticamente una volta ripristinata la connes
     <value>Connessione a kDrive interrotta</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Questo elemento non è disponibile su questo dispositivo.
-Si aprirà nel tuo browser.</value> 
+    <value>Questa funzione non è disponibile su questo dispositivo.
+Si aprirà in kDrive online.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/it/ksuite</value> 
@@ -1293,6 +1300,9 @@ Verifica e rinomina i file contenenti caratteri insoliti, quindi riprova.</value
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflitti di versione rilevati</value> 
+  </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ elementi eliminati</value> 
   </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>La sincronizzazione è stata sospesa per evitare una cancellazione involontaria.
