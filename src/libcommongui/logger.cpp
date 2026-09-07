@@ -96,8 +96,25 @@ static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessag
 #else
     const char *fileNamePtr = fileName.c_str();
 #endif
+    QString displayedMessage = message;
+    if (ctx.category != nullptr) {
+        if (const QString category = QString::fromUtf8(ctx.category);
+            category != QStringLiteral("gui.v4") && !category.startsWith(QStringLiteral("gui.v4."))) {
+            displayedMessage.prepend(QStringLiteral("[%1] ").arg(category));
+        }
+    }
+
     const QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
-    return qFormatLogMessage(type, ctxNew, message);
+    QString formattedMessage = qFormatLogMessage(type, ctxNew, displayedMessage);
+    if (fileName.empty() && ctx.line == 0) {
+        const QString missingLocation = QStringLiteral(" :0 - ");
+        const qsizetype missingLocationPosition = formattedMessage.indexOf(missingLocation);
+        if (missingLocationPosition >= 0) {
+            formattedMessage.replace(missingLocationPosition, missingLocation.size(), QStringLiteral(" "));
+        }
+    }
+
+    return formattedMessage;
 }
 
 static QString formatSentryBreadcrumb(const QMessageLogContext &ctx, const QString &message) {
