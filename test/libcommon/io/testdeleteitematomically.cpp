@@ -103,7 +103,7 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 #elif defined(KD_WINDOWS)
     CPPUNIT_ASSERT(!std::filesystem::exists(filePathInSubdir));
-    CPPUNIT_ASSERT(!std::filesystem::is_empty(cacheDirectoryPath));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 #endif
 }
 
