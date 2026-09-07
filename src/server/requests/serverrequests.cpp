@@ -1209,6 +1209,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::QuotaExceeded:
                 case ExitCause::FileLocked:
                 case ExitCause::Http5xx:
+                case ExitCause::InvalidLinkTarget:
                     return true;
                 default:
                     return false;

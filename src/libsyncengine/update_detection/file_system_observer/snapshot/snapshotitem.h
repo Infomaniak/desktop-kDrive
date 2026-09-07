@@ -64,7 +64,7 @@ class SnapshotItem {
         void setLastChangedSnapshotVersion(SnapshotRevision snapshotVersion);
         SnapshotRevision lastChangeRevision() const { return _lastChangeRevision; }
 
-        // Force update the last change revision to the next snapshot revision. 
+        // Force update the last change revision to the next snapshot revision.
         // This is useful when we want to mark an item as changed without actually changing its properties, for example when we
         // remove an item from tmp blacklist and want to make sure it is properly re-synced.
         void forceUpdateLastChangeRevision();
@@ -74,6 +74,13 @@ class SnapshotItem {
             _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
         SnapshotItem &operator=(const SnapshotItem &other);
+        bool operator==(const SnapshotItem &other) const {
+            return _id == other._id && _parentId == other._parentId && _name == other._name &&
+                   _normalizedName == other._normalizedName && _createdAt == other._createdAt &&
+                   _lastModified == other._lastModified && _type == other._type && _size == other._size &&
+                   _isLink == other._isLink && _contentChecksum == other._contentChecksum && _canWrite == other._canWrite &&
+                   _canShare == other._canShare;
+        }
 
         void copyExceptChildren(const SnapshotItem &other);
         void addChild(const std::shared_ptr<SnapshotItem> child);

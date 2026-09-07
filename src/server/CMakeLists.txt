@@ -94,7 +94,7 @@ set(server_SRCS
     comm/guijobs/abstracterrorresolveconflictsjob.h comm/guijobs/abstracterrorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsjob.h comm/guijobs/errorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsquickjob.h comm/guijobs/errorresolveconflictsquickjob.cpp
-    
+
     comm/guijobs/excltemplgetexcludedjob.h comm/guijobs/excltemplgetexcludedjob.cpp
     comm/guijobs/excltemplgetlistjob.h comm/guijobs/excltemplgetlistjob.cpp
     comm/guijobs/excltemplsetlistjob.h comm/guijobs/excltemplsetlistjob.cpp
@@ -114,12 +114,12 @@ set(server_SRCS
     comm/guijobs/utilitygetlogestimatedsizejob.h comm/guijobs/utilitygetlogestimatedsizejob.cpp
     comm/guijobs/utilityquitjob.h comm/guijobs/utilityquitjob.cpp
     comm/guijobs/utilitysendappstarttracejob.h comm/guijobs/utilitysendappstarttracejob.cpp
-    
+
     comm/guijobs/updaterversioninfojob.h comm/guijobs/updaterversioninfojob.cpp
     comm/guijobs/updaterstatejob.h comm/guijobs/updaterstatejob.cpp
     comm/guijobs/updaterstartinstallerjob.h comm/guijobs/updaterstartinstallerjob.cpp
     comm/guijobs/updaterskipversionjob.h comm/guijobs/updaterskipversionjob.cpp
-    
+
     comm/guijobs/signaluseraddedjob.h comm/guijobs/signaluseraddedjob.cpp
     comm/guijobs/signaluserupdatedjob.h comm/guijobs/signaluserupdatedjob.cpp
     comm/guijobs/signaluserremovedjob.h comm/guijobs/signaluserremovedjob.cpp

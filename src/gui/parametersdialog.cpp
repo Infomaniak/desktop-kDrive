@@ -757,6 +757,11 @@ QString ParametersDialog::getCancelText(const CancelType cancelType, const QStri
                     "The file has been modified locally while it has been deleted on the remote kDrive.<br>"
                     "Local copy has been saved in the rescue folder.");
         }
+        case CancelType::InvalidLinkTarget: {
+            return tr(
+                    "This link has been excluded from sync because its target path is not compliant.<br> Target paths should be "
+                    "relative. They should not use parent traversal, i.e., components like \"..\" are forbidden.");
+        }
         default: {
             break;
         }
