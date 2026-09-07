@@ -958,7 +958,8 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
 
 ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory) noexcept {
     SyncPath cacheDirectoryPath;
-if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+    if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
     if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
 
     const SyncPath destPath = cacheDirectoryPath / CacheDirectory::createTmpFileName();
