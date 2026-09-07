@@ -706,7 +706,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    exists = ioError != IoError::FileNameTooLong;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (exists && option == PathCheckOption::Sensitive) {
@@ -968,10 +968,20 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::renameItem: " << Utility::formatIoError(path, ioError));
     }
 
+    bool sourceItemExists = true;
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        if (!checkIfPathExists(path, sourceItemExists, ioError, PathCheckOption::Sensitive)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+        }
+    }
+
     switch (ioError) {
         case IoError::NoSuchFileOrDirectory:
+            return ExitCode::Ok;
         case IoError::Success: {
-            (void) deleteItem(destPath, ioError);
+            if (sourceItemExists) {
+                (void) deleteItem(destPath, ioError);
+            }
             return ExitCode::Ok;
         }
         case IoError::AccessDenied:
