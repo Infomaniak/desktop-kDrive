@@ -482,12 +482,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
     }
 }
 
-void AppClient::onLogTooBig() {
-    auto logger = KDC::Logger::instance();
-    qCDebug(lcAppClient()) << "Log too big, archiving current log and creating a new one.";
-    logger->enterNextLogFile();
-}
-
 void AppClient::onQuit() {
     qCInfo(lcAppClient) << "Quit app client at the request of the user";
     _quitInProcess = true;
@@ -572,9 +566,8 @@ void AppClient::onWizardDone(int res) {
 void AppClient::setupLogging() {
     // might be called from second instance
     auto logger = KDC::Logger::instance();
-    logger->setIsClientLog(true);
     logger->enterNextLogFile();
-    logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
+    logger->setMinLogLevel(ParametersCache::instance()->parametersInfo().logLevel());
 
     if (ParametersCache::instance()->parametersInfo().useLog()) {
         // Don't override other configured logging
@@ -591,7 +584,6 @@ void AppClient::setupLogging() {
         logger->disableLog();
     }
 
-    connect(logger, &KDC::Logger::logTooBig, this, &AppClient::onLogTooBig);
     connect(logger, &KDC::Logger::showNotification, this, &AppClient::showNotification);
 
     qCInfo(lcAppClient) << QString::fromLatin1("################## %1 locale:[%2] ui_lang:[%3] version:[%4] os:[%5]")

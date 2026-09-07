@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "libcommon/utility/cstypes.h"
 #include "libcommongui/utility/utility.h"
 
 #include <QObject>
@@ -49,7 +50,7 @@ class Logger : public QObject {
         bool isLoggingToFile() const;
 
         void log(GuiLog log);
-        void doLog(const QString &log);
+        void doLog(const QString &log, bool flush = false);
 
         static void kdriveLog(const QString &message);
 
@@ -61,12 +62,12 @@ class Logger : public QObject {
 
         void postNotification(const QString &title, const QString &message);
 
-        void setLogFile(const QString &name);
+        QFileDevice::FileError setLogFile(const QString &name, QIODeviceBase::OpenMode mode = QIODevice::WriteOnly);
         void setLogExpire(std::chrono::days expire);
         void setLogDir(const QString &dir);
 
-        bool logDebug() const { return _logDebug; }
-        void setLogDebug(bool debug);
+        bool qtLoggingRulesEnabled() const { return _qtLoggingRulesEnabled; }
+        void setQtLoggingRulesEnabled(bool enabled);
 
         /** Returns where the automatic logdir would be */
         QString logDirectoryPath() const { return _logDirectoryPath; }
@@ -77,18 +78,13 @@ class Logger : public QObject {
         /** For switching off via logwindow */
         void disableLog();
 
-        int minLogLevel() const;
-        void setMinLogLevel(int level);
+        LogLevel minLogLevel() const;
+        void setMinLogLevel(LogLevel level);
 
-        bool compressSingleLog(const QString &sourceName, const QString &targetName);
-
-        void setIsClientLog(bool newIsClientLog);
+        static bool compressSingleLog(const QString &sourceName, const QString &targetName);
 
     signals:
-        void logWindowLog(const QString &);
-
         void showNotification(const QString &, const QString &);
-        void logTooBig();
 
     public slots:
         void enterNextLogFile();
@@ -97,18 +93,17 @@ class Logger : public QObject {
         void slotWatchLogSize();
 
     private:
-        Logger(QObject *parent = 0);
-        ~Logger();
+        explicit Logger(QObject *parent = nullptr);
+        ~Logger() override;
         QFile _logFile;
         std::chrono::days _logExpire{0};
-        bool _logDebug{false};
+        bool _qtLoggingRulesEnabled{false};
         QScopedPointer<QTextStream> _logstream;
         mutable QMutex _mutex;
         QString _logDirectoryPath;
         bool _logEnabled = false;
-        int _minLogLevel;
+        std::atomic<LogLevel> _minLogLevel = LogLevel::Debug;
         QTimer _watchLogSizeTimer;
-        bool _isClientLog = false;
         inline static std::atomic_bool _sentryBreadcrumbsEnabled{false};
 };
 

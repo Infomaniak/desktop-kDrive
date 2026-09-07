@@ -32,37 +32,37 @@
 #include <cstdint>
 #include <iostream>
 
-#if defined(KD_WINDOWS)
-#include <io.h>
-#if !defined(NDEBUG)
-#include <windows.h>
-#endif
-#else
-#include <unistd.h>
-#endif
 
-static const int logSizeWatcherTimeout = 60000;
+namespace KDC {
+
+namespace {
+static constexpr auto logSizeWatcherTimeout = std::chrono::minutes{1};
+
 constexpr char logMessagePattern[] =
         "%{time yyyy-MM-dd hh:mm:ss:zzz} "
         "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
         "(%{threadid}) %{file}:%{line} - %{message}";
 
-namespace KDC {
+struct LogMessageMetadata {
+        QString fileName;
+        QString category;
+        bool hasCategory = false;
+};
+} // namespace
 
-static int8_t logLevelForMessageType(const QtMsgType type) noexcept {
+static LogLevel logLevelForMessageType(const QtMsgType type) noexcept {
     switch (type) {
         case QtDebugMsg:
-            return 0;
+            return LogLevel::Debug;
         case QtInfoMsg:
-            return 1;
+            return LogLevel::Info;
         case QtWarningMsg:
-            return 2;
+            return LogLevel::Warning;
         case QtCriticalMsg: // In Qt's implem, QtCriticalMsg == QtSystemMsg
-            return 3;
+            return LogLevel::Error;
         case QtFatalMsg:
-            return 4;
+            return LogLevel::Fatal;
     }
-
     Q_UNREACHABLE();
 }
 
@@ -83,31 +83,33 @@ static const char *sentryLevelForMessageType(const QtMsgType type) noexcept {
     Q_UNREACHABLE();
 }
 
-static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    SyncName fileName;
+static LogMessageMetadata extractLogMessageMetadata(const QMessageLogContext &ctx) {
+    LogMessageMetadata metadata;
     if (ctx.file != nullptr) {
-        const SyncPath filePath(ctx.file);
-        fileName = filePath.filename();
-    }
-#if defined(KD_WINDOWS)
-    // For performance purposes, assume that the file name contains only mono byte chars
-    std::string unsafeFileName(CommonUtility::toUnsafeStr(fileName));
-    const char *fileNamePtr = unsafeFileName.c_str();
-#else
-    const char *fileNamePtr = fileName.c_str();
-#endif
-    QString displayedMessage = message;
-    if (ctx.category != nullptr) {
-        if (const QString category = QString::fromUtf8(ctx.category);
-            category != QStringLiteral("gui.v4") && !category.startsWith(QStringLiteral("gui.v4."))) {
-            displayedMessage.prepend(QStringLiteral("[%1] ").arg(category));
-        }
+        metadata.fileName = SyncName2QStr(SyncPath(ctx.file).filename());
     }
 
-    const QMessageLogContext ctxNew(fileNamePtr, ctx.line, ctx.function, ctx.category);
+    if (ctx.category != nullptr) {
+        metadata.category = QString::fromUtf8(ctx.category);
+        metadata.hasCategory = true;
+    }
+
+    return metadata;
+}
+
+static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessageLogContext &ctx, const QString &message,
+                                             const LogMessageMetadata &metadata) {
+    QString displayedMessage = message;
+    if (metadata.hasCategory && metadata.category != QStringLiteral("gui.v4") &&
+        !metadata.category.startsWith(QStringLiteral("gui.v4."))) {
+        displayedMessage.prepend(QStringLiteral("[%1] ").arg(metadata.category));
+    }
+
+    const QByteArray fileName = metadata.fileName.toUtf8();
+    const QMessageLogContext ctxNew(fileName.constData(), ctx.line, ctx.function, ctx.category);
     QString formattedMessage = qFormatLogMessage(type, ctxNew, displayedMessage);
-    if (fileName.empty() && ctx.line == 0) {
-        const QString missingLocation = QStringLiteral(" :0 - ");
+    if (metadata.fileName.isEmpty() && ctx.line == 0) {
+        const auto missingLocation = QStringLiteral(" :0 - ");
         const qsizetype missingLocationPosition = formattedMessage.indexOf(missingLocation);
         if (missingLocationPosition >= 0) {
             formattedMessage.replace(missingLocationPosition, missingLocation.size(), QStringLiteral(" "));
@@ -117,32 +119,23 @@ static QString formatLogMessageWithShortFile(const QtMsgType type, const QMessag
     return formattedMessage;
 }
 
-static QString formatSentryBreadcrumb(const QMessageLogContext &ctx, const QString &message) {
-    if (ctx.file == nullptr) {
+static QString formatSentryBreadcrumb(const QMessageLogContext &ctx, const QString &message, const LogMessageMetadata &metadata) {
+    if (metadata.fileName.isEmpty()) {
         return message;
     }
 
-    const SyncName fileName = SyncPath(ctx.file).filename();
-#if defined(KD_WINDOWS)
-    const QString fileNameString = QString::fromStdString(CommonUtility::toUnsafeStr(fileName));
-#else
-    const QString fileNameString = QString::fromStdString(fileName);
-#endif
-    return QStringLiteral("%1:%2 - %3").arg(fileNameString).arg(ctx.line).arg(message);
+    return QStringLiteral("%1:%2 - %3").arg(metadata.fileName).arg(ctx.line).arg(message);
 }
 
-static void addSentryBreadcrumb(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    if (!Logger::sentryBreadcrumbsEnabled()) {
-        return;
-    }
-
-    const std::string breadcrumbMessage = formatSentryBreadcrumb(ctx, message).toStdString();
+static void addSentryBreadcrumb(const QtMsgType type, const QMessageLogContext &ctx, const QString &message,
+                                const LogMessageMetadata &metadata) {
+    const std::string breadcrumbMessage = formatSentryBreadcrumb(ctx, message, metadata).toStdString();
     const sentry_value_t breadcrumb = sentry_value_new_breadcrumb("default", breadcrumbMessage.c_str());
     (void) sentry_value_set_by_key(breadcrumb, "level", sentry_value_new_string(sentryLevelForMessageType(type)));
 
-    if (ctx.category != nullptr) {
+    if (metadata.hasCategory) {
         static const auto guiV4Prefix = QStringLiteral("gui.v4.");
-        QString category = QString::fromUtf8(ctx.category);
+        QString category = metadata.category;
         if (category.startsWith(guiV4Prefix)) {
             (void) category.remove(0, guiV4Prefix.size());
         }
@@ -154,34 +147,43 @@ static void addSentryBreadcrumb(const QtMsgType type, const QMessageLogContext &
 }
 
 static void earlyLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
-    const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message);
-    addSentryBreadcrumb(type, ctx, message);
-    if (CommonUtility::logToConsoleEnabled()) {
+    const bool logToConsole = CommonUtility::logToConsoleEnabled();
+    const bool addBreadcrumb = Logger::sentryBreadcrumbsEnabled();
+    if (!logToConsole && !addBreadcrumb) {
+        return;
+    }
+
+    const LogMessageMetadata metadata = extractLogMessageMetadata(ctx);
+    if (addBreadcrumb) {
+        addSentryBreadcrumb(type, ctx, message, metadata);
+    }
+    if (logToConsole) {
+        const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message, metadata);
         std::cerr << qPrintable(formattedMessage) << '\n';
     }
 }
 
 static void kdriveLogCatcher(const QtMsgType type, const QMessageLogContext &ctx, const QString &message) {
     auto *const logger = Logger::instance();
-    const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message);
-    addSentryBreadcrumb(type, ctx, message);
-
-    if (logLevelForMessageType(type) < logger->minLogLevel()) {
+    const bool addBreadcrumb = Logger::sentryBreadcrumbsEnabled();
+    const bool logLocally = logLevelForMessageType(type) >= logger->minLogLevel();
+    if (!addBreadcrumb && !logLocally) {
         return;
     }
 
+    const LogMessageMetadata metadata = extractLogMessageMetadata(ctx);
+    if (addBreadcrumb) {
+        addSentryBreadcrumb(type, ctx, message, metadata);
+    }
+
+    if (!logLocally) return;
+
+    const QString formattedMessage = formatLogMessageWithShortFile(type, ctx, message, metadata);
     if (!logger->isNoop()) {
-        logger->doLog(formattedMessage);
+        logger->doLog(formattedMessage, type == QtFatalMsg);
     } else if (type >= QtCriticalMsg) {
         std::cerr << qPrintable(formattedMessage) << '\n';
     }
-
-#if defined(Q_OS_WIN)
-    // Make application terminate in a way that can be caught by the crash reporter
-    if (type == QtFatalMsg) {
-        KDC::CommonUtility::crash();
-    }
-#endif
 }
 
 
@@ -209,18 +211,6 @@ void Logger::setSentryBreadcrumbsEnabled(const bool enabled) {
 
 Logger::Logger(QObject *parent) :
     QObject(parent) {
-#if defined(Q_OS_WIN)
-    if (CommonUtility::logToConsoleEnabled() && AllocConsole()) {
-        FILE *fp = nullptr;
-        (void) freopen_s(&fp, "CONOUT$", "w", stdout);
-        (void) freopen_s(&fp, "CONOUT$", "w", stderr);
-
-        // freopen_s may leave the stream in an error state on failure.
-        // Clear C++ stream flags to ensure std::cout/std::cerr remain usable.
-        std::cout.clear();
-        std::cerr.clear();
-    }
-#endif
     installMessagePattern();
 #ifndef NO_MSG_HANDLER
     qInstallMessageHandler(kdriveLogCatcher);
@@ -236,18 +226,15 @@ Logger::~Logger() {
 #ifndef NO_MSG_HANDLER
     qInstallMessageHandler(0);
 #endif
+    (void) setLogFile(QString());
 }
 
-void Logger::setIsClientLog(bool newIsCLientLog) {
-    _isClientLog = newIsCLientLog;
+LogLevel Logger::minLogLevel() const {
+    return _minLogLevel.load(std::memory_order_relaxed);
 }
 
-int Logger::minLogLevel() const {
-    return _minLogLevel;
-}
-
-void Logger::setMinLogLevel(int level) {
-    _minLogLevel = level;
+void Logger::setMinLogLevel(const LogLevel level) {
+    _minLogLevel.store(level, std::memory_order_relaxed);
 }
 
 void Logger::postNotification(const QString &title, const QString &message) {
@@ -274,19 +261,20 @@ bool Logger::isLoggingToFile() const {
     return !_logstream.isNull();
 }
 
-void Logger::doLog(const QString &msg) {
+void Logger::doLog(const QString &msg, const bool flush) {
     {
         QMutexLocker lock(&_mutex);
         if (_logstream) {
-            (*_logstream) << msg << Qt::endl;
+            (*_logstream) << msg << '\n';
+            if (flush) _logstream->flush();
         }
     }
 #ifndef NDEBUG
     if (CommonUtility::logToConsoleEnabled()) {
-        std::cout << qPrintable(msg) << std::endl;
+        std::cout << qPrintable(msg) << '\n';
+        if (flush) std::cout.flush();
     }
 #endif
-    emit logWindowLog(msg);
 }
 
 void Logger::kdriveLog(const QString &message) {
@@ -294,18 +282,19 @@ void Logger::kdriveLog(const QString &message) {
     log_.timeStamp = QDateTime::currentDateTimeUtc();
     log_.message = message;
 
-    Logger::instance()->log(log_);
+    instance()->log(log_);
 }
 
-void Logger::setLogFile(const QString &name) {
+QFileDevice::FileError Logger::setLogFile(const QString &name, const QIODeviceBase::OpenMode mode) {
     QMutexLocker locker(&_mutex);
     if (_logstream) {
+        _logstream->flush();
         _logstream.reset(0);
         _logFile.close();
     }
 
     if (name.isEmpty()) {
-        return;
+        return QFileDevice::NoError;
     }
 
     bool openSucceeded = false;
@@ -313,18 +302,25 @@ void Logger::setLogFile(const QString &name) {
         openSucceeded = _logFile.open(stdout, QIODevice::WriteOnly);
     } else {
         _logFile.setFileName(name);
-        openSucceeded = _logFile.open(QIODevice::WriteOnly);
+        openSucceeded = _logFile.open(mode);
     }
 
     if (!openSucceeded) {
+        const QFileDevice::FileError error = _logFile.error();
+        const QString errorString = _logFile.errorString();
+        const bool fileAlreadyExists = mode.testFlag(QIODeviceBase::NewOnly) && QFile::exists(name);
         locker.unlock(); // Just in case postGuiMessage has a qDebug()
-        postNotification(tr("Error"), QString(tr("<nobr>File '%1'<br/>cannot be opened for writing.<br/><br/>"
-                                                 "The log output can <b>not</b> be saved!</nobr>"))
-                                              .arg(name));
-        return;
+        if (!fileAlreadyExists) {
+            std::cerr << "Unable to open log file '" << qPrintable(name) << "': " << qPrintable(errorString) << '\n';
+            postNotification(tr("Error"), QString(tr("<nobr>File '%1'<br/>cannot be opened for writing.<br/><br/>"
+                                                     "The log output can <b>not</b> be saved!</nobr>"))
+                                                  .arg(name));
+        }
+        return error;
     }
 
     _logstream.reset(new QTextStream(&_logFile));
+    return QFileDevice::NoError;
 }
 
 void Logger::setLogExpire(const std::chrono::days expire) {
@@ -335,14 +331,14 @@ void Logger::setLogDir(const QString &dir) {
     _logDirectoryPath = dir;
 }
 
-void Logger::setLogDebug(const bool debug) {
-    QLoggingCategory::setFilterRules(debug ? QStringLiteral("*=true\n"
-                                                            "*.debug=false\n"
-                                                            "gui.*.debug=true\n"
-                                                            "qml.debug=true\n"
-                                                            "qml.*.debug=true")
-                                           : QString());
-    _logDebug = debug;
+void Logger::setQtLoggingRulesEnabled(const bool enabled) {
+    QLoggingCategory::setFilterRules(enabled ? QStringLiteral("*=true\n"
+                                                              "*.debug=false\n"
+                                                              "gui.*.debug=true\n"
+                                                              "qml.debug=true\n"
+                                                              "qml.*.debug=true")
+                                             : QString());
+    _qtLoggingRulesEnabled = enabled;
 }
 
 void Logger::setupLogDir() {
@@ -351,7 +347,7 @@ void Logger::setupLogDir() {
     const QString logDirPath = Path2QStr(path);
     if (logDirPath.isEmpty()) return;
     if (!QDir().mkpath(logDirPath)) return;
-    setLogDebug(true);
+    setQtLoggingRulesEnabled(true);
     setLogDir(logDirPath);
     _logEnabled = true;
 }
@@ -361,8 +357,8 @@ void Logger::disableLog() {
 
     enterNextLogFile();
     setLogDir(QString());
-    setLogDebug(false);
-    setLogFile(QString());
+    setQtLoggingRulesEnabled(false);
+    (void) setLogFile(QString());
     _logEnabled = false;
 }
 
@@ -377,9 +373,7 @@ void Logger::enterNextLogFile() {
     // Tentative new log name, will be adjusted if one like this already exists
     const QDateTime now = QDateTime::currentDateTime();
     QString appName(APPLICATION_NAME);
-    if (_isClientLog) {
-        appName += QString("_client");
-    }
+    appName += QStringLiteral("_client");
     QString newLogName = now.toString("yyyyMMdd_HHmm") + QString("_%1.log").arg(appName);
 
     // Expire old log files and deal with conflicts
@@ -387,7 +381,7 @@ void Logger::enterNextLogFile() {
     QString rxPattern(QString(R"(.*%1\.log\.(\d+).*)").arg(appName));
     rxPattern = QRegularExpression::anchoredPattern(rxPattern);
 
-    QString unzippedPattern(QString(R"(.*%1\.log\.\d$)").arg(appName));
+    QString unzippedPattern(QString(R"(.*%1\.log\.\d+$)").arg(appName));
     unzippedPattern = QRegularExpression::anchoredPattern(unzippedPattern);
 
     int32_t maxNumber = -1;
@@ -407,9 +401,16 @@ void Logger::enterNextLogFile() {
             unzippedFiles.append(dir.absoluteFilePath(s));
         }
     }
-    newLogName.append("." + QString::number(maxNumber + 1));
-
-    setLogFile(dir.filePath(newLogName));
+    const QString newLogPrefix = newLogName + ".";
+    int32_t nextNumber = maxNumber + 1;
+    QString candidateLogPath;
+    do {
+        candidateLogPath = dir.filePath(newLogPrefix + QString::number(nextNumber));
+        const QFileDevice::FileError error = setLogFile(candidateLogPath, QIODeviceBase::WriteOnly | QIODeviceBase::NewOnly);
+        if (error == QFileDevice::NoError) break;
+        if (!QFile::exists(candidateLogPath)) return;
+        ++nextNumber;
+    } while (true);
 
     // Compress the previous log file. On a restart this can be the most recent
     // log file.
@@ -430,15 +431,18 @@ void Logger::enterNextLogFile() {
 }
 
 void Logger::slotWatchLogSize() {
-    if (_isClientLog) {
-        // Do not check log size from client
-        _watchLogSizeTimer.stop();
-    } else {
-        if (_logFile.size() > CommonUtility::logMaxSize) {
-            kdriveLog("Log too big, archiving current log and creating a new one.");
-            emit logTooBig();
-            enterNextLogFile();
+    bool rotateLog = false;
+    {
+        QMutexLocker lock(&_mutex);
+        if (_logstream) {
+            _logstream->flush();
+            rotateLog = _logFile.size() > CommonUtility::logMaxSize;
         }
+    }
+
+    if (rotateLog) {
+        kdriveLog("Log too big, archiving current log and creating a new one.");
+        enterNextLogFile();
     }
 }
 

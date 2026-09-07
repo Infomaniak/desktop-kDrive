@@ -261,7 +261,7 @@ void AppClientLinux::updateLoggerMinLevel() const {
         return;
     }
 
-    Logger::instance()->setMinLogLevel(toInt(parametersInfo->logLevel()));
+    Logger::instance()->setMinLogLevel(parametersInfo->logLevel());
     qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
                              << QString::fromStdString(toString(parametersInfo->logLevel()));
 }
@@ -425,8 +425,6 @@ void AppClientLinux::setupLogging() {
 
 void AppClientLinux::configureLogger() {
     auto *const logger = Logger::instance();
-    logger->setIsClientLog(true);
-    logger->setLogDebug(true);
     logger->setupLogDir();
     logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
     logger->enterNextLogFile();
