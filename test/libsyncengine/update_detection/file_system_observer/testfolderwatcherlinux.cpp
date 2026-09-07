@@ -62,7 +62,7 @@ void TestFolderWatcherLinux::testAddFolderRecursive() {
     }
 
     FolderWatcherLinuxMock testObj(tempDir.path());
-    CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.addFolderRecursive(tempDir.path()));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.watchDirectoryTree(tempDir.path()));
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), testObj._pathToWatch.size());
     for (const auto &path: {tempDir.path(), tempDir.path() / "A", pathAA, pathAA / "new-child"}) {
         CPPUNIT_ASSERT(testObj._pathToWatch.contains(path));
@@ -96,7 +96,7 @@ void TestFolderWatcherLinux::testAddFolderRecursiveDisappearingChild() {
         CPPUNIT_ASSERT(std::filesystem::create_directories(tempDir.path() / "remaining/nested"));
 
         FolderWatcherLinuxMock testObj(tempDir.path(), registrationSucceeded);
-        CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.addFolderRecursive(tempDir.path()));
+        CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.watchDirectoryTree(tempDir.path()));
         CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.exitInfo());
         CPPUNIT_ASSERT(!std::filesystem::exists(tempDir.path() / "disappearing"));
         CPPUNIT_ASSERT(testObj._pathToWatch.contains(tempDir.path() / "remaining/nested"));

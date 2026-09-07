@@ -49,7 +49,7 @@ void FolderWatcher_linux::startWatching() {
         return;
     }
 
-    if (const auto addFolderRecursiveExitInfo = addFolderRecursive(_folder); !addFolderRecursiveExitInfo) {
+    if (const auto addFolderRecursiveExitInfo = watchDirectoryTree(_folder); !addFolderRecursiveExitInfo) {
         setExitInfo(addFolderRecursiveExitInfo);
         return;
     }
@@ -114,7 +114,7 @@ void FolderWatcher_linux::startWatching() {
                         if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirectory) {
                             // Watch the directory and its descendants before changesDetected scans their contents,
                             // so creations after the scan are queued by inotify instead of being lost.
-                            if (auto exitInfo = addFolderRecursive(path); !exitInfo) {
+                            if (auto exitInfo = watchDirectoryTree(path); !exitInfo) {
                                 setExitInfo(exitInfo);
                                 return;
                             };
@@ -218,7 +218,7 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     return ExitCode::Ok;
 }
 
-ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
+ExitInfo FolderWatcher_linux::watchDirectoryTree(const SyncPath &path) {
     std::list pendingFolders{path};
     while (!pendingFolders.empty() && !_stop) {
         const auto currentPath = std::move(pendingFolders.front());
