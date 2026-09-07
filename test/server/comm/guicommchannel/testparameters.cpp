@@ -86,7 +86,6 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) parametersInfoObj.set("distributionChannel", toInt(DistributionChannel::Prod));
     (void) parametersInfoObj.set("sentryEnabled", true);
     (void) parametersInfoObj.set("matomoEnabled", true);
-    (void) parametersInfoObj.set("askBeforeDelete", true);
 
     return parametersInfoObj;
 };

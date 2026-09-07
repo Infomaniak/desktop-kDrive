@@ -618,6 +618,13 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
     if (std::holds_alternative<std::string>(appStateValueTo)) {
         appStateValueTo = stringFrom;
         appStateValueType = "std::string";
+    } else if (std::holds_alternative<bool>(appStateValueTo)) {
+        appStateValueType = "bool";
+        try {
+            appStateValueTo = static_cast<bool>(std::stoi(stringFrom));
+        } catch (const std::invalid_argument &) {
+            res = false;
+        }
     } else if (std::holds_alternative<int>(appStateValueTo)) {
         appStateValueType = "int";
         try {
@@ -654,6 +661,8 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
     if (std::holds_alternative<std::string>(appStateValueFrom)) {
         stringTo = std::get<std::string>(appStateValueFrom);
+    } else if (std::holds_alternative<bool>(appStateValueFrom)) {
+        stringTo = std::to_string(static_cast<int>(std::get<bool>(appStateValueFrom)));
     } else if (std::holds_alternative<int>(appStateValueFrom)) {
         stringTo = std::to_string(std::get<int>(appStateValueFrom));
     } else if (std::holds_alternative<LogUploadState>(appStateValueFrom)) {

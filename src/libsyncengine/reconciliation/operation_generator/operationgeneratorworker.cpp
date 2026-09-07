@@ -141,13 +141,19 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
+    AppStateValue notifyBeforeDelete = true;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::NotifyBeforeDelete, notifyBeforeDelete, found)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState"); // Non blocking error
+    } else if (!found) {
+        LOG_WARN(_logger, AppStateKey::NotifyBeforeDelete << " not found in appstate table."); // Non blocking error
+    }
+
     if (_syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::None) {
         if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
             LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
             exitCode = ExitCode::TooManyDeleteOperations;
             _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit, _nbLocalDeleteOperations);
-        } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit &&
-                   ParametersCache::instance()->parameters().notifyBeforeDelete()) {
+        } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit && std::get<bool>(notifyBeforeDelete)) {
             LOGW_SYNCPAL_INFO(_logger, L"Local delete operations detected: soft limit triggered!");
             _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit, _nbLocalDeleteOperations);
         }

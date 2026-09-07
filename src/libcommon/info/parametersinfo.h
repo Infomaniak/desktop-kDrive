@@ -72,8 +72,6 @@ class ParametersInfo {
         void setSentryEnabled(bool value) { _sentryEnabled = value; }
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(bool value) { _matomoEnabled = value; }
-        [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
-        void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
 
         friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) = default;
 
@@ -100,7 +98,6 @@ class ParametersInfo {
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
-        bool _notifyBeforeDelete{true};
 };
 
 } // namespace KDC
