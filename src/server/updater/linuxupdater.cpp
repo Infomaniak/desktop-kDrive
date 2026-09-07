@@ -25,27 +25,6 @@
 
 namespace KDC {
 
-static bool parseVersion(const std::string &versionStr, int &major, int &minor, int &patch) {
-    major = minor = patch = 0;
-
-    // Try format: major.minor.patch
-    if (sscanf(versionStr.c_str(), "%d.%d.%d", &major, &minor, &patch) == 3) {
-        return true;
-    }
-
-    // Try format: major.minor
-    if (sscanf(versionStr.c_str(), "%d.%d", &major, &minor) == 2) {
-        return true;
-    }
-
-    // Try format: major only
-    if (sscanf(versionStr.c_str(), "%d", &major) == 1) {
-        return true;
-    }
-
-    return false;
-}
-
 void LinuxUpdater::onUpdateFound() {
     setState(UpdateState::ManualUpdateAvailable);
 }

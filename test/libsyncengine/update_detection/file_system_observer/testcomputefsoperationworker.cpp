@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,6 +78,8 @@ void TestComputeFSOperationWorker::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), sync.dbId(),
@@ -185,7 +187,7 @@ void TestComputeFSOperationWorker::testAccessDenied() {
         // AA (child of A) is deleted and recreated with the same node ID after the snapshots are copied
         // A access is denied
         // Causes an Access Denied in checkIfOkToDelete
-        _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa");
+        (void) _syncPal->_localFSObserverWorker->_liveSnapshot.removeItem("l_aa");
 
         SyncPath aNodePath = "A";
         std::error_code ec;
@@ -510,6 +512,44 @@ void TestComputeFSOperationWorker::testHasChangedSinceLastSeen() {
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_liveSnapshot.updateItem(remoteItem));
     _syncPal->copySnapshots();
 
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    const SnapshotRevision localRevisionBeforeUnblacklist =
+            _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId);
+    const SnapshotRevision remoteRevisionBeforeUnblacklist =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId);
+
+    _syncPal->blacklistTemporarily(nodeIds.localNodeId, "test.txt", ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(nodeIds.remoteNodeId, "test.txt", ReplicaSide::Remote);
+    _syncPal->removeItemFromTmpBlacklist(nodeIds.localNodeId, ReplicaSide::Local);
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT_GREATER(localRevisionBeforeUnblacklist,
+                           _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId));
+    CPPUNIT_ASSERT_GREATER(remoteRevisionBeforeUnblacklist,
+                           _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId));
+    CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    _syncPal->computeFSOperationsWorker()->_lastLocalSnapshotSyncedRevision =
+            _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId);
+    _syncPal->computeFSOperationsWorker()->_lastRemoteSnapshotSyncedRevision =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId);
+    CPPUNIT_ASSERT(!_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
+
+    const SnapshotRevision localRevisionBeforeClear =
+            _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId);
+    const SnapshotRevision remoteRevisionBeforeClear =
+            _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId);
+
+    _syncPal->blacklistTemporarily(nodeIds.localNodeId, "test.txt", ReplicaSide::Local);
+    _syncPal->blacklistTemporarily(nodeIds.remoteNodeId, "test.txt", ReplicaSide::Remote);
+    _syncPal->clearTmpBlacklist();
+    _syncPal->copySnapshots();
+
+    CPPUNIT_ASSERT_GREATER(localRevisionBeforeClear,
+                           _syncPal->liveSnapshot(ReplicaSide::Local).lastChangeRevision(nodeIds.localNodeId));
+    CPPUNIT_ASSERT_GREATER(remoteRevisionBeforeClear,
+                           _syncPal->liveSnapshot(ReplicaSide::Remote).lastChangeRevision(nodeIds.remoteNodeId));
     CPPUNIT_ASSERT(_syncPal->computeFSOperationsWorker()->hasChangedSinceLastSeen(nodeIds));
 }
 

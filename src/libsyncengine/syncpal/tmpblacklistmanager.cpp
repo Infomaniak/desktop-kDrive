@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,6 +85,29 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
 
     for (const auto &id: toBeRemoved) {
         removeItemFromTmpBlacklist(id, side);
+    }
+}
+
+void TmpBlacklistManager::clear() {
+    for (const auto side: std::array<ReplicaSide, 2>{ReplicaSide::Local, ReplicaSide::Remote}) {
+        auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
+        auto errorIt = errors.begin();
+        while (errorIt != errors.end()) {
+            logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
+            errorIt = errors.erase(errorIt);
+        }
+        const auto blacklistType_ = blackListType(side);
+
+        // Force a new detection of changes for all the nodes that were blacklisted.
+        NodeSet tmp;
+        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType_, tmp);
+        for (const auto &nodeId: tmp) {
+            (void) _syncPal->forceUpdateLastChangeRevision(nodeId, side);
+        }
+
+        // Clear the blacklist in cache
+        NodeSet emptyNodeSet;
+        SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType_, emptyNodeSet);
     }
 }
 
@@ -179,6 +202,8 @@ void TmpBlacklistManager::eraseSingleItemFromBlacklist(const NodeId &nodeId, con
 
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     errors.erase(nodeId);
+
+    (void) _syncPal->forceUpdateLastChangeRevision(nodeId, side);
     logMessage(L"Item removed from tmp blacklist", nodeId, side);
 }
 

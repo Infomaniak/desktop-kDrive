@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ class ErrorsMenuBarWidget : public HalfRoundRectWidget {
     public:
         explicit ErrorsMenuBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-        void setDrive(int driveDbId);
+        void setDrive(DriveDbId driveDbId);
         void reset();
 
     signals:
@@ -44,7 +44,7 @@ class ErrorsMenuBarWidget : public HalfRoundRectWidget {
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
+        DriveDbId _driveDbId{0};
         CustomToolButton *_backButton;
         QLabel *_driveIconLabel;
         QLabel *_titleLabel;

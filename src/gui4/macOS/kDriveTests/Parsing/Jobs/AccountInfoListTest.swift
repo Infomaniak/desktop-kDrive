@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -47,8 +47,8 @@ struct AccountInfoListTest {
         let response = try decoder.decode(CallbackMessage<AccountListResponse>.self, from: callbackData)
 
         // THEN
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 3)
         #expect(response.body.accountInfoList.count == 1)
 

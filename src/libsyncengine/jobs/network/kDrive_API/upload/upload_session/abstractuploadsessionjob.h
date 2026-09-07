@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ namespace KDC {
 
 class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
     public:
-        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId);
-        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+        AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId);
+        AbstractUploadSessionJob(UploadSessionType uploadType, DriveDbId driveDbId, const SyncPath &filepath,
                                  const std::string &sessionToken);
         ~AbstractUploadSessionJob() override = default;
 

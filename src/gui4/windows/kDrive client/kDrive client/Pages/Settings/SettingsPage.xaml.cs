@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
+using CommunityToolkit.WinUI.Controls;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -24,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,37 +34,96 @@ namespace Infomaniak.kDrive.Pages.Settings
 {
     public sealed partial class SettingsPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
+        private const string _skipNextRefreshKey = "skipNextRefresh";
+        private NavigationParameter? _navigationParameter;
+        static private double _lastVerticalOffset = 0;
+
         public AppModel ViewModel => _viewModel;
+
+        public struct NavigationParameter
+        {
+            public enum SettingsTab
+            {
+                Default,
+                Users,
+                LastVerticalOffset
+            }
+
+            public SettingsTab Tab { get; set; }
+            public User? UserToShow { get; set; }
+        }
 
         public SettingsPage()
         {
             Logger.Log(Logger.Level.Info, "Navigated to SettingsPage - Initializing SettingsPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "SettingsPage components initialized");
+            Loaded += SettingsPage_Loaded;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await RefreshAvailableDrivesForAllUsers();
+            if (_navigationParameter is null)
+                return;
+
+            switch (_navigationParameter.Value.Tab)
+            {
+                case NavigationParameter.SettingsTab.Users:
+                    BringUserIntoView(_navigationParameter.Value.UserToShow);
+                    break;
+                case NavigationParameter.SettingsTab.LastVerticalOffset:
+                    SettingsScrollView.ScrollTo(0, _lastVerticalOffset, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            _analyticsService.TrackPageView(Analytics.Keys.Category.SettingsPage);
+            _navigationParameter = e.Parameter as NavigationParameter?;
+
+            if (e.NavigationMode != NavigationMode.New)
+            {
+                _navigationParameter = new NavigationParameter { Tab = NavigationParameter.SettingsTab.LastVerticalOffset };
+            }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            _lastVerticalOffset = SettingsScrollView.VerticalOffset;
+        }
+
+        private void BringUserIntoView(User? user)
+        {
+            if (user is not null && UsersListView.ContainerFromItem(user) is UIElement container)
+            {
+                container.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.1f });
+                return;
+            }
+
+            // If the container is null, just scroll to the Accounts section
+            AccountsStackPanel.StartBringIntoView(new BringIntoViewOptions { VerticalAlignmentRatio = 0.1f });
         }
 
         private void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.OpenOnboarding);
             (App.Current as App)?.StartOnboarding();
         }
 
         private async void AutoStartToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!IsLoaded)
-                return;
-
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
 
                 toggleSwitch.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeAutoStart, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangeAutoStart(toggleSwitch.IsOn))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change AutoStart setting");
@@ -84,6 +144,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     return;
 
                 comboBox.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeNotifications);
 
                 string? selection = selectedItem.Tag as string;
                 if (!Enum.TryParse<NotificationsDisabled>(selection, out NotificationsDisabled selectedNotificationsDisabled))
@@ -110,8 +171,9 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
+                _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeMoveToTrash);
 
                 toggleSwitch.IsEnabled = false;
                 if (!await ViewModel.Settings.ChangeMoveToTrash(toggleSwitch.IsOn))
@@ -123,8 +185,35 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
+        private async void UserSettingsExpander_Loaded(object sender, RoutedEventArgs e)
+        {
+            User? user = (sender as FrameworkElement)?.DataContext as User;
+            if (user is null)
+            {
+                Logger.Log(Logger.Level.Error, "Unable to find the user from DataContext.");
+                return;
+            }
+
+            if (await user.RefreshAvailableDrives(CancellationToken.None))
+            {
+                var senderExpander = sender as SettingsExpander;
+                if (senderExpander is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Unable to find the SettingsExpander from sender.");
+                    return;
+                }
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Warning, "Error while refreshing available drives for user.");
+            }
+        }
+
         private async void UserSettingsExpander_Expanded(object sender, EventArgs e)
         {
+            if (!IsLoaded)
+                return;
+
             User? user = (sender as FrameworkElement)?.DataContext as User;
             if (user is null)
             {
@@ -139,15 +228,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private async Task RefreshAvailableDrivesForAllUsers()
+        private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            List<Task<bool>> loadAvailableDrivesTasks = [];
-            foreach (var user in ViewModel.Users)
+            if (sender is Control control)
             {
-                loadAvailableDrivesTasks.Add(user.RefreshAvailableDrives(CancellationToken.None));
+                var currentForeground = control.Foreground;
+                control.Foreground = null;
+                control.Foreground = currentForeground;
             }
-            await Task.WhenAll(loadAvailableDrivesTasks);
-            // Results are ignored for now; errors are displayed only if the user explicitly expands the user settings.
         }
 
         private async void DisconectUser_Click(object sender, RoutedEventArgs e)
@@ -161,13 +249,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.Disconnect);
 
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = this.XamlRoot,
                 Title = Localizer.Instance.GetString("dialogRemoveAccountTitle"),
-                PrimaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountPrimaryButton"),
-                SecondaryButtonText = Localizer.Instance.GetString("dialogRemoveAccountSecondaryButton"),
+                PrimaryButtonText = Localizer.Instance.GetString("buttonKeepAccount"),
+                SecondaryButtonText = Localizer.Instance.GetString("buttonLogOut"),
                 DefaultButton = ContentDialogButton.Primary,
                 Content = Localizer.Instance.GetString("dialogRemoveAccountContent", user.Name)
             };
@@ -175,6 +264,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Secondary)
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.ConfirmDisconnect);
                 if (!await _viewModel.DisconnectUserAsync(user.DbId))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to disconnect user");
@@ -186,6 +276,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
             else
             {
+                _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.CancelDisconnect);
                 Logger.Log(Logger.Level.Info, "User disconnection cancelled by user");
             }
             if (control is not null)
@@ -198,6 +289,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (drive is not null)
             {
                 Logger.Log(Logger.Level.Info, $"ManageDriveButton clicked for configured drive {drive.Name}, going to manage page");
+                _analyticsService.TrackClick(Analytics.Keys.Category.AccountsSettingsPage, Analytics.Keys.EventName.OpenDriveSettings);
                 Frame.Navigate(typeof(DriveManagementPage), drive);
             }
             else
@@ -209,6 +301,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         private void SyncRulesCard_Clicked(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Navigating to Sync Rules Page from Settings Page");
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenExclusionRules);
             Frame.Navigate(typeof(TemplateExclusionPage));
         }
 
@@ -217,6 +310,10 @@ namespace Infomaniak.kDrive.Pages.Settings
             ConsentResult result = await MatomoContentDialog.ShowAsync(this.XamlRoot);
             if (result == ConsentResult.Cancelled)
                 return;
+            if ((result == ConsentResult.Allowed) == ViewModel.Settings.MatomoEnabled)
+                return;
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeMatomoSettings, (result == ConsentResult.Allowed) ? 1 : 0);
             if (!await ViewModel.Settings.ChangeMatomoEnabled(result == ConsentResult.Allowed))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change Matomo enabled setting");
@@ -230,6 +327,10 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (result == ConsentResult.Cancelled)
                 return;
 
+            if ((result == ConsentResult.Allowed) == ViewModel.Settings.SentryEnabled)
+                return;
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeSentrySettings, (result == ConsentResult.Allowed) ? 1 : 0);
             if (!await ViewModel.Settings.ChangeSentryEnabled(result == ConsentResult.Allowed))
             {
                 Logger.Log(Logger.Level.Error, "Failed to change Sentry enabled setting");
@@ -242,6 +343,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenSourceCodeWeb);
 
             await Windows.System.Launcher.LaunchUriAsync(App.Constants.GitHub.RepoUrl);
 
@@ -278,6 +380,12 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = true;
                 Logger.Log(Logger.Level.Error, "selected item is null or invalid");
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeProxyMode);
+
+            if (selectedProxyType == ProxyType.HTTP && ViewModel.Settings.ProxyConfig.Type != ProxyType.HTTP)
+                ProxySettingsExpander.IsExpanded = true;
+            else
+                ProxySettingsExpander.IsExpanded = false;
 
 
             if (!await ViewModel.Settings.ChangeProxyType(selectedProxyType))
@@ -285,6 +393,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 Logger.Log(Logger.Level.Error, "Failed to change proxy type");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+
             control.IsEnabled = true;
         }
 
@@ -313,6 +422,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             ProxySaveProgressRing.Visibility = Visibility.Visible;
             ProxySettingsExpander.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeProxySettings);
 
             if (!await ViewModel.Settings.ChangeProxyConfiguration(ProxyHostTextBox.Text, int.Parse(ProxyPortTextBox.Text), ProxyNeedsAuthToggleSwitch.IsOn, ProxyUserTextBox.Text, ProxyPwdPasswordBox.Password))
             {
@@ -336,19 +446,28 @@ namespace Infomaniak.kDrive.Pages.Settings
             SaveProxySettingsCard.Visibility = Visibility.Collapsed;
         }
 
-        private void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
+        private async void OpenDebugFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            Utility.OpenFolderSecurely(Logger.LogFolder);
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.OpenLogFolder);
+            try
+            {
+                await Utility.OpenFolderSecurely(Logger.LogFolder);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to open debug folder: {ex.Message}");
+            }
         }
 
         private async void EnableDebugLogsToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogIsOn, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Debug : Logger.Level.None))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change log level");
@@ -363,10 +482,11 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogPurge, toggleSwitch.IsOn ? 1 : 0);
                 if (!await ViewModel.Settings.ChangePurgeOldLog(toggleSwitch.IsOn))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change purge old logs setting");
@@ -381,7 +501,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (sender is ToggleSwitch toggleSwitch)
             {
-                if (!toggleSwitch.IsEnabled)
+                if (!toggleSwitch.IsEnabled || !toggleSwitch.IsLoaded)
                     return;
                 LogSettingsExpander.IsEnabled = false;
                 toggleSwitch.IsEnabled = false;
@@ -392,7 +512,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                     LogSettingsExpander.IsEnabled = true;
                     return; // No change needed
                 }
-
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogVerbosity);
                 if (!await ViewModel.Settings.ChangeLogLevel(toggleSwitch.IsOn ? Logger.Level.Extended : Logger.Level.Debug))
                 {
                     Logger.Log(Logger.Level.Error, "Failed to change log level");
@@ -415,10 +535,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             if (!control.IsEnabled)
-            {
-                Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
-            }
 
             control.IsEnabled = false;
 
@@ -436,6 +553,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 control.IsEnabled = true;
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.ChangeLogVerbosity);
 
             if (!await ViewModel.Settings.ChangeLogLevel(selectedLevel))
             {
@@ -458,10 +576,9 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             if (!control.IsEnabled)
-            {
-                Logger.Log(Logger.Level.Error, "control is disabled");
                 return;
-            }
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.ChangeLanguage);
 
             control.IsEnabled = false;
 
@@ -491,7 +608,9 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
-            if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("helpURL"))
+            _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.OpenSupportWeb);
+
+            if (!await Windows.System.Launcher.LaunchUriAsync(App.Constants.kSuite.HelpUri))
             {
                 Logger.Log(Logger.Level.Error, "Failed to launch HelpDesk URI.");
                 Utility.ShowUnexpectedErrorTeachingTip();
@@ -507,6 +626,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Control? control = sender as Control;
             if (control is not null)
                 control.IsEnabled = false;
+            _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.OpenFeedbackWeb);
             if (!await kDrive.Localizer.Instance.TryLaunchUriAsync("feedbackURL"))
             {
                 Logger.Log(Logger.Level.Error, "Failed to launch Feedback URI.");
@@ -516,8 +636,45 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (control is not null)
                 control.IsEnabled = true;
         }
-    }
 
+        private async void ActivateNotificationInSystem_Button(object sender, RoutedEventArgs e)
+        {
+
+            Control? control = sender as Control;
+
+            if (ViewModel.Settings.AppNotificationAvailability == AppNotificationAvailability.DeactivatedInSystemSettings)
+            {
+                await NotificationManager.OpenNotificationSystemSettings();
+            }
+            else
+            {
+                ViewModel.Settings.RefreshAppNotificationAvailability();
+                return;
+            }
+
+            if (control is null)
+                return;
+
+            control.IsEnabled = false;
+            // As we cannot be notified of when the user change the settings, we refresh the availability every second
+            // until it is no longer deactivated in system settings or the page is unloaded.
+            while (ViewModel.Settings.AppNotificationAvailability == AppNotificationAvailability.DeactivatedInSystemSettings && base.IsLoaded)
+            {
+                await Task.Delay(1000);
+            }
+            if (base.IsLoaded)
+            {
+                ViewModel.Settings.RefreshAppNotificationAvailability();
+                control.IsEnabled = true;
+            }
+        }
+
+        private void RestartAppHyperlinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            App.RestartApplicationWindows();
+            ViewModel.Settings.RestartRequiredForLanguageChange = false;
+        }
+    }
     // templateSelector for the drives listview
     public partial class DriveDataTemplateSelector : DataTemplateSelector
     {
@@ -537,5 +694,4 @@ namespace Infomaniak.kDrive.Pages.Settings
             return base.SelectTemplateCore(item);
         }
     }
-
 }

@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ void TestGuiCommChannel::testBlacklistedSyncNodeListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::BLACKLISTED_NODE_LIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -107,7 +107,7 @@ void TestGuiCommChannel::testBlacklistedSyncNodeSetListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::BLACKLISTED_NODE_SETLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -155,7 +155,7 @@ void TestGuiCommChannel::testNodePathJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_PATH));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -213,7 +213,7 @@ void TestGuiCommChannel::testNodeInfoJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_INFO));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -286,7 +286,7 @@ void TestGuiCommChannel::testNodeSubFolderJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -360,7 +360,7 @@ void TestGuiCommChannel::testNodeSubFolders2Job() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_SUBFOLDERS2));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -413,7 +413,7 @@ void TestGuiCommChannel::testNodeFolderSizeJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_FOLDER_SIZE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -462,7 +462,7 @@ void TestGuiCommChannel::testNodeCreateMissingFoldersJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_CREATEMISSINGFOLDERS));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -518,7 +518,7 @@ void TestGuiCommChannel::testNodeConflictInfoJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::NODE_CONFLICT_INFO));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

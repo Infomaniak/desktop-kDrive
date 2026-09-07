@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,13 @@
  */
 
 #include "testnetworkjobs.h"
+#include "jobs/network/kDrive_API/postfilemodificationdatejob.h"
 #include "jobs/network/kDrive_API/copytodirectoryjob.h"
 #include "jobs/network/kDrive_API/deletejob.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
 #include "jobs/network/kDrive_API/duplicatejob.h"
 #include "jobs/network/getavatarjob.h"
+#include "jobs/network/kDrive_API/getallfilesindirectoryjob.h"
 #include "jobs/network/kDrive_API/getdriveslistjob.h"
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/getfilelistjob.h"
@@ -37,6 +39,7 @@
 #include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "jobs/network/directdownloadjob.h"
 #include "jobs/network/kDrive_API/createdirjob.h"
+#include "jobs/network/kDrive_API/checkhashmatchjob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
@@ -60,6 +63,8 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/iohelpertestutilities.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
+
+#include <sstream>
 
 using namespace CppUnit;
 
@@ -87,6 +92,41 @@ static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
 static const std::string dummyDirName = "dummy_dir";
 static const std::string dummyFileName = "picture.jpg";
 
+class GetAppVersionJobForTests final : public GetAppVersionJob {
+    public:
+        explicit GetAppVersionJobForTests(const std::string &appId) :
+            GetAppVersionJob(DistributionChannel::Internal, appId) {}
+
+        ExitInfo parseResponse(const std::string &response) {
+            std::istringstream stream(response);
+            return handleResponse(stream);
+        }
+};
+
+Poco::JSON::Object buildVersionInfo(const std::string &channel, const bool includeTag = true) {
+    Poco::JSON::Object versionObj;
+    (void) versionObj.set("channel", channel);
+    if (includeTag) {
+        (void) versionObj.set("tag", "3.6.4");
+    }
+    (void) versionObj.set("build_version", 20240816);
+    (void) versionObj.set("build_min_os_version", "10.15");
+    (void) versionObj.set("download_link", "https://download.example.com/kDrive.pkg");
+    (void) versionObj.set("checksum", "abcd1234");
+    (void) versionObj.set("min_version", "3.6.0.0");
+
+    return versionObj;
+}
+
+std::string buildAppVersionReply(const Poco::JSON::Object &versionInfoObj) {
+    Poco::JSON::Object mainObj;
+    (void) mainObj.set("result", "success");
+    (void) mainObj.set("data", versionInfoObj);
+
+    std::ostringstream out;
+    mainObj.stringify(out);
+    return out.str();
+}
 } // namespace
 
 void TestNetworkJobs::setUp() {
@@ -102,21 +142,21 @@ void TestNetworkJobs::setUp() {
     (void) KeyChainManager::instance(true);
     (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
     // Create parmsDb
-    (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
+    (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    const int userId(atoi(testVariables.userId.c_str()));
+    const UserId userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
     _userDbId = user.dbId();
 
-    const int accountId(atoi(testVariables.accountId.c_str()));
+    const AccountId accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    const int driveId = atoi(testVariables.driveId.c_str());
+    const DriveId driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
@@ -128,6 +168,9 @@ void TestNetworkJobs::setUp() {
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
+
+    // Setup cache directory
+    _cacheDirectory = std::make_shared<CacheDirectory>(_localTempDir.path());
 }
 
 void TestNetworkJobs::tearDown() {
@@ -289,8 +332,10 @@ void TestNetworkJobs::testDownload() {
         int64_t sizeOut = 0;
         // Download (CREATE propagation)
         {
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -329,8 +374,10 @@ void TestNetworkJobs::testDownload() {
         // Download again (EDIT propagation)
         {
             modificationTimeIn += std::chrono::minutes(1);
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             sizeOut = job.size();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -377,8 +424,10 @@ void TestNetworkJobs::testDownload() {
             vfs->setMockForceStatus([]([[maybe_unused]] const SyncPath & /*path*/,
                                        [[maybe_unused]] const VfsStatus & /*vfsStatus*/) -> ExitInfo { return ExitCode::Ok; });
 
-            DownloadJob job(vfs, _driveDbId, testFileRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(vfs, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
             CPPUNIT_ASSERT_EQUAL(true, job._isHydrated);
@@ -419,6 +468,20 @@ void TestNetworkJobs::testDownload() {
             CPPUNIT_ASSERT(value == litesync_attrs::statusOffline);
         }
 #endif
+
+        // Download again (EDIT propagation) but cache directory has been deleted
+        {
+            SyncPath cacheDirectoryPath;
+            CPPUNIT_ASSERT(_cacheDirectory->path(cacheDirectoryPath));
+            (void) IoHelper::deleteItem(cacheDirectoryPath);
+
+            modificationTimeIn += std::chrono::minutes(1);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
+            CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously().code());
+        }
     }
 
     // Cross Device Link
@@ -426,11 +489,6 @@ void TestNetworkJobs::testDownload() {
         const LocalTemporaryDirectory temporaryDirectory("tmp");
         const LocalTemporaryDirectory temporaryDirectorySync("syncDir");
         SyncPath localDestFilePath = temporaryDirectorySync.path() / "test_file.txt";
-
-        std::function<SyncPath(std::error_code & ec)> MockTempDirectoryPath = [&temporaryDirectory](std::error_code &ec) {
-            ec.clear();
-            return temporaryDirectory.path();
-        };
         std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> MockRename =
                 []([[maybe_unused]] const SyncPath &, [[maybe_unused]] const SyncPath &, std::error_code &ec) {
 #if defined(KD_WINDOWS)
@@ -440,10 +498,11 @@ void TestNetworkJobs::testDownload() {
 #endif
                 };
         IoHelperTestUtilities::setRename(MockRename);
-        IoHelperTestUtilities::setTempDirectoryPathFunction(MockTempDirectoryPath);
         // CREATE
         {
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, true},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -464,7 +523,9 @@ void TestNetworkJobs::testDownload() {
 
         // EDIT
         {
-            DownloadJob job(nullptr, _driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -510,31 +571,19 @@ void TestNetworkJobs::testDownload() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT_MESSAGE("Small partition not found", exist);
 
-        // Not Enough disk space (tmp dir)
-        {
-            // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
-            // NotEnoughDiskSpace.
-            const SyncPath localDestFilePath = temporaryDirectory.path() / "9Mo.txt";
-            DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
-
-            IoHelperTestUtilities::setCacheDirectoryPath(smallPartitionPath);
-
-            downloadJob.runSynchronously();
-            CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
-            IoHelperTestUtilities::resetFunctions();
-            CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
-                                                     std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
-                                         ExitInfo(ExitCode::SystemError, ExitCause::NotEnoughDiskSpace), downloadJob.exitInfo());
-        }
+        const auto cacheDirectory = std::make_shared<CacheDirectory>(smallPartitionPath);
 
         // Not Enough disk space (destination dir)
         {
             // Trying to download a file with size 9Mo in a 8Mo disk should fail with SystemError,
             // NotEnoughDiskSpace.
             const SyncPath localDestFilePath = smallPartitionPath / "9Mo.txt";
-            DownloadJob downloadJob(nullptr, _driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false);
+            DownloadJob downloadJob(
+                    nullptr, cacheDirectory,
+                    DownloadJob::FileDownloadInfo{_driveDbId, remoteTmpDir.id(), localDestFilePath, 0, 0, 0, false},
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
 
-            downloadJob.runSynchronously();
+            (void) downloadJob.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{-1}, downloadJob.size());
             CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string("Space available at " + smallPartitionPath.string() + " -> " +
                                                      std::to_string(Utility::getFreeDiskSpace(smallPartitionPath))),
@@ -558,7 +607,9 @@ void TestNetworkJobs::testDownload() {
         const SyncPath localDestFilePath = temporaryDirectorySync.path() / "empty_file.txt";
         // Download an empty file
         {
-            DownloadJob job(nullptr, _driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, remote0bytesFileId, localDestFilePath, 0, 0, 0, false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             (void) job.runSynchronously();
             CPPUNIT_ASSERT_EQUAL(int64_t{0}, job.size());
             CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.exitInfo().code());
@@ -579,8 +630,10 @@ void TestNetworkJobs::testDownload() {
 
         // Download a file symlink
         {
-            DownloadJob job(nullptr, _driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFileSymlinkRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -620,8 +673,10 @@ void TestNetworkJobs::testDownload() {
 
         // Download a folder symlink
         {
-            DownloadJob job(nullptr, _driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testFolderSymlinkRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -661,8 +716,10 @@ void TestNetworkJobs::testDownload() {
 
         // Download a valid alias
         {
-            DownloadJob job(nullptr, _driveDbId, testAliasGoodRemoteId, localDestFilePath, 0, creationTimeIn.count(),
-                            modificationTimeIn.count(), false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testAliasGoodRemoteId, localDestFilePath, 0,
+                                                          creationTimeIn.count(), modificationTimeIn.count(), false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT_GREATER(int64_t{-1}, job.size());
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
@@ -692,7 +749,9 @@ void TestNetworkJobs::testDownload() {
 
         // Download an invalid alias (not imported by the desktop app)
         {
-            DownloadJob job(nullptr, _driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(nullptr, _cacheDirectory,
+                            DownloadJob::FileDownloadInfo{_driveDbId, testAliasDnDRemoteId, localDestFilePath, 0, 0, 0, false},
+                            DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
         }
@@ -711,7 +770,10 @@ void TestNetworkJobs::testDownload() {
 
         // Download an invalid alias (corrupted)
         {
-            DownloadJob job(nullptr, _driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false);
+            DownloadJob job(
+                    nullptr, _cacheDirectory,
+                    DownloadJob::FileDownloadInfo{_driveDbId, testAliasCorruptedRemoteId, localDestFilePath, 0, 0, 0, false},
+                    DownloadJob::DateTimePolicy::ApplyDateTime);
             const ExitCode exitCode = job.runSynchronously();
             CPPUNIT_ASSERT(exitCode == ExitCode::SystemError);
         }
@@ -770,8 +832,10 @@ void TestNetworkJobs::testDownloadAborted() {
                 return ExitCode::Ok;
             });
 
-    std::shared_ptr<DownloadJob> job =
-            std::make_shared<DownloadJob>(vfs, _driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
+    std::shared_ptr<DownloadJob> job = std::make_shared<DownloadJob>(
+            vfs, _cacheDirectory,
+            DownloadJob::FileDownloadInfo{_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false},
+            DownloadJob::DateTimePolicy::ApplyDateTime);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job);
 
     int counter = 0;
@@ -887,6 +951,80 @@ void TestNetworkJobs::testGetFileList() {
                 CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), dataArray->size());
             }
         }
+    }
+}
+
+void TestNetworkJobs::testCheckHashMatch() {
+    // Download picture-1.jpg once to use as a valid local reference file
+    const LocalTemporaryDirectory tmpDir("testGetFileHashMatch");
+    const SyncPath validLocalFile = tmpDir.path() / "picture-1.jpg";
+    {
+        DownloadJob downloadJob(nullptr, _cacheDirectory,
+                                DownloadJob::FileDownloadInfo{_driveDbId, picture1RemoteId, validLocalFile, 0, 0, 0, false},
+                                DownloadJob::DateTimePolicy::ApplyDateTime);
+        const ExitInfo exitInfo = downloadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+    }
+    CPPUNIT_ASSERT(std::filesystem::exists(validLocalFile));
+
+    FileStat validFileStat;
+    IoError ioError = IoError::Success;
+    CPPUNIT_ASSERT(IoHelper::getFileStat(validLocalFile, &validFileStat, ioError, IoHelper::PathCheckOption::Insensitive));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    const int64_t validSize = validFileStat.size;
+
+    // Create a tampered copy (wrong local content, same remote node)
+    const SyncPath tamperedLocalFile = tmpDir.path() / "picture-1-tampered.jpg";
+    CPPUNIT_ASSERT(std::filesystem::copy_file(validLocalFile, tamperedLocalFile));
+    {
+        std::ofstream ofs(tamperedLocalFile, std::ios::binary | std::ios::app);
+        ofs << "corrupted";
+    }
+
+    // Create a dummy file that has the same size as the valid file (to bypass size check but fail hash)
+    const SyncPath sameSizeDifferentContentFile = tmpDir.path() / "picture-1-same-size.jpg";
+    {
+        std::ofstream ofs(sameSizeDifferentContentFile, std::ios::binary);
+        ofs << std::string(static_cast<size_t>(validSize), 'X');
+    }
+
+    // Create an empty file (wrong size → should skip API call and trigger download)
+    const SyncPath emptyLocalFile = tmpDir.path() / "picture-1-empty.jpg";
+    std::ofstream(emptyLocalFile).close();
+
+    struct TestCase {
+            std::string name;
+            SyncPath localFile;
+            NodeId remoteNodeId;
+            int64_t localSize;
+            int64_t remoteSize;
+            bool expectedShouldDownload;
+            ExitCode expectedExitCode;
+    };
+
+    const std::vector<TestCase> testCases = {
+            // Both hash and size match → file is in sync
+            {"MatchingHashAndSize", validLocalFile, picture1RemoteId, validSize, validSize, false, ExitCode::Ok},
+
+            // Local file is corrupted but size is provided as matching → hash mismatch detected
+            {"LocalFileTampered_SizeForcedMatch", tamperedLocalFile, picture1RemoteId, validSize, validSize, true, ExitCode::Ok},
+
+            // Wrong remote node ID → API returns a different hash → mismatch
+            {"WrongRemoteNodeId", validLocalFile, testFileRemoteId, validSize, validSize, true, ExitCode::Ok},
+
+            // Sizes differ → job aborts immediately, no API call, shouldDownload stays true
+            {"SizeMismatch_EmptyLocal", emptyLocalFile, picture1RemoteId, 0, validSize, true, ExitCode::Ok},
+
+            // Same size, different content → passes size check, hash mismatch detected
+            {"SameSizeDifferentContent", sameSizeDifferentContentFile, picture1RemoteId, validSize, validSize, true,
+             ExitCode::Ok},
+    };
+
+    for (const auto &tc: testCases) {
+        CheckHashMatchJob job(_driveDbId, tc.localFile, tc.remoteNodeId, tc.remoteSize);
+        job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected exit code", tc.expectedExitCode, job.exitInfo().code());
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(tc.name + ": unexpected shouldDownload", tc.expectedShouldDownload, job.shouldDownload());
     }
 }
 
@@ -1045,8 +1183,8 @@ void TestNetworkJobs::testGetInfoDrive() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
     CPPUNIT_ASSERT_EQUAL(std::string("kDrive Desktop Team"), job.name());
-    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name);
-    CPPUNIT_ASSERT(!job.packInfo().isFree);
+    CPPUNIT_ASSERT_EQUAL(std::string("pro"), job.packInfo().name());
+    CPPUNIT_ASSERT(!job.packInfo().isFree());
 }
 
 void TestNetworkJobs::testThumbnail() {
@@ -1475,14 +1613,11 @@ void TestNetworkJobs::testGetAppVersionInfo() {
     const auto appUid = "1234567890";
     // Without user IDs
     {
-        GetAppVersionJob job(CommonUtility::platform(), appUid);
+        GetAppVersionJob job(DistributionChannel::Internal, appUid);
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
+        CPPUNIT_ASSERT_EQUAL(AbstractTokenNetworkJob::ApiType::InternalUnauthenticated, job._apiType);
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
     }
     // With 1 user ID
     {
@@ -1490,27 +1625,55 @@ void TestNetworkJobs::testGetAppVersionInfo() {
         bool found = false;
         ParmsDb::instance()->selectUser(_userDbId, user, found);
 
-        GetAppVersionJob job(CommonUtility::platform(), appUid, {user.userId()});
+        GetAppVersionJob job(DistributionChannel::Internal, appUid, {user.userId()});
         job.runSynchronously();
         CPPUNIT_ASSERT(!job.hasHttpError());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Internal).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Beta).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Next).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(VersionChannel::Prod).isValid());
-        CPPUNIT_ASSERT(job.versionInfo(job.prodVersionChannel()).isValid());
+        CPPUNIT_ASSERT_EQUAL(AbstractTokenNetworkJob::ApiType::Internal, job._apiType);
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
     }
-    // // With several user IDs
-    // TODO : commented out because we need valid user IDs but we have only one available in tests for now
-    // {
-    //     GetAppVersionJob job(CommonUtility::platform(), appUid, {123, 456, 789});
-    //     job.runSynchronously();
-    //     CPPUNIT_ASSERT(!job.hasHttpError());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Internal).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Beta).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Next).isValid());
-    //     CPPUNIT_ASSERT(job.getVersionInfo(VersionChannel::Prod).isValid());
-    //     CPPUNIT_ASSERT(job.getProdVersionInfo().isValid());
-    // }
+    // Invalid distribution channel
+    {
+        GetAppVersionJob job(DistributionChannel::Unknown, appUid);
+        job.runSynchronously();
+        CPPUNIT_ASSERT(job.hasHttpError());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
+}
+
+void TestNetworkJobs::testGetAppVersionInfoParsingEdgeCases() {
+    const auto appUid = "1234567890";
+
+    // Valid "production" channel response: parsing succeeds and version info is valid.
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo(toString(DistributionChannel::Prod));
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT(job.versionInfo().isValid());
+    }
+
+    // Missing required fields in the reply: parsing fails with MissingReplyData and version info is invalid.
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo(toString(DistributionChannel::Prod), false);
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::MissingReplyData, exitInfo.cause());
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
+
+    // Unknown distribution channel: parsing succeeds but version info is invalid due to unrecognised channel.
+    {
+        GetAppVersionJobForTests job(appUid);
+        Poco::JSON::Object versionInfoObj = buildVersionInfo("unknown-channel");
+
+        const ExitInfo exitInfo = job.parseResponse(buildAppVersionReply(versionInfoObj));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+        CPPUNIT_ASSERT_EQUAL(DistributionChannel::Unknown, job.versionInfo().channel);
+        CPPUNIT_ASSERT(!job.versionInfo().isValid());
+    }
 }
 
 void TestNetworkJobs::testDirectDownload() {
@@ -1560,13 +1723,12 @@ bool TestNetworkJobs::createTestFiles() {
     return true;
 }
 
-
 void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     class GetInfoUserJobMock final : public GetInfoUserJob {
         public:
-            explicit GetInfoUserJobMock(const int32_t userDbId, const ApiToken &apiToken) :
+            explicit GetInfoUserJobMock(const UserDbId userDbId, const ApiToken &apiToken) :
                 GetInfoUserJob(userDbId),
-                _apiToken(apiToken) {};
+                _apiToken(apiToken){};
 
             [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
                 return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
@@ -1594,6 +1756,29 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
     }
 }
 
+void TestNetworkJobs::testGetInfoDriveOn401Error() {
+    class GetInfoDriveJobMock final : public GetInfoDriveJob {
+        public:
+            explicit GetInfoDriveJobMock(const DriveDbId driveDbId, const ApiToken &apiToken) :
+                GetInfoDriveJob(driveDbId),
+                _apiToken(apiToken) {}
+
+            [[nodiscard]] Poco::Net::HTTPResponse httpResponse() const override {
+                return Poco::Net::HTTPResponse(Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED);
+            }
+            ApiToken loadApiToken() override { return _apiToken; }
+
+        private:
+            ApiToken _apiToken;
+    };
+
+    GetInfoDriveJobMock job(_driveDbId, _apiToken);
+    const auto exitInfo = job.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::BackError, exitInfo.code());
+    CPPUNIT_ASSERT_EQUAL(ExitCause::DriveAccessError, exitInfo.cause());
+    CPPUNIT_ASSERT_EQUAL(0, job.trials());
+}
+
 void TestNetworkJobs::testExists() {
     const NodeId dummyId("1234567890");
     const auto ids = {pictureDirRemoteId, picture1RemoteId, dummyId};
@@ -1608,6 +1793,163 @@ void TestNetworkJobs::testExists() {
     CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     CPPUNIT_ASSERT(!job.exists("0987654321", ioError));
     CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
+}
+
+void TestNetworkJobs::testGetAllFilesInDirectory() {
+    const LocalTemporaryDirectory temporaryDirectory("testGetAllFilesInDirectory");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testGetAllFilesInDirectory");
+
+    for (const auto &fileName: {Str("test_file_A.txt"), Str("test_file_B.txt")}) {
+        const SyncPath localFilePath = temporaryDirectory.path() / fileName;
+        testhelpers::generateOrEditTestFile(localFilePath);
+
+        const auto epochNow = std::chrono::system_clock::now().time_since_epoch();
+        const auto creationTimeIn = std::chrono::duration_cast<std::chrono::seconds>(epochNow);
+        auto modificationTimeIn = creationTimeIn;
+        (void) IoHelper::setFileDates(localFilePath, creationTimeIn.count(), modificationTimeIn.count(), false);
+
+        bool exists = false;
+        FileStat fileStat;
+        IoHelper::getFileStat(localFilePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
+
+        UploadJob job(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                      creationTimeIn.count(), modificationTimeIn.count());
+        const ExitInfo exitInfo = job.runSynchronously();
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+    }
+
+    const RemoteTemporaryDirectory remoteSubDir(_driveDbId, remoteTmpDir.id(), "testGetAllFilesInDirectory");
+
+    GetAllFilesInDirectoryJob listFilesInDirectoryJob(DriveDbId{_driveDbId}, RemoteNodeId{remoteTmpDir.id()});
+    listFilesInDirectoryJob.setListingConf({.dirOnly = true});
+
+    auto exitInfo = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0).path().isEmpty());
+    const auto subDirName = SyncName2QStr(remoteSubDir.name());
+    CPPUNIT_ASSERT(subDirName == listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0).name());
+
+    listFilesInDirectoryJob.setListingConf({.dirOnly = false});
+    exitInfo = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0).path().isEmpty());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(1).path().isEmpty());
+    CPPUNIT_ASSERT(listFilesInDirectoryJob.v3RemoteNodeInfoList().at(2).path().isEmpty());
+
+    std::set<QString> expectedNames{"test_file_A.txt", "test_file_B.txt", subDirName};
+    std::set<QString> names;
+    for (const auto &nodeInfo: listFilesInDirectoryJob.v3RemoteNodeInfoList()) names.emplace(nodeInfo.name());
+
+    CPPUNIT_ASSERT(expectedNames == names);
+
+    listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false});
+    exitInfo = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+
+    const NodeInfo &nodeInfo1 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(0);
+    CPPUNIT_ASSERT(nodeInfo1.path().endsWith(nodeInfo1.name()));
+    CPPUNIT_ASSERT(!nodeInfo1.nodeId().isEmpty());
+    const auto parentNodeId = QString::fromStdString(remoteTmpDir.id());
+    CPPUNIT_ASSERT(nodeInfo1.parentNodeId() == parentNodeId);
+    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo1.size()); // Not computed because it is expensive.
+
+    const NodeInfo &nodeInfo2 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(1);
+    CPPUNIT_ASSERT(nodeInfo2.path().endsWith(nodeInfo2.name()));
+    CPPUNIT_ASSERT(!nodeInfo2.nodeId().isEmpty());
+    CPPUNIT_ASSERT(nodeInfo2.parentNodeId() == parentNodeId);
+    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo2.size()); // Not computed because it is expensive.
+
+    const NodeInfo &nodeInfo3 = listFilesInDirectoryJob.v3RemoteNodeInfoList().at(2);
+    CPPUNIT_ASSERT(nodeInfo3.path().endsWith(nodeInfo3.name()));
+    CPPUNIT_ASSERT(!nodeInfo3.nodeId().isEmpty());
+    CPPUNIT_ASSERT(nodeInfo3.parentNodeId() == parentNodeId);
+    CPPUNIT_ASSERT_EQUAL(qint64{-1}, nodeInfo3.size());
+
+    // The backend issues an HTTP error 422 if `limit` is less than 5.
+    listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 1});
+    exitInfo = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::BackError, ExitCause::HttpErr), exitInfo);
+    CPPUNIT_ASSERT_EQUAL(size_t{0}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+
+    listFilesInDirectoryJob.setListingConf({.withPath = true, .dirOnly = false, .limit = 5});
+    exitInfo = listFilesInDirectoryJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+    CPPUNIT_ASSERT_EQUAL(size_t{3}, listFilesInDirectoryJob.v3RemoteNodeInfoList().size());
+}
+
+void TestNetworkJobs::testPostFileModificationDate() {
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testPostFileModificationDate");
+    const LocalTemporaryDirectory localTmpDir("testPostFileModificationDate");
+    using namespace std::chrono;
+    const auto nowTimeStamp = system_clock::now().time_since_epoch();
+    const SyncTime pastModificationDateSec = duration_cast<seconds>(nowTimeStamp - hours(1)).count();
+    const SyncTime valideFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(1)).count();
+    const SyncTime invalidFutureModificationDate = duration_cast<seconds>(nowTimeStamp + hours(25)).count();
+    const SyncTime nowTimeStampSec = duration_cast<seconds>(nowTimeStamp).count();
+
+    struct TestCase {
+            std::string fileName;
+            SyncTime timestampToPost;
+            std::string targetNodeIdOverride; // non-empty overrides the uploaded node's ID
+            bool expectSuccess;
+            SyncTime expectedServerValue;
+    };
+
+    const std::vector<TestCase> testCases = {
+            // clang-format off
+            // fileName                   timestampToPost         targetOverride    expectSuccess  expectedServerValue
+            {"test_valid.txt",            pastModificationDateSec,           "",     true,        pastModificationDateSec},
+            {"test_valid_future.txt",     valideFutureModificationDate,      "",     true,        valideFutureModificationDate},
+            {"test_nonExistent.txt",      pastModificationDateSec,           "0",    false,       nowTimeStampSec},
+            {"test_zero.txt",             0,                                 "",     true,        static_cast<SyncTime>(0)},
+            // clang-format on
+    };
+
+    for (const auto &testCase: testCases) {
+        const SyncPath localFilePath = localTmpDir.path() / testCase.fileName;
+        testhelpers::generateOrEditTestFile(localFilePath);
+        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            nowTimeStampSec, nowTimeStampSec);
+        ExitInfo exitInfo = uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo);
+        const NodeId nodeId = uploadJob.nodeId();
+        CPPUNIT_ASSERT(!nodeId.empty());
+        const std::string targetId = testCase.targetNodeIdOverride.empty() ? nodeId : testCase.targetNodeIdOverride;
+        PostFileModificationDateJob testJob(_driveDbId, targetId, testCase.timestampToPost);
+        exitInfo = testJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(exitInfo), exitInfo.operator bool() == testCase.expectSuccess);
+
+        // Verify the modification date on the server.
+        GetFileInfoJob verifyJob(_driveDbId, nodeId);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
+        if (testCase.expectSuccess) {
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(testCase.fileName + ": lastModifiedAt() should match server value",
+                                         verifyJob.modificationTime(), testJob.lastModifiedAt());
+        }
+    }
+
+    // A timestamp more than 24h in the future is capped by the server to its current time.
+    // We only know the capped value is strictly less than what we sent.
+    {
+        const SyncPath localFilePath = localTmpDir.path() / "test_future.txt";
+        testhelpers::generateOrEditTestFile(localFilePath);
+        UploadJob uploadJob(nullptr, _driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+                            nowTimeStampSec, nowTimeStampSec);
+        const ExitInfo uploadExitInfo = uploadJob.runSynchronously();
+        CPPUNIT_ASSERT_MESSAGE(toString(uploadExitInfo), uploadExitInfo);
+        const NodeId nodeId = uploadJob.nodeId();
+        CPPUNIT_ASSERT(!nodeId.empty());
+        PostFileModificationDateJob testJob(_driveDbId, nodeId, invalidFutureModificationDate);
+        CPPUNIT_ASSERT(testJob.runSynchronously());
+
+        GetFileInfoJob verifyJob(_driveDbId, nodeId);
+        CPPUNIT_ASSERT(verifyJob.runSynchronously());
+        CPPUNIT_ASSERT_LESS(invalidFutureModificationDate, verifyJob.modificationTime());
+        CPPUNIT_ASSERT_EQUAL(testJob.lastModifiedAt(), verifyJob.modificationTime());
+    }
 }
 
 } // namespace KDC

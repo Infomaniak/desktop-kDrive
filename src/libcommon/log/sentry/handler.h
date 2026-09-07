@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,8 +89,8 @@ class Handler {
 
         // Performances monitoring
         bool arePtracesEnabled() const;
-        pTraceId startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1);
-        void stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId = -1, PTraceStatus status = PTraceStatus::Ok);
+        pTraceId startPTrace(const PTraceDescriptor &pTraceInfo, SyncDbId syncDbId = -1);
+        void stopPTrace(const PTraceDescriptor &pTraceInfo, SyncDbId syncDbId = -1, PTraceStatus status = PTraceStatus::Ok);
         void stopPTrace(const pTraceId &pTraceId, PTraceStatus status = PTraceStatus::Ok);
 
         // Debugging
@@ -103,7 +103,7 @@ class Handler {
         // Print a crash event description into a file (for debugging)
         static void writeCrashEvent(const std::string &eventStr) noexcept { writeEvent(eventStr, true); }
 
-        void setDistributionChannel(VersionChannel channel);
+        void setDistributionChannel(DistributionChannel channel);
         void setAppUUID(std::string appUUID);
         void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
 
@@ -208,7 +208,7 @@ class Handler {
         // (which can be either a transaction or another span).
         pTraceId startSpan(const std::string &name, const std::string &description, const pTraceId &parentId);
 
-        std::map<int /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
+        std::map<SyncDbId /*syncDbId*/, std::map<PTraceName, pTraceId>> _pTraceNameToPTraceIdMap;
 
         bool checkCustomSampleRate(const PTraceDescriptor &pTraceInfo) const;
 

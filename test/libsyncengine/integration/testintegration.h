@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,11 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
-#include "libcommon/utility/sourcelocation.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
+
+#include <source_location>
 
 using namespace CppUnit;
 
@@ -85,6 +86,10 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void testDeleteAndRecreateBranch();
         void testDeleteAndMoveCase();
+        void initTestMoveDeleteRename(const RemoteTemporaryDirectory &remoteTempDir, NodeId &nodeIdA, NodeId &nodeIdAA,
+                                      NodeId &nodeIdAAA, NodeId &nodeIdB);
+        void testMoveDeleteRename();
+        void testCreateMoveDeleteRename();
 
         void testSynchronizationOfSymLinks();
         void testSymLinkWithTooManySymbolicLevels();
@@ -116,7 +121,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNodeIdReuseFalsePositive();
         void nodeIdReuseFalsePositiveInitialSituation(const LocalTemporaryDirectory &localTmpDir) const;
 #endif
-        void waitForSyncToBeIdle(const SourceLocation &srcLoc,
+        void waitForSyncToBeIdle(const std::source_location &srcLoc,
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         void logStep(const std::string &str);
 

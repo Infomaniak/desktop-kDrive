@@ -1,4 +1,21 @@
-﻿using Microsoft.UI.Xaml.Data;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Microsoft.UI.Xaml.Data;
 using System;
 
 namespace Infomaniak.kDrive.Converters
@@ -48,7 +65,7 @@ namespace Infomaniak.kDrive.Converters
                 {
                     return String.Format(format, $"{Math.Floor(timeSpan.TotalHours)} {Localizer.Instance.GetString("labelShortHour")}");
                 }
-                if (timeSpan.TotalDays < 6)
+                if (timeSpan.TotalDays < 4) // Only show "x days ago" for up to 3 days, after that show the date
                 {
                     return String.Format(format, $"{Math.Floor(timeSpan.TotalDays)} {Localizer.Instance.GetString("labelShortDay")}");
                 }

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -26,20 +27,25 @@ struct AccountsView: View {
 
     var body: some View {
         Form {
-            ForEach(viewModel.users) { user in
-                UserSection(
-                    user: user,
-                    synchronizedDrives: viewModel.synchronizedDrive[user.id, default: []],
-                    availableDrives: viewModel.availableDrive[user.id, default: []]
-                )
-            }
-
-            Section {
-                Button(KDriveLocalizable.buttonConnectAccount) {
-                    // TODO: Add new user
+            if viewModel.users.isEmpty {
+                AccountsPreferencesAddAccountView()
+            } else {
+                ForEach(viewModel.users) { user in
+                    UserSection(
+                        user: user,
+                        synchronizedDrives: viewModel.synchronizedDrive[user.id, default: []],
+                        availableDrives: viewModel.availableDrive[user.id, default: []]
+                    )
                 }
-                .buttonStyle(.bordered)
-                .frame(maxWidth: .infinity, alignment: .trailing)
+
+                Section {
+                    Button(KDriveLocalizable.buttonConnectAccount) {
+                        @InjectService var router: MainWindowRouter
+                        router.navigate(to: .onboarding())
+                    }
+                    .buttonStyle(.bordered)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                }
             }
         }
         .groupedFormatStyle()

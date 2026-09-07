@@ -1,22 +1,21 @@
-/*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// Infomaniak kDrive - Desktop
+// Copyright (C) 2023-2026 Infomaniak Network SA
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utility.h"
+#include "utility_base.h"
 #include "log/sentry/handler.h"
 
 #include <shlobj.h>
@@ -34,6 +33,7 @@
 #include <QSettings>
 #include <QVariant>
 #include <QCoreApplication>
+#include <config.h>
 #include <sentry.h>
 
 static const char systemRunPathC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -138,7 +138,7 @@ std::string CommonUtility::toUnsafeStr(const SyncName &name) {
     return unsafeName;
 }
 
-std::string CommonUtility::osVersion() {
+std::string extractOsVersion() {
     // Use RtlGetVersion to get the real Windows version (works on Windows 10/11)
     typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 
@@ -153,8 +153,51 @@ std::string CommonUtility::osVersion() {
     if (rtlGetVersion(&osInfo) != 0) return {};
 
     char versionStr[32];
-    snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion, osInfo.dwBuildNumber);
+    (void) snprintf(versionStr, sizeof(versionStr), "%lu.%lu.%lu", osInfo.dwMajorVersion, osInfo.dwMinorVersion,
+                    osInfo.dwBuildNumber);
     return std::string(versionStr);
+}
+
+std::string CommonUtility::osVersion() {
+    static const std::string osVersion = extractOsVersion();
+    return osVersion;
+}
+
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    TCHAR szFileSystemName[MAX_PATH + 1];
+    DWORD dwMaxFileNameLength = 0;
+    DWORD dwFileSystemFlags = 0;
+
+    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+        return ws2s(szFileSystemName);
+    } else {
+        // Not all the requested information is retrieved
+        DWORD dwError = GetLastError();
+        std::wstringstream message;
+        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
+                << utility_base::getErrorMessage(dwError) << L")";
+        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
+
+        // !!! File system name can be OK or not !!!
+        return ws2s(szFileSystemName);
+    }
+
+
+    return "UNIDENTIFIED";
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    // Generate directory path
+    if (const auto exitInfo = deviceTempDirectoryPath(directoryPath); !exitInfo) {
+        return exitInfo;
+    }
+
+    static const std::string LOGDIR_SUFFIX = "-logdir/";
+    const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
+    directoryPath /= logDirName;
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

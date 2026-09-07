@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -65,6 +65,10 @@ extension CoherentCache {
         let syncDbId = syncSignal.syncDbId
         guard var synchro = await getSynchro(synchroDbId: syncDbId) else {
             throw ServerCoherentCache.CacheError.synchroNotFound(syncDbId)
+        }
+
+        if syncSignal.syncStatus == .Paused || syncSignal.syncStatus == .Stopped {
+            synchro.removeSyncingActivities()
         }
 
         synchro.progress = syncSignal.asSynchroProgressInfo

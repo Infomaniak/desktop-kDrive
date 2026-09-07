@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,11 @@ namespace KDC {
 
 class MockUpdater : public AbstractUpdater {
     public:
-        explicit MockUpdater(const std::shared_ptr<UpdateChecker> &customUpdateChecker = std::make_shared<UpdateChecker>()) :
-            AbstractUpdater(customUpdateChecker) {
-            _currentChannel = VersionChannel::Beta;
+        explicit MockUpdater(
+                const std::shared_ptr<VersionRetriever> &customVersionRetriever = std::make_shared<VersionRetriever>()) {
+            _versionRetriever = customVersionRetriever;
+            const std::function callback = [this] { onAppVersionReceived(); };
+            _versionRetriever->setCallback(callback);
         }
 
         void startInstaller() override {
@@ -37,11 +39,6 @@ class MockUpdater : public AbstractUpdater {
 
         void onUpdateFound() override {
             if (_quitCallback) _quitCallback();
-        }
-
-        std::string getCurrentVersion() const override {
-            if (_mockGetCurrentVersion) return _mockGetCurrentVersion();
-            return AbstractUpdater::getCurrentVersion();
         }
 
         void setMockGetCurrentVersion(const std::function<std::string()> &mockGetCurrentVersion) {

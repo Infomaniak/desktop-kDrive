@@ -1,7 +1,26 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Infomaniak.kDrive.CustomControls.Errors;
@@ -43,28 +62,48 @@ public partial class ConflictDialog : Page
 
     private void Init()
     {
-        _dialog.IsSecondaryButtonEnabled = false;
-        _dialog.SecondaryButtonClick += Dialog_SecondaryButtonClick;
+        _dialog.IsPrimaryButtonEnabled = false;
+        _dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
+        _dialog.CloseButtonClick += Dialog_CloseButtonClick;
+        _dialog.DefaultButton = ContentDialogButton.Primary;
+        _dialog.Closed += Dialog_Closed;
+
+        _dialog.CloseButtonText = kDrive.Localizer.Instance.GetString("buttonClose");
         RefreshPrimaryButtonText();
     }
 
-    private async void Dialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+    {
+        _dialog.PrimaryButtonClick -= Dialog_PrimaryButtonClick;
+        _dialog.CloseButtonClick -= Dialog_CloseButtonClick;
+        _dialog.Closed -= Dialog_Closed;
+    }
+
+    private async void Dialog_CloseButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        if (ViewModel.CurrentErrorIndex > 1)
+        {
+            // Save all the conflict resolutions choices the user made so far, even if they didn't click on the "Validate" button for the current conflict.
+            if (!await ApplyUserChoices())
+            {
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
+        }
+    }
+
+    private async void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         if (RemoteVersionPresenter.IsSelected || LocalVersionPresenter.IsSelected)
             ViewModel.SaveCurrentErrorChoice(LocalVersionPresenter.IsSelected ? ConflictResolutionStrategy.KeepLocal : ConflictResolutionStrategy.KeepRemote);
 
         if (!ViewModel.HasMultipleConflicts || ViewModel.CurrentErrorIndex == _errors.Count)
         {
-
-
             // The user has validated the last conflict, we can now apply all their choices on the server
-            _dialog.IsEnabled = false;
-            if (!await ViewModel.ApplyUserChoices())
+            if (!await ApplyUserChoices())
             {
                 Utility.ShowUnexpectedErrorTeachingTip();
                 args.Cancel = true;
             }
-            _dialog.IsEnabled = true;
         }
         else
         {
@@ -74,35 +113,43 @@ public partial class ConflictDialog : Page
         }
     }
 
+    private async Task<bool> ApplyUserChoices()
+    {
+        _dialog.IsEnabled = false;
+        var result = await ViewModel.ApplyUserChoices();
+        _dialog.IsEnabled = true;
+        return result;
+    }
+
     private void RefreshPrimaryButtonText()
     {
         if (ViewModel.CurrentErrorIndex == _errors.Count)
-            _dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonValidate");
+            _dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonValidate");
         else
-            _dialog.SecondaryButtonText = Localizer.Instance.GetString("buttonValidateAndGoNext");
+            _dialog.PrimaryButtonText = Localizer.Instance.GetString("buttonValidateAndGoNext");
     }
 
     private void RemoteVersionPresenter_Selected(object sender, System.EventArgs e)
     {
         LocalVersionPresenter.IsSelected = false;
-        _dialog.IsSecondaryButtonEnabled = true;
+        _dialog.IsPrimaryButtonEnabled = true;
     }
 
     private void LocalVersionPresenter_Selected(object sender, System.EventArgs e)
     {
         RemoteVersionPresenter.IsSelected = false;
-        _dialog.IsSecondaryButtonEnabled = true;
+        _dialog.IsPrimaryButtonEnabled = true;
     }
 
     private void RemoteVersionPresenter_Unselected(object sender, System.EventArgs e)
     {
         if (!LocalVersionPresenter.IsSelected)
-            _dialog.IsSecondaryButtonEnabled = false;
+            _dialog.IsPrimaryButtonEnabled = false;
     }
 
     private void LocalVersionPresenter_Unselected(object sender, System.EventArgs e)
     {
         if (!RemoteVersionPresenter.IsSelected)
-            _dialog.IsSecondaryButtonEnabled = false;
+            _dialog.IsPrimaryButtonEnabled = false;
     }
 }

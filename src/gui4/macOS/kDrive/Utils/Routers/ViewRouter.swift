@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -58,6 +58,16 @@ final class ViewRouter<Tab: RouterTab>: ObservableObject, NavigableRouter {
     @MainActor
     func setCurrentTab(_ tab: Tab) {
         currentPath = pathCache[tab] ?? RouterPath(mainTab: tab, details: [tab.rootPath])
+    }
+
+    @MainActor
+    func setCurrentTabIfNecessary(_ tab: Tab) {
+        let rootPath = tab.rootPath
+        guard currentPath.details.first != rootPath else {
+            return
+        }
+
+        setCurrentTab(tab)
     }
 
     @MainActor

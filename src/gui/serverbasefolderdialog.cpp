@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@ static const int folderTreeBoxVMargin = 20;
 
 Q_LOGGING_CATEGORY(lcServerBaseFolderDialog, "gui.serverbasefolderdialog", QtInfoMsg)
 
-ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &localFolderName,
-                                               const QString &localFolderPath, QWidget *parent) :
+ServerBaseFolderDialog::ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, const DriveDbId driveDbId,
+                                               const QString &localFolderName, const QString &localFolderPath, QWidget *parent) :
     CustomDialog(true, parent),
     _gui(gui),
     _driveDbId(driveDbId),

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         CPPUNIT_TEST(testLFSOFastMoveDeleteMoveWithEncodingChange);
         CPPUNIT_TEST(testLFSOWithSpecialCases1);
         CPPUNIT_TEST(testLFSOWithSpecialCases2);
+        CPPUNIT_TEST(testLFSODirReplacement);
         CPPUNIT_TEST(testInvalidateCounter);
         CPPUNIT_TEST(testInvalidateSnapshot);
         CPPUNIT_TEST_SUITE_END();
@@ -102,12 +103,13 @@ class TestLocalFileSystemObserverWorker final : public CppUnit::TestFixture, pub
         void testLFSOFastMoveDeleteMoveWithEncodingChange();
         void testLFSOWithSpecialCases1();
         void testLFSOWithSpecialCases2();
+        void testLFSODirReplacement();
         void testInvalidateCounter();
         void testInvalidateSnapshot();
         void testSyncDirChange();
-        static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; };
-        static bool vfsPinState(int, const SyncPath &, PinState &) { return true; };
-        static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; };
+        static bool vfsStatus(int, const SyncPath &, bool &, bool &, bool &, int &) { return true; }
+        static bool vfsPinState(int, const SyncPath &, PinState &) { return true; }
+        static bool vfsFileStatusChanged(int, const SyncPath &, SyncFileStatus) { return true; }
 };
 
 } // namespace KDC

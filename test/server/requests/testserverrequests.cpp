@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -218,7 +218,7 @@ void TestServerRequests::testDeleteDrive() {
     AbstractTokenNetworkJob::_userToApiKeyMap[1] = {nullptr, 0};
     AbstractTokenNetworkJob::_driveToApiKeyMap[1] = {0, 0};
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), ServerRequests::deleteDrive(1));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, ServerRequests::deleteDrive(1));
 
     // Check that drive has been removed from db
     Drive drive;

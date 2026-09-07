@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,12 +85,12 @@ void TestIo::testSetXAttrValue() {
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "locked", ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError); // `setXAttrValue` grant write permissions temporarily
+        CPPUNIT_ASSERT_EQUAL(IoError::AccessDenied, ioError);
 
         std::string value;
         CPPUNIT_ASSERT(_testObj->getXAttrValue(path, "status", value, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        CPPUNIT_ASSERT_EQUAL(std::string("locked"), value);
+        CPPUNIT_ASSERT(ioError == IoError::AttrNotFound);
+        CPPUNIT_ASSERT(value.empty());
     }
 #endif
 

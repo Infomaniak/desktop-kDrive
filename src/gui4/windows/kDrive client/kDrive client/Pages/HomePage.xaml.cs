@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Infomaniak.kDrive.Pages.Settings;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,12 +24,14 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class HomePage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
         public HomePage()
@@ -58,53 +60,70 @@ namespace Infomaniak.kDrive.Pages
             }
         }
 
-        private void RedirectToErrorPageIfNeeded()
+        private bool RedirectToErrorPageIfNeeded()
         {
-            switch (ViewModel.SelectedSync?.SyncErrorState)
+            if (ViewModel.SelectedSync is null)
+                return false;
+
+            switch (ViewModel.SelectedSync.SyncErrorState)
             {
                 case SyncErrorStates.Undefined:
                     // No error, stay on the HomePage
-                    break;
+                    return false;
                 case SyncErrorStates.AccessDenied:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(DriveAccessDeniedPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(DriveAccessDeniedPage)));
                     break;
                 case SyncErrorStates.LoggingError:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(LogginErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(LogginErrorPage)));
                     break;
                 case SyncErrorStates.NotRenew:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(NotRenewErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(NotRenewErrorPage)));
                     break;
                 case SyncErrorStates.Maintenance:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(MaintenanceErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(MaintenanceErrorPage)));
                     break;
                 case SyncErrorStates.Asleep:
-                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(AsleepErrorPage)));
+                    AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(AsleepErrorPage)));
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
-                    break;
+                    return false;
             }
+            return true;
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (ViewModel.SelectedSync is null)
-            {
-                AppModel.UIThreadDispatcher.TryEnqueue(() =>
-                {
-                    DetachHandlers();
-                    Frame.Navigate(typeof(SettingsPage));
-                });
-                return;
-            }
             ViewModel.SelectedSyncChanged += OnSelectedSyncChanged;
             OnSelectedSyncChanged(null, new(null, ViewModel.SelectedSync));
-            RedirectToErrorPageIfNeeded();
+            if (!RedirectToErrorPageIfNeeded())
+                _analyticsService.TrackPageView(Analytics.Keys.Category.HomePage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             DetachHandlers();
+        }
+
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent) where T : DependencyObject
+        {
+            if (parent == null)
+                yield break;
+
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                {
+                    yield return typedChild;
+                }
+
+                foreach (var descendant in FindVisualChildren<T>(child))
+                {
+                    yield return descendant;
+                }
+            }
         }
 
         private void DetachHandlers()
@@ -117,6 +136,7 @@ namespace Infomaniak.kDrive.Pages
 
         private void SyncInProgressHyperlinkButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenActivity);
             DetachHandlers();
             Frame.Navigate(typeof(ActivityPage));
         }
@@ -128,12 +148,17 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
                 return;
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.StartSync);
             await ViewModel.SelectedSync.Start();
         }
 
-        public string GetGreetingLabel(string userName, SyncStatus status)
+        public string GetGreetingLabel(string? userName, SyncStatus? status)
         {
-            const string transitionStr = "...";
+            if (userName is null || status is null)
+                return Localizer.Instance.GetString("labelWelcomeToKDrive");
+
+
+            const string transitionStr = "…";
             string syncStateStr = status switch
             {
                 SyncStatus.Undefined => transitionStr,
@@ -145,10 +170,23 @@ namespace Infomaniak.kDrive.Pages
                 SyncStatus.StopAsked => transitionStr,
                 SyncStatus.Stopped => Localizer.Instance.GetString("synchroPaused"),
                 SyncStatus.Error => transitionStr,
-                SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused")
+                SyncStatus.Offline => Localizer.Instance.GetString("synchroPaused"),
+                _ => Localizer.Instance.GetString("labelWelcomeToKDrive")
             };
 
             return Localizer.Instance.GetString("greetingLabel", userName, syncStateStr);
+        }
+
+        private void StartOnboardingButton_Click(object sender, RoutedEventArgs e)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.OpenSignInWeb);
+            (App.Current as App)?.StartOnboarding();
+        }
+
+        private async void SyncUpToDateMainTemplateAnimatedVisualPlayer_Loaded(object sender, RoutedEventArgs e)
+        {
+            if(sender is AnimatedVisualPlayer player)
+                await player.PlayAsync(0.0, 1.0, false);
         }
     }
 }

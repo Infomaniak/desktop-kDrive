@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class StatusBarWidget : public HalfRoundRectWidget {
         explicit StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
         void setStatus(KDC::GuiUtility::StatusInfo &statusInfo);
-        void setCurrentDrive(int driveDbId);
+        void setCurrentDrive(DriveDbId driveDbId);
         void setSeveralSyncs(bool severalSyncs);
         void reset();
 
@@ -50,8 +50,8 @@ class StatusBarWidget : public HalfRoundRectWidget {
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
-        bool _severalSyncs;
+        DriveDbId _driveDbId{0};
+        bool _severalSyncs{false};
         QLabel *_statusIconLabel;
         QLabel *_statusLabel;
         CustomToolButton *_pauseButton;

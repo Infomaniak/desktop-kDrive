@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ class ServerBaseFolderDialog : public CustomDialog {
         Q_PROPERTY(QSize info_icon_size READ infoIconSize WRITE setInfoIconSize)
 
     public:
-        explicit ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, int accountId, const QString &localFolderName,
+        explicit ServerBaseFolderDialog(std::shared_ptr<ClientGui> gui, AccountDbId accountId, const QString &localFolderName,
                                         const QString &localFolderPath, QWidget *parent = nullptr);
 
         inline QString serverFolderBasePath() const { return _serverFolderBasePath; }
@@ -49,7 +49,7 @@ class ServerBaseFolderDialog : public CustomDialog {
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
+        DriveDbId _driveDbId{0};
         QString _localFolderName;
         QString _localFolderPath;
 

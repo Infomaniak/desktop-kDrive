@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-GetInfoUserJob::GetInfoUserJob(const int userDbId) :
+GetInfoUserJob::GetInfoUserJob(const UserDbId userDbId) :
     AbstractTokenNetworkJob(ApiType::Profile, userDbId, 0, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
@@ -36,6 +36,10 @@ ExitInfo GetInfoUserJob::handleJsonResponse(const std::string &replyBody) {
     if (!dataObj || dataObj->size() == 0) return {ExitCode::BackError, ExitCause::MissingReplyData};
 
     if (!JsonParserUtility::extractValue(dataObj, displayNameKey, _name)) {
+        return {ExitCode::BackError, ExitCause::MissingReplyData};
+    }
+
+    if (!JsonParserUtility::extractValue(dataObj, firstNameKey, _firstName)) {
         return {ExitCode::BackError, ExitCause::MissingReplyData};
     }
 

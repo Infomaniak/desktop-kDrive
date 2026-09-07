@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,16 +38,16 @@ class MockAppServer : public AppServer {
             _loadAccountInfo = f;
         };
         void setLoadDriveInfoFunction(
-                const std::function<ExitInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId,
+                const std::function<ExitInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId,
                                              bool &updated, bool &quotaUpdated)> &f) {
             _loadDriveInfo = f;
         };
 
     private:
-        void sendUserUpdated(const UserInfo &) const override { /* Do not try to notify the client */ };
-        void sendAccountAdded(const AccountInfo &) const override { /* Do not try to notify the client */ };
-        void sendAccountUpdated(const AccountInfo &) const override { /* Do not try to notify the client */ };
-        void sendDriveUpdated(const DriveInfo &) const override { /* Do not try to notify the client */ };
+        void sendUserUpdated(const UserInfo &) const override{/* Do not try to notify the client */};
+        void sendAccountAdded(const AccountInfo &) const override{/* Do not try to notify the client */};
+        void sendAccountUpdated(const AccountInfo &) const override{/* Do not try to notify the client */};
+        void sendDriveUpdated(const DriveInfo &) const override{/* Do not try to notify the client */};
 
         std::filesystem::path _parmsDbPath;
 };
@@ -72,8 +72,6 @@ class TestAppServer : public CppUnit::TestFixture, public TestBase {
     private:
         MockAppServer *_appPtr;
         LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestAppServer");
-        SyncPath _localPath;
-        SyncPath _remotePath;
 
         bool waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const;
         bool syncIsActive(int syncDbId) const;

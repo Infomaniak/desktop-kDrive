@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -55,9 +56,15 @@ namespace Infomaniak.kDrive.ViewModels
         {
             _dbId = dbId;
             _account = account;
-            _syncs.CollectionChanged += (s, e) => RefreshAdvancedSyncsMap();
+            _syncs.CollectionChanged += Syncs_CollectionChanged;
 
         }
+
+        private void Syncs_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            RefreshAdvancedSyncsMap();
+        }
+
         public DbId UserDbId { get => _account.User.DbId; }
 
         private void RefreshAdvancedSyncsMap()

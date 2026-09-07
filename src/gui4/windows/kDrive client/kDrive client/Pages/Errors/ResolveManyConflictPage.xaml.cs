@@ -1,10 +1,26 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls.Errors;
-using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.ComponentModel;
@@ -15,6 +31,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 {
     public sealed partial class ResolveManyConflictPage : Page
     {
+        private static readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
         private ErrorPageVM? _errorPageVM;
@@ -25,13 +42,18 @@ namespace Infomaniak.kDrive.Pages.Errors
             Logger.Log(Logger.Level.Debug, "ResolveManyConflictPage components initialized");
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             _errorPageVM = new ErrorPageVM();
             _errorPageVM.PropertyChanged += OnErrorPageVMPropertyChanged;
+            _analyticsService.TrackPageView(Analytics.Keys.Category.IndividualConflictResolutionPage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            DetachEventHandlers();
+        }
+        private void DetachEventHandlers()
         {
             if (_errorPageVM is not null)
             {
@@ -53,6 +75,7 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             Logger.Log(Logger.Level.Debug, "Navigating to Conflict quick");
             Frame.Navigate(typeof(ConflictQuickResolvePage));
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.BatchConflictResolutionBreadcrumb);
         }
 
         private void OnSelectedSyncChanged(object sender, SelectedSyncChangedEventArgs e)
@@ -84,8 +107,8 @@ namespace Infomaniak.kDrive.Pages.Errors
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                DefaultButton = ContentDialogButton.Secondary,
-                PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                DefaultButton = ContentDialogButton.Primary,
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
             };
 
             // Reset conflict filter to populate the conflict with list with all the filter.
@@ -98,7 +121,8 @@ namespace Infomaniak.kDrive.Pages.Errors
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
 
-            _ = await dialog.ShowAsync(); 
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.StartChoices);
+            _ = await dialog.ShowAsync();
         }
 
         private async void ResolveOneConflictButton_Click(object sender, RoutedEventArgs e)
@@ -111,8 +135,8 @@ namespace Infomaniak.kDrive.Pages.Errors
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                DefaultButton = ContentDialogButton.Secondary,
-                PrimaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                DefaultButton = ContentDialogButton.Primary,
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
             };
 
             Control? control = sender as Control;
@@ -137,8 +161,13 @@ namespace Infomaniak.kDrive.Pages.Errors
             // Apply the style to allow wider content
             dialog.Resources["ContentDialogMaxWidth"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxWidth"];
             dialog.Resources["ContentDialogMaxHeight"] = Application.Current.Resources["Infomaniak.Style.ContentDialog.MaxHeight"];
-
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.ManageSingleConflict);
             _ = await dialog.ShowAsync();
+        }
+
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.IndividualConflictResolutionPage, Analytics.Keys.EventName.ValidateSearch);
         }
     }
 }

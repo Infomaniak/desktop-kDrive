@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 import InfomaniakConcurrency
 import InfomaniakDI
@@ -83,14 +84,34 @@ public struct NodeJobs: Sendable {
         return decodedMessage.body.folderSize
     }
 
-    public func createMissingFolders(driveDbId: Int32, folders: [MissingFolder]) async throws -> String {
+    public func createMissingFolders(userDbId: Int32,
+                                     driveId: Int32,
+                                     parentNodeId: String,
+                                     relativePath: String) async throws -> String {
         IKLogger.data.log("Query to create missing folders")
-        let folders = folders.map { MissingFolderQuery(name: $0.name, nodeId: $0.nodeId) }
-        let query = AddMissingFolderQuery(driveDbId: driveDbId, folderList: folders)
-        let request = await RequestMessage<AddMissingFolderQuery>(num: RequestNum.NODE_CREATEMISSINGFOLDERS, body: query)
+        let query = CreateMissingFoldersQuery(userDbId: userDbId,
+                                              driveId: driveId,
+                                              parentNodeId: parentNodeId,
+                                              relativePath: relativePath)
+        let request = await RequestMessage<CreateMissingFoldersQuery>(num: RequestNum.NODE_CREATEMISSINGFOLDERS, body: query)
 
-        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<MissingFolderResponse>.self)
+        let decodedMessage = try await queryFetcher.query(
+            request,
+            responseType: CallbackMessage<CreateMissingFoldersResponse>.self
+        )
 
-        return decodedMessage.body.parentNodeId
+        return decodedMessage.body.nodeId
+    }
+
+    public func getNodeConflictInfo(syncDbId: Int32,
+                                    relativePath: String,
+                                    replicaSide: KDC.ReplicaSide) async throws -> NodeConflictInfo {
+        IKLogger.data.log("Query to get node conflict info")
+        let query = NodeConflictInfoQuery(syncDbId: syncDbId, relativePath: relativePath, replicaSide: replicaSide)
+        let request = await RequestMessage<NodeConflictInfoQuery>(num: RequestNum.NODE_CONFLICT_INFO, body: query)
+
+        let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeConflictInfoResponse>.self)
+
+        return NodeConflictInfo(nodeConflictInfoMetadata: decodedMessage.body.nodeConflictInfo)
     }
 }

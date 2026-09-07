@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,6 @@ class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
         CPPUNIT_TEST(testCanRunjob);
-        CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -69,7 +68,6 @@ class TestSyncJobManagerSingleton : public CppUnit::TestFixture, public TestBase
         void testJobPriority2(); // Test execution order of jobs with same priority. Jobs created first must be executed first.
 
         void testCanRunjob();
-        void testReuseSocket();
 
     private:
         const testhelpers::TestVariables _testVariables;

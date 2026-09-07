@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,11 +16,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// Required flag to correctly compile shared types
-#define KD_MACOS 1
-
 // Bridging-Header.h
 #import "ServerBridge/XPC/xpcGuiProtocol.h"
 #import "ServerBridge/XPC/xpcLoginItemProtocol.h"
-#import "ServerBridge/XPC/cstypes.h"
-#import "ServerBridge/XPC/comm.h"

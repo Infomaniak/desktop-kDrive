@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-ItemsExistJob::ItemsExistJob(int driveDbId, const NodeSet &ids) :
+ItemsExistJob::ItemsExistJob(const DriveDbId driveDbId, const NodeSet &ids) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     for (const auto &id: ids) {
@@ -86,12 +86,12 @@ ExitInfo ItemsExistJob::handleResponse(std::istream &is) {
         NodeId nodeId;
         if (!JsonParserUtility::extractValue(obj, idKey, nodeId)) {
             LOG_WARN(_logger, "Missing object:" << idKey);
-            continue;
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         bool exists = false;
         if (!JsonParserUtility::extractValue(obj, resultKey, exists)) {
             LOG_WARN(_logger, "Missing object:" << resultKey);
-            continue;
+            return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
         if (!_nodeExistenceMap.contains(nodeId)) {
             LOG_WARN(_logger, "ID " << nodeId << " is not watched.");

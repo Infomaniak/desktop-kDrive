@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,21 +22,20 @@
 #include "../abstractcommchannel.h"
 #include "../commmanager.h"
 #include "libcommon/comm.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/utility.h"
 
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Struct.h>
 
 namespace KDC {
+static const int32_t userActionLockShortTimeoutMs =
+        1000; // Short timeout for action that can be easily retried by the user in case of failure such as starting a sync
+static const int32_t userActionLockLongTimeoutMs = 30000; // Long timeout for action that are not easily retryable by the user in
+                                                          // case of failure such as editing the exclusion list
 
 class AbstractGuiJob : public AbstractJob {
     public:
-        enum class GuiJobType {
-            Unknown,
-            Query,
-            Signal
-        };
-
         // Request
         AbstractGuiJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
                        std::shared_ptr<AbstractCommChannel> channel);

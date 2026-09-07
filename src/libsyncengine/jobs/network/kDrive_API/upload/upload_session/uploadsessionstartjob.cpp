@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,9 @@
 
 namespace KDC {
 
-UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const int driveDbId, const SyncName &filename,
-                                             const uint64_t size, const NodeId &remoteParentDirId, const uint64_t totalChunks) :
+UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const DriveDbId driveDbId,
+                                             const SyncName &filename, const uint64_t size, const NodeId &remoteParentDirId,
+                                             const uint64_t totalChunks) :
     AbstractUploadSessionJob(uploadType, driveDbId),
     _filename(filename),
     _totalSize(size),
@@ -34,7 +35,7 @@ UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType,
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const int driveDbId, const NodeId &fileId,
+UploadSessionStartJob::UploadSessionStartJob(const UploadSessionType uploadType, const DriveDbId driveDbId, const NodeId &fileId,
                                              const uint64_t size, const uint64_t totalChunks) :
     UploadSessionStartJob(uploadType, driveDbId, SyncName(), size, "", totalChunks) {
     _fileId = fileId;

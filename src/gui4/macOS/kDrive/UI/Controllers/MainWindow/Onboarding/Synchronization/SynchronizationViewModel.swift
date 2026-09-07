@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -32,15 +32,14 @@ final class SynchronizationViewModel: ObservableObject {
         self.flowCoordinator = flowCoordinator
     }
 
-    func startSynchronizations() {
+    func createSynchronizations() {
         Task {
             let syncCandidates = flowCoordinator.synchronizations
             try? await syncCandidates.asyncForEach { syncCandidate in
-                let syncInfo = try await self.syncCreator.create(from: syncCandidate)
-                try await SyncJobs().startSync(syncDbId: syncInfo.dbId)
+                try await self.syncCreator.create(from: syncCandidate)
             }
 
-            await flowCoordinator.navigateToNextStep()
+            await flowCoordinator.navigateToNextStepOrFinish()
         }
     }
 }

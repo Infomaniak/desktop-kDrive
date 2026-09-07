@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -451,7 +451,7 @@ void PreferencesWidget::onLiteSyncWidgetClicked() {
 
 void PreferencesWidget::onLinkActivated(const QString &link) {
     if (link == debuggingFolderLink) {
-        const QString debuggingFolderPath = KDC::Logger::instance()->temporaryFolderLogDirPath();
+        const QString debuggingFolderPath = KDC::Logger::instance()->logDirectoryPath();
         const QUrl debuggingFolderUrl = KDC::GuiUtility::getUrlFromLocalPath(debuggingFolderPath);
         if (debuggingFolderUrl.isValid()) {
             MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "debuggingFolderLink");
@@ -502,6 +502,13 @@ void PreferencesWidget::retranslateUi() const {
     _languageSelectorComboBox->addItem(tr("German"), toInt(Language::German));
     _languageSelectorComboBox->addItem(tr("Spanish"), toInt(Language::Spanish));
     _languageSelectorComboBox->addItem(tr("Italian"), toInt(Language::Italian));
+    _languageSelectorComboBox->addItem(tr("Swedish"), toInt(Language::Swedish));
+    _languageSelectorComboBox->addItem(tr("Portuguese"), toInt(Language::Portuguese));
+    _languageSelectorComboBox->addItem(tr("Polish"), toInt(Language::Polish));
+    _languageSelectorComboBox->addItem(tr("Norwegian"), toInt(Language::Norwegian));
+    _languageSelectorComboBox->addItem(tr("Finnish"), toInt(Language::Finnish));
+    _languageSelectorComboBox->addItem(tr("Danish"), toInt(Language::Danish));
+    _languageSelectorComboBox->addItem(tr("Greek"), toInt(Language::Greek));
     _languageSelectorComboBox->addItem(tr("Dutch"), toInt(Language::Dutch));
     const int languageIndex =
             _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));

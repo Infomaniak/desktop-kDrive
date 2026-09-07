@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 import InfomaniakDI
 
@@ -24,7 +25,7 @@ public struct UpdaterJobs: Sendable {
 
     public init() {}
 
-    public func versionInfo(channel: KDC.VersionChannel) async throws -> VersionInfo {
+    public func versionInfo(channel: KDC.DistributionChannel) async throws -> VersionInfo {
         IKLogger.data.log("Query for version info")
         let query = UpdaterVersionInfoQuery(channel: channel)
         let request = await RequestMessage<UpdaterVersionInfoQuery>(num: RequestNum.UPDATER_VERSION_INFO, body: query)
@@ -40,7 +41,8 @@ public struct UpdaterJobs: Sendable {
             tag: versionInfoResponse.tag,
             buildVersion: versionInfoResponse.buildVersion,
             buildMinOsVersion: versionInfoResponse.buildMinOsVersion,
-            downloadUrl: versionInfoResponse.downloadUrl
+            downloadUrl: versionInfoResponse.downloadUrl,
+            checksum: versionInfoResponse.checksum
         )
     }
 

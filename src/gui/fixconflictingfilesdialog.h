@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class FixConflictingFilesDialog final : public CustomDialog {
         Q_OBJECT
 
     public:
-        explicit FixConflictingFilesDialog(int driveDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
+        explicit FixConflictingFilesDialog(DriveDbId driveDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
         bool keepLocalVersion() const { return _keepLocalVersion; }
 
@@ -51,7 +51,7 @@ class FixConflictingFilesDialog final : public CustomDialog {
         void insertFileItems(const int nbItems);
 
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId = 0;
+        DriveDbId _driveDbId = 0;
         QList<ErrorInfo> _conflictList;
 
         bool _keepLocalVersion = false;

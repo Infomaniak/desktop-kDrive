@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,12 +45,11 @@ class UpdateManager final : public QObject {
         UpdateManager &operator=(UpdateManager &) = delete;
         UpdateManager &operator=(UpdateManager &&) = delete;
 
-        void setDistributionChannel(VersionChannel channel);
-        [[nodiscard]] const VersionInfo &versionInfo(const VersionChannel channel = VersionChannel::Unknown) const {
-            return _updater->versionInfo(channel == VersionChannel::Unknown ? _currentChannel : channel);
-        }
+        void setDistributionChannel(DistributionChannel channel);
+        [[nodiscard]] const VersionInfo &versionInfo() const { return _updater->versionInfo(); }
         [[nodiscard]] const UpdateState &state() const { return _updater->state(); }
 
+        void forceRefresh() const { slotTimerFired(); }
         void startInstaller() const;
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
@@ -76,7 +75,7 @@ class UpdateManager final : public QObject {
         void onUpdateStateChanged(UpdateState newState);
 
         std::unique_ptr<AbstractUpdater> _updater;
-        VersionChannel _currentChannel{VersionChannel::Unknown};
+        DistributionChannel _currentChannel{DistributionChannel::Unknown};
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };
 

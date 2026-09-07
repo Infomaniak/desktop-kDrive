@@ -1,6 +1,6 @@
 <#
  Infomaniak kDrive - Desktop App
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@ Param(
     [ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
     [string] $buildType = "RelWithDebInfo",
 
+    # Thumbprint: The thumbprint of the debug or KSP certificate
+    [string] $thumbprint,
+
     # Path: The path to the root CMakeLists.txt
     [string] $path = $PWD.Path,
 
@@ -34,13 +37,10 @@ Param(
     # Ci: Build configured for CI
     [switch] $ci,
 
-    # Upload: Flag to trigger the use of the USB-key signing certificate
+    # Upload: Flag to trigger the use of the KSP client certificate
     [switch] $upload,
 
-    # tokenPass: The password to use for unlocking the USB-key signing certificate (only used if upload is set)
-    [String] $tokenPass,
-	
-	# Msi: Build MSI installer
+    # Msi: Build MSI installer
     [switch] $msi,
 
     # Coverage: Flag to enable or disable the code coverage computation
@@ -82,7 +82,7 @@ $archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archive
 
 #################################################################################################
 #                                                                                               #
-#										  	 IMPORT                                             #
+#                                            IMPORT                                             #
 #                                                                                               #
 #################################################################################################
 . "$path\infomaniak-build-tools\version-helpers.ps1"
@@ -109,10 +109,8 @@ function Set-Bullseye-Coverage {
         $cmd = Get-Command cov01.exe -ErrorAction Stop
         & $cmd $cov01Parameter
      } catch {
-         Write-Host "BullseyeCoverage cov01.exe command not found."
-         if ($enable) {
-            exit 1
-         }
+        Write-Host "BullseyeCoverage cov01.exe command not found."
+        return 1
      }
      
      $outputString = "disabled"
@@ -121,6 +119,7 @@ function Set-Bullseye-Coverage {
     }
 
      Write-Host "BullseyeCoverage is $outputString."
+     return 0
 } 
 function Clean {
     param (
@@ -141,10 +140,11 @@ function Get-Version {
     
 }
 
-function Get-Thumbprint {
+function Get-Cert-Property {
     param (
-        [bool] $upload,
-        [bool] $ci # On CI build machines, the certificate are located in local computer store
+        [string] $thumbprint,
+        [bool] $ci, # On CI build machines, the certificate are located in local computer store
+        [string] $property
     )
     if ($ci) {
         $certStore = "Cert:\LocalMachine\My"
@@ -152,29 +152,65 @@ function Get-Thumbprint {
         $certStore = "Cert:\CurrentUser\My"
     }
     
-    $thumbprint = 
-    If ($upload) {
-         Get-ChildItem $certStore | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
-    } 
-    Else {
-        Get-ChildItem $certStore | Where-Object { $_.Subject -match "Windows11CI-1" -and $_.Issuer -match "Windows11CI-1" } | Select -ExpandProperty Thumbprint
-    }
-    Write-Host "Using thumbprint: $thumbprint"
+    $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
 
-    return $thumbprint
+    return $value
+}
+
+function Get-Subject {
+    param (
+        [string] $thumbprint,
+        [bool] $ci # On CI build machines, the certificate are located in local computer store
+    )
+
+    $subject = Get-Cert-Property $thumbprint $ci "Subject"
+    return $subject
+}
+
+function Get-Publisher-Hash {
+    param (
+        [string] $publisherName
+    )
+
+    $publisherNameAsUnicode = [System.Text.Encoding]::Unicode.GetBytes($publisherName);
+    $publisherSha256 = [System.Security.Cryptography.HashAlgorithm]::Create("SHA256").ComputeHash($publisherNameAsUnicode);
+    $publisherSha256First8Bytes = $publisherSha256 | Select-Object -First 8;
+    $publisherSha256AsBinary = $publisherSha256First8Bytes | ForEach-Object { [System.Convert]::ToString($_, 2).PadLeft(8, '0') };
+    $asBinaryStringWithPadding = [System.String]::Concat($publisherSha256AsBinary).PadRight(65, '0');
+
+    $encodingTable = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    $result = "";
+    for ($i = 0; $i -lt $asBinaryStringWithPadding.Length; $i += 5)
+    {
+        $asIndex = [System.Convert]::ToInt32($asBinaryStringWithPadding.Substring($i, 5), 2);
+        $result += $encodingTable[$asIndex];
+    }
+
+    return $result.ToLower();
 }
 
 function Get-Aumid {
     param (
-        [bool] $upload
+        [string] $thumbprint,
+        [bool] $ci
     )
-   $aumid = if ($upload) { $env:KDC_PHYSICAL_AUMID } else { $env:KDC_VIRTUAL_AUMID }
 
-    if (!$aumid) {
-        Write-Host "The AUMID value could not be read from env.
+    # Get the certificate subject (publisher)
+    $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
+
+    if (!$subject) {
+        Write-Host "The certificate subject could not be retrieved.
                    Exiting." -f Red
         exit 1
     }
+
+    Write-Host "Certificate subject: $subject"
+
+    # Compute the publisher hash (AUMID suffix) from the full subject DN
+    $aumid = Get-Publisher-Hash -PublisherName $subject
+
+    Write-Host "Computed AUMID: $aumid"
 
     return $aumid
 }
@@ -182,7 +218,7 @@ function Get-Aumid {
 function Get-Package-Name {
     param (
         [switch] $msi,
-		[switch] $exe
+	[switch] $exe
     )
 
     $prodName = "kDrive"
@@ -228,33 +264,30 @@ function Build-Extension {
 
     $configuration = $buildType
     if ($buildType -eq "RelWithDebInfo") { $configuration = "Release" }
-    if($upload) {
-        $publisher = "CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
-    }else{
-        $publisher = "CN=INFOMANIAK NETWORK SA, O=INFOMANIAK NETWORK SA, S=Genève, C=CH"
-    }
+
+    $subject = Get-Subject -Thumbprint $thumbprint -Ci $ci
+    Write-Host "Subject: $subject for thumbprint $thumbprint"
 
     $appxManifestPath = "$extPath\FileExplorerExtensionPackage\Package.appxmanifest"
     if (Test-Path $appxManifestPath) {
-        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$publisher`"" |
+        (Get-Content $appxManifestPath -Raw) -replace 'Publisher="[^"]*"', "Publisher=`"$subject`"" |
         Set-Content -Encoding UTF8 -Force $appxManifestPath
     } else {
         Write-Host "Package.appxmanifest not found at $appxManifestPath" -ForegroundColor Red
         exit 1
     }
-    Write-Host "Publisher set to: $publisher" -ForegroundColor Yellow
 
     $version = Get-version -IncludeBuildVersion $true
     Write-Host "Extension version: $version"
-	
-	$aumid = Get-Aumid $upload
-	Write-Host "Building extension with AUMID: $aumid"
-	
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_AUMID="$aumid"
+
+    $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
+    Write-Host "Building extension with AUMID: $aumid"
+
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_DEBUG_AUMID="$aumid" /p:KDC_RELEASE_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description "FileExplorerExtensionPackage"
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -275,7 +308,8 @@ function CMake-Build-And-Install {
         [string] $path,
         [string] $installPath,
         [string] $vfsDir,
-        [bool] $ci
+        [bool] $ci,
+        [bool] $newGui
     )
     Write-Host "1) Installing Conan dependencies…"
     $conanFolder = Join-Path $buildPath "conan"
@@ -286,9 +320,9 @@ function CMake-Build-And-Install {
     Write-Host "Conan folder: $conanFolder"
 
     if ($ci) {
-      & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci -MakeRelease
+      & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -Ci -MakeRelease -CleanCache
     } else {
-      & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease
+      & "$path\infomaniak-build-tools\conan\build_dependencies.ps1" Release -OutputDir $conanFolder -MakeRelease -CleanCache
     }
 
     
@@ -299,6 +333,14 @@ function CMake-Build-And-Install {
         Write-Error "Conan toolchain file not found. Abort."
         exit 1
     }
+
+    $conanGeneratorsFolder = Split-Path -Parent $conanToolchainFile
+    $env:QTDIR = (& "$path\infomaniak-build-tools\conan\find_conan_dep.ps1" -Package "qt" -BuildDir "$conanGeneratorsFolder") -replace '\\bin$', ''
+    if (-not $env:QTDIR -or -not (Test-Path $env:QTDIR)) {
+        Write-Error "Qt not found in Conan dependencies. Abort."
+        exit 1
+    }
+
     Write-Host "Conan toolchain file used: $conanToolchainFile"
 
     Write-Host "2) Configuring and building with CMake ..."
@@ -317,8 +359,8 @@ function CMake-Build-And-Install {
     $flags = @(
         "'-DCMAKE_TOOLCHAIN_FILE=$conanToolchainFile'",
         "'-DCMAKE_EXPORT_COMPILE_COMMANDS=1'",
-        "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
-        "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
+        "'-DCMAKE_MAKE_PROGRAM=ninja.exe'",
+        "'-DQT_QMAKE_EXECUTABLE:STRING=cmake.exe'",
         "'-DCMAKE_C_COMPILER:STRING=$compiler'",
         "'-DCMAKE_CXX_COMPILER:STRING=$compiler'",
         "'-DBIN_INSTALL_DIR:PATH=$path'",
@@ -337,18 +379,28 @@ function CMake-Build-And-Install {
         $flags += ("'-DKD_COVERAGE:BOOL=TRUE'")
     }
 
+    if($newGui) {
+        $flags += ("'-DBUILD_GUI:BOOL=TRUE'")
+        $flags += ("'-DBUILD_GUI_LEGACY:BOOL=FALSE'")
+    } else {
+        $flags += ("'-DBUILD_GUI:BOOL=FALSE'")
+        $flags += ("'-DBUILD_GUI_LEGACY:BOOL=TRUE'")
+    } 
+
     $args += $flags
 
     $args += ("'-B$buildPath'")
     $args += ("'-H$path'")
 
-    $cmake = ('cmake {0}' -f ($args -Join ' '))
+    & "$conanGeneratorsFolder/conanbuild.ps1" # Ensure the cmake used is the one from conan.
+
+    $cmake = ('cmake.exe {0}' -f ($args -Join ' '))
 
     Write-Host $cmake
     Invoke-Expression $cmake
 
     $buildArgs += @('--build', $buildPath, '--target all install')
-    $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
+    $buildCall = ('cmake.exe {0}' -f ($buildArgs -Join ' '))
 
     Write-Host "Building and installing executables with CMake ..."
 
@@ -356,15 +408,22 @@ function CMake-Build-And-Install {
     Invoke-Expression $buildCall
 
     Write-Host "CMake build done."
+    & "$conanGeneratorsFolder/deactivate_conanbuild.ps1" # Ensure the cmake used is the one from conan.
+    & "$conanGeneratorsFolder/conanrun.ps1" # Ensure the cmake used is the one from conan.
 }
 
 function Get-Icon-Path {
     param (
-        [string] $buildPath
+        [string] $buildPath,
+        [bool] $newGui
     )
 
     # NSIS needs the path to use backslash
-    $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
+    if(-not $newGui) {
+        $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
+    } else {
+        $iconPath = "$buildPath\bin\client\Assets\kdrive.ico".Replace('/', '\')
+    }
 
     return $iconPath
 }
@@ -378,13 +437,16 @@ function Set-Up-NSIS {
         [string] $archiveName,
         [string] $archivePath,
         [string] $archiveDataPath,
-        [bool] $upload
+        [bool] $upload,
+        [string] $thumbprint,
+        [bool] $ci,
+        [bool] $newGui
     )
 
     Write-Host "Setting up NSIS."
 
     # NSIS needs the path to use backslash
-    $iconPath = Get-Icon-Path $buildpath
+    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $newGui
     $appName = Get-Package-Name -exe
    
     $installerPath = Get-Installer-Path -ContentPath $contentPath
@@ -393,7 +455,7 @@ function Set-Up-NSIS {
 
     Clean $installerPath
 
-    $aumid = Get-Aumid $upload
+    $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     $prodName = "kDrive"
     $compName = "Infomaniak Network SA"
     $version = Get-Version -IncludeBuildVersion $true
@@ -420,13 +482,11 @@ function Set-Up-NSIS {
 function Sign-File {
     param (
         [string] $filePath,
-        [bool] $upload = $false,
         [string] $thumbprint,
-        [string] $tokenPass = "",
-		[string] $description = ""
+        [string] $description = ""
     )
-    Write-Host "Signing the file $filePath with thumbprint $thumbprint" -f Yellow
-    & "$path\infomaniak-build-tools\windows\ksigntool.exe" sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath /password:$tokenPass
+    Write-Host "Signing the file $filePath with thumbprint $thumbprint"
+    & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -447,7 +507,8 @@ function Prepare-Archive {
         [string] $newGuiDir,
         [string] $archivePath,
         [bool] $upload,
-        [bool] $ci
+        [bool] $ci,
+        [string] $thumbprint
     )
 
     Write-Host "Preparing the archive ..."
@@ -455,14 +516,6 @@ function Prepare-Archive {
     $dependencies = @(
         "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
         "${env:ProgramFiles(x86)}/libzip/bin/zip",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoNet",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoNetSSL",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
-        "${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
-        "${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
         "$vfsDir/Vfs",
         "$buildPath/bin/kDrive_vfs_win"
     )
@@ -476,21 +529,23 @@ function Prepare-Archive {
         }
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
-    $packages = @(
+    $packages = @( # Qt dependencies are handled by windeployqt
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
-        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") }
+        @{ Name = "openssl";   Dlls = @("libcrypto-3-x64", "libssl-3-x64") },
+        @{ Name = "sentry";    Dlls = @("sentry") },
+        @{ Name = "poco";      DLLs = @("PocoCrypto", "PocoFoundation", "PocoJSON", "PocoNet", "PocoNetSSL", "PocoUtil", "PocoXML") }
     )
 
     foreach ($pkg in $packages) {
         $args = @{ Package = $pkg.Name; BuildDir = $buildPath }
         $binFolder = & $find_dep_script @args
         foreach ($dll in $pkg.Dlls) {
-            if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-                Copy-Item -Path "$binFolder/${dll}d.dll" -Destination "$archivePath"
-            } else {
-                Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
+            if (-not (Test-Path "$binFolder/$dll.dll")) {
+                Write-Host "Missing DLL: $dll.dll" -ForegroundColor Red
+                exit 1
             }
+            Copy-Item -Path "$binFolder/$dll.dll" -Destination "$archivePath"
         }
     }
 
@@ -503,11 +558,16 @@ function Prepare-Archive {
         Copy-Item -Path "$iconPath" -Destination $archivePath
     }
 
+    $crashpad_folder = & $find_dep_script -BuildDir $buildPath -Package sentry
+
     $binaries = @(
-        "${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
-        "kDrive.exe",
-        "kDrive_client.exe"
+        "$crashpad_folder/crashpad_handler.exe",
+        "kDrive.exe"
     )
+
+    if(-not $newGui) {
+        $binaries += "kDrive_client.exe"
+    }
 
     # Move each executable to the bin folder and sign them
     foreach ($file in $binaries) {
@@ -521,12 +581,12 @@ function Prepare-Archive {
 
         $filename = Split-Path -Leaf $file
 
-        $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $filename
+        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
 
     }
 
     Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
+    Write-Host "newGui is set to : $newGui"
 
     if ($newGui) {
         # Copy client files
@@ -534,12 +594,12 @@ function Prepare-Archive {
         Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
 
         # Sign all the .exe, .dll and .xbf that have no signature yet
-        $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll, *.xbf | Where-Object {
+        $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll | Where-Object {
             $signature = Get-AuthenticodeSignature $_.FullName
             $signature.Status -eq 'NotSigned'
         }
         foreach ($file in $filesToSign) {
-            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $file.Name
+            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
             Write-Host "Signed file: $($file.FullName)"
         }
     }
@@ -556,7 +616,8 @@ function Create-Archive {
         [string] $archiveName,
         [string] $archivePath,
         [bool] $upload,
-        [bool] $ci
+        [bool] $ci,
+        [string] $thumbprint
     )
 
     Write-Host "Creating the archive ..."
@@ -579,11 +640,10 @@ function Create-Archive {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Sign final installer
-    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -598,7 +658,8 @@ function Create-MSI-Package {
     param (
         [string] $path,
         [string] $buildPath,
-        [string] $contentPath
+        [string] $contentPath,
+        [string] $thumbprint
     )
 
     Write-Host "Creating MSI package ..."
@@ -614,14 +675,10 @@ function Create-MSI-Package {
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 	# Sign final installer
-	if (!$thumbprint) {
-		$thumbprint = Get-Thumbprint $upload
-	}
-
 	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -TokenPass $tokenPass -Description $appName
+		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {
@@ -685,7 +742,7 @@ Parameters :
     `t`tremake`t`t: Remove all the files, then rebuild the project
     `t-ext`t`t`t: Rebuild and redeploy the windows extension
     `t-ci`t`t`t: Use the CI build configuration
-    `t-upload`t`t: Upload flag to switch between the virtual and physical certificates. Also rebuilds the project
+    `t-upload`t`t: Upload flag to switch between the debug and release certificates. Also rebuilds the project
     `t-coverage`t`t: Enable coverage computation
     `t-unitTests`t`t: Enable unit tests build
     ") -f Cyan
@@ -757,12 +814,19 @@ if ($upload) {
 #                                                                                               #
 #################################################################################################
 
-Set-Bullseye-Coverage $coverage
-Write-Host
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to enable code coverage computation. Aborting." -f Red
-    exit $LASTEXITCODE
+$res = Set-Bullseye-Coverage $coverage
+if ($res -ne 0) {
+    if (($ci -and $buildType -eq "Release") -or $coverage) {
+        $outputString = "disable"
+        if ($coverage) {
+            $outputString = "enable"
+        }
+        Write-Host "Failed to $outputString code coverage computation. Aborting." -f Red
+        exit $res
+    }
+    else {
+        Write-Host "Ignoring error returned by Set-Bullseye-Coverage because this is not a CI build." -f Yellow
+    }
 }
 
 #################################################################################################
@@ -770,9 +834,14 @@ if ($LASTEXITCODE -ne 0) {
 #                                           EXTENSION                                           #
 #                                                                                               #
 #################################################################################################
+if($thumbprint) {
+    Write-Host "Using certificate with thumbprint: $thumbprint" -f Green
+} else {
+    Write-Warning "No certificate thumbprint provided. The extension will not be signed."
+    Exit 1
+}
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    $thumbprint = Get-Thumbprint -Upload $upload -Ci $ci
     Build-Extension -Path $path -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
 
     if ($LASTEXITCODE -ne 0) {
@@ -787,7 +856,7 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
 #                                                                                               #
 #################################################################################################
 
-CMake-Build-And-Install -Path $path -InstallPath $installPath -VfsDir $vfsDir -Ci $ci
+CMake-Build-And-Install -Path $path -InstallPath $installPath -VfsDir $vfsDir -Ci $ci -NewGui $newGui
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "CMake build failed. Aborting." -f Red
@@ -800,7 +869,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload
+Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Upload $upload -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "NSIS setup failed. Aborting." -f Red
@@ -813,7 +882,7 @@ if ($LASTEXITCODE -ne 0) {
 #                                                                                               #
 #################################################################################################
 
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui
+Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Upload $upload -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0)
 {
     Write-Host "Archive preparation failed. Aborting." -f Red
@@ -826,7 +895,7 @@ if ($LASTEXITCODE -ne 0)
 #                                                                                               #
 #################################################################################################
 
-Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci
+Create-Archive -Path $path -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Upload $upload -Ci $ci -Thumbprint $thumbprint
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
     exit $LASTEXITCODE
@@ -840,7 +909,7 @@ if ($LASTEXITCODE -ne 0) {
 #################################################################################################
 
 if ($msi) {
-    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath
+    Create-MSI-Package -Path $path -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE

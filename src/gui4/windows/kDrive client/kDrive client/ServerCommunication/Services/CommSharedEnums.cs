@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,6 +74,8 @@ namespace Infomaniak.kDrive.Types
         ERROR_DELETE_SERVER,
         ERROR_DELETE_SYNC,
         ERROR_DELETE_INVALIDTOKEN,
+        ERROR_DELETE,
+        ERROR_SYNC_REFRESH,
         ERROR_RESOLVE_CONFLICTS_LEGACY,
         ERROR_RESOLVE_CONFLICTS,
         ERROR_RESOLVE_CONFLICTS_QUICK,
@@ -197,6 +199,24 @@ namespace Infomaniak.kDrive.Types
         Node
     };
 
+    public enum Language
+    {
+        Default,
+        English,
+        French,
+        German,
+        Spanish,
+        Italian,
+        Dutch,
+        Swedish,
+        Portuguese,
+        Polish,
+        Norwegian,
+        Finnish,
+        Danish,
+        Greek
+    };
+
 
     public enum ExitCode
     {
@@ -276,7 +296,8 @@ namespace Infomaniak.kDrive.Types
         FileOrDirectoryCorrupted,
         TmpDirAccessError,
         UpdateTreeIntegrityCheckFailed,
-        MissingReplyData
+        MissingReplyData,
+        BlackListPropagationError
     };
 
 

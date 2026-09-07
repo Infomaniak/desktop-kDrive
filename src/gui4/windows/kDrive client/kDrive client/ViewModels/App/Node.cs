@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ namespace Infomaniak.kDrive.ViewModels
             get => _accessDenied;
             set => SetPropertyInUIThread(ref _accessDenied, value);
         }
-        public async Task LoadSize()
+        public async Task LoadSize(CancellationToken cancellationToken)
         {
             if (UserDbId == -1 || DriveId == -1 || string.IsNullOrEmpty(NodeId))
             {
@@ -111,9 +111,9 @@ namespace Infomaniak.kDrive.ViewModels
             }
             IsLoadingSize = true;
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-            var res = await commService.GetFolderSize(_userDbId, _driveId, _nodeId, CancellationToken.None);
+            var res = await commService.GetFolderSize(_userDbId, _driveId, _nodeId, cancellationToken);
             if (res is null)
-                Logger.Log(Logger.Level.Warning, $"Failed to fecth size for NodeId: {NodeId} ");
+                Logger.Log(Logger.Level.Warning, $"Failed to fetch size for NodeId: {NodeId} ");
 
             Size = res ?? -1;
             IsLoadingSize = false;

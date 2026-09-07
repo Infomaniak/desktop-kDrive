@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "libcommon/utility/utility.h"
 
 #include <QBoxLayout>
+#include <QProcess>
 #include <QFileDialog>
 #include <QLoggingCategory>
 
@@ -435,24 +436,19 @@ QString CustomExtensionSetupWidget::picturePath(const bool fullDiskAccess) const
 
 void CustomExtensionSetupWidget::onLinkActivated(const QString &link) const {
     if (link == clickHereLinkSecurity) {
-        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Securiy\"");
         MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "clickHereSecurityLink");
-        int status = system(cmd.toLocal8Bit());
-        if (status != 0) {
+        if (!QProcess::startDetached("open", {QString("x-apple.systempreferences:com.apple.preference.security?Securiy")})) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
     } else if (link == clickHereLinkFullDiskAccess) {
-        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles\"");
         MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "clickHereFullDiskAccessLink");
-        int status = system(cmd.toLocal8Bit());
-        if (status != 0) {
+        if (!QProcess::startDetached("open",
+                                     {QString("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")})) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
     } else if (link == clickHereLinkGeneral) {
-        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.LoginItems-Settings.extension\"");
         MatomoClient::sendEvent("customExtension", MatomoEventAction::Click, "clickHereGeneralLink");
-        int status = system(cmd.toLocal8Bit());
-        if (status != 0) {
+        if (!QProcess::startDetached("open", {QString("x-apple.systempreferences:com.apple.LoginItems-Settings.extension")})) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
     }

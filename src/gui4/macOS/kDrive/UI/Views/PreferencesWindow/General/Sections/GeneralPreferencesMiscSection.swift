@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import SwiftUI
 struct GeneralPreferencesMiscSection: View {
     @ObservedObject var repository: PreferencesRepository
 
-    @State private var language: UIAppLanguage = .english
     @State private var notificationsState: UINotificationState = .never
     @State private var launchOnStartup = true
     @State private var moveDeletedFilesToTrash = true
@@ -31,26 +30,17 @@ struct GeneralPreferencesMiscSection: View {
     var body: some View {
         Section {
             OptionPicker(
-                KDriveLocalizable.languageSetting,
-                options: UIAppLanguage.allCases,
-                selection: $language
-            )
-            .onChange(of: language) { newValue in
-                updateValue(\.$language, \.language, newValue: newValue)
-            }
-
-            OptionPicker(
                 KDriveLocalizable.labelNotifications,
                 options: UINotificationState.allCases,
                 selection: $notificationsState
             )
             .onChange(of: notificationsState) { newValue in
-                updateValue(\.$notificationsState, \.notificationsState, newValue: newValue)
+                updateRepositoryValue(\.$notificationsState, \.notificationsState, newValue: newValue, repository: repository)
             }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
                 .onChange(of: launchOnStartup) { newValue in
-                    updateValue(\.$launchOnStartup, \.launchOnStartup, newValue: newValue)
+                    updateRepositoryValue(\.$launchOnStartup, \.launchOnStartup, newValue: newValue, repository: repository)
                 }
 
             HStack {
@@ -66,7 +56,12 @@ struct GeneralPreferencesMiscSection: View {
                     .labelsHidden()
             }
             .onChange(of: moveDeletedFilesToTrash) { newValue in
-                updateValue(\.$moveDeletedFilesToTrash, \.moveDeletedFilesToTrash, newValue: newValue)
+                updateRepositoryValue(
+                    \.$moveDeletedFilesToTrash,
+                    \.moveDeletedFilesToTrash,
+                    newValue: newValue,
+                    repository: repository
+                )
             }
         }
         .onAppear {
@@ -77,24 +72,7 @@ struct GeneralPreferencesMiscSection: View {
         }
     }
 
-    private func updateValue<T: Equatable>(
-        _ stateKeyPath: KeyPath<Self, Binding<T>>,
-        _ repositoryKeyPath: WritableKeyPath<UIParametersInfo, T>,
-        newValue: T
-    ) {
-        Task {
-            guard newValue != repository.parametersInfo[keyPath: repositoryKeyPath] else { return }
-
-            do {
-                try await repository.update(repositoryKeyPath, value: newValue)
-            } catch {
-                self[keyPath: stateKeyPath].wrappedValue = repository.parametersInfo[keyPath: repositoryKeyPath]
-            }
-        }
-    }
-
     private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
-        language = parametersInfo.language
         notificationsState = parametersInfo.notificationsState
         launchOnStartup = parametersInfo.launchOnStartup
         moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash

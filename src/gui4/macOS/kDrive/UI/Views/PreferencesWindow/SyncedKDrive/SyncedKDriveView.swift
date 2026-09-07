@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -30,19 +30,8 @@ struct SyncedKDriveView: View {
     @State private var mainSynchroMode = UISynchroMode.storeOnline
     @State private var advancedSynchros = [UISynchro]()
 
-    @State private var isShowingRemoveSynchroConfirmation = false
-    @State private var domainError: ShowableError?
-
-    enum ShowableError: LocalizedError {
-        case cannotChangeVFSMode
-
-        var errorDescription: String? {
-            switch self {
-            case .cannotChangeVFSMode:
-                return KDriveLocalizable.errorWhileChangingSynchroMode
-            }
-        }
-    }
+    @State private var synchroToDelete: UISynchro?
+    @State private var isShowingGenericError = false
 
     var body: some View {
         Form {
@@ -103,7 +92,7 @@ struct SyncedKDriveView: View {
 
                 Section {
                     Button(role: .destructive) {
-                        isShowingRemoveSynchroConfirmation = true
+                        synchroToDelete = mainSynchro
                     } label: {
                         Text(KDriveLocalizable.buttonRemoveSync)
                             .foregroundStyle(.red)
@@ -135,10 +124,10 @@ struct SyncedKDriveView: View {
         .task {
             await fetchSynchros()
         }
-        .sheet(isPresented: $isShowingRemoveSynchroConfirmation) {
-            RemoveSynchroConfirmationView(synchroDbId: mainSynchro?.dbId ?? 0)
+        .sheet(item: $synchroToDelete) { synchro in
+            RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
         }
-        .errorAlert(domainError)
+        .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
     private func fetchSynchros() async {
@@ -173,13 +162,23 @@ struct SyncedKDriveView: View {
             do {
                 try await SyncJobs().setSupportsVirtualFiles(syncDbId: Int32(synchro.dbId), value: mode == .storeOnline)
             } catch {
-                throw ShowableError.cannotChangeVFSMode
+                isShowingGenericError = true
             }
         }
     }
 
     private func navigateToAdvancedSynchro() {
         // TODO: Navigate to advanced synchros
+    }
+
+    private func handleSynchroIsDeleted(_ error: Error?) {
+        guard error == nil else {
+            isShowingGenericError = true
+            return
+        }
+
+        @InjectService var router: PreferencesViewRouter
+        router.append(.accounts)
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ class AddDriveLoginWidget : public QWidget {
 
         void init();
 
-        inline int userDbId() const { return _userDbId; }
+        inline UserDbId userDbId() const { return _userDbId; }
 
     public slots:
         void onAuthorizationCodeReceived(const QString &code, const QString &state);
@@ -43,9 +43,16 @@ class AddDriveLoginWidget : public QWidget {
     signals:
         void terminated(bool next = true);
 
+    protected:
+        void showEvent(QShowEvent *event) override;
+
     private:
         QString _codeVerifier;
-        int _userDbId{0};
+        UserDbId _userDbId{0};
+        bool _openInBrowserPending{false};
+
+        // Opens the login page once the window this widget belongs to is on screen, so that the browser comes up in front of it.
+        void scheduleOpenLoginInBrowser();
 
         QUrl generateAuthorizeUrl();
 

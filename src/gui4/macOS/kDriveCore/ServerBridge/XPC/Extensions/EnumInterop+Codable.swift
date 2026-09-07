@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Foundation
+import CppInterop
 
-extension MsgType: Codable {}
 extension KDC.ExitCause: Codable {}
 extension KDC.ExitCode: Codable {}
 extension KDC.NodeType: Codable {}
@@ -36,7 +35,11 @@ extension KDC.Language: Codable {}
 extension KDC.LogLevel: Codable {}
 extension KDC.NotificationsDisabled: Codable {}
 extension KDC.ProxyType: Codable {}
-extension KDC.VersionChannel: Codable {}
+extension KDC.DistributionChannel: Codable {}
 extension KDC.UpdateState: Codable {}
-extension SignalNum: Codable {}
-extension RequestNum: Codable {}
+extension KDC.ReplicaSide: Codable {}
+extension KDC.SyncConfiguration: Codable {}
+extension KDC.ConflictResolutionStrategy: Codable {}
+extension MsgType: @retroactive Codable {}
+extension SignalNum: @retroactive Codable {}
+extension RequestNum: @retroactive Codable {}

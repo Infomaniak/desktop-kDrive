@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,17 @@ import kDriveCore
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
+import UserNotifications
 
 extension NSToolbarItem.Identifier {
     static let supportGroup = NSToolbarItem.Identifier("SupportGroup")
     static let syncControlsGroup = NSToolbarItem.Identifier("SyncControlsGroup")
     static let searchGroup = NSToolbarItem.Identifier("SearchGroup")
     static let pauseResumeButton = NSToolbarItem.Identifier("PauseResumeButton")
+}
+
+private extension UInt16 {
+    static let escapeKeyCode: UInt16 = 53
 }
 
 final class MainViewController: IKSplitViewController {
@@ -38,6 +43,8 @@ final class MainViewController: IKSplitViewController {
     private let viewModel = MainViewModel()
 
     private var bindStore = Set<AnyCancellable>()
+
+    private var sheetClickMonitor: Any?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,6 +58,14 @@ final class MainViewController: IKSplitViewController {
 
         configureWindowAppearance()
         splitView.setPosition(200, ofDividerAt: 0)
+
+        Task {
+            try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+        }
+    }
+
+    deinit {
+        unregisterSheetClickMonitor()
     }
 
     private func bindViewModel() {
@@ -126,13 +141,8 @@ final class MainViewController: IKSplitViewController {
                 contentViewController = HomeViewController(mainViewModel: viewModel)
                 #endif
             }
-        case .activityError:
-            contentViewController = TitledViewController(toolbarTitle: "activityError", contentView: Text("activityError - WIP"))
-        case .versionConflict:
-            contentViewController = TitledViewController(
-                toolbarTitle: "versionConflict",
-                contentView: Text("versionConflict - WIP")
-            )
+        case .errors:
+            contentViewController = ErrorsViewController(mainViewModel: viewModel)
         default:
             contentViewController = HomeViewController(mainViewModel: viewModel)
         }
@@ -210,7 +220,7 @@ extension MainViewController {
         settingsButton.image = KDriveResources.cog.image
         settingsButton.label = KDriveLocalizable.buttonSettings
         settingsButton.target = nil
-        settingsButton.action = #selector(AppDelegate.openPreferencesWindow(_:))
+        settingsButton.action = #selector(AppDelegate.openPreferencesWindow)
 
         let group = NSToolbarItemGroup(itemIdentifier: .syncControlsGroup)
         group.subitems = [pauseResumeButton, settingsButton]
@@ -221,8 +231,8 @@ extension MainViewController {
         let searchButton = NSToolbarItem(itemIdentifier: .init("SearchButton"))
         searchButton.image = KDriveResources.magnifyingGlass.image
         searchButton.label = KDriveLocalizable.buttonSearch
-        searchButton.target = nil
-        searchButton.action = nil
+        searchButton.target = self
+        searchButton.action = #selector(showSearchSheet)
 
         let group = NSToolbarItemGroup(itemIdentifier: .searchGroup)
         group.subitems = [searchButton]
@@ -233,6 +243,55 @@ extension MainViewController {
 
     @objc private func openHelpURL() {
         NSWorkspace.shared.open(URLConstants.help)
+    }
+
+    @objc func showSearchSheet() {
+        guard let synchroContext = viewModel.currentSynchroContext else { return }
+        let syncDbId = Int32(synchroContext.synchro.dbId)
+        let driveId = synchroContext.drive.driveId
+
+        let searchViewModel = SearchViewModel(
+            syncDbId: syncDbId,
+            driveId: driveId,
+            synchroLocalPath: synchroContext.synchro.localPath
+        )
+        let searchSheetView = SearchSheetView(viewModel: searchViewModel)
+        let hostingController = NSHostingController(rootView: searchSheetView)
+        presentAsSheet(hostingController)
+
+        unregisterSheetClickMonitor()
+        sheetClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .keyDown]) { [weak self] event in
+            guard let self,
+                  let sheetWindow = presentedViewControllers?.first?.view.window
+            else {
+                return event
+            }
+
+            if event.type == .keyDown && event.keyCode == .escapeKeyCode {
+                dismissSearchSheet()
+                return nil
+            }
+
+            if event.type == .leftMouseDown, let eventWindow = event.window, eventWindow != sheetWindow {
+                dismissSearchSheet()
+                return nil
+            }
+
+            return event
+        }
+    }
+
+    private func unregisterSheetClickMonitor() {
+        if let sheetClickMonitor {
+            NSEvent.removeMonitor(sheetClickMonitor)
+        }
+        sheetClickMonitor = nil
+    }
+
+    private func dismissSearchSheet() {
+        unregisterSheetClickMonitor()
+        guard let presentedViewController = presentedViewControllers?.first else { return }
+        dismiss(presentedViewController)
     }
 
     @objc private func togglePauseResume() {

@@ -1,4 +1,21 @@
-﻿using Microsoft.UI.Xaml.Data;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Microsoft.UI.Xaml.Data;
 using System;
 
 namespace Infomaniak.kDrive.Converters
@@ -30,27 +47,40 @@ namespace Infomaniak.kDrive.Converters
                 return $"? {Localizer.Instance.GetString("labelMegaBytes")}";
             }
 
-            var units = new (long Threshold, string ResourceKey)[]
-            {
-                (0L,                      "labelBytes"),
-                (1024L,                   "labelKiloBytes"),
-                (1024L * 1024L,           "labelMegaBytes"),
-                (1024L * 1024L * 1024L,   "labelGigaBytes"),
-                (1024L * 1024L * 1024L * 1024L, "labelTeraBytes")
-            };
+            double displayValue;
+            string unit;
 
-            double displayValue = byteCount;
-            string unitKey = units[0].ResourceKey;
+            const Int64 kiloByte = 1024;
+            const Int64 megaByte = kiloByte * 1024;
+            const Int64 gigaByte = megaByte * 1024;
+            const Int64 teraByte = gigaByte * 1024;
 
-            for (int i = units.Length - 1; i >= 0; --i)
+            if (byteCount >= teraByte)
             {
-                if (byteCount >= units[i].Threshold)
-                {
-                    displayValue = (double)byteCount / (units[i].Threshold > 0 ? units[i].Threshold : 1);
-                    unitKey = units[i].ResourceKey;
-                    break;
-                }
+                displayValue = (double)byteCount / teraByte;
+                unit = Localizer.Instance.GetString("labelTeraBytes");
             }
+            else if (byteCount >= gigaByte)
+            {
+                displayValue = (double)byteCount / gigaByte;
+                unit = Localizer.Instance.GetString("labelGigaBytes");
+            }
+            else if (byteCount >= megaByte)
+            {
+                displayValue = (double)byteCount / megaByte;
+                unit = Localizer.Instance.GetString("labelMegaBytes");
+            }
+            else if (byteCount >= kiloByte)
+            {
+                displayValue = (double)byteCount / kiloByte;
+                unit = Localizer.Instance.GetString("labelKiloBytes");
+            }
+            else
+            {
+                displayValue = byteCount;
+                unit = Localizer.Instance.GetString("labelBytes");
+            }
+
             ParameterParser parameterParser = new ParameterParser(parameter);
             string? decimals = parameterParser.Get("Decimals");
             string template = "0.##"; // default
@@ -62,7 +92,7 @@ namespace Infomaniak.kDrive.Converters
                 template = template.TrimEnd('.');
             }
 
-            return $"{displayValue.ToString(template)} {Localizer.Instance.GetString(unitKey)}";
+            return $"{displayValue.ToString(template)} {unit}";
 
         }
 

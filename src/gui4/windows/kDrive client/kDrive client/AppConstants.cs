@@ -1,4 +1,22 @@
-﻿using System;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using System;
+using System.Windows.Forms;
 
 namespace Infomaniak.kDrive
 {
@@ -8,7 +26,9 @@ namespace Infomaniak.kDrive
     internal interface IAppConstants
     {
         ISentryConstants Sentry { get; }
+        IMatomoConstants Matomo { get; }
         IGitHubConstants GitHub { get; }
+        ISyncConstants Sync { get; }
         IDriveConstants Drive { get; }
         IkSuiteConstants kSuite { get; }
         IStorageConstants Storage { get; }
@@ -19,6 +39,12 @@ namespace Infomaniak.kDrive
     {
         string Dsn { get; }
         string Environment { get; }
+    }
+
+    internal interface IMatomoConstants
+    {
+        string Host { get; }
+        string SiteId { get; }
     }
 
     internal interface IGitHubConstants
@@ -36,11 +62,15 @@ namespace Infomaniak.kDrive
 
     internal interface ILoginConstants
     {
-        Uri OAtuhRedirectUri { get; }
-        Uri OAtuhAuthorizationEndpoint { get; }
-        string OAtuhClientId { get; }
+        Uri OAuthRedirectUri { get; }
+        Uri OAuthAuthorizationEndpoint { get; }
+        string OAuthClientId { get; }
     }
-
+    internal interface ISyncConstants
+    {
+        public NodeId RootNodeId { get; }
+        public string RescueFolderName { get; }
+    }
     internal interface IDriveConstants
     {
         Uri RenewUrl(DriveId? driveId);
@@ -52,29 +82,30 @@ namespace Infomaniak.kDrive
         Uri itemUri(DriveId? driveId, NodeId nodeId);
         Uri ChangeOfferUri(DriveId? driveId);
         public Uri StartFreeUri { get; }
-        public Uri FAQUri { get; }
-        public NodeId RootNodeId { get; }
     }
     internal interface IkSuiteConstants
     {
-        public Uri HomeUri { get; }
         public Uri TarrifsUri { get; }
+        public Uri HelpUri { get; }
     }
-
 
     internal sealed class CustomAppConstants : IAppConstants
     {
         public ISentryConstants Sentry { init; get; }
+        public IMatomoConstants Matomo { init; get; }
         public IGitHubConstants GitHub { init; get; }
         public IDriveConstants Drive { init; get; }
         public IStorageConstants Storage { init; get; }
+        public ISyncConstants Sync { init; get; }
         public ILoginConstants Login { init; get; }
         public IkSuiteConstants kSuite { init; get; }
 
-        public CustomAppConstants(ISentryConstants sentry, IGitHubConstants gitHub, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
+        public CustomAppConstants(ISentryConstants sentry, IMatomoConstants matomo, IGitHubConstants gitHub, ISyncConstants sync, IDriveConstants drive, IStorageConstants storage, ILoginConstants oAuth, IkSuiteConstants kSuite)
         {
             Sentry = sentry;
+            Matomo = matomo;
             GitHub = gitHub;
+            Sync = sync;
             Drive = drive;
             Storage = storage;
             Login = oAuth;
@@ -91,6 +122,11 @@ namespace Infomaniak.kDrive
 
         public string Environment { get; } = "production";
     }
+    internal sealed class ProductionMatomo : IMatomoConstants
+    {
+        public string Host { get; } = "https://analytics.infomaniak.com/";
+        public string SiteId { get; } = "41";
+    }
 
     internal sealed class ProductionGitHub : IGitHubConstants
     {
@@ -99,6 +135,14 @@ namespace Infomaniak.kDrive
         public Uri RepoUrl { get; } = new(Repo);
         public Uri LicenseUrl { get; } = new($"{Repo}?tab=GPL-3.0-1-ov-file");
     }
+
+    internal sealed class ProductionSync : ISyncConstants
+    {
+        public NodeId RootNodeId { get; } = "1";
+
+        public string RescueFolderName { get; } = "kDrive Rescue Folder";
+    }
+
 
     internal sealed class ProductionDrive : IDriveConstants
     {
@@ -114,9 +158,6 @@ namespace Infomaniak.kDrive
         public Uri itemUri(DriveId? driveId, NodeId nodeId) => new($"{kDriveHomeUrl(driveId)}/redirect/{nodeId}");
         public Uri ChangeOfferUri(DriveId? driveId) => new($"https://shop.infomaniak.com/order/drive/{driveId}");
         public Uri StartFreeUri { get; } = new Uri("http://shop.infomaniak.com/order/select/drive");
-        public Uri FAQUri { get; } = new Uri("https://www.infomaniak.com/fr/support/faq/admin2"); // TODO: Replace with static link.
-        public NodeId RootNodeId { get; } = "1";
-
     }
 
     internal sealed class ProductionStorage : IStorageConstants
@@ -127,21 +168,23 @@ namespace Infomaniak.kDrive
 
     internal sealed class ProductionLogin : ILoginConstants
     {
-        public Uri OAtuhRedirectUri { get; } = new Uri("kdrive://auth-desktop");
-        public Uri OAtuhAuthorizationEndpoint { get; } = new Uri("https://login.infomaniak.com/authorize?skipAutoRedirect=true");
-        public string OAtuhClientId { get; } = "5EA39279-FF64-4BB8-A872-4A40B5786317";
+        public Uri OAuthRedirectUri { get; } = new Uri("kdrive://auth-desktop");
+        public Uri OAuthAuthorizationEndpoint { get; } = new Uri("https://login.infomaniak.com/authorize?skipAutoRedirect=true");
+        public string OAuthClientId { get; } = "5EA39279-FF64-4BB8-A872-4A40B5786317";
     }
 
     internal sealed class ProductionKSuite : IkSuiteConstants
     {
-        public Uri HomeUri { get; } = new Uri("https://www.infomaniak.com/fr/ksuite");
         public Uri TarrifsUri { get; } = new Uri("https://www.infomaniak.com/gtl/myksuite#prices");
+        public Uri HelpUri { get; } = new Uri("https://www.infomaniak.com/gtl/support");
     }
 
     internal sealed class ProductionAppConstants : IAppConstants
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
+        public IMatomoConstants Matomo { get; } = new ProductionMatomo();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
+        public ISyncConstants Sync { get; } = new ProductionSync();
         public IDriveConstants Drive { get; } = new ProductionDrive();
         public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new ProductionLogin();
@@ -153,15 +196,18 @@ namespace Infomaniak.kDrive
 
     internal sealed class PreProdLogin : ILoginConstants
     {
-        public Uri OAtuhRedirectUri { get; } = new ProductionLogin().OAtuhRedirectUri;
-        public Uri OAtuhAuthorizationEndpoint { get; } = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
-        public string OAtuhClientId { get; } = new ProductionLogin().OAtuhClientId;
+        public Uri OAuthRedirectUri { get; } = new ProductionLogin().OAuthRedirectUri;
+        public Uri OAuthAuthorizationEndpoint { get; } = new Uri("https://login.preprod.dev.infomaniak.ch/authorize?skipAutoRedirect=true");
+        public string OAuthClientId { get; } = new ProductionLogin().OAuthClientId;
     }
 
     internal sealed class PreProdAppConstants : IAppConstants
     {
         public ISentryConstants Sentry { get; } = new ProductionSentry();
+        public IMatomoConstants Matomo { get; } = new ProductionMatomo();
         public IGitHubConstants GitHub { get; } = new ProductionGitHub();
+        public ISyncConstants Sync { get; } = new ProductionSync();
+
         public IDriveConstants Drive { get; } = new ProductionDrive();
         public IStorageConstants Storage { get; } = new ProductionStorage();
         public ILoginConstants Login { get; } = new PreProdLogin();

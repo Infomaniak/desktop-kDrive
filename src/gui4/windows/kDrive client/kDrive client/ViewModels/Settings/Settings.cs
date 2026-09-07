@@ -1,4 +1,21 @@
-﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
@@ -8,7 +25,7 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class Settings : UISafeObservableObject
     {
-        private Language _language = Language.SystemDefault;
+        private Language _language = Language.Default;
         private bool _restartRequiredForLanguageChange = false;
         private bool _autoStart = false;
         private bool _moveToTrash = false;
@@ -103,6 +120,11 @@ namespace Infomaniak.kDrive.ViewModels
                         Logger.StopSentry();
             }
         }
+
+        public AppNotificationAvailability AppNotificationAvailability => App.ServiceProvider.GetRequiredService<NotificationManager>().Availability;
+
+        public bool ShowNotificationsSettings => AppNotificationAvailability != AppNotificationAvailability.NotSupportedByOS;
+        public bool NotificationsAuthorizedInSystemSettings => AppNotificationAvailability == AppNotificationAvailability.Available;
 
         public async Task<bool> ChangeAutoStart(bool activated)
         {
@@ -256,6 +278,12 @@ namespace Infomaniak.kDrive.ViewModels
             }
             RestartRequiredForLanguageChange = true;
             return true;
+        }
+    
+        public void RefreshAppNotificationAvailability()
+        {
+            OnPropertyChanged(nameof(ShowNotificationsSettings));
+            OnPropertyChanged(nameof(NotificationsAuthorizedInSystemSettings));
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ public protocol NodeURLGenerator: Sendable {
     func localURL(for nodePath: String, synchroPath: URL) -> URL
     func remoteURL(for nodeId: String, driveId: Int) -> URL
     func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL
+    func redirectURL(forDriveId driveId: Int, fileId: String) -> URL?
+    func shopURL(forDriveId driveId: Int) -> URL
 }
 
 public struct DriveNodeURLGenerator: NodeURLGenerator {
@@ -35,5 +37,14 @@ public struct DriveNodeURLGenerator: NodeURLGenerator {
 
     public func shareURL(for nodeId: String, driveDbId: Int) async throws -> URL {
         return try await SyncJobs().getPublicLinkUrl(driveDbId: Int32(driveDbId), nodeId: nodeId)
+    }
+
+    public func redirectURL(forDriveId driveId: Int, fileId: String) -> URL? {
+        let urlString = "https://kdrive.infomaniak.com/app/drive/\(driveId)/redirect/\(fileId)"
+        return URL(string: urlString)
+    }
+
+    public func shopURL(forDriveId driveId: Int) -> URL {
+        return URL(string: "https://shop.infomaniak.com/order/drive/\(driveId)")!
     }
 }

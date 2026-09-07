@@ -1,4 +1,21 @@
-﻿using Infomaniak.kDrive.Types;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ViewModels;
 using System;
@@ -11,6 +28,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 {
     public interface IServerCommService
     {
+        Task<bool> Init(CancellationToken cancellationToken);
 
         // User-related requests
 
@@ -66,7 +84,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Returns a valid path for a new sync as close as possible to the desiredPath, if not known, the driveDbId can be set to -1
         Task<string?> GetGoodPathForNewSync(IDrive? drive, string desiredPath, CancellationToken cancellationToken);
         Task<bool?> IsPathValidForNewSync(string path, SyncConfiguration syncConfiguration, CancellationToken cancellationToken);
-        Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken);
+        Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken);
         Task<UInt64?> GetSyncOfflineFilesSize(DbId syncDbId, CancellationToken cancellationToken);
 
         // Node-related requests
@@ -105,7 +123,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Update-related requests
         Task<bool> StartUpdate(CancellationToken cancellationToken);
-        Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken);
+        Task<bool> SkipVersion(CancellationToken cancellationToken);
+        Task<bool> RefreshUpdaterVersionInfo(UpdateState? updateState, CancellationToken cancellationToken);
 
         // Log-related requests
         Task<bool> StartLogUpload(bool includeArchivedLogs, CancellationToken cancellationToken);
@@ -118,6 +137,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Error-related requests
         Task<bool> RefreshErrors(CancellationToken cancellationToken);
+        Task<bool> DeleteError(DbId errorDbId, CancellationToken cancellationToken);
+        Task<bool> RefreshSyncErrors(DbId syncDbId, CancellationToken cancellationToken);
         Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
         Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
@@ -151,5 +172,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         // Event handlers for error-related signals
         Task HandleErrorAddedAsync(object? sender, SignalEventArgs args);
         Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args);
+
+        // Event handlers for app-related signals
+        Task HandleUtilityShowNotification(object? sender, SignalEventArgs args);
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
         xmlns:viewModel="using:Infomaniak.kDrive.ViewModels"
         xmlns:converters="using:Infomaniak.kDrive.Converters"
         xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+        xmlns:kDrive="using:Infomaniak.kDrive"
+        xmlns:animatedvisuals="using:AnimatedVisuals"
         mc:Ignorable="d"
         Title="kDrive">
 
@@ -45,12 +47,18 @@
         </Grid.ColumnDefinitions>
 
         <!-- Set the backgrounds -->
-        <Border x:Name="AppTitleBar"
-                Grid.Row="0"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
-        </Border>
+        <TitleBar x:Name="AppTitleBar"
+                  Grid.Row="0"
+                  Grid.ColumnSpan="2"
+                  Title="kDrive">
+            <TitleBar.IconSource>
+                <ImageIconSource>
+                    <ImageIconSource.ImageSource>
+                        <SvgImageSource UriSource="{StaticResource Infomaniak.Custom.Icons.kDrive}" />
+                    </ImageIconSource.ImageSource>
+                </ImageIconSource>
+            </TitleBar.IconSource>
+        </TitleBar>
         <Border  Grid.Row="1"
                  Grid.Column="0"
                  Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}">
@@ -59,14 +67,28 @@
                 Grid.Column="1"
                 Background="{ThemeResource LayerFillColorDefaultBrush}">
         </Border>
-        <controls:AppTitleBarLogo Grid.Column="0"
-                                  Margin="8,8,0,0" />
 
-        <controls:LottiePlayer x:Name="LottiePlayer"
-                               Grid.Row="1"
-                               Grid.Column="2"
-                               Height="120"
-                               UriSource="{ThemeResource Infomaniak.Custom.Animations.loader-stroke}" />
+        <AnimatedVisualPlayer x:Name="kDrive_SyncroFilePlayer"
+                              AutoPlay="True"
+                              MaxWidth="219"
+                              Grid.Row="1"
+                              Grid.Column="2"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">     
+            <animatedvisuals:KDrive_SyncroFile Color_446EDD="{kDrive:ThemeColor Key=AccentFillColorDefaultBrush}"
+                                               Color_FFFFFF="{kDrive:ThemeColor Key=SolidBackgroundFillColorBaseBrush}"/>
+        </AnimatedVisualPlayer>
+        <AnimatedVisualPlayer x:Name="KDrive_LoaderStrokePlayer"
+                              AutoPlay="True"
+                              MaxWidth="130"
+                              Grid.Row="1"
+                              Grid.Column="2"
+                              Opacity="0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center">
+            <animatedvisuals:KDrive_LoaderStroke Color_446EDD="{kDrive:ThemeColor Key=SystemFillColorAttentionBrush}"/>
+        </AnimatedVisualPlayer>
         <Border Grid.Row="1"
                 Grid.Column="0">
             <Frame x:Name="ContentFrame" />

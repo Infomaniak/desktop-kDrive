@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 
 public struct ParametersInfoResponse: Codable, Sendable {
@@ -35,7 +36,7 @@ public struct ParametersInfo: Codable, Sendable {
     public let proxyConfigInfo: ProxyConfigInfo
     public let darkTheme: Bool
     public let maxAllowedCpu: Int32
-    public let distributionChannel: KDC.VersionChannel
+    public let distributionChannel: KDC.DistributionChannel
     public let sentryEnabled: Bool
     public let matomoEnabled: Bool
 
@@ -52,7 +53,7 @@ public struct ParametersInfo: Codable, Sendable {
         proxyConfigInfo: ProxyConfigInfo,
         darkTheme: Bool,
         maxAllowedCpu: Int32,
-        distributionChannel: KDC.VersionChannel,
+        distributionChannel: KDC.DistributionChannel,
         sentryEnabled: Bool,
         matomoEnabled: Bool
     ) {

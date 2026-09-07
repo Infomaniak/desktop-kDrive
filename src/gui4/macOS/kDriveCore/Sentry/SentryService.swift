@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -18,13 +18,16 @@
 
 import Sentry
 
-public struct SentryService {
-    public init() {}
+public final class SentryService {
+    private var isSentryAuthorized = true
+
+    public init() {
+        fetchAuthorization()
+    }
 
     public func initSentry() {
         SentrySDK.start { options in
-            // TODO: Setup correct Sentry DSN
-            // options.dsn = "https://8018fd7b5c8adf98e1052d5bea678793@sentry-mobile.infomaniak.com/21"
+            options.dsn = "https://b6784e934228fe7683d206898d9d0f1e@sentry-desktop.infomaniak.com/6"
             options.tracePropagationTargets = []
             options.enableNetworkTracking = false
             options.enableNetworkBreadcrumbs = false
@@ -33,17 +36,23 @@ public struct SentryService {
                 options.enableMetricKit = true
             }
 
-            options.beforeSend = { event in
-                // if the application is in debug mode discard the events
+            options.beforeSend = { [weak self] event in
+                guard let self else { return nil }
+                fetchAuthorization()
+
                 #if DEBUG || TEST
                 return nil
                 #else
-                if UserDefaults.shared.isSentryAuthorized {
-                    return event
-                } else {
-                    return nil
-                }
+                return isSentryAuthorized ? event : nil
                 #endif
+            }
+        }
+    }
+
+    private func fetchAuthorization() {
+        Task {
+            if let isEnabled = try? await ParametersJobs().parametersInfo().sentryEnabled {
+                isSentryAuthorized = isEnabled
             }
         }
     }

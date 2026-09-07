@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -132,6 +132,10 @@ final class MainMenu: NSMenu {
         menu.addItem(withTitle: "Delete", action: #selector(NSText.delete(_:)), keyEquivalent: backspaceKey)
 
         menu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+
+        menu.addItem(NSMenuItem.separator())
+
+        menu.addItem(withTitle: "Find...", action: #selector(MainWindowController.showSearchSheet), keyEquivalent: "f")
 
         return menu
     }

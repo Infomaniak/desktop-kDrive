@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "syncdeletejob.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -50,7 +51,21 @@ ExitInfo SyncDeleteJob::serializeOutputParms() {
 }
 
 ExitInfo SyncDeleteJob::process() {
-    _commManager->appServer().stopSyncTask(_syncDbId);
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        LOG_INFO(_logger, "Error in getSyncPal for syncDbId="
+                                  << _syncDbId << " : " << exitInfo
+                                  << " This means that the syncPal is not running, which can be expected at this step.");
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << _syncDbId << ". Another user action is running. Aborting SyncDeleteJob.");
+        return ExitCode::OperationCanceled;
+    }
+
+    _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
 
     // Delete sync from DB
     _commManager->appServer().deleteSync(_syncDbId);

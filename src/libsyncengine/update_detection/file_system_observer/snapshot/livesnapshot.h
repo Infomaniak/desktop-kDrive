@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         void init();
 
         bool updateItem(const SnapshotItem &newItem);
+        bool updateItem(const SnapshotItem &newItem, NodeId &removedNodeId);
         bool removeItem(const NodeId itemId); // Do not pass by reference to avoid dangling references
 
         bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept override;
@@ -48,6 +49,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         bool setLastModified(const NodeId &itemId, SyncTime newTime);
         bool setContentChecksum(const NodeId &itemId, const std::string &newChecksum);
         bool clearContentChecksum(const NodeId &itemId);
+        bool forceUpdateLastChangeRevision(const NodeId &itemId);
 
         bool isValid() const;
         void setValid(bool newIsValid);

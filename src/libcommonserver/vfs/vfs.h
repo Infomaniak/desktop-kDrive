@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/handler.h"
-#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/vfs/workerinfo.h"
 #include "libsyncengine/progress/syncfileitem.h"
 
 #include <memory>
 #include <deque>
+#include <source_location>
 
 #include <QObject>
 
@@ -41,15 +41,15 @@ namespace KDC {
 
 class Vfs;
 
-using VfsMap = std::unordered_map<int, std::shared_ptr<Vfs>>;
+using VfsMap = std::unordered_map<SyncDbId, std::shared_ptr<Vfs>>;
 
 struct VfsSetupParams {
         VfsSetupParams() = default;
         explicit VfsSetupParams(const log4cplus::Logger &logger) :
             logger(logger) {}
-        int syncDbId{-1};
-        int driveId{-1};
-        int userId{-1};
+        SyncDbId syncDbId{-1};
+        DriveId driveId{-1};
+        UserId userId{-1};
         SyncPath localPath;
         SyncPath targetPath;
         std::string namespaceCLSID;
@@ -98,13 +98,13 @@ class Vfs : public QObject {
 
         ~Vfs() override;
 
-        void setSyncFileStatusCallback(const std::function<void(int, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
+        void setSyncFileStatusCallback(const std::function<void(SyncDbId, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
             _syncFileStatus = syncFileStatus;
         }
-        void setSyncFileSyncingCallback(const std::function<void(int, const SyncPath &, bool &)> &syncFileSyncing) {
+        void setSyncFileSyncingCallback(const std::function<void(SyncDbId, const SyncPath &, bool &)> &syncFileSyncing) {
             _syncFileSyncing = syncFileSyncing;
         }
-        void setSetSyncFileSyncingCallback(const std::function<void(int, const SyncPath &, bool)> &setSyncFileSyncing) {
+        void setSetSyncFileSyncingCallback(const std::function<void(SyncDbId, const SyncPath &, bool)> &setSyncFileSyncing) {
             _setSyncFileSyncing = setSyncFileSyncing;
         }
         void setExclusionAppListCallback(const std::function<void(QString &)> &exclusionAppList) {
@@ -333,9 +333,9 @@ class Vfs : public QObject {
         const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks
-        std::function<void(int, const SyncPath &, SyncFileStatus &)> _syncFileStatus;
-        std::function<void(int, const SyncPath &, bool &)> _syncFileSyncing;
-        std::function<void(int, const SyncPath &, bool)> _setSyncFileSyncing;
+        std::function<void(SyncDbId, const SyncPath &, SyncFileStatus &)> _syncFileStatus;
+        std::function<void(SyncDbId, const SyncPath &, bool &)> _syncFileSyncing;
+        std::function<void(SyncDbId, const SyncPath &, bool)> _setSyncFileSyncing;
         std::function<void(QString &)> _exclusionAppList;
 
         bool extendedLog() { return _extendedLog; }
@@ -361,7 +361,8 @@ class Vfs : public QObject {
          *  the error provided to the application will only be based on the existence/permission of the file/directory.
          *  If there is no issue with the file/directory, the error will be Vfs::defaultVfsError().         *
          */
-        ExitInfo handleVfsError(const SyncPath &itemPath, const SourceLocation &location = SourceLocation::currentLoc()) const;
+        ExitInfo handleVfsError(const SyncPath &itemPath,
+                                const std::source_location &location = std::source_location::current()) const;
 
         /* Check if a path exists and return an ExitInfo with the appropriate error code.
          *
@@ -378,12 +379,12 @@ class Vfs : public QObject {
          *   - ExitCode::SystemError, ExitCause::InvalidArguments if the path is empty.
          */
         ExitInfo checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist,
-                                    const SourceLocation &location = SourceLocation::currentLoc()) const;
+                                    const std::source_location &location = std::source_location::current()) const;
 
         /* By default, we will return file access error.
          *  The file will be blacklisted for 1h or until the user edit, move or delete it (or the sync is restarted).
          */
-        ExitInfo defaultVfsError(const SourceLocation &location = SourceLocation::currentLoc()) const {
+        ExitInfo defaultVfsError(const std::source_location &location = std::source_location::current()) const {
             return {ExitCode::SystemError, ExitCause::FileAccessError, location};
         }
 
@@ -439,18 +440,24 @@ class VfsOff : public Vfs {
         ExitInfo setAppExcludeList() override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(AppTable &) override { return ExitCode::Ok; }
         ExitInfo getFetchingAppList(QHash<QString, QString> &) override { return ExitCode::Ok; }
-        void exclude(const SyncPath &) override { /*VfsOff*/ }
+        void exclude(const SyncPath &) override { /*VfsOff*/
+        }
         bool isExcluded(const SyncPath &) override { return false; }
         bool fileStatusChanged(const SyncPath &, const SyncFileStatus) override { return true; }
 
-        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
-        void dehydrate(const SyncPath &) override { /*VfsOff*/ }
-        void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void clearFileAttributes(const SyncPath &) override { /*VfsOff*/
+        }
+        void dehydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void hydrate(const SyncPath &) override { /*VfsOff*/
+        }
+        void cancelHydrate(const SyncPath &) override { /*VfsOff*/
+        }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
-        void stopImpl(bool /*unregister*/) override { /*VfsOff*/ }
+        void stopImpl(bool /*unregister*/) override { /*VfsOff*/
+        }
 
         friend class TestWorkers;
 };

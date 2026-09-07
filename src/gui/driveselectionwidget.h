@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,14 +48,14 @@ class DriveSelectionWidget : public QPushButton {
         QSize sizeHint() const override;
 
         void clear();
-        void selectDrive(int driveDbId);
+        void selectDrive(DriveDbId driveDbId);
 
     signals:
-        void driveSelected(int driveDbId);
+        void driveSelected(DriveDbId driveDbId);
         void addDrive();
 
     private:
-        int _currentDriveDbId;
+        DriveDbId _currentDriveDbId{0};
         std::shared_ptr<ClientGui> _gui;
 
         QSize _driveIconSize;

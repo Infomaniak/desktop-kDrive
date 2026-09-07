@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,10 +35,11 @@ class COMMONSERVER_EXPORT Db {
         Db(const std::filesystem::path &dbPath);
         virtual ~Db();
 
-        static std::string makeDbFileName(int userId, int accountId, int driveId, int syncDbId);
+        static std::string makeDbFileName(UserId userId, AccountId accountId, DriveId driveId, SyncDbId syncDbId);
         static std::filesystem::path makeDbName(bool &alreadyExist);
-        static std::filesystem::path makeDbName(int userId, int accountId, int driveId, int syncDbId, bool &alreadyExist,
-                                                std::function<std::string(int, int, int, int)> dbFileName = makeDbFileName);
+        static std::filesystem::path makeDbName(
+                UserId userId, AccountId accountId, DriveId driveId, SyncDbId syncDbId, bool &alreadyExist,
+                std::function<std::string(UserId, AccountId, DriveId, SyncDbId)> dbFileName = makeDbFileName);
 
         void setAutoDelete(bool value);
         bool exists();
@@ -85,7 +86,7 @@ class COMMONSERVER_EXPORT Db {
         void commitTransaction();
         void rollbackTransaction();
         bool sqlFail(const std::string &log, const std::string &error);
-        bool checkConnect(const std::string &version);
+        bool checkConnect();
 
         bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
         bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);

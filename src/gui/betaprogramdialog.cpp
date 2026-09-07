@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ static constexpr auto iconColor = QColor(239, 139, 52);
 static constexpr int indexNo = 0;
 static constexpr int indexBeta = 1;
 static constexpr int indexInternal = 2;
+static constexpr int indexTest = 3;
 
 namespace KDC {
 
@@ -91,16 +92,20 @@ BetaProgramDialog::BetaProgramDialog(const bool isQuit, const bool isStaff, QWid
         _staffSelectionBox->insertItem(indexNo, tr("No"));
         _staffSelectionBox->insertItem(indexBeta, tr("Public beta version"));
         _staffSelectionBox->insertItem(indexInternal, tr("Internal beta version"));
+        _staffSelectionBox->insertItem(indexTest, tr("Test version"));
 
         switch (ParametersCache::instance()->parametersInfo().distributionChannel()) {
-            case VersionChannel::Prod:
+            case DistributionChannel::Prod:
                 _initialIndex = indexNo;
                 break;
-            case VersionChannel::Beta:
+            case DistributionChannel::Beta:
                 _initialIndex = indexBeta;
                 break;
-            case VersionChannel::Internal:
+            case DistributionChannel::Internal:
                 _initialIndex = indexInternal;
+                break;
+            case DistributionChannel::Test:
+                _initialIndex = indexTest;
                 break;
             default:
                 break;
@@ -180,29 +185,31 @@ void BetaProgramDialog::onAcknowledgment() {
     _saveButton->setEnabled(_acknowledgmentCheckbox->isChecked());
 }
 
-VersionChannel toDistributionChannel(const int index) {
+DistributionChannel indexToDistributionChannel(const int index) {
     switch (index) {
         case indexNo:
-            return VersionChannel::Prod;
+            return DistributionChannel::Prod;
         case indexBeta:
-            return VersionChannel::Beta;
+            return DistributionChannel::Beta;
         case indexInternal:
-            return VersionChannel::Internal;
+            return DistributionChannel::Internal;
+        case indexTest:
+            return DistributionChannel::Test;
         default:
             break;
     }
-    return VersionChannel::Unknown;
+    return DistributionChannel::Unknown;
 }
 
 void BetaProgramDialog::onSave() {
     MatomoClient::sendEvent("betaProgramDialog", MatomoEventAction::Click, "saveButton");
     if (_isStaff) {
-        _newChannel = toDistributionChannel(_staffSelectionBox->currentIndex());
+        _newChannel = indexToDistributionChannel(_staffSelectionBox->currentIndex());
     } else {
         if (_isQuit) {
-            _newChannel = VersionChannel::Prod;
+            _newChannel = DistributionChannel::Prod;
         } else {
-            _newChannel = VersionChannel::Beta;
+            _newChannel = DistributionChannel::Beta;
         }
     }
 
@@ -217,7 +224,7 @@ void BetaProgramDialog::onChannelChange(const int index) {
     }
 
     _acknowledgmentFrame->setVisible(true);
-    if (index > _initialIndex)
+    if (_initialIndex == indexNo)
         setInstabilityMessage();
     else
         setTooRecentMessage();

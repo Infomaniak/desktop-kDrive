@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 import Combine
 import InfomaniakDI
+import kDriveCore
 import kDriveCoreUI
 import OrderedCollections
 import SwiftUI
@@ -31,11 +32,7 @@ struct HomeView: View {
     @ObservedUISynchroState private var synchroState: UISynchroState
 
     private var userName: String {
-        guard let currentUser = mainViewModel.currentUser,
-              let givenName = try? PersonNameComponents.FormatStyle().parseStrategy.parse(currentUser.name).givenName
-        else { return "" }
-
-        return givenName
+        return mainViewModel.currentUser?.firstName ?? ""
     }
 
     private var state: HomeState {
@@ -66,7 +63,7 @@ struct HomeView: View {
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
-                    SynchroStatusView(state: state)
+                    SynchroStatusView(state: state, synchroDbId: mainViewModel.currentSynchro?.id)
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
                     DriveWebShortcutsView(avatar: mainViewModel.currentUser?.avatar, drive: mainViewModel.currentDrive)
@@ -75,6 +72,9 @@ struct HomeView: View {
             }
         }
         .padding(AppPadding.page)
+        .task {
+            try? await UtilityJobs().activateLoadInfo()
+        }
     }
 }
 

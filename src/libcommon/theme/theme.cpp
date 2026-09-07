@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,20 +55,19 @@ QIcon Theme::themeIcon(const QString &name, bool sysTray, bool sysTrayMenuVisibl
     QString osType;
     QString flavor;
 
-    if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS) {
-        osType = "mac";
-    } else {
-        osType = "windows";
-    }
+    osType = "windows";
+#if defined(KD_MACOS)
+    osType = "mac";
+#endif
 
     if (sysTray) {
         if (_mono) {
-            if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
-                QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
+            flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
+#if defined(KD_MACOS)
+            if (QOperatingSystemVersion::current() > QOperatingSystemVersion::MacOSCatalina) {
                 flavor = QString("black");
-            } else {
-                flavor = CommonUtility::hasDarkSystray() ? QString("white") : QString("black");
             }
+#endif
         } else {
             flavor = QString("colored");
         }
@@ -141,7 +140,17 @@ QString Theme::feedbackUrl(const Language language) const {
             return FEEDBACK_ES_URL;
         case Language::Italian:
             return FEEDBACK_IT_URL;
+        case Language::Default:
+        case Language::English:
         case Language::Dutch:
+        case Language::Swedish:
+        case Language::Portuguese:
+        case Language::Polish:
+        case Language::Norwegian:
+        case Language::Finnish:
+        case Language::Danish:
+        case Language::Greek:
+        case Language::EnumEnd:
         default:
             break;
     }

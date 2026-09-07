@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,10 +54,13 @@ class OldCommServer : public QObject {
 
         void start();
         inline bool isListening() { return _tcpServer.isListening(); }
+        bool hasActiveConnexion() const {
+            return _tcpSocket != nullptr && _tcpSocket->state() == QAbstractSocket::ConnectedState && _tcpSocket->isValid();
+        }
 
     signals:
         void requestReceived(int id, RequestNum num, const QByteArray &params);
-        void restartClient();
+        void clientDisconnected();
 
     private:
         static std::shared_ptr<OldCommServer> _instance;

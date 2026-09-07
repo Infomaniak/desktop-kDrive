@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
@@ -23,9 +24,11 @@ using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,6 +36,7 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class StoragePage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly StoragePageViewModel _pageViewModel = new StoragePageViewModel();
         public StoragePageViewModel PageViewModel => _pageViewModel;
         public StoragePage()
@@ -41,11 +45,14 @@ namespace Infomaniak.kDrive.Pages
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "StoragePage components initialized");
         }
-
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             if (App.ServiceProvider.GetRequiredService<AppModel>().SelectedSync is null)
+            {
                 AppModel.UIThreadDispatcher.TryEnqueue(() => Frame.Navigate(typeof(SettingsPage)));
+                return;
+            }
+
             try
             {
                 await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
@@ -54,6 +61,8 @@ namespace Infomaniak.kDrive.Pages
             {
                 Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
             }
+
+            _analyticsService.TrackPageView(Analytics.Keys.Category.StoragePage);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -63,14 +72,14 @@ namespace Infomaniak.kDrive.Pages
 
         private async void RetryButton_click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn)
+            if (sender is ButtonBase btn)
             {
                 btn.IsEnabled = false;
                 btn.Visibility = Visibility.Collapsed;
                 RetryProgressRing.Visibility = Visibility.Visible;
                 try
                 {
-                    await PageViewModel.UpdateDiskSizeAsync().ConfigureAwait(false);
+                    await PageViewModel.UpdateDiskSizeAsync();
                     if (!PageViewModel.IsDiskConnected)
                     {
                         await Task.Delay(2000); // Add a small delay to let the user know we've done something but the disk still unavailable.
@@ -110,8 +119,7 @@ namespace Infomaniak.kDrive.Pages
                 Logger.Log(Logger.Level.Warning, $"Failed to convert usedSize size {usedSize} to human readable string");
                 prettySize = $"{usedSize} bytes";
             }
-
-            return Localizer.Instance.GetString("storageUsedLabel", prettySize);
+            return Localizer.Instance.GetStringWithPlural("labelStorageUsed", ParseNumberFromPrettySize(prettySize), prettySize);
         }
 
         private string GetStorageFreeLabel(Int64? usedSize)
@@ -125,9 +133,25 @@ namespace Infomaniak.kDrive.Pages
                 prettySize = $"{usedSize} bytes";
             }
 
-            return Localizer.Instance.GetString("storageFreeLabel", prettySize);
+            return Localizer.Instance.GetStringWithPlural("labelStorageFree", ParseNumberFromPrettySize(prettySize), prettySize);
+        }
+
+        private int ParseNumberFromPrettySize(string prettySize)
+        {
+            // Extract the number part from the prettySize to use for pluralization
+            var numberPart = new string(prettySize.TakeWhile(c => char.IsDigit(c) || c == '.' || c == ',').ToArray());
+            numberPart = numberPart.Replace(',', '.'); // Ensure the decimal separator is a dot for parsing
+            double number;
+            if (!double.TryParse(numberPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out number))
+            {
+                Logger.Log(Logger.Level.Warning, $"Failed to parse number part '{numberPart}' from prettySize '{prettySize}'");
+                number = 2; // Default to 2 to use plural form if parsing fails
+            }
+            return (int)Math.Round(number);
         }
     }
+
+
 
     public partial class StoragePageViewModel : UISafeObservableObject, IDisposable
     {
@@ -222,8 +246,13 @@ namespace Infomaniak.kDrive.Pages
             set
             {
                 SetPropertyInUIThread(ref _diskRoot, value);
-                UpdateMissingDiskTexts();
+                OnPropertyChangedInUIThread(nameof(TrimmedDiskRoot));
             }
+        }
+
+        public string TrimmedDiskRoot
+        {
+            get => DiskRoot.TrimEnd(Path.DirectorySeparatorChar);
         }
 
         public string MissingDiskTitle
@@ -242,16 +271,6 @@ namespace Infomaniak.kDrive.Pages
         {
             get => _isDiskConnected;
             set => SetPropertyInUIThread(ref _isDiskConnected, value);
-        }
-
-
-        private void UpdateMissingDiskTexts()
-        {
-            if (AppViewModel.SelectedSync == null)
-                return;
-
-            MissingDiskTitle = Localizer.Instance.GetString("storageMissingDiskTitle", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
-            MissingDiskSubtitle = Localizer.Instance.GetString("storageMissingDiskDescription", DiskRoot.TrimEnd(Path.DirectorySeparatorChar));
         }
 
         public async Task UpdateDiskSizeAsync()

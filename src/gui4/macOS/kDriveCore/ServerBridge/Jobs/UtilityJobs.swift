@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 import InfomaniakDI
 
@@ -58,9 +59,9 @@ public struct UtilityJobs: Sendable {
         return decodedMessage.body.goodPath
     }
 
-    public func isPathValidFor(path: String) async throws -> Bool {
+    public func isPathValidFor(path: String, syncConfiguration: KDC.SyncConfiguration) async throws -> Bool {
         IKLogger.data.log("Query for path validation for new sync")
-        let query = UtilityIsPathValidForNewSyncQuery(path: path)
+        let query = UtilityIsPathValidForNewSyncQuery(path: path, syncConfiguration: syncConfiguration)
         let request = await RequestMessage<UtilityIsPathValidForNewSyncQuery>(
             num: RequestNum.UTILITY_ISPATHVALIDFORNEWSYNC,
             body: query

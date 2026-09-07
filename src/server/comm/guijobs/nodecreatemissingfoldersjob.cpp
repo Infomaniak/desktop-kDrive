@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ ExitInfo NodeCreateMissingFoldersJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo NodeCreateMissingFoldersJob::pauseDriveSyncs(std::vector<int> &pausedSyncs) {
+ExitInfo NodeCreateMissingFoldersJob::pauseDriveSyncs(std::vector<SyncDbId> &pausedSyncs) {
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncPalId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal || syncPal->driveId() != _driveId || syncPal->isPaused()) continue;
@@ -139,7 +139,7 @@ ExitInfo NodeCreateMissingFoldersJob::blacklistNodeOnAllDriveSyncs(const NodeId 
     return ExitCode::Ok;
 }
 
-void NodeCreateMissingFoldersJob::resumeSyncs(const std::vector<int> &pausedSyncs) {
+void NodeCreateMissingFoldersJob::resumeSyncs(const std::vector<SyncDbId> &pausedSyncs) {
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto syncDbId: pausedSyncs) {
         if (_commManager->appServer().syncPalMap.contains(syncDbId)) _commManager->appServer().syncPalMap[syncDbId]->unpause();
@@ -147,7 +147,7 @@ void NodeCreateMissingFoldersJob::resumeSyncs(const std::vector<int> &pausedSync
 }
 
 ExitInfo NodeCreateMissingFoldersJob::process() {
-    std::vector<int> pausedSyncs;
+    std::vector<SyncDbId> pausedSyncs;
     if (const auto exitInfo = pauseDriveSyncs(pausedSyncs); !exitInfo) return exitInfo;
 
     NodeId firstCreatedNodeId;

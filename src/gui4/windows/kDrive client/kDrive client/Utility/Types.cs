@@ -1,10 +1,28 @@
-﻿global using AccountId = System.Int64;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+global using AccountId = System.Int64;
 global using DbId = System.Int64;
 global using DriveId = System.Int64;
 global using NodeId = System.String;
 global using SyncPath = System.String;
 global using UserId = System.Int64;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 
@@ -79,25 +97,17 @@ namespace Infomaniak.kDrive.Types
         Online // (Ex liteSync)
     };
 
-    public enum VersionChannel
+    public enum DistributionChannel
     {
         Prod,
         Next,
         Beta,
         Internal,
         Legacy,
+        Test,
         Unknown
     };
 
-    public enum Language
-    {
-        SystemDefault = 0,
-        FR,
-        IT,
-        DE,
-        ES,
-        EN
-    };
     public enum OAuth2State
     {
         None,
@@ -106,7 +116,7 @@ namespace Infomaniak.kDrive.Types
         Success,
         Error
     }
-    public interface IDrive
+    public interface IDrive : INotifyPropertyChanged
     {
         public string Name { get; }
         public System.Drawing.Color Color { get; }
@@ -117,7 +127,7 @@ namespace Infomaniak.kDrive.Types
         public bool IsConfigured { get; } // Indicates if at least one sync (which is not an advanced sync) is set up for this drive
     }
 
-    public class DriveAvailable : IDrive
+    public partial class DriveAvailable : UISafeObservableObject, IDrive
     {
         public DriveId DriveId { get; set; } = 0;
         public UserId UserId { get; set; } = 0;

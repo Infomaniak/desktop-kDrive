@@ -3,7 +3,7 @@
 > **Note:** This file contains the old instructions used to compile and use the dependencies that are now managed by Conan.
 
 <details>
-<summary>xxHash 0.8.2</summary>
+<summary>xxHash - 0.8.2</summary>
 
 ### macOS
 ```bash
@@ -46,7 +46,7 @@ cmake --build . --target install --config Release
 </details>
 
 <details>
-<summary>log4cplus</summary>
+<summary>log4cplus - 2.1.0</summary>
 
 ### macOS
 
@@ -115,7 +115,7 @@ git checkout v2.x
 </details>
 
 <details>
-<summary>OpenSSL</summary>
+<summary>OpenSSL - 3.2.4</summary>
 
 ### macOS
 Download and build `OpenSSL`:
@@ -184,5 +184,197 @@ git checkout tags/openssl-3.2.1
 
 Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows.
 Note that installing `NASM` is not required.
+
+</details>
+
+<details>
+<summary>Qt 6.2.3</summary>
+
+### macOS
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In `QT 6.2.3`, select:
+- macOS
+- Sources
+- QT 5 Compatibility Module
+
+In `Qt 6.2.3 Additional Libraries`, select:
+- Qt WebEngine
+- Qt Positioning
+- Qt WebChannel
+- Qt WebView
+
+Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
+
+```bash
+export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
+export ALTOOL_USERNAME=<email address>
+export QTDIR=~/Qt/6.2.3/macos
+```
+
+### Linux
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In QT 6.2.3, select :
+- Desktop gcc 64-bits
+- Qt 5 Compatibility Module
+
+In Qt 6.2.3 Additional Libraries, select:
+- Qt WebEngine
+- Qt Positioning
+- Qt WebChannel
+- Qt WebView
+
+If, following the installation, you cannot load the Qt platform plugin xcb, you can run the following command:
+```bash
+sudo apt install libxcb-cursor0
+```
+
+### Windows
+From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4),
+tick the **Archive** box and then press the `Refresh` button to see earlier `Qt` versions.  
+In `Qt 6.2.3`, select:
+- MSVC 2019 64-bit
+- Sources
+- Qt 5 Compatibility Module
+
+In `Qt 6.2.3 Additional Libraries`, select:
+- Qt WebEngine
+- Qt Positioning
+- Qt WebChannel
+- Qt WebView
+- Qt Debug Information Files (only if you want to use a debugger)
+
+In `Developer and Designer Tools` (should be selected by default):
+- CMake
+- Ninja
+
+Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.2.3\msvc2019_64`).
+Add to the following paths to your `PATH` or adapt them to the actual location of your Qt folder if needed:
+- `C:\Qt\6.2.3\msvc2019_64\bin`
+- `C:\Qt\Tools\CMake_64\bin`
+
+</details>
+
+<details>
+<summary>Sentry - 0.7.9 (0.6.4 on Linux for Ubuntu 20.04)</summary>
+
+### macOS
+
+Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
+
+```bash
+cd ~/Projects/sentry-native
+cmake -B build -DSENTRY_BACKEND=crashpad -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DCMAKE_PREFIX_PATH=$QTDIR/lib/cmake
+cmake --build build --parallel
+sudo cmake --install build
+```
+
+### Linux
+
+You will need to install the dev libcurl package to build sentry-native
+
+```bash
+sudo apt install -y libcurl4-openssl-dev
+cd ~/Projects
+git clone https://github.com/getsentry/sentry-native.git
+cd sentry-native
+git checkout tags/0.7.9
+git submodule init
+git submodule update --recursive
+cd external/crashpad
+git submodule init
+git submodule update --recursive
+cd ../..
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
+cmake --build build --parallel
+sudo cmake --install build
+```
+
+
+### Windows
+
+Download the [Sentry sources (`sentry-native.zip`)](https://github.com/getsentry/sentry-native/releases) and extract them to `F:\Projects`.
+After successful extraction, run:
+
+```cmd
+cd F:\Projects\sentry-native
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_PREFIX_PATH=%QTDIR%
+cmake --build build --config RelWithDebInfo
+cmake --install build --config RelWithDebInfo
+```
+
+</details>
+
+<details>
+<summary>Poco - 1.13.3</summary>
+
+### macOS
+
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
+
+Download and build `Poco`:
+
+```bash
+cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'DYLD_LIBRARY_PATH' environment variable
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir build
+cd build
+cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DENABLE_DATA_ODBC=OFF 
+sudo cmake --build . --target install
+```
+
+### Linux
+
+> :warning: **`Poco` requires OpenSSL to be installed.**
+>
+> You **must follow** the [Conan](#conan) section first to install `OpenSSL`.
+
+```bash
+cd ~/Projects
+source "$(find ./desktop-kdrive/ -name "conanrun.sh")" || exit 1 # This will prepend the path to the conan-managed dependencies to the 'LD_LIBRARY_PATH' environment variable
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir cmake-build
+cd cmake-build
+cmake ..
+sudo cmake --build . --target install
+```
+
+### Windows
+
+## Poco
+
+> :warning: **`Poco` requires OpenSSL to be installed.**
+
+Clone and build `Poco`:
+
+```powershell
+cd F:\Projects
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir build
+cd build
+cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
+```
+
+Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
+- Crypto
+- JWT
+- NetSSL
+
+While still in the `build` directory, issue the following commands:
+
+```powershell
+cmake --build . --target install --config Debug
+cmake --build . --target install --config Release
+```
 
 </details>

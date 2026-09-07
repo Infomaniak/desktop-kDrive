@@ -1,3 +1,21 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -10,6 +28,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static Infomaniak.kDrive.OnBoarding.OnBoardingWindow;
 
 
 namespace Infomaniak.kDrive.Pages.Onboarding
@@ -17,6 +36,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
     public sealed partial class OAuthLoadingPage : Page
     {
         private static readonly TimeSpan _oauthTimeOut = TimeSpan.FromMinutes(5);
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         private ViewModels.Onboarding? _onboardingViewModel;
 
@@ -34,8 +54,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "OAuthLoadingPage components initialized");
         }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
 
@@ -47,7 +66,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 _onBoardingTask = _onboardingViewModel.ConnectUser(_oauthCts.Token);
                 ScheduleRestartButtonEnableAsync();
                 if ((App.Current as App)?.CurrentWindow is OnBoardingWindow onBoardingWindow)
-                    onBoardingWindow.UpdateLottieSource("Infomaniak.Custom.Animations.loader-stroke", 130);
+                    await onBoardingWindow.UpdateLottieSource(LottieTemplateKey.KDrive_LoaderStroke);
             }
             else
             {
@@ -141,6 +160,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     break;
 
                 case OAuth2State.Error:
+                    _analyticsService.TrackPageView(Analytics.Keys.Category.OnboardingConnectionFailedPage);
                     onBoardingWindow.SetLottiePosition(OnBoardingWindow.LottiePosition.Right);
                     TitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginErrorTitle");
                     SubtitleTextBlock.Text = Localizer.Instance.GetString("onboardingLoginErrorDescription");
@@ -153,6 +173,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void RestartOAuthButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingConnectionFailedPage, Analytics.Keys.EventName.ReOpenLoginWeb);
             try
             {
                 // Cancel any ongoing authentication attempt

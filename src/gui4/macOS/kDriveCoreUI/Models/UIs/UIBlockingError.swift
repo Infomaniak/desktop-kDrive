@@ -33,9 +33,9 @@ public struct UIBlockingError: Sendable, Equatable {
     public let badgeBackgroundColor: Color
     public let badgeColor: Color
 
-    public let error: SynchroError
+    public let error: BlockingSynchroError
 
-    public init(uiDrive: UIDrive, isDriveAdmin: Bool, error: SynchroError) {
+    public init(uiDrive: UIDrive, isDriveAdmin: Bool, error: BlockingSynchroError) {
         drive = uiDrive
         self.error = error
 
@@ -96,7 +96,7 @@ public struct UIBlockingError: Sendable, Equatable {
         }
     }
 
-    public init?(drive: Drive, error: SynchroError?) {
+    public init?(drive: Drive, error: BlockingSynchroError?) {
         guard let error else {
             return nil
         }

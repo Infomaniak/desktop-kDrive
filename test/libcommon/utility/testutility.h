@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,11 +34,12 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST(testCompressFile);
         CPPUNIT_TEST(testCurrentVersion);
-        CPPUNIT_TEST(testSourceLocation);
         CPPUNIT_TEST(testGenerateRandomStringAlphaNum);
+        CPPUNIT_TEST(testGenerateRandomNumber);
         CPPUNIT_TEST(testGenerateUuid);
         CPPUNIT_TEST(testLanguageCode);
         CPPUNIT_TEST(testIsSupportedLanguage);
+        CPPUNIT_TEST(testStrToLanguage);
         CPPUNIT_TEST(testLogIfFail);
         CPPUNIT_TEST(testRelativePath);
         CPPUNIT_TEST(testSplitSyncName);
@@ -68,6 +69,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testConvertFromBase64Str);
         CPPUNIT_TEST(testConvertToBase64Str);
         CPPUNIT_TEST(isLikeSomeError);
+        CPPUNIT_TEST(testTempDirectoryPath);
+        CPPUNIT_TEST(testLogDirectoryPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -82,11 +85,12 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testArgsWriter();
         void testCompressFile();
         void testCurrentVersion();
-        void testSourceLocation();
         void testGenerateRandomStringAlphaNum();
+        void testGenerateRandomNumber();
         void testGenerateUuid();
         void testLanguageCode();
         void testIsSupportedLanguage();
+        void testStrToLanguage();
         void testLogIfFail();
         void testRelativePath();
         void testSplitSyncName();
@@ -117,6 +121,8 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testConvertFromBase64Str();
         void testConvertToBase64Str();
         void isLikeSomeError();
+        void testTempDirectoryPath();
+        void testLogDirectoryPath();
 
     private:
         /* Generate all the possible path for a set of items and separators

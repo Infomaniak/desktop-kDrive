@@ -2,7 +2,7 @@
 
 #
 # Infomaniak kDrive - Desktop
-# Copyright (C) 2023-2025 Infomaniak Network SA
+# Copyright (C) 2023-2026 Infomaniak Network SA
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #
 
 rm -vrf admin/
-rm -vrf src/3rdparty/sqlite3   # FIXME: For CentOS6 we have to use our bundled sqlite
 rm -vrf binary/
 rm -vrf extensions/windows
 rm -vrf extensions/MacOSX

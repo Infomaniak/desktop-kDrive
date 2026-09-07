@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -600,7 +600,14 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 #if defined(KD_MACOS)
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && !exists);
+        if (CommonUtility::isAPFS(nfdPath) || CommonUtility::isHFS(nfdPath)) {
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
+
+        } else {
+            // For now, we are only testing on APFS, so this case is not verified.
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) &&
+                           !exists);
+        }
 #else
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfdPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 #endif
@@ -636,7 +643,14 @@ void TestIo::testCheckIfPathExistWithDistinctEncodings() {
 
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Insensitive) && exists);
 #if defined(KD_MACOS)
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && !exists);
+        if (CommonUtility::isAPFS(nfcPath) || CommonUtility::isHFS(nfcPath)) {
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
+
+        } else {
+            // For now, we are only testing on APFS, so this case is not verified.
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) &&
+                           !exists);
+        }
 #else
         CPPUNIT_ASSERT(IoHelper::checkIfPathExists(nfcPath, exists, ioError, IoHelper::PathCheckOption::Sensitive) && exists);
 #endif

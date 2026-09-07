@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,8 +83,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNodeCreateMissingFoldersJob);
         CPPUNIT_TEST(testNodeConflictInfoJob);
         CPPUNIT_TEST(testErrorInfoListJob);
+        CPPUNIT_TEST(testErrorDeleteJob);
         CPPUNIT_TEST(testErrorResolveConflictsJob);
         CPPUNIT_TEST(testErrorResolveConflictsQuickJob);
+        CPPUNIT_TEST(testErrorSyncRefreshJob);
         CPPUNIT_TEST(testExclTemplGetExcludedJob);
         CPPUNIT_TEST(testExclTemplGetListJob);
         CPPUNIT_TEST(testExclTemplSetUserListJob);
@@ -165,8 +167,10 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testNodeCreateMissingFoldersJob();
         void testNodeConflictInfoJob();
         void testErrorInfoListJob();
+        void testErrorDeleteJob();
         void testErrorResolveConflictsJob();
         void testErrorResolveConflictsQuickJob();
+        void testErrorSyncRefreshJob();
         void testExclTemplGetExcludedJob();
         void testExclTemplGetListJob();
         void testExclTemplSetUserListJob();

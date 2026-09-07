@@ -13,6 +13,10 @@ inputs:
     description: 'Username for altool upload'
     required: false
     default: ''
+  release_build_notary_app_password:
+    description: 'Password for notary app'
+    required: false
+    default: ''
 
 runs:
     using: "composite"
@@ -44,8 +48,10 @@ runs:
 
       - name: Build kDrive desktop
         id: build
+        env:
+          NOTARY_APP_PASSWORD: ${{ inputs.release_build_notary_app_password }}
+          ALTOOL_USERNAME: ${{ inputs.release_build_altool_username }}
         run : |
-            export ALTOOL_USERNAME="${{ inputs.release_build_altool_username }}"
             if [ "${{ inputs.release_build }}" = "true" ]; then
                 ./infomaniak-build-tools/macos/build-release.sh
             else
@@ -64,19 +70,9 @@ runs:
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtSvg.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/QtDBus.framework ./dependencies/
           cp -R ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Frameworks/Sparkle.framework ./dependencies/
-          mkdir dependencies/platforms
-          cp /Users/runner/Qt/6.2.3/macos/plugins/platforms/libqoffscreen.dylib ./dependencies/platforms/
-          cp /usr/local/lib/libPocoNetSSL.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoUtil.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoJSON.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoXML.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoFoundation.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoNet.103.dylib ./dependencies/
-          cp /usr/local/lib/libPocoCrypto.103.dylib ./dependencies/
-          cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
-          cp /usr/local/lib/libsentry.dylib ./dependencies/
           cp /usr/local/lib/libzip.5.dylib ./dependencies/
           cp /usr/local/lib/libzstd.1.dylib ./dependencies/
+          cp /usr/local/lib/libcppunit-1.15.2.dylib ./dependencies/
           cp ${{ github.workspace }}/build-macos/client/bin/crashpad_handler ./dependencies/
           # kDrive_vfs_mac lib is not cached and therefore is uploaded as a separate artifact
           find "${{ github.workspace }}/build-macos/client/bin" -name "*.dylib" \
@@ -87,23 +83,46 @@ runs:
 
       - name: Fetch Conan dependencies
         run: |
-          echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH..."
+          echo "Sourcing conanrun.sh to get DYLD_LIBRARY_PATH & PATH..."
           source $(find "${{ github.workspace }}/build-macos" -name conanrun.sh | head -n 1)
-          echo "DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH"
           
+          echo "\nSearching dylibs in DYLD_LIBRARY_PATH..."
           IFS=':' read -ra dirs <<< "$DYLD_LIBRARY_PATH"
           for dir in "${dirs[@]}"; do
             if [[ "$dir" == *".conan2/p"* ]]; then
               echo "Looking in $dir"
+              # We skip the dSYM directories to avoid copying debug symbols and copy only the necessary libraries (Ex: '/Users/runner/.conan2/p/b/sentr<hash>/p/lib/libsentry.dylib.dSYM/Contents/Resources/DWARF/libsentry.dylib')
               find "$dir" \
+                  -path '*/*.dSYM/*' -prune -o \
                   '(' -iname 'libxxhash.0.dylib' \
                    -o -iname 'liblog4cplus*.dylib' \
+                   -o -iname 'libsentry.dylib' \
                    -o -iname 'libssl*.dylib' \
-                   -o -iname 'libcrypto*.dylib' ')' \
+                   -o -iname 'libcrypto*.dylib' \
+                   -o -iname 'libPocoNetSSL*.dylib' \
+                   -o -iname 'libPocoUtil*.dylib' \
+                   -o -iname 'libPocoJSON*.dylib' \
+                   -o -iname 'libPocoXML*.dylib' \
+                   -o -iname 'libPocoFoundation*.dylib' \
+                   -o -iname 'libPocoNet*.dylib' \
+                   -o -iname 'libPocoCrypto*.dylib' \
+          ')' \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
+              if [[ "$dir" == *"/qt"* ]]; then
+                find "$(dirname $dir)" \
+                    '(' -iname 'libqoffscreen.dylib' ')' \
+                    -exec mkdir -p ./dependencies/platforms \; \
+                    -exec cp {} ./dependencies/platforms/ \; \
+                    -exec echo "Conan Qt dependency found -> " {} \;
+              fi
             fi
           done
+          # Restore the original environment variables set before running conanrun.sh
+              deactivate_script=$(find "${{ github.workspace }}/build-macos" -name deactivate_conanrun.sh | head -n 1)
+              if [ -n "$deactivate_script" ]; then
+                source "$deactivate_script"
+              fi
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
@@ -139,7 +158,7 @@ runs:
         run: |
           sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
           mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
-          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
+          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
           cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
@@ -174,7 +193,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload build common files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-build-common-files
           path: ./dependencies
@@ -183,7 +202,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload uncached build common files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-build-common-files-uncached
           path: ./uncached_dependencies
@@ -191,7 +210,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' }}
 
       - name: Upload build test common executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-kDrive_test_common
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common
@@ -200,7 +219,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test common server executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-kDrive_test_common_server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_common_server
@@ -209,7 +228,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test server executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-kDrive_test_server
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_server
@@ -218,7 +237,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test syncengine executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-kDrive_test_syncengine
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_syncengine
@@ -227,7 +246,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test parms executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-kDrive_test_parms
           path: ${{ github.workspace }}/build-macos/client/bin/kDrive_test_parms
@@ -236,7 +255,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload sentry server artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-release-artifacts-server-debug
           path: ${{ github.workspace }}/build-macos/sentry-server-artifacts
@@ -244,24 +263,37 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload sentry client artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-release-artifacts-client-debug
           path: ${{ github.workspace }}/build-macos/sentry-client-artifacts
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
+      - name: Display macOS package info in summary
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-macos/client/install/"*.pkg | head -n 1)
+
+          HASH=$(shasum -a 256 "$FILE" | awk '{print $1}')
+
+          echo "### 🔐 macOS pkg SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          # Create .sha256 file next to the pkg
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
 
       - name: Upload kDrive Package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-release-artifacts-package
-          path: ${{ github.workspace }}/build-macos/client/install/*.pkg
+          path: ${{ github.workspace }}/build-macos/client/install/kDrive-*.*
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
       - name: Upload Sparkle artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: macos-release-artifacts-sparkle
           path: ${{ github.workspace }}/build-macos/client/install/sparkle/

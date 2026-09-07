@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,16 +26,18 @@ namespace KDC {
 
 class SearchJob : public AbstractTokenNetworkJob {
     public:
-        SearchJob(int driveDbId, int syncDbId, const std::string &searchString, const std::string &cursorInput = {});
+        SearchJob(DriveDbId driveDbId, SyncDbId syncDbId, const std::string &searchString, const std::string &cursorInput = {});
 
         // Using this constructor will lead to SearchInfo::isAvailableLocally always being false
-        SearchJob(int driveDbId, const std::string &searchString, const std::string &cursorInput = {});
+        SearchJob(DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput = {});
 
         std::list<SearchInfo> searchResults() const { return _searchResults; }
         [[nodiscard]] const std::string &cursor() const { return _cursorOutput; }
         [[nodiscard]] bool hasMore() const { return _hasMore; }
 
     private:
+        friend class TestSearchJob;
+
         std::string getSpecificUrl() override;
         void setQueryParameters(Poco::URI &uri) override;
         ExitInfo handleResponse(std::istream &is) override;

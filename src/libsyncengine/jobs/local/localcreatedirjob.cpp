@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #include "localcreatedirjob.h"
 
-#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
@@ -27,9 +26,8 @@
 
 namespace KDC {
 
-LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath, bool readOnly /*= false*/) :
-    _destFilePath(destFilepath),
-    _readOnly(readOnly) {}
+LocalCreateDirJob::LocalCreateDirJob(const SyncPath &destFilepath) :
+    _destFilePath(destFilepath) {}
 
 ExitInfo LocalCreateDirJob::canRun() {
     if (bypassCheck()) {
@@ -61,9 +59,6 @@ ExitInfo LocalCreateDirJob::runJob() {
         return exitInfo;
     }
 
-    // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_destFilePath.parent_path(), _logger);
-
     IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, false, ioError) && ioError == IoError::Success) {
         if (isExtendedLog()) {
@@ -91,12 +86,6 @@ ExitInfo LocalCreateDirJob::runJob() {
     } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
-
-    if (_readOnly) {
-        if (IoHelper::setReadOnly(_destFilePath) != IoError::Success) {
-            LOGW_WARN(_logger, L"Failed to set read-only rights: " << Utility::formatSyncPath(_destFilePath));
-        }
     }
 
     _nodeId = std::to_string(filestat.inode);

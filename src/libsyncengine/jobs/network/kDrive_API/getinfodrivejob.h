@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,19 +26,19 @@ namespace KDC {
 
 class GetInfoDriveJob : public AbstractTokenNetworkJob {
     public:
-        GetInfoDriveJob(int userDbId, int driveId);
-        GetInfoDriveJob(int driveDbId);
+        GetInfoDriveJob(UserDbId userDbId, DriveId driveId);
+        GetInfoDriveJob(DriveDbId driveDbId);
 
         [[nodiscard]] const std::string &name() const { return _name; }
         [[nodiscard]] int64_t size() const { return _size; }
         [[nodiscard]] bool isAdmin() const { return _isAdmin; }
-        [[nodiscard]] uint64_t accountId() const { return _accountId; }
+        [[nodiscard]] AccountDbId accountId() const { return _accountId; }
         [[nodiscard]] const std::string &colorHex() const { return _colorHex; }
         [[nodiscard]] bool isInMaintenance() const { return _isInMaintenance; }
         [[nodiscard]] int64_t maintenanceFrom() const { return _maintenanceFrom; }
         [[nodiscard]] bool isLocked() const { return _isLocked; }
         [[nodiscard]] int64_t usedSize() const { return _usedSize; }
-        [[nodiscard]] const Drive::PackInfo &packInfo() const { return _packInfo; }
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
 
     protected:
         ExitInfo handleError(const std::string &replyBody, const Poco::URI &uri) override;
@@ -51,13 +51,13 @@ class GetInfoDriveJob : public AbstractTokenNetworkJob {
         std::string _name;
         int64_t _size{0};
         bool _isAdmin{false};
-        uint64_t _accountId{0};
+        AccountId _accountId{0};
         std::string _colorHex;
         bool _isInMaintenance{false};
         int64_t _maintenanceFrom{0};
         bool _isLocked{false};
         int64_t _usedSize{0};
-        Drive::PackInfo _packInfo;
+        PackInfo _packInfo;
 };
 
 } // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #if defined(KD_WINDOWS)
 #include "updater/testwindowsupdater.h"
 #endif
-#include "updater/testupdatechecker.h"
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
 #include "comm/guicommchannel/testguicommchannel.h"
@@ -39,12 +38,12 @@
 #include "comm/testguijobpriority.h"
 
 namespace KDC {
+
 #if defined(KD_MACOS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsMac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncCommClient);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateChecker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWindowsUpdater);

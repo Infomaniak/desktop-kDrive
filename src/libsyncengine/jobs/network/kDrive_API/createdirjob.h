@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,10 +25,10 @@ namespace KDC {
 
 class CreateDirJob : public AbstractTokenNetworkJob {
     public:
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const SyncPath &filepath, const NodeId &parentId,
+        CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const SyncPath &filepath, const NodeId &parentId,
                      const SyncName &name, const std::string &color = "");
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &parentId, const SyncName &name);
-        CreateDirJob(const std::shared_ptr<Vfs> vfs, int32_t userDbId, int32_t driveId, const NodeId &parentId,
+        CreateDirJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &parentId, const SyncName &name);
+        CreateDirJob(const std::shared_ptr<Vfs> vfs, UserDbId userDbId, DriveId driveId, const NodeId &parentId,
                      const SyncName &name);
         ~CreateDirJob() override;
 

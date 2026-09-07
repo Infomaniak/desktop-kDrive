@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ class OperationSorterWorker : public OperationProcessor {
          */
         void fixMoveBeforeMoveHierarchyFlip();
 
-        std::optional<SyncOperationList> fixImpossibleFirstMoveOp();
+        bool fixImpossibleFirstMoveOp(SyncOperationList &syncOperationList);
         bool breakCycle(SyncOperationList &cycle, const SyncOpPtr &renameResolutionOp);
         /**
          * @brief Move `opFirst` immediately after `opSecond` in the sorted operation list.

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -36,7 +37,9 @@
 #include <Poco/Error.h>
 
 #include <iostream> // std::ios, std::istream, std::cout, std::cerr
+#include <atomic>
 #include <functional>
+#include <thread>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Net/HTTPRequest.h>
 
@@ -45,6 +48,10 @@
 #define MAX_TRIALS 5
 
 namespace KDC {
+
+const std::string rateLimitHeaderReset = "X-RateLimit-Reset"; // Timestamp (in seconds since epoch)
+const std::string rateLimitHeaderDelay = "Retry-After"; // Delay (in seconds)
+const int64_t sleepDurationThreshold = 60000; // 60'000 ms -> 1 min
 
 const std::string AbstractNetworkJob::_userAgent = KDC::CommonUtility::userAgentString();
 Poco::Net::Context::Ptr AbstractNetworkJob::_context = nullptr;
@@ -102,24 +109,25 @@ bool AbstractNetworkJob::isManagedError(const ExitInfo exitInfo) noexcept {
     }
 }
 
-void AbstractNetworkJob::logRequestInfo() {
+void AbstractNetworkJob::logRequestInfo(const Poco::Net::HTTPRequest &req) {
     if (!isExtendedLog()) { // If not in extended mode, log only the request ID.
         LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
         return;
     }
 
     LOG_DEBUG(_logger, "*** Request headers: ***");
-    // /!\ The user-agent could contain special characters
-    LOGW_DEBUG(_logger, L"User-Agent: " << KDC::CommonUtility::s2ws(_userAgent));
-    LOG_DEBUG(_logger, "Content-Type: " << contentType());
-    LOG_DEBUG(_logger, "Accept: " << acceptHeader());
-    LOG_DEBUG(_logger, "X-Request-ID: " << _requestUuid);
-    for (const auto &[headerKey, headerValue]: _rawHeaders) {
-        if (headerKey == "Authorization") continue;
+
+    for (const auto &[headerKey, headerValue]: req) {
+        if (headerKey == "Authorization") {
+            LOG_DEBUG(_logger, "Authorization: Bearer *****");
+            continue;
+        }
+        if (headerKey == "User-Agent") {
+            // The user-agent could contain special characters
+            LOGW_DEBUG(_logger, L"User-Agent: " << KDC::CommonUtility::s2ws(_userAgent));
+            continue;
+        }
         LOG_DEBUG(_logger, headerKey << ": " << headerValue);
-    }
-    if (!_data.empty()) {
-        LOG_DEBUG(_logger, "Content-Length: " << static_cast<std::streamsize>(_data.size()));
     }
 
     if (contentType() != mimeTypeJson || _data.empty()) return; // Log the body only for JSON MIME type
@@ -139,6 +147,32 @@ void AbstractNetworkJob::logReplyInfo() {
     }
 }
 
+int64_t AbstractNetworkJob::extractWaitingTime() {
+    int64_t waitingTime = -1;
+    if (httpResponse().has(rateLimitHeaderDelay)) {
+        try {
+            waitingTime = std::stoll(httpResponse().get(rateLimitHeaderDelay));
+        } catch (std::exception const &e) {
+            LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderDelay << " : " << e.what());
+        }
+    } else if (httpResponse().has(rateLimitHeaderReset)) {
+        try {
+            int64_t timestamp = 0;
+            timestamp = std::stoll(httpResponse().get(rateLimitHeaderReset));
+            const auto now =
+                    std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+            waitingTime = timestamp - now.count();
+        } catch (std::exception const &e) {
+            LOG_WARN(_logger, "Failed to extract int value from header " << rateLimitHeaderReset << " : " << e.what());
+        }
+    }
+
+    if (waitingTime > 0) {
+        return (waitingTime + CommonUtility::generateRandomNumber(1, 15)) * 1000; // Add a random delay between 1 and 15sec
+    }
+    return -1;
+}
+
 ExitInfo AbstractNetworkJob::runJob() noexcept {
     std::string url = getUrl();
     if (url.empty()) {
@@ -150,11 +184,12 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
 
     Poco::URI uri;
     ExitInfo outputExitInfo = ExitCode::Ok;
+    _trials = _defaultTrials;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
         outputExitInfo = ExitCode::Ok;
 
         if (trials > 1) {
-            Utility::msleep(500); // Sleep for 0.5s
+            Utility::msleep(_sleepDuration);
         }
 
         uri = Poco::URI(url);
@@ -224,6 +259,15 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
                 break;
             }
 
+            if (outputExitInfo.code() == ExitCode::RateLimited) {
+                if (_sleepDuration < sleepDurationThreshold) {
+                    // The waiting time is short enough, wait and retry to send the request
+                    continue;
+                }
+                // Waiting time is too long, pause the sync
+                break;
+            }
+
             // Attempt to detect network timeout
             auto errChrono = std::chrono::steady_clock::now();
             std::chrono::duration<double> requestDuration = errChrono - sendChrono;
@@ -244,7 +288,7 @@ ExitInfo AbstractNetworkJob::runJob() noexcept {
             break;
         }
 
-        if (outputExitInfo.code() == ExitCode::TokenRefreshed || outputExitInfo.code() == ExitCode::RateLimited) {
+        if (outputExitInfo.code() == ExitCode::TokenRefreshed) {
             _trials++; // Add one more chance
             continue;
         } else if (isManagedError(outputExitInfo)) {
@@ -282,13 +326,6 @@ void AbstractNetworkJob::abort() {
     SyncJob::abort();
 
     abortSession();
-}
-
-void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
-    Poco::InflatingInputStream inflater(is, Poco::InflatingStreamBuf::STREAM_GZIP);
-    while (is) {
-        Poco::StreamCopier::copyStream(inflater, ss);
-    }
 }
 
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
@@ -355,18 +392,12 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
-    req.set("User-Agent", _userAgent);
-    req.setContentType(contentType());
-    req.add("Accept", acceptHeader());
-    req.add("X-Request-ID", _requestUuid);
-    for (const auto &[headerKey, headerValue]: _rawHeaders) {
-        req.add(headerKey, headerValue);
-    }
+    setHeaders(req);
 
     if (!_data.empty()) {
         req.setContentLength(static_cast<std::streamsize>(_data.size()));
     }
-    logRequestInfo();
+    logRequestInfo(req);
 
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
@@ -415,6 +446,18 @@ ExitInfo AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     return ExitCode::Ok;
 }
 
+void AbstractNetworkJob::setHeaders(Poco::Net::HTTPRequest &req) {
+    req.set("User-Agent", _userAgent);
+    req.setContentType(contentType());
+    req.add("Accept", acceptHeader());
+    req.add("X-Request-ID", _requestUuid);
+    for (const auto &[headerKey, headerValue]: _rawHeaders) {
+        req.add(headerKey, headerValue);
+    }
+    if (scope() != Scope::None) req.add("ik-client-scope", toString(scope()));
+    if (!context().empty()) req.add("ik-client-context", context());
+}
+
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     try {
         const std::scoped_lock lock(_mutexSession);
@@ -445,14 +488,6 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << httpResponse().getStatus() << " / "
                                   << httpResponse().getReason());
     logReplyInfo();
-
-    if (Utility::isError500(httpResponse().getStatus())) {
-        std::string replyBody;
-        getStringFromStream(stream[0].get(), replyBody);
-        LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-        disableRetry();
-        return {ExitCode::BackError, ExitCause::Http5xx};
-    }
 
     switch (httpResponse().getStatus()) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
@@ -492,27 +527,43 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
             LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
+
+            // Update time to wait
+            if (const auto newWaitTime = extractWaitingTime(); newWaitTime > 0) {
+                _sleepDuration = newWaitTime;
+                LOG_INFO(_logger, "New waiting time: " << _sleepDuration);
+            } else {
+                // If no specific header is provided, wait for the longest acceptable duration
+                _sleepDuration = sleepDurationThreshold - 1;
+            }
             return ExitCode::RateLimited;
         }
+        case Poco::Net::HTTPResponse::HTTP_BAD_REQUEST:
+        case Poco::Net::HTTPResponse::HTTP_FORBIDDEN: {
+            disableRetry();
+            [[fallthrough]];
+        }
         default: {
-            if (!isAborted()) {
-                ExitInfo exitInfo;
-                try {
-                    exitInfo = handleError(stream[0].get(), uri);
-                } catch (const std::exception &e) {
-                    LOG_WARN(_logger, "handleError failed: " << errorText(e));
-                    return {};
-                }
+            if (isAborted()) return ExitCode::Ok;
 
-                if (!exitInfo) {
-                    if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
-                        (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
-                        LOG_WARN(_logger, "Error handling failed");
-                    }
-                    return exitInfo;
-                }
+            ExitInfo exitInfo;
+            try {
+                exitInfo = handleError(stream[0].get(), uri);
+            } catch (const std::exception &e) {
+                LOG_WARN(_logger, "handleError failed: " << errorText(e));
+                return ExitCode::NetworkError;
             }
-            break;
+
+            if (exitInfo.code() == ExitCode::Ok) return exitInfo;
+
+            if (exitInfo.cause() == ExitCause::Unknown && Utility::isError500(httpResponse().getStatus())) {
+                disableRetry();
+                exitInfo.setCause(ExitCause::Http5xx);
+            } else if (exitInfo.code() != ExitCode::DataError && exitInfo.code() != ExitCode::InvalidToken &&
+                       (exitInfo.code() != ExitCode::BackError || exitInfo.cause() != ExitCause::NotFound)) {
+                LOG_WARN(_logger, "Error handling failed");
+            }
+            return exitInfo;
         }
     }
 
@@ -526,14 +577,54 @@ ExitInfo AbstractNetworkJob::handleError(std::istream &inputStream, const Poco::
     return handleError(replyBody, uri);
 }
 
+void readStream(const Poco::Net::HTTPResponse &httpResponse, std::istream &inputStream, std::string &res,
+                std::atomic_bool &finished, std::exception_ptr &threadException) {
+    res = {};
+    try {
+        if (const std::string encoding = httpResponse.get("content-encoding", ""); encoding == "gzip") {
+            std::stringstream ss;
+            Utility::unzipStream(inputStream, ss);
+            res = ss.str();
+        } else {
+            std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
+            res = std::move(tmp);
+        }
+    } catch (...) {
+        threadException = std::current_exception();
+    }
+
+    finished.store(true);
+}
+
 void AbstractNetworkJob::getStringFromStream(std::istream &inputStream, std::string &res) {
-    if (const std::string encoding = httpResponse().get("content-encoding", ""); encoding == "gzip") {
-        std::stringstream ss;
-        unzip(inputStream, ss);
-        res = ss.str();
-    } else {
-        std::string tmp(std::istreambuf_iterator<char>(inputStream), (std::istreambuf_iterator<char>()));
-        res = std::move(tmp);
+    std::atomic_bool finished = false;
+    std::exception_ptr threadException = nullptr;
+    std::thread t(readStream, httpResponse(), std::ref(inputStream), std::ref(res), std::ref(finished),
+                  std::ref(threadException));
+
+    // Wait
+    TimerUtility timer;
+    while (timer.elapsed<std::chrono::milliseconds>() < std::chrono::milliseconds(sleepDurationThreshold) && !finished.load()) {
+        Utility::msleep(100);
+    }
+
+    if (!finished.load()) {
+        LOG_WARN(_logger, "Timed out while reading response stream for job " << jobId() << ", aborting session");
+        abortSession();
+    }
+
+    if (t.joinable()) {
+        t.join();
+    }
+
+    if (threadException) {
+        try {
+            std::rethrow_exception(threadException);
+        } catch (const std::exception &e) {
+            LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": " << e.what());
+        } catch (...) {
+            LOG_WARN(_logger, "Failed to read response stream for job " << jobId() << ": unknown exception.");
+        }
     }
 }
 

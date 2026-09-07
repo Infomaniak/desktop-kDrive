@@ -1,5 +1,24 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.IO;
@@ -10,17 +29,19 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
         Levels = new[] { ErrorLevel.SyncPal },
         ExitCodes = new[] { ExitCode.SystemError },
         ExitCauses = new[] { ExitCause.SyncDirAccessError },
-        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown }
+        NodeTypes = new[] { NodeType.File, NodeType.Directory, NodeType.Unknown },
+        ShowInSystemTray = true
     )]
     public sealed partial class SystemErrorSyncDirAccessError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private Error Error { get; init; }
         public SystemErrorSyncDirAccessError(Error error)
         {
             this.InitializeComponent();
             Error = error;
 
-            error.Path = Error.Sync?.LocalPath ?? "";
+            error.Path = Error.Sync?.LocalPath ?? string.Empty;
             error.NodeType = Types.NodeType.Directory;
         }
 
@@ -34,22 +55,31 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString("systemErrorSyncDirAccessErrorTitle"),
+                Title = Localizer.Instance.GetString("errSystemErrorSyncDirAccessTitle"),
                 DefaultButton = ContentDialogButton.Primary,
-                SecondaryButtonText = Localizer.Instance.GetString("buttonClose"),
+                CloseButtonText = Localizer.Instance.GetString("buttonClose"),
                 PrimaryButtonText = Localizer.Instance.GetString("buttonOpenParentFolder"),
                 Content = new SystemErrorSyncDirAccessErrorDialog(Error) { XamlRoot = xamlRoot }
             };
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageSyncDirAccessError);
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                string? absolutPath = Path.GetDirectoryName(Error.Sync?.LocalPath ?? "") ?? Error.Sync?.LocalPath;
+                if (Error.Sync is null)
+                {
+                    Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                    return;
+                }
+
+                string? absolutPath = Path.GetDirectoryName(Error.Sync.LocalPath) ?? Error.Sync.LocalPath;
                 if (string.IsNullOrEmpty(absolutPath))
                 {
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 else
                 {
+                    _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.SyncDirAccessErrorOpenFolder);
                     await Utility.OpenFolderSecurely(absolutPath);
                 }
             }

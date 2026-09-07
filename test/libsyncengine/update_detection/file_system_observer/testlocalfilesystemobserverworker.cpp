@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,8 @@ void TestLocalFileSystemObserverWorker::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     Sync sync(1, drive.dbId(), _rootFolderPath, "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(user.userId(), account.accountId(), drive.driveId(), sync.dbId());
+    sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
@@ -314,7 +316,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
     {
         /// Create dir
         LOGW_DEBUG(_logger, L"***** test create dir *****");
-        testhelpers::generateOrEditTestFile(testAbsolutePath);
+        CPPUNIT_ASSERT(testhelpers::generateTestFolder(testAbsolutePath));
 
         Utility::msleep(1000); // Wait 1sec
 
@@ -461,6 +463,77 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(initItemId));
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(newItemId));
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).name(initItemId) == testFilename);
+}
+
+void TestLocalFileSystemObserverWorker::testLFSODirReplacement() {
+    LOGW_DEBUG(_logger, L"***** Test dir replacement *****")
+
+    // Setup initial situation
+    SyncPath dirName1{Str("A")};
+    SyncPath testDirPath1 = _rootFolderPath / dirName1;
+    CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath1));
+
+    SyncPath dirName2{Str("B")};
+    SyncPath testDirPath2 = _rootFolderPath / dirName2;
+    CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath2));
+
+    SyncPath fileName1{Str("F1")};
+    SyncPath testFilePath1 = testDirPath1 / fileName1;
+    KDC::testhelpers::generateOrEditTestFile(testFilePath1);
+
+    SyncPath fileName2{Str("F2")};
+    SyncPath testFilePath2 = testDirPath2 / fileName2;
+    KDC::testhelpers::generateOrEditTestFile(testFilePath2);
+
+    Utility::msleep(1000); // Wait 1sec
+
+    NodeId dirId1;
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(dirName1, dirId1));
+    NodeId dirId2;
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(dirName2, dirId2));
+    NodeId fileId1;
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(SyncPath(dirName1) / fileName1, fileId1));
+    NodeId fileId2;
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).getItemId(SyncPath(dirName2) / fileName2, fileId2));
+
+    // Init SyncDb (we need only A and B nodes)
+    bool constraintError = false;
+    DbNode dbNodeDir1(1, Str("A"), Str("A"), dirId1, "1234", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
+    DbNodeId dbDirId1 = 0;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNodeDir1, dbDirId1, constraintError) && !constraintError);
+    dbNodeDir1.setNodeId(dbDirId1);
+
+    DbNode dbNodeDir2(1, Str("B"), Str("B"), dirId2, "5678", std::nullopt, std::nullopt, std::nullopt, NodeType::Directory, 0);
+    DbNodeId dbDirId2 = 0;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNodeDir2, dbDirId2, constraintError) && !constraintError);
+    dbNodeDir2.setNodeId(dbDirId2);
+
+    // Execute operations
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::moveItem(testDirPath1, testDirPath2 / Str("AA"), ioError));
+    CPPUNIT_ASSERT(IoHelper::renameItem(testDirPath2, testDirPath1, ioError));
+    CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath2));
+
+    // Update SyncDb to reflect the operations
+    bool found = false;
+    dbNodeDir1.setNameLocal(Str("AA"));
+    dbNodeDir1.setNameRemote(Str("AA"));
+    dbNodeDir1.setParentNodeId(std::make_optional<DbNodeId>(dbDirId2));
+    CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNodeDir1, found) && found);
+
+    dbNodeDir2.setNameLocal(Str("A"));
+    dbNodeDir2.setNameRemote(Str("A"));
+    CPPUNIT_ASSERT(_syncPal->syncDb()->updateNode(dbNodeDir2, found) && found);
+
+    Utility::msleep(1000); // Wait 1sec
+
+    // Check that the final situation is correct
+    SyncPath path;
+    bool ignore = false;
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(dirId1, path, ignore) && path == Str("A/AA"));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(fileId1, path, ignore) && path == Str("A/AA/F1"));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(dirId2, path, ignore) && path == Str("A"));
+    CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).path(fileId2, path, ignore) && path == Str("A/F2"));
 }
 
 void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Office test

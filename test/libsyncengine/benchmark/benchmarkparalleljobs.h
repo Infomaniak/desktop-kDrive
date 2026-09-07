@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ class BenchmarkParallelJobs : public CppUnit::TestFixture, public TestBase {
                                                                       const SyncPath &localTestFolderPath,
                                                                       const uint16_t nbParallelChunkJobs) const;
         std::list<std::shared_ptr<SyncJob>> generateDownloadJobs(const NodeId &remoteDirId, const SyncPath &localTestFolderPath,
-                                                                 const uint64_t expectedSize, const uint16_t nbMaxJob = 0) const;
+                                                                 const int64_t expectedSize, const uint16_t nbMaxJob = 0) const;
         void runJobs(const uint16_t nbThread, DataExtractor &dataExtractor,
                      const std::list<std::shared_ptr<SyncJob>> &jobs) const;
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         ExitCode checkLocalTree(std::shared_ptr<Node> localNode, const SyncPath &parentPath);
 
         void blacklistNode(std::shared_ptr<Node> node, const InconsistencyType inconsistencyType);
-        bool checkPathAndName(std::shared_ptr<Node> remoteNode);
+        ExitInfo checkIfPathAndNameAreValid(std::shared_ptr<Node> remoteNode, bool &pathAndNameAreValid);
         void checkNameClashAgainstSiblings(const std::shared_ptr<Node> remoteParentNode);
 
         bool pathChanged(std::shared_ptr<Node> node) const;

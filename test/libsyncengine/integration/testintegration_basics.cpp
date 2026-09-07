@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ void TestIntegration::basicTests() {
 }
 
 void TestIntegration::testLocalChanges() {
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     // Generate create operations.
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirLocal";
@@ -50,7 +50,7 @@ void TestIntegration::testLocalChanges() {
     FileStat fileStat;
     bool exists = false;
     IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
@@ -64,7 +64,7 @@ void TestIntegration::testLocalChanges() {
     // Generate an edit operation.
     testhelpers::generateOrEditTestFile(filePath);
     IoHelper::getFileStat(filePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     const auto prevRemoteTestFileInfo = remoteTestFileInfo;
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), filePath.filename());
@@ -74,6 +74,17 @@ void TestIntegration::testLocalChanges() {
     CPPUNIT_ASSERT_LESS(remoteTestFileInfo.size, prevRemoteTestFileInfo.size);
     logStep("test edit local file");
 
+    // Generate a dummy edit in local snapshot without changes
+    CPPUNIT_ASSERT(!_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
+    SnapshotItem dummySnapshotItem(std::to_string(fileStat.inode), "1", filePath.filename(), fileStat.creationTime,
+                                   fileStat.modificationTime, fileStat.nodeType, fileStat.size, false, true, true);
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
+    CPPUNIT_ASSERT(!_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
+
+    dummySnapshotItem.setLastModified(dummySnapshotItem.lastModified() + 1);
+    (void) _syncPal->_localFSObserverWorker->_liveSnapshot.updateItem(dummySnapshotItem);
+    CPPUNIT_ASSERT(_syncPal->_localFSObserverWorker->_liveSnapshot.updated());
+
     // Generate a move operation.
     const SyncName newName = Str("testFileLocal_renamed");
     const std::filesystem::path destinationPath = subDirPath / newName;
@@ -81,7 +92,7 @@ void TestIntegration::testLocalChanges() {
         LocalMoveJob job(filePath, destinationPath);
         (void) job.runSynchronously();
     }
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, newName);
     CPPUNIT_ASSERT(remoteTestFileInfo.isValid());
@@ -95,13 +106,13 @@ void TestIntegration::testLocalChanges() {
         GenericLocalDeleteJob deleteJob(subDirPath);
         (void) deleteJob.runSynchronously();
     }
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.id, filePath.filename());
     CPPUNIT_ASSERT(!remoteTestFileInfo.isValid());
 
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(subDirPath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
 #endif
@@ -114,7 +125,7 @@ void TestIntegration::testLocalChanges() {
 }
 
 void TestIntegration::testRemoteChanges() {
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     // Generate create operations.
     const SyncPath subDirPath = _syncPal->localPath() / "testSubDirRemote";
@@ -131,7 +142,7 @@ void TestIntegration::testRemoteChanges() {
     GetFileInfoJob fileInfoJob(_driveDbId, fileId);
     (void) fileInfoJob.runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     CPPUNIT_ASSERT(std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
@@ -149,7 +160,7 @@ void TestIntegration::testRemoteChanges() {
     int64_t size = 0;
     testhelpers::editRemoteFile(_driveDbId, fileId, nullptr, &modificationTime, &size);
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     FileStat filestat;
     IoError ioError = IoError::Unknown;
@@ -162,7 +173,7 @@ void TestIntegration::testRemoteChanges() {
     filePath = subDirPath / "testFileRemote_renamed";
     testhelpers::moveRemoteItem(_driveDbId, fileId, subDirId, filePath.filename());
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     CPPUNIT_ASSERT(std::filesystem::exists(filePath));
     logStep("test move remote file");
@@ -174,12 +185,12 @@ void TestIntegration::testRemoteChanges() {
         (void) job.runSynchronously();
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     CPPUNIT_ASSERT(!std::filesystem::exists(subDirPath));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
 #if defined(KD_LINUX)
-    CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath));
+    CPPUNIT_ASSERT(!testhelpers::hasTrashInfo() || testhelpers::isInTrash(subDirPath));
 #else
     CPPUNIT_ASSERT(testhelpers::isInTrash(subDirPath.filename()));
 #endif
@@ -192,7 +203,7 @@ void TestIntegration::testRemoteChanges() {
 }
 
 void TestIntegration::testSimultaneousChanges() {
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     // Rename a file on remote replica.
     const SyncPath remoteFilePath = _syncPal->localPath() / "testSimultaneousChanges_remote";
@@ -203,7 +214,7 @@ void TestIntegration::testSimultaneousChanges() {
     testhelpers::generateOrEditTestFile(localFilePath);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     CPPUNIT_ASSERT(std::filesystem::exists(remoteFilePath));
     const auto remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, _remoteSyncDir.id(), localFilePath.filename());
@@ -214,7 +225,7 @@ void TestIntegration::testSimultaneousChanges() {
 void TestIntegration::testUploadBigFile() {
     const LocalTemporaryDirectory temporaryDir("testUploadBigFile", _syncPal->localPath());
 
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     const auto localFilePath = testhelpers::generateBigFile(temporaryDir.path(), 110); // Generate a 110MB local file.
 
@@ -222,7 +233,7 @@ void TestIntegration::testUploadBigFile() {
     FileStat fileStat;
     IoHelper::getFileStat(localFilePath, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
 
-    waitForSyncToBeIdle(SourceLocation::currentLoc());
+    waitForSyncToBeIdle(std::source_location::current());
 
     DbNode dbNode;
     CPPUNIT_ASSERT(_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found) && found);

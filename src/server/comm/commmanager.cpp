@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "guijobs/abstractguijob.h"
 #include "guijobs/guijobfactory.h"
 #include "config.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/theme/theme.h"
@@ -68,19 +69,14 @@ CommManager::CommManager(AppServer &appServer) :
 
 #if defined(KD_MACOS)
     // Tell the Finder to use the Extension (checking it from System Preferences -> Extensions)
-    std::string cmd("pluginkit -v -e use -i ");
-    cmd.append(APPLICATION_REV_DOMAIN);
-    cmd.append(".Extension");
-    system(cmd.c_str());
+    Utility::runCommand("/usr/bin/pluginkit", {"-v", "-e", "use", "-i", std::string(APPLICATION_REV_DOMAIN) + ".Extension"});
 
     // Add it again. This was needed for Mojave to trigger a load.
     // TODO: Still needed?
     SyncPath extPath(CommonUtility::getExtensionPath());
     if (std::filesystem::exists(extPath)) {
         // Bundled app (i.e. not test executable)
-        std::string cmd("pluginkit -v -a ");
-        cmd.append(extPath.native());
-        system(cmd.c_str());
+        Utility::runCommand("/usr/bin/pluginkit", {"-v", "-a", extPath.native()});
     }
 #endif
 
@@ -256,7 +252,10 @@ void CommManager::onLostExtConnection(std::shared_ptr<AbstractCommChannel> chann
 
 void CommManager::executeGuiQuery(const CommString &commandLineStr, std::shared_ptr<AbstractCommChannel> channel) {
     const std::scoped_lock lock(_mutex);
-    if (!_guiJobFactory) return;
+    if (!_guiJobFactory) {
+        LOG_WARN(Log::instance()->getLogger(), "GUI Job Factory not initialized");
+        return;
+    }
 
     // Deserialize generic parameters
     int requestId = 0;
@@ -283,7 +282,7 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
     const std::scoped_lock lock(_mutex);
     if (!_guiCommServer) return;
 
-    assert(signal->type() == AbstractGuiJob::GuiJobType::Signal);
+    assert(signal->type() == GuiJobType::Signal);
 
     LOG_DEBUG(Log::instance()->getLogger(), "Send gui signal: id=" << signal->id() << " num=" << signal->signalNum());
 
@@ -292,6 +291,11 @@ void CommManager::sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal) {
 
     // Add job to JobManager pool
     GuiJobManagerSingleton::instance()->queueAsyncJob(signal);
+}
+
+bool CommManager::hasActiveGuiConnection() {
+    const std::scoped_lock lock(_mutex);
+    return _guiCommServer && _guiCommServer->hasActiveConnexion();
 }
 
 void CommManager::onNewGuiConnection() {
@@ -324,5 +328,9 @@ void CommManager::onGuiQueryReceived(std::shared_ptr<AbstractCommChannel> channe
 
 void CommManager::onLostGuiConnection(std::shared_ptr<AbstractCommChannel> channel) {
     LOG_INFO(Log::instance()->getLogger(), "Lost gui connection: sender=" << channel->id());
+    if (_guiCommServer->connections().empty()) {
+        LOG_INFO(Log::instance()->getLogger(), "No more GUI connections");
+        _appServer.handleClientDisconnection();
+    }
 }
 } // namespace KDC

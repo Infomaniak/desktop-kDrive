@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@ namespace KDC {
 
 class GetSizeJob : public AbstractTokenNetworkJob {
     public:
-        GetSizeJob(int userDbId, int driveId, const NodeId &nodeId);
-        GetSizeJob(int driveDbId, const NodeId &nodeId);
+        GetSizeJob(UserDbId userDbId, DriveId driveId, const NodeId &nodeId);
+        GetSizeJob(DriveDbId driveDbId, const NodeId &nodeId);
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline int64_t size() const { return _size; }

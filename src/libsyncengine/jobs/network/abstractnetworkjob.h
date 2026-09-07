@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ class AbstractNetworkJob : public SyncJob {
     public:
         /// @throw std::runtime_error
         AbstractNetworkJob();
-
         ~AbstractNetworkJob() override;
 
         [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
@@ -54,6 +53,7 @@ class AbstractNetworkJob : public SyncJob {
         [[nodiscard]] const BackError &backError() const { return _backError; }
 
         int32_t trials() const noexcept { return _trials; }
+        [[nodiscard]] int64_t sleepDuration() const { return _sleepDuration; }
 
     protected:
         ExitInfo runJob() noexcept override;
@@ -66,8 +66,6 @@ class AbstractNetworkJob : public SyncJob {
 
         virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
-
-        void unzip(std::istream &inputStream, std::stringstream &ss);
 
         [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
         [[nodiscard]] std::string errorText(std::exception const &e) const;
@@ -83,7 +81,8 @@ class AbstractNetworkJob : public SyncJob {
         uint8_t _apiVersion{2};
         std::string _data;
         int _customTimeout = 0;
-        int32_t _trials = 2; // By default, try again once if exception is thrown
+        static const int32_t _defaultTrials = 2;
+        int32_t _trials = _defaultTrials; // By default, try again once if exception is thrown
         BackError _backError;
 
     private:
@@ -112,7 +111,8 @@ class AbstractNetworkJob : public SyncJob {
         ExitInfo receiveResponse(const Poco::URI &uri);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
+        }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }
@@ -121,6 +121,7 @@ class AbstractNetworkJob : public SyncJob {
         void clearSession();
         void abortSession();
         ExitInfo sendRequest(const Poco::URI &uri);
+        void setHeaders(Poco::Net::HTTPRequest &req);
         ExitInfo followRedirect();
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId);
         ExitInfo processSocketError(const std::string &msg, UniqueId jobId, const std::exception &e);
@@ -129,10 +130,17 @@ class AbstractNetworkJob : public SyncJob {
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitInfo exitInfo) noexcept;
 
-        void logRequestInfo();
+        void logRequestInfo(const Poco::Net::HTTPRequest &req);
         void logReplyInfo();
+        /**
+         * @brief Try to extract the waiting time from the reply header. Especially useful when receiving a 429 error.
+         * @return The waiting in milliseconds if found. -1 otherwise.
+         */
+        int64_t extractWaitingTime();
 
         const std::string _requestUuid;
+
+        int64_t _sleepDuration = 500; // By default, wait for 500ms before retrying to send a requests
 
         static const std::string _userAgent;
         static Poco::Net::Context::Ptr _context;

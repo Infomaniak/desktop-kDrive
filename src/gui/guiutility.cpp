@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -554,7 +554,7 @@ void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*
     }
 }
 
-bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap,
+bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<SyncDbId, SyncInfoClient> &syncInfoMap,
                                          QWidget *parent) {
     const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
     const SyncPath directoryPath = QStr2Path(dirPath);
@@ -624,6 +624,20 @@ QLocale GuiUtility::languageToQLocale(Language language) {
             return QLocale::German;
         case Language::Italian:
             return QLocale::Italian;
+        case Language::Swedish:
+            return QLocale::Swedish;
+        case Language::Portuguese:
+            return QLocale::Portuguese;
+        case Language::Polish:
+            return QLocale::Polish;
+        case Language::Norwegian:
+            return QLocale::NorwegianBokmal;
+        case Language::Finnish:
+            return QLocale::Finnish;
+        case Language::Danish:
+            return QLocale::Danish;
+        case Language::Greek:
+            return QLocale::Greek;
         case Language::Dutch:
             return QLocale::Dutch;
         default:

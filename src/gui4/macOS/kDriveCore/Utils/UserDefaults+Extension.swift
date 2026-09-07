@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,30 +27,6 @@ public extension UserDefaults {
 }
 
 public extension UserDefaults {
-    var isFirstLaunch: Bool {
-        get {
-            guard let isFirstLaunch = object(forKey: Key.isFirstLaunch) as? Bool else {
-                return false
-            }
-            return isFirstLaunch
-        }
-        set {
-            set(newValue, forKey: Key.isFirstLaunch)
-        }
-    }
-
-    var shouldPresentOnboarding: Bool {
-        get {
-            guard let shouldPresentOnboarding = object(forKey: Key.shouldPresentOnboarding) as? Bool else {
-                return true
-            }
-            return shouldPresentOnboarding
-        }
-        set {
-            set(newValue, forKey: Key.shouldPresentOnboarding)
-        }
-    }
-
     var selectedSynchroDbId: Int {
         get {
             integer(forKey: Key.selectedSynchroDbId)

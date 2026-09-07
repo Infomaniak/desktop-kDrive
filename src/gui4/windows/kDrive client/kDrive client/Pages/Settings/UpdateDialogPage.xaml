@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ * Infomaniak kDrive - Desktop * Copyright (C) 2023-2026 Infomaniak Network SA 
+ * 
+ * This program is free software: you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation, either version 3 of the License, or 
+ * (at your option) any later version. * * This program is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * GNU General Public License for more details. * * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see<http://www.gnu.org/licenses/> . 
+ -->
+<Page x:Class="Infomaniak.kDrive.Pages.Settings.UpdateDialogPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:toolKit="using:CommunityToolkit.WinUI.Controls"
+      xmlns:local="using:Infomaniak.kDrive.Pages.Settings"
+      xmlns:converters="using:Infomaniak.kDrive.Converters"
+      xmlns:controls="using:Infomaniak.kDrive.CustomControls"
+      xmlns:viewmodel="using:Infomaniak.kDrive.ViewModels"
+      xmlns:types="using:Infomaniak.kDrive.Types"
+      xmlns:kDrive="using:Infomaniak.kDrive"
+      mc:Ignorable="d">
+
+    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Top.L}" 
+          RowSpacing="{StaticResource Infomaniak.Style.Spacing.M}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- App branding -->
+        <StackPanel Grid.Row="0" 
+                    Orientation="Horizontal" 
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
+            <controls:SvgIcon UriString="{StaticResource Infomaniak.Custom.Icons.kDrive}"
+                              Height="24" />
+            <TextBlock Text="kDrive"
+                       VerticalAlignment="Center"
+                       Style="{ThemeResource BodyLargeTextBlockStyle}" />
+        </StackPanel>
+
+        <!-- Title and version info -->
+        <TextBlock Grid.Row="1" 
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('updateDialogTitle'), Mode=OneWay}"
+                   Style="{StaticResource SubtitleTextBlockStyle}" 
+                   Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"/>
+        <TextBlock Grid.Row="2" 
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString1s2s('updateDialogSubtitle', ViewModel.Settings.UpdateManager.AvailableUpdate.FullVersion, ViewModel.Settings.AppVersion.FullVersion), Mode=OneWay}"
+                   Style="{StaticResource CaptionTextBlockStyle}"
+                   Foreground="{ThemeResource TextFillColorSecondary}"
+                   Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"/>
+
+        <!-- Description -->
+        <TextBlock Grid.Row="3"
+                   Text="{x:Bind kDrive:Localizer.Instance.GetString('updateDialogDescription'), Mode=OneWay}"
+                   Style="{StaticResource BodyTextBlockStyle}"
+                   Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
+                   TextWrapping="Wrap" />
+
+        <!-- What's new expander -->
+        <ScrollView x:Name="ReleaseNotesScrollView"
+                    Grid.Row="4"
+                    ContentOrientation="Vertical"
+                    VerticalAlignment="Top"
+                    Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}"
+                    Visibility="Collapsed">
+            <Expander HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
+                <Expander.Header>
+                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('updateDialogSeeWhatsNew'), Mode=OneWay}"
+                               Style="{StaticResource Infomaniak.Style.TextBlock.Body}" />
+                </Expander.Header>
+                <Expander.Content>
+                    <ItemsControl x:Name="ReleaseNotesItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <StackPanel Orientation="Horizontal"
+                                                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                                                    Padding="0,2">
+                                    <TextBlock Text="•"
+                                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{x:Bind}"
+                                                       TextWrapping="Wrap"
+                                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Expander.Content>
+            </Expander>
+        </ScrollView>
+        <!-- Buttons -->
+        <Grid Grid.Row="5" 
+              ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+              RowSpacing="{StaticResource Infomaniak.Style.Spacing.S}"
+              Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+              Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
+              BorderThickness="0,1,0,0"
+              BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+
+            <Button Grid.Column="0"
+                    Grid.Row="0"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('updateDialogRemindLater'), Mode=OneWay}"
+                    HorizontalAlignment="Stretch"
+                    Click="RemindLaterButton_Click" />
+
+            <Button Grid.Column="1"
+                    Grid.Row="0"
+                    Content="{x:Bind kDrive:Localizer.Instance.GetString('updateDialogInstallNow'), Mode=OneWay}"
+                    Style="{ThemeResource AccentButtonStyle}"
+                    HorizontalAlignment="Stretch"
+                    Click="InstallNowButton_Click" />
+
+            <HyperlinkButton Grid.Row="1"
+                             Grid.ColumnSpan="2"
+                             Content="{x:Bind kDrive:Localizer.Instance.GetString('updateDialogIgnoreVersion'), Mode=OneWay}"
+                             Foreground="{ThemeResource TextFillColorSecondary}"
+                             Style="{ThemeResource WindowChromeStyle}"
+                             HorizontalAlignment="Center"
+                             Click="IgnoreVersionButton_Click"  />
+        </Grid>
+    </Grid>
+</Page>

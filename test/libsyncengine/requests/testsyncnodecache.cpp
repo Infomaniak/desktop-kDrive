@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ void TestSyncNodeCache::setUp() {
     (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
-    _testObj = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _testObj = std::make_shared<SyncDb>(syncDbPath.string());
     _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 

@@ -1,4 +1,22 @@
-﻿using Infomaniak.kDrive.ServerCommunication.CommStruct;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Converters;
+using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.Types;
 using System;
 
@@ -24,6 +42,7 @@ namespace Infomaniak.kDrive.ViewModels
         private DateTime _timestamp = DateTime.Now;
         private string _localPath = "";
         private string _parentFolderPath = "";
+        private string _parentFolderName = "";
         private int _progressPercent = 0;
         public Int64 _operationId = 0;
 
@@ -39,9 +58,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             Sync = sync;
             _type = info.Type ?? NodeType.File;
-            _path = info.Path ?? string.Empty;
-            _localPath = System.IO.Path.Combine(Sync.LocalPath, _path.TrimStart(System.IO.Path.DirectorySeparatorChar));
-            _parentFolderPath = System.IO.Path.GetDirectoryName(LocalPath) ?? "";
+            Path = info.Path ?? string.Empty;
             _newPath = info.NewPath ?? string.Empty;
             _localNodeId = info.LocalNodeId ?? string.Empty;
             _remoteNodeId = info.RemoteNodeId ?? string.Empty;
@@ -71,6 +88,10 @@ namespace Infomaniak.kDrive.ViewModels
                 SetPropertyInUIThread(ref _path, value);
                 SetPropertyInUIThread(ref _localPath, System.IO.Path.Combine(Sync.LocalPath, _path.TrimStart(System.IO.Path.DirectorySeparatorChar)), nameof(LocalPath));
                 SetPropertyInUIThread(ref _parentFolderPath, System.IO.Path.GetDirectoryName(LocalPath) ?? "", nameof(ParentFolderPath));
+
+                StringPathToFileNameConverter converter = new StringPathToFileNameConverter();
+                var result = converter.Convert(_parentFolderPath, typeof(string), "", "") as string;
+                SetPropertyInUIThread(ref _parentFolderName, result ?? "", nameof(ParentFolderName));
             }
         }
         public string LocalPath
@@ -118,8 +139,14 @@ namespace Infomaniak.kDrive.ViewModels
         public int ProgressPercent
         {
             get => _progressPercent;
-            set => SetPropertyInUIThread(ref _progressPercent, value);
+            set
+            {
+                if (SetPropertyInUIThread(ref _progressPercent, value))
+                    OnPropertyChanged(nameof(HasIndeterminateProgress));
+            }
         }
+
+        public bool HasIndeterminateProgress => _progressPercent < 0;
 
         public ConflictType Conflict
         {
@@ -164,6 +191,11 @@ namespace Infomaniak.kDrive.ViewModels
         public string ParentFolderPath
         {
             get => _parentFolderPath;
+        }
+
+        public string ParentFolderName
+        {
+            get => _parentFolderName;
         }
     }
 }

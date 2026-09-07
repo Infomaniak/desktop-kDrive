@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "io/cachedirectory.h"
 #include "libcommonserver/commonserverlib.h"
 #include "libcommonserver/db/dbdefs.h"
 #include "libcommonserver/log/log.h"
@@ -32,6 +33,7 @@
 #include <filesystem>
 #include <unordered_set>
 #include <list>
+#include <Poco/InflatingStream.h>
 
 #include <Poco/DOM/Document.h>
 #include <Poco/Net/HTTPResponse.h>
@@ -55,11 +57,14 @@ class URI;
 
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
-        inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
+        static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
 
         static bool init();
         static void free();
+        // Returns free disk space in bytes for the given path, or -1 if an error occurs
         static int64_t getFreeDiskSpace(const SyncPath &path);
+        // Returns the minimum free disk space in bytes that should be available to consider that there is enough space for a
+        // download or an upload.
         static int64_t freeDiskSpaceLimit();
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
@@ -119,6 +124,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string computeXxHash(const char *in, std::size_t length);
         static std::string xxHashToStr(XXH64_hash_t hash);
 
+        static void unzipStream(std::istream &inputStream, std::stringstream &ss,
+                                const Poco::InflatingStreamBuf::StreamType type = Poco::InflatingStreamBuf::STREAM_GZIP);
+
 #if defined(KD_MACOS)
         static SyncPath getExcludedAppFilePath(bool test = false);
 #endif
@@ -142,6 +150,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
         static bool runDetachedProcess(std::wstring cmd);
 #endif
+#if defined(KD_MACOS) || defined(KD_LINUX)
+        static bool runCommand(const std::string &launchPath, const std::vector<std::string> &arguments = {});
+#endif
+
         static bool checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isManaged, IoError &ioError,
                                              const ItemType &itemType = ItemType());
         /* Resource analyzer */
@@ -153,8 +165,10 @@ struct COMMONSERVER_EXPORT Utility {
         static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
         static bool cpuUsageByProcess(double &percent);
 
-        static SyncPath commonDocumentsFolderName();
-        static SyncPath sharedFolderName();
+        static SyncName commonDocumentsFolderName();
+        static SyncPath commonDocumentsFolderPath();
+        static SyncName sharedFolderName();
+        static SyncPath sharedFolderPath();
         static std::string userName();
 
         static bool hasSystemLaunchOnStartup(const std::string &appName);
@@ -188,17 +202,29 @@ struct COMMONSERVER_EXPORT Utility {
         /**
          * @brief Check if a directory can be created in the temp directory.
          * @param name the name of the directory to create.
-         * @return IoError
+         * @return ExitInfo
          */
-        static IoError tryCreateTmpDir(const SyncName &name = Str("testDir"));
+        static ExitInfo tryCreateTmpDir(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testDir"));
         /**
          * @brief Check if a file can be created in the temp directory.
          * @param name the name of the file to create.
-         * @return IoError
+         * @return ExitInfo
          */
-        static IoError tryCreateTmpFile(const SyncName &name = Str("testFile"));
+        static ExitInfo tryCreateTmpFile(std::shared_ptr<CacheDirectory> cacheDirectory, const SyncName &name = Str("testFile"));
 
-        static void msleep(int msec);
+#if defined(KD_LINUX)
+        /*
+         This method makes a more accurate detection of the file system type on Linux, correcting the possibly wrong guess
+         of `Utility::fileSystemName` when it returns "EXT2/3/4". In this case, the method tries to create a file in the cache
+         directory. This method circumvents the fact that `statfs` can mistake "exFAT" with the more permissive "EXT2/3/4" when
+         a USB stick is used.
+        */
+        static ExitInfo getFileSystemName(std::shared_ptr<CacheDirectory> cacheDirectory, std::string &fileSystemName);
+#endif
+        static ExitInfo checkIfFileNamesCanEndWithSpace([[maybe_unused]] std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                        bool &canEndWithSpace);
+
+        static void msleep(int64_t msec);
 
         static bool getLinuxDesktopType(std::string &currentDesktop);
         static SyncPath getTrashPath();
@@ -216,11 +242,12 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring quotedSyncName(const SyncName &name);
         static std::wstring formatSyncName(const SyncName &name);
         static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatExitInfo(const SyncPath &path, const ExitInfo &exitInfo);
         static std::wstring formatPath(const QString &path);
         static std::wstring formatSystemError(const std::system_error &exception);
 
         static ExitCause exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir,
-                                                                SourceLocation srcLoc = SourceLocation::currentLoc());
+                                                                std::source_location srcLoc = std::source_location::current());
 
 
     private:

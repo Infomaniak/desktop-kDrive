@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,57 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class LogginErrorPage : SpecialErroBasePage
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+        public struct NavigationParams
+        {
+            public bool TryReconnectOnLoad { get; set; }
+        }
+        private NavigationParams? _navigationParams;
         public LogginErrorPage() : base([SyncErrorStates.LoggingError])
         {
             Logger.Log(Logger.Level.Info, "Navigated to LogginErrorPage - Initializing LogginErrorPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "LogginErrorPage components initialized");
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if(_navigationParams?.TryReconnectOnLoad == true)
+            {
+                DispatcherQueue.TryEnqueue(async () => await StartConnection());
+            }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            _navigationParams = e.Parameter as NavigationParams?;
+            _analyticsService.TrackPageView(Analytics.Keys.Category.LogginErrorPage);
         }
 
         private async void ConnectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            _analyticsService.TrackClick(Analytics.Keys.Category.LogginErrorPage, Analytics.Keys.EventName.OpenSignInWeb);
+            await StartConnection();
+        }
+
+        private async Task StartConnection()
         {
             try
             {

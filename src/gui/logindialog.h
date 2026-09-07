@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,10 @@ class LoginDialog : public CustomDialog {
         Q_OBJECT
 
     public:
-        LoginDialog(int userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
+        LoginDialog(UserDbId userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
     private:
-        int _userDbId;
+        UserDbId _userDbId{0};
         std::shared_ptr<ClientGui> _gui;
 
         AddDriveLoginWidget *_loginWidget;

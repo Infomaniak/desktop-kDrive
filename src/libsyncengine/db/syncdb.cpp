@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 #include <queue>
 
-#include <3rdparty/sqlite3/sqlite3.h>
+#include <sqlite3.h>
 
 #define PRAGMA_WRITABLE_SCHEMA_ID "db1"
 #define PRAGMA_WRITABLE_SCHEMA "PRAGMA writable_schema=ON;"
@@ -302,14 +302,14 @@ namespace KDC {
 DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                               NodeType::Directory, 0, std::nullopt);
 
-SyncDb::SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
+SyncDb::SyncDb(const std::string &dbPath, const std::string &targetNodeId) :
     Db(dbPath),
     _cache(*this) {
     if (!targetNodeId.empty()) {
         _rootNode.setNodeIdRemote(targetNodeId);
     }
 
-    if (!checkConnect(version)) {
+    if (!checkConnect()) {
         throw std::runtime_error("Cannot open DB!");
     }
 
@@ -1728,7 +1728,7 @@ bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<
 }
 
 // Returns the parent directory ID of the object with ID nodeId
-bool SyncDb::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
+bool SyncDb::parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "log/sentry/handler.h"
 #include "filestat.h"
 #include "iohelper.h"
@@ -30,6 +31,9 @@
 #include <fstream>
 #include <log4cplus/loggingmacros.h> // LOGW_WARN
 
+#include <vector>
+#include <xxhash.h>
+
 namespace KDC {
 
 // Default `std::filesytem` implementation. This can be changed in unit tests.
@@ -43,8 +47,6 @@ std::function<SyncPath(const SyncPath &path, std::error_code &ec)> IoHelper::_re
         static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
 std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelper::_fileSize =
         static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
-std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
-        static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 
 std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> IoHelper::_getFileStat = IoHelper::_getFileStatFn;
 
@@ -415,11 +417,9 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     if (isAlias) {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
-        IoError aliasReadError = IoError::Success;
-        if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
+        if (!_readAlias(path, itemType.targetPath, itemType.ioError)) {
             LOGW_WARN(logger(),
                       L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
-            itemType.ioError = aliasReadError;
 
             return false;
         }
@@ -621,183 +621,8 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     return true;
 }
 
-bool IoHelper::deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    // Warning: never log anything in this method. If the logger is not set, the app will crash.
-    ioError = IoError::Success;
-    std::error_code ec;
-    if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
-        directoryPath = SyncPath(value);
-        (void) std::filesystem::create_directories(directoryPath, ec);
-    } else {
-        directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
-    }
-
-    ioError = stdError2ioError(ec);
-
-    return ioError == IoError::Success;
-}
-
-bool IoHelper::appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    SyncPath tmpDirPath;
-    if (const auto res = !deviceTempDirectoryPath(tmpDirPath, ioError)) return res;
-
-    static const SyncName kDriveTmpDirName = Str("kDrive-tmp");
-    directoryPath = tmpDirPath / kDriveTmpDirName;
-    std::error_code ec;
-    (void) std::filesystem::create_directory(directoryPath, ec);
-    ioError = stdError2ioError(ec);
-    return ioError == IoError::Success;
-}
-
-namespace details {
-
-class CacheDirectoryHandler {
-    public:
-        static CacheDirectoryHandler &instance() noexcept {
-            static CacheDirectoryHandler instance;
-            return instance;
-        }
-        const SyncPath &directoryPath() noexcept {
-            std::scoped_lock lock(_mutex);
-
-            bool exists = false;
-            auto ioError = IoError::Unknown;
-            if (!IoHelper::checkIfPathExists(_directoryPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-                sentry::Handler::captureMessage(sentry::Level::Error, "Failed to check if kDrive-cache exist",
-                                                CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
-            }
-
-            if (_directoryPath.empty() || !exists) {
-                resetDirectoryPathInternal();
-            }
-            return _directoryPath;
-        }
-        void setDirectoryPath(const SyncPath &newPath) {
-            deleteDirectoryPath();
-            _directoryPath = newPath;
-            createDirectoryPath();
-        }
-        void resetDirectoryPath() noexcept {
-            std::lock_guard<std::mutex> lock(_mutex);
-            resetDirectoryPathInternal();
-        }
-        ~CacheDirectoryHandler() { deleteDirectoryPath(); }
-
-    private:
-        mutable std::mutex _mutex;
-        SyncPath _directoryPath;
-
-        void resetDirectoryPathInternal() noexcept {
-            deleteDirectoryPath();
-            initDirectoryPath();
-            if (!_directoryPath.empty()) createDirectoryPath();
-        }
-
-        CacheDirectoryHandler() {
-            if (_directoryPath.empty()) initDirectoryPath();
-            if (!_directoryPath.empty()) createDirectoryPath();
-        }
-
-        void initDirectoryPath() noexcept {
-            static const SyncName cacheDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-cache"));
-            if (initDirectoryPathFromEnv("KDRIVE_CACHE_PATH", cacheDirName)) return;
-
-#if defined(KD_LINUX)
-            if (initDirectoryPathFromEnv("XDG_CACHE_HOME", cacheDirName)) return;
-            if (initDirectoryPathFromEnv("HOME", cacheDirName, ".cache")) return;
-#endif
-            IoError ioError = IoError::Success;
-            if (!IoHelper::deviceTempDirectoryPath(_directoryPath, ioError)) {
-                return;
-            }
-            _directoryPath /= cacheDirName;
-            return;
-        }
-
-        bool initDirectoryPathFromEnv(const std::string &envVar, const SyncName &cacheDirName,
-                                      const SyncPath &subDir = "") noexcept {
-            bool isSet = false;
-            if (const auto value = CommonUtility::envVarValue(envVar, isSet); isSet && !value.empty()) {
-                if (subDir.empty()) {
-                    _directoryPath = SyncPath(value) / cacheDirName;
-                } else {
-                    _directoryPath = SyncPath(value) / subDir / cacheDirName;
-                }
-                return true;
-            }
-            return false;
-        };
-
-        void createDirectoryPath() noexcept {
-            if (!_directoryPath.empty()) {
-                IoError ioError = IoError::Success;
-                if (!IoHelper::createDirectory(_directoryPath, true, ioError) && ioError != IoError::DirectoryExists) {
-                    sentry::Handler::captureMessage(sentry::Level::Error, "Failed to create kDrive-cache",
-                                                    CommonUtility::ws2s(Utility::formatIoError(_directoryPath, ioError)));
-                    _directoryPath.clear(); // Clear the path if the directory could not be created.
-                    return;
-                }
-            }
-        }
-
-        void deleteDirectoryPath() noexcept {
-            // It is a best effort, we cannot log/sentry anything here as the logger/sentry may have been destroyed already.
-            IoError ioError = IoError::Success;
-            (void) IoHelper::deleteItem(_directoryPath, ioError);
-        }
-};
-
-} // namespace details
-
-void IoHelper::setCacheDirectoryPath(const SyncPath &newPath) {
-    if (!newPath.empty()) {
-        details::CacheDirectoryHandler::instance().setDirectoryPath(newPath);
-    } else {
-        details::CacheDirectoryHandler::instance().resetDirectoryPath();
-    }
-}
-
-bool IoHelper::cacheDirectoryPath(SyncPath &directoryPath) noexcept {
-    directoryPath = details::CacheDirectoryHandler::instance().directoryPath();
-    return !directoryPath.empty();
-}
-
-bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    if (Log::instance()) {
-        SyncPath filePath = Log::instance()->getLogFilePath();
-        if (!filePath.empty()) {
-            directoryPath = filePath.parent_path();
-        } else {
-            LOG_WARN(logger(), "Empty log file path");
-            return false;
-        }
-    } else {
-        // Generate directory path
-        if (!deviceTempDirectoryPath(directoryPath, ioError)) {
-            return false;
-        }
-
-        static const std::string LOGDIR_SUFFIX = "-logdir/";
-        const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
-        directoryPath /= logDirName;
-    }
-
-    return true;
-}
-
-bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    SyncPath tempDir;
-    (void) deviceTempDirectoryPath(tempDir, ioError);
-    if (ioError != IoError::Success) {
-        return false;
-    }
-    const SyncName logArchiverDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-logarchiverdir/"));
-    directoryPath = tempDir / logArchiverDirName;
-    return true;
-}
-
-
-bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept {
+bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError,
+                                 [[maybe_unused]] const PathCheckOption option) noexcept {
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
@@ -884,6 +709,70 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Pa
         exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
+    }
+}
+
+IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum) noexcept {
+    using enum IoError;
+    checksum.clear();
+
+    try {
+        std::error_code ec;
+        const bool isSymlink = _isSymlink(path, ec);
+        if (const IoError ioError = stdError2ioError(ec); ioError != Success) return ioError;
+        if (isSymlink) return InvalidArgument;
+
+#if defined(KD_MACOS)
+        bool isAlias = false;
+        IoError aliasError = Success;
+        if (!IoHelper::_checkIfAlias(path, isAlias, aliasError)) return aliasError;
+        if (isAlias) return InvalidArgument;
+#endif
+
+        IoError openError = Success;
+        std::ifstream ifs;
+        if (!IoHelper::openFile(path, ifs, openError) || !ifs) return openError;
+
+        constexpr size_t chunkSize = 8 * 1024 * 1024; // 8 MB
+        std::vector<char> buffer(chunkSize);
+
+        XXH3_state_t *state = XXH3_createState();
+        if (state == nullptr) {
+            return Unknown;
+        }
+
+        if (XXH3_64bits_reset(state) == XXH_ERROR) {
+            XXH3_freeState(state);
+            return Unknown;
+        }
+
+        std::streamsize readBytes(0);
+        while ((readBytes = ifs.read(buffer.data(), static_cast<std::streamsize>(buffer.size())).gcount()) > 0) {
+            if (XXH3_64bits_update(state, buffer.data(), static_cast<size_t>(readBytes)) == XXH_ERROR) {
+                XXH3_freeState(state);
+                return Unknown;
+            }
+        }
+
+        if (ifs.bad()) {
+            XXH3_freeState(state);
+            return Unknown;
+        }
+
+        XXH64_hash_t hash = XXH3_64bits_digest(state);
+        XXH3_freeState(state);
+
+        checksum = "xxh3:" + Utility::xxHashToStr(hash);
+        return Success;
+    } catch (const std::bad_alloc &) {
+        LOGW_WARN(logger(), L"Memory allocation failed in getFileChecksum");
+        return Unknown;
+    } catch (const std::exception &e) {
+        LOGW_WARN(logger(), L"Exception in getFileChecksum: " << CommonUtility::s2ws(e.what()));
+        return Unknown;
+    } catch (...) {
+        LOGW_WARN(logger(), L"Unknown exception in getFileChecksum");
+        return Unknown;
     }
 }
 
@@ -982,6 +871,7 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
+    // NB: Symlinks are not followed (symlink is removed, not its target).
     std::error_code ec;
     (void) std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
@@ -997,8 +887,34 @@ bool IoHelper::deleteItem(const SyncPath &path) noexcept {
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    ioError = IoError::Unknown;
+
+    // Get the destination type.
+    ItemType destinationType;
+    if (!getItemType(destinationPath, destinationType)) {
+        LOGW_WARN(logger(),
+                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(destinationPath, destinationType.ioError));
+        ioError = destinationType.ioError;
+        return false;
+    }
+
     std::error_code ec;
-    std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
+    if (destinationType.ioError == IoError::Success && isLink(destinationType.linkType)) {
+        // Remove the destination path.
+        if (!deleteItem(destinationPath, ioError)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destinationPath, ioError));
+            return false;
+        }
+    }
+
+    // Copy the source path to the destination path
+    // - Overwrite if the destination path already exists
+    // - Copy recursively if it is a directory
+    // - Allow symlinks copy
+    std::filesystem::copy(sourcePath, destinationPath,
+                          std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive |
+                                  std::filesystem::copy_options::copy_symlinks,
+                          ec);
     ioError = IoHelper::stdError2ioError(ec);
 
     return ioError == IoError::Success;
@@ -1025,6 +941,12 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
+        ioError = IoError::InvalidArgument;
+        return false;
+    }
+
+    if (targetPath.empty()) {
+        LOGW_DEBUG(logger(), L"Cannot create symlink on an empty target: " << Utility::formatSyncPath(path));
         ioError = IoError::InvalidArgument;
         return false;
     }
@@ -1220,10 +1142,10 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     // Retrieve `exec` rights. It is not modified by this method.
     bool dummyRead = false;
     bool dummyWrite = false;
-    bool exec = false;
+    bool exec = true;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
         LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        return IoError::Unknown;
+        // This is the best effort to re-apply the existing exec rights, therefor we do not return in case of error.
     }
 
     // The file must be unlocked before changing its access rights.

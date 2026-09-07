@@ -27,11 +27,25 @@ runs:
           /usr/bin/env bash "$SCRIPT" $ARGS
         shell: bash
 
+      - name: Display AppImage info in summary
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-linux/install/kDrive-"*-amd64.AppImage | head -n 1)
+
+          HASH=$(sha256sum "$FILE" | awk '{print $1}')
+
+          echo "### 🔐 Linux amd64 AppImage SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          # Create .sha256 file next to the AppImage
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
+
       - name: Upload app AppImage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-appimage-amd64
-          path: ${{ github.workspace }}/build-linux/install/kDrive-*-amd64.AppImage # kDrive-<full_version>-amd64.AppImage
+          path: ${{ github.workspace }}/build-linux/install/kDrive-*-amd64.* # kDrive-<full_version>-amd64.<extension>
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 
@@ -64,7 +78,7 @@ runs:
 
       - name: Upload sentry server artifacts
         if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-server-debug-amd64
           path: ${{ github.workspace }}/build-linux/sentry-server-artifacts
@@ -73,7 +87,7 @@ runs:
 
       - name: Upload sentry client artifacts
         if: ${{ steps.build.outcome == 'success' &&  inputs.release_build == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-release-artifacts-client-debug-amd64
           path: ${{ github.workspace }}/build-linux/sentry-client-artifacts
@@ -83,27 +97,7 @@ runs:
       - name: Fetch dependencies
         run: | 
           mkdir dependencies
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Widgets.* ./dependencies/ 
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Gui.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Network.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Sql.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Core.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6DBus.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicui18n.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicuuc.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libicudata.* ./dependencies/
-          cp /home/runner/Qt/6.2.3/gcc_64/lib/libQt6Svg.* ./dependencies/
-          mkdir dependencies/platforms
-          cp /home/runner/Qt/6.2.3/gcc_64/plugins/platforms/libqoffscreen.so ./dependencies/platforms/
           cp /usr/local/lib/libcppunit-1.15.so.2 ./dependencies/ 
-          cp /usr/local/lib/libPocoUtil* ./dependencies/
-          cp /usr/local/lib/libPocoJSON* ./dependencies/
-          cp /usr/local/lib/libPocoXML* ./dependencies/
-          cp /usr/local/lib/libPocoFoundation* ./dependencies/
-          cp /usr/local/lib/libPocoNetSSL* ./dependencies/
-          cp /usr/local/lib/libPocoCrypto* ./dependencies/
-          cp /usr/local/lib/libPocoNet* ./dependencies/
-          cp /usr/local/lib/libsentry* ./dependencies/
           cp /usr/local/lib/libzip* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libglib* ./dependencies/
           cp /usr/lib/x86_64-linux-gnu/libsecret* ./dependencies/
@@ -125,11 +119,41 @@ runs:
                 \( -iname 'libxxhash*.so*' \
                 -o -iname 'liblog4cplus*.so.*' \
                 -o -iname 'libssl*.so*' \
-                -o -iname 'libcrypto*.so*' \) \
+                -o -iname 'libcrypto*.so*' \
+                -o -iname 'libsentry*.so*' \
+                -o -iname 'libQt6Widgets*.so*' \
+                -o -iname 'libQt6Gui*.so*' \
+                -o -iname 'libQt6Network*.so*' \
+                -o -iname 'libQt6Sql*.so*' \
+                -o -iname 'libQt6Core*.so*' \
+                -o -iname 'libQt6DBus*.so*' \
+                -o -iname 'libQt6Svg*.so*' \
+                -o -iname 'libicuuc*.so*' \
+                -o -iname 'libicudata*.so*' \
+                -o -iname 'libicui18n*.so*' \
+                -o -iname 'libPocoUtil*' \
+                -o -iname 'libPocoJSON*' \
+                -o -iname 'libPocoXML*' \
+                -o -iname 'libPocoFoundation*' \
+                -o -iname 'libPocoNetSSL*' \
+                -o -iname 'libPocoCrypto*' \
+                -o -iname 'libPocoNet*' \) \
                 -exec cp {} ./dependencies/ \; \
                 -exec echo "Conan dependency found -> " {} \;
+              if [[ "$dir" == *"/qt"* ]]; then
+                mkdir -p ./dependencies/platforms
+                find "$(dirname $dir)" \
+                  '(' -iname 'libqoffscreen.so' ')' \
+                  -exec cp {} ./dependencies/platforms/ \; \
+                  -exec echo "Conan Qt dependency found -> " {} \;
+              fi
             fi
           done
+          # Restore the original environment variables set before running conanrun.sh
+              deactivate_script=$(find "${{ github.workspace }}/build-linux" -name deactivate_conanrun.sh | head -n 1)
+              if [ -n "$deactivate_script" ]; then
+                source "$deactivate_script"
+              fi
         shell: bash
         if: steps.build.outcome == 'success'
 
@@ -141,16 +165,16 @@ runs:
         if: steps.build.outcome == 'success'
 
       - name: Upload build common files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-build-common-files
           path: ./dependencies/
           retention-days: 1
           compression-level: 0
         if: steps.build.outcome == 'success'
-     
+
       - name: Upload uncached build common files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-build-common-files-uncached
           path: ./uncached_dependencies/
@@ -159,7 +183,7 @@ runs:
         if: steps.build.outcome == 'success'
 
       - name: Upload build test common executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-kDrive_test_common
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common
@@ -168,7 +192,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test common server executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-kDrive_test_common_server
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_common_server
@@ -177,7 +201,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test server executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-kDrive_test_server
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_server
@@ -186,7 +210,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test syncengine executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-kDrive_test_syncengine
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_syncengine
@@ -195,7 +219,7 @@ runs:
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'false' }}
 
       - name: Upload build test parms executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-kDrive_test_parms
           path: ${{ github.workspace }}/build-linux/build/bin/kDrive_test_parms

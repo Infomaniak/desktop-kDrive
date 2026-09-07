@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         [[nodiscard]] bool initializing() const { return _initializing; }
 
         [[nodiscard]] const LiveSnapshot &liveSnapshot() const { return _liveSnapshot; }
+        bool forceUpdateLastChangeRevision(const NodeId &itemId) { return _liveSnapshot.forceUpdateLastChangeRevision(itemId); }
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;
@@ -73,6 +74,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         friend class TestOperationProcessor;
         friend class TestSituationGenerator;
         friend class TestSyncPal;
+        friend class TestIntegration;
 };
 
 } // namespace KDC

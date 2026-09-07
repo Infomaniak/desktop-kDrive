@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,27 +19,41 @@
 #pragma once
 
 #include "jobs/network/abstracttokennetworkjob.h"
+
 #include "libcommonserver/vfs/vfs.h"
+#include "libcommonserver/io/cachedirectory.h"
 
 namespace KDC {
 
 class DownloadJob : public AbstractTokenNetworkJob {
     public:
-        DownloadJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize, SyncTime creationTime, SyncTime modificationTime, bool isCreate);
-        DownloadJob(const std::shared_ptr<Vfs> vfs, int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath,
-                    int64_t expectedSize);
+        struct FileDownloadInfo {
+                const DriveDbId driveDbId = 0;
+                const NodeId remoteFileId;
+                const SyncPath localpath;
+                const int64_t expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
+                const SyncTime creationTime = 0;
+                SyncTime modificationTime = 0;
+                bool isCreate = false;
+        };
+        enum class DateTimePolicy {
+            IgnoreDateTime,
+            ApplyDateTime
+        };
+
+        DownloadJob(const std::shared_ptr<Vfs> vfs, std::shared_ptr<CacheDirectory> cacheDirectory,
+                    const FileDownloadInfo &fileDownloadInfo, DateTimePolicy dateTimePolicy);
         ~DownloadJob() override;
 
-        inline const NodeId &remoteNodeId() const { return _remoteFileId; }
-        inline const SyncPath &localPath() const { return _localpath; }
+        inline const NodeId &remoteNodeId() const { return _fileDownloadInfo.remoteFileId; }
+        inline const SyncPath &localPath() const { return _fileDownloadInfo.localpath; }
 
         inline const NodeId &localNodeId() const { return _localNodeId; }
         inline SyncTime creationTime() const { return _creationTimeOut; }
         inline SyncTime modificationTime() const { return _modificationTimeOut; }
         [[nodiscard]] inline int64_t size() const { return _sizeOut; }
 
-        [[nodiscard]] int64_t expectedSize() const { return _expectedSize; }
+        [[nodiscard]] int64_t expectedSize() const { return _fileDownloadInfo.expectedSize; }
 
     private:
         std::string getSpecificUrl() override;
@@ -73,15 +87,12 @@ class DownloadJob : public AbstractTokenNetworkJob {
         static bool hasEnoughPlace(const SyncPath &tmpDirPath, const SyncPath &destDirPath, int64_t neededPlace,
                                    log4cplus::Logger logger);
 
-        NodeId _remoteFileId;
-        SyncPath _localpath;
-        SyncPath _tmpPath;
-        const int64_t _expectedSize = Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH;
-        const SyncTime _creationTimeIn = 0;
-        const SyncTime _modificationTimeIn = 0;
+        const std::shared_ptr<Vfs> _vfs;
+        std::shared_ptr<CacheDirectory> _cacheDirectory;
+        FileDownloadInfo _fileDownloadInfo;
 
-        bool _isCreate = false;
-        bool _ignoreDateTime = false;
+        SyncPath _tmpPath;
+        DateTimePolicy _dateTimePolicy;
         bool _responseHandlingCanceled = false;
 
         NodeId _localNodeId;
@@ -90,7 +101,6 @@ class DownloadJob : public AbstractTokenNetworkJob {
         SyncTime _modificationTimeOut = 0;
         int64_t _sizeOut = -1; // Do not use 0 here as it is a valid size.
 
-        const std::shared_ptr<Vfs> _vfs;
         bool _isHydrated{true};
 
         friend class TestNetworkJobs;

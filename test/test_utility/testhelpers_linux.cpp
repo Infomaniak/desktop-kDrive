@@ -21,15 +21,15 @@
 #include "io/iohelper.h"
 
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 
 #include <fstream>
 
 #include <Poco/JSON/Object.h>
+#include <Poco/URI.h>
 
 #include <regex>
 #include <sys/stat.h>
-#include <utime.h>
+
 
 namespace KDC::testhelpers {
 namespace {
@@ -61,10 +61,30 @@ SyncPath removeNumericSuffix(const SyncPath &relativePath) {
     return SyncPath{ss.str()};
 }
 
+// Parse the mandatory `Path` entry from a .trashinfo file
+std::string getOriginalPath(const SyncPath &infoFile) {
+    std::ifstream file(infoFile);
+    if (!file.is_open()) return "";
+
+    std::string line;
+    static const std::string pathKey = "Path=";
+    while (std::getline(file, line)) {
+        if (line.rfind(pathKey, 0) != 0) continue;
+        std::string pathValue;
+        Poco::URI::decode(line.substr(pathKey.size()), pathValue);
+
+        return pathValue;
+    }
+
+    return "";
+}
+
 enum class TrashSubDirectory {
     Info,
     Files
 };
+
+} // namespace
 
 // Get the user trash subdirectory
 SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
@@ -82,23 +102,22 @@ SyncPath getTrashSubDir(const TrashSubDirectory trashSubDir) {
     return {};
 }
 
+bool hasTrashInfo() {
+    std::error_code ec;
+    const auto trashInfoPath = getTrashSubDir(TrashSubDirectory::Info);
+    if (!std::filesystem::exists(trashInfoPath, ec) || ec) return false;
 
-// Parse the mandatory `Path` entry from a .trashinfo file
-std::string getOriginalPath(const SyncPath &infoFile) {
-    std::ifstream file(infoFile);
-    if (!file.is_open()) return "";
+    const auto trashPath = Utility::getTrashPath();
+    const auto tempPath = std::filesystem::temp_directory_path(ec);
+    if (ec) return false;
 
-    std::string line;
-    static const std::string pathKey = "Path=";
-    while (std::getline(file, line)) {
-        if (line.rfind(pathKey, 0) != 0) continue;
-        return line.substr(pathKey.size());
-    }
+    struct stat trashStat {};
+    struct stat tempStat {};
+    if (::stat(trashPath.c_str(), &trashStat) != 0) return false;
+    if (::stat(tempPath.c_str(), &tempStat) != 0) return false;
 
-    return "";
+    return trashStat.st_dev == tempStat.st_dev;
 }
-
-} // namespace
 
 void eraseFromTrash(const KDC::SyncPath &relativePath) {
     const auto trashPath = Utility::getTrashPath();
@@ -154,5 +173,21 @@ bool isInTrash(const SyncPath &absoluteFilePath) {
     return false;
 }
 
+void showTrashInfo() {
+    try {
+        const SyncPath trashInfoDir = getTrashSubDir(TrashSubDirectory::Info);
+        std::cout << "Showing trash info from " << trashInfoDir << " ..." << std::endl;
+        for (const auto &entry: std::filesystem::directory_iterator(trashInfoDir)) {
+            if (entry.path().extension() != ".trashinfo") continue;
+
+            std::cerr << "Trash Info Entry: " << entry.path() << std::endl;
+
+            const std::string originalPathStr = getOriginalPath(entry.path());
+            std::cout << "OriginalPath: " << originalPathStr << std::endl;
+        }
+    } catch (const std::filesystem::filesystem_error &e) {
+        std::cerr << "File system exception caught in `showTrashInfo`: " << e.what() << std::endl;
+    }
+}
 
 } // namespace KDC::testhelpers

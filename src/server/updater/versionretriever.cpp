@@ -1,0 +1,107 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "versionretriever.h"
+
+#include "db/parmsdb.h"
+#include "jobs/syncjobmanager.h"
+#include "jobs/network/abstractnetworkjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/log/log.h"
+#include "utility/utility.h"
+
+namespace KDC {
+
+ExitCode VersionRetriever::retrieveVersion(const DistributionChannel channel, UniqueId *id /*= nullptr*/) {
+    _isVersionReceived = false;
+
+    std::shared_ptr<AbstractNetworkJob> job;
+    if (const auto exitCode = generateGetAppVersionJob(channel, job); exitCode != ExitCode::Ok) return exitCode;
+    if (id) *id = job->jobId();
+
+    LOG_INFO(Log::instance()->getLogger(), "Looking for new app version...");
+
+    const std::function<void(UniqueId)> callback = std::bind_front(&VersionRetriever::versionInfoReceived, this);
+    job->setAdditionalCallback(callback);
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
+    return ExitCode::Ok;
+}
+
+void VersionRetriever::setCallback(const std::function<void()> &callback) {
+    LOG_INFO(Log::instance()->getLogger(), "Set callback");
+    _callback = callback;
+}
+
+void VersionRetriever::versionInfoReceived(const UniqueId jobId) {
+    // A mutex is needed because this function can be run multiple times simultaneously when the computer wakes from sleep.
+    const std::scoped_lock<std::mutex> lock(_mutex);
+    _isVersionReceived = false;
+    _versionsInfo.clear();
+    LOG_INFO(Log::instance()->getLogger(), "App version info received");
+
+    const auto job = SyncJobManagerSingleton::instance()->getJob(jobId);
+    const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
+    if (!getAppVersionJobPtr) {
+        LOG_ERROR(Log::instance()->getLogger(), "Could not cast job pointer.");
+        _callback();
+        return;
+    }
+
+    if (getAppVersionJobPtr->hasErrorApi()) {
+        std::stringstream ss;
+        ss << getAppVersionJobPtr->backError().code() << " - " << getAppVersionJobPtr->backError().description();
+        sentry::Handler::captureMessage(sentry::Level::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
+        LOG_ERROR(Log::instance()->getLogger(), ss.str());
+    } else if (getAppVersionJobPtr->exitInfo().code() != ExitCode::Ok) {
+        LOG_ERROR(Log::instance()->getLogger(),
+                  "Error in UpdateChecker::versionInfoReceived : " << getAppVersionJobPtr->exitInfo());
+    } else {
+        _versionsInfo = getAppVersionJobPtr->versionInfo();
+        _isVersionReceived = true;
+    }
+
+    _callback();
+}
+
+ExitCode VersionRetriever::generateGetAppVersionJob(const DistributionChannel channel, std::shared_ptr<AbstractNetworkJob> &job) {
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        return ExitCode::DbError;
+    } else if (!found) {
+        return ExitCode::DataError;
+    }
+
+    std::vector<User> userList;
+    if (!ParmsDb::instance()->selectAllUsers(userList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllUsers");
+        return ExitCode::DbError;
+    }
+    std::vector<UserId> userIdList;
+    for (const auto &user: userList) {
+        if (user.userId() == 0) continue;
+        userIdList.push_back(user.userId());
+    }
+
+    const auto &appUid = std::get<std::string>(appStateValue);
+    job = std::make_shared<GetAppVersionJob>(channel, appUid, userIdList);
+    return ExitCode::Ok;
+}
+
+} // namespace KDC

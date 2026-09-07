@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ class TestSituationGeneratorException final : public std::runtime_error {
 
 TestSituationGenerator::TestSituationGenerator() {
     const auto syncDbPath = _temporaryDirectory.path() / ("dummySyncDb_" + CommonUtility::generateRandomStringAlphaNum());
-    _syncDb = std::make_shared<SyncDb>(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    _syncDb = std::make_shared<SyncDb>(syncDbPath.string());
     (void) _syncDb->init(KDRIVE_VERSION_STRING);
     _syncDb->setAutoDelete(true);
 

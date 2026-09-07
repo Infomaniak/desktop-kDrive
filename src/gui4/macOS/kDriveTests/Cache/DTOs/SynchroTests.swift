@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -598,6 +598,62 @@ struct SynchroTests {
         #expect(nodesArray.count == 2)
         #expect(nodesArray[0] == node3)
         #expect(nodesArray[1] == node1)
+    }
+
+    @Test("Remove syncing activities")
+    func removeSyncingActivities() {
+        // GIVEN
+        var synchro = Synchro(dbId: 1,
+                              driveDbId: 2,
+                              localPath: "/test",
+                              targetPath: "/target",
+                              targetNodeId: "node-id",
+                              supportVfs: true,
+                              virtualFileMode: .Mac)
+
+        let syncingNode = SynchroNode(operationId: 1,
+                                      type: .File,
+                                      path: "/syncing.txt",
+                                      newPath: "/syncing.txt",
+                                      localNodeId: "local-1",
+                                      remoteNodeId: "remote-1",
+                                      direction: .Up,
+                                      instruction: .Put,
+                                      status: .Syncing,
+                                      conflict: .None,
+                                      inconsistency: .None,
+                                      cancelType: .None,
+                                      date: Date(timeIntervalSince1970: 1),
+                                      size: 7_000_000,
+                                      progress: 10,
+                                      error: "")
+
+        let completedNode = SynchroNode(operationId: 2,
+                                        type: .File,
+                                        path: "/completed.txt",
+                                        newPath: "/completed.txt",
+                                        localNodeId: "local-2",
+                                        remoteNodeId: "remote-2",
+                                        direction: .Down,
+                                        instruction: .Update,
+                                        status: .Success,
+                                        conflict: .None,
+                                        inconsistency: .None,
+                                        cancelType: .None,
+                                        date: Date(timeIntervalSince1970: 2),
+                                        size: 7_000_000,
+                                        progress: 100,
+                                        error: "")
+
+        synchro.addOrUpdateSynchNode(syncingNode)
+        synchro.addOrUpdateSynchNode(completedNode)
+
+        // WHEN
+        synchro.removeSyncingActivities()
+
+        // THEN
+        #expect(synchro.synchNodes[1] == nil)
+        #expect(synchro.synchNodes[2] == completedNode)
     }
 
     @Test("Synchro equality")

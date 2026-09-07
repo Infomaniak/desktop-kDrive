@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,9 @@ static const auto syncInfoNavigationPaneClsid = "navigationPaneClsid";
 
 namespace KDC {
 
-SyncInfo::SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
-                   bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid) :
+SyncInfo::SyncInfo(const SyncDbId dbId, const DriveDbId driveDbId, const QString &localPath, const QString &targetPath,
+                   const QString &targetNodeId, const bool supportVfs, const VirtualFileMode virtualFileMode,
+                   const QString &navigationPaneClsid) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
@@ -77,14 +78,18 @@ void SyncInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
-    in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
+    qint64 dbId = 0;
+    qint64 driveDbId = 0;
+    in >> dbId >> driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
             info._virtualFileMode >> info._navigationPaneClsid;
+    info.setDbId(static_cast<SyncDbId>(dbId));
+    info.setDriveDbId(static_cast<DriveDbId>(driveDbId));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const SyncInfo &info) {
-    out << info._dbId << info._driveDbId << info._localPath << info._targetPath << info._targetNodeId << info._supportVfs
-        << info._virtualFileMode << info._navigationPaneClsid;
+    out << static_cast<qint64>(info._dbId) << static_cast<qint64>(info._driveDbId) << info._localPath << info._targetPath
+        << info._targetNodeId << info._supportVfs << info._virtualFileMode << info._navigationPaneClsid;
     return out;
 }
 

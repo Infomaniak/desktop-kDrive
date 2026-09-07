@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         void start() override;
         void stop() override;
 
-        virtual ExitInfo changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes);
+        virtual ExitInfo changesDetected(const std::list<std::pair<SyncPath, OperationType>> &changes);
         virtual void forceUpdate() override;
 
     protected:
@@ -50,10 +50,13 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         bool canComputeChecksum(const SyncPath &absolutePath);
 
 #if defined(KD_MACOS)
-        ExitCode isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal, bool &valid) const;
+        ExitCode isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal, int64_t sizeLocal,
+                             bool &valid) const;
 #endif
 
-        void sendAccessDeniedError(const SyncPath &absolutePath);
+        void sendAccessDeniedError(const SyncPath &relativePath);
+
+        ExitInfo handleIoError(const SyncPath &relativePath, IoError ioError);
 
         std::chrono::steady_clock::time_point _needUpdateTimerStart = std::chrono::steady_clock::now();
 

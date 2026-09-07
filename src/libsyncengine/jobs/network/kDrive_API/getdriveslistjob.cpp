@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ namespace KDC {
 
 const std::string driveKey = "drive";
 
-GetDrivesListJob::GetDrivesListJob(int userDbId) :
+GetDrivesListJob::GetDrivesListJob(const UserDbId userDbId) :
     AbstractTokenNetworkJob(ApiType::DriveByUser, userDbId, 0, 0, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
@@ -59,17 +59,17 @@ ExitInfo GetDrivesListJob::handleJsonResponse(const std::string &replyBody) {
     for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
         const auto dataObj = it->extract<Poco::JSON::Object::Ptr>();
 
-        int driveId = -1;
+        DriveId driveId = -1;
         if (!JsonParserUtility::extractValue(dataObj, driveIdKey, driveId)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        int userId = -1;
+        UserId userId = -1;
         if (!JsonParserUtility::extractValue(dataObj, idKey, userId)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        int accountId = -1;
+        AccountId accountId = -1;
         std::string accountName;
         const auto driveObj = dataObj->getObject(driveKey);
         if (!driveObj) {

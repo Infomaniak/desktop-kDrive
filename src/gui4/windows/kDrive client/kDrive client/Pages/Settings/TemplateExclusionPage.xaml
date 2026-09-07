@@ -1,4 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <Page x:Class="Infomaniak.kDrive.Pages.Settings.TemplateExclusionPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -16,7 +33,7 @@
     <Page.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
-    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.L}"
+    <Grid Padding="{StaticResource Infomaniak.Style.Thickness.Sides.Vertical.L}"
           RowSpacing="{StaticResource Infomaniak.Style.Spacing.L}">
         <Grid.RowDefinitions>
             <!-- Title & BreadCrumb bar -->
@@ -28,7 +45,8 @@
         <!-- Title & BreadCrumb bar -->
         <StackPanel Grid.Row="0"
                     Orientation="Vertical"
-                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+                    Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                    Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
             <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('settingsTitle')}"
                        Style="{StaticResource TitleLargeTextBlockStyle}" />
 
@@ -38,7 +56,8 @@
 
         <!-- Template exclusion management -->
         <ScrollView Grid.Row="1">
-            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}">
+            <StackPanel Spacing="{StaticResource Infomaniak.Style.Spacing.XS}"
+                        Margin="{StaticResource Infomaniak.Style.Thickness.Sides.Horizontal.L}">
                 <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('filesToExclude')}"
                            Style="{StaticResource TitleTextBlockStyle}" />
 
@@ -100,6 +119,7 @@
                 <!-- User Exclusion - At least one template-->
                 <toolKit:SettingsExpander Header="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListHeader')}"
                                           Description="{x:Bind kDrive:Localizer.Instance.GetString('userExclusionFileListDescription')}"
+                                          IsExpanded="True"
                                           Visibility="{x:Bind _templateListModel.UserDefinedTemplates.Count, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}">
 
                     <toolKit:SettingsExpander.HeaderIcon>
@@ -162,6 +182,8 @@
                                                           Click="TemplateCheckBox_Click" />
 
                                                 <ToggleSwitch Grid.Column="2"
+                                                              OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                                                              OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
                                                               IsOn="{x:Bind Warning, Mode=OneWay}"
                                                               Toggled="WarningToggleSwitch_Toggled"
                                                               HorizontalAlignment="Right">

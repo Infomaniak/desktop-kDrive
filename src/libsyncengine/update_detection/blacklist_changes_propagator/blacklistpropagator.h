@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ class BlacklistPropagator : public AbstractPropagatorJob {
 
         ExitInfo runJob() override;
 
-        inline int syncDbId() const { return _syncPal->syncDbId(); }
+        inline SyncDbId syncDbId() const { return _syncPal->syncDbId(); }
 
     private:
         ExitInfo checkNodes();

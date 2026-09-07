@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ void UpdateDialog::initUi(const VersionInfo &versionInfo) {
     auto *lbl = new QLabel;
     QString txt = tr("<p>The new version <b>%1</b> of the %2 Client is available and has been downloaded.</p>"
                      "<p>The installed version is %3.</p>")
-                          .arg(KDC::CommonUtility::escape(versionInfo.beautifulVersion().c_str()),
+                          .arg(KDC::CommonUtility::escape(versionInfo.fullVersion().c_str()),
                                KDC::CommonUtility::escape(QString::fromStdString(Theme::instance()->appName())),
                                KDC::CommonUtility::escape(CommonUtility::currentVersion().c_str()));
 

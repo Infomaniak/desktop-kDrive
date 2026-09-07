@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@ import Cocoa
 import Combine
 import InfomaniakDI
 import kDriveCore
+import kDriveCoreUI
+import OrderedCollections
+import SwiftUI
 
 final class MainWindowController: NSWindowController {
     enum WindowConstants {
@@ -31,6 +34,7 @@ final class MainWindowController: NSWindowController {
     @LazyInjectService private var router: MainWindowRouter
     @LazyInjectService private var xpcConnectionProvider: XPCConnectionProvider
     @LazyInjectService private var coherentCache: CoherentCache
+    @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
     // periphery:ignore - We keep a strong reference on the viewController being presented
     private var viewController: NSViewController?
@@ -47,9 +51,13 @@ final class MainWindowController: NSWindowController {
 
         window.center()
         window.setFrameAutosaveName(WindowConstants.frameName)
+        window.minSize = NSSize(width: 800, height: 450)
+        window.collectionBehavior = [.managed, .moveToActiveSpace]
+        window.delegate = self
 
         observeRouter()
         observeXPConnectionState()
+        observeUsersCache()
     }
 
     @available(*, unavailable)
@@ -71,6 +79,21 @@ final class MainWindowController: NSWindowController {
             }
     }
 
+    private func observeUsersCache() {
+        cacheObservable.usersPublisher.map { $0.isEmpty }.removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] noAccount in
+                guard let self else { return }
+
+                guard noAccount else { return }
+
+                guard case .mainWindow = router.currentRoute else {
+                    return
+                }
+
+                router.navigate(to: .onboarding())
+            }
+    }
+
     private func navigateAfterPreloading(state: XPCConnectionState) {
         switch state {
         case .notConnected:
@@ -79,6 +102,8 @@ final class MainWindowController: NSWindowController {
             router.navigate(to: .preloading(isShowingError: true))
         case .connected:
             Task {
+                guard await !presentPermissionsViewIfNecessary() else { return }
+
                 let route = await guessBestRouteWhenXPCIsConnected()
                 router.navigate(to: route)
             }
@@ -88,12 +113,7 @@ final class MainWindowController: NSWindowController {
     private func guessBestRouteWhenXPCIsConnected() async -> WindowRoute {
         let hasConnectedUser = await coherentCache.getFirstAvailableUser() != nil
 
-        if UserDefaults.standard.isFirstLaunch {
-            UserDefaults.standard.shouldPresentOnboarding = !hasConnectedUser
-            UserDefaults.standard.isFirstLaunch = false
-        }
-
-        if hasConnectedUser && !UserDefaults.standard.shouldPresentOnboarding {
+        if hasConnectedUser {
             return .mainWindow()
         } else {
             return .onboarding()
@@ -104,8 +124,8 @@ final class MainWindowController: NSWindowController {
         switch route {
         case .preloading(let isShowingError):
             setViewController(PreloadingViewController(isShowingError: isShowingError))
-        case .onboarding(let user, let onboardingStep):
-            setViewController(OnboardingViewController(user: user, initialStep: onboardingStep))
+        case .onboarding(let user, let steps, let initialStep):
+            setViewController(OnboardingViewController(user: user, steps: steps, initialStep: initialStep))
         case .mainWindow(let tab):
             setViewController(MainViewController())
             if let tab {
@@ -118,5 +138,53 @@ final class MainWindowController: NSWindowController {
     private func setViewController(_ viewController: NSViewController) {
         self.viewController = viewController
         window?.contentView = viewController.view
+    }
+
+    @discardableResult
+    private func presentPermissionsViewIfNecessary() async -> Bool {
+        #if DEBUG
+        return false
+        #else
+        guard xpcConnectionProvider.guiConnectionState == .connected else {
+            return false
+        }
+
+        @InjectService var windowRouter: MainWindowRouter
+        if case .onboarding = windowRouter.currentRoute {
+            return false
+        }
+
+        @InjectService var permissionHander: MacOSPermissionHandling
+        var permissionsToShow = [OnboardingStep]()
+        for requiredPermission in PermissionsViewModel.requiredPermissions {
+            if await !permissionHander.isAuthorized(for: requiredPermission) {
+                permissionsToShow.append(.permissions(requiredPermission))
+            }
+        }
+
+        guard !permissionsToShow.isEmpty else {
+            return false
+        }
+        windowRouter.navigate(to: .onboarding(nil, permissionsToShow, permissionsToShow.first))
+
+        return true
+        #endif
+    }
+
+    // MARK: - Search
+
+    @objc func showSearchSheet() {
+        guard let mainViewController = viewController as? MainViewController else { return }
+        mainViewController.showSearchSheet()
+    }
+}
+
+// MARK: - NSWindowDelegate
+
+extension MainWindowController: NSWindowDelegate {
+    func windowDidBecomeMain(_ notification: Notification) {
+        Task {
+            await presentPermissionsViewIfNecessary()
+        }
     }
 }

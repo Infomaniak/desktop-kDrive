@@ -2,7 +2,7 @@ name: macOS Redesigned GUI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -16,13 +16,12 @@ jobs:
   run-tests:
     name: Run tests
     runs-on: [ self-hosted, iOS ]
-    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     # We disable code signing to avoid issues with missing certificates/provisioning profiles on the CI runner
     # More info here: https://github.com/orgs/community/discussions/175498
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Build
         run: |
           xcodebuild \
@@ -45,12 +44,12 @@ jobs:
   swiftlint:
     name: SwiftLint
     runs-on: ubuntu-latest
-    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup Mise
+        # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           working_directory: src/gui4/macOS
@@ -60,12 +59,12 @@ jobs:
   swiftformat:
     name: SwiftFormat
     runs-on: ubuntu-latest
-    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup Mise
+        # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           working_directory: src/gui4/macOS
@@ -75,12 +74,12 @@ jobs:
   periphery:
     name: Periphery
     runs-on: [ self-hosted, iOS ]
-    if: ${{ contains(join(github.event.*.labels.*.name, ','), 'macOS UI') || contains(join(github.event.*.labels.*.name, ','), 'XPC') }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup Mise
+        # jdx/mise-action@v3.6.1
         uses: jdx/mise-action@6d1e696aa24c1aa1bcc1adea0212707c71ab78a8
         with:
           working_directory: src/gui4/macOS      

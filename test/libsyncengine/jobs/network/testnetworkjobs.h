@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,14 @@
 #pragma once
 
 #include "testincludes.h"
+
+#include "io/cachedirectory.h"
 #include "keychainmanager/apitoken.h"
 #include "test_utility/localtemporarydirectory.h"
 
 #include "utility/types.h"
 #include "libcommonserver/io/iohelper.h"
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -39,6 +42,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
         CPPUNIT_TEST(testGetFileList);
+        CPPUNIT_TEST(testCheckHashMatch);
         CPPUNIT_TEST(testGetFileListWithCursor);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
@@ -60,11 +64,15 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
+        CPPUNIT_TEST(testGetAppVersionInfoParsingEdgeCases);
         CPPUNIT_TEST(testDirectDownload);
         CPPUNIT_TEST(testDownloadHasEnoughSpace);
         CPPUNIT_TEST(testSearch);
         CPPUNIT_TEST(testGetInfoUserTrialsOn401Error);
+        CPPUNIT_TEST(testGetInfoDriveOn401Error);
         CPPUNIT_TEST(testExists);
+        CPPUNIT_TEST(testGetAllFilesInDirectory);
+        CPPUNIT_TEST(testPostFileModificationDate);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -81,6 +89,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testGetDriveList();
         void testGetFileInfo();
         void testGetFileList();
+        void testCheckHashMatch();
         void testGetFileListWithCursor();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
@@ -102,11 +111,15 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testGetAppVersionInfo();
+        void testGetAppVersionInfoParsingEdgeCases();
         void testDirectDownload();
         void testDownloadHasEnoughSpace();
         void testSearch();
         void testGetInfoUserTrialsOn401Error();
+        void testGetInfoDriveOn401Error();
         void testExists();
+        void testGetAllFilesInDirectory();
+        void testPostFileModificationDate();
 
     private:
         bool createTestFiles();
@@ -114,8 +127,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
 
-        int _driveDbId = 0;
-        int _userDbId = 0;
+        DriveDbId _driveDbId = 0;
+        UserDbId _userDbId = 0;
         NodeId _remoteDirId;
         ApiToken _apiToken;
 
@@ -126,6 +139,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
         static uint64_t _nbParallelThreads;
 
-        LocalTemporaryDirectory _localParmsDbTempDir{"testNetworkJobs"};
+        LocalTemporaryDirectory _localTempDir{"testNetworkJobs"};
+        std::shared_ptr<CacheDirectory> _cacheDirectory;
 };
 } // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,9 @@ int runTestSuite(const std::string &logFileName) {
     std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
-    const KDC::SyncPath logFilePath = std::filesystem::temp_directory_path() / "kDrive-logdir" / (woss.str() + logFileName);
+    KDC::SyncPath logDirectoryPath;
+    (void) KDC::CommonUtility::logDirectoryPath(logDirectoryPath);
+    const KDC::SyncPath logFilePath = logDirectoryPath / (woss.str() + logFileName);
     KDC::Log::instance(Path2WStr(logFilePath));
 
     if (KDC::testhelpers::isExtendedTest(false)) {

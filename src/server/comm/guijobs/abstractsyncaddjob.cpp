@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ ExitInfo AbstractSyncAddJob::serializeOutputParms() {
     return ExitCode::Ok;
 }
 
-ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
+ExitInfo AbstractSyncAddJob::process(const SyncInfo &syncInfo) {
     // Check if sync is valid
     Sync sync;
     ServerRequests::syncInfoToSync(syncInfo, sync);
@@ -110,6 +110,7 @@ ExitInfo AbstractSyncAddJob::process(SyncInfo &syncInfo) {
     Utility::restartFinderExtension();
 #endif
 
+    _syncInfo = syncInfo;
     return ExitCode::Ok;
 }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,11 +104,13 @@ static const std::string redirectUriKey = "redirect_uri";
 static const std::string symbolicLinkKey = "symbolic_link";
 static const std::string updatedByKey = "updated_by";
 static const std::string displayNameKey = "display_name";
+static const std::string firstNameKey = "first_name";
 static const std::string emailKey = "email";
 static const std::string avatarKey = "avatar";
 static const std::string isStaffKey = "is_staff";
 static const std::string updatedAtKey = "updated_at";
 static const std::string versionsKey = "versions";
+static const std::string hashKey = "hash";
 
 static const std::string totalNbItemKey = "total";
 static const std::string pageKey = "page";

@@ -18,15 +18,17 @@
 
 #include "testhelpers_requests.h"
 
+#include "jobs/network/kDrive_API/renamejob.h"
+
 namespace KDC::testhelpers {
 
-NodeId createRemoteDir(const int driveDbId, const NodeId &remoteParentId, const SyncName &name) {
+NodeId createRemoteDir(const DriveDbId driveDbId, const NodeId &remoteParentId, const SyncName &name) {
     CreateDirJob job(nullptr, driveDbId, remoteParentId, name);
     (void) job.runSynchronously();
     return job.nodeId();
 }
 
-void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *creationTime /*= nullptr*/,
+void editRemoteFile(const DriveDbId driveDbId, const NodeId &remoteFileId, SyncTime *creationTime /*= nullptr*/,
                     SyncTime *modificationTime /*= nullptr*/, int64_t *size /*= nullptr*/) {
     const LocalTemporaryDirectory temporaryDir;
     const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
@@ -47,34 +49,29 @@ void editRemoteFile(const int driveDbId, const NodeId &remoteFileId, SyncTime *c
     }
 }
 
-void moveRemoteItem(const int driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
+void moveRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                     const SyncName &name /*= {}*/) {
     MoveJob job(nullptr, driveDbId, {}, remoteFileId, destinationRemoteParentId, name);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
 }
 
-NodeId duplicateRemoteItem(const int driveDbId, const NodeId &id, const SyncName &newName) {
+void renameRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const SyncName &name) {
+    RenameJob job(nullptr, driveDbId, remoteFileId, name);
+    job.setBypassCheck(true);
+    (void) job.runSynchronously();
+}
+
+NodeId duplicateRemoteItem(const DriveDbId driveDbId, const NodeId &id, const SyncName &newName) {
     DuplicateJob job(nullptr, driveDbId, id, newName);
     (void) job.runSynchronously();
     return job.nodeId();
 }
 
-void deleteRemoteItem(const int driveDbId, const NodeId &id) {
+void deleteRemoteItem(const DriveDbId driveDbId, const NodeId &id) {
     DeleteJob job(driveDbId, id);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
-}
-
-SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) {
-    IoError ioError(IoError::Unknown);
-    IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
-    bool endOfDir = false;
-    DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-        if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
-    }
-    return {};
 }
 
 } // namespace KDC::testhelpers

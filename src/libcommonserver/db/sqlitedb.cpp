@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "utility/utility.h"
 #include "utility/logiffail.h"
 #include "log/log.h"
+
+#include "libcommon/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -431,6 +433,26 @@ static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value 
     sqlite3_result_null(context);
 }
 } // namespace details
+
+bool SqliteDb::walCheckpointTruncate() {
+    if (!isOpened()) {
+        return false;
+    }
+    auto nLog = 0;
+    auto nCkpt = 0;
+    _errId = sqlite3_wal_checkpoint_v2(_sqlite3Db.get(), nullptr, SQLITE_CHECKPOINT_TRUNCATE, &nLog, &nCkpt);
+    if (_errId == SQLITE_BUSY) {
+        LOG_WARN(_logger,
+                 "WAL checkpoint (TRUNCATE) blocked by active readers (SQLITE_BUSY): log=" << nLog << " checkpointed=" << nCkpt);
+        return false;
+    }
+    if (_errId != SQLITE_OK) {
+        LOG_WARN(_logger, "WAL checkpoint (TRUNCATE) failed: " << _errId << " - " << sqlite3_errmsg(_sqlite3Db.get()));
+        return false;
+    }
+    LOG_DEBUG(_logger, "WAL checkpoint (TRUNCATE): log=" << nLog << " checkpointed=" << nCkpt);
+    return true;
+}
 
 int SqliteDb::createNormalizeSyncNameFunc() {
     return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, nullptr, &details::normalizeSyncName,

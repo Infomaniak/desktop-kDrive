@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,7 +115,8 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
      * @param name the name of the event
      * @param value the value of the event
      */
-    void MatomoClient::sendEvent(const QString &category, const MatomoEventAction action, const QString &name, const int value) {
+    void MatomoClient::sendEvent(const QString &category, const MatomoEventAction action, const QString &name,
+                                 const GenericId value) {
         QString actionStr;
         switch (action) {
             case MatomoEventAction::Click:
@@ -136,7 +137,7 @@ inline Q_LOGGING_CATEGORY(lcMatomoClient, "gui.matomo", QtInfoMsg)
         }
         if (matomoDisabled) return; // If Matomo is disabled, do not send the event.
 
-        instance().PiwikTracker::sendEvent(category, category, actionStr, name, value);
+        instance().PiwikTracker::sendEvent(category, category, actionStr, name, static_cast<int>(value));
     }
 
     /**

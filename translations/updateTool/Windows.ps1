@@ -1,31 +1,36 @@
-# Chemin par défaut vers lupdate.exe
-$lupdatePath = "C:\Qt\Tools\QtDesignStudio\qt6_design_studio_reduced_version\bin\lupdate.exe"
+# Base directory = folder where the script is located
+$scriptRoot = $PSScriptRoot
 
-# Vérifier de nouveau le chemin fourni par l'utilisateur
+# Default path to lupdate.exe (relative to script)
+$lupdatePath = Join-Path $scriptRoot "linguist\lupdate.exe"
+
+# Verify again the path provided by the user
 while (-Not (Test-Path $lupdatePath)) {
-    Write-Host "Le chemin fourni n'existe pas."
-    $lupdatePath = Read-Host "Veuillez fournir le chemin correct vers lupdate.exe"
+    Write-Host "The provided path does not exist."
+    $lupdatePath = Read-Host "Please provide the correct path to lupdate.exe"
 }
 
-# Trouver tous les fichiers .ts dans le dossier transalations
-$tsFiles = Get-ChildItem -Path ../ -Filter "*.ts" -Recurse
+# Path to src folder (relative to script)
+$srcPath = Join-Path $scriptRoot "..\..\src"
 
-# Chemin vers le dossier src
-$srcPath = "..\..\src"
+# Find all .ts files in the translations folder (relative to script)
+$translationsPath = Join-Path $scriptRoot ".."
+$tsFiles = Get-ChildItem -Path $translationsPath -Filter "*.ts" -Recurse
 
-# Compteur de fichiers mis à jour
+# Counter for updated files
 $updatedCount = 0
 
-# Exécuter lupdate.exe pour chaque fichier .ts
+# Run lupdate.exe for each .ts file
 foreach ($file in $tsFiles) {
     & $lupdatePath $srcPath -ts $file.FullName -noobsolete
+
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Erreur lors de l'exécution de lupdate.exe pour $($file.FullName)"
+        Write-Host "Error while running lupdate.exe for $($file.FullName) ($LASTEXITCODE)"
     } else {
-        Write-Host "Mis a jour reussi pour $($file.FullName)"
+        Write-Host "Update successful for $($file.FullName)"
         $updatedCount++
     }
 }
 
-# Afficher le nombre de fichiers mis à jour
-Write-Host "Nombre total de fichiers mis a jour : $updatedCount"
+# Display the number of updated files
+Write-Host "Total number of files updated: $updatedCount"

@@ -84,7 +84,7 @@ namespace KDC {
 
 std::mutex CommonUtility::_generateRandomStringMutex;
 
-const int CommonUtility::logsPurgeRate = 7; // days
+const int CommonUtility::logsPurgeRate = 31; // days
 const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
@@ -97,6 +97,14 @@ const QString CommonUtility::germanCode = "de";
 const QString CommonUtility::spanishCode = "es";
 const QString CommonUtility::italianCode = "it";
 const QString CommonUtility::dutchCode = "nl";
+const QString CommonUtility::swedishCode = "sv";
+const QString CommonUtility::portugueseCode = "pt";
+const QString CommonUtility::polishCode = "pl";
+const QString CommonUtility::norwegianCode = "nb";
+const QString CommonUtility::finnishCode = "fi";
+const QString CommonUtility::danishCode = "da";
+const QString CommonUtility::greekCode = "el";
+
 static std::random_device rd;
 static std::default_random_engine gen(rd());
 
@@ -138,6 +146,11 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
     return generateRandomString(charArray, distrib, length);
 }
 
+int64_t CommonUtility::generateRandomNumber(const int64_t minValue, const int64_t maxValue) {
+    std::uniform_int_distribution<int64_t> distrib(minValue, maxValue);
+    return distrib(gen);
+}
+
 #if defined(KD_MACOS) || defined(KD_LINUX)
 std::string CommonUtility::generateUUID() {
     uuid_t uuid = {0};
@@ -166,7 +179,6 @@ Platform CommonUtility::platform() {
     }
     // Otherwise we consider the OS to be Linux based
     if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
-
     return Platform::LinuxAMD;
 }
 
@@ -175,32 +187,19 @@ QString CommonUtility::platformArch() {
 }
 
 const std::string &CommonUtility::userAgentString() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << APPLICATION_NAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
-        str = ss.str();
-    }
+    static const std::string str =
+            std::string(APPLICATION_NAME) + " / " + currentVersion() + " (" + platformName().toStdString() + ")";
     return str;
 }
 
 const std::string &CommonUtility::currentVersion() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH << "." << KDRIVE_VERSION_BUILD;
-        str = ss.str();
-    }
+    static const std::string str = KDRIVE_VERSION_STRING;
     return str;
 }
 
 const std::string &CommonUtility::versionTag() {
-    static std::string str;
-    if (str.empty()) {
-        std::stringstream ss;
-        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH;
-        str = ss.str();
-    }
+    static const std::string str = std::to_string(KDRIVE_VERSION_MAJOR) + "." + std::to_string(KDRIVE_VERSION_MINOR) + "." +
+                                   std::to_string(KDRIVE_VERSION_PATCH);
     return str;
 }
 
@@ -208,19 +207,20 @@ uint64_t CommonUtility::versionBuild() {
     return KDRIVE_VERSION_BUILD;
 }
 
-static std::unordered_map<std::string, std::string> rootFsTypeMap;
-std::string getRootFsType(const SyncPath &targetPath) {
+std::string CommonUtility::getRootFsType(const SyncPath &targetPath) {
+    static std::unordered_map<std::string, std::string> rootFsTypeMap;
+
     auto it = rootFsTypeMap.find(targetPath.root_name().string());
     if (it == rootFsTypeMap.end()) {
         const std::string fsType = CommonUtility::fileSystemName(targetPath);
         const auto [it2, inserted] = rootFsTypeMap.try_emplace(targetPath.root_name().string(), CommonUtility::toUpper(fsType));
-        if (!inserted) {
-            return {};
-        }
+        if (!inserted) return {};
+
         it = it2;
     }
     return it->second;
 }
+
 
 bool CommonUtility::isNTFS(const SyncPath &targetPath) {
     static const std::string ntfs("NTFS");
@@ -232,12 +232,17 @@ bool CommonUtility::isAPFS(const SyncPath &targetPath) {
     return getRootFsType(targetPath) == apfs;
 }
 
+bool CommonUtility::isHFS(const SyncPath &targetPath) {
+    static const std::string hfs("HFS");
+    return getRootFsType(targetPath) == hfs;
+}
+
 bool CommonUtility::isFAT(const SyncPath &targetPath) {
     static const std::string fat("FAT");
     return contains(getRootFsType(targetPath), fat);
 }
 
-bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
+bool CommonUtility::isSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
 #if defined(KD_MACOS)
     // Tested OK: APFS, HFS+, exFAT
     // Tested KO: FAT32
@@ -251,7 +256,7 @@ bool CommonUtility::isSyncCompatible(const SyncPath &targetPath) {
 #endif
 }
 
-bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
+bool CommonUtility::isLiteSyncCompatible([[maybe_unused]] const SyncPath &targetPath) {
     // Only File Systems supporting sparse files are compatible
 #if defined(KD_MACOS)
     return CommonUtility::isAPFS(targetPath);
@@ -260,71 +265,6 @@ bool CommonUtility::isLiteSyncCompatible(const SyncPath &targetPath) {
 #else
     return false;
 #endif
-}
-
-std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
-#if defined(KD_MACOS)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        return stat.f_fstypename;
-    }
-#elif defined(KD_WINDOWS)
-    TCHAR szFileSystemName[MAX_PATH + 1];
-    DWORD dwMaxFileNameLength = 0;
-    DWORD dwFileSystemFlags = 0;
-
-    if (GetVolumeInformation(targetPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-        return ws2s(szFileSystemName);
-    } else {
-        // Not all the requested information is retrieved
-        DWORD dwError = GetLastError();
-        std::wstringstream message;
-        message << L"Error in GetVolumeInformation for " << Path2WStr(targetPath.root_name()) << L" ("
-                << utility_base::getErrorMessage(dwError) << L")";
-        sentry::Handler::captureMessage(sentry::Level::Warning, "CommonUtility::fileSystemName", ws2s(message.str()));
-
-        // !!! File system name can be OK or not !!!
-        return ws2s(szFileSystemName);
-    }
-#elif defined(KD_LINUX)
-    struct statfs stat;
-    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
-        const auto formatFsName = [](const std::string &prettyName, long fsCode) {
-            std::stringstream stream;
-            stream << std::hex << fsCode;
-            return prettyName + " | 0x" + stream.str();
-        };
-        switch (stat.f_type) {
-            case 0x137d:
-                return formatFsName("EXT(1)", stat.f_type);
-            case 0xef51:
-                return formatFsName("EXT2", stat.f_type);
-            case 0xef53:
-                return formatFsName("EXT2/3/4", stat.f_type);
-            case 0xbad1dea:
-            case 0xa501fcf5:
-            case 0x58465342:
-                return formatFsName("XFS", stat.f_type);
-            case 0x9123683e:
-            case 0x73727279:
-                return formatFsName("BTRFS", stat.f_type);
-            case 0xf15f:
-                return formatFsName("ECRYPTFS", stat.f_type);
-            case 0x4244:
-                return formatFsName("HFS", stat.f_type);
-            case 0x5346544e:
-                return formatFsName("NTFS", stat.f_type);
-            case 0x858458f6:
-                return formatFsName("RAMFS", stat.f_type);
-            default:
-                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
-                                    stat.f_type);
-        }
-    }
-#endif
-
-    return "UNIDENTIFIED";
 }
 
 void CommonUtility::resetTranslations() {
@@ -701,6 +641,38 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
 #endif
 }
 
+Language CommonUtility::strToLanguage(const QString &lang) {
+    if (lang == "en") {
+        return Language::English;
+    } else if (lang == "fr") {
+        return Language::French;
+    } else if (lang == "de") {
+        return Language::German;
+    } else if (lang == "es") {
+        return Language::Spanish;
+    } else if (lang == "it") {
+        return Language::Italian;
+    } else if (lang == "sv") {
+        return Language::Swedish;
+    } else if (lang == "nl") {
+        return Language::Dutch;
+    } else if (lang == "pt") {
+        return Language::Portuguese;
+    } else if (lang == "pl") {
+        return Language::Polish;
+    } else if (lang == "nb" || lang == "no") {
+        return Language::Norwegian;
+    } else if (lang == "fi") {
+        return Language::Finnish;
+    } else if (lang == "da") {
+        return Language::Danish;
+    } else if (lang == "el") {
+        return Language::Greek;
+    } else {
+        return Language::Default;
+    }
+}
+
 QString applicationTrPath() {
 #if defined(KD_MACOS)
     QString devTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
@@ -799,25 +771,10 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 }
 
 bool CommonUtility::isSupportedLanguage(const QString &languageCode) {
-    return strToLanguage(languageCode) != Language::Default;
-}
-
-Language CommonUtility::strToLanguage(const QString &lang) {
-    if (lang == CommonUtility::englishCode) {
-        return Language::English;
-    } else if (lang == CommonUtility::frenchCode) {
-        return Language::French;
-    } else if (lang == CommonUtility::germanCode) {
-        return Language::German;
-    } else if (lang == CommonUtility::spanishCode) {
-        return Language::Spanish;
-    } else if (lang == CommonUtility::italianCode) {
-        return Language::Italian;
-    } else if (lang == CommonUtility::dutchCode) {
-        return Language::Dutch;
-    }
-
-    return Language::Default;
+    static const std::unordered_set<QString> supportedLanguages = {
+            englishCode,    frenchCode, germanCode,    italianCode, spanishCode, dutchCode, swedishCode,
+            portugueseCode, polishCode, norwegianCode, finnishCode, danishCode,  greekCode};
+    return supportedLanguages.contains(languageCode);
 }
 
 QString CommonUtility::languageCode(const Language language) {
@@ -838,6 +795,20 @@ QString CommonUtility::languageCode(const Language language) {
             return spanishCode;
         case Language::Dutch:
             return dutchCode;
+        case Language::Swedish:
+            return swedishCode;
+        case Language::Portuguese:
+            return portugueseCode;
+        case Language::Polish:
+            return polishCode;
+        case Language::Norwegian:
+            return norwegianCode;
+        case Language::Finnish:
+            return finnishCode;
+        case Language::Danish:
+            return danishCode;
+        case Language::Greek:
+            return greekCode;
         case Language::English:
             break;
         case Language::EnumEnd:
@@ -965,6 +936,11 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
         it2++;
     }
     return (it1 == it1End);
+}
+
+bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath) {
+    SyncPath dummyPath;
+    return isDiskRootFolder(absolutePath, dummyPath);
 }
 
 bool CommonUtility::isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath) {
@@ -1119,6 +1095,15 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
     return std::string();
 }
 
+bool CommonUtility::logToConsoleEnabled() {
+#ifndef NDEBUG
+    static const bool value = CommonUtility::envVarValue("KDRIVE_ENABLE_LOG_TO_CONSOLE") == "1";
+    return value;
+#else
+    return false;
+#endif
+}
+
 int CommonUtility::setenv(const char *const name, const char *const value, const int overwrite) {
 #if defined(KD_WINDOWS)
     // https://stackoverflow.com/a/23616164/4675396
@@ -1133,6 +1118,29 @@ int CommonUtility::setenv(const char *const name, const char *const value, const
     return ::setenv(name, value, overwrite);
 #endif
 }
+
+#if defined(KD_LINUX)
+void CommonUtility::initAppImageEnvironment() {
+    if (const std::string appImageEnvValue = envVarValue("APPIMAGE"); !appImageEnvValue.empty()) {
+        // We are running inside an AppImage
+        if (const std::string appDirValue = envVarValue("APPDIR"); !appDirValue.empty()) {
+            // Use APPDIR which points to the mounted AppImage directory
+            _workingDirPath = KDC::SyncPath(appDirValue) / "usr/bin";
+
+            // Prevent loading incompatible system GIO modules by pointing to our AppImage's GIO modules
+            // This must be set BEFORE any GLib initialization
+            const std::string gioModuleDir = appDirValue + "/usr/lib/gio/modules";
+            if (setenv("GIO_MODULE_DIR", gioModuleDir.c_str(), 1) == -1) {
+                const int err = errno;
+                qWarning() << "Failed to set GIO_MODULE_DIR to " << gioModuleDir.c_str() << " (errno " << err << ": "
+                           << strerror(err) << ")";
+            }
+        } else {
+            qWarning() << "APPDIR environment variable is not set, AppImage environment may be incomplete";
+        }
+    }
+}
+#endif
 
 void CommonUtility::handleSignals(void (*sigHandler)(int)) {
     // Kills
@@ -1432,6 +1440,15 @@ ReplicaSide CommonUtility::syncNodeTypeSide(SyncNodeType type) {
     }
 }
 
+bool CommonUtility::modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2) {
+    // Resolution for the modification time is 2s on FAT filesystems:
+    // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+    const uint16_t timeDifferenceThresholdForEdit = CommonUtility::isFAT(path) ? 1 // +/- 1 sec
+                                                                               : 0;
+    const auto diff = time1 > time2 ? time1 - time2 : time2 - time1;
+    return diff <= timeDifferenceThresholdForEdit;
+}
+
 void CommonUtility::convertFromBase64Str(const std::string &base64Str, std::string &value) {
     value.clear();
     std::istringstream istr(base64Str);
@@ -1503,6 +1520,55 @@ bool CommonUtility::isLinux() {
 #else
     return false;
 #endif
+}
+
+ExitInfo CommonUtility::deviceTempDirectoryPath(SyncPath &directoryPath) noexcept {
+    // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    std::error_code ec;
+    if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
+        directoryPath = SyncPath(value);
+        (void) std::filesystem::create_directories(directoryPath, ec);
+    } else {
+        directoryPath =
+                std::filesystem::temp_directory_path(ec); // The std::filesystem implementation returns an empty path on error.
+    }
+
+    return stdErrorToExitInfo(ec);
+}
+
+ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {
+    switch (error) {
+        case 0:
+            return ExitCode::Ok;
+        case static_cast<int64_t>(std::errc::file_exists):
+            return {ExitCode::SystemError, ExitCause::FileExists};
+        case static_cast<int64_t>(std::errc::filename_too_long):
+            return {ExitCode::SystemError, ExitCause::InvalidName};
+        case static_cast<int64_t>(std::errc::invalid_argument):
+        case static_cast<int64_t>(std::errc::is_a_directory):
+            return {ExitCode::SystemError, ExitCause::InvalidArgument};
+        case static_cast<int64_t>(std::errc::no_such_file_or_directory):
+        case static_cast<int64_t>(std::errc::not_a_directory): // Occurs in particular when converting a bundle into a single file
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        case static_cast<int64_t>(std::errc::no_space_on_device):
+            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+        case static_cast<int64_t>(std::errc::permission_denied):
+        case static_cast<int64_t>(std::errc::operation_not_permitted):
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        case static_cast<int64_t>(std::errc::cross_device_link):
+        default:
+            return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+}
+
+ExitInfo CommonUtility::stdErrorToExitInfo(const std::error_code &ec) noexcept {
+    if (!ec) {
+        return stdErrorToExitInfo(0);
+    }
+    if (const std::error_condition defaultCondition = ec.default_error_condition(); defaultCondition) {
+        return stdErrorToExitInfo(defaultCondition.value());
+    }
+    return stdErrorToExitInfo(ec.value());
 }
 
 } // namespace KDC

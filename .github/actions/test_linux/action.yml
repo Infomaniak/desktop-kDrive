@@ -27,7 +27,7 @@ runs:
 
       - name: Download common files
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           name: linux-build-common-files
           path: ${{ github.workspace }}/build-linux/cache/
@@ -39,13 +39,13 @@ runs:
         shell: bash
 
       - name: Download uncached common files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           name: linux-build-common-files-uncached
           path: ${{ github.workspace }}/build-linux/test/
 
       - name: Download test executable
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           name: linux-${{ inputs.test_name }}
           path: ${{ github.workspace }}/build-linux/test/
@@ -56,12 +56,12 @@ runs:
 
       - name: Execute tests
         run : |
-            export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${{ github.workspace }}/build-linux/test/
+            export LD_LIBRARY_PATH=${{ github.workspace }}/build-linux/test/:$LD_LIBRARY_PATH
             ./infomaniak-build-tools/run-test.sh ./build-linux/test/ ${{ inputs.test_name }}
         shell: bash
 
       - name: Upload tests logs artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: linux-logs-${{ inputs.test_name }}
           path: /tmp/kDrive-logdir/*

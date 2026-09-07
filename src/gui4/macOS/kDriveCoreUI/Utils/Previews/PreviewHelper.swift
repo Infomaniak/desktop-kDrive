@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -49,8 +49,10 @@ public enum PreviewHelper {
         dbId: 95014,
         userId: 95014,
         name: "Tim Cook",
+        firstName: "Tim",
         email: "tim@apple.com",
-        avatar: nil
+        avatar: nil,
+        isStaff: false
     )
 
     public static let account = UIAccount(
@@ -62,12 +64,14 @@ public enum PreviewHelper {
         dbId: 1,
         driveId: 1,
         name: "Tim Drive",
+        isAdmin: true,
         hexColor: UIHexColor(red: 0, green: 0, blue: 255)
     )
     public static let drive2 = UIDrive(
         dbId: 2,
         driveId: 2,
         name: "Drive Pro Max",
+        isAdmin: true,
         hexColor: UIHexColor(red: 255, green: 0, blue: 0)
     )
 
@@ -133,7 +137,24 @@ public enum PreviewHelper {
         syncDate: .now.addingTimeInterval(-3600)
     )
 
-    public static func blockingErrorFor(syncError: SynchroError, isDriveAdmin: Bool) -> UIBlockingError {
+    public static func blockingErrorFor(syncError: BlockingSynchroError, isDriveAdmin: Bool) -> UIBlockingError {
         return UIBlockingError(uiDrive: drive1, isDriveAdmin: isDriveAdmin, error: syncError)
     }
+
+    public static let synchroError = SynchroError(
+        kind: .unknown,
+        metadata: .init(
+            dbId: 0,
+            synchroDbId: 0,
+            date: .now,
+            path: "/this/is/a/lovely/path.jpg",
+            destinationPath: "/the/vision/pro/is/great.pdf",
+            nodeType: .file,
+            nodeId: .init(local: nil, remote: nil),
+            isAutoResolved: true,
+            level: KDC.ErrorLevel.Node,
+            exitCode: .Unknown,
+            exitCause: .Unknown
+        )
+    )
 }

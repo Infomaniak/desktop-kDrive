@@ -1,3 +1,20 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -22,7 +39,6 @@ namespace Infomaniak.kDrive.Pages.Settings
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "TemplateExclusionPage components initialized");
         }
-
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             SetupNavBar();
@@ -59,7 +75,7 @@ namespace Infomaniak.kDrive.Pages.Settings
                 XamlRoot = this.XamlRoot,
                 Content = popupPage,
                 PrimaryButtonText = Localizer.Instance.GetString("dialogNewExclusionRulePrimaryButton"),
-                SecondaryButtonText = Localizer.Instance.GetString("buttonCancel"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
                 DefaultButton = ContentDialogButton.Primary
             };
 
@@ -154,7 +170,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
         }
 
-        private void WarningToggleSwitch_Toggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        private async void WarningToggleSwitch_Toggled(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             if (_templateListModel is null)
             {
@@ -177,7 +193,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             }
 
             exclusionTemplate.Warning = toggleSwitch.IsOn;
-            _templateListModel.SaveUserTemplates();
+            await _templateListModel.SaveUserTemplates();
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,26 +96,27 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {{"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
-                 {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
-                 {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
-                 {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
-                 {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
-                 {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
-                 {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
-                 {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
-                 {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
-                 {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
+    _commands = {
+        {"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
+        {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
+        {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
+        {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
+        {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
+        {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
+        {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
+        {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
+        {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
+        {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
 #if defined(KD_WINDOWS)
-                 {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
-                 {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
+        {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
+        {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
 #endif
 #if defined(KD_MACOS)
-                 {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
-                 {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
-                 {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
-                 {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
-                 {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
+        {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
+        {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
+        {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
+        {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
+        {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
 #endif
     };
 }
@@ -322,17 +323,36 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 
 #if defined(KD_MACOS)
         // Not done in Windows case: triggers a hydration
-        // Set pin state
-        if (!setPinState(fileData, PinState::AlwaysLocal)) {
+        // Get pin state
+        PinState ps{PinState::Unknown};
+        if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
+        }
+
+        if (ps != PinState::AlwaysLocal) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::AlwaysLocal); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
         }
 #endif
 
         if (!addDownloadJob(fileData, parentFolder)) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath));
+
+#if defined(KD_MACOS)
+            // Cancel hydration and reset pin state to initial value
+            if (const auto exitInfo = cancelHydrate(fileData, ps); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::cancelHydrate - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            }
+#endif
+
             continue;
         }
     }
@@ -624,17 +644,34 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
             continue;
         }
 
-        // Set pin state
-        if (ExitInfo exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
+        // Get pin state
+        PinState ps{PinState::Unknown};
+        if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                      L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             continue;
         }
 
+        if (ps != PinState::OnlineOnly) {
+            // Set pin state
+            if (const auto exitInfo = setPinState(fileData, PinState::OnlineOnly); !exitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(),
+                          L"Error in ExtensionJob::setPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+                continue;
+            }
+        }
+
         // Dehydrate placeholder
-        if (ExitInfo exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
-            LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::dehydratePlaceholder - " << Utility::formatSyncPath(filePath) << exitInfo);
+        if (const auto exitInfo = dehydratePlaceholder(fileData); !exitInfo) {
+            LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::dehydratePlaceholder - "
+                                                            << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+
+            // Setting back the previous pin state
+            if (const auto exitInfo2 = cancelDehydrate(fileData, ps); !exitInfo2) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelDehydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": " << exitInfo2);
+            }
+
             continue;
         }
     }
@@ -868,7 +905,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     return true;
 }
 
-SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId) const {
+SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const SyncDbId syncDbId) const {
     const auto result = _commManager->appServer().syncPalMap.find(syncDbId);
     if (result == _commManager->appServer().syncPalMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "SyncPal not found in SyncPalMap - syncDbId=" << syncDbId);
@@ -878,7 +915,7 @@ SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const int syncDbId
     return result;
 }
 
-VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const {
+VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const SyncDbId syncDbId) const {
     const auto result = _commManager->appServer().vfsMap.find(syncDbId);
     if (result == _commManager->appServer().vfsMap.cend()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in VfsMap - syncDbId=" << syncDbId);
@@ -886,6 +923,17 @@ VfsMap::const_iterator ExtensionJob::retrieveVfsMapIt(const int syncDbId) const 
     }
 
     return result;
+}
+
+ExitInfo ExtensionJob::getPinState(const FileData &fileData, PinState &pinState) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+
+    pinState = vfsMapIt->second->pinState(fileData.relativePath);
+    return ExitCode::Ok;
 }
 
 ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) {
@@ -896,6 +944,26 @@ ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) 
     if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
     return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+}
+
+ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState) {
+    if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+    const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
+    if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
+
+    vfsMapIt->second->cancelHydrate(fileData.localPath);
+
+    if (pinState != PinState::Unknown) return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ExtensionJob::cancelDehydrate(const FileData &fileData, PinState pinState) {
+    if (pinState != PinState::Unknown) return setPinState(fileData, pinState);
+
+    return ExitCode::Ok;
 }
 
 ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
@@ -910,13 +978,16 @@ ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
 
 bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
     if (!fileData.syncDbId) return false;
-    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return false;
 
     // Create download job
-    const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
-    if (exitCode != ExitCode::Ok) {
+    if (const ExitCode exitCode =
+                syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
+        exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
         return false;
@@ -926,7 +997,7 @@ bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &pare
 }
 
 #if defined(KD_MACOS)
-bool ExtensionJob::cancelDownloadJobs(int syncDbId, const std::vector<CommString> &fileList) {
+bool ExtensionJob::cancelDownloadJobs(const SyncDbId syncDbId, const std::vector<CommString> &fileList) {
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(syncDbId);

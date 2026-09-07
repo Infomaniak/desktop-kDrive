@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ namespace KDC {
 
 class UrlHelper {
     public:
-        static std::string infomaniakApiUrl(uint8_t version = 2, bool forceProd = false);
+        static std::string infomaniakApiUrl(uint8_t version = 2);
         static std::string kDriveApiUrl(uint8_t version = 2);
         static std::string notifyApiUrl(uint8_t version = 2);
         static std::string loginApiUrl();

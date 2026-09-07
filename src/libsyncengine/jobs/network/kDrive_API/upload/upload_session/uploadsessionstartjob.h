@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@ namespace KDC {
 class UploadSessionStartJob : public AbstractUploadSessionJob {
     public:
         // Using file name and parent ID, for create only
-        UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const SyncName &filename, uint64_t size,
+        UploadSessionStartJob(UploadSessionType uploadType, DriveDbId driveDbId, const SyncName &filename, uint64_t size,
                               const NodeId &remoteParentDirId, uint64_t totalChunks);
         // Using file ID, for edit only
-        UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const NodeId &fileId, uint64_t size,
+        UploadSessionStartJob(UploadSessionType uploadType, DriveDbId driveDbId, const NodeId &fileId, uint64_t size,
                               uint64_t totalChunks);
 
         // Using file name for log upload

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -59,12 +59,16 @@ struct ActivitiesView: View {
                 hasAnyActivity: hasAnyActivity
             )
 
+            if synchroState.errorCount > 0 {
+                SynchroErrorsInformationBlockView(errorCount: synchroState.errorCount)
+            }
+
             ActivitiesTable(contexts: visibleNodes)
                 .opacity(hasAnyActivity ? 1 : 0)
                 .overlay(alignment: .top) {
                     if !hasAnyActivity {
                         IKContentUnavailableView(
-                            image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+                            image: KDriveResources.mountainsTreesSun.swiftUIImage,
                             title: KDriveLocalizable.unavailableContentNoActivityTitle,
                             subtitle: KDriveLocalizable.unavailableContentNoActivityDescription
                         )

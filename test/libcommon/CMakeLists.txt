@@ -4,7 +4,7 @@ else()
     project(testcommon LANGUAGES C CXX)
 endif()
 
-find_package(Poco REQUIRED Foundation)
+find_package(Poco 1.13.3 REQUIRED Foundation)
 find_package(log4cplus 2.1.2 REQUIRED)
 
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
@@ -30,10 +30,10 @@ set(testcommon_SRCS
         io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testgetrights.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
         io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testrights.cpp io/testopenfile.cpp io/testgetdirectorysize.cpp
         io/testmoveitemtotrash.cpp io/testispathonmounteddisk.cpp
-)
+        io/testcachedirectory.h io/testcachedirectory.cpp io/testgetfilechecksum.cpp io/testcopyfileordirectory.cpp)
 
 if(APPLE)
-    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
+    list(APPEND testcommon_SRCS ../test_utility/testhelpers_mac.cpp io/testcreatealias.cpp io/testreadalias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testremovexattr.cpp)
 elseif (WIN32)
     list(APPEND testcommon_SRCS ../test_utility/testhelpers_win.cpp io/testcreatejunction.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp io/testgetlongpathname.cpp)
 else ()
@@ -42,7 +42,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-    include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else()
     include_directories("/usr/local/include")
 endif()

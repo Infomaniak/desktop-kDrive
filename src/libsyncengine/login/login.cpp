@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,11 +52,12 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
 
     try {
         GetTokenJob job(authorizationCode, codeVerifier);
-        if (const ExitCode exitCode = job.runSynchronously(); exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: code=" << exitCode);
+        job.setScope(Scope::UserInitiated);
+        if (const auto exitInfo = job.runSynchronously(); !exitInfo) {
+            LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously: " << exitInfo);
             _error = std::string();
             _errorDescr = std::string();
-            return exitCode;
+            return exitInfo;
         }
 
         LOG_DEBUG(_logger, "job.runSynchronously() done");

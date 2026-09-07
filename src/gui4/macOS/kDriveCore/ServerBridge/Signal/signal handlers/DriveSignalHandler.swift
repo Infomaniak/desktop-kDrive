@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -50,7 +50,13 @@ extension CoherentCache {
             throw ServerCoherentCache.CacheError.accountNotFound(accountDbId)
         }
 
-        let existingDrive = account.drives[driveSignal.dbId]
+        let existingDrive = await getDrive(driveDbId: driveSignal.dbId)
+        if let existingDrive, existingDrive.accountDbId != accountDbId {
+            await removeDrive(driveDbId: driveSignal.dbId,
+                              accountDbId: existingDrive.accountDbId,
+                              userDbId: existingDrive.userDbId)
+        }
+
         let updatedDrive = driveSignal.asDrive(accountId: account.id,
                                                userDbId: account.userDbId,
                                                synchros: existingDrive?.synchros ?? [:])

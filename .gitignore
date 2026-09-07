@@ -200,6 +200,8 @@ cmake-build-debug*
 # Xcode
 DerivedData/
 
+# Opencode folder containing agents / configuration
+.opencode/
 # Misc
 PROXYAI.md
 /src/server/vfs/win/vfs.h
@@ -207,3 +209,4 @@ enc_temp_folder
 
 # ImportLoco
 .import_loco_api
+/list_unresolved_pr_comments.py

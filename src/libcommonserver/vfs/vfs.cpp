@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,14 +113,14 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const SourceLocation &location) const {
+ExitInfo Vfs::handleVfsError(const SyncPath &itemPath, const std::source_location &location) const {
     if (ExitInfo exitInfo = checkIfPathIsValid(itemPath, true, location); !exitInfo) {
         return exitInfo;
     }
     return defaultVfsError(location);
 }
 
-ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const SourceLocation &location) const {
+ExitInfo Vfs::checkIfPathIsValid(const SyncPath &itemPath, bool shouldExist, const std::source_location &location) const {
     if (itemPath.empty()) {
         LOGW_WARN(logger(), L"Empty path provided in Vfs::checkIfPathIsValid");
         assert(false && "Empty path in a VFS call");
@@ -238,6 +238,7 @@ static QString modeToPluginName(const VirtualFileMode virtualFileMode) {
 bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &error) {
     if (virtualFileMode == VirtualFileMode::Off) return true;
 
+#if !defined(KD_LINUX)
     if (virtualFileMode == VirtualFileMode::Win) {
         if (CommonUtility::platform() == Platform::WindowsServer) return false; // LiteSync not available on Windows Server
 
@@ -254,7 +255,7 @@ bool KDC::isVfsPluginAvailable(const VirtualFileMode virtualFileMode, QString &e
             return false;
         }
     }
-
+#endif
     auto name = modeToPluginName(virtualFileMode);
     if (name.isEmpty()) return false;
     auto pluginPath = pluginFileName("vfs", name);

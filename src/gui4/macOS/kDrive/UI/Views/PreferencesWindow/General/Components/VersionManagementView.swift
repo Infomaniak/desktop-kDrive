@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -36,6 +36,10 @@ struct VersionManagementView: View {
 
     @ObservedObject var repository: PreferencesRepository
 
+    private var updateStatePublisher: UpdateStatePublisher {
+        updaterCacheObservable.updateStatePublisher
+    }
+
     enum DomainError: LocalizedError {
         case cannotStartInstall
 
@@ -70,13 +74,15 @@ struct VersionManagementView: View {
             }
         }
         .task(id: repository.parametersInfo.distributionChannel) {
-            guard let currentUpdateState = try? await UpdaterJobs().updaterState() else {
+            guard let currentUpdateState: KDC.UpdateState = try? await UpdaterJobs().updaterState() else {
                 return
             }
             handleUpdateState(UIUpdateState(updateState: currentUpdateState))
         }
-        .onReceive(updaterCacheObservable.updateStatePublisher.map { UIUpdateState(updateState: $0) }) {
-            handleUpdateState($0)
+        .onReceive(updateStatePublisher
+            .map { UIUpdateState(updateState: $0) }
+            .receive(on: RunLoop.main)) { @MainActor in
+                handleUpdateState($0)
         }
         .alert(isPresented: $isShowingError, error: error) {}
     }
@@ -99,7 +105,7 @@ struct VersionManagementView: View {
 
         versionTask?.cancel()
         versionTask = Task { @MainActor in
-            let channel = repository.parametersInfo.distributionChannel.toKDCVersionChannel()
+            let channel: KDC.DistributionChannel = repository.parametersInfo.distributionChannel.toKDCDistributionChannel()
             guard let newVersion = try? await UpdaterJobs().versionInfo(channel: channel) else {
                 return
             }

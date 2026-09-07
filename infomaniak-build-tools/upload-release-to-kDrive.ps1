@@ -20,7 +20,9 @@ param (
     [string]$version,
 
     [ValidateSet('win', 'macos', 'linux-arm', 'linux-amd')]
-    [string] $os
+    [string] $os,
+
+    [switch] $test
 )
 
 if (-not $env:KDRIVE_TOKEN) {
@@ -145,7 +147,13 @@ function Upload-FilesToKDrive {
                 Pop-Location
                 exit 1
             }
-            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$versionNumber/$buildNumber/$targetSubDir&conflict=version"
+            $directoryPath = "$versionNumber/$buildNumber/$targetSubDir"
+
+            if ($test) {
+                $directoryPath = "Test/$directoryPath"
+            }
+
+            $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$directoryPath&conflict=version"           
             Write-Host "Uploading $file to kDrive at $uri"
             Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
             Write-Host "\t\t => ✅" -f Green
@@ -163,6 +171,7 @@ if ($os -eq "win") {
     Write-Host " - Windows Files - " # Windows
     $win_files = @(
         "$app.exe",
+        "$app.exe.sha256",
         "$app.msi",
         "kDrive.pdb",
         "kDrive_client.pdb",
@@ -177,6 +186,7 @@ if ($os -eq "macos") {
     Write-Host " - macOS Files - " # macOS
     $macos_files = @(
         "$app.pkg",
+        "$app.pkg.sha256",
         "$app.zip", # Sparkle zip
         "update-macos-$version.xml", # Sparkle update xml
         "kDrive.dSYM",
@@ -192,6 +202,7 @@ if ($os -eq "linux-amd") {
     Write-Host " - Linux AMD64 Files - " # Linux AMD
     $linux_amd_files = @(
         "$app-amd64.AppImage",
+        "$app-amd64.AppImage.sha256",
         "kDrive.dbg",
         "kDrive_client.dbg",
         "kDrive.src.zip",
@@ -205,6 +216,7 @@ if ($os -eq "linux-arm") {
     Write-Host " - Linux ARM64 Files - " # Linux ARM
     $linux_arm_files = @(
         "$app-arm64.AppImage",
+        "$app-arm64.AppImage.sha256",
         "kDrive.dbg",
         "kDrive_client.dbg",
         "kDrive.src.zip",

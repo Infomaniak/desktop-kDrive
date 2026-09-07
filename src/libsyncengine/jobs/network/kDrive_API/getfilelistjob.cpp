@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@
 
 namespace KDC {
 
-GetFileListJob::GetFileListJob(const int userDbId, const int driveId, const NodeId &fileId, const uint64_t page /*= 1*/,
+GetFileListJob::GetFileListJob(const UserDbId userDbId, const DriveId driveId, const NodeId &fileId, const uint64_t page /*= 1*/,
                                const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
     GetRootFileListJob(userDbId, driveId, page, dirOnly, nbItemsPerPage),
     _fileId(fileId) {}
 
-GetFileListJob::GetFileListJob(const int driveDbId, const NodeId &fileId, const uint64_t page /*= 1*/,
+GetFileListJob::GetFileListJob(const DriveDbId driveDbId, const NodeId &fileId, const uint64_t page /*= 1*/,
                                const bool dirOnly /*= false*/, uint64_t nbItemsPerPage /*= 1000*/) :
     GetRootFileListJob(driveDbId, page, dirOnly, nbItemsPerPage),
     _fileId(fileId) {}

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,6 +236,13 @@ std::string toString(const ExitCause e) {
             return "UpdateTreeIntegrityCheckFailed";
         case ExitCause::MissingReplyData:
             return "MissingReplyData";
+        case ExitCause::BlackListPropagationError:
+            return "BlackListPropagationError";
+        case ExitCause::FileSystemNotSupported:
+            return "FileSystemNotSupported";
+        case ExitCause::SyncDeletionFailed:
+            return "SyncDeletionFailed";
+
         default:
             return noConversionStr;
     }
@@ -537,6 +544,20 @@ std::string toString(const Language e) {
             return "Spanish";
         case Language::Italian:
             return "Italian";
+        case Language::Swedish:
+            return "Swedish";
+        case Language::Portuguese:
+            return "Portuguese";
+        case Language::Polish:
+            return "Polish";
+        case Language::Norwegian:
+            return "Norwegian";
+        case Language::Finnish:
+            return "Finnish";
+        case Language::Danish:
+            return "Danish";
+        case Language::Greek:
+            return "Greek";
         case Language::Dutch:
             return "Dutch";
         default:
@@ -777,36 +798,47 @@ std::string toString(const UpdateState e) {
     }
 }
 
-std::string toString(const VersionChannel e) {
+std::string toString(const DistributionChannel e) {
     switch (e) {
-        case VersionChannel::Prod:
-            return "Prod";
-        case VersionChannel::Next:
-            return "Next";
-        case VersionChannel::Beta:
-            return "Beta";
-        case VersionChannel::Internal:
-            return "Internal";
-        case VersionChannel::Legacy:
-            return "Legacy";
-        case VersionChannel::Unknown:
+        case DistributionChannel::Prod:
+            return "production";
+        case DistributionChannel::Next:
+            return "production-next";
+        case DistributionChannel::Beta:
+            return "beta";
+        case DistributionChannel::Internal:
+            return "internal";
+        case DistributionChannel::Legacy:
+            return "legacy";
+        case DistributionChannel::Test:
+            return "test";
+        case DistributionChannel::Unknown:
             return "Unknown";
         default:
             return noConversionStr;
     }
 }
+DistributionChannel toDistributionChannel(const std::string &channel) {
+    if (channel == "production") return DistributionChannel::Prod;
+    if (channel == "next") return DistributionChannel::Next;
+    if (channel == "beta") return DistributionChannel::Beta;
+    if (channel == "internal") return DistributionChannel::Internal;
+    if (channel == "legacy") return DistributionChannel::Legacy;
+    if (channel == "test") return DistributionChannel::Test;
+    return DistributionChannel::Unknown;
+}
+
 std::string toString(const Platform e) {
     switch (e) {
         case Platform::MacOS:
-            return "MacOS";
+            return "mac-os";
         case Platform::Windows:
-            return "Windows";
         case Platform::WindowsServer:
-            return "WindowsServer";
+            return "windows";
         case Platform::LinuxAMD:
-            return "LinuxAMD";
+            return "linux-amd";
         case Platform::LinuxARM:
-            return "LinuxARM";
+            return "linux-arm";
         case Platform::Unknown:
             return "Unknown";
         default:
@@ -906,6 +938,38 @@ std::string toString(const SyncConfiguration e) {
     }
 }
 
+std::string toString(const TranslationMode e) {
+    switch (e) {
+        case TranslationMode::None:
+            return "None";
+        case TranslationMode::V2ToV3:
+            return "V2ToV3";
+        case TranslationMode::V3ToV2:
+            return "V3ToV2";
+        default:
+            return noConversionStr;
+    }
+}
+
+std::string toString(const std::source_location &e) {
+    return e.file_name() + std::string(":") + std::to_string(e.line()) + std::string("[") + e.function_name() + "]";
+}
+
+std::string toString(const Scope e) {
+    switch (e) {
+        case Scope::None:
+            return "None";
+        case Scope::Sync:
+            return "Sync";
+        case Scope::Extension:
+            return "LiteSync";
+        case Scope::UserInitiated:
+            return "UserInitiated";
+        default:
+            return noConversionStr;
+    }
+}
+
 void ExitInfo::merge(const ExitInfo &exitInfoToMerge, const std::vector<ExitCode> &exitCodeList) {
     const long index = indexInList(exitInfoToMerge.code(), exitCodeList);
     const long thisIndex = indexInList(this->code(), exitCodeList);
@@ -924,23 +988,36 @@ long ExitInfo::indexInList(const ExitCode &exitCode, const std::vector<ExitCode>
 const std::string VersionInfo::versionInfoChannel = "channel";
 const std::string VersionInfo::versionInfoTag = "tag";
 const std::string VersionInfo::versionInfoBuildVersion = "buildVersion";
-const std::string VersionInfo::versionInfoBuildMinOsVersion = "buildMinOsVersion";
 const std::string VersionInfo::versionInfoDownloadUrl = "downloadUrl";
+const std::string VersionInfo::versionInfoChecksum = "checksum";
+const std::string VersionInfo::versionInfoMinOsVersion = "minOsVersion";
+const std::string VersionInfo::versionInfoMinAppVersion = "minAppVersion";
+
+VersionInfo VersionInfo::current() {
+    VersionInfo versionInfo;
+    versionInfo.tag = CommonUtility::versionTag();
+    versionInfo.buildVersion = CommonUtility::versionBuild();
+    return versionInfo;
+}
 
 void VersionInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, versionInfoChannel, channel);
     CommonUtility::writeValueToStruct(dstruct, versionInfoTag, tag);
     CommonUtility::writeValueToStruct(dstruct, versionInfoBuildVersion, buildVersion);
-    CommonUtility::writeValueToStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
     CommonUtility::writeValueToStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoChecksum, checksum);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
+    CommonUtility::writeValueToStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
 
 void VersionInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, versionInfoChannel, channel);
     CommonUtility::readValueFromStruct(dstruct, versionInfoTag, tag);
     CommonUtility::readValueFromStruct(dstruct, versionInfoBuildVersion, buildVersion);
-    CommonUtility::readValueFromStruct(dstruct, versionInfoBuildMinOsVersion, buildMinOsVersion);
     CommonUtility::readValueFromStruct(dstruct, versionInfoDownloadUrl, downloadUrl);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoChecksum, checksum);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoMinOsVersion, minOsVersion);
+    CommonUtility::readValueFromStruct(dstruct, versionInfoMinAppVersion, minAppVersion);
 }
 
 } // namespace KDC

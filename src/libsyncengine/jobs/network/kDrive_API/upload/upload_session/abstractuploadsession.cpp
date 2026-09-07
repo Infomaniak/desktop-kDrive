@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "abstractuploadsession.h"
 
 #include "io/iohelper.h"
+#include "jobs/network/jobexceptions.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjobmanager.h"
 #include "utility/timerutility.h"
@@ -209,8 +210,9 @@ ExitInfo AbstractUploadSession::startSession() {
         startJob = createStartJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionStartJob::UploadSessionStartJob: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
+    startJob->setScope(scope());
 
     if (const auto exitInfo = startJob->runSynchronously(); startJob->hasHttpError() || exitInfo.code() != ExitCode::Ok) {
         LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()));
@@ -317,6 +319,7 @@ ExitInfo AbstractUploadSession::sendChunks() {
             jobCreationError = true;
             break;
         }
+        chunkJob->setScope(scope());
 
         if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
             LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath));
@@ -415,8 +418,9 @@ ExitInfo AbstractUploadSession::closeSession() {
         finishJob = createFinishJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionFinishJob::UploadSessionFinishJob: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
+    finishJob->setScope(scope());
 
     if (const auto exitInfo = finishJob->runSynchronously(); !exitInfo || finishJob->hasHttpError()) {
         LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously: "
@@ -464,8 +468,9 @@ ExitInfo AbstractUploadSession::cancelSession() {
         cancelJob = createCancelJob();
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob::UploadSessionCancelJob: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
+    cancelJob->setScope(scope());
 
     if (const auto exitInfo = cancelJob->runSynchronously(); !exitInfo) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously: " << exitInfo);

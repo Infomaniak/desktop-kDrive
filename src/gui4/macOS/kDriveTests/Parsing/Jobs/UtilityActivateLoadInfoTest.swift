@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ struct UtilityActivateLoadInfoTest {
 
         // THEN
         #expect(response.id == 4)
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
     }
 }

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -34,9 +34,9 @@ final class OnboardingViewController: NSViewController {
 
     private var bindStore = Set<AnyCancellable>()
 
-    init(user: UIUser?, initialStep: OnboardingStep?) {
+    init(user: UIUser?, steps: [OnboardingStep]?, initialStep: OnboardingStep?) {
         shouldGuessInitialStep = initialStep == nil
-        flowCoordinator = OnboardingFlowCoordinator(user: user, initialStep: initialStep)
+        flowCoordinator = OnboardingFlowCoordinator(user: user, steps: steps, initialStep: initialStep)
 
         contentView = NSView()
         animationsView = OnboardingAnimationsView(flowCoordinator: flowCoordinator)
@@ -72,9 +72,11 @@ final class OnboardingViewController: NSViewController {
     private func setupWindowAppearance() {
         guard let window = view.window else { return }
 
-        window.title = KDriveLocalizable.onboardingWindowTitle
+        window.title = KDriveLocalizable.onboardingLoginTitle
         window.titlebarAppearsTransparent = true
         window.isMovableByWindowBackground = false
+
+        window.toolbar = NSToolbar()
     }
 
     private func setupUI() {
@@ -131,7 +133,7 @@ final class OnboardingViewController: NSViewController {
         case .synchronization:
             return SynchronizationViewController(flowCoordinator: flowCoordinator)
         case .appReady:
-            return AppReadyViewController()
+            return AppReadyViewController(flowCoordinator: flowCoordinator)
         }
     }
 

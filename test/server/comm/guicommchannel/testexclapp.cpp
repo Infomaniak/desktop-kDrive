@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ void TestGuiCommChannel::testExclAppGetListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GETLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -155,7 +155,7 @@ void TestGuiCommChannel::testExclAppSetListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_SETLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -198,7 +198,7 @@ void TestGuiCommChannel::testExclAppGetFetchingAppListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::EXCLAPP_GET_FETCHING_APP_LIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

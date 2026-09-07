@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -713,10 +713,10 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     const auto rMoveOpAAA = generateSyncOperation(OperationType::Move, rNodeAAA);
 
     _syncPal->syncOps()->setOpList({lMoveOpB, lMoveOpAAB, rMoveOpC, rMoveOpA, rMoveOpAAA});
-    const auto reshuffledOp = _syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp();
-    CPPUNIT_ASSERT(reshuffledOp);
-    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.size() == 2);
-    CPPUNIT_ASSERT(reshuffledOp->_opSortedList.back() == rMoveOpA->id());
+    SyncOperationList reshuffledOps;
+    CPPUNIT_ASSERT(_syncPal->_operationsSorterWorker->fixImpossibleFirstMoveOp(reshuffledOps));
+    CPPUNIT_ASSERT(reshuffledOps._opSortedList.size() == 2);
+    CPPUNIT_ASSERT(reshuffledOps._opSortedList.back() == rMoveOpA->id());
 }
 
 void TestOperationSorterWorker::testFindCompleteCycles() {
@@ -905,6 +905,44 @@ void TestOperationSorterWorker::testBreakCycle2() {
     CPPUNIT_ASSERT_EQUAL(true, breakCycleOp->isBreakingCycleOp());
     CPPUNIT_ASSERT(!breakCycleOp->newName().empty());
     CPPUNIT_ASSERT(breakCycleOp->newParentNode());
+}
+
+void TestOperationSorterWorker::testSwapNames() {
+    // Initial situation
+    // .
+    // └── A(a)
+    // └── B(b)
+
+    // Final situation
+    // .
+    // └── A(b)
+    //     └── AA(a)
+    // └── B(c)
+
+    // Move A(a) to B(b)/AA(a)
+    const auto nodeA = _testSituationGenerator.moveNode(ReplicaSide::Local, "a", "b", Str("AA"));
+    const auto moveOp1 = generateSyncOperation(OperationType::Move, nodeA);
+
+    // Rename B(b) to A(b)
+    const auto nodeB = _testSituationGenerator.moveNode(ReplicaSide::Local, "b", {}, Str("A"));
+    const auto moveOp2 = generateSyncOperation(OperationType::Move, nodeB);
+
+    // Create B(c)
+    const auto nodeC = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::Directory, "c", "");
+    nodeC->setName(Str("B"));
+    const auto createOp = generateSyncOperation(OperationType::Create, nodeC);
+
+    (void) _syncPal->syncOps()->pushOp(moveOp1);
+    (void) _syncPal->syncOps()->pushOp(moveOp2);
+    (void) _syncPal->syncOps()->pushOp(createOp);
+
+    _syncPal->_operationsSorterWorker->_filter.filterOperations();
+    _syncPal->_operationsSorterWorker->sortOperations();
+
+    std::vector<UniqueId> ops = {std::begin(_syncPal->syncOps()->opSortedList()), std::end(_syncPal->syncOps()->opSortedList())};
+    CPPUNIT_ASSERT_EQUAL(moveOp1->id(), ops[0]);
+    CPPUNIT_ASSERT_EQUAL(moveOp2->id(), ops[1]);
+    CPPUNIT_ASSERT_EQUAL(createOp->id(), ops[2]);
 }
 
 void TestOperationSorterWorker::testExtractOpsByType() {

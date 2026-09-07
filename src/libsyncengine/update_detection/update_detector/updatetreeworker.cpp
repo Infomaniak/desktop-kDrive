@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "libcommon/utility/logiffail.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "requests/syncnodecache.h"
 #include "utility/timerutility.h"
 
 #include <iostream>
@@ -52,6 +53,44 @@ UpdateTreeWorker::~UpdateTreeWorker() {
     _updateTree.reset();
 }
 
+bool UpdateTreeWorker::resetNodes() {
+    // Reset nodes working properties
+    NodeSet tmpBlacklist;
+    SyncNodeCache::instance()->syncNodes(
+            syncDbId(), _side == ReplicaSide::Remote ? SyncNodeType::TmpRemoteBlacklist : SyncNodeType::TmpLocalBlacklist,
+            tmpBlacklist);
+
+    auto nodeIt = _updateTree->nodes().begin();
+    std::unordered_set<NodeId> toDeleteNode;
+
+    while (nodeIt != _updateTree->nodes().end()) {
+        const auto node = nodeIt->second;
+        const auto nodeId = nodeIt->first;
+        ++nodeIt;
+
+        // Make sure no node flagged with status "ToDelete" or blacklisted node remains in the update tree
+        if (node->status() == NodeStatus::ToDelete || (node->id().has_value() && tmpBlacklist.contains(node->id().value()))) {
+            (void) toDeleteNode.emplace(nodeId);
+            continue;
+        }
+
+        node->clearChangeEvents();
+        node->clearConflictAlreadyConsidered();
+        node->setInconsistencyType(InconsistencyType::None);
+        node->setPreviousId(std::nullopt);
+        node->setStatus(NodeStatus::Unprocessed);
+        node->clearMoveOriginInfos();
+    }
+
+    for (const auto &nodeId: toDeleteNode) {
+        const auto node = _updateTree->getNodeById(nodeId);
+        if (!node) continue; // The node might have been deleted because it was a child of another deleted node.
+        if (!_updateTree->deleteNode(node)) return false;
+    }
+
+    return true;
+}
+
 void UpdateTreeWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
 
@@ -61,20 +100,9 @@ void UpdateTreeWorker::execute() {
 
     _updateTree->startUpdate();
 
-    // Reset nodes working properties
-    auto nodeIt = _updateTree->nodes().begin();
-    while (nodeIt != _updateTree->nodes().end()) {
-        if (nodeIt->second->status() == NodeStatus::ToDelete) {
-            nodeIt = _updateTree->nodes().erase(nodeIt);
-        } else {
-            nodeIt->second->clearChangeEvents();
-            nodeIt->second->clearConflictAlreadyConsidered();
-            nodeIt->second->setInconsistencyType(InconsistencyType::None);
-            nodeIt->second->setPreviousId(std::nullopt);
-            nodeIt->second->setStatus(NodeStatus::Unprocessed);
-            nodeIt->second->clearMoveOriginInfos();
-            ++nodeIt;
-        }
+    if (!resetNodes()) {
+        LOG_SYNCPAL_WARN(_logger, "Failed to reset nodes. Rebuilding update tree from scratch!");
+        _updateTree->clear();
     }
 
     _updateTree->previousIdSet().clear();
@@ -174,7 +202,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                                                   << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
                                                   << CommonUtility::s2ws(currentNodeIt->second->id().value_or(""))
                                                   << L"', DB ID: '" << currentNodeIt->second->idb().value_or(-1)
-                                                  << L"') updated. Operation DELETE inserted in change events.");
+                                                  << L"') updated. Operation Delete inserted in change events.");
             }
         } else {
             std::shared_ptr<Node> parentNode;
@@ -235,7 +263,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     LOGW_SYNCPAL_DEBUG(_logger, _side << L" update tree: Node '" << SyncName2WStr(existingNode->name()).c_str()
                                                       << L"' (node ID: '" << CommonUtility::s2ws(existingNode->id().value_or(""))
                                                       << L"', DB ID: '" << existingNode->idb().value_or(-1)
-                                                      << L"') updated. Operation DELETE inserted in change events.");
+                                                      << L"') updated. Operation Delete inserted in change events.");
                 }
             } else {
                 // create node
@@ -264,7 +292,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                                   << L"', DB ID: '" << (existingNode->idb().has_value() ? *existingNode->idb() : -1)
                                   << L"', parent ID: '"
                                   << CommonUtility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
-                                  << L"') inserted. Operation DELETE inserted in change events.");
+                                  << L"') inserted. Operation Delete inserted in change events.");
                 }
             }
         }
@@ -818,7 +846,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         if (_updateTree->nodes().find(newNodeId) == _updateTree->nodes().end()) {
             // create node
             NodeId parentId;
-            if (!_syncDbReadOnlyCache.parent(_side, previousNodeId, parentId, found)) {
+            if (!_syncDbReadOnlyCache.parentId(_side, previousNodeId, parentId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
                 return ExitCode::DbError;
             }

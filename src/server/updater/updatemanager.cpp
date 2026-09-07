@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,6 @@ namespace KDC {
 
 UpdateManager::UpdateManager(QObject *parent) :
     QObject(parent) {
-    _currentChannel = ParametersCache::instance()->parameters().distributionChannel();
-
     initUpdater();
 
     (void) connect(&_updateCheckTimer, &QTimer::timeout, this, &UpdateManager::slotTimerFired);
@@ -49,14 +47,19 @@ UpdateManager::UpdateManager(QObject *parent) :
     (void) connect(this, &UpdateManager::updateStateChanged, this, &UpdateManager::slotUpdateStateChanged, Qt::QueuedConnection);
 
     // At startup, do a check in any case and setup distribution channel.
-    QTimer::singleShot(3000, this, [this]() { setDistributionChannel(_currentChannel); });
+    QTimer::singleShot(3000, this,
+                       [this]() { setDistributionChannel(ParametersCache::instance()->parameters().distributionChannel()); });
 }
 
-void UpdateManager::setDistributionChannel(const VersionChannel channel) {
+void UpdateManager::setDistributionChannel(const DistributionChannel channel) {
+    if (_currentChannel == channel) {
+        return;
+    }
     _currentChannel = channel;
-    (void) _updater->checkUpdateAvailable(channel);
-    ParametersCache::instance()->parameters().setDistributionChannel(channel);
+    (void) _updater->checkUpdateAvailable(_currentChannel);
+    ParametersCache::instance()->parameters().setDistributionChannel(_currentChannel);
     ParametersCache::instance()->save();
+    sentry::Handler::instance()->setDistributionChannel(_currentChannel);
 }
 
 void UpdateManager::startInstaller() const {
@@ -82,9 +85,8 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::ManualUpdateAvailable: {
-            emit updateAnnouncement(
-                    tr("New update available."),
-                    tr("Version %1 is available for download.").arg(_updater->versionInfo(_currentChannel).tag.c_str()));
+            emit updateAnnouncement(tr("New update available."),
+                                    tr("Version %1 is available for download.").arg(_updater->versionInfo().tag.c_str()));
             break;
         }
         case UpdateState::Available: {
@@ -93,7 +95,7 @@ void UpdateManager::slotUpdateStateChanged(const UpdateState newState) {
             break;
         }
         case UpdateState::Ready: {
-            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo(_currentChannel).fullVersion())) break;
+            if (AbstractUpdater::isVersionSkipped(_updater->versionInfo().fullVersion())) break;
                 // The new version is ready to be installed
 #if defined(KD_WINDOWS)
             emit showUpdateDialog();

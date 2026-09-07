@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ Poco::JSON::Object createParametersInfoObject() {
 
     (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
     (void) parametersInfoObj.set("maxAllowedCpu", 50);
-    (void) parametersInfoObj.set("distributionChannel", toInt(VersionChannel::Prod));
+    (void) parametersInfoObj.set("distributionChannel", toInt(DistributionChannel::Prod));
     (void) parametersInfoObj.set("sentryEnabled", false);
     (void) parametersInfoObj.set("matomoEnabled", false);
 
@@ -108,7 +108,7 @@ void TestGuiCommChannel::testParametersInfoJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_INFO));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -150,7 +150,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

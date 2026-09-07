@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,13 @@ import kDriveCore
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
-    private lazy var preferencesWindow = PreferencesWindowController()
+    private var preferencesWindow: PreferencesWindowController?
+
+    // periphery:ignore - We keep a strong reference on the statusBarManager
+    private(set) var statusBarManager: StatusBarManager?
+
+    // periphery:ignore - We keep a strong reference on the SentryService
+    private(set) var sentryService: SentryService?
 
     private static var isRunningTests: Bool {
         ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -32,11 +38,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         let testing = AppDelegate.isRunningTests
         DriveTargetAssembly.setupDI(testing: testing)
+
         guard !testing else {
             return
         }
 
-        SentryService().initSentry()
+        sentryService = SentryService()
+        sentryService?.initSentry()
+
+        statusBarManager = StatusBarManager()
 
         openMainWindow()
     }
@@ -45,19 +55,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
-    func openMainWindow() {
-        mainWindow.showWindow(nil)
-        mainWindow.window?.makeKeyAndOrderFront(nil)
-
+    @objc func openMainWindow() {
         if #available(macOS 14.0, *) {
             NSApp.activate()
         } else {
             NSApp.activate(ignoringOtherApps: true)
         }
+
+        mainWindow.showWindow(nil)
+        mainWindow.window?.orderFrontRegardless()
+        mainWindow.window?.makeKey()
+        mainWindow.window?.makeFirstResponder(nil)
     }
 
-    @objc func openPreferencesWindow(_ sender: Any?) {
-        preferencesWindow.showWindow(sender)
-        preferencesWindow.window?.makeKeyAndOrderFront(sender)
+    @objc func openPreferencesWindow() {
+        if preferencesWindow == nil {
+            preferencesWindow = PreferencesWindowController()
+        }
+
+        preferencesWindow?.window?.makeKeyAndOrderFront(nil)
+        preferencesWindow?.window?.isReleasedWhenClosed = false
+    }
+
+    @objc func quitApp() {
+        NSApp.terminate(nil)
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        Task {
+            #if !DEBUG
+            try? await UtilityJobs().quit()
+            #endif
+            NSApp.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
     }
 }

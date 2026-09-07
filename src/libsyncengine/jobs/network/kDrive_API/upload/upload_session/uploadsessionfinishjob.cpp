@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 namespace KDC {
 
 UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, const UploadSessionType uploadType,
-                                               const int driveDbId, const SyncPath &absoluteFilePath,
+                                               const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,
                                                SyncTime modificationTime) :

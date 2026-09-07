@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ using namespace CppUnit;
 
 namespace KDC {
 
-SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId) :
-    SyncDb(dbPath, version, targetNodeId) {}
+SyncDbMock::SyncDbMock(const std::string &dbPath, const std::string &targetNodeId) :
+    SyncDb(dbPath, targetNodeId) {}
 
 
 void SyncDbMock::freeRequest(const char *requestId) {
@@ -83,14 +83,10 @@ class DbNodeTest : public DbNode {
 
 void TestSyncDb::setUp() {
     TestBase::start();
-    bool alreadyExists = false;
-    const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-
-    // Delete previous DB
-    (void) IoHelper::deleteItem(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDbMock(syncDbPath.string(), KDRIVE_VERSION_STRING);
+    const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
+    _testObj = new SyncDbMock(syncDbPath.string());
     _testObj->init(KDRIVE_VERSION_STRING);
     _testObj->setAutoDelete(true);
 }
@@ -297,7 +293,8 @@ void TestSyncDb::testUpgradeTo3_6_7() {
 }
 
 void TestSyncDb::testInit3_6_4() {
-    SyncDbMock testDb(_testObj->dbPath().string(), "3.6.4");
+    const auto syncDbPath = MockDb::makeDbName(1, 1, 1, 1);
+    SyncDbMock testDb(syncDbPath.string());
     const LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_5");
     createParmsDb(testDb.dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
@@ -399,7 +396,7 @@ void TestSyncDb::testCorrespondingNodeIdWithCache() {
     testCorrespondingNodeIdTemplate<SyncDbReadOnlyCache>(*_testObj, _testObj->cache());
 }
 
-void TestSyncDb::testCorrespondingNodeIdWithCacheFaillure() {
+void TestSyncDb::testCorrespondingNodeIdWithCacheFailure() {
     _testObj->enablePrepare(true);
     // This cache will not be reloaded, so it will remain empty. All methods in SyncDbReadOnlyCache should
     // therefore use their fallback and query the database directly.
@@ -558,7 +555,7 @@ void TestSyncDb::testNodesWithCache() {
     CPPUNIT_ASSERT(_testObj->clearNodes());
     testNodesTemplate<SyncDbReadOnlyCache>(*_testObj, _testObj->cache());
 }
-void TestSyncDb::testNodeWithCacheFaillure() {
+void TestSyncDb::testNodeWithCacheFailure() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
     CPPUNIT_ASSERT(_testObj->exists());
@@ -720,14 +717,14 @@ void TestSyncDb::testNodesTemplate(SyncDb &db, T &testObj) {
     }
     // parent
     NodeId parentNodeidFile3;
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) && found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdLocal() == parentNodeidFile3);
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) && found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdRemote() == parentNodeidFile3);
     NodeId parentNodeidDir1;
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) && found);
     CPPUNIT_ASSERT(testObj.rootNode().nodeIdLocal() == parentNodeidDir1);
-    CPPUNIT_ASSERT(testObj.parent(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) && found);
+    CPPUNIT_ASSERT(testObj.parentId(ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) && found);
     CPPUNIT_ASSERT(testObj.rootNode().nodeIdRemote() == parentNodeidDir1);
 
     // path

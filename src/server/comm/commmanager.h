@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
 
         // Broadcast a signal to all the gui channels
         void sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal);
+        bool hasActiveGuiConnection();
 
     private:
         // AppServer maps

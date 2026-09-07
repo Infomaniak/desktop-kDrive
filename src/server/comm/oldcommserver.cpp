@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,8 +217,8 @@ void OldCommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
                                                             << socketError << ")");
         // Restart comm server
         start();
-        // Restart client
-        emit restartClient();
+        // Notify that the client disconnected; shutdown/restart is handled by the server logic
+        emit clientDisconnected();
         return;
     }
 

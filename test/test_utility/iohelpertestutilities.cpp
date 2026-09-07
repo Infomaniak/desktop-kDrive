@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,14 +36,6 @@ void IoHelperTestUtilities::setFileSizeFunction(std::function<std::uintmax_t(con
     _fileSize = f;
 }
 
-void IoHelperTestUtilities::setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f) {
-    _tempDirectoryPath = f;
-}
-
-void IoHelperTestUtilities::setCacheDirectoryPath(const SyncPath &newPath) {
-    IoHelper::setCacheDirectoryPath(newPath);
-}
-
 #if defined(KD_MACOS)
 void IoHelperTestUtilities::setReadAliasFunction(
         std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
@@ -52,13 +44,13 @@ void IoHelperTestUtilities::setReadAliasFunction(
 #endif
 
 void IoHelperTestUtilities::resetFunctions() {
-    // Reset to default std::filesytem implementation.
-    setRename(static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)>(&std::filesystem::rename));
+    // Reset to default std::filesystem implementation.
+    setRename(static_cast<void (*)(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)>(
+            &std::filesystem::rename));
     setIsDirectoryFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory));
     setIsSymlinkFunction(static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink));
     setReadSymlinkFunction(static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink));
     setFileSizeFunction(static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size));
-    setTempDirectoryPathFunction(static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path));
 
 #if defined(KD_MACOS)
     // Default Utility::readAlias implementation
@@ -67,6 +59,5 @@ void IoHelperTestUtilities::resetFunctions() {
         return readAlias(path, data, targetPath, ioError);
     });
 #endif
-    IoHelper::setCacheDirectoryPath("");
 }
 } // namespace KDC

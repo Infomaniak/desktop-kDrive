@@ -65,11 +65,13 @@ struct COMMON_EXPORT CommonUtility {
 
         static std::string generateRandomStringAlphaNum(int length = 10);
         static std::string generateRandomStringPKCE(int length = 10);
+        static int64_t generateRandomNumber(const int64_t minValue, const int64_t maxValue);
         static std::string generateUUID();
 
         // File system type
         static bool isNTFS(const SyncPath &targetPath);
         static bool isAPFS(const SyncPath &targetPath);
+        static bool isHFS(const SyncPath &targetPath); // HFS+
         static bool isFAT(const SyncPath &targetPath);
         static bool isSyncCompatible(const SyncPath &targetPath);
         static bool isLiteSyncCompatible(const SyncPath &targetPath);
@@ -79,8 +81,10 @@ struct COMMON_EXPORT CommonUtility {
         static void crash();
         static QString platformName();
         static std::string osVersion();
-#ifdef KD_LINUX
+#if defined(KD_LINUX)
         static std::string distributionName();
+        static bool isEXT234(const SyncPath &targetPath);
+        static std::string exFAT();
 #endif
         static Platform platform();
         static QString platformArch();
@@ -111,6 +115,13 @@ struct COMMON_EXPORT CommonUtility {
         static const QString spanishCode;
         static const QString italianCode;
         static const QString dutchCode;
+        static const QString swedishCode;
+        static const QString portugueseCode;
+        static const QString polishCode;
+        static const QString norwegianCode;
+        static const QString finnishCode;
+        static const QString danishCode;
+        static const QString greekCode;
         static Language strToLanguage(const QString &lang);
         static QString languageCode(Language language);
         static QStringList languageCodeList(Language enforcedLocale);
@@ -145,6 +156,7 @@ struct COMMON_EXPORT CommonUtility {
          * disk root.
          * @return True if the given path is a disk root folder; otherwise, false.
          */
+        static bool isDiskRootFolder(const SyncPath &absolutePath);
         static bool isDiskRootFolder(const SyncPath &absolutePath, SyncPath &suggestedPath);
         static const std::string dbVersionNumber(const std::string &dbVersion);
         /**
@@ -164,6 +176,13 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);
         static int setenv(const char *const name, const char *const value, const int overwrite);
+
+        static bool logToConsoleEnabled();
+
+#if defined(KD_LINUX)
+        // Sets the working directory path and configures GIO_MODULE_DIR to prevent loading incompatible system GIO modules.
+        static void initAppImageEnvironment();
+#endif
 
         static void handleSignals(void (*sigHandler)(int));
         static SyncPath signalFilePath(AppType appType, SignalCategory signalCategory);
@@ -280,6 +299,7 @@ struct COMMON_EXPORT CommonUtility {
 
         // CommString conversion functions
         static CommString syncPath2CommString(const SyncPath &s) { return s.native(); }
+        static SyncPath commString2SyncPath(const CommString &s) { return SyncPath(s); }
 
 #if defined(KD_WINDOWS)
         static CommString str2CommString(const std::string &s) { return KDC::CommonUtility::s2ws(s); }
@@ -306,6 +326,8 @@ struct COMMON_EXPORT CommonUtility {
         */
         static size_t strLen(const CommChar *const s) { return s ? strlen(s) : 0; }
 #endif
+
+        static bool modificationTimesAreEqual(const SyncPath &path, SyncTime time1, SyncTime time2);
 
         class InvalidEnumerationValue : public std::runtime_error {
             public:
@@ -481,6 +503,23 @@ struct COMMON_EXPORT CommonUtility {
         static bool isMac();
         static bool isLinux();
 
+        //! Returns the directory location suitable for temporary files.
+        /*!
+         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo deviceTempDirectoryPath(SyncPath &directoryPath) noexcept;
+
+        //! Returns the log directory path of the application.
+        /*!
+         \param directoryPath is set with the path to the log directory of the application. Empty if there is an error.
+         \return An ExitInfo representing the return value of the underlying OS API call.
+         */
+        static ExitInfo logDirectoryPath(SyncPath &directoryPath) noexcept;
+
+        static ExitInfo stdErrorToExitInfo(int64_t error) noexcept;
+        static ExitInfo stdErrorToExitInfo(const std::error_code &ec) noexcept;
+
     private:
         static std::mutex _generateRandomStringMutex;
 
@@ -512,6 +551,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath getGenericAppSupportDir();
 
+        static std::string getRootFsType(const SyncPath &targetPath);
 
         friend class TestUtility;
 };

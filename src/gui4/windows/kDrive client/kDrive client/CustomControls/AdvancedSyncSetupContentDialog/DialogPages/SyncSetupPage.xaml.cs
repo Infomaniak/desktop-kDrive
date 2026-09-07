@@ -1,3 +1,20 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
@@ -46,6 +63,11 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers();
+        }
+
+        private void DetachEventHandlers()
+        {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
                 Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");
@@ -88,7 +110,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             AdvancedSyncSetupContentDialogVM.FinishSetup(CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Confirmed);
         }
 
-        private async void AdvancedSyncSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
+        private void AdvancedSyncSetupContentDialogVM_CurrentStepCancelled(object? sender, EventArgs e)
         {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
@@ -148,7 +170,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             }
             if (!result.Value)
             {
-                Utility.ShowTeachingTipFromxUid("CC_DriveSetupContentDialog_SyncSetupPage_TeachingTip_InvalidFolder");
+                Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderAdvancedContent"), TimeSpan.FromSeconds(20));
                 Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is not valid for syncing");
                 control.IsEnabled = true;
                 return;

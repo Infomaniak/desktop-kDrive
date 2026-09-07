@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,6 +101,7 @@ struct IoHelper {
         static std::string ioError2StdString(IoError ioError) noexcept;
 
         //! Get the item type of the item indicated by `path`.
+        //! Hardlinks are not supported
         /*!
           \param path is the file system path of the inspected item.
           \param itemType is the type of the item indicated by `path`.
@@ -108,47 +109,6 @@ struct IoHelper {
             See isExpectedError for the definition of an expected error.
         */
         [[nodiscard]] static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
-
-        //! Returns the directory location suitable for temporary files.
-        /*!
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool deviceTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
-        //! Returns the location of the kDrive temporary subdirectory.
-        /*!
-         \param directoryPath is the path to the kDrive temporary directory. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool appTempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
-
-        //! Returns the directory location suitable for temporary files.
-        /*! This directory is deleted at the end of the application run.
-          ! The location of this folder can be enforced with the env variable: KDRIVE_CACHE_PATH
-         \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool cacheDirectoryPath(SyncPath &directoryPath) noexcept;
-
-        //! Returns the log directory path of the application.
-        /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
-
-        //! Returns the log archiver directory path of the application.
-        /*!
-         \param directoryPath is set with the path of to the log directory of the application. Empty if there is an error.
-         \param ioError holds the error returned when an underlying OS API call fails.
-         \return true if no unexpected error occurred, false otherwise.
-         */
-        static bool logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
         //! Retrieves the node identifier of the item indicated by a file system path.
         /*!
@@ -174,6 +134,15 @@ struct IoHelper {
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
         static void getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, PathCheckOption option);
+
+        //! Get the checksum of the file indicated by `path`.
+        /*!
+         \param path is a file system path to a directory entry (we also call it an item).
+         \param ifs is an input file stream used to read the file contents.
+         \param checksum is set with the checksum of the file indicated by `path`, or empty on error.
+         \return the IoError representing the success or failure of the operation.
+         */
+        static IoError getFileChecksum(const SyncPath &path, std::string &checksum) noexcept;
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
@@ -202,7 +171,6 @@ struct IoHelper {
 
         static bool isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept;
 
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
         //! Hides or reveals the item indicated by path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
@@ -210,7 +178,6 @@ struct IoHelper {
          terminal when using a sheer `ls` command).
          */
         static void setFileHidden(const SyncPath &path, bool hidden) noexcept;
-#endif
 
         //! Checks if the item indicated by the specified path exists.
         /*!
@@ -378,6 +345,7 @@ struct IoHelper {
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
+        //! If the destination item is a link, remove it before copying.
         /*!
           \param sourcePath is the file system path of the item to copy.
           \param destinationPath is the file system path of the location to copy the item to.
@@ -385,7 +353,6 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise.
         */
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-
 
 #if defined(KD_MACOS)
         // From `man xattr`:
@@ -584,7 +551,7 @@ struct IoHelper {
         static std::function<void(const SyncPath &srcPath, const SyncPath &destPath, std::error_code &ec)> _rename;
         static std::function<SyncPath(const SyncPath &path, std::error_code &ec)> _readSymlink;
         static std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> _fileSize;
-        static std::function<SyncPath(std::error_code &ec)> _tempDirectoryPath;
+
 #if defined(KD_MACOS)
         // Can be modified in tests.
         static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
@@ -597,7 +564,6 @@ struct IoHelper {
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
         static bool _unsuportedFSLogged;
-        static void setCacheDirectoryPath(const SyncPath &newPath);
 
     private:
         static log4cplus::Logger _logger;

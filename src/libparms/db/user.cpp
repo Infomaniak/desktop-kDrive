@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,23 +27,17 @@
 namespace KDC {
 
 User::User() :
-    _logger(Log::instance()->getLogger()),
-    _dbId(0),
-    _userId(0),
-    _keychainKey(std::string()),
-    _name(std::string()),
-    _email(std::string()),
-    _avatarUrl(std::string()),
-    _avatar(nullptr),
-    _toMigrate(false) {}
+    _logger(Log::instance()->getLogger()) {}
 
-User::User(int dbId, int userId, const std::string &keychainKey, const std::string &name, const std::string &email,
-           const std::string &avatarUrl, std::shared_ptr<std::vector<char>> avatar, bool toMigrate) :
+User::User(const UserDbId dbId, const UserId userId, const std::string &keychainKey, const std::string &name,
+           const std::string &firstName, const std::string &email, const std::string &avatarUrl,
+           const std::shared_ptr<std::vector<char>> avatar, const bool toMigrate) :
     _logger(Log::instance()->getLogger()),
     _dbId(dbId),
     _userId(userId),
     _keychainKey(keychainKey),
     _name(name),
+    _firstName(firstName),
     _email(email),
     _avatarUrl(avatarUrl),
     _avatar(avatar),

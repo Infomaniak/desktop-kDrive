@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,6 +99,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
 
         static public string UpdateChannel = "channel";
         static public string UpdateState = "updateState";
+        static public string SkippedVersion = "skippedVersion";
         static public string State = "state";
         static public string Percentage = "percentage";
 
@@ -107,5 +108,8 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string RelativePath = "relativePath";
         static public string ReplicaSide = "replicaSide";
         static public string NodeConflictInfo = "nodeConflictInfo";
+
+        static public string Title = "title";
+        static public string Message = "message";
     }
 }

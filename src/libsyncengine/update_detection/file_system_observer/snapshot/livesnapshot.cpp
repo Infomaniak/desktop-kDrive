@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,17 @@ void LiveSnapshot::init() {
 }
 
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
+    NodeId removedNodeId;
+    const auto res = updateItem(newItem, removedNodeId);
+    if (!removedNodeId.empty()) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Item " << newItem.id() << " replaced item " << removedNodeId << " in the snapshot");
+    }
+
+    return res;
+}
+
+bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId) {
     const std::scoped_lock lock(_mutex);
 
     if (newItem.parentId().empty()) {
@@ -64,7 +75,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
-    // Check if `newItem` already exists with the same path but a different Id
+    // Check if `newItem` already exists with the same path but a different ID
     if (const auto newParent = findItem(newItem.parentId()); newParent) {
         for (const auto &child: newParent->children()) {
             if (child->normalizedName() == newItem.normalizedName() && child->id() != newItem.id()) {
@@ -72,6 +83,7 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
                            L"Item: " << Utility::formatSyncName(newItem.name()) << L" (" << CommonUtility::s2ws(newItem.id())
                                      << L") already exists in parent: " << CommonUtility::s2ws(newItem.parentId())
                                      << L" with a different id. Removing it and adding the new one.");
+                removedNodeId = child->id();
                 auto child2 = child; // removeItem cannot be called on a const ref, we need to make a copy.
                 if (!removeItem(child2)) return false;
                 break; // There should be at most one item with the same normalized name in a folder.
@@ -81,8 +93,10 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
 
     bool parentChanged = false;
     auto item = findItem(newItem.id());
+    bool hasChanged = false;
     // Update old parent's children lists if the item already exists
     if (item) {
+        hasChanged = *item != newItem;
         parentChanged = item->id() != rootFolderId() && item->parentId() != newItem.parentId();
         // Remove children from previous parent
         if (parentChanged) {
@@ -116,19 +130,28 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
             newParent->addChild(item);
         }
     }
-    if (parentChanged || !isOrphan(item->id())) {
+    if (hasChanged || (parentChanged && !isOrphan(item->id()))) {
         startUpdate();
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" ("
+                                                               << CommonUtility::s2ws(item->id()) << L") updated at:"
+                                                               << item->lastModified());
+        }
     }
 
-    if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" ("
-                                                           << CommonUtility::s2ws(item->id()) << L") updated at:"
-                                                           << item->lastModified());
-    }
     return true;
 }
 
 bool LiveSnapshot::removeItem(const NodeId itemId) {
+    if (itemId.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LiveSnapshot::removeItem: empty item ID argument.");
+        return false;
+    }
+    if (itemId == rootFolderId()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in LiveSnapshot::removeItem: cannot remove root folder.");
+        return false;
+    }
+
     if (auto item = findItem(itemId); item) {
         return removeItem(item);
     }
@@ -263,6 +286,18 @@ bool LiveSnapshot::clearContentChecksum(const NodeId &itemId) {
     return setContentChecksum(itemId, "");
 }
 
+bool LiveSnapshot::forceUpdateLastChangeRevision(const NodeId &itemId) {
+    const std::scoped_lock lock(_mutex);
+    if (const auto item = findItem(itemId); item) {
+        item->forceUpdateLastChangeRevision();
+        if (!isOrphan(itemId)) {
+            startUpdate();
+        }
+        return true;
+    }
+    return false;
+}
+
 
 bool LiveSnapshot::isValid() const {
     const std::scoped_lock lock(_mutex);
@@ -281,6 +316,8 @@ SnapshotRevision LiveSnapshot::revision() const {
 void LiveSnapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem> parent) {
     auto it = parent->children().begin();
     while (it != parent->children().end()) {
+        // We take a reference on child item on purpose:
+        // The reference count is checked against 1 in SnapshotItemUnorderedMap::erase.
         const auto &child = *it;
         const NodeId childId = child->id();
 

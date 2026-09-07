@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ DriveInfoClient::DriveInfoClient() :
 DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) :
     DriveInfo(driveInfo) {}
 
-void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
+void DriveInfoClient::updateStatus(std::map<SyncDbId, SyncInfoClient> &syncInfoMap) {
     _status = SyncStatus::Undefined;
     _unresolvedConflicts = false;
 

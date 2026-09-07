@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,17 +62,22 @@ ExitInfo AbstractGuiJob::runJob() {
 
     auto exitInfo = ExitInfo(ExitCode::Ok);
     if (_type == GuiJobType::Query) {
-        if (exitInfo = deserializeInputParms(); !exitInfo) {
+        exitInfo = deserializeInputParms();
+        if (!exitInfo) {
             LOG_WARN(_logger, "Error in deserializeInputParms for job=" << jobId() << " : " << exitInfo);
-        }
-
-        if (exitInfo = process(); !exitInfo) {
-            LOG_WARN(_logger, "Error in process for job=" << jobId() << " : " << exitInfo);
+        } else {
+            exitInfo = process();
+            if (!exitInfo) {
+                LOG_WARN(_logger, "Error in process for job=" << jobId() << " : " << exitInfo);
+            }
         }
     }
-    auto serializeExitInfo = ExitInfo(ExitCode::Ok);
-    if (serializeExitInfo = serializeOutputParms(); !serializeExitInfo) {
-        LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId() << " : " << serializeExitInfo);
+
+    if (exitInfo) {
+        exitInfo = serializeOutputParms();
+        if (!exitInfo) {
+            LOG_WARN(_logger, "Error in serializeOutputParms for job=" << jobId() << " : " << exitInfo);
+        }
     }
 
     if (_type == GuiJobType::Signal && !exitInfo) return exitInfo;

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -64,6 +64,8 @@ enum BetaOption: String, Identifiable, CaseIterable, PreferenceOption {
             self = .internal
         case .legacy:
             self = .doNotJoin
+        case .test:
+            self = .doNotJoin
         }
     }
 }
@@ -74,6 +76,8 @@ struct GeneralPreferencesVersionSection: View {
     @State private var isShowingDistributionChannelSheet = false
     @State private var betaOption = BetaOption.doNotJoin
 
+    let containsStaffUser: Bool
+
     var body: some View {
         Section {
             VersionManagementView(repository: repository)
@@ -81,7 +85,7 @@ struct GeneralPreferencesVersionSection: View {
             // TODO: Automatic update is not available yet
             Toggle(KDriveLocalizable.automaticUpdatesSetting, isOn: .constant(false))
 
-            IKLabeledContent(KDriveLocalizable.betaSettings) {
+            IKLabeledContent(KDriveLocalizable.releaseChannelBeta) {
                 HStack {
                     Text(betaOption.description)
                         .foregroundStyle(.secondary)
@@ -105,7 +109,7 @@ struct GeneralPreferencesVersionSection: View {
             updatePropertiesFromParametersInfo(newValue)
         }
         .sheet(isPresented: $isShowingDistributionChannelSheet) {
-            DistributionChannelView(repository: repository)
+            DistributionChannelView(repository: repository, containsStaffUser: containsStaffUser)
         }
     }
 
@@ -115,5 +119,5 @@ struct GeneralPreferencesVersionSection: View {
 }
 
 #Preview {
-    GeneralPreferencesVersionSection(repository: PreferencesRepository())
+    GeneralPreferencesVersionSection(repository: PreferencesRepository(), containsStaffUser: false)
 }

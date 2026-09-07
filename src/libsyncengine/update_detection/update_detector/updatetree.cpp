@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, bool deleteNodeLater, in
 
     if (depth > MAX_DEPTH) {
         assert(false);
+        LOG_WARN(Log::instance()->getLogger(), "Update tree depth is too big");
         sentry::Handler::captureMessage(sentry::Level::Warning, "UpdateTree::deleteNode", "Update tree depth is too big");
         return false;
     }
