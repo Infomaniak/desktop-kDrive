@@ -549,7 +549,7 @@ struct COMMON_EXPORT CommonUtility {
         static bool isMac();
         static bool isLinux();
 
-        //! Returns the user-private directory location suitable for temporary files.
+        //! Returns a directory location suitable for temporary files, preferring a user-private directory when available.
         /*!
          \param directoryPath is a path to a directory suitable for temporary files. Empty if there is an error.
          \return An ExitInfo representing the return value of the underlying OS API call.
