@@ -400,7 +400,7 @@ void KDC::TestLocalJobs::testGenericLocalDeleteJobHardDelete() {
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, deleteJob.exitInfo().code());
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePath.filename()));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 
     // Non-existing items do not raise deletion errors.
     const SyncPath nonExistingPath = temporaryDirectory.path() / "non-existing-item.txt";
