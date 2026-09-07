@@ -40,7 +40,7 @@ void TestDeleteItemAtomically::testDeleteRegularFile() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(filePath, cacheDirectory));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
     CPPUNIT_ASSERT(std::filesystem::exists(cacheDirectoryPath)); // The cache directory is left in place.
-    CPPUNIT_ASSERT(!std::filesystem::exists(cacheDirectoryPath / filePath.filename()));
+    CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 }
 
 void TestDeleteItemAtomically::testDeleteDirectory() {
