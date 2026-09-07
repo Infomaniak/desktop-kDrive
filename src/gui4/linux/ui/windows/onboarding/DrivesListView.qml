@@ -32,6 +32,7 @@ ListView {
     spacing: IKSpacing.s8
     clip: true
     boundsBehavior: Flickable.StopAtBounds
+    acceptedButtons: Qt.NoButton // remove the
 
     model: root.drivesModel
 
