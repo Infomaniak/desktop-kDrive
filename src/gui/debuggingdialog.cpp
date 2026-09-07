@@ -52,10 +52,10 @@ DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent
     CustomDialog(true, parent),
     _gui(gui) {
     initUI();
-    _recordDebugging = ParametersCache::instance()->parametersInfo().useLog();
-    _extendedLog = ParametersCache::instance()->parametersInfo().extendedLog();
-    _minLogLevel = ParametersCache::instance()->parametersInfo().logLevel();
-    _deleteLogs = ParametersCache::instance()->parametersInfo().purgeOldLogs();
+    _recordDebugging = ParametersCache::instance()->parameters().useLog();
+    _extendedLog = ParametersCache::instance()->parameters().extendedLog();
+    _minLogLevel = ParametersCache::instance()->parameters().logLevel();
+    _deleteLogs = ParametersCache::instance()->parameters().purgeOldLogs();
 
     ClientGui::restoreGeometry(this);
     setResizable(true);
@@ -686,10 +686,10 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
     MatomoClient::sendEvent("preferencesDebugging", MatomoEventAction::Click, "saveButton");
 
-    ParametersCache::instance()->parametersInfo().setUseLog(_recordDebugging);
-    ParametersCache::instance()->parametersInfo().setExtendedLog(_extendedLog);
-    ParametersCache::instance()->parametersInfo().setLogLevel(_minLogLevel);
-    ParametersCache::instance()->parametersInfo().setPurgeOldLogs(_deleteLogs);
+    ParametersCache::instance()->parameters().setUseLog(_recordDebugging);
+    ParametersCache::instance()->parameters().setExtendedLog(_extendedLog);
+    ParametersCache::instance()->parameters().setLogLevel(_minLogLevel);
+    ParametersCache::instance()->parameters().setPurgeOldLogs(_deleteLogs);
     ParametersCache::instance()->saveParametersInfo();
 
     accept();

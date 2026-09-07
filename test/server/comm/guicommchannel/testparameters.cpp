@@ -27,10 +27,10 @@ namespace KDC {
 using namespace testcommhelpers;
 
 namespace {
-ParametersInfo getExpectedParametersInfo() {
+Parameters getExpectedParametersInfo() {
     const ProxyConfig proxyConfig(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
 
-    ParametersInfo parametersInfo;
+    Parameters parametersInfo;
     parametersInfo.setLanguage(Language::Default);
     parametersInfo.setMonoIcons(false);
     parametersInfo.setAutoStart(true);
@@ -165,7 +165,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
-        ParametersInfo res = getExpectedParametersInfo();
+        Parameters res = getExpectedParametersInfo();
         CPPUNIT_ASSERT(res == parametersUpdateJob->_parametersInfo);
     };
 

@@ -44,7 +44,7 @@ class MigrationParams {
         ExitCode setToken(User &user, const std::string &appPassword);
 
         void deleteUselessConfigFiles();
-        void migrateGeometry(std::shared_ptr<std::vector<char>> &geometryStr);
+        void migrateGeometry(Parameters::DialogGeometry &dialogGeometry);
         inline const std::unordered_map<SyncDbId, std::pair<SyncPath, SyncName>> &getSyncToMigrate() { return _syncToMigrate; }
         static QDir configDir();
         static QString configFileName();

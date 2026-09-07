@@ -28,11 +28,10 @@
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/data/syncfileitem.h"
 #include "libcommon/data/error.h"
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 #include "libcommon/data/proxyconfig.h"
 #include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/exclusionapp.h"
-#include "libparms/db/parameters.h"
 #include "libsyncengine/login/login.h"
 
 #include <QList>
@@ -57,8 +56,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo updateDrive(const Drive &drive);
         static ExitCode getSyncList(QList<Sync> &list);
         static ExitCode getSyncList(std::vector<Sync> &list);
-        static ExitCode getParameters(ParametersInfo &parametersInfo);
-        static ExitCode updateParameters(const ParametersInfo &parametersInfo);
+        static ExitCode getParameters(Parameters &parametersInfo);
+        static ExitCode updateParameters(const Parameters &parametersInfo);
         static ExitInfo isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid);
         static ExitInfo folderContainsNonExcludedItem(const SyncPath &path, bool &containsNonExcludedFile);
         static ExitInfo findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error);
@@ -146,9 +145,6 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo getThumbnail(DriveDbId driveDbId, const NodeId &nodeId, int width, std::string &thumbnail);
 
         // Utility
-        static void parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo);
-        static void parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters);
-
         static bool isDisplayableError(const Error &error);
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
         static void fixProxyConfig();

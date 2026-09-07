@@ -30,6 +30,44 @@
 #include <fstream>
 #include <string>
 
+namespace {
+
+// Encodes the dialog geometry map into the BLOB format stored in the "parameters" table:
+// one "objectName;base64Geometry" pair per line.
+std::shared_ptr<std::vector<char>> dialogGeometryToBlob(const KDC::Parameters::DialogGeometry &dialogGeometry) {
+    if (dialogGeometry.isEmpty()) {
+        return nullptr;
+    }
+
+    QByteArray arr;
+    for (const QString &objectName: dialogGeometry.keys()) {
+        arr += objectName.toUtf8();
+        arr += ";";
+        arr += dialogGeometry.value(objectName);
+        arr += "\n";
+    }
+    return std::make_shared<std::vector<char>>(arr.begin(), arr.end());
+}
+
+KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::vector<char>> &blob) {
+    KDC::Parameters::DialogGeometry dialogGeometry;
+    if (!blob) {
+        return dialogGeometry;
+    }
+
+    const QByteArray arr(blob->data(), static_cast<int>(blob->size()));
+    const QList<QByteArray> lines = arr.split('\n');
+    for (const QByteArray &line: lines) {
+        const QList<QByteArray> elts = line.split(';');
+        if (elts.size() == 2) {
+            dialogGeometry.insert(QString(elts[0]), elts[1]);
+        }
+    }
+    return dialogGeometry;
+}
+
+} // namespace
+
 //
 // parameters
 //
@@ -678,7 +716,7 @@ bool ParmsDb::insertDefaultParameters() {
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersionString()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.autoUpdateAttempted()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.seenVersion()));
-    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, dialogGeometryToBlob(parameters.dialogGeometry())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, static_cast<int>(_test ? true : parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, index++, parameters.uploadSessionParallelJobs()));
@@ -1496,7 +1534,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.updateTargetVersionString()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.autoUpdateAttempted()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.seenVersion()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.dialogGeometry()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, dialogGeometryToBlob(parameters.dialogGeometry())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, static_cast<int>(parameters.extendedLog())));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.maxAllowedCpu()));
     LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_REQUEST_ID, index++, parameters.uploadSessionParallelJobs()));
@@ -1608,7 +1646,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 
     std::shared_ptr<std::vector<char>> blobResult;
     LOG_IF_FAIL(queryBlobValue(SELECT_PARAMETERS_REQUEST_ID, index++, blobResult));
-    parameters.setDialogGeometry(blobResult);
+    parameters.setDialogGeometry(blobToDialogGeometry(blobResult));
 
     LOG_IF_FAIL(queryIntValue(SELECT_PARAMETERS_REQUEST_ID, index++, intResult));
     parameters.setExtendedLog(intResult);

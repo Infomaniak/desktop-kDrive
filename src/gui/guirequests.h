@@ -27,7 +27,7 @@
 #include "libcommon/data/driveavailable.h"
 #include "libcommon/data/sync.h"
 #include "libcommon/data/error.h"
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 #include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/exclusionapp.h"
 
@@ -53,8 +53,8 @@ struct GuiRequests {
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
         static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);
-        static ExitCode getParameters(ParametersInfo &parametersInfo);
-        static ExitCode updateParameters(const ParametersInfo &parametersInfo);
+        static ExitCode getParameters(Parameters &parametersInfo);
+        static ExitCode updateParameters(const Parameters &parametersInfo);
         static ExitCode getNodePath(SyncDbId syncDbId, const QString &nodeId, QString &path);
         static ExitCode findGoodPathForNewSync(const QString &driveName, QString &path, QString &error);
         static ExitCode isPathValidForNewSync(const QString &path, SyncConfiguration syncConfig, bool &valid);

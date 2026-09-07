@@ -162,7 +162,7 @@ void FixConflictingFilesDialog::initUi() {
     keepLocalDisclaimerLayout->addWidget(keepRemoteDisclaimerLabel);
 
 
-    if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
+    if (ParametersCache::instance()->parameters().moveToTrash()) {
         const auto keepRemoteDisclaimerLearnMoreLabel = new QLabel();
         connect(keepRemoteDisclaimerLearnMoreLabel, &QLabel::linkActivated, this, &FixConflictingFilesDialog::onLinkActivated);
         keepRemoteDisclaimerLabel->setText(
