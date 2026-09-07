@@ -986,12 +986,14 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
                         ioError == IoError::AccessDenied ? ExitCause::FileAccessError : ExitCause::Unknown};
     }
 
-    if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(destPath, ioError));
-    }
 
     switch (ioError) {
         case IoError::Success:
+            if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
+                LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
+                                             << Utility::formatIoError(destPath, ioError)
+                                             << L". The item will be deleted later by the cache directory cleanup process.");
+            }
             return ExitCode::Ok;
         case IoError::AccessDenied:
             return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
