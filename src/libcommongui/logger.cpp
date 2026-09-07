@@ -319,8 +319,11 @@ void Logger::setLogDir(const QString &dir) {
 }
 
 void Logger::setLogDebug(const bool debug) {
-    QLoggingCategory::setFilterRules(debug ? QStringLiteral("*=false\nsync.*=true\nsync.database.sql=false\nserver.*=true\ngui.*="
-                                                            "true\ncommon.*=true\nlibcommon.*=true\nvfs.*=true")
+    QLoggingCategory::setFilterRules(debug ? QStringLiteral("*=true\n"
+                                                            "*.debug=false\n"
+                                                            "gui.*.debug=true\n"
+                                                            "qml.debug=true\n"
+                                                            "qml.*.debug=true")
                                            : QString());
     _logDebug = debug;
 }
