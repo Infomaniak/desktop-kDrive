@@ -76,17 +76,23 @@ void TestFolderWatcherLinux::testAddFolderRecursiveDisappearingChild() {
                 FolderWatcher_linux(nullptr, path),
                 _registrationSucceeded(registrationSucceeded) {}
 
+            ~FolderWatcherLinuxMock() override { stopWatching(); }
+
         private:
             AddWatchOutcome inotifyAddWatch(const SyncPath &path) override {
-                if (path == _folder / "disappearing") {
+                if (path == _folder / "disappearing" && !_childRemoved) {
+                    _childRemoved = true;
+                    const auto outcome =
+                            _registrationSucceeded ? FolderWatcher_linux::inotifyAddWatch(path) : AddWatchOutcome{-1, ENOENT};
+                    if (_registrationSucceeded) CPPUNIT_ASSERT(outcome.returnValue >= 0);
                     CPPUNIT_ASSERT(std::filesystem::remove(path));
-                    if (!_registrationSucceeded) return {-1, ENOENT};
+                    return outcome;
                 }
-                return {++_nextWatch, 0};
+                return FolderWatcher_linux::inotifyAddWatch(path);
             }
 
             bool _registrationSucceeded;
-            std::int64_t _nextWatch = 0;
+            bool _childRemoved = false;
     };
 
     // Cover disappearance during registration and immediately after successful registration.
@@ -96,10 +102,25 @@ void TestFolderWatcherLinux::testAddFolderRecursiveDisappearingChild() {
         CPPUNIT_ASSERT(std::filesystem::create_directories(tempDir.path() / "remaining/nested"));
 
         FolderWatcherLinuxMock testObj(tempDir.path(), registrationSucceeded);
+        testObj._fileDescriptor = inotify_init();
+        CPPUNIT_ASSERT(testObj._fileDescriptor >= 0);
         CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.watchDirectoryTree(tempDir.path()));
         CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.exitInfo());
         CPPUNIT_ASSERT(!std::filesystem::exists(tempDir.path() / "disappearing"));
         CPPUNIT_ASSERT(testObj._pathToWatch.contains(tempDir.path() / "remaining/nested"));
+        const auto childPath = tempDir.path() / "disappearing";
+        CPPUNIT_ASSERT(!testObj._pathToWatch.contains(childPath));
+        for (const auto &watchedPath: testObj._watchToPath | std::views::values) {
+            CPPUNIT_ASSERT(watchedPath != childPath);
+        }
+
+        CPPUNIT_ASSERT(std::filesystem::create_directory(childPath));
+        CPPUNIT_ASSERT_EQUAL(ExitInfo{ExitCode::Ok}, testObj.watchDirectoryTree(childPath));
+        CPPUNIT_ASSERT(testObj._pathToWatch.contains(childPath));
+        const auto watch = testObj._pathToWatch.at(childPath);
+        CPPUNIT_ASSERT(testObj._watchToPath.at(watch) == childPath);
+        // The recreated directory must have a live kernel watch, not only a bookkeeping entry.
+        CPPUNIT_ASSERT_EQUAL(0, inotify_rm_watch(static_cast<int32_t>(testObj._fileDescriptor), watch));
     }
 }
 
