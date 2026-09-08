@@ -20,8 +20,12 @@ import QtQuick
 import QtQuick.Controls
 import kDrive.UI
 
-// Always-alive composition point for app-global dialogs. Feature-specific queueing remains in each controller; a
-// cross-feature arbiter can be introduced here later if simultaneous global modal families become a real requirement.
+// Always-alive composition point for app-global dialogs. Feature-specific queueing remains in each controller; this
+// host only arbitrates across global modal families.
+//
+// Priority rule: a hard mass deletion warning outranks the quit confirmation. A hard warning holds a decision the
+// server is waiting for (restore the files or delete them online), so the user must answer it before we offer to
+// leave the app. A soft warning is only informative, so the quit prompt may cover it.
 Item {
     id: root
 
@@ -29,23 +33,76 @@ Item {
     required property bool presentationAllowed
     required property real surfaceInset
     required property real surfaceRadius
+    required property var systemTrayController
     required property var targetWindow
     required property rect windowMoveArea
+    // A hard warning is awaiting an answer. Read from the controller, not from the dialog visibility, so the rule
+    // still holds while the dialog is closed or not shown yet.
+    readonly property bool hardDeletePending: root.presentationAllowed && root.manyDeletesController.visible
+                                              && root.manyDeletesController.severity === ManyDeletesController.Hard
+    readonly property bool modalVisible: manyDeletesDialog.visible || quitConfirmationDialog.visible
+    // The user confirmed the quit: the shutdown is running, so arbitration stops and the dialog only shows its busy
+    // state.
+    property bool quitPending: false
+
+    function requestQuitConfirmation() {
+        root.systemTrayController.showMainWindow();
+
+        // Skip when the prompt is already up, the quit is already running, or a hard warning takes precedence.
+        if (quitConfirmationDialog.visible || root.quitPending || root.hardDeletePending) {
+            return;
+        }
+
+        quitConfirmationDialog.open();
+    }
+
+    // A hard warning raised after the quit prompt opened cancels it: the warning must be answered first. Once the
+    // quit is confirmed we let it run instead, the app is already shutting down.
+    onHardDeletePendingChanged: {
+        if (root.hardDeletePending && !root.quitPending) {
+            quitConfirmationDialog.close();
+        }
+    }
 
     ManyDeletesDialog {
         id: manyDeletesDialog
 
         controller: root.manyDeletesController
-        presentationAllowed: root.presentationAllowed
+        presentationAllowed: root.presentationAllowed && !quitConfirmationDialog.visible
         scrimInset: root.surfaceInset
         scrimRadius: root.surfaceRadius
+    }
+
+    IKConfirmationDialog {
+        id: quitConfirmationDialog
+
+        busy: root.quitPending
+        cancelText: qsTrId("buttonCancel")
+        confirmText: qsTrId("statusBarQuitApp")
+        description: qsTrId("quitConfirmationDialogDescription")
+        scrimInset: root.surfaceInset
+        scrimRadius: root.surfaceRadius
+        title: qsTrId("quitConfirmationDialogTitle")
+
+        onConfirmed: {
+            root.quitPending = true;
+            root.systemTrayController.requestApplicationQuit();
+        }
+    }
+
+    Connections {
+        target: root.systemTrayController
+
+        function onQuitConfirmationRequested() {
+            root.requestQuitConfirmation();
+        }
     }
 
     Item {
         parent: Overlay.overlay
         anchors.fill: parent
-        z: manyDeletesDialog.z + 1
-        visible: manyDeletesDialog.visible
+        z: Math.max(manyDeletesDialog.z, quitConfirmationDialog.z) + 1
+        visible: root.modalVisible
 
         Item {
             id: modalWindowMoveArea
