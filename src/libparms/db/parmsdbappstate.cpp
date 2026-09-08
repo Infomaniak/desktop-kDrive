@@ -231,14 +231,13 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
 };
 
 std::string ParmsDb::appUID() {
-    const auto instance = ParmsDb::instance();
-    if (!instance) {
+    if (!_instance) {
         LOG_WARN(Log::instance()->getLogger(), "ParmsDb is not initialized, cannot retrieve " << AppStateKey::AppUid);
         return {};
     }
 
     AppStateValue appStateValue = "";
-    if (bool found = false; !instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+    if (bool found = false; !_instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
         return {};
     } else if (!found) {
