@@ -52,6 +52,7 @@ enum class CancelType {
     ExcludedByTemplate,
     Hardlink,
     FileRescued,
+    InvalidLinkTarget,
     EnumEnd
 };
 
@@ -167,6 +168,7 @@ enum class ExitCause {
     BlackListPropagationError,
     FileSystemNotSupported,
     SyncDeletionFailed,
+    InvalidLinkTarget,
     EnumEnd
 };
 

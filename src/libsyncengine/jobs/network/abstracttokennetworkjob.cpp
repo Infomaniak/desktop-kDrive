@@ -270,12 +270,20 @@ ExitInfo AbstractTokenNetworkJob::handleError(const std::string &replyBody, cons
             exitInfo.setCause(ExitCause::DriveMaintenance);
             break;
         }
+        case NetworkErrorCode::ValidationRuleSymbolicLinkTargetRule: {
+            LOG_DEBUG(_logger,
+                      "Validation rule error: " << Utility::formatRequest(uri, _backError.code(), _backError.description()));
+            disableRetry();
+            exitInfo.setCause(ExitCause::InvalidLinkTarget);
+            break;
+        }
         default:
             ExitCause exitCause = ExitCause::Unknown;
             defaultBackErrorHandling(errorCode, uri, exitCause);
             exitInfo.setCause(exitCause);
             break;
     }
+
     return exitInfo;
 }
 

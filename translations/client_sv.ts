@@ -1569,22 +1569,22 @@ Välj en annan mapp. Om du fortsätter kommer Lite Sync att inaktiveras.&lt;br&g
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1082"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
         <source>Unable to open folder path %1.</source>
         <translation>Det går inte att öppna mappsökvägen %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Överföringen är klar!&lt;br&gt;Ange referensnummer &lt;b&gt;%1&lt;/b&gt; i felrapporter.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1118"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
         <source>No kDrive configured!</source>
         <translation>kDrive är inte konfigurerat!</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Överföringen misslyckades!
@@ -1777,7 +1777,12 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Du får inte flytta objektet till &amp;quot;%1&amp;quot;.&lt;br&gt;Det kommer att återställas till sin ursprungliga överordnade mapp.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="814"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="753"/>
+        <source>This link has been excluded from sync because its target path is not compliant.&lt;br&gt; Target paths should be relative. They should not use parent traversal, i.e., components like &quot;..&quot; are forbidden.</source>
+        <translation>Den här länken har uteslutits från synkroniseringen eftersom dess målväg inte uppfyller kraven.&lt;br&gt; Målvägar ska vara relativa. De får inte använda uppåtgående sökning, dvs. komponenter som ”..” är förbjudna.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="819"/>
         <source>There is not enough space left on your computer.&lt;br&gt;The download has been canceled.</source>
         <translation>Det finns inte tillräckligt med utrymme kvar på din dator.&lt;br&gt;Nedladdningen har avbrutits.</translation>
     </message>
@@ -1842,27 +1847,27 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Filen har ändrats lokalt samtidigt som den har raderats på den fjärranslutna kDrive-enheten. En&lt;br&gt;lokal kopia har sparats i räddningsmappen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="765"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="770"/>
         <source>The operation performed on item is forbidden.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Den åtgärd som utförts på objektet är inte tillåten.&lt;br&gt;Objektet har tillfälligt lagts till i svartlistan.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="771"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
         <source>The operation performed on this item failed.&lt;br&gt;The item has been temporarily blacklisted.</source>
         <translation>Åtgärden som utfördes på detta objekt misslyckades.&lt;br&gt;Objektet har tillfälligt lagts till i svartlistan.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="781"/>
         <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
         <translation>Filen är för stor för att laddas upp. Den har tillfälligt blockerats.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="782"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="787"/>
         <source>Impossible to download the file.</source>
         <translation>Det går inte att ladda ner filen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="779"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="784"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Du har överskridit din kvot. Öka din lagringskvot för att återaktivera filuppladdning.</translation>
     </message>
@@ -1927,33 +1932,33 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Den här posten har uteslutits från synkroniseringen eftersom det är en hård länk.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="785"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="790"/>
         <source>This item is currently locked by another user online.&lt;br&gt;We will retry uploading your changes later.</source>
         <translation>Den här artikeln är för närvarande upptagen av en annan användare som är inloggad.&lt;br&gt;Vi försöker ladda upp dina ändringar igen senare.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="790"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="795"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
         <source>Synchronization error.</source>
         <translation>Synkroniseringsfel.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="810"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="815"/>
         <source>Can&apos;t access item.&lt;br&gt;Please fix the read and write permissions.</source>
         <translation>Det går inte att komma åt objektet.&lt;br&gt;Kontrollera läs- och skrivbehörigheterna.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="823"/>
         <source>System error.</source>
         <translation>Systemfel.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="825"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Objektet finns redan på den andra sidan.&lt;br&gt;Det har tillfälligt blockerats.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="840"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Ett tekniskt fel har uppstått.&lt;br&gt;Rensa historiken och kontakta vår support om felet kvarstår.</translation>
     </message>
@@ -2755,47 +2760,47 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
         <translation>Det går inte att spara parametrarna!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="468"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="469"/>
         <source>The parent folder is a sync folder or contained in one</source>
         <translation>Överordnad mapp är en synkroniseringsmapp eller ingår i en sådan</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="502"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="503"/>
         <source>Can&apos;t find a valid path</source>
         <translation>Det går inte att hitta en giltig sökväg</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2110"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2112"/>
         <source>No valid folder selected!</source>
         <translation>Ingen giltig mapp har valts!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2121"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2123"/>
         <source>The selected path does not exist!</source>
         <translation>Den valda sökvägen finns inte!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2126"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2128"/>
         <source>The selected path is not a folder!</source>
         <translation>Den valda sökvägen är ingen mapp!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2131"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2133"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Du har inte behörighet att skriva till den valda mappen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2161"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2163"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 innehåller en mapp som redan är synkroniserad. Välj en annan!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2169"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2171"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 finns i en mapp som redan är synkroniserad. Välj en annan mapp!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2177"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2179"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Den lokala mappen %1 är redan synkroniserad. Välj en annan!</translation>
     </message>
