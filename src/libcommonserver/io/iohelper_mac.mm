@@ -22,6 +22,7 @@
 #import "utility/types.h"
 
 #import "libcommon/utility/utility.h"
+#import "libcommon/utility/logiffail.h"
 
 #import "config.h"
 
@@ -164,16 +165,17 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             ioError = nsError2ioError((__bridge NSError *) error);
             if (ioError != IoError::Unknown) {
                 LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-                CFRelease(error);
-                return true;
             } else {
+                // Case of a corrupted alias file for instance (NSFileReadUnknownError)
                 LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << formatCFError(aliasPath, error));
-                CFRelease(error);
-                return false;
             }
+            CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            ioError = IoError::Unknown;
         }
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath));
-        return false;
+        return isExpectedError(ioError);
     }
 
     const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
@@ -189,9 +191,20 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
         if (error) {
+            ioError = nsError2ioError((__bridge NSError *) error);
+            if (ioError != IoError::Unknown) {
+                LOGW_WARN(logger(),
+                          L"Error in CFURLCreateByResolvingBookmarkData: " << Utility::formatIoError(aliasPath, ioError));
+            } else {
+                LOGW_WARN(logger(), L"Error in CFURLCreateByResolvingBookmarkData: " << formatCFError(aliasPath, error));
+            }
             CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            ioError = IoError::Unknown;
         }
-        return true;
+        return isExpectedError(ioError);
     }
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
