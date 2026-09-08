@@ -2614,6 +2614,21 @@ lukitsematon ja tietokoneeltasi käytettävissä.</translation>
                 <numerusform>Poista (%1 sääntöä)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Tarkistetaan päivityksiä…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Asetusta ei voitu tallentaa. Yritä uudelleen.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Päivityksiä ei voi tarkistaa</translation>
+        </message>
     </context> 
     <context>
         <name></name> 
