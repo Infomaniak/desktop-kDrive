@@ -23,6 +23,7 @@
 #include "update_detection/file_system_observer/folderwatcher_linux.h"
 
 #include <Poco/File.h>
+#include <ranges>
 #include <sys/inotify.h>
 
 namespace KDC {
