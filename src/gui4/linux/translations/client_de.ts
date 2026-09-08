@@ -2613,6 +2613,21 @@ entriegelt und von Ihrem Computer aus zugänglich ist.</translation>
                 <numerusform>Entfernen (%1 Regeln)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Suche nach Updates…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Diese Einstellung konnte nicht gespeichert werden. Bitte versuche es erneut.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Updates können nicht geprüft werden</translation>
+        </message>
     </context> 
     <context>
         <name></name> 
