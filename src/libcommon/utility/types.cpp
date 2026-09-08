@@ -242,6 +242,8 @@ std::string toString(const ExitCause e) {
             return "FileSystemNotSupported";
         case ExitCause::SyncDeletionFailed:
             return "SyncDeletionFailed";
+        case ExitCause::InvalidLinkTarget:
+            return "InvalidLinkTarget";
 
         default:
             return noConversionStr;
@@ -328,6 +330,8 @@ std::string toString(const CancelType e) {
             return "Hardlink";
         case CancelType::FileRescued:
             return "FileRescued";
+        case CancelType::InvalidLinkTarget:
+            return "InvalidLinkTarget";
         default:
             return noConversionStr;
     }

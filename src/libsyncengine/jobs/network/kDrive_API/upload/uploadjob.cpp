@@ -98,6 +98,13 @@ ExitInfo UploadJob::canRun() {
     return ExitCode::Ok;
 }
 
+ExitInfo UploadJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri) {
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+
+    return AbstractTokenNetworkJob::handleError(replyBody, uri);
+}
+
 ExitInfo UploadJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
         return exitInfo;
@@ -105,6 +112,7 @@ ExitInfo UploadJob::handleResponse(std::istream &is) {
 
     UploadJobReplyHandler replyHandler(_absoluteFilePath, IoHelper::isLink(_linkType), _creationTimeIn, _modificationTimeIn);
     if (!replyHandler.extractData(jsonRes())) return {};
+
     _nodeIdOut = replyHandler.nodeId();
     _creationTimeOut = replyHandler.creationTime();
     _modificationTimeOut = replyHandler.modificationTime();

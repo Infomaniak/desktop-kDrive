@@ -49,6 +49,7 @@ class BackError {
         void extractErrorFromJsonObject(const Poco::JSON::Object::Ptr jsonObjPtr);
         void extractFromFullReply(const Poco::JSON::Object::Ptr jsonObjPtr);
         void extractFromErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr);
+        void extractFromBasicErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr);
 
         std::string _code;
         std::string _description;

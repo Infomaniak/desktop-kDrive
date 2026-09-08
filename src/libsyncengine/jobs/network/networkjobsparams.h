@@ -171,6 +171,7 @@ static const std::string nbItemPerPage = "1000"; // Default # of items max retur
 
 /// Errors
 static const std::string errorKey = "error";
+static const std::string errorsKey = "errors";
 static const std::string reasonKey = "reason";
 static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
@@ -187,6 +188,7 @@ enum class NetworkErrorCode {
     ObjectNotFound,
     InvalidGrant,
     ValidationFailed,
+    ValidationRuleSymbolicLinkTargetRule,
     UploadNotTerminatedError,
     UploadError,
     DestinationAlreadyExists,

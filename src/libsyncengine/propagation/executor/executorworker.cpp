@@ -430,6 +430,7 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
             job.reset();
         }
     }
+
     return ExitCode::Ok;
 }
 
@@ -1424,7 +1425,12 @@ ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, con
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
     }
-    if (jobExitInfo.cause() != ExitCause::NotFound) {
+
+    if (jobExitInfo.cause() == ExitCause::InvalidLinkTarget) {
+        error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
+                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None,
+                      CancelType::InvalidLinkTarget);
+    } else if (jobExitInfo.cause() != ExitCause::NotFound) {
         error = Error(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
                       jobExitInfo.code(), jobExitInfo.cause());
@@ -1436,9 +1442,10 @@ ExitInfo ExecutorWorker::handleManagedBackError(const ExitInfo &jobExitInfo, con
 
 namespace details {
 bool isManagedBackError(const ExitCause exitCause) {
-    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,   ExitCause::ApiErr,
-                                                          ExitCause::FileTooBig,    ExitCause::NotFound,
-                                                          ExitCause::QuotaExceeded, ExitCause::UploadNotTerminated};
+    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,      ExitCause::ApiErr,
+                                                          ExitCause::FileTooBig,       ExitCause::NotFound,
+                                                          ExitCause::QuotaExceeded,    ExitCause::UploadNotTerminated,
+                                                          ExitCause::InvalidLinkTarget};
 
     return managedExitCauses.contains(exitCause);
 }

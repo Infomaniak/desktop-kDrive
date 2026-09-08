@@ -47,6 +47,7 @@ BackError::BackError(const std::string &code, const std::string &description, co
 
 void BackError::extractErrorFromJsonObject(const Poco::JSON::Object::Ptr jsonObjPtr) {
     if (!jsonObjPtr) return;
+
     if (jsonObjPtr->has(errorKey))
         extractFromFullReply(jsonObjPtr);
     else
@@ -60,7 +61,7 @@ void BackError::extractFromFullReply(const Poco::JSON::Object::Ptr jsonObjPtr) {
     return extractFromErrorObject(errorObjPtr);
 }
 
-void BackError::extractFromErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr) {
+void BackError::extractFromBasicErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr) {
     if (!jsonObjPtr) return;
 
     (void) JsonParserUtility::extractValue(jsonObjPtr, codeKey, _code, false);
@@ -68,6 +69,21 @@ void BackError::extractFromErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr)
     const auto contextObjPtr = jsonObjPtr->getObject(contextKey);
     (void) JsonParserUtility::extractValue(contextObjPtr, reasonKey, _contextReason, false);
     (void) JsonParserUtility::extractValue(contextObjPtr, modelKey, _contextModel, false);
+}
+
+void BackError::extractFromErrorObject(const Poco::JSON::Object::Ptr jsonObjPtr) {
+    if (!jsonObjPtr) return;
+
+    if (jsonObjPtr->has(errorsKey)) {
+        // An array of more detailed errors exists.
+        // Returns only the first one for now.
+        Poco::JSON::Array::Ptr errorsObj = JsonParserUtility::extractArrayObject(jsonObjPtr, errorsKey);
+        if (errorsObj && !errorsObj->empty()) {
+            extractFromBasicErrorObject(errorsObj->begin()->extract<Poco::JSON::Object::Ptr>());
+        }
+    } else {
+        extractFromBasicErrorObject(jsonObjPtr);
+    }
 }
 
 } // namespace KDC
