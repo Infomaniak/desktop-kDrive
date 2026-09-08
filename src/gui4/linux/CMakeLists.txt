@@ -143,6 +143,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
+        ui/tokens/IKSettings.qml
         ui/tokens/IKStorage.qml
         ui/tokens/IKSyncConfiguration.qml
         ui/tokens/IKWaiting.qml
@@ -246,6 +247,10 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/settings/accounts.svg
+        ui/assets/settings/advanced.svg
+        ui/assets/settings/general.svg
+        ui/assets/settings/information.svg
         ui/assets/main/activities.svg
         ui/assets/main/activities/empty.svg
         ui/assets/main/activities/empty-dark.svg
