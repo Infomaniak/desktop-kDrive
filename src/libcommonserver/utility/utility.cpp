@@ -362,9 +362,12 @@ SyncPath Utility::getExcludedAppFilePath(const bool test /*= false*/) {
 
 SyncPath Utility::getExcludedTemplateFilePath(const bool test /*= false*/) {
     if (test) return excludedTemplateFileName;
+
     std::error_code ec;
     auto canonicalPath = std::filesystem::weakly_canonical(
             CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / excludedTemplateFileName, ec);
+    if (ec.value()) return {};
+
     return canonicalPath.make_preferred();
 }
 
@@ -441,9 +444,12 @@ bool Utility::normalizedSyncPath(const SyncPath &path, SyncPath &normalizedPath,
 }
 SyncPath Utility::getSyncFolderRulesFilePath(const bool test) {
     if (test) return syncFolderRulesFileName;
+
     std::error_code ec;
     auto canonicalPath = std::filesystem::weakly_canonical(
             CommonUtility::getAppWorkingDir() / SyncPath{resourcesPath} / syncFolderRulesFileName, ec);
+    if (ec.value()) return {};
+
     return canonicalPath.make_preferred();
 }
 

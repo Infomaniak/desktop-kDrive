@@ -87,17 +87,17 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             return false;
         }
 
-        auto entryIoError = IoError::Success;
-        const auto entryShouldBeKeptOnDisk = shouldBeKeptOnDisk(entry, vfsStatus, entryIoError);
-        if (!entryShouldBeKeptOnDisk.has_value()) {
-            LOGW_DEBUG(_logger, L"Error in shouldBeKeptOnDisk " << Utility::formatIoError(entry.path(), entryIoError));
+        bool shouldBeKeptOnDisk = false;
+        if (auto entryIoError = IoError::Success;
+            !checkIfItemShouldStayOnDisk(entry, vfsStatus, shouldBeKeptOnDisk, entryIoError)) {
+            LOGW_DEBUG(_logger, L"Error in checkIfItemShouldStayOnDisk " << Utility::formatIoError(entry.path(), entryIoError));
             if (IoHelper::isExpectedError(entryIoError)) continue;
 
             _exitInfo = IoHelper::directoryIteratorExitCode(entryIoError);
             return false;
         }
 
-        if (entryShouldBeKeptOnDisk.value()) {
+        if (shouldBeKeptOnDisk) {
             // Keep file on file system.
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item with " << Utility::formatSyncPath(absolutePath)
@@ -111,7 +111,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             }
 
             if (auto tmpIoError = IoError::Unknown; !IoHelper::deleteItem(entry.path(), tmpIoError)) {
-                LOGW_WARN(_logger, L"Failed to remove all " << Utility::formatIoError(absolutePath, tmpIoError));
+                LOGW_WARN(_logger, L"Error in IoHelper::deleteItem: " << Utility::formatIoError(absolutePath, tmpIoError));
                 _exitInfo = {ExitCode::SystemError, ExitCause::FileAccessError};
                 return false;
             }
@@ -174,77 +174,98 @@ bool VirtualFilesCleaner::folderCanBeProcessed(const DirectoryEntry &directoryEn
     return true;
 }
 
-std::optional<bool> VirtualFilesCleaner::hasFileType(const std::filesystem::directory_entry &entry, IoError &ioError) {
+bool VirtualFilesCleaner::checkFileType(const std::filesystem::directory_entry &entry, bool &hasFileType, IoError &ioError) {
+    hasFileType = false;
+    ioError = IoError::Success;
+
     std::error_code ec;
     const auto isSymlink = entry.is_symlink(ec);
     if (ec.value()) {
         LOGW_WARN(_logger,
                   L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
         ioError = IoHelper::stdError2ioError(ec);
-        return std::nullopt;
+        return false;
     }
 
-    if (isSymlink) return std::make_optional(true);
+    if (isSymlink) {
+        hasFileType = true;
+        return true;
+    }
 
     const auto isDirectory = entry.is_directory(ec);
     if (ec.value()) {
         LOGW_WARN(_logger,
                   L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
         ioError = IoHelper::stdError2ioError(ec);
-        return std::nullopt;
+        return false;
     }
 
-    return std::make_optional(!isDirectory);
+    hasFileType = !isDirectory;
+    return true;
 }
 
-std::optional<bool> VirtualFilesCleaner::shouldBeKeptOnDisk(const std::filesystem::directory_entry &entry,
-                                                            const VfsStatus &vfsStatus, IoError &ioError) {
+bool VirtualFilesCleaner::checkIfItemShouldStayOnDisk(const std::filesystem::directory_entry &entry, const VfsStatus &vfsStatus,
+                                                      bool &shouldStayOnDisk, IoError &ioError) {
+    shouldStayOnDisk = false;
     ioError = IoError::Success;
-    const auto isFile = hasFileType(entry, ioError);
-    if (!isFile.has_value()) {
-        LOGW_WARN(_logger, L"Error in hasFileType " << Utility::formatIoError(entry.path(), ioError));
-        return std::nullopt;
-    } else if (!isFile.value())
-        return true; // Folders are kept on disk.
 
-    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) return true; // Hydrated placeholders are kept on disk.
-    if (!vfsStatus.isPlaceholder) return true; // Non-placeholder files are kept on disk.
+    auto hasFileType = false;
+    if (auto tmpIoError = IoError::Success; !checkFileType(entry, hasFileType, tmpIoError)) {
+        LOGW_WARN(_logger, L"Error in checkFileType " << Utility::formatIoError(entry.path(), tmpIoError));
+        ioError = tmpIoError;
+        return false;
+    }
 
-    return false;
+    if (!hasFileType) {
+        shouldStayOnDisk = true; // Folders are kept on disk.
+        return true;
+    }
+
+    if (vfsStatus.isPlaceholder && vfsStatus.isHydrated) {
+        shouldStayOnDisk = true; // Hydrated placeholders are kept on disk.
+        return true;
+    }
+
+    if (!vfsStatus.isPlaceholder) {
+        shouldStayOnDisk = true; // Non-placeholder files are kept on disk.
+        return true;
+    }
+
+    return true;
 }
 
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
     bool directoryIterationException = false;
 
-    IoError iterationIoError = IoError::Success;
     IoHelper::DirectoryIterator dirIt;
-    bool endOfDir = false;
-    DirectoryEntry entry;
-
     if (auto ioError = IoError::Success; !IoHelper::getRecursiveDirectoryIterator(_rootPath, ioError, dirIt)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(_rootPath, ioError));
         _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
         return false;
     }
 
+    DirectoryEntry entry;
+    bool endOfDir = false;
+    IoError iterationIoError = IoError::Success;
     while (dirIt.next(entry, endOfDir, iterationIoError) && !endOfDir) {
         if (!folderCanBeProcessed(entry)) {
             dirIt.disableRecursionPending();
             continue;
         }
 
-        IoError ioError = IoError::Success;
-        const auto isFile = hasFileType(entry, ioError);
-        if (!isFile.has_value()) {
-            if (IoHelper::isExpectedError(ioError)) continue;
+        auto hasFileType = false;
+        if (auto tmpIoError = IoError::Success; !checkFileType(entry, hasFileType, tmpIoError)) {
+            LOGW_WARN(_logger, L"Error in checkFileType " << Utility::formatIoError(entry.path(), tmpIoError));
+            if (IoHelper::isExpectedError(tmpIoError)) continue;
 
-            _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+            _exitInfo = IoHelper::directoryIteratorExitCode(tmpIoError);
             return false;
-        } else if (!isFile.value())
-            continue;
+        }
 
-        bool isDehydrated = false;
-        ioError = IoError::Success;
+        if (!hasFileType) continue;
+
+        auto isDehydrated = false;
+        auto ioError = IoError::Success;
         if (const bool success = IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError);
             !success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(entry.path(), ioError));
@@ -253,16 +274,16 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
         if (!isDehydrated) continue;
 
-        const SyncPath &filePath = entry.path();
-        if (!IoHelper::deleteItem(filePath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(filePath, ioError));
-            _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+        if (auto tmpIoError = IoError::Success; !IoHelper::deleteItem(entry.path(), tmpIoError)) {
+            LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(entry.path(), tmpIoError));
+            _exitInfo = IoHelper::directoryIteratorExitCode(tmpIoError);
 
-            failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
+            failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, entry.path()));
         }
 
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_DEBUG(_logger, L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(filePath));
+            LOGW_DEBUG(_logger,
+                       L"VFC removeDehydratedPlaceholders: removing item with " << Utility::formatSyncPath(entry.path()));
         }
     }
 
