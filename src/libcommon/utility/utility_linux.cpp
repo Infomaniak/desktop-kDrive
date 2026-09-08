@@ -117,7 +117,8 @@ bool CommonUtility::fileSystemInfo(const SyncPath &targetPath, std::string &fsTy
 
     std::error_code ec;
     auto canonicalPath = std::filesystem::weakly_canonical(targetPath, ec);
-    if (ec) canonicalPath = std::filesystem::absolute(targetPath);
+    if (ec) canonicalPath = std::filesystem::absolute(targetPath, ec);
+    if (ec) return false;
 
     // FS type
     struct statfs stat;

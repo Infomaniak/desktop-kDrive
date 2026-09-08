@@ -158,7 +158,27 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     IoError ioError = IoError::Success;
     bool endOfDir = false;
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-        if (!entry.is_symlink() && entry.is_directory()) fullList.push_back(entry.path());
+        std::error_code ec;
+        const auto isDirectory = entry.is_directory(ec);
+        if (ec.value()) {
+            LOGW_WARN(logger(),
+                      L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_WARN(logger(),
+                      L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        if (!isSymlink && isDirectory) fullList.push_back(entry.path());
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(dir, ioError));
+        return false;
     }
 
     return true;
