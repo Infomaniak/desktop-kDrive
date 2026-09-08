@@ -13,6 +13,10 @@
 
 ### Local Norms (Linux v4)
 
+- Search existing Loco IDs and reuse equivalent translated labels before introducing Linux-specific wording or new keys.
+- Display language choices as capitalized native language names without regional qualifiers; keep the system-default
+  choice translated in the system language independently of the app language, with English as fallback.
+
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Treat Qt 6.11.1 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing behavior
   to an older Qt release.
