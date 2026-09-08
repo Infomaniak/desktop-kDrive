@@ -165,6 +165,11 @@ set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QM
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
+        ui/components/IKComboBox.qml
+        ui/components/IKSwitch.qml
+        ui/windows/settings/SettingsGroup.qml
+        ui/windows/settings/SettingsInfoButton.qml
+        ui/windows/settings/SettingsRow.qml
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
