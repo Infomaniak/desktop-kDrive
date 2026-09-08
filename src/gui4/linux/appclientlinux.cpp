@@ -267,7 +267,7 @@ void AppClientLinux::updateLoggerMinLevel() const {
 }
 
 void AppClientLinux::requestQuit() {
-    qCInfo(lcAppClientLinux) << "Quit requested from system tray";
+    qCInfo(lcAppClientLinux) << "Processing application quit request";
     if (!_ipcClient.isConnected()) {
         qCWarning(lcAppClientLinux) << "IPC is not connected, quitting application directly";
         quit();
