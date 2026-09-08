@@ -399,7 +399,7 @@ bool SyncPal::wipeVirtualFiles() {
     VirtualFilesCleaner virtualFileCleaner(localPath(), _syncDb, vfs());
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
-        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+        addError(Error(syncDbId(), ERR_ID, virtualFileCleaner.exitInfo()));
         return false;
     }
     return true;
@@ -413,7 +413,7 @@ bool SyncPal::wipeOldPlaceholders() {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem: failedToRemovePlaceholders) {
             addError(Error(syncDbId(), "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
-                           CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+                           CancelType::None, "", virtualFileCleaner.exitInfo().code(), virtualFileCleaner.exitInfo().cause()));
         }
         return false;
     }
@@ -779,7 +779,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // from the job map, resulting in a memory leak.
     std::weak_ptr<SyncJob> weakJobPtr = job;
     const auto progressPercentCallback = [weakJobPtr, this](UniqueId,
-                                                            int progress // %
+                                                            int16_t progress // %
                                          ) {
         auto job = weakJobPtr.lock();
         if (!job) {

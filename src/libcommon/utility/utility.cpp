@@ -1137,11 +1137,16 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 }
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
+    SyncPath tmpDir;
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        return {};
+    }
+
     using namespace KDC::event_dump_files;
-    auto sigFilePath =
-            std::filesystem::temp_directory_path() /
-            (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
-                                        : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+    auto sigFilePath = tmpDir / (appType == AppType::Server
+                                         ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
+                                         : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+
     return sigFilePath;
 }
 
@@ -1294,7 +1299,7 @@ void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory 
         signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
-        (void) std::filesystem::remove(sigFilePath);
+        (void) std::filesystem::remove(sigFilePath, ec);
     }
 }
 
@@ -1652,18 +1657,33 @@ bool CommonUtility::isLinux() {
 #endif
 }
 
-ExitInfo CommonUtility::deviceTempDirectoryPath(SyncPath &directoryPath) noexcept {
+ExitInfo CommonUtility::tempDirectoryPath(SyncPath &directoryPath) noexcept {
     // Warning: never log anything in this method. If the logger is not set, the app will crash.
+    directoryPath = SyncPath();
+
     std::error_code ec;
     if (const auto value = CommonUtility::envVarValue("KDRIVE_TMP_PATH"); !value.empty()) {
         directoryPath = SyncPath(value);
+
         (void) std::filesystem::create_directories(directoryPath, ec);
+        if (ec.value()) return stdErrorToExitInfo(ec);
     } else {
-        directoryPath =
-                std::filesystem::temp_directory_path(ec); // The std::filesystem implementation returns an empty path on error.
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        directoryPath = std::filesystem::temp_directory_path(ec);
+        if (ec.value()) return stdErrorToExitInfo(ec);
+#else
+        if (const auto value = CommonUtility::envVarValue("XDG_RUNTIME_DIR"); !value.empty()) {
+            directoryPath = SyncPath(value);
+        } else {
+            // Fallback (not user-private)
+            // Docker containers etc.
+            directoryPath = std::filesystem::temp_directory_path(ec);
+            if (ec.value()) return stdErrorToExitInfo(ec);
+        }
+#endif
     }
 
-    return stdErrorToExitInfo(ec);
+    return ExitCode::Ok;
 }
 
 ExitInfo CommonUtility::stdErrorToExitInfo(const int64_t error) noexcept {

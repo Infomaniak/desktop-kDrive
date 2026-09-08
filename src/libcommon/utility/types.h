@@ -279,6 +279,7 @@ enum class IoError {
     ResultOutOfRange,
     CrossDeviceLink,
     FileOrDirectoryCorrupted,
+    TooManySymbolicLinkLevels,
     Unknown,
     EnumEnd
 };

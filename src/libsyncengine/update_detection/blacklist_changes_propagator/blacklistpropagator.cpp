@@ -120,70 +120,60 @@ ExitInfo BlacklistPropagator::checkNodes() {
 }
 
 ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath) {
-    bool directoryIterationException = false;
     auto ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt;
     bool endOfDir = false;
     DirectoryEntry entry;
 
-    try {
-        if (!IoHelper::recursiveDirectoryIterator(absoluteLocalPath, dirIt)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
-            return ExitCode::SystemError;
-        }
-
-        while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (isAborted()) return ExitCode::Ok;
-
-            const SyncPath &absoluteLocalPath_ = entry.path();
-            // Check if the directory entry is managed
-            bool isManaged = true;
-            auto managedDirEntryError = IoError::Success;
-            if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedDirEntryError)) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                  L"Error in Utility::checkIfDirEntryIsManaged: " << Utility::formatSyncPath(absoluteLocalPath_));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (managedDirEntryError == IoError::NoSuchFileOrDirectory) {
-                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                   L"Directory entry does not exist anymore:" << Utility::formatSyncPath(absoluteLocalPath_));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (ioError == IoError::AccessDenied) {
-                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                   L"Directory misses search permission: " << Utility::formatSyncPath(absoluteLocalPath_));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            if (!isManaged) {
-                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                   L"Directory entry is not managed: " << Utility::formatSyncPath(absoluteLocalPath_));
-                dirIt.disableRecursionPending();
-                continue;
-            }
-
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                               L"Cancel hydration: " << Utility::formatSyncPath(absoluteLocalPath_));
-            _syncPal->vfs()->cancelHydrate(entry.path());
-        }
-    } catch (const std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Exception caught in BlacklistPropagator::removeItem: code=" << e.code() << " error=" << e.what());
-        directoryIterationException = true;
-    } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Exception caught in BlacklistPropagator::removeItem.");
-        directoryIterationException = true;
+    if (!IoHelper::getRecursiveDirectoryIterator(absoluteLocalPath, ioError, dirIt)) {
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(absoluteLocalPath, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
-    if (const auto interruptionExitInfo =
-                IoHelper::checkDirectoryIteratorInterruption(endOfDir, ioError, entry, directoryIterationException);
-        !interruptionExitInfo) {
-        return interruptionExitInfo;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        if (isAborted()) return ExitCode::Ok;
+
+        const SyncPath &absoluteLocalPath_ = entry.path();
+        // Check if the directory entry is managed
+        bool isManaged = true;
+        auto managedDirEntryError = IoError::Success;
+        if (!Utility::checkIfDirEntryIsManaged(entry, isManaged, managedDirEntryError)) {
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                              L"Error in Utility::checkIfDirEntryIsManaged: " << Utility::formatSyncPath(absoluteLocalPath_));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (managedDirEntryError == IoError::NoSuchFileOrDirectory) {
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                               L"Directory entry does not exist anymore:" << Utility::formatSyncPath(absoluteLocalPath_));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (managedDirEntryError == IoError::AccessDenied) {
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                               L"Directory misses search permission: " << Utility::formatSyncPath(absoluteLocalPath_));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        if (!isManaged) {
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+                               L"Directory entry is not managed: " << Utility::formatSyncPath(absoluteLocalPath_));
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
+        LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absoluteLocalPath_));
+        _syncPal->vfs()->cancelHydrate(entry.path());
+    }
+
+    if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                                                << Utility::formatIoError(absoluteLocalPath, ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancelling hydration of " << Utility::formatSyncPath(absoluteLocalPath));

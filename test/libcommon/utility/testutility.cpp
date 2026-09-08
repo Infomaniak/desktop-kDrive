@@ -1421,7 +1421,7 @@ void TestUtility::isLikeSomeError() {
 void TestUtility::testTempDirectoryPath() {
     {
         SyncPath tmpPath;
-        CPPUNIT_ASSERT(CommonUtility::deviceTempDirectoryPath(tmpPath));
+        CPPUNIT_ASSERT(CommonUtility::tempDirectoryPath(tmpPath));
         CPPUNIT_ASSERT(!tmpPath.empty());
     }
 
@@ -1434,7 +1434,7 @@ void TestUtility::testTempDirectoryPath() {
         (void) CommonUtility::setenv("KDRIVE_TMP_PATH", pathStringToSet.c_str(), 1);
 
         SyncPath tmpPath;
-        CPPUNIT_ASSERT(CommonUtility::deviceTempDirectoryPath(tmpPath));
+        CPPUNIT_ASSERT(CommonUtility::tempDirectoryPath(tmpPath));
         CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path() / "testTempDirectoryPath", tmpPath);
         CPPUNIT_ASSERT(std::filesystem::exists(tmpPath));
 
