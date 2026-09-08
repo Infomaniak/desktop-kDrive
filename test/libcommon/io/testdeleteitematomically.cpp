@@ -79,8 +79,8 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     SyncPath cacheDirectoryPath;
     CPPUNIT_ASSERT(cacheDirectory->path(cacheDirectoryPath));
 
-    // A file within a directory that misses owner write and execute permissions cannot be moved to the cache directory.
-    // It is left unmodified.
+    // On POSIX, a file within a directory without owner execute permission cannot be moved to the cache directory.
+    // It is left unmodified; Windows permits the operation.
     const SyncPath permissionLessSubdir = temporaryDirectory.path() / "permission_less_subdirectory";
     CPPUNIT_ASSERT(std::filesystem::create_directory(permissionLessSubdir));
     const SyncPath filePathInSubdir = permissionLessSubdir / "test_file.txt";
