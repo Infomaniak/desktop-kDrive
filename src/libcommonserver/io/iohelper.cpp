@@ -960,7 +960,15 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     SyncPath cacheDirectoryPath;
     if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
-    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
+        bool sourceItemExists = true;
+        auto checkIfPathExistsError = IoError::Success;
+        if (checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, PathCheckOption::Sensitive) &&
+            !sourceItemExists) {
+            return ExitCode::Ok;
+        }
+        return exitInfo;
+    }
 
     const SyncPath destPath = cacheDirectoryPath / CacheDirectory::createTmpFileName();
     auto ioError = IoError::Success;
