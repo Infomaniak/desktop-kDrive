@@ -101,17 +101,17 @@ void FolderWatcher_linux::startWatching() {
 
                         bool isDirectory = false;
                         auto ioError = IoError::Success;
-                        if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
+                        const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
+                        if (!isDirSuccess) {
                             LOGW_WARN(_logger,
                                       L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
-                            continue;
                         }
 
                         if (ioError == IoError::AccessDenied) {
                             LOGW_WARN(_logger, L"The item misses search/exec permission - " << Utility::formatSyncPath(path));
                         }
 
-                        if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirectory) {
+                        if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirSuccess && isDirectory) {
                             // Watch the directory and its descendants before changesDetected scans their contents,
                             // so creations after the scan are queued by inotify instead of being lost.
                             if (auto exitInfo = watchDirectoryTree(path); !exitInfo) {
@@ -148,6 +148,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
         if (ioError == IoError::NoSuchFileOrDirectory && dir != _folder) {
             // A child may disappear between discovery, watch registration and enumeration.
             LOGW_DEBUG(logger(), L"Folder disappeared before enumeration: " << Utility::formatSyncPath(dir));
+            removeFoldersBelow(dir);
             return true;
         }
         LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(dir, ioError));
@@ -256,7 +257,8 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         }
 
         auto wid = it->second;
-        if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1) {
+        // Linux may already have removed the watch when the directory was deleted.
+        if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1 || errno == EINVAL) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG_DEBUG(_logger, "Removed watch on " << itPath);
