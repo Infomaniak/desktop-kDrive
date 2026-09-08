@@ -960,11 +960,11 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     SyncPath cacheDirectoryPath;
     if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
+    // If the cache directory is invalid and if the path does not exist, return success.
     if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
         bool sourceItemExists = true;
-        auto checkIfPathExistsError = IoError::Success;
-        if (checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, PathCheckOption::Sensitive) &&
-            !sourceItemExists) {
+        if (auto checkIfPathExistsError = IoError::Success;
+            checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, PathCheckOption::Sensitive) && !sourceItemExists) {
             return ExitCode::Ok;
         }
         return exitInfo;
@@ -975,9 +975,13 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     (void) IoHelper::renameItem(path, destPath, ioError);
 
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(logger(), L"Error in IoHelper::renameItem: " << Utility::formatIoError(path, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::renameItem: source " << Utility::formatSyncPath(path) << L", destination "
+                                                                      << Utility::formatSyncPath(destPath) << L", error: "
+                                                                      << Utility::formatIoError(ioError));
     }
 
+    // If `ioError` is `NoSuchFileOrDirectory`, this is due to a non-existent source item or to a non-existent parent
+    // directory of the rename target. Check if the source item exists. If it does not exist, return success.
     if (ioError == IoError::NoSuchFileOrDirectory) {
         bool sourceItemExists = true;
         if (auto checkIfPathExistsError = IoError::Success;
@@ -988,12 +992,6 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
         }
         if (!sourceItemExists) return ExitCode::Ok;
     }
-
-    if (ioError != IoError::Success) {
-        return ExitInfo{ExitCode::SystemError,
-                        ioError == IoError::AccessDenied ? ExitCause::FileAccessError : ExitCause::Unknown};
-    }
-
 
     switch (ioError) {
         case IoError::Success:
