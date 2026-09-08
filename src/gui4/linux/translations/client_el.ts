@@ -2827,4 +2827,20 @@ To speed up the upload, we recommend sending only the last kDrive session.</sour
             <translation>Αποστολή μόνο της τελευταίας περιόδου σύνδεσης</translation> 
         </message> 
     </context> 
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogDescription">
+            <source>Your files will stop syncing until the next time you open the application.</source>
+            <extracomment>Explain that quitting kDrive interrupts file synchronization until the application is opened again.</extracomment>
+            <translation>Ο συγχρονισμός των αρχείων σας θα διακοπεί μέχρι να ανοίξετε ξανά την εφαρμογή.</translation>
+        </message>
+    </context>
+    <context>
+        <name></name>
+        <message id="quitConfirmationDialogTitle">
+            <source>Do you really want to quit kDrive?</source>
+            <extracomment>Ask whether the user wants to quit kDrive completely. Keep the product name spelled kDrive.</extracomment>
+            <translation>Θέλετε πραγματικά να κλείσετε το kDrive;</translation>
+        </message>
+    </context>
 </TS>
