@@ -49,7 +49,7 @@ void FolderWatcher_linux::startWatching() {
         return;
     }
 
-    if (const auto addFolderRecursiveExitInfo = addFolderRecursive(_folder); !addFolderRecursiveExitInfo) {
+    if (const auto addFolderRecursiveExitInfo = watchDirectoryTree(_folder); !addFolderRecursiveExitInfo) {
         setExitInfo(addFolderRecursiveExitInfo);
         return;
     }
@@ -99,29 +99,31 @@ void FolderWatcher_linux::startWatching() {
                                        L"Operation " << opType << L" detected on item with " << Utility::formatSyncPath(path));
                         }
 
-                        if (const auto exitInfo = changeDetected(path, opType); !exitInfo) {
-                            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_linux::changeDetected for "
-                                                                                 << Utility::formatSyncPath(path) << L" "
-                                                                                 << exitInfo);
-                        }
-
                         bool isDirectory = false;
                         auto ioError = IoError::Success;
-                        if (const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError); !isDirSuccess) {
+                        const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
+                        if (!isDirSuccess) {
                             LOGW_WARN(_logger,
                                       L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(path, ioError));
-                            continue;
                         }
 
                         if (ioError == IoError::AccessDenied) {
                             LOGW_WARN(_logger, L"The item misses search/exec permission - " << Utility::formatSyncPath(path));
                         }
 
-                        if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirectory) {
-                            if (auto exitInfo = addFolderRecursive(path); !exitInfo) {
+                        if ((event->mask & (IN_MOVED_TO | IN_CREATE)) && isDirSuccess && isDirectory) {
+                            // Watch the directory and its descendants before changesDetected scans their contents,
+                            // so creations after the scan are queued by inotify instead of being lost.
+                            if (auto exitInfo = watchDirectoryTree(path); !exitInfo) {
                                 setExitInfo(exitInfo);
                                 return;
                             };
+                        }
+
+                        if (const auto exitInfo = changeDetected(path, opType); !exitInfo) {
+                            LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in FolderWatcher_linux::changeDetected for "
+                                                                                 << Utility::formatSyncPath(path) << L" "
+                                                                                 << exitInfo);
                         }
 
                         if (event->mask & (IN_MOVED_FROM | IN_DELETE)) {
@@ -142,7 +144,13 @@ void FolderWatcher_linux::startWatching() {
 
 bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList) {
     IoHelper::DirectoryIterator dirIt;
-    if (IoError ioError = IoError::Success; !IoHelper::getDirectoryIterator(dir, true, ioError, dirIt)) {
+    if (auto ioError = IoError::Success; !IoHelper::getDirectoryIterator(dir, false, ioError, dirIt)) {
+        if (ioError == IoError::NoSuchFileOrDirectory && dir != _folder) {
+            // A child may disappear between discovery, watch registration and enumeration.
+            LOGW_DEBUG(logger(), L"Folder disappeared before enumeration: " << Utility::formatSyncPath(dir));
+            removeFoldersBelow(dir);
+            return true;
+        }
         LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(dir, ioError));
         if (ioError == IoError::AccessDenied) {
             setExitInfo({ExitCode::SystemError, ExitCause::FileAccessError});
@@ -211,40 +219,25 @@ ExitInfo FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
     return ExitCode::Ok;
 }
 
-ExitInfo FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
-    if (_pathToWatch.contains(path)) {
-        // This path is already watched
-        return ExitCode::Ok;
-    }
+ExitInfo FolderWatcher_linux::watchDirectoryTree(const SyncPath &path) {
+    std::list pendingFolders{path};
+    while (!pendingFolders.empty() && !_stop) {
+        const auto currentPath = std::move(pendingFolders.front());
+        pendingFolders.pop_front();
 
-    int subdirs = 0;
-    LOGW_DEBUG(_logger, L"(+) Watcher:" << Utility::formatSyncPath(path));
-
-    if (auto exitInfo = inotifyRegisterPath(path); !exitInfo) return exitInfo;
-
-    std::list<SyncPath> allSubFolders;
-    if (!findSubFolders(path, allSubFolders)) {
-        LOG_ERROR(_logger, "Could not traverse all sub folders");
-        return {ExitCode::SystemError, ExitCause::Unknown};
-    }
-
-    for (const auto &subDirPath: allSubFolders) {
-        if (std::error_code ec; std::filesystem::exists(subDirPath, ec) && !_pathToWatch.contains(subDirPath)) {
-            subdirs++;
-
-            if (auto exitInfo = inotifyRegisterPath(subDirPath); !exitInfo) return exitInfo;
-        } else {
-            if (ec) {
-                LOGW_WARN(_logger, L"Failed to check if path exists " << Utility::formatSyncPath(path) << L": "
-                                                                      << CommonUtility::s2ws(ec.message()) << L" (" << ec.value()
-                                                                      << L")");
-            }
-            LOGW_DEBUG(_logger, L"    `-> discarded: " << Utility::formatSyncPath(subDirPath));
+        if (_pathToWatch.contains(currentPath)) {
+            continue;
         }
-    }
 
-    if (subdirs > 0) {
-        LOG_DEBUG(_logger, "    `-> and " << subdirs << " subdirectories");
+        LOGW_DEBUG(_logger, L"(+) Watcher:" << Utility::formatSyncPath(currentPath));
+        if (auto exitInfo = inotifyRegisterPath(currentPath); !exitInfo) return exitInfo;
+
+        // Watch each directory before enumerating its direct children. Queue them instead of
+        // recursing, so the traversal does not grow the call stack with the directory depth.
+        if (!findSubFolders(currentPath, pendingFolders)) {
+            LOG_ERROR(_logger, "Could not traverse all sub folders");
+            return {ExitCode::SystemError, ExitCause::Unknown};
+        }
     }
 
     return ExitCode::Ok;
@@ -264,7 +257,8 @@ void FolderWatcher_linux::removeFoldersBelow(const SyncPath &dirPath) {
         }
 
         auto wid = it->second;
-        if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1) {
+        // Linux may already have removed the watch when the directory was deleted.
+        if (const auto wd = inotify_rm_watch(static_cast<int>(_fileDescriptor), wid); wd > -1 || errno == EINVAL) {
             _watchToPath.erase(wid);
             it = _pathToWatch.erase(it);
             LOG_DEBUG(_logger, "Removed watch on " << itPath);
