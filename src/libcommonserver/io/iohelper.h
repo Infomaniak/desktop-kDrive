@@ -184,6 +184,8 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
+
+         \note This method never sets ioError with `IoError::NoSuchFileOrDirectory`.
          */
         static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
