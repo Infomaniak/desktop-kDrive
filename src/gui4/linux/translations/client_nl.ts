@@ -2614,6 +2614,21 @@ ontgrendeld en toegankelijk is vanaf uw computer.</translation>
                 <numerusform>Verwijderen (%1 regels)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Zoeken naar updates…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Deze instelling kon niet worden opgeslagen. Probeer het opnieuw.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Kan niet op updates controleren</translation>
+        </message>
     </context> 
     <context>
         <name></name> 
