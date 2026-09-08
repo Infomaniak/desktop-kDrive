@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -68,19 +68,10 @@ final class PermissionsViewModel: ObservableObject {
 
     func navigateIfPossible() {
         Task {
-            guard currentState == .done else { return }
-
-            switch currentPermission {
-            case .endpointSecurityExtension:
-                let nextPermission = MacOSPermission.fullDiskAccess
-                if await permissionHander.isAuthorized(for: nextPermission) {
-                    await flowCoordinator.navigateToNextStep()
-                } else {
-                    flowCoordinator.navigate(to: .permissions(nextPermission))
-                }
-            case .fullDiskAccess:
-                await flowCoordinator.navigateToNextStep()
+            guard currentState == .done else {
+                return
             }
+            await flowCoordinator.navigateToNextStepOrFinish()
         }
     }
 

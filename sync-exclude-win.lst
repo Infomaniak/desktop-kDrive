@@ -9,7 +9,7 @@
 *_conflict_*_*_*
 *_blacklisted_*_*_*
 kDrive Rescue Folder
-kDrive-cache
+.kDrive-cache
 *~
 ~$*
 *.~*
@@ -35,3 +35,5 @@ desktop.ini
 *.filepart
 *.app
 ~BROMIUM
+$Recycle.Bin
+$RECYCLE.BIN

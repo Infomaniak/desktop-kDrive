@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,6 +121,12 @@ void SnapshotItem::setLastChangedSnapshotVersion(SnapshotRevision snapshotVersio
                   L"SnapshotItem::setLastChangedSnapshotVersion: "
                   L"Trying to set a lower version than the current one. Current version: "
                           << _lastChangeRevision << L", new version: " << snapshotVersion << L" on " << CommonUtility::s2ws(_id));
+    }
+}
+
+void SnapshotItem::forceUpdateLastChangeRevision() {
+    if (_snapshotRevisionHandler) {
+        _lastChangeRevision = _snapshotRevisionHandler->nextVersion();
     }
 }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "testio.h"
-#include "libcommonserver/io/permissionsholder.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
@@ -624,55 +623,6 @@ void TestIo::testReadOnly() {
     CPPUNIT_ASSERT_EQUAL(true, write);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
     CPPUNIT_ASSERT(!isLocked);
-}
-
-void TestIo::testPermissionsHolder() {
-    const LocalTemporaryDirectory tempDir("testPermissionsHolderDir");
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
-
-    const auto filePath = tempDir.path() / "testPermissionsHolderFile";
-    testhelpers::generateOrEditTestFile(filePath);
-    CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
-
-    {
-        const PermissionsHolder permsHolder(tempDir.path(), Log::instance()->getLogger());
-        testhelpers::generateOrEditTestFile(filePath);
-        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
-    }
-
-    const auto filePath2 = tempDir.path() / "testPermissionsHolderFile2";
-    testhelpers::generateOrEditTestFile(filePath2);
-    CPPUNIT_ASSERT(std::filesystem::exists(filePath2));
-
-    // Test with several instance of perms holder on the same folder
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
-
-    bool dummyRead = false;
-    bool write = false;
-    bool dummyExec = false;
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-    CPPUNIT_ASSERT_EQUAL(false, write);
-    {
-        const PermissionsHolder permsHolder(tempDir.path(), Log::instance()->getLogger());
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-        CPPUNIT_ASSERT_EQUAL(true, write);
-        {
-            const PermissionsHolder permsHolder2(tempDir.path(), Log::instance()->getLogger());
-            CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-            CPPUNIT_ASSERT_EQUAL(true, write);
-            {
-                const PermissionsHolder permsHolder3(tempDir.path(), Log::instance()->getLogger());
-                CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-                CPPUNIT_ASSERT_EQUAL(true, write);
-            }
-            CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-            CPPUNIT_ASSERT_EQUAL(true, write);
-        }
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-        CPPUNIT_ASSERT_EQUAL(true, write);
-    }
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getRights(tempDir.path(), dummyRead, write, dummyExec));
-    CPPUNIT_ASSERT_EQUAL(true, write);
 }
 
 } // namespace KDC

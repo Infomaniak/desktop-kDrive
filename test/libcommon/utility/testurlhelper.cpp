@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,16 +50,13 @@ void TestUrlHelper::testGetUrl() {
         std::cout << " Testing prod URLs";
     }
 
-
     CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::infomaniakApiUrl(), preprodKeyWord));
-    CPPUNIT_ASSERT_EQUAL(false, CommonUtility::contains(UrlHelper::infomaniakApiUrl(2, true), preprodKeyWord));
     CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::kDriveApiUrl(), preprodKeyWord));
     CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::notifyApiUrl(), preprodKeyWord));
     CPPUNIT_ASSERT_EQUAL(usePreprod, CommonUtility::contains(UrlHelper::loginApiUrl(), preprodKeyWord));
 
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::infomaniakApiUrl(), "/2"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::infomaniakApiUrl(123), "/123"));
-    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::infomaniakApiUrl(123, true), "/123"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::kDriveApiUrl(), "/2"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::kDriveApiUrl(123), "/123"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::endsWith(UrlHelper::notifyApiUrl(), "/2"));

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@
 namespace KDC {
 
 MigrationSelectiveSync::MigrationSelectiveSync() :
-    _syncDbId(0),
-    _path(std::filesystem::path()),
-    _type(SyncNodeType::Undefined) {}
+    _path(std::filesystem::path()) {}
 
-MigrationSelectiveSync::MigrationSelectiveSync(int syncDbId, const std::filesystem::path &path, SyncNodeType type) :
+MigrationSelectiveSync::MigrationSelectiveSync(const SyncDbId syncDbId, const std::filesystem::path &path,
+                                               const SyncNodeType type) :
     _syncDbId(syncDbId),
     _path(path),
     _type(type) {}

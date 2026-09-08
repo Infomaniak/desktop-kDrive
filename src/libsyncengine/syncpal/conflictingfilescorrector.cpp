@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,6 +94,14 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
+    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, so we check them here.
+    if (error.path().filename().empty() || error.destinationPath().filename().empty()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error paths in ConflictingFilesCorrector::keepLocalVersion: "
+                                                        << Utility::formatSyncPath(error.path()) << L" / destination "
+                                                        << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
     // Delete remote version locally
     SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
     SyncLocalDeleteJob deleteJob(_syncPal, originalAbsolutePath);
@@ -117,6 +125,15 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 }
 
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
+    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, so we check it
+    // here.
+    if (error.destinationPath().filename().empty()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"ConflictingFilesCorrector::keepRemoteVersion got an invalid error path: destination "
+                          << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
     // Delete local version
     SyncLocalDeleteJob deleteJob(_syncPal, _syncPal->localPath() / error.destinationPath());
     deleteJob.runSynchronously();
@@ -127,7 +144,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     return true;
 }
 
-void ConflictingFilesCorrector::deleteError(int64_t errorDbId) {
+void ConflictingFilesCorrector::deleteError(const ErrorDbId errorDbId) {
     bool found = false;
     if (!ParmsDb::instance()->deleteError(errorDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");

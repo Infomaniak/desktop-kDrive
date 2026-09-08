@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +23,14 @@
 
 namespace KDC {
 
-GetSizeJob::GetSizeJob(int userDbId, int driveId, const NodeId &nodeId) :
+GetSizeJob::GetSizeJob(const UserDbId userDbId, const DriveId driveId, const NodeId &nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId),
     _nodeId(nodeId),
     _size(0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetSizeJob::GetSizeJob(int driveDbId, const NodeId &nodeId) :
+GetSizeJob::GetSizeJob(const DriveDbId driveDbId, const NodeId &nodeId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;

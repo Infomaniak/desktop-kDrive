@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 import Collections
+import CppInterop
 import Foundation
 import OrderedCollections
 
@@ -38,7 +39,7 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
-    public var latestError: SynchroError?
+    public var latestError: BlockingSynchroError?
 
     private static let maxSynchNodesCount = 100
 
@@ -57,6 +58,16 @@ public struct Synchro: Identifiable, Hashable, Sendable {
         }
 
         synchNodes.removeLast(itemsToRemove)
+    }
+
+    public mutating func removeSyncingActivities() {
+        let syncingNodeIds = synchNodes.compactMap { nodeId, node in
+            node.status == .Syncing ? nodeId : nil
+        }
+
+        for nodeId in syncingNodeIds {
+            synchNodes.removeValue(forKey: nodeId)
+        }
     }
 
     public func getSynchNode(by operationId: Int32) -> SynchroNode? {
@@ -134,10 +145,10 @@ extension SynchroNode {
     }
 }
 
-public enum SynchroError: Error, Hashable, Sendable, CaseIterable {
+public enum BlockingSynchroError: Error, Hashable, Sendable, CaseIterable {
     case asleep
     case wakingUp
-    case notRenew // "drive locked"
+    case notRenew
     case maintenance
     case accessDenied
     case loggingError

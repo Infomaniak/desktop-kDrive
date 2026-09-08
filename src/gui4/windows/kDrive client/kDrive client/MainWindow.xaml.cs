@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,23 +16,129 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using H.NotifyIcon;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using System;
+using System.ComponentModel;
 
 namespace Infomaniak.kDrive
 {
     public sealed partial class MainWindow : Window
     {
+        private const int _defaultWidth = 1025;
+        private const int _defaultHeight = 683;
+        private const int _minimumWidth = 900;
+        private const int _minimumHeight = 600;
         public AppNavigationView AppNavView { get { return NavView; } }
-        public MainWindow()
+        public AppModel ViewModel { get; } = App.ServiceProvider.GetRequiredService<AppModel>();
+
+        public MainWindow(Type? landingPageType = null)
         {
             InitializeComponent();
+            AppNavView.LandingPageType = landingPageType;
             this.ExtendsContentIntoTitleBar = true;  // enable custom titlebar
             this.SetTitleBar(AppTitleBar);
-            Utility.SetWindowProperties(this, 900, 600, true);
+            Utility.SetWindowProperties(this, _minimumWidth, _minimumHeight, Utility.WindowResizeOptions.AllowMinimize | Utility.WindowResizeOptions.AllowResize); // Set the minimum size and allow resizing
+            Utility.SetWindowCurrentSize(this, _defaultWidth, _defaultHeight); // Default size sized for the navigation pane expanded state
+            Utility.CenterWindow(this);
             AppModel.UIThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread(); // Save the UI thread dispatcher for later use in view models
             AppWindow.TitleBar.PreferredTheme = Microsoft.UI.Windowing.TitleBarTheme.UseDefaultAppMode;
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            Closed += MainWindow_Closed;
+            Activated += MainWindow_Activated;
+            this.Content.PointerPressed += OnPointerPressed;
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var props = e.GetCurrentPoint(null).Properties;
+
+            if (props.IsXButton1Pressed) // Mouse Back button
+            {
+                if (AppNavView?.Frame?.CanGoBack == true)
+                {
+                    AppNavView?.Frame?.GoBack();
+                    e.Handled = true;
+                }
+            }
+            else if (props.IsXButton2Pressed) // Mouse Forward button
+            {
+                if (AppNavView?.Frame?.CanGoForward == true)
+                {
+                    AppNavView?.Frame?.GoForward();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            UpdateControlsVisibility();
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            if ((App.Current as App)?.CurrentWindow == this)
+            {
+                args.Handled = true;
+                this.Hide();
+                return;
+            }
+
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            Closed -= MainWindow_Closed;
+            Activated -= MainWindow_Activated;
+            this.Content.PointerPressed -= OnPointerPressed;
+        }
+
+        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AppModel.IsInitialized) || e.PropertyName == nameof(AppModel.UpdateRequired))
+                UpdateControlsVisibility();
+        }
+
+        private void UpdateControlsVisibility()
+        {
+            if (NavView is null || SplashScreen is null) return;
+            if (!ViewModel.IsInitialized)
+            {
+                SplashScreen.Visibility = Visibility.Visible;
+
+                NavView.Visibility = Visibility.Collapsed;
+                UpdateRequiredControl.Visibility = Visibility.Collapsed;
+            }
+            else if (ViewModel.UpdateRequired)
+            {
+                UpdateRequiredControl.Visibility = Visibility.Visible;
+
+                SplashScreen.Visibility = Visibility.Collapsed;
+                NavView.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                NavView.Visibility = Visibility.Visible;
+
+                SplashScreen.Visibility = Visibility.Collapsed;
+                UpdateRequiredControl.Visibility = Visibility.Collapsed;
+            }
+        }
+
+
+        private void AppTitleBar_BackRequested(TitleBar sender, object args)
+        {
+            if (AppNavView?.Frame?.CanGoBack is null)
+            {
+                Logger.Log(Logger.Level.Warning, "BackRequested event triggered but AppNavView or its Frame is null. Cannot navigate back.");
+                return;
+            }
+
+            if (AppNavView.Frame.CanGoBack)
+                AppNavView.Frame.GoBack();
         }
     }
 }

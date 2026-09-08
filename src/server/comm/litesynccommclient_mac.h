@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@ class LiteSyncCommClient {
         bool install(bool &activationDone);
         bool connect();
 
-        bool vfsStart(int syncDbId, const SyncPath &folderPath, bool &isPlaceholder, bool &isSyncing);
-        bool vfsStop(int syncDbId);
+        bool vfsStart(SyncDbId syncDbId, const SyncPath &folderPath, bool &isPlaceholder, bool &isSyncing);
+        bool vfsStop(SyncDbId syncDbId);
         bool vfsDehydratePlaceHolder(const SyncPath &absoluteFilepath, const SyncPath &localSyncPath);
         bool vfsHydratePlaceHolder(const SyncPath &filePath);
         bool vfsSetPinState(const SyncPath &path, const SyncPath &localSyncPath, const std::string_view &pinState);
@@ -75,7 +75,7 @@ class LiteSyncCommClient {
     private:
         log4cplus::Logger _logger;
         LiteSyncCommClientPrivate *_Nullable _private{nullptr};
-        std::unordered_map<int, SyncPath> _folders;
+        std::unordered_map<SyncDbId, SyncPath> _folders;
 
         /**
          * Keeps track of folder with `syncing` status.

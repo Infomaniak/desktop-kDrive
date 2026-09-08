@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -24,7 +24,10 @@ import SwiftUI
 struct RemoveSynchroConfirmationView: View {
     @Environment(\.dismiss) private var dismiss
 
+    @State private var isLoading = false
+
     let synchroDbId: Int
+    let completion: (Error?) -> Void
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -40,26 +43,35 @@ struct RemoveSynchroConfirmationView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(KDriveLocalizable.buttonRemove) {
-                    removeSynchro()
-                    dismiss()
+                LoadingButton(isLoading: $isLoading, action: removeSynchro) {
+                    Text(KDriveLocalizable.buttonRemove)
                 }
+                .keyboardShortcut(.defaultAction)
             }
+
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     dismiss()
                 }
+                .keyboardShortcut(.cancelAction)
+                .disabled(isLoading)
             }
         }
     }
 
-    private func removeSynchro() {
-        Task {
-            try? await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
+    private func removeSynchro() async {
+        do {
+            try await SyncJobs().syncDelete(syncDbId: Int32(synchroDbId))
+
+            dismiss()
+            completion(nil)
+        } catch {
+            dismiss()
+            completion(error)
         }
     }
 }
 
 #Preview {
-    RemoveSynchroConfirmationView(synchroDbId: 42)
+    RemoveSynchroConfirmationView(synchroDbId: 42) { _ in }
 }

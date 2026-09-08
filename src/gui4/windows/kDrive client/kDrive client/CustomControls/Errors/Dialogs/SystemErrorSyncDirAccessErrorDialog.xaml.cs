@@ -1,3 +1,21 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using CommunityToolkit.WinUI;
 using DynamicData;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -18,11 +36,10 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         InitializeComponent();
         InitTextBlocks();
     }
-
     public void InitTextBlocks()
     {
         // Access Modified
-        string sentence = Localizer.Instance.GetString("localFileAccessErrorDialogFaqLink");
+        string sentence = Localizer.Instance.GetString("errDialogLocalFileAccessFaqLink");
         string faqText = Localizer.Instance.GetString("labelFAQ");
 
         // Split the sentence around the placeholder
@@ -68,9 +85,9 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
             FolderDeletedTextBlock.Inlines.Add(new Run { Text = parts[1] });
     }
 
-    private async void RecreateSync_Click(Hyperlink sender, HyperlinkClickEventArgs args)
+    private void RecreateSync_Click(Hyperlink sender, HyperlinkClickEventArgs args)
     {
-        var frame = ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
+        var frame = Utility.GetFrame(this);
         if (frame is null)
         {
             Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
@@ -79,10 +96,15 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
 
         var destPage = (Error.Sync?.IsAdvanced ?? false) ? typeof(Pages.Settings.DriveAdvancedSyncsPage) : typeof(Pages.Settings.DriveManagementPage);
         frame.Navigate(destPage, Error.Sync?.Drive);
+
+        // Get the containg dialog and close it
+        var dialog = this.FindAscendant<ContentDialog>();
+        if (dialog is not null)
+            dialog.Hide();
     }
 
     private async void FaqHyperlink_Click(Hyperlink sender, HyperlinkClickEventArgs args)
     {
-        await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.FAQUri);
+        await kDrive.Localizer.Instance.TryLaunchUriAsync("faqUrl");
     }
 }

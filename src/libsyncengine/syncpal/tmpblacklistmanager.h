@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ class TmpBlacklistManager {
         void refreshBlacklist();
 
         // Remove the item from local and remote blacklist
+        void clear();
         void removeItemFromTmpBlacklist(const SyncPath &relativePath);
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const;
@@ -47,7 +48,7 @@ class TmpBlacklistManager {
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side) const;
         void eraseSingleItemFromBlacklist(const NodeId &nodeId, ReplicaSide side);
-        int syncDbId() const noexcept {
+        SyncDbId syncDbId() const noexcept {
             assert(_syncPal);
             return _syncPal->syncDbId();
         };

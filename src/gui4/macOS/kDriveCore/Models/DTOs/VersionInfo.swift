@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,18 +16,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
+
 public struct VersionInfo: Codable, Sendable {
-    public init(channel: KDC.VersionChannel, tag: String, buildVersion: UInt64, buildMinOsVersion: String, downloadUrl: String) {
+    public init(
+        channel: KDC.DistributionChannel,
+        tag: String,
+        buildVersion: UInt64,
+        buildMinOsVersion: String,
+        downloadUrl: String,
+        checksum: String
+    ) {
         self.channel = channel
         self.tag = tag
         self.buildVersion = buildVersion
         self.buildMinOsVersion = buildMinOsVersion
         self.downloadUrl = downloadUrl
+        self.checksum = checksum
     }
 
-    public let channel: KDC.VersionChannel
+    public let channel: KDC.DistributionChannel
     public let tag: String
     public let buildVersion: UInt64
     public let buildMinOsVersion: String
     public let downloadUrl: String
+    public let checksum: String
 }

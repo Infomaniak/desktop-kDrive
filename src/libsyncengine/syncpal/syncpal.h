@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "syncenginelib.h"
 #include "db/syncdb.h"
+#include "io/cachedirectory.h"
 #include "progress/progressinfo.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/snapshot/livesnapshot.h"
@@ -37,6 +38,7 @@
 #include "libparms/db/parmsdb.h"
 
 #include <memory>
+#include <mutex>
 #include <comm.h>
 
 namespace KDC {
@@ -82,21 +84,21 @@ class GetSizeJob;
 
 class SyncPal;
 
-using SyncPalMap = std::unordered_map<int, std::shared_ptr<SyncPal>>;
+using SyncPalMap = std::unordered_map<SyncDbId, std::shared_ptr<SyncPal>>;
 
 struct SyncPalInfo {
         SyncPalInfo() = default;
-        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
+        SyncPalInfo(const DriveDbId driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
             driveDbId(driveDbId_),
             localPath(localPath_),
             targetPath(targetPath_) {}
 
-        int syncDbId{0};
-        int driveDbId{0};
-        int driveId{0};
-        int accountDbId{0};
-        int userDbId{0};
-        int userId{0};
+        SyncDbId syncDbId{0};
+        DriveDbId driveDbId{0};
+        DriveId driveId{0};
+        AccountDbId accountDbId{0};
+        UserDbId userDbId{0};
+        UserId userId{0};
         std::string driveName;
         SyncPath localPath;
         NodeId localNodeId;
@@ -127,7 +129,6 @@ struct SyncProgress {
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
 };
 
-
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
         enum class PauseCaller {
@@ -147,6 +148,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual ~SyncPal();
 
         inline void setAddErrorCallback(const std::function<void(const Error &)> &addError) { _addError = addError; }
+        inline void setResolveSyncErrorsByExitCauseCallback(
+                const std::function<void(SyncDbId syncDbId, ExitCause cause)> &resolveSyncErrors) {
+            _resolveSyncErrors = resolveSyncErrors;
+        }
 
         inline void setAddCompletedItemCallback(const std::function<void(int, const SyncFileItem &, bool)> &addCompletedItem) {
             _addCompletedItem = addCompletedItem;
@@ -163,12 +168,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // SyncPalInfo
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         inline const SyncPalInfo &syncInfo() const { return _syncInfo; }
-        inline int syncDbId() const { return _syncInfo.syncDbId; }
-        inline int driveDbId() const { return _syncInfo.driveDbId; }
-        inline int driveId() const { return _syncInfo.driveId; }
-        inline int accountDbId() const { return _syncInfo.accountDbId; }
-        inline int userDbId() const { return _syncInfo.userDbId; }
-        inline int userId() const { return _syncInfo.userId; }
+        inline SyncDbId syncDbId() const { return _syncInfo.syncDbId; }
+        inline DriveDbId driveDbId() const { return _syncInfo.driveDbId; }
+        inline DriveId driveId() const { return _syncInfo.driveId; }
+        inline AccountDbId accountDbId() const { return _syncInfo.accountDbId; }
+        inline UserDbId userDbId() const { return _syncInfo.userDbId; }
+        inline UserId userId() const { return _syncInfo.userId; }
         inline const std::string &driveName() const { return _syncInfo.driveName; }
         inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
         inline const SyncPath &localPath() const { return _syncInfo.localPath; }
@@ -190,16 +195,22 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         [[nodiscard]] std::shared_ptr<ConflictQueue> conflictQueue() const { return _conflictQueue; }
 
         // TODO : not ideal, to be refactored
-        bool checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
-        bool checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
+        ExitInfo checkIfExistsOnServer(const SyncPath &path, bool &exists) const;
+        ExitInfo checkIfCanShareItem(const SyncPath &path, bool &canShare) const;
 
         ExitCode fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const;
         ExitCode syncIdSet(SyncNodeType type, NodeSet &nodeIdSet);
         ExitCode setSyncIdSet(SyncNodeType type, const NodeSet &nodeIdSet);
-        ExitCode syncListUpdated(bool restartSync);
-        ExitCode excludeListUpdated();
+        ExitInfo propagateSyncIdSetChange(bool restartSync);
+        // TODO: Remove this in favor of `propagateSyncIdSetChange`.
+        // The asynchronous behavior is now handled by the new CommLayer design.
+        ExitCode propagateSyncIdSetChangeAsync(bool restartSync);
+        ExitInfo propagateExcludeListChange();
+        // TODO: Remove this in favor of `propagateExcludeListChange`.
+        // The asynchronous behavior is now handled by the new CommLayer design.
+        ExitCode propagateExcludeListChangeAsync();
         ExitCode fixConflictingFiles(const std::vector<Error> &keepLocalErrorList, const std::vector<Error> &keepRemoteErrorList,
-                                     std::vector<int32_t> &removedErrorsDbIds);
+                                     std::vector<ErrorDbId> &removedErrorsDbIds);
 
         // TODO: Remove this in favor of `fixConflictingFiles`.
         // The asynchronous behavior is now handled by the new CommLayer design.
@@ -234,6 +245,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void pause();
         void unpause();
         std::chrono::time_point<std::chrono::steady_clock> pauseTime() const;
+        int64_t pauseDuration() const;
         bool isPaused() const;
         bool pauseAsked() const;
         bool isIdle() const;
@@ -243,8 +255,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncStep step() const;
 
         void addError(const Error &error);
-        void addCompletedItem(int syncDbId, const SyncFileItem &item);
-        void fixConflictedFilesCompleted(int syncDbId, uint64_t nbErrors);
+        void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item);
+        void fixConflictedFilesCompleted(SyncDbId syncDbId, uint64_t nbErrors);
+        void resolveSyncErrorsByExitCause(ExitCause cause);
 
         bool wipeVirtualFiles();
         bool wipeOldPlaceholders();
@@ -272,9 +285,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                         ExitInfo exitInfo = ExitInfo());
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         virtual bool isTmpBlacklisted(const SyncPath &relativePath, ReplicaSide side) const;
+        virtual void clearTmpBlacklist();
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         virtual void removeItemFromTmpBlacklist(const SyncPath &relativePath);
+        virtual bool forceUpdateLastChangeRevision(const NodeId &nodeId, ReplicaSide side);
         //! Handle an access denied error on an item on the local side.
         /*!
          \param relativeLocalPath is the local path of the item.
@@ -290,7 +305,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
-        void freeSnapshotsCopies();
+        virtual void freeSnapshotsCopies();
         void tryToInvalidateSnapshots();
         void forceInvalidateSnapshots();
 
@@ -337,10 +352,26 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             (void) _localOperationSet->removeOp(localNodeId, operationType);
         }
 
+        // Local delete operations monitoring
+        Count nbOfPropagatedLocalDeleteOps() const { return _nbOfPropagatedLocalDeleteOps; }
+        void incrementNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps++; }
+        void resetNbOfPropagatedLocalDeleteOps() { _nbOfPropagatedLocalDeleteOps = 0; }
+
+        [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _cacheDirectory; }
+
+        int64_t consecutiveBackErrors() const { return _consecutiveBackErrors; }
+        void incrementConsecutiveBackErrors() { _consecutiveBackErrors++; }
+        void resetConsecutiveBackErrors() { _consecutiveBackErrors = 0; }
+        std::timed_mutex &userActionsMutex() { return _userActionsMutex; }
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
         SyncPalInfo _syncInfo;
+
+        std::timed_mutex _userActionsMutex; // Mutex protecting the start/stop/pause/unpause/changeVFS/ operations to
+                                            // ensure that
+                                            // only one of these operations can be performed at a time.
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
         std::shared_ptr<BlacklistPropagator> _blacklistPropagator = nullptr;
@@ -353,10 +384,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::unordered_map<SyncPath, UniqueId, PathHashFunction> _syncPathToDownloadJobMap;
         std::mutex _directDownloadJobsMapMutex;
 
+        // Cumulative count of local delete operations that were propagated across successive synchronization cycles since the
+        // last time the synchronization was in the idle state.
+        Count _nbOfPropagatedLocalDeleteOps{0};
+
         // Callbacks
         std::function<void(const Error &error)> _addError;
-        std::function<void(int syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
-        std::function<void(int syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
+        std::function<void(SyncDbId syncDbId, ExitCause cause)> _resolveSyncErrors;
+        std::function<void(SyncDbId syncDbId, const SyncFileItem &item, bool notify)> _addCompletedItem;
+        std::function<void(SyncDbId syncDbId, uint64_t nbErrors)> _fixConflictedFilesCompleted;
         std::shared_ptr<Vfs> _vfs;
 
         // DB
@@ -373,6 +409,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<UpdateTree> _remoteUpdateTree{nullptr};
         std::shared_ptr<ConflictQueue> _conflictQueue{nullptr};
         std::shared_ptr<SyncOperationList> _syncOps{nullptr};
+        mutable std::mutex _progressInfoMutex;
         std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
         // Workers
@@ -404,6 +441,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
 
         // Progress info management
+        [[nodiscard]] std::shared_ptr<ProgressInfo> progressInfo() const;
+        void setProgressInfo(std::shared_ptr<ProgressInfo> progressInfo);
+        void clearProgressInfo();
         void createProgressInfo();
         void resetEstimateUpdates();
         void startEstimateUpdates();
@@ -418,9 +458,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
     private:
+        void setUpBlacklistPropagator(bool restartSync);
+        void setUpExcludelistPropagator();
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,
                                             const std::vector<Error> &keepRemoteErrorList);
         log4cplus::Logger _logger;
+
+        int64_t _consecutiveBackErrors{0};
+
+        std::shared_ptr<CacheDirectory> _cacheDirectory;
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;

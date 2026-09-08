@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,11 +43,11 @@
                         RelativePanel.AlignHorizontalCenterWithPanel="True"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
 
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorTitle')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('errDriveMaintenanceTitle')}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            HorizontalAlignment="Center" />
 
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('driveMaintenanceErrorDescription')}"
+                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('errDriveMaintenanceDescription')}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center" />
 

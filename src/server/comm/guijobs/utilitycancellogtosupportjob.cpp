@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "jobs/network/kDrive_API/upload/loguploadjob.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
+#include "signalutilityloguploadstatejob.h"
 
 namespace KDC {
 
@@ -39,8 +40,11 @@ ExitInfo UtilityCancelLogToSupportJob::serializeOutputParms() {
 }
 
 ExitInfo UtilityCancelLogToSupportJob::process() {
-    LogUploadJob::cancelUpload();
-
+    if (!LogUploadJob::cancelUpload()) {
+        LOG_DEBUG(_logger, "No log upload job was running. Update GUI with Canceled state anyway.");
+        _commManager->sendGuiSignal(
+                std::make_shared<SignalUtilityLogUploadStateJob>(LogUploadState::Canceled, static_cast<std::int32_t>(0)));
+    }
     return ExitCode::Ok;
 }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 
 #include "libcommon/utility/utility.h"
 
-#include "libcommonserver/io/permissionsholder.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -74,7 +73,7 @@ ExitInfo LocalMoveJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_source));
-        return {ExitCode::DataError, ExitCause::InvalidDestination};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     return ExitCode::Ok;
@@ -84,9 +83,6 @@ ExitInfo LocalMoveJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }
-
-    // Make sure we are allowed to propagate the change
-    PermissionsHolder _(_dest.parent_path(), _logger);
 
     std::error_code ec;
     std::filesystem::rename(_source, _dest, ec);

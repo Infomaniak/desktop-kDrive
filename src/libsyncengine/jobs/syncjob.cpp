@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,13 +33,16 @@ void SyncJob::setProgress(const int64_t newProgressSize) {
         if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
             LOG_DEBUG(_logger,
                       "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
-                      "_progressSizeCallback is set by the caller).");
+                      "_progressPercentCallback is set by the caller).");
+            sentry::Handler::captureMessage(sentry::Level::Warning, "SyncJob::setProgress",
+                                            "_expectedFinishProgress is not set but _progressPercentCallback is set");
             _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
-            _progressPercentCallback(jobId(), 100);
+            _progressPercentCallback(jobId(), -1);
         } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
-            _progressPercentCallback(jobId(), 100);
+            _progressPercentCallback(jobId(), -1);
         } else {
-            const auto progressThresholdSize = static_cast<int64_t>(_expectedFinishProgress * progressThresholdSizePercent);
+            const auto progressThresholdSize =
+                    static_cast<int64_t>(static_cast<double>(_expectedFinishProgress) * progressThresholdSizePercent);
             const auto progressTimeStamp = std::chrono::steady_clock::now();
             if (_progressSize > _lastProgressSize + progressThresholdSize && _progressSize < _expectedFinishProgress &&
                 progressTimeStamp > _lastProgressTimeStamp + progressThresholdTime) {

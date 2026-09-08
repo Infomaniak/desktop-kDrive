@@ -1,3 +1,21 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +29,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
     public sealed partial class DriveSelectionPage : Page
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel { get { return _viewModel; } }
 
@@ -24,7 +43,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         }
 
         // Navigation method
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (e.Parameter is DriveSetupContentDialogVM viewModel)
             {
@@ -55,6 +74,11 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            DetachEventHandlers(); 
+        }
+
+        private void DetachEventHandlers()
+        {
             if (DriveSetupContentDialogVM is not null)
             {
                 DriveSetupContentDialogVM.CurrentStepConfirmed -= DriveSetupContentDialogVM_CurrentStepConfirmed;
@@ -75,6 +99,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.ConfigureSync);
             if (sender is Control control && control.DataContext is NewSync sync)
             {
                 GoToSyncSetupPagePage(sync);
@@ -99,17 +124,12 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         public static string GetExclusionsSummary(int exclusionCount)
         {
-            string exclusionText = exclusionCount == 0 ? Localizer.Instance.GetString("onboardingExclusionSummaryNone") : Localizer.Instance.GetString("onboardingExclusionSummaryAtLeastOne");
-
-            return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionExclusion", exclusionText);
+            return exclusionCount == 0 ? Localizer.Instance.GetString("labelAllkDrive") : Localizer.Instance.GetString("onboardingExclusionSummarySome");
         }
 
         public static string GetLocationSummary(bool isDefaultLocation, string location)
         {
-            string locationText = isDefaultLocation ? Localizer.Instance.GetString("buttonDefaultLocation") : location;
-
-            return Localizer.Instance.GetString("onboardingAdvancedSettingsDriveSelectionLocation", locationText);
+            return isDefaultLocation ? Localizer.Instance.GetString("labelByDefault") : location;
         }
-
     }
 }

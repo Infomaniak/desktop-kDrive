@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,11 +66,10 @@ void TestAppServer::setUp() {
     const Drive drive(1, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = _localTempDir.path().string() + "/local_sync_directory";
-    std::filesystem::create_directories(_localPath);
+    const auto localPath = _localTempDir.path() / "local_sync_directory";
+    std::filesystem::create_directories(localPath);
 
-    _remotePath = testVariables.remotePath;
-    Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
+    Sync sync(1, drive.dbId(), localPath, "", testVariables.remotePath);
     (void) ParmsDb::instance()->insertSync(sync);
 
     // Create AppServer
@@ -149,26 +148,45 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
 
+    const auto syncDbPath = _appPtr->syncPalMap[syncDbId]->syncDb()->dbPath();
+
     // Stop sync & clear maps
     _appPtr->stopSyncTask(syncDbId);
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
     // Start syncs for all users
-    exitInfo = _appPtr->startSyncs();
+    std::unordered_set<SyncDbId> toIgnoreSyncDbIds;
+    std::unordered_set<SyncDbId> startedSyncDbIds;
+    exitInfo = _appPtr->startSyncs(toIgnoreSyncDbIds, startedSyncDbIds);
     CPPUNIT_ASSERT(exitInfo);
     CPPUNIT_ASSERT(_appPtr->syncPalMap[syncDbId]->isRunning());
     CPPUNIT_ASSERT(syncIsActive(syncDbId));
+    CPPUNIT_ASSERT(startedSyncDbIds.contains(syncDbId));
 
     // Stop syncs & clear maps for all users
     _appPtr->stopAllSyncsTask({syncDbId});
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
+    auto exists = false;
+    auto ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
+    CPPUNIT_ASSERT(exists);
+
+    // Start syncs for all users with an ignored syncDbId
+    toIgnoreSyncDbIds = {syncDbId};
+    startedSyncDbIds.clear();
+    exitInfo = _appPtr->startSyncs(toIgnoreSyncDbIds, startedSyncDbIds);
+    CPPUNIT_ASSERT(exitInfo);
+    CPPUNIT_ASSERT(!_appPtr->syncPalMap.contains(syncDbId));
+    CPPUNIT_ASSERT(!startedSyncDbIds.contains(syncDbId));
 
     // Update sync local folder with a dummy value
     Sync sync;
     found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(syncDbId, sync, found) && found);
+    const auto originalLocalPath = sync.localPath();
+    CPPUNIT_ASSERT(!originalLocalPath.empty());
 
 #ifdef KD_WINDOWS
     sync.setLocalPath("Y:\\dummy");
@@ -186,8 +204,16 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(exitInfo.cause() == ExitCause::SyncDirDiskMissing);
 
     // Update sync local folder with the good value
+    sync.setLocalPath(originalLocalPath);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync, found) && found);
-    sync.setLocalPath(_localPath);
+
+    // Check that DB file is removed when sync is deleted
+    CPPUNIT_ASSERT(_appPtr->startSyncs());
+    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
+    CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
+    CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
+    CPPUNIT_ASSERT(!exists);
 }
 
 void TestAppServer::testCleanup() {
@@ -217,7 +243,7 @@ ExitInfo mockLoadAccountInfo(Account &account, bool &updated) {
     return ExitCode::Ok;
 }
 
-ExitInfo mockLoadDriveInfo(Drive &drive, const uint64_t previousAccountId, uint64_t &newAccountId, bool &updated,
+ExitInfo mockLoadDriveInfo(Drive &drive, const AccountId previousAccountId, AccountId &newAccountId, bool &updated,
                            bool &quotaUpdated) {
     if (drive.dbId() == 11 && previousAccountId == accountIdA) {
         newAccountId = accountIdB;

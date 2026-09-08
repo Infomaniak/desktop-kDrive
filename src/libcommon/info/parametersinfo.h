@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,8 +69,8 @@ class ParametersInfo {
         inline const DialogGeometry &dialogGeometry() const { return _dialogGeometry; }
         inline int maxAllowedCpu() const { return _maxAllowedCpu; }
         inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
-        [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
-        void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
+        [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
+        void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
         bool sentryEnabled() const { return _sentryEnabled; }
         void setSentryEnabled(bool value) { _sentryEnabled = value; }
         bool matomoEnabled() const { return _matomoEnabled; }
@@ -107,7 +107,7 @@ class ParametersInfo {
         bool _darkTheme{false};
         DialogGeometry _dialogGeometry;
         int _maxAllowedCpu{50};
-        VersionChannel _distributionChannel{VersionChannel::Prod};
+        DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{false};
         bool _matomoEnabled{false};
 };

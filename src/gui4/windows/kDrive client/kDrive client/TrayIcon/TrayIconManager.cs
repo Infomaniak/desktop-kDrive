@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 using DynamicData;
 using DynamicData.Binding;
 using H.NotifyIcon;
+using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -30,15 +31,16 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Windows.UI.ViewManagement;
+using static Infomaniak.kDrive.App;
 
 namespace Infomaniak.kDrive.TrayIcon
 {
     public partial class TrayIconManager : IDisposable
     {
         private TaskbarIcon? _trayIcon;
-        private bool _handleClosedEvents = true;
         private string _currentIcon = "taskbar-ico";
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
@@ -57,6 +59,17 @@ namespace Infomaniak.kDrive.TrayIcon
             else
             {
                 Logger.Log(Logger.Level.Error, "ShowWindowCommand not found in application resources.");
+            }
+
+
+            if (Application.Current.Resources["OpenSettingsCommand"] is XamlUICommand settingsCommand)
+            {
+                settingsCommand.ExecuteRequested -= OpenSettingsCommand_ExecuteRequested;
+                settingsCommand.ExecuteRequested += OpenSettingsCommand_ExecuteRequested;
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, "OpenSettingsCommand not found in application resources.");
             }
 
             if (Application.Current.Resources["ExitApplicationCommand"] is XamlUICommand exitCommand)
@@ -83,7 +96,8 @@ namespace Infomaniak.kDrive.TrayIcon
                 (Application.Current as App)?.CurrentWindow?.Show();
             }
 
-            ConfigureWindowEventHandler();
+            _uiSettings = new UISettings();
+            _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
         }
 
         public TrayIconManager(AppModel appModel)
@@ -96,10 +110,19 @@ namespace Infomaniak.kDrive.TrayIcon
                 .AutoRefresh(sync => sync.SyncStatus) // react when a sync's Status changes
                 .AutoRefreshOnObservable(sync => sync.SyncErrors.ToObservableChangeSet()) // react when any sync's errors change
                 .Subscribe(_ => UpdateTrayIcon()));
+
+            // Subscribe to changes in the available update
+            _subscriptions.Add(_appModel.Settings.UpdateManager.WhenPropertyChanged(updateManager => updateManager.ShowNotification)
+                .Subscribe(_ => UpdateTrayIcon()));
         }
 
         private void UpdateTrayIcon()
         {
+            if (!_appModel.IsInitialized)
+            {
+                SetIconNeutral();
+                return;
+            }
 
             if (_appModel.AllSyncs.Any(sync => sync.SyncStatus == SyncStatus.Running))
             {
@@ -107,9 +130,15 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Count != 0))
+            if (_appModel.AllSyncs.Any(sync => sync.SyncErrors.Any(err => ErrorFactory.GetErrorCardInfos(err)?.Meta.ShowInSystemTray == true)))
             {
                 SetIconError();
+                return;
+            }
+
+            if (_appModel.Settings.UpdateManager.ShowNotification)
+            {
+                SetIconNotification();
                 return;
             }
 
@@ -119,25 +148,7 @@ namespace Infomaniak.kDrive.TrayIcon
                 return;
             }
 
-            SetIconOk();
-        }
-
-        public void ConfigureWindowEventHandler()
-        {
-            if (Application.Current is App app && app.CurrentWindow is not null)
-            {
-                _uiSettings = new UISettings();
-                _uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
-
-                app.CurrentWindow.Closed += (sender, args) =>
-                {
-                    if (_handleClosedEvents)
-                    {
-                        args.Handled = true;
-                        app.CurrentWindow.Hide();
-                    }
-                };
-            }
+            SetIconNeutral();
         }
 
         private async void UISettings_ColorValuesChanged(UISettings sender, object args)
@@ -146,46 +157,60 @@ namespace Infomaniak.kDrive.TrayIcon
             await Utility.RunOnUIThread(() => RefreshTheme());
         }
 
-        public void SetIconOk()
-        {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'ok' state.");
-            SetIcon("taskbar-ico");
-        }
         public void SetIconSync()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'sync' state.");
-            SetIcon("taskbar-ico-sync");
+            SetIcon("sync");
         }
         public void SetIconError()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
-            SetIcon("taskbar-ico-error");
+            SetIcon("error");
         }
         public void SetIconPause()
         {
-            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'error' state.");
-            SetIcon("taskbar-ico-pause");
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'pause' state.");
+            SetIcon("pause");
+        }
+        public void SetIconNotification()
+        {
+            Logger.Log(Logger.Level.Debug, "Setting tray icon to 'notification' state.");
+            SetIcon("notif");
         }
         public void SetIconNeutral()
         {
             Logger.Log(Logger.Level.Debug, "Setting tray icon to 'neutral' state.");
-            SetIcon("taskbar-ico");
+            SetIcon("neutral");
         }
 
         private async void ShowWindowCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "ShowWindowCommand executed - showing and activating main window");
-            Utility.BringCurrentWindowToFront();
+            if (Application.Current is App app)
+            {
+                app.CreateWindow(CreateWindowOptions.Foreground);
+            }
             await App.ServiceProvider.GetRequiredService<IServerCommService>().ActivateLoadInfo(CancellationToken.None);
         }
 
         private void ExitApplicationCommand_ExecuteRequested(object? sender, ExecuteRequestedEventArgs args)
         {
             Logger.Log(Logger.Level.Info, "ExitApplicationCommand executed - exiting application");
-            _handleClosedEvents = false;
             _trayIcon?.Dispose();
             App.ExitApplicationAndShutdownServer();
         }
+
+        private void OpenSettingsCommand_ExecuteRequested(XamlUICommand sender, ExecuteRequestedEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "OpenSettingsCommand executed");
+            if (Application.Current is App app)
+            {
+                app.CreateWindow(CreateWindowOptions.Foreground | CreateWindowOptions.CancelOnboarding | CreateWindowOptions.OpenSettings);
+            }
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
+        extern static bool DestroyIcon(IntPtr handle);
 
         private void SetIcon(string fileName)
         {
@@ -195,15 +220,16 @@ namespace Infomaniak.kDrive.TrayIcon
             try
             {
                 _currentIcon = fileName;
-                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo", $"{_currentIcon}{GetThemeSuffix()}.ico");
+                var imagePath = Path.Combine(AppContext.BaseDirectory, "Assets", "Custom", "Icons", "TrayIcons", $"{_currentIcon}{GetThemeSuffix()}.ico");
                 using var bitmap = new Bitmap(imagePath);
                 var iconHandle = bitmap.GetHicon();
                 var icon = Icon.FromHandle(iconHandle);
                 _trayIcon.UpdateIcon(icon);
+                DestroyIcon(iconHandle);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to set tray icon: {ex.Message}");
+                Logger.Log(Logger.Level.Warning, $"Failed to set tray icon: {ex.Message}");
             }
         }
 

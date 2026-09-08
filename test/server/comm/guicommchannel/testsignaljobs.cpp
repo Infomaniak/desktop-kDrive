@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,10 +67,10 @@ void TestGuiCommChannel::testSignalDriveUpdatedJob() {
 
 void TestGuiCommChannel::testSignalUpdaterShowDialogJob() {
     VersionInfo versionInfo;
-    versionInfo.channel = VersionChannel::Beta;
+    versionInfo.channel = DistributionChannel::Beta;
     versionInfo.tag = "4.0.0";
     versionInfo.buildVersion = 1;
-    versionInfo.buildMinOsVersion = "15.1";
+    versionInfo.minOsVersion = "15.1";
     versionInfo.downloadUrl = "https://downloads/kDrive/latest";
 
     SignalUpdaterShowDialogJob job(versionInfo);

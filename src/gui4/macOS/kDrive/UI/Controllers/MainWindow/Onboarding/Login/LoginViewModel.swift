@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import InfomaniakDI
 import InfomaniakLogin
 import kDriveCore
 import kDriveCoreUI
+import kDriveResources
 
 @MainActor
 final class LoginViewModel: ObservableObject {
@@ -56,7 +57,7 @@ final class LoginViewModel: ObservableObject {
     }
 
     func openAccountRegistrationProcess() {
-        // TODO: Handle account registration
+        NSWorkspace.shared.open(URL(string: KDriveLocalizable.kSuiteOfferUrl)!)
     }
 
     private func handleConnectedUser(_ user: User?) {
@@ -69,7 +70,7 @@ final class LoginViewModel: ObservableObject {
 
         Task {
             guard flowCoordinator.currentStep == .login else { return }
-            await flowCoordinator.navigateToNextStep()
+            await flowCoordinator.navigateToNextStepOrFinish()
         }
     }
 }

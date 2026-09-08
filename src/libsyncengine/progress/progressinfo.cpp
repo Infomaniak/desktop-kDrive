@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -137,7 +137,8 @@ bool ProgressInfo::setProgress(const SyncPath &path, int progress) {
         return true;
     }
 
-    it->second.front().progress().setCompleted(progress * it->second.front().progress().total() / 100);
+    it->second.front().progress().setCompleted(
+            std::max(static_cast<int64_t>(0), progress * it->second.front().progress().total() / 100));
     recomputeCompletedSize();
     return true;
 }

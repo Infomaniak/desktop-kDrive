@@ -4,29 +4,44 @@ on:
   workflow_dispatch:  
     inputs:
       build_windows:
-        type: boolean
+        type: choice
         description: Build Windows executables
-        default: true
-      build_windows_new_client:
+        options:
+          - Do not build
+          - Legacy client
+          - New client
+        default: Legacy client
+      use_ksp_cert:
         type: boolean
-        description: Build Windows with new client (has no effect on macOS and Linux)
-        default: false
+        description: Use release certificate
+        default: true
       build_macos:
-        type: boolean
+        type: choice
         description: Build macOS executables
-        default: true
+        options:
+          - Do not build
+          - Legacy client
+        default: Legacy client
       build_linux:
-        type: boolean
+        type: choice
         description: Build Linux executables
-        default: true
-      upload_to_kdrive:
+        options:
+          - Do not build
+          - Legacy client (all)
+          - Legacy client (amd64)
+          - Legacy client (arm64)
+        default: Legacy client (all)
+      enable_safety_checks_and_upload_builds_to_kdrive:
         type: boolean
-        description: Upload builds to kDrive
+        description: Enable safety checks and upload builds to kDrive
         default: true
 
 concurrency:
   group: kDrive-desktop-release-${{ github.head_ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
@@ -37,22 +52,28 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
   QT_QPA_PLATFORM: offscreen
 
 jobs:
 # Check translation files
   check-translations:
-    runs-on: [self-hosted, Windows, desktop-kdrive-with-gui ]
+    runs-on: [self-hosted, Windows ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        uses: actions/checkout@v6.0.2
 
       - name: Check translations
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         run: |
              cd translations\updateTool
              $result = .\Windows.ps1
              echo $result
-             # Ensure that result contains FIVE TIMES the string "0 new"
+             # Count the number of .ts files in translations folder
+             $tsFileCount = (Get-ChildItem -Path "..\..\translations" -Filter "*.ts" -File).Count
+             Write-Host "Found $tsFileCount .ts translation files"
+             # Ensure that result contains the string "0 new" for each translation file
              $counter = 0
              foreach ($str in $result) {
                  if ($str -match "0 new") {
@@ -60,7 +81,7 @@ jobs:
                  }
              }
 
-             if ($counter -ne 5) {
+             if ($counter -ne $tsFileCount) {
                  Write-Host "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" -ForegroundColor Red
                  "<h1>:stop_sign: Translation files are not up to date. Please run the update tool. </h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
                  exit 1
@@ -70,18 +91,27 @@ jobs:
                  exit 0
              }
 
+      - name: Skip translations check
+        if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        run: |
+             Write-Host "Safety checks and uploads are disabled: translations check skipped."
+             "<h1>:warning: Safety checks disabled: translations check skipped.</h1>" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
 # Check Release Notes
   check-release-notes:
     runs-on: [ self-hosted, Linux, X64 ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        uses: actions/checkout@v6.0.2
 
       - name: Get kDrive version
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         id: get-version
         uses: ./.github/actions/get_version
 
       - name: Check release notes
+        if: ${{ inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
         run: |
           VERSION_NUMBER="${{ steps.get-version.outputs.kDrive_version }}"  # Example: 3.9.20.23
           VERSION_NUMBER="${VERSION_NUMBER%.*}"  # Remove build number for release notes check
@@ -123,36 +153,48 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
         shell: bash
 
+      - name: Skip release notes check
+        if: ${{ !inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+        run: |
+          echo "Safety checks and uploads are disabled: release notes check skipped."
+          echo "<h1>:warning: Safety checks disabled: release notes check skipped.</h1>" >> $GITHUB_STEP_SUMMARY
+        shell: bash
+
 # Build apps
   build-Windows:
-    if: ${{ inputs.build_windows }}
+    if: ${{ inputs.build_windows != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Windows, desktop-kdrive-with-gui ] #with-gui is required for the build_windows action to unlock the release signing certificate
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
-    env:
-      KDC_PHYSICAL_AUMID: ${{ secrets.KDC_PHYSICAL_AUMID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Windows
         id: build-windows-step
         uses: ./.github/actions/build_windows
-        with:  
-          physical_cert: ${{ secrets.WINDOWS_PHYSICAL_CERT }}
-          physical_cert_pass: ${{ secrets.WINDOWS_PHYSICAL_CERT_PASSWORD }}
+        with:
+          ksp_host: ${{ secrets.WINDOWS_KSP_HOST }}
+          ksp_api_key: ${{ secrets.WINDOWS_KSP_API_KEY }}
+          ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
+          ksp_client_cert_pass: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_PASSWORD }}
+          ksp_client_cert_thumbprint: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_THUMBPRINT }}
+          debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
+          debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
+          debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
+          use_ksp_cert: ${{ inputs.use_ksp_cert }}
           release_build: true
-          build_new_client: ${{ inputs.build_windows_new_client }}
+          build_new_client: ${{ inputs.build_windows == 'New client' }}
 
   build-Linux-amd:
-    if: ${{ inputs.build_linux }}
+    if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Linux
@@ -161,12 +203,12 @@ jobs:
           release_build: true
 
   build-Linux-arm:
-    if: ${{ inputs.build_linux }}
+    if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build Linux
@@ -175,12 +217,12 @@ jobs:
           release_build: true
 
   build-MacOS:
-    if: ${{ inputs.build_macos }}
+    if: ${{ inputs.build_macos != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
         with:
           submodules: recursive
       - name: Build macOS
@@ -189,10 +231,11 @@ jobs:
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
           release_build: true    
           release_build_altool_username: ${{ secrets.ALTOOL_USERNAME }}
+          release_build_notary_app_password: ${{ secrets.NOTARY_APP_PASSWORD }}
 
 # Upload the installer and sentry artifacts
   upload-to-kDrive-and-sentry-Windows:
-    if: ${{ inputs.build_windows && inputs.upload_to_kdrive }}
+    if: ${{ inputs.build_windows != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Windows]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be runing on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -201,7 +244,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -210,14 +253,17 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Download Windows artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           path: build-windows
           pattern: win-release-artifacts-*
           merge-multiple: true
 
       - name: Upload debug files and installers/appimage to kDrive
-        run: powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win"
+        run: |
+          $testFlag = if ("${{ inputs.use_ksp_cert }}" -eq "false") { "-test" } else { "" }
+          powershell ./infomaniak-build-tools/upload-release-to-kDrive.ps1 -version "${{ steps.get-version.outputs.kDrive_version }}" -os "win" $testFlag
+
 
       - name: Download sentry-cli and login
         run: |
@@ -234,7 +280,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
-    if: ${{ inputs.build_linux && inputs.upload_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-amd]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -243,7 +289,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -252,7 +298,7 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Download Linux AMD64 artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           path: build-linux-amd64
           pattern: linux-release-artifacts-*-amd64
@@ -276,7 +322,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
-    if: ${{ inputs.build_linux && inputs.upload_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-arm]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -285,7 +331,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -294,7 +340,7 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Download Linux ARM64 artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           path: build-linux-arm64
           pattern: linux-release-artifacts-*-arm64
@@ -318,7 +364,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-macOS:
-    if: ${{ inputs.build_macos && inputs.upload_to_kdrive }}
+    if: ${{ inputs.build_macos != 'Do not build' && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-MacOS]
     runs-on: [self-hosted, Windows, desktop-kdrive-with-gui] # Could be running on any windows runner, but we use 'desktop-kdrive-with-gui' to avoid monopolizing the runners that are used for the CI builds.
     env:
@@ -327,7 +373,7 @@ jobs:
         KDRIVE_DIR_ID: ${{ secrets.KDRIVE_DIR_ID }}
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ github.head_ref }}
 
@@ -336,7 +382,7 @@ jobs:
         uses: ./.github/actions/get_version
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8.0.1
         with:
           path: build-macos
           pattern: macos-release-artifacts-*
@@ -366,7 +412,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout the PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Get kDrive version
         id: get-version

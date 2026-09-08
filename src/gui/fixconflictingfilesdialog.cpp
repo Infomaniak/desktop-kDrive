@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
 
-FixConflictingFilesDialog::FixConflictingFilesDialog(const int driveDbId, std::shared_ptr<ClientGui> gui,
+FixConflictingFilesDialog::FixConflictingFilesDialog(const DriveDbId driveDbId, std::shared_ptr<ClientGui> gui,
                                                      QWidget *parent /*= nullptr*/) :
     CustomDialog(true, parent),
     _gui(gui),

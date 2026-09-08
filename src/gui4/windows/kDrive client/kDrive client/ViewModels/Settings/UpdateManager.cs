@@ -1,4 +1,21 @@
-﻿using Infomaniak.kDrive.ServerCommunication.Interfaces;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
@@ -10,8 +27,10 @@ namespace Infomaniak.kDrive.ViewModels
     {
         private bool _updateEnabled = false;
         private bool _autoUpdateEnabled = false;
-        private VersionChannel _currentChannel = VersionChannel.Beta;
+        private DistributionChannel _currentChannel = DistributionChannel.Beta;
         private AppVersion? _availableUpdate;
+        private bool _fetchingUpdate = false;
+        private bool _showNotification = false;
 
         public bool UpdateEnabled
         {
@@ -25,7 +44,7 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _autoUpdateEnabled, value);
         }
 
-        public VersionChannel CurrentChannel
+        public DistributionChannel CurrentChannel
         {
             get => _currentChannel;
             set => SetPropertyInUIThread(ref _currentChannel, value);
@@ -33,7 +52,22 @@ namespace Infomaniak.kDrive.ViewModels
         public AppVersion? AvailableUpdate
         {
             get => _availableUpdate;
-            set => SetPropertyInUIThread(ref _availableUpdate, value);
+            set
+            {
+                SetPropertyInUIThread(ref _availableUpdate, value);
+            }
+        }
+
+        public bool FetchingUpdate
+        {
+            get => _fetchingUpdate;
+            set => SetPropertyInUIThread(ref _fetchingUpdate, value);
+        }
+
+        public bool ShowNotification
+        {
+            get => _showNotification;
+            set => SetPropertyInUIThread(ref _showNotification, value);
         }
 
         public static async Task<bool> StartUpdate()
@@ -41,17 +75,26 @@ namespace Infomaniak.kDrive.ViewModels
             return await App.ServiceProvider.GetRequiredService<IServerCommService>().StartUpdate(CancellationToken.None);
         }
 
-        public async Task<bool> ChangeChannel(VersionChannel newChannel)
+        public async Task<bool> SkipVersion()
+        {
+            bool res = await App.ServiceProvider.GetRequiredService<IServerCommService>().SkipVersion(CancellationToken.None);
+            if (res)
+                ShowNotification = false;
+            return res;
+        }
+
+        public async Task<bool> ChangeChannel(DistributionChannel newChannel)
         {
             var previousChannel = CurrentChannel;
             CurrentChannel = newChannel;
-            AvailableUpdate = null;
+
             if (!await App.ServiceProvider.GetRequiredService<IServerCommService>().SaveSettings(CancellationToken.None))
             {
                 CurrentChannel = previousChannel;
                 return false;
             }
-
+            AvailableUpdate = null;
+            ShowNotification = false;
             return true;
         }
 

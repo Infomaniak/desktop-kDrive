@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ ExitInfo UserDeleteJob::serializeOutputParms() {
 
 ExitInfo UserDeleteJob::process() {
     // Get syncs do delete
-    std::vector<int> syncDbIdList;
+    std::vector<SyncDbId> syncDbIdList;
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncDbId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal) continue;
@@ -63,7 +63,7 @@ ExitInfo UserDeleteJob::process() {
     }
 
     // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList);
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
 
     // Delete user from DB
     const ExitInfo exitInfo = ServerRequests::deleteUser(_userDbId);

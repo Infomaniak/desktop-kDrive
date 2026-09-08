@@ -1,6 +1,25 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using CommunityToolkit.WinUI.Controls;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -8,11 +27,12 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class LogUploadSettingsCard : SettingsCard
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         public LogUploadSettingsCard()
         {
             InitializeComponent();
         }
-
         public LogUploadManager? LogUploadManager
         {
             get { return (LogUploadManager?)GetValue(LogUploadManagerProperty); }
@@ -24,13 +44,20 @@ namespace Infomaniak.kDrive.CustomControls
 
         private async void SendLogsButton_Click(object sender, RoutedEventArgs e)
         {
+            if (LogUploadManager is null)
+            {
+                Logger.Log(Logger.Level.Error, "LogUploadManager is not set for LogUploadSettingsCard");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
             ContentDialog dialog = new ContentDialog
             {
                 XamlRoot = XamlRoot,
                 Title = Localizer.Instance.GetString("logUploadPopupTitle"),
                 DefaultButton = ContentDialogButton.Primary,
                 PrimaryButtonText = Localizer.Instance.GetString("buttonSend"),
-                SecondaryButtonText = Localizer.Instance.GetString("buttonCancel")
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel")
             };
             var popupPage = new Pages.Popup.LogUploadPopup();
             dialog.Content = popupPage;
@@ -38,14 +65,20 @@ namespace Infomaniak.kDrive.CustomControls
             var result = await dialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)
+            {
+                _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.SendLogToSupport);
                 await LogUploadManager.StartUpload(!(popupPage.LastSessionCheckBox.IsChecked ?? false));
+            }
             else
+            {
                 Logger.Log(Logger.Level.Info, "Log upload canceled");
+            }
         }
 
         private async void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             await LogUploadManager.CancelUpload();
+            _analyticsService.TrackClick(Analytics.Keys.Category.AdvancedSettingsPage, Analytics.Keys.EventName.CancelLogToSupport);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(const std::string &testType) :
     _testType(testType) {}
 
-RemoteTemporaryDirectory::RemoteTemporaryDirectory(const int driveDbId, const NodeId &parentId,
+RemoteTemporaryDirectory::RemoteTemporaryDirectory(const DriveDbId driveDbId, const NodeId &parentId,
                                                    const std::string &testType /*= "undef"*/) :
     RemoteTemporaryDirectory(testType) {
     createDirectory(driveDbId, parentId);
@@ -42,7 +42,7 @@ RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     deleteDirectory();
 }
 
-void RemoteTemporaryDirectory::createDirectory(const int driveDbId, const NodeId &parentId) {
+void RemoteTemporaryDirectory::createDirectory(const DriveDbId driveDbId, const NodeId &parentId) {
     assert(_driveDbId == 0 && _parentId.empty()); // Do not allow to generate several temporary directories.
 
     _driveDbId = driveDbId;

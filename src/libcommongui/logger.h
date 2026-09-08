@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,26 +57,20 @@ class Logger : public QObject {
         void postNotification(const QString &title, const QString &message);
 
         void setLogFile(const QString &name);
-        void setLogExpire(std::chrono::hours expire);
+        void setLogExpire(std::chrono::days expire);
         void setLogDir(const QString &dir);
-        void setLogFlush(bool flush);
 
         bool logDebug() const { return _logDebug; }
         void setLogDebug(bool debug);
 
         /** Returns where the automatic logdir would be */
-        QString temporaryFolderLogDirPath() const;
+        QString logDirectoryPath() const { return _logDirectoryPath; }
 
-        /** Sets up default dir log setup.
-         *
-         * logdir: a temporary folder
-         * logdebug: true
-         *
-         */
-        void setupTemporaryFolderLogDir();
+        /** Sets up default dir log setup. */
+        void setupLogDir();
 
         /** For switching off via logwindow */
-        void disableTemporaryFolderLogDir();
+        void disableLog();
 
         int minLogLevel() const;
         void setMinLogLevel(int level);
@@ -100,18 +94,16 @@ class Logger : public QObject {
     private:
         Logger(QObject *parent = 0);
         ~Logger();
-        bool _showTime;
         QFile _logFile;
-        bool _doFileFlush;
-        std::chrono::hours _logExpire;
-        bool _logDebug;
+        std::chrono::days _logExpire{0};
+        bool _logDebug{false};
         QScopedPointer<QTextStream> _logstream;
         mutable QMutex _mutex;
-        QString _logDirectory;
-        bool _temporaryFolderLogDir = false;
+        QString _logDirectoryPath;
+        bool _logEnabled = false;
         int _minLogLevel;
         QTimer _watchLogSizeTimer;
-        bool _isCLientLog = false;
+        bool _isClientLog = false;
 };
 
 } // namespace KDC

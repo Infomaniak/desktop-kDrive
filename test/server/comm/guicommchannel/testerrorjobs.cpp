@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,11 @@
 
 #include "testguicommchannel.h"
 #include "../testcommhelpers.h"
+#include "comm/guijobs/errordeletejob.h"
 #include "comm/guijobs/errorinfolistjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
+#include "comm/guijobs/errorsyncrefreshjob.h"
 
 namespace KDC {
 
@@ -81,7 +83,7 @@ void TestGuiCommChannel::testErrorInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ERROR_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = testcommhelpers::stringifyAnswerObj(answerObjWithNumAndType);
@@ -187,9 +189,9 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
         auto quickJob = std::dynamic_pointer_cast<ErrorResolveConflictsQuickJob>(job);
         CPPUNIT_ASSERT(quickJob);
         CPPUNIT_ASSERT_EQUAL(size_t{3}, quickJob->_errorDbIdList.size());
-        CPPUNIT_ASSERT_EQUAL(int32_t{100}, quickJob->_errorDbIdList.at(0));
-        CPPUNIT_ASSERT_EQUAL(int32_t{200}, quickJob->_errorDbIdList.at(1));
-        CPPUNIT_ASSERT_EQUAL(int32_t{300}, quickJob->_errorDbIdList.at(2));
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{100}, quickJob->_errorDbIdList.at(0));
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{200}, quickJob->_errorDbIdList.at(1));
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{300}, quickJob->_errorDbIdList.at(2));
         CPPUNIT_ASSERT(ConflictResolutionStrategy::KeepLocal == quickJob->_strategy);
     };
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -197,6 +199,68 @@ void TestGuiCommChannel::testErrorResolveConflictsQuickJob() {
 #else
     const auto cbkAnswerStr2 = stringifyCbkAnswerObj(answerObj);
     testGenericJob(queryStr, answerStr, cbkAnswerStr2, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorSyncRefreshJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_SYNC_REFRESH));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 7);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer (no output parameters)
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_SYNC_REFRESH);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto refreshJob = std::dynamic_pointer_cast<ErrorSyncRefreshJob>(job);
+        CPPUNIT_ASSERT(refreshJob);
+        CPPUNIT_ASSERT_EQUAL(SyncDbId{7}, refreshJob->_syncDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorDeleteJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_DELETE));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("errorDbId", 42);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer (no output parameters)
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_DELETE);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto deleteJob = std::dynamic_pointer_cast<ErrorDeleteJob>(job);
+        CPPUNIT_ASSERT(deleteJob);
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, deleteJob->_errorDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
 }
 

@@ -1,4 +1,21 @@
-﻿using Infomaniak.kDrive.Types;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Types;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -7,15 +24,27 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class AppVersion
     {
-        public VersionChannel Channel { get; set; } = VersionChannel.Prod;
+        public DistributionChannel Channel { get; set; } = DistributionChannel.Prod;
         public string Tag { get; set; } = string.Empty; // e.g., "1.2.3"
         public int BuildVersion { get; set; } = 0;
-        public Uri ChangeLogUrl
+
+        public string FullVersion
+        {
+            get => $"{Tag}.{BuildVersion}";
+        }
+
+        public Uri ChangeLogUrlLocalized
         {
             get
             {
-                string languageCode = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                return App.Constants.Storage.ReleaseNoteUrl(Tag, languageCode);
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, Localizer.Instance.CurrentLanguage);
+            }
+        }
+        public Uri ChangeLogUrlDefaultLanguage
+        {
+            get
+            {
+                return App.Constants.Storage.ReleaseNoteUrl(Tag, "en");
             }
         }
 
@@ -30,7 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     Tag = $"{version.Major}.{version.Minor}.{version.Build}",
                     BuildVersion = version.Revision,
-                    Channel = VersionChannel.Prod
+                    Channel = DistributionChannel.Prod
                 };
             }
             else
@@ -40,7 +69,7 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     Tag = "0.0.0",
                     BuildVersion = 0,
-                    Channel = VersionChannel.Prod
+                    Channel = DistributionChannel.Prod
                 };
             }
         }

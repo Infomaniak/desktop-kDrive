@@ -1,5 +1,5 @@
 // Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
+// Copyright (C) 2023-2026 Infomaniak Network SA
 /// This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -30,7 +30,7 @@
 
 namespace KDC {
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const SyncPath &absoluteFilePath,
+UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
                      const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
                      const SyncTime modificationTime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
@@ -45,8 +45,8 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const 
     _trials = TRIALS;
 }
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const int driveDbId, const SyncPath &absoluteFilePath, const NodeId &fileId,
-                     const SyncTime modificationTime) :
+UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
+                     const NodeId &fileId, const SyncTime modificationTime) :
     UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
 
@@ -260,12 +260,9 @@ ExitInfo UploadJob::readLink() {
 
         _data = Path2Str(_linkTarget);
     } else if (_linkType == LinkType::Hardlink) {
-        if (ExitInfo exitInfo = readFile(); !exitInfo) {
-            LOGW_WARN(_logger, L"Failed to read file - path=" << Path2WStr(_absoluteFilePath));
-            return exitInfo;
-        }
-
-        _linkTarget = _absoluteFilePath;
+        // For safety, cannot happen (IoHelper::getItemType doesn't detect hardlinks)
+        LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_absoluteFilePath));
+        return {ExitCode::SystemError, ExitCause::OperationCanceled};
     } else if (_linkType == LinkType::Junction) {
 #if defined(KD_WINDOWS)
         IoError ioError = IoError::Success;

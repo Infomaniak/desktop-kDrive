@@ -1,7 +1,23 @@
-﻿using DynamicData;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.CustomControls.Errors;
-using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +26,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
 using static Infomaniak.kDrive.ViewModels.AppModel;
 
@@ -23,11 +38,14 @@ namespace Infomaniak.kDrive.Pages.Errors
         private Sync? _sync;
         private const int _maxConflictsForIndividualDisplay = 5;
         private bool _hasManyConflicts;
+        private bool _hasError;
+        private bool _refreshInProgress;
         private int _conflictsCount;
         private readonly List<IDisposable?> _errorsSubscription = new();
 
         public ReadOnlyObservableCollection<Error> FileErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
         public ReadOnlyObservableCollection<Error> SyncDirErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+        public ReadOnlyObservableCollection<Error> StorageErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
         public ReadOnlyObservableCollection<Error> OtherErrors { get; private set; } = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
 
         private string _conflitFilterText = "";
@@ -51,6 +69,12 @@ namespace Infomaniak.kDrive.Pages.Errors
             private set => SetPropertyInUIThread(ref _hasManyConflicts, value);
         }
 
+        public bool HasError
+        {
+            get => _hasError;
+            private set => SetPropertyInUIThread(ref _hasError, value);
+        }
+
         public int ConflictsCount
         {
             get => _conflictsCount;
@@ -61,6 +85,12 @@ namespace Infomaniak.kDrive.Pages.Errors
         {
             get => _conflitFilterText;
             set => SetConflictFilterText(value);
+        }
+
+        public bool RefreshInProgress
+        {
+            get => _refreshInProgress;
+            set => SetPropertyInUIThread(ref _refreshInProgress, value);
         }
 
         public ErrorPageVM()
@@ -88,14 +118,17 @@ namespace Infomaniak.kDrive.Pages.Errors
             {
                 OnPropertyChangingInUIThread(nameof(FileErrors));
                 OnPropertyChangingInUIThread(nameof(SyncDirErrors));
+                OnPropertyChangingInUIThread(nameof(StorageErrors));
                 OnPropertyChangingInUIThread(nameof(OtherErrors));
                 OnPropertyChangingInUIThread(nameof(FilteredConflictErrors));
                 FileErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 SyncDirErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
+                StorageErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OtherErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 FilteredConflictErrors = new ReadOnlyObservableCollection<Error>(new ObservableCollection<Error>());
                 OnPropertyChangedInUIThread(nameof(FileErrors));
                 OnPropertyChangedInUIThread(nameof(SyncDirErrors));
+                OnPropertyChangedInUIThread(nameof(StorageErrors));
                 OnPropertyChangedInUIThread(nameof(OtherErrors));
                 OnPropertyChangedInUIThread(nameof(FilteredConflictErrors));
                 ConflictsCount = 0;
@@ -104,7 +137,7 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
             ConflictsCount = Sync.SyncErrors.Where(e => e.IsConflictUserResolvable()).Count();
             HasManyConflicts = ConflictsCount > _maxConflictsForIndividualDisplay;
-
+            HasError = Sync.SyncErrors.Count > 0;
             // Re-evaluate ConflictsCount and HasManyConflicts each time SyncErrors changes.
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
@@ -116,6 +149,16 @@ namespace Infomaniak.kDrive.Pages.Errors
                     HasManyConflicts = count > _maxConflictsForIndividualDisplay;
                 }));
 
+            // Re-evaluate HasError each time SyncErrors changes.
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
+                .QueryWhenChanged(q => q.Any())
+                .Subscribe(any =>
+                {
+                    HasError = any;
+                }));
+
+            // Subscribe to SyncErrors changes for each error category, applying the appropriate filter for each list.
             _errorsSubscription.Add(Sync.SyncErrors
                 .ToObservableChangeSet()
                 .Filter(e => IsInFileErrorsList(e))
@@ -135,6 +178,16 @@ namespace Infomaniak.kDrive.Pages.Errors
             OnPropertyChangingInUIThread(nameof(SyncDirErrors));
             SyncDirErrors = syncDirErrors;
             OnPropertyChangedInUIThread(nameof(SyncDirErrors));
+
+            _errorsSubscription.Add(Sync.SyncErrors
+                .ToObservableChangeSet()
+                .Filter(e => IsInStorageErrorList(e))
+                .Sort(SortExpressionComparer<Error>.Ascending(e => e.DbId))
+                .Bind(out var storageErrors)
+                .Subscribe());
+            OnPropertyChangingInUIThread(nameof(StorageErrors));
+            StorageErrors = storageErrors;
+            OnPropertyChangedInUIThread(nameof(StorageErrors));
 
             // Reset the filter predicate for the new Sync, then subscribe using the observable overload
             // so the list re-filters automatically when _conflictFilterSubject emits a new predicate.
@@ -183,6 +236,8 @@ namespace Infomaniak.kDrive.Pages.Errors
             if (HasManyConflicts && error.IsConflictUserResolvable())
                 return false;
 
+            if (IsInStorageErrorList(error)) return false;
+
             return true;
         }
 
@@ -194,10 +249,13 @@ namespace Infomaniak.kDrive.Pages.Errors
             [
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirAccessError),
                 typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorSyncDirDiskMissing),
-                typeof(CustomControls.Errors.Templates.SyncPal.DataErrorSyncDirChanged)
+                typeof(CustomControls.Errors.Templates.SyncPal.DataErrorSyncDirChanged),
+                typeof(CustomControls.Errors.Templates.SyncPal.InvalidSyncSyncDirNestingError),
+                typeof(CustomControls.Errors.Templates.SyncPal.InvalidSyncSyncDirAccessError),
+                typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorUnableToStartVfs)
             ];
 
-            Type? errorType = ErrorFactory.GetBestControlType(error);
+            Type? errorType = ErrorFactory.GetErrorCardInfos(error)?.Type;
             if (errorType is null)
             {
                 return false;
@@ -205,9 +263,38 @@ namespace Infomaniak.kDrive.Pages.Errors
             return syncDirErrorTypes.Contains(errorType);
         }
 
+        private static bool IsInStorageErrorList(Error error)
+        {
+            // List of Types of errors to be included in the StorageErrors list:
+            List<Type> storageErrorTypes =
+            [
+                typeof(CustomControls.Errors.Templates.SyncPal.SystemErrorNotEnoughDiskSpace),
+                typeof(CustomControls.Errors.Templates.Node.QuotaExceededError)
+            ];
+
+            Type? errorType = ErrorFactory.GetErrorCardInfos(error)?.Type;
+            if (errorType is null)
+            {
+                return false;
+            }
+            return storageErrorTypes.Contains(errorType);
+        }
+
         private bool IsInOtherErrorList(Error error)
         {
-            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable();
+            return !IsInFileErrorsList(error) && !IsInSyncDirErrorList(error) && !error.IsConflictUserResolvable() && !IsInStorageErrorList(error);
+        }
+
+        public async Task<bool> RefreshErrors()
+        {
+            if (_sync is null)
+                return false;
+
+            RefreshInProgress = true;
+            var result = await _sync.RefreshErrors();
+            RefreshInProgress = false;
+
+            return result;
         }
 
         public void Dispose()

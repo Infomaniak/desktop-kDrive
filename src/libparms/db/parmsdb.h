@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,44 +58,45 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertUser(const User &user);
         bool updateUser(const User &user, bool &found);
-        bool deleteUser(int dbId, bool &found);
-        bool selectUser(int dbId, User &user, bool &found);
-        bool selectUserByUserId(int userId, User &user, bool &found);
-        bool selectUserFromAccountDbId(int dbId, User &user, bool &found);
-        bool selectUserFromDriveDbId(int dbId, User &user, bool &found);
+        bool deleteUser(UserDbId dbId, bool &found);
+        bool selectUser(UserDbId dbId, User &user, bool &found);
+        bool selectUserByUserId(UserId userId, User &user, bool &found);
+        bool selectUserFromAccountDbId(AccountDbId accountDbId, User &user, bool &found);
+        bool selectUserFromDriveDbId(DriveDbId driveDbId, User &user, bool &found);
         bool selectAllUsers(std::vector<User> &userList);
         bool selectLastConnectedUser(User &user, bool &found);
-        bool getNewUserDbId(int &dbId);
+        bool getNewUserDbId(UserDbId &dbId);
 
         bool insertAccount(const Account &account);
         bool updateAccount(const Account &account, bool &found);
-        bool deleteAccount(int dbId, bool &found);
-        bool selectAccount(int dbId, Account &account, bool &found);
+        bool deleteAccount(AccountDbId dbId, bool &found);
+        bool selectAccount(AccountDbId dbId, Account &account, bool &found);
         bool selectAllAccounts(std::vector<Account> &accountList);
-        bool selectAllAccounts(int userDbId, std::vector<Account> &accountList);
-        bool accountFromUserDbIdAndAccountId(int userDbId, int accountId, Account &account, bool &found);
-        bool getNewAccountDbId(int &dbId);
+        bool selectAllAccounts(UserDbId userDbId, std::vector<Account> &accountList);
+        bool accountFromUserDbIdAndAccountId(UserDbId userDbId, AccountId accountId, Account &account, bool &found);
+        bool getNewAccountDbId(AccountDbId &dbId);
 
         bool insertDrive(const Drive &drive);
         bool updateDrive(const Drive &drive, bool &found);
-        bool deleteDrive(int dbId, bool &found);
-        bool selectDrive(int dbId, Drive &drive, bool &found);
-        bool selectDriveByDriveId(int driveId, Drive &drive, bool &found);
+        bool deleteDrive(DriveDbId dbId, bool &found);
+        bool selectDrive(DriveDbId dbId, Drive &drive, bool &found);
+        bool selectDriveByDriveId(DriveId driveId, Drive &drive, bool &found);
         bool selectAllDrives(std::vector<Drive> &driveList);
-        bool selectAllDrives(int accountDbId, std::vector<Drive> &driveList);
-        bool driveDbId(int accountDbId, int driveId, int &dbId);
-        bool getNewDriveDbId(int &dbId);
+        bool selectAllDrives(AccountDbId accountDbId, std::vector<Drive> &driveList);
+        bool driveDbId(AccountDbId accountDbId, DriveId driveId, DriveDbId &dbId);
+        bool getNewDriveDbId(DriveDbId &dbId);
 
         bool insertSync(const Sync &sync);
         bool updateSync(const Sync &sync, bool &found);
-        bool setSyncPaused(int dbId, bool value, bool &found);
-        bool setSyncHasFullyCompleted(int dbId, bool value, bool &found);
-        bool deleteSync(int dbId, bool &found);
-        bool selectSync(int dbId, Sync &sync, bool &found);
+        bool setSyncPaused(SyncDbId dbId, bool value, bool &found);
+        bool setSyncHasFullyCompleted(SyncDbId dbId, bool value, bool &found);
+        bool setSyncToDelete(SyncDbId dbId, bool value, bool &found);
+        bool deleteSync(SyncDbId dbId, bool &found);
+        bool selectSync(SyncDbId dbId, Sync &sync, bool &found);
         bool selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found);
         bool selectAllSyncs(std::vector<Sync> &syncList);
-        bool selectAllSyncs(int driveDbId, std::vector<Sync> &syncList);
-        bool getNewSyncDbId(int &dbId);
+        bool selectAllSyncs(DriveDbId driveDbId, std::vector<Sync> &syncList);
+        bool getNewSyncDbId(SyncDbId &dbId);
 
         bool insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &constraintError);
         bool updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &found);
@@ -125,11 +126,17 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateError(const Error &err, bool &found);
         bool deleteAllErrorsByExitCode(ExitCode exitCode);
         bool deleteAllErrorsByExitCause(ExitCause exitCause);
-        bool selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs);
+        bool selectSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause exitCause, std::vector<Error> &errs);
+        bool selectAllErrors(ErrorLevel level, SyncDbId syncDbId, int limit, std::vector<Error> &errs);
         bool selectAllErrors(int limit, std::vector<Error> &errs);
-        bool selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs);
+        bool selectError(ErrorDbId dbId, Error &error, bool &found);
+        bool selectErrorByNodeInfo(SyncDbId syncDbId, const std::optional<NodeId> &localNodeId,
+                                   const std::optional<NodeId> &remoteNodeId, const std::optional<SyncPath> &path,
+                                   const std::optional<SyncPath> &destinationPath, std::vector<Error> &errs, bool &found);
+
+        bool selectConflicts(const SyncDbId syncDbId, ConflictType filter, std::vector<Error> &errs);
         bool deleteErrors(ErrorLevel level);
-        bool deleteError(int64_t dbId, bool &found);
+        bool deleteError(ErrorDbId dbId, bool &found);
 
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
@@ -143,7 +150,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         static std::shared_ptr<ParmsDb> _instance;
 
-        ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
+        ParmsDb(const std::filesystem::path &dbPath, bool autoDelete, bool test);
 
         bool upgradeTables();
         bool insertDefaultParameters();
@@ -169,6 +176,8 @@ class PARMS_EXPORT ParmsDb : public Db {
 #if defined(KD_WINDOWS)
         bool replaceShortDbPathsWithLongPaths();
 #endif
+        bool enableSentryAndMatomo();
+
 #
 #
 };

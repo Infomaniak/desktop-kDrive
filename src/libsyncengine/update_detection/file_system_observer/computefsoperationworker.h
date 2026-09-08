@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
                                     NodeIdsSet &remainingNodesIds); // Restrict change detection to a node type.
         ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
                                        const SyncPath &remoteDbPath); // Detect change for a single node on a specific side.
+        ExitInfo fixDestinationPathIfNeeded(SyncPath &destinationPath, const SyncPath &dbPath,
+                                            const std::shared_ptr<ConstSnapshot> snapshot, const NodeId &nodeId,
+                                            const ReplicaSide side, const SyncName &snapshotName);
 
         // Detect changes based on the snapshot records: create operations
         ExitCode exploreSnapshotTree(ReplicaSide side, const NodeSet &idsSet);
@@ -114,8 +117,6 @@ class ComputeFSOperationWorker : public ISyncWorker {
         std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var:
                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
         SyncNameSet _ignoredDirectoryNames;
-
-        uint16_t _timeDifferenceThresholdForEdit{0};
 
         bool addFolderToDelete(const SyncPath &path);
         bool checkIfPathIsInDeletedFolder(const SyncPath &path, bool &isInDeletedFolder);

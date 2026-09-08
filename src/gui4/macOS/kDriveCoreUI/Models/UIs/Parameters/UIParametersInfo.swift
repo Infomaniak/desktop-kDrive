@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -93,6 +93,21 @@ public enum UILogLevel: String, CaseIterable, Sendable, Equatable {
     case warning
     case error
     case fatal
+
+    public var label: String {
+        switch self {
+        case .info:
+            return KDriveLocalizable.logLevelInfo
+        case .debug:
+            return KDriveLocalizable.logLevelDebug
+        case .error:
+            return KDriveLocalizable.logLevelError
+        case .fatal:
+            return KDriveLocalizable.logLevelFatal
+        case .warning:
+            return KDriveLocalizable.logLevelWarning
+        }
+    }
 }
 
 public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {
@@ -105,6 +120,7 @@ public enum UIDistributionChannel: String, CaseIterable, Sendable, Equatable {
     case beta
     case `internal`
     case legacy
+    case test
 }
 
 public struct UIParametersInfo: Sendable, Equatable {

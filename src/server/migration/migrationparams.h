@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ class MigrationParams {
 
         void deleteUselessConfigFiles();
         void migrateGeometry(std::shared_ptr<std::vector<char>> &geometryStr);
-        inline const std::unordered_map<int, std::pair<SyncPath, SyncName>> &getSyncToMigrate() { return _syncToMigrate; }
+        inline const std::unordered_map<SyncDbId, std::pair<SyncPath, SyncName>> &getSyncToMigrate() { return _syncToMigrate; }
         static QDir configDir();
         static QString configFileName();
         bool isProxyNotSupported() const { return _proxyNotSupported; }
@@ -62,7 +62,7 @@ class MigrationParams {
         void setProxyNotSupported(bool proxyNotSupported) { _proxyNotSupported = proxyNotSupported; }
 
         log4cplus::Logger _logger;
-        std::unordered_map<int, std::pair<SyncPath, SyncName>> _syncToMigrate;
+        std::unordered_map<SyncDbId, std::pair<SyncPath, SyncName>> _syncToMigrate;
         bool _proxyNotSupported;
 };
 

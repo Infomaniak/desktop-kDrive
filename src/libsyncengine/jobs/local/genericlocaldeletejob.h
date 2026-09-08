@@ -25,9 +25,13 @@ namespace KDC {
  */
 class GenericLocalDeleteJob : public SyncJob {
     public:
-        GenericLocalDeleteJob(const SyncPath &absolutePath, bool forceHardDelete = false);
+        enum class ForceHardDelete {
+            Yes,
+            No
+        };
+        explicit GenericLocalDeleteJob(SyncPath absolutePath, ForceHardDelete forceHardDelete = ForceHardDelete::No);
 
-        [[nodiscard]] const SyncPath &absolutePath() const { return _absolutePath; }
+        [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
 
     protected:
         ExitInfo runJob() override;
@@ -35,7 +39,7 @@ class GenericLocalDeleteJob : public SyncJob {
         ExitInfo hardDelete(const SyncPath &path);
 
     private:
-        SyncPath _absolutePath;
+        SyncPath _absoluteLocalPath;
         bool _forceHardDelete{false};
 };
 

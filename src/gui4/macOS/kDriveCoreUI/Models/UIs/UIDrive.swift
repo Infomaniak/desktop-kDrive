@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,9 @@ public protocol UIDriveRepresentation: Sendable, Equatable, Hashable, Identifiab
 // MARK: - UIAvailableDrive
 
 public struct UIAvailableDrive: UIDriveRepresentation, Hashable {
-    public var id: Int {
+    public typealias ID = Int
+
+    public var id: ID {
         return driveId
     }
 
@@ -100,12 +102,13 @@ public struct UIDrive: UIDriveRepresentation {
     public typealias ID = Int
 
     public var id: ID {
-        return dbId
+        return driveId
     }
 
     public let dbId: Int
     public let driveId: Int
     public let name: String
+    public let isAdmin: Bool
     public let hexColor: UIHexColor?
 
     public var nsColor: NSColor? {
@@ -122,10 +125,11 @@ public struct UIDrive: UIDriveRepresentation {
         return Color(nsColor: nsColor)
     }
 
-    public init(dbId: Int, driveId: Int, name: String, hexColor: UIHexColor?) {
+    public init(dbId: Int, driveId: Int, name: String, isAdmin: Bool, hexColor: UIHexColor?) {
         self.dbId = dbId
         self.driveId = driveId
         self.name = name
+        self.isAdmin = isAdmin
         self.hexColor = hexColor
     }
 }
@@ -141,6 +145,7 @@ public extension UIDrive {
             dbId: Int(drive.driveDbId),
             driveId: Int(drive.driveId),
             name: drive.name,
+            isAdmin: drive.admin,
             hexColor: hexColor
         )
     }

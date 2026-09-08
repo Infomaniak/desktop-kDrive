@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,21 +33,17 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get right functions
         CPPUNIT_TEST(testLock);
         CPPUNIT_TEST(testReadOnly);
-        CPPUNIT_TEST(testPermissionsHolder);
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
-        CPPUNIT_TEST(testTempDirectoryPath);
-        CPPUNIT_TEST(testCacheDirectoryPath);
-        CPPUNIT_TEST(testLogDirectoryPath);
         CPPUNIT_TEST(testCheckIfPathExists);
         CPPUNIT_TEST(testCheckIfIsDirectory);
         CPPUNIT_TEST(testCreateDirectory);
         CPPUNIT_TEST(testCreateSymlink);
         CPPUNIT_TEST(testGetNodeId);
         CPPUNIT_TEST(testGetFileStat);
+        CPPUNIT_TEST(testGetFileChecksum);
         CPPUNIT_TEST(testGetRights);
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
-        CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
         CPPUNIT_TEST(testCheckDirectoryIterator);
         CPPUNIT_TEST(testCheckDirectoryIteratorSkipAccessDenied);
@@ -59,6 +55,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS)
         CPPUNIT_TEST(testRemoveXAttr);
         CPPUNIT_TEST(testCreateAlias);
+        CPPUNIT_TEST(testReadAlias);
 #endif
 #if defined(KD_WINDOWS)
         CPPUNIT_TEST(testCreateJunction);
@@ -66,7 +63,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetShortPathName);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
-        CPPUNIT_TEST(testAccesDeniedOnLockedFiles);
+        CPPUNIT_TEST(testAccessDeniedOnLockedFiles);
         CPPUNIT_TEST(testOpenFileSuccess);
         CPPUNIT_TEST(testOpenFileAccessDenied);
         CPPUNIT_TEST(testOpenFileNonExisting);
@@ -75,6 +72,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetDirectorySize);
         CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testIsPathOnMountedDisk);
+        CPPUNIT_TEST(testCopyFileOrDirectory);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -85,9 +83,6 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
     protected:
         void testGetItemType(void);
         void testGetFileSize(void);
-        void testTempDirectoryPath(void);
-        void testCacheDirectoryPath(void);
-        void testLogDirectoryPath(void);
         void testGetNodeId(void);
         void testCheckDirectoryIterator(void);
         void testCheckIfPathExists(void);
@@ -95,9 +90,9 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCreateDirectory(void);
         void testCreateSymlink(void);
         void testGetFileStat(void);
+        void testGetFileChecksum(void);
         void testGetRights(void);
         void testIsFileAccessible(void);
-        void testFileChanged(void);
         void testCheckIfIsHiddenFile(void);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         void testGetXAttrValue(void);
@@ -106,6 +101,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS)
         void testRemoveXAttr(void);
         void testCreateAlias(void);
+        void testReadAlias();
 #elif defined(KD_WINDOWS)
         void testCreateJunction();
         void testGetLongPathName();
@@ -115,7 +111,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckSetAndGetRights();
         void testLock();
         void testReadOnly();
-        void testPermissionsHolder();
+        void testCopyFileOrDirectory();
 
     private:
         void testGetItemTypeSimpleCases();
@@ -139,7 +135,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckDirectoryIteratorUnexpectedDelete();
         void testCheckDirectoryPermissionLost();
         void testCheckDirectoryIteratorSymlinkEntry();
-        void testAccesDeniedOnLockedFiles();
+        void testAccessDeniedOnLockedFiles();
         void testOpenFileSuccess();
         void testOpenFileAccessDenied();
         void testOpenFileNonExisting();

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,7 +138,9 @@ bool PipeCommServer::listen() {
 
     _stopAsked = false;
     _isRunning = true;
-    _thread = (std::make_unique<std::thread>(executeFunc, this));
+
+    const std::function<void()> runFunction = std::bind_front(executeFunc, this);
+    _thread = (std::make_unique<StdLoggingThread>(runFunction));
 
     return true;
 }
@@ -159,9 +161,8 @@ std::list<std::shared_ptr<AbstractCommChannel>> PipeCommServer::connections() {
     return channelList;
 }
 
-void PipeCommServer::executeFunc(PipeCommServer *server) {
+void PipeCommServer::executeFunc(PipeCommServer *const server) {
     server->execute();
-    log4cplus::threadCleanup();
 }
 
 void PipeCommServer::execute() {

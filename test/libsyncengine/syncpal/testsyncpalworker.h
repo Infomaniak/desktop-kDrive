@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,9 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testInternalPause1);
         CPPUNIT_TEST(testInternalPause2);
         CPPUNIT_TEST(testInternalPause3);
+        CPPUNIT_TEST(testHandleBackError);
+        CPPUNIT_TEST(testEnsureBlackListIsPropagatedIgnoresMissingNode);
+        CPPUNIT_TEST(testEnsureBlackListIsPropagated);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -80,6 +83,13 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
          * state.
          */
         void testInternalPause3();
+
+        /* This test verifies that consecutive BackError exits produce an exponentially increasing pause duration (capped at
+         * maxDelay), and that the counter resets when the sync reaches the Idle step.
+         */
+        void testHandleBackError();
+        void testEnsureBlackListIsPropagatedIgnoresMissingNode();
+        void testEnsureBlackListIsPropagated();
 
         void testStopDuringInternalPause();
         void testDestroyDuringInternalPause();
@@ -203,6 +213,14 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
                 }
         };
 
+        class MockSyncPalWorker : public SyncPalWorker {
+            public:
+                using SyncPalWorker::SyncPalWorker;
+
+            private:
+                double jitter() const override { return 1.0; }
+        };
+
         class MockSyncPal : public SyncPal {
             public:
                 using SyncPal::SyncPal;
@@ -218,6 +236,7 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
             private:
                 void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0)) override;
+                void freeSnapshotsCopies() override;
         };
 };
 

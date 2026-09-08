@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,12 @@
 #pragma once
 
 namespace KDC {
+
+enum class GuiJobType {
+    Unknown,
+    Query,
+    Signal
+};
 
 enum class UpdateState {
     UpToDate,
@@ -158,6 +164,9 @@ enum class ExitCause {
     TmpDirAccessError,
     UpdateTreeIntegrityCheckFailed,
     MissingReplyData,
+    BlackListPropagationError,
+    FileSystemNotSupported,
+    SyncDeletionFailed,
     EnumEnd
 };
 
@@ -181,6 +190,13 @@ enum class Language {
     Spanish,
     Italian,
     Dutch,
+    Swedish,
+    Portuguese,
+    Polish,
+    Norwegian,
+    Finnish,
+    Danish,
+    Greek,
     EnumEnd
 };
 
@@ -285,12 +301,13 @@ enum class SyncStep {
     EnumEnd
 };
 
-enum class VersionChannel {
+enum class DistributionChannel {
     Prod,
     Next,
     Beta,
     Internal,
     Legacy,
+    Test,
     Unknown,
     EnumEnd
 };

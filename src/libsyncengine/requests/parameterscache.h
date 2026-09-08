@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,7 @@ class SYNCENGINE_EXPORT ParametersCache {
 
         static void reset();
 
-        // If _instance is not initialized, use extended log by default
-        static bool isExtendedLogEnabled() noexcept { return instance() ? instance()->_parameters.extendedLog() : true; }
+        static bool isExtendedLogEnabled() noexcept;
 
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
@@ -47,6 +46,7 @@ class SYNCENGINE_EXPORT ParametersCache {
     private:
         static std::shared_ptr<ParametersCache> _instance;
         Parameters _parameters;
+        static bool _forceExtendedLog;
 
         ParametersCache(bool isTest = false);
 };

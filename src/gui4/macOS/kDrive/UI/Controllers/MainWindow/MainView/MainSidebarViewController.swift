@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +42,8 @@ extension SidebarItem {
         title: KDriveLocalizable.buttonOpenInFinder,
         type: .action
     )
+
+    static let mainViewItems: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
 }
 
 final class MainSidebarViewController: NSViewController {
@@ -55,7 +57,7 @@ final class MainSidebarViewController: NSViewController {
     private let mainViewModel: MainViewModel
     private var bindStore = Set<AnyCancellable>()
 
-    private let items: [SidebarItem] = [.home, .activities, .storage, .openInFinder]
+    private let items = SidebarItem.mainViewItems
 
     private var hasBlockingError = false
 
@@ -130,6 +132,7 @@ final class MainSidebarViewController: NSViewController {
     private func bindViewModel() {
         observableCache.usersPublisher.allSynchrosPublisher()
             .map { UIIndexedSynchroContext(indexedSynchro: $0) }
+            .removeDuplicates()
             .eraseToAnyPublisher()
             .receiveOnMain(store: &bindStore) { [weak self] synchroContexts in
                 self?.updateSynchrosList(synchroContexts)
@@ -143,6 +146,11 @@ final class MainSidebarViewController: NSViewController {
                 self?.sidebarNotificationView.configure(with: state)
             }
             .store(in: &bindStore)
+
+        router.$currentPath
+            .receiveOnMain(store: &bindStore) { [weak self] path in
+                self?.updateSelectedItemIfNecessary(path)
+            }
     }
 
     private func fetchInitialSynchros() {
@@ -263,6 +271,15 @@ final class MainSidebarViewController: NSViewController {
         hasBlockingError = shouldShowBlockingError
     }
 
+    private func updateSelectedItemIfNecessary(_ path: Path<MainViewTab>) {
+        let tab = path.mainTab
+        guard let tabIndex = SidebarItem.mainViewItems.compactMap(\.mainViewTab).firstIndex(of: tab) else {
+            return
+        }
+
+        outlineView.selectRowIndexes(IndexSet(integer: tabIndex), byExtendingSelection: false)
+    }
+
     private func addPopUpItem(forSynchroContext synchroContext: UISynchroContext, withSynchroPath: Bool) {
         var title: String
         if withSynchroPath {
@@ -325,7 +342,7 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
             return
         }
 
-        router.setCurrentTab(path)
+        router.setCurrentTabIfNecessary(path)
     }
 
     func outlineView(_: NSOutlineView, didClick item: Any?) {

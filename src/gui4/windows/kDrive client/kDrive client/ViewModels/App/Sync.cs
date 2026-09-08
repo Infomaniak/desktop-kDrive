@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,12 @@ using DynamicData.Binding;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -50,6 +53,8 @@ namespace Infomaniak.kDrive.ViewModels
         private readonly ObservableCollection<SyncFileItem> _syncActivities = [];
         private bool _syncTypeMigrationInProgress = false;
         private SyncFileItem? _lastActivity;
+        private bool? _hasExcludedFolder = null;
+        private Task? _hasExcludedFolderLoadingTask = null;
 
 
         public SyncStatus SyncStatus
@@ -86,22 +91,25 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             });
 
-            SyncActivities.CollectionChanged += (s, args) =>
+            SyncActivities.CollectionChanged += SyncActivities_CollectionChanged;
+        }
+
+        private void SyncActivities_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+
+            if (!SyncActivities.Any())
             {
-                if (!SyncActivities.Any())
-                {
-                    LastActivity = null;
-                    return;
-                }
-                try
-                {
-                    LastActivity = SyncActivities[0];
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    LastActivity = null;
-                }
-            };
+                LastActivity = null;
+                return;
+            }
+            try
+            {
+                LastActivity = SyncActivities[0];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                LastActivity = null;
+            }
         }
 
         public DbId DbId
@@ -199,6 +207,19 @@ namespace Infomaniak.kDrive.ViewModels
             set => SetPropertyInUIThread(ref _showIncomingActivity, value);
         }
 
+        public bool? HasExcludedFolder
+        {
+            get
+            {
+                if (_hasExcludedFolder is null)
+                    RefreshHasExcludedFolder();
+                return _hasExcludedFolder;
+            }
+            set => SetPropertyInUIThread(ref _hasExcludedFolder, value);
+        }
+
+        public string RescueFolderPath => System.IO.Path.Combine(LocalPath, App.Constants.Sync.RescueFolderName);
+
         public async Task<bool> Start()
         {
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
@@ -224,6 +245,13 @@ namespace Infomaniak.kDrive.ViewModels
             return result;
         }
 
+        public async Task<bool> RefreshErrors()
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            bool result = await commService.RefreshSyncErrors(DbId, CancellationToken.None);
+            return result;
+        }
+
         public async Task AddErrorAsync(Error error)
         {
             if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
@@ -234,9 +262,6 @@ namespace Infomaniak.kDrive.ViewModels
 
             Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
-
-            if (error.ExitCause == ExitCause.QuotaExceeded)
-                Drive.DisplayRemoteSpaceWarning = true;
 
             await RefreshErrorState();
         }
@@ -256,26 +281,17 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task ClearAllErrorsAsync()
         {
-            await Utility.RunOnUIThread(async () =>
-            {
-                // Call RemoveError for each error to ensure proper handling (RemoveError is responsible for some viewmodel updates)
-                while (SyncErrors.Any())
-                {
-                    var error = SyncErrors[0];
-                    Logger.Log(Logger.Level.Info, $"Sync {DbId}: Clearing error {error.ExitCode} - {error.Path}");
-                    await RemoveErrorAsync(error, false);
-                }
-            });
+            await Utility.RunOnUIThread(() => SyncErrors.Clear());
             await RefreshErrorState();
         }
 
         public async Task RefreshErrorState()
         {
-            await Utility.RunOnUIThread(async () =>
+            await Utility.RunOnUIThread(() =>
             {
 
                 SyncErrorState = SyncErrorStates.Undefined;
-
+                bool hasQuotaExceeded = false;
                 foreach (var error in SyncErrors)
                 {
                     SyncErrorState = error.ExitCause switch
@@ -298,7 +314,12 @@ namespace Infomaniak.kDrive.ViewModels
                         Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
                         return;
                     }
+
+                    hasQuotaExceeded |= error.ExitCause == Types.ExitCause.QuotaExceeded;
+
                 }
+
+                Drive.DisplayRemoteSpaceWarning = hasQuotaExceeded;
 
                 if (SyncErrorState == SyncErrorStates.Undefined && !Drive.Account.User.IsConnected)
                 {
@@ -327,11 +348,43 @@ namespace Infomaniak.kDrive.ViewModels
             return await commService.GetBlacklistedNodeIdList(DbId, CancellationToken.None);
         }
 
+        public async Task<bool> SetExcludedNodeIds(List<NodeId> excludedNodeIds)
+        {
+            var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+            if (!await commService.SetBlacklistedNodeIdList(DbId, excludedNodeIds, CancellationToken.None))
+            {
+                Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                return false;
+            }
+            HasExcludedFolder = excludedNodeIds.Count > 0;
+            return true;
+        }
+
         public void ClearOngoingActivities()
         {
             var toBeRemoved = SyncActivities.Where(a => a.Status == SyncFileStatus.Syncing);
             SyncActivities.RemoveMany(toBeRemoved);
         }
 
+        private void RefreshHasExcludedFolder()
+        {
+            if (_hasExcludedFolderLoadingTask is not null && !_hasExcludedFolderLoadingTask.IsCompleted)
+            {
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Already loading excluded folders, skipping refresh.");
+                return;
+            }
+            _hasExcludedFolderLoadingTask = Task.Run(async () =>
+            {
+                var excludedNodeIds = await GetExcludedNodeIds();
+                HasExcludedFolder = excludedNodeIds is not null && excludedNodeIds.Count > 0;
+                Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFolder}");
+            });
+        }
+
+        public Visibility GetSyncSelectorInfoBadgeVisibility(IList<Error> errors, Sync selectedSync)
+        {
+            bool isVisible = selectedSync is not null && errors.Any() && selectedSync != this;
+            return isVisible ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 }

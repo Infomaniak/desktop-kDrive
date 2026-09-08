@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ namespace KDC {
 
 class SyncDbMock : public SyncDb {
     public:
-        SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
+        SyncDbMock(const std::string &dbPath, const std::string &targetNodeId = std::string());
         bool prepare() override;
         void freeRequest(const char *requestId);
         void enablePrepare(bool enabled);
@@ -38,10 +38,10 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestSyncDb);
         CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST(testNodesWithCache);
-        CPPUNIT_TEST(testNodeWithCacheFaillure);
+        CPPUNIT_TEST(testNodeWithCacheFailure);
         CPPUNIT_TEST(testCorrespondingNodeId);
         CPPUNIT_TEST(testCorrespondingNodeIdWithCache);
-        CPPUNIT_TEST(testCorrespondingNodeIdWithCacheFaillure);
+        CPPUNIT_TEST(testCorrespondingNodeIdWithCacheFailure);
         CPPUNIT_TEST(testSyncNodes);
         CPPUNIT_TEST(testUpdateLocalName);
         CPPUNIT_TEST(testUpgradeTo3_6_7);
@@ -62,7 +62,7 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testNodesTemplate(SyncDb &db, T &testObj);
         void testNodes();
         void testNodesWithCache();
-        void testNodeWithCacheFaillure();
+        void testNodeWithCacheFailure();
 
         void testReloadIfNeeded();
 
@@ -70,7 +70,7 @@ class TestSyncDb : public CppUnit::TestFixture, public TestBase {
         void testCorrespondingNodeIdTemplate(SyncDb &db, T &testObj);
         void testCorrespondingNodeId();
         void testCorrespondingNodeIdWithCache();
-        void testCorrespondingNodeIdWithCacheFaillure();
+        void testCorrespondingNodeIdWithCacheFailure();
 
         void testSyncNodes();
         void testUpdateLocalName();

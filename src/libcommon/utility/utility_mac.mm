@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,37 @@
 
 #include "utility.h"
 
-#include "types.h"
+#include "config.h"
 
-#include <QString>
+#include <system_error>
+#include <fstream>
+#include <sys/mount.h>
 
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSImage.h>
 
 namespace KDC {
+
+namespace {
+ExitInfo nsErrorToExitInfo(NSError *nsError) noexcept {
+    // See https://developer.apple.com/documentation/foundation/
+    if ([nsError.domain isEqualToString:NSCocoaErrorDomain]) {
+        switch (nsError.code) {
+            case NSFileNoSuchFileError:
+            case NSFileReadNoSuchFileError:
+                return {ExitCode::SystemError, ExitCause::NotFound};
+            case NSFileReadNoPermissionError:
+            case NSFileWriteNoPermissionError:
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            case NSFileReadInvalidFileNameError:
+                return {ExitCode::SystemError, ExitCause::InvalidName};
+            default:
+                break;
+        }
+    }
+    return {ExitCode::SystemError, ExitCause::Unknown};
+}
+} // namespace
 
 SyncPath CommonUtility::getAppDir() {
     NSError *error;
@@ -90,12 +113,49 @@ void CommonUtility::convertToBase64Str(NSString *const _Nonnull str, NSString **
     }
 }
 
-std::string CommonUtility::osVersion() {
+std::string extractOsVersion() {
     const NSProcessInfo *processInfo = [NSProcessInfo processInfo];
     const NSOperatingSystemVersion osVersion = [processInfo operatingSystemVersion];
     return [@(osVersion.majorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.minorVersion) stringValue].UTF8String + std::string(".") +
            [@(osVersion.patchVersion) stringValue].UTF8String;
+}
+
+std::string CommonUtility::osVersion() {
+    static const std::string osVersion = extractOsVersion();
+    return osVersion;
+}
+
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    struct statfs stat;
+
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
+    }
+
+    return "UNIDENTIFIED";
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    NSError *error = nil;
+    NSURL *url = [[NSFileManager defaultManager] URLForDirectory:NSLibraryDirectory
+                                                        inDomain:NSUserDomainMask
+                                               appropriateForURL:nil
+                                                          create:NO
+                                                           error:&error];
+    if (error) {
+        return nsErrorToExitInfo(error);
+    }
+
+    if (!url) {
+        return {ExitCode::SystemError, ExitCause::Unknown};
+    }
+
+    directoryPath = SyncPath([url.path UTF8String]);
+    directoryPath /= "Logs";
+    directoryPath /= APPLICATION_NAME; // On macOS, logs in "Logs" folder are stored in a subfolder named after the application
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

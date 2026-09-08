@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,22 +48,6 @@ DbNode::DbNode(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, 
                const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing) :
     DbNode(0, parentNodeId, nameLocal, nameRemote, nodeIdLocal, nodeIdRemote, created, lastModifiedLocal, lastModifiedRemote,
            type, size, checksum, status, syncing) {}
-
-DbNode::DbNode() :
-    _nodeId(0),
-    _parentNodeId(0),
-    _nameLocal(SyncName()),
-    _nameRemote(SyncName()),
-    _nodeIdLocal(std::string()),
-    _nodeIdRemote(std::string()),
-    _created(0),
-    _lastModifiedLocal(0),
-    _lastModifiedRemote(0),
-    _type(NodeType::Unknown),
-    _size(0),
-    _checksum(std::string()),
-    _status(SyncFileStatus::Unknown),
-    _syncing(false) {}
 
 void DbNode::setNameLocal(const SyncName &name) {
     _nameLocal = name;

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -28,17 +28,20 @@ public extension Font {
         public static let titleEmphasized: Font = .title.weight(.emphasized)
 
         public static let title2: Font = .title2
-        public static let title2Emphasized: Font = .title2.weight(.emphasized)
+        public static let title2Emphasized: Font = .Tokens.title2.weight(.emphasized)
 
         public static let title3: Font = .title3
-        public static let title3Emphasized: Font = .title3.weight(.emphasized)
+        public static let title3Emphasized: Font = Tokens.title3.weight(.emphasized)
 
         public static let headline: Font = .headline
 
         public static let body: Font = .body
-        public static let bodyEmphasized: Font = .body.weight(.emphasized)
+        public static let bodyEmphasized: Font = .Tokens.body.weight(.emphasized)
+
+        public static let callout: Font = .callout
 
         public static let subheadline: Font = .subheadline
+        public static let subheadlineEmphasized: Font = .Tokens.subheadline.weight(.semibold)
     }
 }
 

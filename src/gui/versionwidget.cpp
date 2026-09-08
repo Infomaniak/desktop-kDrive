@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ static const QString downloadPageLink = "downloadPageLink";
 static constexpr int statusLayoutSpacing = 8;
 static constexpr auto betaTagColor = QColor(214, 56, 100);
 static constexpr auto internalTagColor = QColor(120, 116, 176);
+static constexpr auto testTagColor = QColor(62, 160, 146);
 
 Q_LOGGING_CATEGORY(lcVersionWidget, "gui.versionwidget", QtInfoMsg)
 
@@ -156,7 +157,7 @@ void VersionWidget::onJoinBetaButtonClicked() {
     MatomoClient::sendEvent("versionWidget", MatomoEventAction::Click, "joinBetaButton");
     MatomoClient::sendVisit(MatomoNameField::PG_Preferences_Beta);
     if (auto dialog = BetaProgramDialog(
-                ParametersCache::instance()->parametersInfo().distributionChannel() != VersionChannel::Prod, _isStaff, this);
+                ParametersCache::instance()->parametersInfo().distributionChannel() != DistributionChannel::Prod, _isStaff, this);
         dialog.exec() == QDialog::Accepted) {
         saveDistributionChannel(dialog.selectedDistributionChannel());
         refresh();
@@ -187,7 +188,7 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         qCWarning(lcVersionWidget) << "Error in GuiRequests::versionInfo";
     }
 
-    const QString versionStr = versionInfo.beautifulVersion().c_str();
+    const QString versionStr = QString::fromStdString(versionInfo.fullVersion());
 
     QString statusString;
     bool showReleaseNote = false;
@@ -252,14 +253,32 @@ void VersionWidget::refresh(UpdateState state /*= UpdateState::Unknown*/) const 
         _betaVersionDescription->setText(tr("Get early access to new versions of the application"));
 
         if (const auto channel = ParametersCache::instance()->parametersInfo().distributionChannel();
-            channel == VersionChannel::Prod) {
+            channel == DistributionChannel::Prod) {
             _joinBetaButton->setText(tr("Join"));
             _betaTag->setVisible(false);
         } else {
             _joinBetaButton->setText(_isStaff ? tr("Modify") : tr("Quit"));
             _betaTag->setVisible(true);
-            _betaTag->setBackgroundColor(channel == VersionChannel::Beta ? betaTagColor : internalTagColor);
-            _betaTag->setText(channel == VersionChannel::Beta ? "BETA" : "INTERNAL");
+            auto tagColor = betaTagColor;
+            auto tagText = "BETA";
+            switch (channel) {
+                case DistributionChannel::Beta:
+                    tagColor = betaTagColor;
+                    tagText = "BETA";
+                    break;
+                case DistributionChannel::Internal:
+                    tagColor = internalTagColor;
+                    tagText = "INTERNAL";
+                    break;
+                case DistributionChannel::Test:
+                    tagColor = testTagColor;
+                    tagText = "TEST";
+                    break;
+                default:
+                    break;
+            }
+            _betaTag->setBackgroundColor(tagColor);
+            _betaTag->setText(tagText);
         }
     }
 }
@@ -339,7 +358,7 @@ void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
     betaLayout->addWidget(_joinBetaButton);
 }
 
-void VersionWidget::saveDistributionChannel(const VersionChannel channel) const {
+void VersionWidget::saveDistributionChannel(const DistributionChannel channel) const {
     GuiRequests::changeDistributionChannel(channel);
     ParametersCache::instance()->parametersInfo().setDistributionChannel(channel);
     ParametersCache::instance()->saveParametersInfo();

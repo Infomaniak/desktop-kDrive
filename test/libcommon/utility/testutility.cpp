@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,14 @@
 #include "test_utility/testhelpers.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/utility/sourcelocation.h"
 #include "libcommonserver/io/iohelper.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "utility/utility_base.h"
 
 #include <QLocale>
-
+#include <source_location>
 #include <iostream>
 #include <regex>
-#include <source_location>
 
 #include <Poco/DynamicStruct.h>
 
@@ -77,6 +75,14 @@ void TestUtility::extractIntFromStrVersion() {
         CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 20250221} == versionNumberComponents));
     }
 
+    {
+        const std::string versionString = "155.75.0 (build 1)";
+        std::vector<uint32_t> versionNumberComponents;
+
+        CommonUtility::extractIntFromStrVersion(versionString, versionNumberComponents);
+        CPPUNIT_ASSERT((std::vector<uint32_t>{155, 75, 0, 1} == versionNumberComponents));
+    }
+
     // Invalid version string
     {
         const std::string versionString = ".0";
@@ -121,6 +127,8 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.7"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
 
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.2.3.4", "1.2.3.5"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.5", "1.2.3.4"));
 
     // Double digit major, minor or patch versions
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.0.0", "55.0.0"));
@@ -142,6 +150,10 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 20250222)"));
     CPPUNIT_ASSERT(CommonUtility::isVersionLower("255.85.0 (build 1)", "255.85.0 (build 2)"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("255.85.0 (build 2)", "255.85.0 (build 1)"));
+    CPPUNIT_ASSERT(CommonUtility::isVersionLower("1.2.3 (build 4)", "1.2.3.5"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.5", "1.2.3 (build 4)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3.4", "1.2.3 (build 4)"));
+    CPPUNIT_ASSERT(!CommonUtility::isVersionLower("1.2.3 (build 4)", "1.2.3.4"));
 
     // With an invalid version
     CPPUNIT_ASSERT(CommonUtility::isVersionLower(".155.75.0", "156.75.0"));
@@ -374,39 +386,6 @@ void TestUtility::testCurrentVersion() {
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}\.{1}\d{1,2}\.{1}\d{1,2}\.{1}\d{0,8}$)")));
 }
 
-SourceLocation testSourceLocationFooFunc(uint32_t &constructLine, SourceLocation location = SourceLocation::currentLoc()) {
-    constructLine = std::source_location::current().line() - 1;
-    return location;
-}
-
-void TestUtility::testSourceLocation() {
-    SourceLocation location = SourceLocation::currentLoc();
-    uint32_t correctLine = std::source_location::current().line() - 1;
-
-    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
-    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
-
-#ifdef SRC_LOC_AVALAIBALE
-    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
-#else
-    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
-#endif
-
-    // Test as a default argument
-    uint32_t fooFuncLine = 0;
-    location = testSourceLocationFooFunc(fooFuncLine);
-    correctLine = std::source_location::current().line() - 1;
-
-    CPPUNIT_ASSERT_EQUAL(std::string("testutility.cpp"), location.fileName());
-#ifdef SRC_LOC_AVALAIBALE
-    CPPUNIT_ASSERT_EQUAL(std::string("testSourceLocation"), location.functionName());
-    CPPUNIT_ASSERT_EQUAL(correctLine, location.line());
-#else
-    CPPUNIT_ASSERT_EQUAL(std::string(""), location.functionName());
-    CPPUNIT_ASSERT_EQUAL(fooFuncLine, location.line());
-#endif
-}
-
 void TestUtility::testGenerateRandomStringAlphaNum() {
     if (!testhelpers::isExtendedTest()) return;
     {
@@ -447,6 +426,29 @@ void TestUtility::testGenerateRandomStringAlphaNum() {
     }
 }
 
+void TestUtility::testGenerateRandomNumber() {
+    std::unordered_set<int64_t> results;
+    std::vector<int64_t> sequence;
+    for (auto i = 0; i < 100; i++) {
+        const auto val = CommonUtility::generateRandomNumber(1, 100);
+        (void) results.emplace(val);
+        (void) sequence.push_back(val);
+    }
+    // Check that not all values are the same
+    CPPUNIT_ASSERT_GREATER(static_cast<int64_t>(1), static_cast<int64_t>(results.size()));
+
+    // Check that a second draw does not produce the same sequence
+    bool allValuesAreTheSame = true;
+    for (auto i = 0; i < 100; i++) {
+        const auto val = CommonUtility::generateRandomNumber(1, 100);
+        if (val != sequence[static_cast<size_t>(i)]) {
+            allValuesAreTheSame = false;
+            break;
+        }
+    }
+    CPPUNIT_ASSERT(!allValuesAreTheSame);
+}
+
 void TestUtility::testGenerateUuid() {
     const auto uuid = CommonUtility::generateUUID();
     const auto regexPattern = std::regex(R"(^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$)");
@@ -463,6 +465,13 @@ void TestUtility::testLanguageCode() {
     CPPUNIT_ASSERT_EQUAL(std::string("es"), CommonUtility::languageCode(Language::Spanish).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("it"), CommonUtility::languageCode(Language::Italian).toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("nl"), CommonUtility::languageCode(Language::Dutch).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("sv"), CommonUtility::languageCode(Language::Swedish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("pt"), CommonUtility::languageCode(Language::Portuguese).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("pl"), CommonUtility::languageCode(Language::Polish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("nb"), CommonUtility::languageCode(Language::Norwegian).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("fi"), CommonUtility::languageCode(Language::Finnish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("da"), CommonUtility::languageCode(Language::Danish).toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("el"), CommonUtility::languageCode(Language::Greek).toStdString());
 
     const auto systemLanguage = QLocale::languageToCode(QLocale::system().language());
     CPPUNIT_ASSERT_EQUAL(systemLanguage.toStdString(), CommonUtility::languageCode(Language::Default).toStdString());
@@ -478,9 +487,35 @@ void TestUtility::testIsSupportedLanguage() {
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("es"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("it"));
     CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("nl"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("sv"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pt"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("pl"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("nb"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("fi"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("da"));
+    CPPUNIT_ASSERT_EQUAL(true, CommonUtility::isSupportedLanguage("el"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("ita"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage("zc"));
     CPPUNIT_ASSERT_EQUAL(false, CommonUtility::isSupportedLanguage(""));
+}
+
+void TestUtility::testStrToLanguage() {
+    CPPUNIT_ASSERT_EQUAL(Language::English, CommonUtility::strToLanguage("en"));
+    CPPUNIT_ASSERT_EQUAL(Language::French, CommonUtility::strToLanguage("fr"));
+    CPPUNIT_ASSERT_EQUAL(Language::German, CommonUtility::strToLanguage("de"));
+    CPPUNIT_ASSERT_EQUAL(Language::Spanish, CommonUtility::strToLanguage("es"));
+    CPPUNIT_ASSERT_EQUAL(Language::Italian, CommonUtility::strToLanguage("it"));
+    CPPUNIT_ASSERT_EQUAL(Language::Dutch, CommonUtility::strToLanguage("nl"));
+    CPPUNIT_ASSERT_EQUAL(Language::Swedish, CommonUtility::strToLanguage("sv"));
+    CPPUNIT_ASSERT_EQUAL(Language::Portuguese, CommonUtility::strToLanguage("pt"));
+    CPPUNIT_ASSERT_EQUAL(Language::Polish, CommonUtility::strToLanguage("pl"));
+    CPPUNIT_ASSERT_EQUAL(Language::Norwegian, CommonUtility::strToLanguage("nb"));
+    CPPUNIT_ASSERT_EQUAL(Language::Norwegian, CommonUtility::strToLanguage("no"));
+    CPPUNIT_ASSERT_EQUAL(Language::Finnish, CommonUtility::strToLanguage("fi"));
+    CPPUNIT_ASSERT_EQUAL(Language::Danish, CommonUtility::strToLanguage("da"));
+    CPPUNIT_ASSERT_EQUAL(Language::Greek, CommonUtility::strToLanguage("el"));
+    CPPUNIT_ASSERT_EQUAL(Language::Default, CommonUtility::strToLanguage("xx"));
+    CPPUNIT_ASSERT_EQUAL(Language::Default, CommonUtility::strToLanguage(""));
 }
 
 #if defined(KD_WINDOWS)
@@ -1238,6 +1273,37 @@ void TestUtility::isLikeSomeError() {
 
     errorCode = std::make_error_code(std::errc::no_such_file_or_directory);
     CPPUNIT_ASSERT(utility_base::isLikeFileNotFoundError(errorCode));
+}
+
+void TestUtility::testTempDirectoryPath() {
+    {
+        SyncPath tmpPath;
+        CPPUNIT_ASSERT(CommonUtility::deviceTempDirectoryPath(tmpPath));
+        CPPUNIT_ASSERT(!tmpPath.empty());
+    }
+
+    {
+        // Saves the current value of "KDRIVE_TMP_PATH".
+        const std::string previousPathString = CommonUtility::envVarValue("KDRIVE_TMP_PATH");
+
+        LocalTemporaryDirectory temporaryDirectory;
+        const auto pathStringToSet = Path2Str(SyncPath(temporaryDirectory.path() / "testTempDirectoryPath"));
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", pathStringToSet.c_str(), 1);
+
+        SyncPath tmpPath;
+        CPPUNIT_ASSERT(CommonUtility::deviceTempDirectoryPath(tmpPath));
+        CPPUNIT_ASSERT_EQUAL(temporaryDirectory.path() / "testTempDirectoryPath", tmpPath);
+        CPPUNIT_ASSERT(std::filesystem::exists(tmpPath));
+
+        // Restores previous value.
+        (void) CommonUtility::setenv("KDRIVE_TMP_PATH", previousPathString.c_str(), 1);
+    }
+}
+
+void TestUtility::testLogDirectoryPath() {
+    SyncPath logDirPath;
+    CPPUNIT_ASSERT(CommonUtility::logDirectoryPath(logDirPath));
+    CPPUNIT_ASSERT(!logDirPath.empty());
 }
 
 } // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ static const int boxVBMargin = 40;
 
 Q_LOGGING_CATEGORY(lcAddDriveWizard, "gui.adddrivewizard", QtInfoMsg)
 
-AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent) :
+AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, const UserDbId userDbId, QWidget *parent) :
     CustomDialog(false, parent),
     _gui(gui),
     _currentStep(userDbId ? Login : None),
@@ -113,7 +113,11 @@ void AddDriveWizard::startNextStep(bool backward) {
 
     _currentStep = (Step) (_currentStep + (backward ? -1 : 1));
 
-    if (_currentStep == Login && backward) {
+    if (_currentStep == None) {
+        // We close the wizard on login error.
+        exit();
+        return;
+    } else if (_currentStep == Login && backward) {
         if (!_addDriveListWidget->isAddUserClicked()) {
             exit();
             return;
@@ -206,9 +210,9 @@ void AddDriveWizard::startNextStep(bool backward) {
     }
 }
 
-bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                             const QString &serverFolderPath, bool liteSync, const QSet<QString> &blackList,
-                             const QSet<QString> &whiteList) {
+bool AddDriveWizard::addSync(const UserDbId userDbId, const AccountId accountId, const DriveId driveId,
+                             const QString &localFolderPath, const QString &serverFolderPath, bool liteSync,
+                             const QSet<QString> &blackList, const QSet<QString> &whiteList) {
     QString localFolderPathNormalized = QDir::fromNativeSeparators(localFolderPath);
 
     const QDir localFolderDir(localFolderPathNormalized);
@@ -238,7 +242,7 @@ bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QSt
     return true;
 }
 
-void AddDriveWizard::onStepTerminated(bool next) {
+void AddDriveWizard::onStepTerminated(const bool next) {
     if (_currentStep == Login) {
         if (next) {
             _userDbId = _addDriveLoginWidget->userDbId();

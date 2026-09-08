@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,8 +95,8 @@ class PARMS_EXPORT Parameters {
             _uploadSessionParallelJobs = uploadSessionParallelJobs;
         }
 
-        [[nodiscard]] VersionChannel distributionChannel() const { return _distributionChannel; }
-        void setDistributionChannel(const VersionChannel channel) { _distributionChannel = channel; }
+        [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
+        void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
 
         bool sentryEnabled() const { return _sentryEnabled; }
         void setSentryEnabled(bool value) { _sentryEnabled = value; }
@@ -126,9 +126,9 @@ class PARMS_EXPORT Parameters {
         std::shared_ptr<std::vector<char>> _dialogGeometry;
         int _maxAllowedCpu{50};
         int _uploadSessionParallelJobs;
-        VersionChannel _distributionChannel{VersionChannel::Prod};
-        bool _sentryEnabled{false};
-        bool _matomoEnabled{false};
+        DistributionChannel _distributionChannel{DistributionChannel::Prod};
+        bool _sentryEnabled{true};
+        bool _matomoEnabled{true};
 };
 
 } // namespace KDC

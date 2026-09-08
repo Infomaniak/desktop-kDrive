@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ namespace KDC {
 
 static const uint32_t apiTimout = 900;
 
-CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const int driveDbId, const NodeId &dirId,
+CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId driveDbId, const NodeId &dirId,
                                                            const NodeSet &blacklist /*= {}*/, const bool zip /*= true*/) :
     AbstractListingJob(driveDbId, blacklist),
     _dirId(dirId),
@@ -73,7 +73,7 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri) {
 
 ExitInfo CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     if (_zip) {
-        unzip(is, _ss);
+        Utility::unzipStream(is, _ss);
     } else {
         _ss << is.rdbuf();
     }

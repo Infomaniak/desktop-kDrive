@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -126,10 +126,38 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 
 uint64_t computeNodeId(const _FILE_ID_FULL_DIR_INFORMATION *pFileInfo) {
     // We keep `long long` type cast for legacy reason.
-    auto longLongId =
+    const auto longLongId =
             (static_cast<long long>(pFileInfo->FileId.HighPart) << 32) + static_cast<long long>(pFileInfo->FileId.LowPart);
 
     return static_cast<uint64_t>(longLongId);
+}
+
+uint64_t computeNodeId(const BY_HANDLE_FILE_INFORMATION &pFileInfo) {
+    // We keep `long long` type cast for legacy reason.
+    const auto longLongId =
+            (static_cast<long long>(pFileInfo.nFileIndexHigh) << 32) + static_cast<long long>(pFileInfo.nFileIndexLow);
+
+    return static_cast<uint64_t>(longLongId);
+}
+
+// Get the node id of a root path. This is necessary because pzwQueryDirectoryFile requires a parent handle, which is not
+// available for root paths.
+bool getRootNodeId(const SyncPath &rootPath, NodeId &nodeId) noexcept {
+    const HANDLE hRoot = CreateFileW(rootPath.wstring().c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                                     nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+
+    if (hRoot == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+    BY_HANDLE_FILE_INFORMATION info{};
+    if (!GetFileInformationByHandle(hRoot, &info)) {
+        (void) CloseHandle(hRoot);
+        return false;
+    }
+
+    nodeId = std::to_string(computeNodeId(info));
+    (void) CloseHandle(hRoot);
+    return true;
 }
 
 } // namespace
@@ -145,6 +173,10 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
 }
 
 bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+    if (path == path.root_path()) {
+        return getRootNodeId(path, nodeId);
+    }
+
     // Get parent folder handle
     HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
                                  OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
@@ -467,9 +499,8 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::deviceTempDirectoryPath(tmpDir, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
+    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
+        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
         return;
     }
 
@@ -479,7 +510,7 @@ void IoHelper::initRightsWindowsApi() {
 
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10; i++) {
-        if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
+        if (auto ioError = IoError::Unknown; !IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
             _getAndSetRightsMethod = 1; // Fallback method
             return;
@@ -503,7 +534,7 @@ void IoHelper::initRightsWindowsApi() {
 
 // Always return false if ioError != IoError::Success, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger, bool inherite = false) noexcept {
+                                log4cplus::Logger logger, bool inherit = false) noexcept {
     PACL pACLold = nullptr; // Current ACL
     PACL pACLnew = nullptr; // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
@@ -512,7 +543,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     explicitAccess.grfAccessPermissions = permission;
     explicitAccess.grfAccessMode = accessMode;
-    if (!inherite) {
+    if (!inherit) {
         explicitAccess.grfInheritance = NO_INHERITANCE;
     } else {
         explicitAccess.grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;

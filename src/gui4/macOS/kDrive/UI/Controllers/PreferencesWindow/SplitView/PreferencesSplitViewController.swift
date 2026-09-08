@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ final class PreferencesSplitViewController: IKSplitViewController {
 
     private let viewModel = PreferencesViewModel()
     private let repository = PreferencesRepository()
+    private let exclusionRepository = ExclusionRepository()
 
     private var bindStore = Set<AnyCancellable>()
 
@@ -41,8 +42,11 @@ final class PreferencesSplitViewController: IKSplitViewController {
     override func viewWillAppear() {
         super.viewWillAppear()
         Task {
-            async let _ = repository.refreshData()
-            async let _ = viewModel.fetchInitialData()
+            async let repositoryRefresh: Void? = try? repository.refreshData()
+            async let exclusionRefresh: Void? = try? exclusionRepository.refreshData()
+            async let initialDataFetch: Void = viewModel.fetchInitialData()
+
+            _ = await (repositoryRefresh, exclusionRefresh, initialDataFetch)
         }
     }
 
@@ -85,15 +89,33 @@ final class PreferencesSplitViewController: IKSplitViewController {
         let contentViewController: NSViewController
         switch path.details.last {
         case .general:
-            contentViewController = GeneralPreferencesViewController(repository: repository)
+            contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         case .accounts:
             contentViewController = AccountsPreferencesViewController(viewModel: viewModel)
         case .advanced:
             contentViewController = AdvancedPreferencesViewController()
+        case .network:
+            contentViewController = AdvancedPreferencesNetworkViewController(repository: repository)
         case .syncedKDrive(let drive):
             contentViewController = SyncedKDrivePreferencesViewController(drive: drive)
+        case .debug:
+            contentViewController = AdvancedPreferencesDebugViewController(repository: repository)
+        case .dataManagement:
+            contentViewController = DataManagementPreferencesViewController()
+        case .dataManagementDetail(let dataManagementItem):
+            contentViewController = DataManagementPreferencesDetailViewController(
+                dataManagementItem: dataManagementItem,
+                repository: repository
+            )
+        case .synchroRules:
+            contentViewController = SynchroRulesPreferencesViewController()
+        case .synchroRulesDetail(let synchroRulesItem):
+            contentViewController = SynchroRulesPreferencesDetailViewController(
+                synchroRulesItem: synchroRulesItem,
+                exclusionRepository: exclusionRepository
+            )
         default:
-            contentViewController = GeneralPreferencesViewController(repository: repository)
+            contentViewController = GeneralPreferencesViewController(repository: repository, viewModel: viewModel)
         }
 
         switchContentViewController(destination: contentViewController)

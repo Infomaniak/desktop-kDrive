@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -36,9 +36,21 @@ final class DriveSelectionViewModel: ObservableObject {
     private var bindStore = Set<AnyCancellable>()
 
     @Published private(set) var isLoading = false
+    @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
 
     @Published private(set) var availableDrives = [UIAvailableDrive]()
-    @Published private(set) var selectedDrives = Set<UIAvailableDrive>()
+    var synchroConfigurations = [UIAvailableDrive.ID: SynchroConfiguration]()
+
+    var selectedSynchroConfigurations: [SynchroConfiguration] {
+        return synchroConfigurations
+            .filter { indexedSynchroConfiguration in
+                selectedDrives.contains { $0.id == indexedSynchroConfiguration.key }
+            }
+            .map { $0.value }
+            .sorted {
+                $0.drive.name.localizedCaseInsensitiveCompare($1.drive.name) == .orderedAscending
+            }
+    }
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
@@ -48,8 +60,11 @@ final class DriveSelectionViewModel: ObservableObject {
     private func observeAvailableDrives() {
         coherentCacheObservable.usersPublisher.allAvailableDrivesPublisher()
             .map { $0.map { UIAvailableDrive(availableDrive: $0.availableDrive) } }
-            .receiveOnMain(store: &bindStore) { [weak self] availableDrive in
-                self?.availableDrives = availableDrive
+            .receiveOnMain(store: &bindStore) { [weak self] availableDrives in
+                self?.availableDrives = availableDrives.sorted {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+                self?.generateConfigurations(for: availableDrives)
             }
     }
 
@@ -80,29 +95,41 @@ final class DriveSelectionViewModel: ObservableObject {
                 let syncCandidates: [NewSyncCandidate] = try await selectedDrives.concurrentCompactMap { selectedDrive in
                     guard let uiAvailableDrive = await self.availableDrives.first(where: { $0.id == selectedDrive.id }),
                           let availableDrive = await self.coherentCache.getAvailableDrive(driveDb: Int32(uiAvailableDrive.id))
-                    else {
-                        return nil
-                    }
+                    else { return nil }
 
                     let syncOrigin = SyncOrigin.availableDrive(availableDrive)
-                    let localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin)
+                    let synchroConfiguration = await self.synchroConfigurations[selectedDrive.id]
 
-                    let newSyncCandidate = NewSyncCandidate(
+                    let localFolder: URL
+                    if let setupSynchroConfigurationURL = synchroConfiguration?.localFolder.url {
+                        localFolder = setupSynchroConfigurationURL
+                    } else {
+                        localFolder = try await self.syncCreator.preferredLocalPath(for: syncOrigin.drive.name)
+                    }
+
+                    return NewSyncCandidate(
                         origin: syncOrigin,
                         remoteFolder: .kDriveRoot,
                         localFolder: localFolder,
-                        blackList: []
+                        blackList: synchroConfiguration?.blackList ?? []
                     )
-
-                    return newSyncCandidate
                 }
 
                 flowCoordinator.synchronizations = syncCandidates
-                await flowCoordinator.navigateToNextStep()
+                await flowCoordinator.navigateToNextStepOrFinish()
             } catch {
                 // TODO: Handle error
                 isLoading = false
             }
+        }
+    }
+
+    private func generateConfigurations(for drives: [UIAvailableDrive]) {
+        for drive in drives {
+            guard synchroConfigurations[drive.id] == nil else { continue }
+
+            let configuration = SynchroConfiguration(drive: drive, blackList: [])
+            synchroConfigurations[drive.id] = configuration
         }
     }
 }

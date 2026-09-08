@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ static const int boxVBMargin = 40;
 
 Q_LOGGING_CATEGORY(lcLoginDialog, "gui.logindialog", QtInfoMsg)
 
-LoginDialog::LoginDialog(int userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
+LoginDialog::LoginDialog(const UserDbId userDbId, std::shared_ptr<ClientGui> gui, QWidget *parent) :
     CustomDialog(false, parent),
     _userDbId(userDbId),
     _gui(gui),

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,13 @@
 
 namespace KDC {
 
+namespace {
+class LateCallbackJob final : public SyncJob {
+    public:
+        ExitInfo runJob() override { return ExitCode::Ok; }
+};
+} // namespace
+
 void TestExecutorWorker::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
@@ -69,6 +76,8 @@ void TestExecutorWorker::setUp() {
     (void) ParmsDb::instance()->insertDrive(drive);
 
     _sync = Sync(1, drive.dbId(), localPathStr, "", testVariables.remotePath);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
+    _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
@@ -219,7 +228,7 @@ SyncOpPtr TestExecutorWorker::generateSyncOperationWithNestedNodes(const DbNodeI
 class ExecutorWorkerMock : public ExecutorWorker {
     public:
         ExecutorWorkerMock(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-            ExecutorWorker(syncPal, name, shortName) {};
+            ExecutorWorker(syncPal, name, shortName){};
 
         using ArgsMap = std::map<std::shared_ptr<Node>, std::shared_ptr<Node>>;
         void setCorrespondingNodeInOtherTree(ArgsMap nodeMap) { _correspondingNodeInOtherTree = nodeMap; };
@@ -254,7 +263,6 @@ void TestExecutorWorker::testIsValidDestination() {
         CPPUNIT_ASSERT(_executorWorker->isValidDestination(op));
     }
 
-
     const auto executorWorkerMock = std::shared_ptr<ExecutorWorkerMock>(new ExecutorWorkerMock(_syncPal, "Executor", "EXEC"));
     // False if the item created on the local replica is not at the root of the synchronisation folder and has no
     // corresponding parent node.
@@ -278,6 +286,24 @@ void TestExecutorWorker::testIsValidDestination() {
         executorWorkerMock->setCorrespondingNodeInOtherTree(
                 {{op->affectedNode()->parentNode(), correspondingParentCommonDocsNode}});
         CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+    // False if a file is created at root level on the local replica and the sync is an advanced sync with Common documents as
+    // target remote folder.
+    {
+        _syncPal->_syncInfo.targetPath = Utility::commonDocumentsFolderPath();
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), root}});
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+    // True if a directory is created at root level on the local replica and the sync is an advanced sync with Common documents as
+    // target remote folder.
+    {
+        _syncPal->_syncInfo.targetPath = Utility::commonDocumentsFolderPath();
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_directory"), OperationType::Create, NodeType::Directory);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), root}});
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(executorWorkerMock->isValidDestination(op));
     }
 
     // True if the item created on the local replica is a directory and has Common Documents as corresponding parent node.
@@ -306,6 +332,25 @@ void TestExecutorWorker::testIsValidDestination() {
         SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_dir"), OperationType::Create, NodeType::Directory);
         op->setTargetSide(ReplicaSide::Remote);
         executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), correspondingParentSharedNode}});
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+
+    // False if a file is created at root level on the local replica and the sync is an advanced sync with Shared as target
+    // remote folder.
+    {
+        _syncPal->_syncInfo.targetPath = Utility::sharedFolderPath();
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_file.txt"), OperationType::Create, NodeType::File);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), root}});
+        op->setTargetSide(ReplicaSide::Remote);
+        CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
+    }
+    // False if a directory is created at root level on the local replica and the sync is an advanced sync with Shared as target
+    // remote folder.
+    {
+        _syncPal->_syncInfo.targetPath = Utility::sharedFolderPath();
+        SyncOpPtr op = generateSyncOperationWithNestedNodes(1, Str("test_directory"), OperationType::Create, NodeType::Directory);
+        executorWorkerMock->setCorrespondingNodeInOtherTree({{op->affectedNode()->parentNode(), root}});
+        op->setTargetSide(ReplicaSide::Remote);
         CPPUNIT_ASSERT(!executorWorkerMock->isValidDestination(op));
     }
 }
@@ -360,6 +405,23 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t2.join();
     t3.join();
     t4.join(); // Wait for all threads to finish.
+}
+
+void TestExecutorWorker::testLateJobCallbacksAfterStop() {
+    const auto job = std::make_shared<LateCallbackJob>();
+    _executorWorker->setJobCallbacks(job);
+    job->setMainCallback([]([[maybe_unused]] const UniqueId jobId) {});
+
+    const std::weak_ptr<ExecutorWorker> weakExecutor = _executorWorker;
+    _executorWorker.reset();
+    _syncPal->clearProgressInfo();
+
+    CPPUNIT_ASSERT(weakExecutor.expired());
+    CPPUNIT_ASSERT(!_syncPal->setProgress(SyncPath("late-callback"), 1));
+
+    // Both callbacks used to retain raw pointers into state released by SyncPal::stop().
+    job->setProgress(1);
+    CPPUNIT_ASSERT(job->runSynchronously());
 }
 
 void TestExecutorWorker::testPropagateConflictToDbAndTree() {

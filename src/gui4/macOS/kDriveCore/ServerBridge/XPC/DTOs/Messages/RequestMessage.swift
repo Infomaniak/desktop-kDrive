@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 import InfomaniakDI
 
@@ -25,7 +26,7 @@ public struct RequestMessage<Body: Codable>: Codable {
     public let body: Body
 
     public init(num: RequestNum, body: Body) async {
-        /// This mimic the server using an auto-increment ids to debug async comms.
+        // This mimics the server using an auto-increment IDs to debug async comms.
         @InjectService var requestIDGenerator: AutoIncrementIDGenerator
         id = await requestIDGenerator.nextID
         self.num = num

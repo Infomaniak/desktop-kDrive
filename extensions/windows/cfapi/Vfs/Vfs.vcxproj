@@ -127,7 +127,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;VFS_EXPORTS;_WINDOWS;_USRDLL;KDC_AUMID=L"$(KDC_VIRTUAL_AUMID)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;VFS_EXPORTS;_WINDOWS;_USRDLL;KDC_AUMID=L"$(KDC_DEBUG_AUMID)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -172,7 +172,7 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(KDC_BUILD_PROJECT_DIR)\."</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;VFS_EXPORTS;_WINDOWS;_USRDLL;KDC_AUMID=L"$(KDC_PHYSICAL_AUMID)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;VFS_EXPORTS;_WINDOWS;_USRDLL;KDC_AUMID=L"$(KDC_RELEASE_AUMID)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

@@ -1,3 +1,21 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +28,8 @@ namespace Infomaniak.kDrive.CustomControls;
 
 public sealed partial class SyncStartPauseButton : UserControl
 {
+    private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
     private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     public AppModel ViewModel
     {
@@ -20,7 +40,6 @@ public sealed partial class SyncStartPauseButton : UserControl
     {
         InitializeComponent();
     }
-
     private async void StartPauseButton_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel?.SelectedSync is not null && (ViewModel.SelectedSync.SyncStatus == SyncStatus.Running || ViewModel.SelectedSync.SyncStatus == SyncStatus.Idle))
@@ -31,6 +50,7 @@ public sealed partial class SyncStartPauseButton : UserControl
                 Logger.Log(Logger.Level.Error, "Failed to pause sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.StartPauseButton, Analytics.Keys.EventName.PauseSync);
         }
         else if (ViewModel?.SelectedSync is not null)
         {
@@ -40,6 +60,7 @@ public sealed partial class SyncStartPauseButton : UserControl
                 Logger.Log(Logger.Level.Error, "Failed to start sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.StartPauseButton, Analytics.Keys.EventName.StartSync);
         }
     }
 }

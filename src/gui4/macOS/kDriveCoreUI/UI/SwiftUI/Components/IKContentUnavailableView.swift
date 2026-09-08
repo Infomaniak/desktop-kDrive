@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -32,10 +32,10 @@ public struct IKContentUnavailableView: View {
 
     let image: Image
     let title: String
-    let subtitle: String
+    let subtitle: String?
     let action: IKContentUnavailableView.Action?
 
-    public init(image: Image, title: String, subtitle: String, action: IKContentUnavailableView.Action? = nil) {
+    public init(image: Image, title: String, subtitle: String? = nil, action: IKContentUnavailableView.Action? = nil) {
         self.image = image
         self.title = title
         self.subtitle = subtitle
@@ -54,9 +54,12 @@ public struct IKContentUnavailableView: View {
                     .font(.Tokens.title3)
                     .foregroundStyle(ColorToken.Text.primary.asColor)
 
-                Text(subtitle)
-                    .font(.Tokens.body)
-                    .foregroundStyle(ColorToken.Text.primary.asColor)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.Tokens.body)
+                        .foregroundStyle(ColorToken.Text.primary.asColor)
+                        .fixedSize()
+                }
 
                 if let action {
                     Button(action.title, action: action.action)
@@ -72,7 +75,7 @@ public struct IKContentUnavailableView: View {
 
 #Preview("No Button") {
     IKContentUnavailableView(
-        image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+        image: KDriveResources.mountainsTreesSun.swiftUIImage,
         title: "Nothing to see here",
         subtitle: "This is just a description"
     )
@@ -80,7 +83,7 @@ public struct IKContentUnavailableView: View {
 
 #Preview("With Button") {
     IKContentUnavailableView(
-        image: KDriveResources.mountainsTreesSunLight.swiftUIImage,
+        image: KDriveResources.mountainsTreesSun.swiftUIImage,
         title: "Nothing to see here",
         subtitle: "This is just a description",
         action: .init(title: "Click Here") {}

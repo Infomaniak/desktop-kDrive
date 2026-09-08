@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.Types;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
 
@@ -24,13 +26,13 @@ namespace Infomaniak.kDrive.Pages
 {
     public sealed partial class AsleepErrorPage : SpecialErroBasePage
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public AsleepErrorPage() : base([SyncErrorStates.Asleep])
         {
             Logger.Log(Logger.Level.Info, "Navigated to AsleepErrorPage - Initializing AsleepErrorPage components");
             InitializeComponent();
             Logger.Log(Logger.Level.Debug, "AsleepErrorPage components initialized");
         }
-
         private async void PrimaryButton_Click(object sender, RoutedEventArgs e)
         {
             Logger.Log(Logger.Level.Info, "Primary button clicked - Opening drive home page");

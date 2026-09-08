@@ -1,12 +1,28 @@
-using Microsoft.UI.Dispatching;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Svg;
 using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,15 +32,15 @@ namespace Infomaniak.kDrive.CustomControls
     {
         private bool _isLoaded;
         private CancellationTokenSource? _refreshCts;
+        private long? _foregroundColorToken;
+        private SolidColorBrush? _foregroundColorBrush;
+        private List<KeyValuePair<DependencyProperty, long>> _subscriptionTokens = new List<KeyValuePair<DependencyProperty, long>>();
 
         public SvgIcon()
         {
             // Register property change callbacks
             Foreground = null;
-            RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged);
-            RegisterPropertyChangedCallback(WidthProperty, OnDependencyPropertyChanged);
-            RegisterPropertyChangedCallback(HeightProperty, OnDependencyPropertyChanged);
-
+           
             // Track Loaded state
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
@@ -54,7 +70,17 @@ namespace Infomaniak.kDrive.CustomControls
                 typeof(SvgIcon),
                 new PropertyMetadata(null, OnUriChanged));
 
-
+        public string? ResourceKey
+        {
+            get => (string?)GetValue(ResourceKeyProperty);
+            set => SetValue(ResourceKeyProperty, value);
+        }
+        public static readonly DependencyProperty ResourceKeyProperty =
+            DependencyProperty.Register(
+                nameof(ResourceKey),
+                typeof(string),
+                typeof(SvgIcon),
+                new PropertyMetadata(null, OnResourceNameChanged));
 
         public bool IsIconEnabled
         {
@@ -73,6 +99,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (d is SvgIcon icon && icon._isLoaded)
                 icon.ScheduleRefresh();
         }
+
+        private static void OnResourceNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is SvgIcon icon && icon._isLoaded)
+                icon.ScheduleRefresh();
+        }
+
         private static void OnIconIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgIcon icon && icon._isLoaded)
@@ -81,13 +114,90 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(ForegroundProperty, RegisterPropertyChangedCallback(ForegroundProperty, OnForegroundChanged)));
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(WidthProperty, RegisterPropertyChangedCallback(WidthProperty, OnDependencyPropertyChanged)));
+            _subscriptionTokens.Add(new KeyValuePair<DependencyProperty, long>(HeightProperty, RegisterPropertyChangedCallback(HeightProperty, OnDependencyPropertyChanged)));
+
+            HookForegroundBrush();
             _isLoaded = true;
             ScheduleRefresh();
+
+            // Subscribe to theme and DPI changes
+            ActualThemeChanged += OnThemeChanged;
+            Utility.DpiHelper.DpiChanged += OnDpiChanged;
         }
+
+        private void OnForegroundChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (dp == ForegroundProperty)
+            {
+                HookForegroundBrush();
+                if (_isLoaded)
+                    ScheduleRefresh();
+            }
+        }
+
+        private void HookForegroundBrush()
+        {
+            if (_foregroundColorToken.HasValue)
+            {
+                if (_foregroundColorBrush is SolidColorBrush oldBrush)
+                {
+                    oldBrush.UnregisterPropertyChangedCallback(
+                        SolidColorBrush.ColorProperty,
+                        _foregroundColorToken.Value);
+                }
+                
+                _foregroundColorBrush = null;
+                _foregroundColorToken = null;
+            }
+
+            if (Foreground is SolidColorBrush brush)
+            {
+                _foregroundColorBrush = brush;
+                _foregroundColorToken =
+                    brush.RegisterPropertyChangedCallback(
+                        SolidColorBrush.ColorProperty,
+                        OnForegroundColorChanged);
+            }
+        }
+        private void OnForegroundColorChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (_isLoaded)
+                ScheduleRefresh();
+        }
+
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             _isLoaded = false;
+            ActualThemeChanged -= OnThemeChanged;
+            Utility.DpiHelper.DpiChanged -= OnDpiChanged;
+
+            // Unregister property change callbacks
+            foreach (var token in _subscriptionTokens)
+            {
+                UnregisterPropertyChangedCallback(token.Key, token.Value);
+            }
+            if (_foregroundColorToken.HasValue && Foreground is SolidColorBrush brush)
+            {
+                brush.UnregisterPropertyChangedCallback(
+                    SolidColorBrush.ColorProperty,
+                    _foregroundColorToken.Value);
+            }
+            _subscriptionTokens.Clear();
+        }
+
+        private void OnThemeChanged(FrameworkElement sender, object args)
+        {
+            if (_isLoaded)
+                ScheduleRefresh();
+        }
+
+        private void OnDpiChanged(object? sender, double newScale)
+        {
+            if (_isLoaded)
+                DispatcherQueue?.TryEnqueue(() => ScheduleRefresh());
         }
 
         private void OnDependencyPropertyChanged(DependencyObject sender, DependencyProperty dp)
@@ -98,7 +208,54 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void ScheduleRefresh()
         {
-            if (UriString != UriSource?.ToString())
+            // If ResourceKey is set, resolve it from application resources
+            if (!string.IsNullOrWhiteSpace(ResourceKey))
+            {
+                if (!Application.Current.Resources.TryGetValue(ResourceKey, out var resource))
+                {
+                    Logger.Log(Logger.Level.Warning, $"Resource not found: {ResourceKey}");
+                    if (UriSource is not null)
+                    {
+                        UriSource = null;
+                        return; // UriSource changed will trigger Refresh
+                    }
+                }
+
+
+                string? resourcePath = resource?.ToString();
+                if (!string.IsNullOrWhiteSpace(resourcePath))
+                {
+                    try
+                    {
+                        var newUri = new Uri(resourcePath);
+                        // Only update if the URI actually changed to prevent recursion
+                        if (UriSource?.ToString() != newUri.ToString())
+                        {
+                            UriSource = newUri;
+                            return; // UriSource changed will trigger Refresh
+                        }
+                    }
+                    catch
+                    {
+                        Logger.Log(Logger.Level.Error, $"Failed to create URI from resource: {ResourceKey} -> {resourcePath}");
+                        if (UriSource is not null)
+                        {
+                            UriSource = null;
+                            return; // UriSource changed will trigger Refresh
+                        }
+                    }
+                }
+                else
+                {
+                    if (UriSource is not null)
+                    {
+                        UriSource = null;
+                        return; // UriSource changed will trigger Refresh
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(UriString) && UriString != UriSource?.ToString())
             {
                 try
                 {
@@ -110,28 +267,8 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 return; // UriSource changed will trigger Refresh
             }
-            // Cancel any previous refresh
-            _refreshCts?.Cancel();
-            _refreshCts = new CancellationTokenSource();
-            var token = _refreshCts.Token;
 
-            // Enqueue on UI dispatcher
-            DispatcherQueue.TryEnqueue(async () =>
-            {
-                try
-                {
-                    await RefreshSource(token);
-                }
-                catch (OperationCanceledException)
-                {
-                    Logger.Log(Logger.Level.Extended, $"SvgIcon refresh canceled");
-
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(Logger.Level.Error, $"SvgIcon refresh failed: {ex.Message}");
-                }
-            });
+            _refreshCts = SvgHelper.ScheduleOnDispatcher(_refreshCts, DispatcherQueue, RefreshSource, "SvgIcon");
         }
 
         private async Task RefreshSource(CancellationToken token)
@@ -142,31 +279,18 @@ namespace Infomaniak.kDrive.CustomControls
                 if (UriSource is null)
                     return;
 
-                // Resolve ms-appx URIs
-                var fullUri = ResolveUri(UriSource);
-                if (!File.Exists(fullUri.LocalPath))
+                var foreground = IsIconEnabled ? Foreground : ResolveDisabledForeground();
+                var result = SvgHelper.TryLoad(UriSource, foreground, token);
+                if (result is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"SVG file not found: {fullUri.LocalPath}");
                     TryFallback();
                     return;
                 }
 
-                token.ThrowIfCancellationRequested();
-
-                // Load SVG
-                var svgDoc = SvgDocument.Open(fullUri.LocalPath);
-                ApplyForeground(svgDoc);
-
-                token.ThrowIfCancellationRequested();
-
-                using var memoryStream = new MemoryStream();
-                svgDoc.Write(memoryStream);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                token.ThrowIfCancellationRequested();
+                using var memoryStream = result.Value.Stream;
 
                 // Compute raster size for current DPI
-                var (pixelWidth, pixelHeight) = ComputeRasterSize(svgDoc);
+                var (pixelWidth, pixelHeight) = ComputeRasterSize(result.Value.Doc);
 
                 var svgImage = new SvgImageSource
                 {
@@ -189,32 +313,6 @@ namespace Infomaniak.kDrive.CustomControls
                 TryFallback();
             }
         }
-        private static Uri ResolveUri(Uri source)
-        {
-            if (source.Scheme != "ms-appx")
-                return source;
-
-            var path = source.LocalPath.TrimStart('/');
-            var absPath = Path.Combine(AppContext.BaseDirectory, path.Replace('/', Path.DirectorySeparatorChar));
-            return new Uri(absPath);
-        }
-
-        private void ApplyForeground(SvgDocument svgDoc)
-        {
-            var foreground = IsIconEnabled ? Foreground : ResolveDisabledForeground();
-            if (foreground is SolidColorBrush solid)
-            {
-                var color = System.Drawing.Color.FromArgb(solid.Color.A, solid.Color.R, solid.Color.G, solid.Color.B);
-                foreach (var elem in svgDoc.Descendants().OfType<SvgVisualElement>())
-                {
-                    if (elem.Fill != null && elem.Fill != SvgPaintServer.None)
-                        elem.Fill = new SvgColourServer(color);
-                    if (elem.Stroke != null && elem.Stroke != SvgPaintServer.None)
-                        elem.Stroke = new SvgColourServer(color);
-                }
-            }
-        }
-
         private SolidColorBrush? ResolveDisabledForeground()
         {
             const string key = "TextFillColorDisabledBrush";
@@ -225,8 +323,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private (double Width, double Height) ComputeRasterSize(SvgDocument svgDoc)
         {
-            var scale = Utility.DpiHelper.GetScaleForWindow(
-                WinRT.Interop.WindowNative.GetWindowHandle((Application.Current as App)?.CurrentWindow));
+            var scale = this.XamlRoot.RasterizationScale;
 
             var ratio = svgDoc.Height.Value / svgDoc.Width.Value;
             if (double.IsNaN(ratio) || double.IsInfinity(ratio))

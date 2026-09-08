@@ -25,7 +25,7 @@ DriveUserInfoCache &DriveUserInfoCache::instance() {
     return cache;
 }
 
-std::optional<DriveUserBasicInfo> DriveUserInfoCache::get(const int32_t driveId, const int32_t userId) const {
+std::optional<DriveUserBasicInfo> DriveUserInfoCache::get(const DriveId driveId, const UserId userId) const {
     const std::scoped_lock lock(_mutex);
 
     const CacheKey key{driveId, userId};
@@ -42,7 +42,7 @@ std::optional<DriveUserBasicInfo> DriveUserInfoCache::get(const int32_t driveId,
     return it->second.info;
 }
 
-void DriveUserInfoCache::put(const int32_t driveId, const int32_t userId, const DriveUserBasicInfo &info) {
+void DriveUserInfoCache::put(const DriveId driveId, const UserId userId, const DriveUserBasicInfo &info) {
     const std::scoped_lock lock(_mutex);
 
     const CacheKey key{driveId, userId};

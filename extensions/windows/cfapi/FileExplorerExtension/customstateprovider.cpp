@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ using namespace winrt::Windows::Storage::Provider;
 
 namespace winrt::FileExplorerExtension::implementation {
 Windows::Foundation::Collections::IIterable<Windows::Storage::Provider::StorageProviderItemProperty>
-CustomStateProvider::GetItemProperties(_In_ hstring const& itemPath) {
+CustomStateProvider::GetItemProperties(_In_ hstring const &itemPath) {
     // TRACE_DEBUG(L"CustomStateProvider::GetItemProperties");
 
     std::hash<std::wstring> hashFunc;

@@ -18,31 +18,41 @@
 
 #include "utility.h"
 
-#include <QStandardPaths>
-
 #include <filesystem>
 #include <fstream>
+#include <vector>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/vfs.h>
 #include <pwd.h>
 
 #include "utility/types.h"
 
-#include <log4cplus/logger.h>
-#include <log4cplus/loggingmacros.h>
-
-#include <Poco/File.h>
-#include <Poco/Exception.h>
+#include <config.h>
 
 namespace KDC {
 
-SyncPath CommonUtility::getGenericAppSupportDir() {
-    const char *homeDir;
-    if ((homeDir = getenv("HOME")) == NULL) {
-        homeDir = getpwuid(getuid())->pw_dir;
-    }
-    SyncPath homePath(homeDir);
+static std::string homeDirectoryStr() {
+    if (auto homeDir = CommonUtility::envVarValue("HOME"); !homeDir.empty()) return homeDir;
 
+    // The "HOME" environment variable might not be set. In this case, fallback on a more robust method by using getpwuid_r. The
+    // "passwd" struct retrieved contains information such as username, user id, encrypted password or  home directory.
+    struct passwd pwd;
+    struct passwd *result = nullptr;
+    auto bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1) bufsize = 16384;
+    if (std::vector<char> buf(static_cast<size_t>(bufsize));
+        getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0 && result != nullptr) {
+        return std::string(result->pw_dir);
+    }
+    return {};
+}
+
+SyncPath CommonUtility::getGenericAppSupportDir() {
+    const auto homeDir = homeDirectoryStr();
+    if (homeDir.empty()) return {};
+
+    SyncPath homePath(homeDir);
     std::string appSupportName(".config");
     SyncPath appSupportPath(homePath / appSupportName);
 
@@ -86,7 +96,7 @@ bool CommonUtility::hasDarkSystray() {
  *  LOGO=ubuntu-logo
  * @return The value associated with the key
  */
-std::string extractOSInfo(const std::string &key) {
+std::string extractOsInfo(const std::string &key) {
     std::string value;
     // Try to get version from /etc/os-release (standard on modern Linux distributions)
     if (std::ifstream osRelease("/etc/os-release"); osRelease.is_open()) {
@@ -109,11 +119,109 @@ std::string extractOSInfo(const std::string &key) {
 }
 
 std::string CommonUtility::osVersion() {
-    return extractOSInfo("VERSION_ID");
+    static const std::string osVersion = extractOsInfo("VERSION_ID");
+    return osVersion;
 }
 
 std::string CommonUtility::distributionName() {
-    return extractOSInfo("NAME");
+    static const std::string distributionName = extractOsInfo("NAME");
+    return distributionName;
+}
+
+namespace {
+#ifndef EXFAT_SUPER_MAGIC
+#define EXFAT_SUPER_MAGIC 0x2011BAB0
+#endif
+
+constexpr auto exFat = "exFAT";
+constexpr auto ext234 = "EXT2/3/4";
+
+std::string formatFsName(const std::string &prettyName, const __fsword_t fType) {
+    std::stringstream stream;
+    stream << std::hex << fType;
+    return prettyName + " | 0x" + stream.str();
+}
+} // namespace
+
+bool CommonUtility::isEXT234(const SyncPath &targetPath) {
+    return contains(getRootFsType(targetPath), ext234);
+}
+
+std::string CommonUtility::exFAT() {
+    return formatFsName(exFat, EXFAT_SUPER_MAGIC);
+}
+
+std::string CommonUtility::fileSystemName(const SyncPath &targetPath) {
+    struct statfs stat;
+
+    if (statfs(targetPath.root_path().native().c_str(), &stat) == 0) {
+        switch (stat.f_type) {
+            case EXFAT_SUPER_MAGIC:
+                return exFAT();
+            case 0x137du:
+                return formatFsName("EXT(1)", stat.f_type);
+            case 0xef51u:
+                return formatFsName("EXT2", stat.f_type);
+            case 0xef53u: // EXT_SUPER_MAGIC
+                return formatFsName(ext234, stat.f_type);
+            case 0xbad1deau:
+            case 0xa501fcf5u:
+            case 0x58465342u:
+                return formatFsName("XFS", stat.f_type);
+            case 0x9123683eu:
+            case 0x73727279u:
+                return formatFsName("BTRFS", stat.f_type);
+            case 0xf15fu:
+                return formatFsName("ECRYPTFS", stat.f_type);
+            case 0x4244u:
+                return formatFsName("HFS", stat.f_type);
+            case 0x5346544eu:
+                return formatFsName("NTFS", stat.f_type);
+            case 0x858458f6u:
+                return formatFsName("RAMFS", stat.f_type);
+            default:
+                return formatFsName("Unknown-see corresponding entry at https://man7.org/linux/man-pages/man2/statfs.2.html",
+                                    stat.f_type);
+        }
+    }
+
+    return "UNIDENTIFIED";
+}
+
+ExitInfo CommonUtility::logDirectoryPath(SyncPath &directoryPath) noexcept {
+    // XDG Base Directory Specification: use $XDG_STATE_HOME if it is absolute,
+    // otherwise fallback to ~/.local/state
+    const auto xdgStateHome = envVarValue("XDG_STATE_HOME");
+    const auto xdgStateHomePath = SyncPath(xdgStateHome);
+    if (!xdgStateHome.empty() && xdgStateHomePath.is_absolute()) {
+        directoryPath = xdgStateHomePath;
+    } else {
+        const auto homeDir = homeDirectoryStr();
+        if (homeDir.empty()) return {ExitCode::SystemError, ExitCause::NotFound};
+        directoryPath = SyncPath(homeDir) / ".local" / "state";
+    }
+
+    directoryPath /= Str2SyncName(APPLICATION_NAME);
+    directoryPath /= "logs";
+
+    std::error_code ec;
+    const bool directoryPathExists = std::filesystem::exists(directoryPath, ec);
+    if (ec) {
+        return stdErrorToExitInfo(ec);
+    }
+
+    if (directoryPathExists) {
+        if (!std::filesystem::is_directory(directoryPath, ec)) {
+            if (ec) {
+                return stdErrorToExitInfo(ec);
+            }
+            return stdErrorToExitInfo(std::make_error_code(std::errc::not_a_directory));
+        }
+    } else if (!std::filesystem::create_directories(directoryPath, ec)) {
+        return stdErrorToExitInfo(ec);
+    }
+
+    return ExitCode::Ok;
 }
 
 } // namespace KDC

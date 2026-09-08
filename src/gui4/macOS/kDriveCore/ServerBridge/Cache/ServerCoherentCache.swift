@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 import Combine
+import CppInterop
 import Foundation
 import OrderedCollections
 
@@ -370,7 +371,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
         synchro.errors[error.dbId] = error
         if synchro.latestError == nil {
-            synchro.latestError = SynchroError(errorInfo: error)
+            synchro.latestError = BlockingSynchroError(errorInfo: error)
         }
 
         try updateSynchro(synchro)
@@ -383,6 +384,25 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
         serverErrors[error.dbId] = error
         notifyServerErrorsUpdate()
+    }
+
+    public func updateErrors(_ errors: [ErrorInfo]) async throws {
+        serverErrors.removeAll()
+
+        for error in errors {
+            if error.level == .Server {
+                try await addOrUpdateServerError(error)
+            } else {
+                guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {
+                    continue
+                }
+                synchro.errors[error.dbId] = error
+                if synchro.latestError == nil {
+                    synchro.latestError = BlockingSynchroError(errorInfo: error)
+                }
+                try? updateSynchro(synchro)
+            }
+        }
     }
 
     public func removeError(_ errorDbId: Int32) async throws {
@@ -399,7 +419,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                         }
 
                         if let remainingError = synchro.errors.values.first {
-                            synchro.latestError = SynchroError(errorInfo: remainingError)
+                            synchro.latestError = BlockingSynchroError(errorInfo: remainingError)
                         } else {
                             synchro.latestError = nil
                         }
@@ -460,10 +480,12 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try await AccountJobs().accountInfoList()
         try await DriveJobs().driveInfoList()
         try await SyncJobs().availableSync()
+        try await ErrorJobs().errorInfoList()
     }
 
     public func clearAndRefresh() async throws {
         users = [:]
+        await clearErrors()
         try await refresh()
     }
 }

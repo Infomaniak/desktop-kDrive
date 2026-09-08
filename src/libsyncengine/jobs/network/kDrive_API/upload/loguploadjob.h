@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
 
         ExitInfo runJob() override;
         void abort() override;
-        static void cancelUpload();
+        static bool cancelUpload();
         /*! Returns the estimated size of the log files in bytes.
          * Actual size may be different due to compression.
          * \param size The estimated size of the log files in bytes.

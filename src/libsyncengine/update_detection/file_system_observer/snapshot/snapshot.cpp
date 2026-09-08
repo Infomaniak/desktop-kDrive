@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,13 +66,15 @@ Snapshot::Snapshot(Snapshot const &other) {
     }
 }
 
-NodeId Snapshot::itemId(const SyncPath &path) const {
+ExitInfo Snapshot::getItemId(const SyncPath &path, NodeId &id) const {
     const std::scoped_lock lock(_mutex);
-
+    id = {};
     const auto rootItemIt = _items.find(rootFolderId());
     if (rootItemIt == _items.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Root folder id not found in snapshot");
-        return "";
+        sentry::Handler::captureMessage(sentry::Level::Error, "Root folder id not found in snapshot",
+                                        "Snapshot::getItemId failed because the root node ID was not found in snapshot.");
+        return {ExitCode::DataError, ExitCause::InvalidSnapshot};
     }
 
     auto item = rootItemIt->second;
@@ -93,11 +95,12 @@ NodeId Snapshot::itemId(const SyncPath &path) const {
         }
 
         if (!idFound) {
-            return "";
+            return {ExitCode::DataError, ExitCause::NotFound};
         }
     }
 
-    return item->id();
+    id = item->id();
+    return ExitCode::Ok;
 }
 
 NodeId Snapshot::parentId(const NodeId &itemId) const {
@@ -118,27 +121,27 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) const no
         return false;
     }
 
+    const std::scoped_lock lock(_mutex);
+
     bool ok = true;
     std::deque<std::pair<NodeId, SyncName>> ancestors;
-    {
-        bool parentIsRoot = false;
-        NodeId id = itemId;
-        const std::scoped_lock lock(_mutex);
-        while (!parentIsRoot) {
-            if (const auto item = findItem(id); item) {
-                if (!item->path().empty()) {
-                    path = item->path();
-                    break;
-                }
-                ancestors.push_back({item->id(), item->name()});
-                id = item->parentId();
-                parentIsRoot = id == _rootFolderId;
-                continue;
+    bool parentIsRoot = false;
+    NodeId id = itemId;
+    while (!parentIsRoot) {
+        if (const auto item = findItem(id); item) {
+            if (!item->path().empty()) {
+                path = item->path();
+                break;
             }
-            ok = false;
-            break;
+            (void) ancestors.emplace_back(item->id(), item->name());
+            id = item->parentId();
+            parentIsRoot = id == _rootFolderId;
+            continue;
         }
+        ok = false;
+        break;
     }
+
 
     // Construct path
     SyncPath tmpParentPath(path);
@@ -231,9 +234,20 @@ bool Snapshot::exists(const NodeId &itemId) const {
     return findItem(itemId) && !isOrphan(itemId);
 }
 
-bool Snapshot::pathExists(const SyncPath &path) const {
+ExitInfo Snapshot::checkIfPathExists(const SyncPath &path, bool &exists) const {
     const std::scoped_lock lock(_mutex);
-    return !itemId(path).empty();
+    exists = false;
+
+    NodeId id;
+    if (const auto exitInfo = getItemId(path, id); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::NotFound) {
+            return ExitCode::Ok;
+        }
+        return exitInfo;
+    }
+
+    exists = !id.empty();
+    return ExitCode::Ok;
 }
 
 bool Snapshot::isLink(const NodeId &itemId) const {

@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 import Combine
+import CppInterop
 import Foundation
 import InfomaniakDI
 import OrderedCollections
@@ -32,6 +33,8 @@ public struct ReplyMock: Codable, Sendable {
 }
 
 public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvider {
+    public var guiConnectionState: XPCConnectionState = .notConnected
+
     public var guiConnectionStatePublisher: AnyPublisher<XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
     @InjectService var signalHandler: XPCSignalHandlerProtocol
@@ -88,6 +91,7 @@ public actor XPCServerMock: XPCGuiProtocol, @preconcurrency XPCConnectionProvide
         let newUser = User(dbId: userDbId,
                            userId: Int32.random(in: 0 ... 1000),
                            name: "Jonh Appleseed",
+                           firstName: "Jonh",
                            email: "jonh.appleseed@apple.com",
                            accounts: [:],
                            availableDrives: [:],

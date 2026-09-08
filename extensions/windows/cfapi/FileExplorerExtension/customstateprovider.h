@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ struct CustomStateProvider : CustomStateProviderT<CustomStateProvider> {
         CustomStateProvider() = default;
 
         Windows::Foundation::Collections::IIterable<Windows::Storage::Provider::StorageProviderItemProperty> GetItemProperties(
-                _In_ hstring const& itemPath);
+                _In_ hstring const &itemPath);
 };
 } // namespace winrt::FileExplorerExtension::implementation
 

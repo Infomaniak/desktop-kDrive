@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,12 +32,12 @@ namespace KDC {
 
 class DriveInfo {
     public:
-        void setDbId(const int driveDbId) { _dbId = driveDbId; }
-        int dbId() const { return _dbId; }
-        void setId(const int driveId) { _id = driveId; }
-        int id() const { return _id; }
-        void setAccountDbId(const int accountDbId) { _accountDbId = accountDbId; }
-        int accountDbId() const { return _accountDbId; }
+        void setDbId(const DriveDbId driveDbId) { _dbId = driveDbId; }
+        DriveDbId dbId() const { return _dbId; }
+        void setId(const DriveId driveId) { _id = driveId; }
+        DriveId id() const { return _id; }
+        void setAccountDbId(const AccountDbId accountDbId) { _accountDbId = accountDbId; }
+        AccountDbId accountDbId() const { return _accountDbId; }
         void setName(const QString &name) { _name = name; }
         const QString &name() const { return _name; }
         void setSize(const int64_t size) { _size = size; }
@@ -58,8 +58,8 @@ class DriveInfo {
         bool accessDenied() const { return _accessDenied; }
         void setAccessDenied(const bool accessDenied) { _accessDenied = accessDenied; }
 
-        [[nodiscard]] bool packIsFree() const { return _packIsFree; }
-        void setPackIsFree(const bool pack_is_free) { _packIsFree = pack_is_free; }
+        [[nodiscard]] const PackInfo &packInfo() const { return _packInfo; }
+        void setPackInfo(const PackInfo &packInfo) { _packInfo = packInfo; }
 
         void toDynamicStruct(Poco::DynamicStruct &dstruct) const;
         void fromDynamicStruct(const Poco::DynamicStruct &dstruct);
@@ -69,13 +69,13 @@ class DriveInfo {
                    lhs.name() == rhs.name() && lhs.size() == rhs.size() && lhs.color() == rhs.color() &&
                    lhs.notifications() == rhs.notifications() && lhs.admin() == rhs.admin() &&
                    lhs.maintenance() == rhs.maintenance() && lhs.locked() == rhs.locked() && lhs.usedSize() == rhs.usedSize() &&
-                   lhs.accessDenied() == rhs.accessDenied();
+                   lhs.accessDenied() == rhs.accessDenied() && lhs.packInfo() == rhs.packInfo();
         }
 
-    protected:
-        int _dbId{0};
-        int _id{0};
-        int _accountDbId{0};
+    private:
+        DriveDbId _dbId{0};
+        DriveId _id{0};
+        AccountDbId _accountDbId{0};
         QString _name;
         int64_t _size{0};
         QColor _color;
@@ -88,7 +88,7 @@ class DriveInfo {
         int64_t _usedSize{0};
         bool _accessDenied{false};
 
-        bool _packIsFree{false};
+        PackInfo _packInfo;
 };
 
 void operator>>(QDataStream &in, DriveInfo &info);

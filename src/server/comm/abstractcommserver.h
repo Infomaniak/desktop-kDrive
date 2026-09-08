@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ class AbstractCommServer {
         virtual bool listen() = 0;
         virtual std::shared_ptr<AbstractCommChannel> nextPendingConnection() = 0;
         virtual std::list<std::shared_ptr<AbstractCommChannel>> connections() = 0;
+        bool hasActiveConnexion() { return !connections().empty(); }
 
         void setNewConnectionCbk(const std::function<void()> &cbk) { _onNewConnectionCbk = cbk; }
         void newConnectionCbk() {

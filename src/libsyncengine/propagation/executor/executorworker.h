@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ class TerminatedJobsQueue : public std::recursive_mutex {
         std::queue<UniqueId> _terminatedJobs;
 };
 
-class ExecutorWorker : public OperationProcessor {
+class ExecutorWorker : public OperationProcessor, public std::enable_shared_from_this<ExecutorWorker> {
     public:
         ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
 
@@ -73,6 +73,8 @@ class ExecutorWorker : public OperationProcessor {
         void execute() override;
 
     private:
+        void setJobCallbacks(const std::shared_ptr<SyncJob> &job);
+        void updateJobProgress(const std::shared_ptr<SyncJob> &job, int progress);
         void initProgressManager();
         void initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem);
 
@@ -91,6 +93,7 @@ class ExecutorWorker : public OperationProcessor {
 
         ExitInfo handleMoveOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
+        ExitInfo getPathFromDb(const std::shared_ptr<Node> node, SyncPath &dbPath);
 
         ExitInfo handleDeleteOp(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
         ExitInfo generateDeleteJob(SyncOpPtr syncOp, bool &ignored, bool &bypassProgressComplete);
@@ -135,7 +138,8 @@ class ExecutorWorker : public OperationProcessor {
 
         bool deleteOpNodes(SyncOpPtr syncOp);
 
-        void setProgressComplete(SyncOpPtr syncOp, SyncFileStatus status, const NodeId &newRemoteNodeId = "");
+        void setProgressComplete(const SyncPath &relativePath, SyncOpPtr syncOp, SyncFileStatus status,
+                                 const NodeId &newRemoteNodeId = "");
 
         static void getNodeIdsFromOp(SyncOpPtr syncOp, NodeId &localNodeId, NodeId &remoteNodeId);
 

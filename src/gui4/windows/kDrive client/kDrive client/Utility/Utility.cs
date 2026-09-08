@@ -1,12 +1,32 @@
-﻿using CommunityToolkit.WinUI;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using CommunityToolkit.WinUI;
 using H.NotifyIcon;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -19,6 +39,33 @@ namespace Infomaniak.kDrive
 {
     public static class Utility
     {
+        public static async Task<T> RunOnUIThread<T>(Func<Task<T>> action)
+        {
+            var dispatcher = AppModel.UIThreadDispatcher;
+
+            if (dispatcher.HasThreadAccess)
+            {
+                return await action().ConfigureAwait(false);
+            }
+
+            TaskCompletionSource<T> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await dispatcher.EnqueueAsync(async () =>
+            {
+                try
+                {
+                    T result = await action().ConfigureAwait(false);
+                    tcs.SetResult(result);
+                }
+                catch (Exception ex)
+                {
+                    tcs.SetException(ex);
+                }
+            }).ConfigureAwait(false);
+
+            return await tcs.Task.ConfigureAwait(false);
+        }
+
         public static async Task RunOnUIThread(Func<Task> action)
         {
             var dispatcher = AppModel.UIThreadDispatcher;
@@ -26,55 +73,22 @@ namespace Infomaniak.kDrive
             if (dispatcher.HasThreadAccess)
             {
                 await action();
+                return;
             }
-            else
+
+            await dispatcher.EnqueueAsync(async () =>
             {
-                TaskCompletionSource tcs = new();
-
-                await dispatcher.EnqueueAsync(async () =>
-                {
-                    try
-                    {
-                        await action();
-                        tcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                });
-
-                await tcs.Task;
-            }
+                await action();
+            });
         }
 
-        public static async Task RunOnUIThread(Action action)
+        public static Task RunOnUIThread(Action action)
         {
-            var dispatcher = AppModel.UIThreadDispatcher;
-
-            if (dispatcher.HasThreadAccess)
+            return RunOnUIThread(() =>
             {
                 action();
-            }
-            else
-            {
-                TaskCompletionSource tcs = new();
-
-                await dispatcher.EnqueueAsync(() =>
-                {
-                    try
-                    {
-                        action();
-                        tcs.SetResult();
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                    }
-                });
-
-                await tcs.Task;
-            }
+                return Task.CompletedTask;
+            });
         }
 
         public static async Task OpenFileAsync(string filePath)
@@ -130,25 +144,138 @@ namespace Infomaniak.kDrive
 
         public static class DpiHelper
         {
+            private const int WM_DPICHANGED = 0x02E0;
+            private const int GWLP_WNDPROC = -4;
+
             [DllImport("User32.dll")]
             private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+            [DllImport("User32.dll")]
+            private static extern IntPtr CallWindowProc(IntPtr lpPrevWndFunc, IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("User32.dll", EntryPoint = "SetWindowLongPtrW")]
+            private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+            [DllImport("User32.dll", EntryPoint = "GetWindowLongPtrW")]
+            private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+            private delegate IntPtr WndProcDelegate(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+            private sealed record class DpiSubclassData(IntPtr OriginalWndProc, WndProcDelegate WndProc, GCHandle WndProcHandle);
+            private static readonly Dictionary<IntPtr, DpiSubclassData> _dpiSubclassDataByHwnd = [];
+            private static readonly object _dpiSubclassLock = new();
+
+            /// <summary>
+            /// Raised when a WM_DPICHANGED message is received, after the window has been resized.
+            /// </summary>
+            public static event EventHandler<double>? DpiChanged;
 
             public static double GetScaleForWindow(IntPtr hWnd)
             {
                 uint dpi = GetDpiForWindow(hWnd);
                 return dpi / 96.0; // 96 DPI = 100%
             }
+
+            /// <summary>
+            /// Subclasses the window to listen for WM_DPICHANGED and automatically re-scale on DPI changes.
+            /// </summary>
+            public static bool RegisterDpiChangeHandler(IntPtr hWnd, AppWindow appWindow, int baseWidth, int baseHeight)
+            {
+                lock (_dpiSubclassLock)
+                {
+                    if (_dpiSubclassDataByHwnd.ContainsKey(hWnd))
+                    {
+                        return false;
+                    }
+
+                    IntPtr originalWndProc = GetWindowLongPtr(hWnd, GWLP_WNDPROC);
+
+                    // Must be stored in a field to prevent garbage collection of the delegate.
+                    WndProcDelegate newWndProc = (hwnd, msg, wParam, lParam) =>
+                    {
+                        if (msg == WM_DPICHANGED)
+                        {
+                            double newScale = (wParam.ToInt32() & 0xFFFF) / 96.0;
+                            int scaledWidth = (int)(baseWidth * newScale);
+                            int scaledHeight = (int)(baseHeight * newScale);
+
+                            if (appWindow.Presenter is OverlappedPresenter p)
+                            {
+                                p.PreferredMinimumWidth = scaledWidth;
+                                p.PreferredMinimumHeight = scaledHeight;
+                            }
+
+                            // The lParam contains a pointer to a RECT with the suggested new window position/size.
+                            var suggestedRect = Marshal.PtrToStructure<RECT>(lParam);
+                            appWindow.MoveAndResize(new RectInt32(
+                                suggestedRect.Left,
+                                suggestedRect.Top,
+                                suggestedRect.Right - suggestedRect.Left,
+                                suggestedRect.Bottom - suggestedRect.Top));
+
+                            DpiChanged?.Invoke(null, newScale);
+
+                            return IntPtr.Zero;
+                        }
+
+                        return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
+                    };
+
+                    // Pin the delegate to prevent GC collection
+                    GCHandle wndProcHandle = GCHandle.Alloc(newWndProc);
+                    _dpiSubclassDataByHwnd[hWnd] = new DpiSubclassData(originalWndProc, newWndProc, wndProcHandle);
+                    SetWindowLongPtr(hWnd, GWLP_WNDPROC, Marshal.GetFunctionPointerForDelegate(newWndProc));
+                }
+
+                return true;
+            }
+
+            public static void UnregisterDpiChangeHandler(IntPtr hWnd)
+            {
+                DpiSubclassData? dpiSubclassData;
+                lock (_dpiSubclassLock)
+                {
+                    if (!_dpiSubclassDataByHwnd.Remove(hWnd, out dpiSubclassData))
+                    {
+                        return;
+                    }
+                }
+
+                SetWindowLongPtr(hWnd, GWLP_WNDPROC, dpiSubclassData.OriginalWndProc);
+                if (dpiSubclassData.WndProcHandle.IsAllocated)
+                {
+                    dpiSubclassData.WndProcHandle.Free();
+                }
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            private struct RECT
+            {
+                public int Left;
+                public int Top;
+                public int Right;
+                public int Bottom;
+            }
         }
-        public static void SetWindowProperties(Window window, int width, int height, bool resizable)
+
+        /// <summary>
+        /// Configures window presenter properties and registers a WM_DPICHANGED listener for automatic DPI scaling.
+        /// </summary>
+        public enum WindowResizeOptions
+        {
+            None,
+            AllowResize = 1,
+            AllowMinimize = 2,
+        }
+        public static void SetWindowProperties(Window window, int width, int height, WindowResizeOptions resizeOptions)
         {
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
             var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
             if (appWindow != null && appWindow.Presenter is OverlappedPresenter presenter)
             {
-                presenter.IsMaximizable = true;
-                presenter.IsMinimizable = true;
-                presenter.IsResizable = resizable;
+                presenter.IsMaximizable = resizeOptions.HasFlag(WindowResizeOptions.AllowResize);
+                presenter.IsMinimizable = resizeOptions.HasFlag(WindowResizeOptions.AllowMinimize);
+                presenter.IsResizable = resizeOptions.HasFlag(WindowResizeOptions.AllowResize);
 
                 // Use the RasterizationScale to scale the desired size
                 double scale = DpiHelper.GetScaleForWindow(hWnd);
@@ -157,6 +284,54 @@ namespace Infomaniak.kDrive
                 int scaledHeight = (int)(height * scale);
                 presenter.PreferredMinimumWidth = scaledWidth;
                 presenter.PreferredMinimumHeight = scaledHeight;
+                appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
+                appWindow.SetIcon("Assets\\kDrive.ico");
+
+                // Subclass the window to automatically handle DPI changes
+                if (DpiHelper.RegisterDpiChangeHandler(hWnd, appWindow, width, height))
+                {
+                    window.Closed += OnWindowClosed;
+                }
+            }
+        }
+
+        private static void OnWindowClosed(object sender, WindowEventArgs args)
+        {
+            var window = sender as Window;
+            if (window is null)
+                return;
+            window.Closed -= OnWindowClosed;
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            DpiHelper.UnregisterDpiChangeHandler(hWnd);
+        }
+
+        public static void CenterWindow(Window window)
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(window);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+
+            if (AppWindow.GetFromWindowId(windowId) is AppWindow appWindow &&
+                DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest) is DisplayArea displayArea)
+            {
+                PointInt32 CenteredPosition = appWindow.Position;
+                CenteredPosition.X = displayArea.WorkArea.X + (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
+                CenteredPosition.Y = displayArea.WorkArea.Y + (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
+                appWindow.Move(CenteredPosition);
+            }
+        }
+
+        public static void SetWindowCurrentSize(Window window, int width, int height)
+        {
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            if (appWindow is not null)
+            {
+                // Use the RasterizationScale to scale the desired size
+                double scale = DpiHelper.GetScaleForWindow(hWnd);
+                int scaledWidth = (int)(width * scale);
+                int scaledHeight = (int)(height * scale);
                 appWindow.Resize(new SizeInt32(scaledWidth, scaledHeight));
             }
         }
@@ -177,26 +352,6 @@ namespace Infomaniak.kDrive
                     return;
                 }
             }
-        }
-
-        public static ContentDialog GetContentDialog(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
-        {
-            ContentDialog dialog = new ContentDialog
-            {
-                XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString($"{translationKeyPreffix}Title"),
-                PrimaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}PrimaryButtonText"),
-                SecondaryButtonText = Localizer.Instance.GetString($"{translationKeyPreffix}SecondaryButtonText"),
-                DefaultButton = defaultButton,
-                Content = Localizer.Instance.GetString($"{translationKeyPreffix}Content")
-            };
-            return dialog;
-        }
-
-        public static async Task<ContentDialogResult> ShowContentDialogAsync(XamlRoot xamlRoot, string translationKeyPreffix, ContentDialogButton defaultButton = ContentDialogButton.Primary)
-        {
-            var result = await GetContentDialog(xamlRoot, translationKeyPreffix, defaultButton).ShowAsync();
-            return result;
         }
 
         public static string? ToBase64String(string? data)
@@ -246,16 +401,28 @@ namespace Infomaniak.kDrive
                 Logger.Log(Logger.Level.Warning, "Cannot bring window to front: Application?.Current?.CurrentWindow is null");
                 return;
             }
-            app.CurrentWindow.Show();
-            app.CurrentWindow.Activate();
-            var hWnd = WindowNative.GetWindowHandle(app.CurrentWindow);
-            if (hWnd == IntPtr.Zero)
-            {
-                Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
-                return;
-            }
+            BringWindowToFront(app.CurrentWindow);
+        }
 
-            SetForegroundWindow(hWnd);
+        public static void BringWindowToFront(Window window)
+        {
+            Logger.Log(Logger.Level.Info, "Bringing current window to front");
+            if (!window.Visible)
+            {
+                window.Activate();
+            }
+            else
+            {
+                var hWnd = WindowNative.GetWindowHandle(window);
+                if (hWnd == IntPtr.Zero)
+                {
+                    Logger.Log(Logger.Level.Warning, "Cannot bring window to front: hWnd is zero");
+                    return;
+                }
+
+                SetForegroundWindow(hWnd);
+            }
+            window.Show();
         }
         public static string ObfuscateEmail(string? email)
         {
@@ -282,27 +449,14 @@ namespace Infomaniak.kDrive
         public static void ShowUnexpectedErrorTeachingTip()
         {
             Logger.Log(Logger.Level.Error, "Showing unexpected error TeachingTip");
-            ShowTeachingTipFromxUid("UnexpectedErrorTeachingTip");
+            App.ServiceProvider.GetRequiredService<IAnalyticsService>().TrackOther(Analytics.Keys.Category.UnexpectedErrorTeachingTip, Analytics.Keys.EventName.Displayed);
+            ShowTeachingTip(Localizer.Instance.GetString("unexpectedErrorTeachingTipTitle"), Localizer.Instance.GetString("unexpectedErrorTeachingTipContent"));
         }
 
         private static TeachingTip? _currentTeachingTip;
         private static DispatcherQueueTimer? _autoCloseTimer;
 
-        /*
-         *  This method shows a TeachingTip with localized content based on the provided translation key prefix.
-         *  The Following keys are expected to be defined in the resource files:
-         *     {translationKeyPreffix}Title
-         *     
-         *  The following keys are optional, but if provided, they will be used to populate the corresponding fields in the TeachingTip:
-         *     {translationKeyPreffix}Subtitle
-         *     {translationKeyPreffix}Content
-         */
-        public static void ShowTeachingTipFromxUid(string translationKeyPreffix)
-        {
-            ShowTeachingTipFromKeys($"{translationKeyPreffix}Title", $"{translationKeyPreffix}Subtitle", $"{translationKeyPreffix}Content");
-        }
-
-        public static void ShowTeachingTipFromKeys(string titleKey, string? subtitleKey = null, string? contentKey = null, TimeSpan? maxDuration = null /* default is 5s*/)
+        public static void ShowTeachingTip(string title, string? content = null, TimeSpan? maxDuration = null /* default is 5s*/)
         {
             if (App.Current is not App app || app.CurrentWindow is null)
             {
@@ -318,17 +472,8 @@ namespace Infomaniak.kDrive
             var teachingTip = new TeachingTip
             {
                 XamlRoot = xamlRoot,
-                Title = Localizer.Instance.GetString(titleKey),
-                Subtitle = Localizer.Instance.IsValidKey(subtitleKey)
-                    ? Localizer.Instance.GetString(subtitleKey!)
-                    : string.Empty,
-                Content = Localizer.Instance.IsValidKey(contentKey)
-                    ? new TextBlock
-                    {
-                        Text = Localizer.Instance.GetString(contentKey!),
-                        TextWrapping = TextWrapping.Wrap
-                    }
-                    : null,
+                Title = title,
+                Subtitle = content,
                 PreferredPlacement = TeachingTipPlacementMode.Bottom,
                 IsLightDismissEnabled = true,
             };
@@ -347,23 +492,23 @@ namespace Infomaniak.kDrive
             _autoCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
             _autoCloseTimer.Interval = maxDuration ?? TimeSpan.FromSeconds(5);
             _autoCloseTimer.IsRepeating = false;
-            _autoCloseTimer.Tick += (_, _) =>
-            {
-                if (_currentTeachingTip?.IsOpen == true)
-                {
-                    _currentTeachingTip.IsOpen = false;
-                }
-
-                _autoCloseTimer?.Stop();
-                _autoCloseTimer = null;
-            };
+            _autoCloseTimer.Tick += TeachingTipAutoCloseTimer_Tick;
             _autoCloseTimer.Start();
+        }
+
+        private static void TeachingTipAutoCloseTimer_Tick(DispatcherQueueTimer sender, object args)
+        {
+            CloseCurrentTeachingTip();
         }
 
         private static void CloseCurrentTeachingTip()
         {
-            _autoCloseTimer?.Stop();
-            _autoCloseTimer = null;
+            if (_autoCloseTimer is not null)
+            {
+                _autoCloseTimer.Stop();
+                _autoCloseTimer.Tick -= TeachingTipAutoCloseTimer_Tick;
+                _autoCloseTimer = null;
+            }
 
             if (_currentTeachingTip is null)
                 return;
@@ -386,9 +531,19 @@ namespace Infomaniak.kDrive
             }
         }
     }
+
+    public static class EnumExtensions
+    {
+        public static string ToCamelCase(this Enum value)
+        {
+            string name = value.ToString();
+
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            return char.ToLowerInvariant(name[0]) + name[1..];
+        }
+    }
 }
-
-
-
 
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
             parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
-            parametersInfo._distributionChannel;
+            parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled;
     return in;
 }
 
@@ -150,7 +150,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
         << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
-        << parametersInfo._distributionChannel;
+        << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled;
     return out;
 }
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ static const std::string preprodNotifyApiUrl = "https://notify.kdrive.preprod.de
 static const std::string prodLoginApiUrl = "https://login.infomaniak.com";
 static const std::string preprodLoginApiUrl = "https://login.preprod.dev.infomaniak.ch";
 
-std::string UrlHelper::infomaniakApiUrl(const uint8_t version /*= 2*/, const bool forceProd /*= false*/) {
-    return (usePreProdUrl() && !forceProd ? preprodInfomaniakApiUrl : prodInfomaniakApiUrl) + std::to_string(version);
+std::string UrlHelper::infomaniakApiUrl(const uint8_t version /*= 2*/) {
+    return (usePreProdUrl() ? preprodInfomaniakApiUrl : prodInfomaniakApiUrl) + std::to_string(version);
 }
 
 std::string UrlHelper::kDriveApiUrl(const uint8_t version /*= 2*/) {

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,12 @@ class SocketCommChannel : public AbstractCommChannel {
     public:
         explicit SocketCommChannel(const Poco::Net::StreamSocket &socket);
         ~SocketCommChannel();
+        void startCallbackThread();
 
         uint64_t bytesAvailable() const override;
         void close() override;
+
+        bool joinCallbackThread() noexcept;
 
     protected:
         // Return number of CommChar (/!\ not always equal the number of bytes) read or 0 on error or closed connection
@@ -56,6 +59,7 @@ class SocketCommServer : public AbstractCommServer {
         SocketCommServer(const std::string &name);
         ~SocketCommServer();
         Poco::UInt16 getPort() const { return _serverSocket.address().port(); }
+        static std::string getHost();
         void close() final;
         bool listen() override;
         std::shared_ptr<AbstractCommChannel> nextPendingConnection() override;
@@ -72,6 +76,8 @@ class SocketCommServer : public AbstractCommServer {
         bool _stopAsked = false;
         std::unique_ptr<StdLoggingThread> _serverSocketThread{nullptr};
         void execute();
+        void joinAndClearPostponedLostConnectionCbks();
+        std::vector<std::shared_ptr<StdLoggingThread>> _postponedLostConnectionCbks;
 };
 
 } // namespace KDC

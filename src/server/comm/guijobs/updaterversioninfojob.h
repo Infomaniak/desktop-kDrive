@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,10 @@ class UpdaterVersionInfoJob : public AbstractGuiJob {
                               std::shared_ptr<AbstractCommChannel> channel);
 
     private:
-        // Input parameter
-        VersionChannel _channel{VersionChannel::Unknown};
         // Output parameters
         VersionInfo _versionInfo;
 
-        ExitInfo deserializeInputParms() override;
+        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 

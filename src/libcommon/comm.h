@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,10 @@
 
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
+/**
+ * This enum is used in the old communication layer.
+ * Its equivalent in the new communication layer is defined in: src/libcommon/utility/cstypes.h - GuiJobType
+ */
 enum class MsgType {
     REQUEST = 0,
     REPLY,
@@ -85,6 +89,8 @@ enum class RequestNum {
     ERROR_DELETE_SERVER,
     ERROR_DELETE_SYNC,
     ERROR_DELETE_INVALIDTOKEN,
+    ERROR_DELETE,
+    ERROR_SYNC_REFRESH,
     ERROR_RESOLVE_CONFLICTS_LEGACY,
     ERROR_RESOLVE_CONFLICTS,
     ERROR_RESOLVE_CONFLICTS_QUICK,
@@ -200,6 +206,8 @@ inline std::string toString(RequestNum e) {
             return "ERROR_DELETE_SYNC";
         case RequestNum::ERROR_DELETE_INVALIDTOKEN:
             return "ERROR_DELETE_INVALIDTOKEN";
+        case RequestNum::ERROR_DELETE:
+            return "ERROR_DELETE";
         case RequestNum::ERROR_RESOLVE_CONFLICTS_LEGACY:
             return "ERROR_RESOLVE_CONFLICTS_LEGACY";
         case RequestNum::ERROR_RESOLVE_CONFLICTS:
@@ -367,6 +375,8 @@ inline std::string toString(SignalNum e) {
             return "UPDATER_SHOW_DIALOG";
         case SignalNum::UPDATER_STATE_CHANGED:
             return "UPDATER_STATE_CHANGED";
+        case SignalNum::LOGIN_SEND_AUTHORIZATION_CODE:
+            return "LOGIN_SEND_AUTHORIZATION_CODE";
         case SignalNum::UTILITY_SHOW_NOTIFICATION:
             return "UTILITY_SHOW_NOTIFICATION";
         case SignalNum::UTILITY_ERROR_ADDED_LEGACY:

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ namespace KDC {
 
 class CopyToDirectoryJob : public AbstractTokenNetworkJob {
     public:
-        CopyToDirectoryJob(int driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId, const SyncName &newName);
+        CopyToDirectoryJob(DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &remoteDestId, const SyncName &newName);
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline SyncTime modtime() const { return _modtime; }

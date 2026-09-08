@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,19 +34,19 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
         ExitInfo runJob() override;
 
         uint64_t nbErrors() const { return _nbErrors; }
-        std::vector<int32_t> removedErrorsDbIds() const { return _removedErrorsDbIds; }
+        std::vector<ErrorDbId> removedErrorsDbIds() const { return _removedErrorsDbIds; }
 
 
     private:
         ExitInfo resolveConflicts(const std::vector<Error> &errorList, ConflictResolutionStrategy strategy);
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);
-        void deleteError(int64_t errorDbId);
+        void deleteError(ErrorDbId errorDbId);
 
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         const std::vector<Error> _keepLocalErrors;
         const std::vector<Error> _keepRemoteErrors;
-        std::vector<int32_t> _removedErrorsDbIds;
+        std::vector<ErrorDbId> _removedErrorsDbIds;
         uint64_t _nbErrors = 0;
 };
 

@@ -88,6 +88,8 @@ set(server_SRCS
     comm/guijobs/nodeconflictinfojob.h comm/guijobs/nodeconflictinfojob.cpp
 
     comm/guijobs/errorinfolistjob.h comm/guijobs/errorinfolistjob.cpp
+    comm/guijobs/errordeletejob.h comm/guijobs/errordeletejob.cpp
+    comm/guijobs/errorsyncrefreshjob.h comm/guijobs/errorsyncrefreshjob.cpp
     comm/guijobs/abstracterrorresolveconflictsjob.h comm/guijobs/abstracterrorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsjob.h comm/guijobs/errorresolveconflictsjob.cpp
     comm/guijobs/errorresolveconflictsquickjob.h comm/guijobs/errorresolveconflictsquickjob.cpp
@@ -150,7 +152,7 @@ set(server_SRCS
 set(updater_SRCS
     updater/abstractupdater.h updater/abstractupdater.cpp
     updater/updatemanager.h updater/updatemanager.cpp
-    updater/updatechecker.h updater/updatechecker.cpp
+    updater/versionretriever.h updater/versionretriever.cpp
 )
 
 if(APPLE OR WIN32)
@@ -196,6 +198,7 @@ elseif(WIN32)
     list(APPEND updater_SRCS updater/windowsupdater.h updater/windowsupdater.cpp)
 else()
     list(APPEND server_SRCS comm/socketcommserver.h comm/socketcommserver.cpp)
+    list(APPEND server_SRCS runningprocessinfo_linux.h runningprocessinfo_linux.cpp)
     list(APPEND updater_SRCS updater/linuxupdater.h updater/linuxupdater.cpp)
 endif()
 
@@ -379,12 +382,40 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     if (NOT ENV_DEPLOY_LIBS_MANUALLY OR NOT CMAKE_BUILD_TYPE MATCHES "Debug")
         set(ENV_QTDIR $ENV{QTDIR})
         set(ENV_DESTDIR $ENV{DESTDIR})
-        set(ENV_DYLD_LIBRARY_PATH $ENV{DYLD_LIBRARY_PATH})
 
-        message(STATUS "DYLD_LIBRARY_PATH: ${ENV_DYLD_LIBRARY_PATH}")
+        string(CONFIGURE [[
+            message(STATUS "Deploying Conan dependencies for kDrive...")
+            set(LIB_DIRS "@CONAN_RUNTIME_LIB_DIRS@")
+            set(FRAMEWORKS_DIR "@ENV_DESTDIR@@CMAKE_INSTALL_PREFIX@/@KDRIVE_OSX_BUNDLE@/Contents/Frameworks/")
+            foreach(libdir IN LISTS LIB_DIRS)
+                if(EXISTS "${libdir}")
+                    file(GLOB dylibs
+                        "${libdir}/*.dylib"
+                    )
+                    foreach(dylib IN LISTS dylibs)
+                        get_filename_component(name "${dylib}" NAME)
+                        message(STATUS "Copying ${name}")
+                        file(COPY
+                            "${dylib}"
+                            DESTINATION "${FRAMEWORKS_DIR}"
+                        )
+                    endforeach()
+                endif()
+            endforeach()
+
+            message(STATUS "Copying libzip.5.dylib")
+            file(COPY
+                "/usr/local/lib/libzip.5.dylib"
+                "/usr/local/lib/libzip.5.5.dylib"
+                DESTINATION "${FRAMEWORKS_DIR}"
+            )
+        ]] INSTALL_CODE @ONLY)
+
+        install(CODE "${INSTALL_CODE}")
+
         install(CODE "
             message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
-            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=${ENV_DYLD_LIBRARY_PATH} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+            execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
             " COMPONENT RUNTIME)
 
         cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)

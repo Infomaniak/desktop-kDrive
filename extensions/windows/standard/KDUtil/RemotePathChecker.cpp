@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,7 +111,7 @@ void RemotePathChecker::workerThreadLoop() {
                         }
                     }
                 }
-                for (auto& path: removedPaths)
+                for (auto &path: removedPaths)
                     SHChangeNotify(SHCNE_UPDATEITEM, SHCNF_PATH | SHCNF_FLUSHNOWAIT, path.data(), nullptr);
             } else if (StringUtil::begins_with(response, wstring(L"STATUS:")) ||
                        StringUtil::begins_with(response, wstring(L"BROADCAST:"))) {
@@ -168,8 +168,11 @@ void RemotePathChecker::workerThreadLoop() {
 
 
 RemotePathChecker::RemotePathChecker() :
-    _stop(false), _watchedDirectories(make_shared<const vector<wstring>>()), _connected(false),
-    _newQueries(CreateEvent(nullptr, FALSE, FALSE, nullptr)), _thread([this] { this->workerThreadLoop(); }) {}
+    _stop(false),
+    _watchedDirectories(make_shared<const vector<wstring>>()),
+    _connected(false),
+    _newQueries(CreateEvent(nullptr, FALSE, FALSE, nullptr)),
+    _thread([this] { this->workerThreadLoop(); }) {}
 
 RemotePathChecker::~RemotePathChecker() {
     _stop = true;
@@ -183,7 +186,7 @@ std::shared_ptr<const std::vector<std::wstring>> RemotePathChecker::WatchedDirec
     return atomic_load(&_watchedDirectories);
 }
 
-bool RemotePathChecker::IsMonitoredPath(const wchar_t* filePath, int* state) {
+bool RemotePathChecker::IsMonitoredPath(const wchar_t *filePath, int *state) {
     assert(state);
     assert(filePath);
 
@@ -208,7 +211,7 @@ bool RemotePathChecker::IsMonitoredPath(const wchar_t* filePath, int* state) {
     return false;
 }
 
-RemotePathChecker::FileState RemotePathChecker::_StrToFileState(const std::wstring& str) {
+RemotePathChecker::FileState RemotePathChecker::_StrToFileState(const std::wstring &str) {
     if (str == L"NOP" || str == L"NONE") {
         return StateNone;
     } else if (str == L"SYNC" || str == L"NEW") {

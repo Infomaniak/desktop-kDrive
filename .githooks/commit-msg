@@ -5,11 +5,13 @@
 
 const fs = require('fs');
 
-const conventionalCommitMessageRegExp = /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\([\w\-\.]+\))?(!)?: ([\w ])+([\s\S]*)/g;
+const conventionalCommitMessageRegExp =
+    /^(Merge .+|((feat|fix|chore|docs|style|refactor|revert|perf|ci|test)(\(.+\))?!?: [A-Za-z0-9].+[^.\s])$)/;
 let exitCode = 0;
 const commitMsgFile = process.argv[2];
 const message = fs.readFileSync(commitMsgFile, 'utf8');
-const isValid = conventionalCommitMessageRegExp.test(message);
+const title = message.split('\n', 1)[0];
+const isValid = conventionalCommitMessageRegExp.test(title);
 
 if(!isValid) {
    console.log('Cannot commit: the commit message does not comply with conventional commits standards.');

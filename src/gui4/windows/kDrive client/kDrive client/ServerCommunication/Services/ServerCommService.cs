@@ -1,32 +1,126 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommProtocol;
 using static Infomaniak.kDrive.ServerCommunication.Interfaces.IServerCommService;
 
 namespace Infomaniak.kDrive.ServerCommunication.Services
 {
+
+    // This class manages the queue of requests to ensure that we don't send too many concurrent requests to the server which could lead to performance issues.
+    // It uses a semaphore to limit the number of concurrent requests and queues additional requests until one of the ongoing requests is completed.
+    internal class RequestQueue
+    {
+        private readonly IServerCommProtocol _commClient;
+        private readonly SemaphoreSlim _semaphore;
+        public RequestQueue(IServerCommProtocol commClient, int maxConcurrentRequests)
+        {
+            _commClient = commClient;
+            _semaphore = new SemaphoreSlim(maxConcurrentRequests, maxConcurrentRequests);
+        }
+
+        // If concurrent request is < max, the request is sent immediately, otherwise it is queued and sent when one of the ongoing request is completed.
+        public async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken)
+        {
+            try
+            {
+                const int timeout = 1000 * 60 * 5; // 5 minutes 
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!await _semaphore.WaitAsync(timeout, cancellationToken).ConfigureAwait(false))
+                {
+                    return new CommData
+                    {
+                        Code = ExitCode.OperationCanceled
+                    };
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return new CommData
+                {
+                    Code = ExitCode.OperationCanceled
+                };
+            }
+
+            try
+            {
+                return await _commClient.SendRequestAsync(requestNum, parameters, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                return new CommData
+                {
+                    Code = ExitCode.OperationCanceled
+                };
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+    }
+
     public class ServerCommService : IServerCommService
     {
         private readonly IServerCommProtocol _commClient;
         private readonly AppModel _viewModel;
+        private const int _maxErrorLimit = 1000;
+        private object _errorLock = new object();
+        private Int64 _errorCount = 0;
+        private bool _hasMoreError;
 
         public ServerCommService(IServerCommProtocol commClient, AppModel viewModel)
         {
             _commClient = commClient;
             _viewModel = viewModel;
             _commClient.SignalReceived += OnSignalReceived;
+            _commClient.ConnectionLost += OnConnectionLost;
+
+            _getFolderSizeQueue = new RequestQueue(_commClient, 5);
+            _getSubFolderQueue = new RequestQueue(_commClient, 5);
+        }
+
+        private void OnConnectionLost(object? sender, EventArgs e)
+        {
+            Logger.Log(Logger.Level.Fatal, "Connection to server lost, this application will close.");
+            App.ExitApplication();
+        }
+
+        public async Task<bool> Init(CancellationToken cancellationToken)
+        {
+            return await _commClient.InitConnection(cancellationToken).ConfigureAwait(false);
         }
 
         // Utility methods
@@ -496,8 +590,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (type == SyncType.Online)
             {
                 // Ensure the path supports online mode
-                bool? canSupportOnlineMode = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
-                if (!canSupportOnlineMode.HasValue || !canSupportOnlineMode.Value)
+                bool? supportsLiteSync = await CanPathSupportLiteSync(sync.LocalPath, CancellationToken.None);
+                if (!supportsLiteSync.HasValue || !supportsLiteSync.Value)
                 {
                     Logger.Log(Logger.Level.Warning, $"Cannot set sync DbId {syncDbId} to online mode, local path does not support it.");
                     return false;
@@ -675,11 +769,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return result;
         }
 
-        public async Task<List<SearchItem>?> SearchItem(DbId syncDbId, string searchString, CancellationToken cancellationToken)
+        public async Task<List<SearchItem>?> SearchItem(Sync? sync, string searchString, CancellationToken cancellationToken)
         {
+            if (sync is null)
+            {
+                Logger.Log(Logger.Level.Error, "Sync is null.");
+                return null;
+            }
+
             var parms = new JsonObject
             {
-                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.SyncDbId] = sync.DbId,
                 [JsonKeys.SearchString] = Utility.ToBase64String(searchString)
             };
 
@@ -719,6 +819,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     item.Name!,
                     item.Type!.Value,
                     item.Path!,
+                    System.IO.Path.Combine(sync.Drive.Name, item.Path!),
                     item.ModifiedTime!.Value,
                     item.Size!.Value,
                     item.IsAvailableLocally!.Value
@@ -749,6 +850,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return size;
         }
 
+        private readonly RequestQueue _getSubFolderQueue;
         public async Task<List<Node>?> GetSubFolders(DbId userDbId, DriveId driveId, NodeId parentNodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -758,7 +860,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.NodeId] = Utility.ToBase64String(parentNodeId) ?? "",
                 [JsonKeys.WithPath] = true
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
+            CommData data = await _getSubFolderQueue.SendRequestAsync(RequestNum.NODE_SUBFOLDERS, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 
@@ -814,6 +916,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return new GetNodeInfoResult(data.Cause, new Node(nodeInfo.NodeId ?? "", nodeInfo.Name ?? "", nodeInfo.Size ?? 0, nodeInfo.ParentNodeId ?? "", nodeInfo.Path ?? "", userDbId, driveId, nodeInfo?.AccessDenied ?? false));
         }
 
+        private readonly RequestQueue _getFolderSizeQueue;
         public async Task<Int64?> GetFolderSize(long userDbId, long driveId, string nodeId, CancellationToken cancellationToken)
         {
             var parms = new JsonObject
@@ -822,7 +925,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.DriveId] = driveId,
                 [JsonKeys.NodeId] = Utility.ToBase64String(nodeId),
             };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken).ConfigureAwait(false);
+            CommData data = await _getFolderSizeQueue.SendRequestAsync(RequestNum.NODE_FOLDER_SIZE, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
                 return null;
 
@@ -880,7 +983,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task<NodeId?> CreateMissingDirectories(IDrive drive, NodeId parentNodeId, string path, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(parentNodeId))
-                parentNodeId = App.Constants.Drive.RootNodeId;
+                parentNodeId = App.Constants.Sync.RootNodeId;
 
             var parms = new JsonObject
             {
@@ -981,22 +1084,45 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data);
         }
 
-        public async Task<bool> RefreshUpdaterVersionInfo(CancellationToken cancellationToken)
+        public async Task<bool> SkipVersion(CancellationToken cancellationToken)
         {
-            // First check the update state
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, [], cancellationToken);
-            if (!CheckJobResultAndLogIfError(data))
-                return false;
-
-            if (!HasRequiredParam(data, JsonKeys.UpdateState))
-                return false;
-
-            UpdateState? updateState = (UpdateState?)data.Params[JsonKeys.UpdateState]?.GetValue<int>();
-            if (updateState is null)
+            var availableUpdate = _viewModel.Settings?.UpdateManager?.AvailableUpdate;
+            if (availableUpdate is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
+                Logger.Log(Logger.Level.Warning, "SkipVersion called but no available update.");
                 return false;
             }
+
+            JsonObject parms = new()
+            {
+                [JsonKeys.SkippedVersion] = Utility.ToBase64String($"{availableUpdate.Tag}.{availableUpdate.BuildVersion}")
+            };
+
+            CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_SKIP_VERSION, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data);
+        }
+
+        public async Task<bool> RefreshUpdaterVersionInfo(UpdateState? updateState, CancellationToken cancellationToken)
+        {
+            // First check the update state
+            if (updateState is null)
+            {
+                CommData data = await _commClient.SendRequestAsync(RequestNum.UPDATER_STATE, [], cancellationToken);
+                if (!CheckJobResultAndLogIfError(data))
+                    return false;
+
+                if (!HasRequiredParam(data, JsonKeys.UpdateState))
+                    return false;
+
+                updateState = (UpdateState?)data.Params[JsonKeys.UpdateState]?.GetValue<int>();
+
+                if (updateState is null)
+                {
+                    Logger.Log(Logger.Level.Error, $"Failed to parse {JsonKeys.UpdateState} from response: {data.Params}");
+                    return false;
+                }
+            }
+
 
             // UpdateState.NoUpdate means that the current setup does not allow for updates at all, so we should disable update functionality in the UI and clear any available update info.
             if (updateState == UpdateState.NoUpdate)
@@ -1006,6 +1132,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             }
             _viewModel.Settings.UpdateManager.UpdateEnabled = true;
+
+            if (updateState == UpdateState.Checking || updateState == UpdateState.Downloading)
+            {
+                _viewModel.Settings.UpdateManager.FetchingUpdate = true;
+                if (updateState == UpdateState.Checking)
+                    return true;
+            }
+            else
+            {
+                _viewModel.Settings.UpdateManager.FetchingUpdate = false;
+            }
 
             List<UpdateState> notReadyStates =
             [
@@ -1020,11 +1157,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (notReadyStates.Contains(updateState.Value))
             {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
-                return true;
-            }
-
-            if (updateState == UpdateState.Checking)
-            {
                 return true;
             }
 
@@ -1054,9 +1186,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
 
             if (_viewModel.Settings.AppVersion.IsLowerThan(versionInfo))
-            {
                 _viewModel.Settings.UpdateManager.AvailableUpdate = versionInfo;
-            }
             else
                 _viewModel.Settings.UpdateManager.AvailableUpdate = null;
 
@@ -1194,7 +1324,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             JsonObject parms = new()
             {
-                [JsonKeys.Limit] = 1000
+                [JsonKeys.Limit] = _maxErrorLimit
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_INFOLIST, parms, cancellationToken).ConfigureAwait(false);
             if (!CheckJobResultAndLogIfError(data, parms))
@@ -1215,16 +1345,64 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfoList from ${data.Params[JsonKeys.ErrorInfoList]}.");
                 return false;
             }
-
+            lock (_errorLock)
+            {
+                _hasMoreError = errorInfos.Count == _maxErrorLimit;
+                _errorCount = errorInfos.Count;
+            }
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
             foreach (var errorInfo in errorInfos)
             {
-                Error error = new();
-                CommStruct.ConversionHelper.CopyToError(errorInfo, error);
-                error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                if (errorInfo.Level == ErrorLevel.Server)
+                {
+                    Error error = new(errorInfo);
+                    await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                }
+                else if (errorInfo.SyncDbId is not null)
+                {
+                    var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+
+                    if (sync is not null)
+                    {
+                        Error error = new(sync, errorInfo);
+                        await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+                    }
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} has invalid SyncDbId {errorInfo.SyncDbId}.");
+                }
             }
             return true;
+        }
+
+        public async Task<bool> DeleteError(DbId errorDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.ErrorDbId] = errorDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_DELETE, parms, cancellationToken).ConfigureAwait(false);
+            if (data?.Code == ExitCode.InvalidOperation)
+            {
+                Logger.Log(Logger.Level.Info, $"Error with DbId {errorDbId} cannot be deleted as it is kept by the server.");
+                return false;
+            }
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
+        public async Task<bool> RefreshSyncErrors(DbId syncDbId, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.ERROR_SYNC_REFRESH, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
         }
 
         public async Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken)
@@ -1282,6 +1460,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 case SignalNum.SYNC_REMOVED:
                     await HandleSyncRemovedAsync(sender, args);
                     break;
+                case SignalNum.UPDATER_SHOW_DIALOG:
+                    await HandleUpdaterShowDialog(sender, args);
+                    break;
                 case SignalNum.UPDATER_STATE_CHANGED:
                     await HandleUpdaterStateChangedAsync(sender, args);
                     break;
@@ -1299,6 +1480,15 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.UTILITY_LOG_UPLOAD_STATUS_UPDATED:
                     await HandleLogUploadProgressAsync(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_NOTIFICATION:
+                    await HandleUtilityShowNotification(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_SYNTHESIS:
+                    await HandleUtilityShowSynthesis(sender, args);
+                    break;
+                case SignalNum.UTILITY_SHOW_SETTINGS:
+                    await HandleUtilityShowSettings(sender, args);
                     break;
                 default:
                     Logger.Log(Logger.Level.Warning, $"Unhandled signal received: {args.SignalNum}");
@@ -1491,19 +1681,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             await Utility.RunOnUIThread(() => { deletedSync.Drive.Syncs.Remove(deletedSync); });
         }
-        public async Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
+        public Task HandleSyncProgressInfo(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
 
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
-                return;
+                return Task.CompletedTask;
             }
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncStatus))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncStatus} not found in parameters.");
-                return;
+                return Task.CompletedTask;
             }
 
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
@@ -1512,21 +1702,22 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (syncDbID is null)
             {
                 Logger.Log(Logger.Level.Error, "syncDbID is null.");
-                return;
+                return Task.CompletedTask;
             }
             if (syncStatus is null)
             {
                 Logger.Log(Logger.Level.Error, "syncStatus is null.");
-                return;
+                return Task.CompletedTask;
             }
 
             Sync? updatedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
             if (updatedSync == null)
             {
                 Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
-                return;
+                return Task.CompletedTask;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
+            return Task.CompletedTask;
         }
 
         public async Task HandleSyncCompletedItem(object? sender, SignalEventArgs args)
@@ -1614,8 +1805,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 Func<SyncFileItemInfo, SyncFileItem, bool> shouldBeRemoved = (info, item) =>
                 {
-                    // We never want to remove an item that as sucessfully completed
-                    if (item.Status == SyncFileStatus.Success)
+                    // We never want to remove an item that has successfully completed or is still syncing
+                    if (item.Status == SyncFileStatus.Success || item.Status == SyncFileStatus.Syncing)
                         return false;
 
 
@@ -1641,8 +1832,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 // Create new item
                 var newItem = new SyncFileItem(sync, fileItemInfo);
 
-                const int MinFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
-                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < MinFileSizeForTopSticking)
+                const int minFileSizeForTopSticking = 1024; // Don't stick items smaller than 1KB to the top as they are likely to complete very fast, otherwise we might end up with flickering in the UI with items jumping from the top to the middle of the list when they are completed.
+                if (newItem.Status != SyncFileStatus.Syncing || newItem.Size < minFileSizeForTopSticking)
                 {
                     // Insert item after all syncing items
                     activities.Insert(Math.Clamp(destIndex, 0, activities.Count), newItem);
@@ -1660,31 +1851,32 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task HandleUpdaterStateChangedAsync(object? sender, SignalEventArgs args)
         {
-            await RefreshUpdaterVersionInfo(new CancellationToken());
+            await RefreshUpdaterVersionInfo((UpdateState?)args?.SignalData[JsonKeys.UpdateState]?.GetValue<int>(), CancellationToken.None);
         }
 
-        public async Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
+        public Task HandleLogUploadProgressAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.State) || !signalData.ContainsKey(JsonKeys.Percentage))
             {
                 Logger.Log(Logger.Level.Error, $"{JsonKeys.State} or {JsonKeys.Percentage} not found in parameters ${signalData}.");
-                return;
+                return Task.CompletedTask;
             }
             LogUploadState? state = signalData[JsonKeys.State]?.Deserialize<LogUploadState>();
             int? percentage = signalData[JsonKeys.Percentage]?.GetValue<int>();
             if (state is null)
             {
                 Logger.Log(Logger.Level.Error, "state is null.");
-                return;
+                return Task.CompletedTask;
             }
             if (percentage is null)
             {
                 Logger.Log(Logger.Level.Error, "percentage is null.");
-                return;
+                return Task.CompletedTask;
             }
             _viewModel.Settings.LogUploadManager.State = state ?? LogUploadState.Failed;
             _viewModel.Settings.LogUploadManager.PercentComplete = percentage ?? 0;
+            return Task.CompletedTask;
         }
 
         public async Task HandleUserRemovedAsync(object? sender, SignalEventArgs args)
@@ -1725,19 +1917,60 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             options.Converters.Add(new Base64StringJsonConverter());
             options.Converters.Add(new IntToDateTimeConverter());
             ErrorInfo? errorInfo = signalData[JsonKeys.ErrorInfo]?.Deserialize<ErrorInfo>(options);
-            Error error = new Error();
-            if (errorInfo == null)
+            if (errorInfo is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from ${signalData[JsonKeys.ErrorInfo]}.");
+                Logger.Log(Logger.Level.Error, $"Failed to deserialize errorInfo from {signalData[JsonKeys.ErrorInfo]}.");
                 return;
             }
 
-            ConversionHelper.CopyToError(errorInfo, error);
-            error.Sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
-            await _viewModel.AddErrorAsync(error);
+            if (errorInfo.Level == ErrorLevel.Server)
+            {
+                lock (_errorLock)
+                {
+                    ++_errorCount;
+                }
+                Error error = new(errorInfo);
+                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+                return;
+            }
+
+            var sync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(s => s.DbId == errorInfo.SyncDbId);
+            if (sync is not null)
+            {
+                Error error = new(sync, errorInfo);
+                lock (_errorLock)
+                {
+                    ++_errorCount;
+                }
+                await _viewModel.AddErrorAsync(error).ConfigureAwait(false);
+            }
+            else
+            {
+                Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs.");
+            }
         }
         public async Task HandleErrorRemovedAsync(object? sender, SignalEventArgs args)
         {
+            bool refreshNeeded = false;
+            lock (_errorLock)
+            {
+                refreshNeeded = _hasMoreError && _errorCount < _maxErrorLimit / 2;
+            }
+
+            if (refreshNeeded)
+            {
+                if (!await RefreshErrors(CancellationToken.None).ConfigureAwait(false))
+                {
+                    Logger.Log(Logger.Level.Warning, "Failed to refresh errors"); // If the refresh fails, we must continue to at least remove the error in response to the signal
+                }
+                else
+                {
+                    Logger.Log(Logger.Level.Info, "Errors refreshed successfully in response to error removed signal.");
+                    return;
+                }
+            }
+
+
             var signalData = args.SignalData;
             if (signalData == null || !signalData.ContainsKey(JsonKeys.ErrorDbId))
             {
@@ -1752,69 +1985,149 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return;
             }
             await _viewModel.RemoveErrorByDbIdAsync(errorDbId.Value);
+            lock (_errorLock)
+            {
+                _errorCount = Math.Max(0, _errorCount - 1);
+            }
+        }
+
+        public Task HandleUtilityShowNotification(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData == null || !signalData.ContainsKey(JsonKeys.Title) || !signalData.ContainsKey(JsonKeys.Message))
+            {
+                Logger.Log(Logger.Level.Error, $"{JsonKeys.Title} or {JsonKeys.Message} not found in parameters.");
+                return Task.CompletedTask;
+            }
+            string? title = signalData[JsonKeys.Title]?.GetValue<string>();
+            string? message = signalData[JsonKeys.Message]?.GetValue<string>();
+
+            // Decode base64 encoded 
+            try
+            {
+                title = title is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(title)) : null;
+                message = message is not null ? Encoding.UTF8.GetString(Convert.FromBase64String(message)) : null;
+            }
+            catch (FormatException ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Failed to decode title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(Logger.Level.Error, $"Unexpected error while decoding title or message from base64. Title: {title}, Message: {message}. Exception: {ex}");
+                return Task.CompletedTask;
+            }
+
+            if (title is null || message is null)
+            {
+                Logger.Log(Logger.Level.Error, "title or message is null.");
+                return Task.CompletedTask;
+            }
+
+            App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
+            return Task.CompletedTask;
+        }
+
+        public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "Received UPDATER_SHOW_DIALOG signal - showing update window");
+            if (Application.Current is App app)
+                await Utility.RunOnUIThread(() => app.ShowUpdateWindow());
+
+            _viewModel.Settings.UpdateManager.ShowNotification = true;
+        }
+
+        public async Task HandleUtilityShowSynthesis(object? sender, SignalEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SYNTHESIS signal - bringing main window to foreground");
+            if (Application.Current is App app)
+                await Utility.RunOnUIThread(() => app.CreateWindow(App.CreateWindowOptions.Foreground));
+        }
+
+        public async Task HandleUtilityShowSettings(object? sender, SignalEventArgs args)
+        {
+            Logger.Log(Logger.Level.Info, "Received UTILITY_SHOW_SETTINGS signal - bringing main window to foreground and navigating to settings");
+            if (Application.Current is App app)
+            {
+                await Utility.RunOnUIThread(() =>
+                {
+                    app.CreateWindow(App.CreateWindowOptions.Foreground);
+
+                    // Navigate to settings page
+                    if (app.CurrentWindow is MainWindow mainWindow)
+                    {
+                        mainWindow.AppNavView?.Frame?.Navigate(typeof(Pages.Settings.SettingsPage));
+                    }
+                });
+            }
         }
 
         // Helpers
         private async Task AddOrUpdateUserInModel(UserInfo userInfo)
         {
-
-            if (!userInfo.DbId.HasValue)
+            await Utility.RunOnUIThread(() =>
             {
-                Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
-                return;
-            }
-            DbId dbId = userInfo.DbId.Value;
-
-            User? user = _viewModel.Users.FirstOrDefault(u => u?.DbId == dbId, null);
-            if (user is not null)
-            {
-                Logger.Log(Logger.Level.Extended, $"User with DbId {dbId} already exists in the application, updating...");
-                ConversionHelper.CopyToUser(userInfo, user);
-                Logger.Log(Logger.Level.Info, $"User with DbId {dbId} updated.");
-            }
-            else
-            {
-                User newUser = new User(dbId);
-                ConversionHelper.CopyToUser(userInfo, newUser);
-                await Utility.RunOnUIThread(() =>
+                if (!userInfo.DbId.HasValue)
                 {
+                    Logger.Log(Logger.Level.Error, "userInfo.DbId is null.");
+                    return;
+                }
+                DbId dbId = userInfo.DbId.Value;
+
+                User? user = _viewModel.Users.FirstOrDefault(u => u?.DbId == dbId, null);
+                if (user is not null)
+                {
+                    Logger.Log(Logger.Level.Extended, $"User with DbId {dbId} already exists in the application, updating...");
+                    ConversionHelper.CopyToUser(userInfo, user);
+                    Logger.Log(Logger.Level.Info, $"User with DbId {dbId} updated.");
+                }
+                else
+                {
+                    User newUser = new User(dbId);
+                    ConversionHelper.CopyToUser(userInfo, newUser);
+
                     _viewModel.Users.Add(newUser);
-                });
-                Logger.Log(Logger.Level.Info, $"New user added with DbId {newUser.DbId}.");
-            }
+
+                    Logger.Log(Logger.Level.Info, $"New user added with DbId {newUser.DbId}.");
+                }
+            });
         }
 
         private async Task AddOrUpdateAccountInModel(AccountInfo accountInfo)
         {
             await AutoRetry(async Task<bool> () =>
             {
-                foreach (var user in _viewModel.Users)
+                return await Utility.RunOnUIThread(Task<bool> () =>
                 {
-                    var account = user.Accounts.FirstOrDefault(a => a.DbId == accountInfo.DbId);
-                    if (account == null)
+                    foreach (var user in _viewModel.Users)
                     {
-                        continue;
+                        var account = user.Accounts.FirstOrDefault(a => a.DbId == accountInfo.DbId);
+                        if (account == null)
+                        {
+                            continue;
+                        }
+                        ConversionHelper.CopyToAccount(accountInfo, account);
+                        Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} updated.");
+                        return Task.FromResult(true);
                     }
-                    ConversionHelper.CopyToAccount(accountInfo, account);
-                    Logger.Log(Logger.Level.Info, $"Account with DbId {accountInfo.DbId} updated.");
-                    return true;
-                }
 
-                // Account not found, add it to the correct user
-                DbId? userDbId = accountInfo.UserDbId;
-                var parentUser = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
-                if (parentUser == null)
-                {
-                    // This might happen due to asynchronous signal processing
-                    Logger.Log(Logger.Level.Error, $"Parent user with DbId {userDbId} not found for account DbId {accountInfo.DbId}.");
-                    return false;
-                }
+                    // Account not found, add it to the correct user
+                    DbId? userDbId = accountInfo.UserDbId;
+                    var parentUser = _viewModel.Users.FirstOrDefault(u => u.DbId == userDbId);
+                    if (parentUser == null)
+                    {
+                        // This might happen due to asynchronous signal processing
+                        Logger.Log(Logger.Level.Error, $"Parent user with DbId {userDbId} not found for account DbId {accountInfo.DbId}.");
+                        return Task.FromResult(false);
+                    }
 
-                var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
-                ConversionHelper.CopyToAccount(accountInfo, newAccount);
-                await Utility.RunOnUIThread(() => { parentUser.Accounts.Add(newAccount); });
-                Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
-                return true;
+                    var newAccount = new Account(accountInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentUser);
+                    ConversionHelper.CopyToAccount(accountInfo, newAccount);
+                    parentUser.Accounts.Add(newAccount);
+                    Logger.Log(Logger.Level.Info, $"New account added to user with DbId {userDbId}.");
+                    return Task.FromResult(true);
+                });
             });
 
         }
@@ -1823,42 +2136,44 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             await AutoRetry(async Task<bool> () =>
             {
-                foreach (var user in _viewModel.Users)
+                return await Utility.RunOnUIThread(Task<bool> () =>
                 {
-
-                    var drive = user.Drives.FirstOrDefault(d => d?.DbId == driveInfo.DbId, null);
-                    if (drive == null)
+                    foreach (var user in _viewModel.Users)
                     {
-                        continue;
+
+                        var drive = user.Drives.FirstOrDefault(d => d?.DbId == driveInfo.DbId, null);
+                        if (drive == null)
+                        {
+                            continue;
+                        }
+                        ConversionHelper.CopyToDrive(driveInfo, drive);
+                        Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
+                        return Task.FromResult(true);
                     }
-                    ConversionHelper.CopyToDrive(driveInfo, drive);
-                    Logger.Log(Logger.Level.Info, $"Drive with DbId {driveInfo.DbId} updated.");
-                    return true;
-                }
-                // Drive not found, add it to the correct account
-                DbId? accountDbId = driveInfo.AccountDbId; // Assuming DriveInfo has an AccountDbId property
-                Account? parentAccount = null;
-                foreach (var user in _viewModel.Users)
-                {
-                    parentAccount = user.Accounts.FirstOrDefault(a => a.DbId == accountDbId);
-                    if (parentAccount != null)
-                        break;
-                }
-                if (parentAccount == null)
-                {
-                    // This might happen due to asynchronous signal processing
-                    Logger.Log(Logger.Level.Error, $"Parent account with DbId {accountDbId} not found for drive DbId {driveInfo.DbId}.");
-                    return false;
-                }
-                await Utility.RunOnUIThread(() =>
-                {
+                    // Drive not found, add it to the correct account
+                    DbId? accountDbId = driveInfo.AccountDbId; // Assuming DriveInfo has an AccountDbId property
+                    Account? parentAccount = null;
+                    foreach (var user in _viewModel.Users)
+                    {
+                        parentAccount = user.Accounts.FirstOrDefault(a => a.DbId == accountDbId);
+                        if (parentAccount != null)
+                            break;
+                    }
+                    if (parentAccount == null)
+                    {
+                        // This might happen due to asynchronous signal processing
+                        Logger.Log(Logger.Level.Error, $"Parent account with DbId {accountDbId} not found for drive DbId {driveInfo.DbId}.");
+                        return Task.FromResult(false);
+                    }
+
                     Drive newDrive = new Drive(driveInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentAccount);
                     ConversionHelper.CopyToDrive(driveInfo, newDrive);
                     parentAccount.Drives.Add(newDrive);
 
+
+                    Logger.Log(Logger.Level.Info, $"New drive added to account with DbId {accountDbId}.");
+                    return Task.FromResult(true);
                 });
-                Logger.Log(Logger.Level.Info, $"New drive added to account with DbId {accountDbId}.");
-                return true;
             });
         }
 
@@ -1866,41 +2181,43 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             await AutoRetry(async Task<bool> () =>
             {
-                List<Drive> allDrives = [];
-                foreach (var user in _viewModel.Users)
+                return await Utility.RunOnUIThread(Task<bool> () =>
                 {
-                    allDrives.AddRange(user.Drives);
-                }
-
-                foreach (var drive in allDrives)
-                {
-                    var sync = drive.Syncs.FirstOrDefault(s => s?.DbId == syncInfo.DbId, null);
-                    if (sync == null)
+                    List<Drive> allDrives = [];
+                    foreach (var user in _viewModel.Users)
                     {
-                        continue;
+                        allDrives.AddRange(user.Drives);
                     }
-                    ConversionHelper.CopyToSync(syncInfo, sync);
-                    Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
-                    return true;
-                }
 
-                // Sync not found, add it to the correct drive
-                DbId? driveDbId = syncInfo.DriveDbId; // Assuming SyncInfo has a DriveDbId property
-                var parentDrive = allDrives.FirstOrDefault(d => d.DbId == driveDbId);
-                if (parentDrive == null)
-                {
-                    // This might happen due to asynchronous signal processing
-                    Logger.Log(Logger.Level.Error, $"Parent drive with DbId {driveDbId} not found for sync DbId {syncInfo.DbId}.");
-                    return false;
-                }
-                await Utility.RunOnUIThread(() =>
-                {
+                    foreach (var drive in allDrives)
+                    {
+                        var sync = drive.Syncs.FirstOrDefault(s => s?.DbId == syncInfo.DbId, null);
+                        if (sync == null)
+                        {
+                            continue;
+                        }
+                        ConversionHelper.CopyToSync(syncInfo, sync);
+                        Logger.Log(Logger.Level.Info, $"Sync with DbId {syncInfo.DbId} updated.");
+                        return Task.FromResult(true);
+                    }
+
+                    // Sync not found, add it to the correct drive
+                    DbId? driveDbId = syncInfo.DriveDbId; // Assuming SyncInfo has a DriveDbId property
+                    var parentDrive = allDrives.FirstOrDefault(d => d.DbId == driveDbId);
+                    if (parentDrive == null)
+                    {
+                        // This might happen due to asynchronous signal processing
+                        Logger.Log(Logger.Level.Error, $"Parent drive with DbId {driveDbId} not found for sync DbId {syncInfo.DbId}.");
+                        return Task.FromResult(false);
+                    }
+
                     Sync newSync = new Sync(syncInfo.DbId ?? throw new InvalidOperationException("DbId should not be null here."), parentDrive);
                     ConversionHelper.CopyToSync(syncInfo, newSync);
                     parentDrive.Syncs.Add(newSync);
+
+                    Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");
+                    return Task.FromResult(true);
                 });
-                Logger.Log(Logger.Level.Info, $"New sync added to drive with DbId {driveDbId}.");
-                return true;
             });
         }
 
@@ -1918,6 +2235,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (attempt < maxRetries)
                 {
                     await Task.Delay(delayMilliseconds);
+                    Logger.Log(Logger.Level.Info, $"AutoRetry: Attempt {attempt} failed for action in {callerName}, retrying after {delayMilliseconds}ms...");
                 }
             }
             Logger.Log(Logger.Level.Error, $"AutoRetry: Failed to complete action in {callerName} after {maxRetries} attempts separated by {delayMilliseconds}ms.");

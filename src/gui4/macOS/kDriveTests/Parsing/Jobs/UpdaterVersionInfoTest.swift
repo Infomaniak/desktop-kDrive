@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -47,8 +47,8 @@ struct UpdaterVersionInfoTest {
         let response = try decoder.decode(CallbackMessage<UpdaterVersionInfoResponse>.self, from: callbackData)
 
         // THEN
-        #expect(response.code == .Ok)
-        #expect(response.cause == .Unknown)
+        #expect(response.code == KDC.ExitCode.Ok)
+        #expect(response.cause == KDC.ExitCause.Unknown)
         #expect(response.id == 18)
 
         // VersionInfo assertions
@@ -58,5 +58,6 @@ struct UpdaterVersionInfoTest {
         #expect(response.body.versionInfo.buildMinOsVersion == "10.15")
         #expect(response.body.versionInfo
             .downloadUrl == "https://download.storage.infomaniak.com/drive/desktopclient/update-macos-3.8.2.5.xml")
+        #expect(response.body.versionInfo.checksum == "12345")
     }
 }

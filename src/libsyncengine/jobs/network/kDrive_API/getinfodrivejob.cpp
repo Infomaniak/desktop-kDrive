@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@ static const std::string packKey = "pack";
 static const std::string packDisplayNameKey = "display_name";
 static const std::string packIsFreeKey = "is_free";
 
-GetInfoDriveJob::GetInfoDriveJob(int userDbId, int driveId) :
+GetInfoDriveJob::GetInfoDriveJob(const UserDbId userDbId, const DriveId driveId) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-GetInfoDriveJob::GetInfoDriveJob(int driveDbId) :
+GetInfoDriveJob::GetInfoDriveJob(const DriveDbId driveDbId) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
@@ -96,10 +96,18 @@ ExitInfo GetInfoDriveJob::handleJsonResponse(const std::string &replyBody) {
     }
 
     if (Poco::JSON::Object::Ptr packObj = dataObj->getObject(packKey); packObj) { // Not mandatory
-        (void) JsonParserUtility::extractValue(packObj, idKey, _packInfo.id, false);
-        (void) JsonParserUtility::extractValue(packObj, nameKey, _packInfo.name, false);
-        (void) JsonParserUtility::extractValue(packObj, packDisplayNameKey, _packInfo.displayName, false);
-        (void) JsonParserUtility::extractValue(packObj, packIsFreeKey, _packInfo.isFree, false);
+        uint64_t packId = 0;
+        (void) JsonParserUtility::extractValue(packObj, idKey, packId, false);
+        _packInfo.setId(packId);
+        std::string packName;
+        (void) JsonParserUtility::extractValue(packObj, nameKey, packName, false);
+        _packInfo.setName(packName);
+        std::string packDisplayName;
+        (void) JsonParserUtility::extractValue(packObj, packDisplayNameKey, packDisplayName, false);
+        _packInfo.setDisplayName(packDisplayName);
+        bool isFree = false;
+        (void) JsonParserUtility::extractValue(packObj, packIsFreeKey, isFree, false);
+        _packInfo.setIsFree(isFree);
     }
 
     return ExitCode::Ok;

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 static const auto userInfoDbId = "dbId";
 static const auto userInfoUserId = "userId";
 static const auto userInfoName = "name";
+static const auto userInfoFirstName = "firstName";
 static const auto userInfoEmail = "email";
 static const auto userInfoAvatar = "avatar";
 static const auto userInfoAvatarUrl = "avatarUrl";
@@ -34,21 +35,21 @@ static const auto userInfoIsStaff = "isStaff";
 
 namespace KDC {
 
-UserInfo::UserInfo(const int dbId, const int userId, const QString &name, const QString &email, const QImage &avatar,
-                   const bool connected) :
+UserInfo::UserInfo(const UserDbId dbId, const UserId userId, const QString &name, const QString &firstName, const QString &email,
+                   const QImage &avatar, const bool connected) :
     _dbId(dbId),
     _userId(userId),
     _name(name),
+    _firstName(firstName),
     _email(email),
     _avatar(avatar),
     _connected(connected) {}
-
-UserInfo::UserInfo() {}
 
 void UserInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, userInfoDbId, _dbId);
     CommonUtility::writeValueToStruct(dstruct, userInfoUserId, _userId);
     CommonUtility::writeValueToStruct(dstruct, userInfoName, CommonUtility::qStr2CommString(_name));
+    CommonUtility::writeValueToStruct(dstruct, userInfoFirstName, CommonUtility::qStr2CommString(_firstName));
     CommonUtility::writeValueToStruct(dstruct, userInfoEmail, CommonUtility::qStr2CommString(_email));
 
     QByteArray avatarQBA;
@@ -72,6 +73,10 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, userInfoName, name);
     _name = CommonUtility::commString2QStr(name);
 
+    CommString firstName;
+    CommonUtility::readValueFromStruct(dstruct, userInfoFirstName, firstName);
+    _firstName = CommonUtility::commString2QStr(firstName);
+
     CommString email;
     CommonUtility::readValueFromStruct(dstruct, userInfoEmail, email);
     _email = CommonUtility::commString2QStr(email);
@@ -91,14 +96,18 @@ void UserInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
 }
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
-    in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected >>
-            userInfo._isStaff >> userInfo._avatarUrl;
+    qint64 userDbId = 0;
+    qint64 userId = 0;
+    in >> userDbId >> userId >> userInfo._name >> userInfo._firstName >> userInfo._email >> userInfo._avatar >>
+            userInfo._connected >> userInfo._isStaff >> userInfo._avatarUrl;
+    userInfo.setDbId(static_cast<UserDbId>(userDbId));
+    userInfo.setUserId(static_cast<UserId>(userId));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo) {
-    out << userInfo._dbId << userInfo._userId << userInfo._name << userInfo._email << userInfo._avatar << userInfo._connected
-        << userInfo._isStaff << userInfo._avatarUrl;
+    out << static_cast<qint64>(userInfo._dbId) << static_cast<qint64>(userInfo._userId) << userInfo._name << userInfo._firstName
+        << userInfo._email << userInfo._avatar << userInfo._connected << userInfo._isStaff << userInfo._avatarUrl;
     return out;
 }
 

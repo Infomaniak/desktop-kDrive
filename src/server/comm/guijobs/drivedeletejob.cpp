@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "drivedeletejob.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "libcommon/utility/utility.h"
@@ -51,17 +52,25 @@ ExitInfo DriveDeleteJob::serializeOutputParms() {
 
 ExitInfo DriveDeleteJob::process() {
     // Get syncs to delete
-    std::vector<int> syncDbIdList;
+    std::vector<SyncDbId> syncDbIdList;
+    std::list<UserActionScopedLock> locks;
+
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     for (const auto &[syncDbId, syncPal]: _commManager->appServer().syncPalMap) {
         if (!syncPal) continue;
         if (syncPal->driveDbId() == _driveDbId) {
             syncDbIdList.push_back(syncDbId);
+            UserActionScopedLock &userLock = locks.emplace_back();
+            if (!userLock.tryLock(syncPal, std::chrono::milliseconds(userActionLockLongTimeoutMs))) {
+                LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                          << syncDbId << ". Another user action is running. Aborting DriveDeleteJob.");
+                return ExitCode::OperationCanceled;
+            }
         }
     }
 
     // Stop syncs for this user and remove them from syncPalMap.
-    _commManager->appServer().stopAllSyncsTask(syncDbIdList);
+    _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
     _commManager->appServer().deleteDrive(_driveDbId);
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();

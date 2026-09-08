@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,9 @@
  */
 
 #pragma once
+
+#include "utility/types.h"
+
 
 #include <QDialog>
 #include <QPaintEvent>
@@ -37,13 +40,13 @@ class ErrorsPopup : public QDialog {
 
     public:
         struct DriveError {
-                int driveDbId;
+                DriveDbId driveDbId{0};
                 QString driveName;
-                int unresolvedErrorsCount;
-                int autoresolvedErrorsCount;
+                Count unresolvedErrorsCount{0};
+                Count autoresolvedErrorsCount{0};
         };
 
-        explicit ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position,
+        explicit ErrorsPopup(const QList<DriveError> &driveErrorList, const Count genericErrorsCount, const QPoint position,
                              QWidget *parent = nullptr);
         inline int selectedAccountId() { return _selectedAccountId; }
 
@@ -51,8 +54,8 @@ class ErrorsPopup : public QDialog {
         void accountSelected(int accountId);
 
     private:
-        bool _moved;
-        int _selectedAccountId;
+        bool _moved{false};
+        AccountId _selectedAccountId{0};
         QPoint _position;
         QColor _backgroundColor;
         QSize _warningIconSize;

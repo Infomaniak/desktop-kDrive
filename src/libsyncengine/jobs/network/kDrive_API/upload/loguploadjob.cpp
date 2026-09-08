@@ -1,20 +1,25 @@
-// Infomaniak kDrive - Desktop
-// Copyright (C) 2023-2025 Infomaniak Network SA
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "loguploadjob.h"
+
+#include "jobs/network/jobexceptions.h"
+
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
@@ -72,14 +77,15 @@ void LogUploadJob::abort() {
     }
 }
 
-void LogUploadJob::cancelUpload() {
+bool LogUploadJob::cancelUpload() {
     const std::scoped_lock lock(_runningJobMutex);
     if (_runningJob) {
         LOG_INFO(Log::instance()->getLogger(), "Cancelling log upload job.");
         _runningJob->abort();
-        return;
+        return true;
     }
     LOG_WARN(Log::instance()->getLogger(), "No log upload in progress, unable to cancel the job.");
+    return false;
 }
 
 bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
@@ -503,7 +509,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         uploadSessionLog = std::make_shared<LogUploadSession>(archivePath, 1);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadSession::LogUploadSession: error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     };
 
     bool canceledByUser = false;
@@ -521,6 +527,7 @@ ExitInfo LogUploadJob::upload(const SyncPath &archivePath) {
         canceledByUser = notifyLogUploadProgress(LogUploadState::Uploading, 100).code() == ExitCode::OperationCanceled;
     };
     uploadSessionLog->setAdditionalCallback(uploadSessionLogFinishCallback);
+    uploadSessionLog->setScope(Scope::UserInitiated);
     (void) uploadSessionLog->runSynchronously();
     if (canceledByUser) {
         return {ExitCode::OperationCanceled, ExitCause::Unknown};

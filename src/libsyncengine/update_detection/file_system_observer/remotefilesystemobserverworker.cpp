@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/syncjobmanager.h"
+
+#include "jobs/network/jobexceptions.h"
 #include "jobs/network/kDrive_API/listing/continuefilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
@@ -103,9 +105,12 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _updating = true;
     countListingRequests();
 
+    exitInfo = initWithCursor();
+
     const auto end = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedSeconds = end - start;
-    if (exitInfo = initWithCursor(); exitInfo && !stopAsked()) {
+
+    if (exitInfo && !stopAsked()) {
         _liveSnapshot.setValid(true);
         LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for "
                                                                    << _liveSnapshot.nbItems() << " items");
@@ -181,9 +186,10 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents() {
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                               << _driveDbId << " error=" << e.what());
-            exitInfo = AbstractTokenNetworkJob::exception2ExitCode(e);
+            exitInfo = exception2ExitCode(e);
             break;
         }
+        job->setScope(Scope::Sync);
 
         if (exitInfo = job->runSynchronously(); exitInfo.code() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob: " << exitInfo);
@@ -274,8 +280,9 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     } catch (const std::exception &e) {
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
                                           << _driveDbId << " error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
+    job->setScope(Scope::Sync);
 
     SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
     while (!SyncJobManagerSingleton::instance()->isJobFinished(job->jobId())) {
@@ -289,6 +296,9 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     if (!job->exitInfo()) {
         LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob: " << job->exitInfo());
+        if (job->exitInfo().code() == ExitCode::RateLimited) {
+            setPauseDuration(job->sleepDuration());
+        }
 
         return job->exitInfo();
     }
@@ -357,10 +367,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             _liveSnapshot.path(item.parentId(), path, ignore);
             path /= item.name();
 
-            Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
-                      CancelType::TmpBlacklisted);
-            _syncPal->addError(err);
-
+            _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None,
+                                     InconsistencyType::None, CancelType::TmpBlacklisted));
             continue;
         }
 
@@ -391,12 +399,17 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
         if (_liveSnapshot.isOrphan(*nodeIdIt)) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_liveSnapshot.name(*nodeIdIt)) << L"' ("
-                                                  << CommonUtility::s2ws(*nodeIdIt) << L") is orphan. Removing it from "
-                                                  << _liveSnapshot.side() << L" snapshot.");
-            _liveSnapshot.removeItem(*nodeIdIt);
+            const auto itemName = _liveSnapshot.name(*nodeIdIt);
+            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(itemName) << L"' (" << CommonUtility::s2ws(*nodeIdIt)
+                                                  << L") is orphan. Removing it from " << _liveSnapshot.side() << L" snapshot.");
+            if (!_liveSnapshot.removeItem(*nodeIdIt)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(itemName) << L" ("
+                                                                    << CommonUtility::s2ws(*nodeIdIt) << L")");
+                invalidateSnapshot();
+                return ExitCode::DataError;
+            }
         }
-        nodeIdIt++;
+        ++nodeIdIt;
     }
 
     LOG_SYNCPAL_DEBUG(_logger,
@@ -412,8 +425,9 @@ ExitInfo RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             notifyJob = std::make_shared<LongPollJob>(_driveDbId, _cursor);
         } catch (const std::exception &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob::LongPollJob for driveDbId=" << _driveDbId << " error=" << e.what());
-            return AbstractTokenNetworkJob::exception2ExitCode(e);
+            return exception2ExitCode(e);
         }
+        notifyJob->setScope(Scope::Sync);
 
         SyncJobManagerSingleton::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
         while (!SyncJobManagerSingleton::instance()->isJobFinished(notifyJob->jobId())) {
@@ -502,7 +516,12 @@ ExitInfo RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 _syncPal->addError(error);
             }
             // Remove it from liveSnapshot
-            _liveSnapshot.removeItem(actionInfo.snapshotItem.id());
+            if (!_liveSnapshot.removeItem(actionInfo.snapshotItem.id())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.snapshotItem.name()) << L" ("
+                                                                    << CommonUtility::s2ws(actionInfo.snapshotItem.id()) << L")");
+                invalidateSnapshot();
+                return ExitCode::DataError;
+            }
             continue;
         }
 
@@ -751,7 +770,7 @@ ExitInfo RemoteFileSystemObserverWorker::removeItemFromSnapshot(const NodeId &id
     if (_liveSnapshot.removeItem(id)) return ExitCode::Ok;
 
     LOG_SYNCPAL_WARN(_logger, "Fail to remove item for ID: " << id);
-    tryToInvalidateSnapshot();
+    invalidateSnapshot();
     return ExitCode::BackError;
 }
 
@@ -764,8 +783,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in GetFileInfoJob::GetFileInfoJob for driveDbId=" << _syncPal->driveDbId() << " nodeId=" << nodeId.c_str()
                                                                           << " error=" << e.what());
-        return AbstractTokenNetworkJob::exception2ExitCode(e);
+        return exception2ExitCode(e);
     }
+    job->setScope(Scope::Sync);
 
     job->runSynchronously();
     if (job->hasHttpError() || !job->exitInfo()) {
@@ -794,34 +814,31 @@ ExitInfo RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId,
-                                                                       NodeType type) {
+ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_unused]] const SyncName &name,
+                                                                       [[maybe_unused]] const NodeId &nodeId,
+                                                                       [[maybe_unused]] const NodeType type) {
     ExitInfo exitInfo = ExitCode::Ok;
+
 #if defined(KD_MACOS)
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
-    auto ioError = IoError::Unknown;
     if (type == NodeType::File) {
-        ioError = Utility::tryCreateTmpFile(name);
+        exitInfo = Utility::tryCreateTmpFile(_syncPal->cacheDirectory(), name);
     } else if (type == NodeType::Directory) {
-        ioError = Utility::tryCreateTmpDir(name);
+        exitInfo = Utility::tryCreateTmpDir(_syncPal->cacheDirectory(), name);
     }
 
-    if (ioError == IoError::AccessDenied) {
+    if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
         LOGW_SYNCPAL_ERROR(_logger, L"Can't access tmp directory.");
-        exitInfo = {ExitCode::SystemError, ExitCause::TmpDirAccessError};
         _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
-    } else if (ioError != IoError::Success) {
+    } else if (!exitInfo) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
                                             << SyncName2WStr(name) << L". Item is ignored.");
         _syncPal->addError(
                 Error(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar));
         exitInfo = {ExitCode::SystemError, ExitCause::InvalidName};
     }
-#else
-    (void) name;
-    (void) nodeId;
-    (void) type;
 #endif
+
     return exitInfo;
 }
 

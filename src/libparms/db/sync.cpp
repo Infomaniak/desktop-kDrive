@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@ Sync::Sync() :
     _hasFullyCompleted(false),
     _listingCursorTimestamp(0) {}
 
-Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
+Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &localPath, const NodeId &localNodeId,
            const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
            VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
            bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           int64_t listingCursorTimestamp) :
+           const int64_t listingCursorTimestamp, const bool toDelete) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
@@ -49,6 +49,7 @@ Sync::Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, cons
     _hasFullyCompleted(hasFullyCompleted),
     _navigationPaneClsid(navigationPaneClsid),
     _listingCursor(listingCursor),
-    _listingCursorTimestamp(listingCursorTimestamp) {}
+    _listingCursorTimestamp(listingCursorTimestamp),
+    _toDelete(toDelete) {}
 
 } // namespace KDC

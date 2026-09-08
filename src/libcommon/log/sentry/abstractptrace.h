@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,10 +34,10 @@ class AbstractPTrace {
 
     protected:
         explicit AbstractPTrace(const PTraceDescriptor &info) :
-            _pTraceInfo(info) {};
-        explicit AbstractPTrace(const PTraceDescriptor &info, const int dbId) :
+            _pTraceInfo(info){};
+        explicit AbstractPTrace(const PTraceDescriptor &info, const SyncDbId dbId) :
             _pTraceInfo(info),
-            _syncDbId(dbId) {};
+            _syncDbId(dbId){};
 
         // Start a new performance trace.
         inline AbstractPTrace &_start() {
@@ -68,7 +68,7 @@ class AbstractPTrace {
         AbstractPTrace &operator=(AbstractPTrace &&) = delete;
         pTraceId _pTraceId{0};
         PTraceDescriptor _pTraceInfo;
-        int _syncDbId = -1;
+        SyncDbId _syncDbId = -1;
         bool _running = false;
 };
 } // namespace KDC::sentry

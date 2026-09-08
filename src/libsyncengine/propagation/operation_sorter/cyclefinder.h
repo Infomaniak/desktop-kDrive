@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ namespace KDC {
 class CycleFinder {
     public:
         explicit CycleFinder(const std::list<std::pair<SyncOpPtr, SyncOpPtr>> &reorderings) :
-            _reorderings(reorderings) {};
+            _reorderings(reorderings){};
 
         void findCompleteCycle();
         [[nodiscard]] const SyncOperationList &completeCycle() const { return _completeCycle; }

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,6 +100,7 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.S">0,0,0,12</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.M">0,0,0,16</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.L">0,0,0,24</Thickness>
+    <Thickness x:Key="Infomaniak.Style.Thickness.Bottom.XL">0,0,0,32</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XXS">4,0,0,0</Thickness>
     <Thickness x:Key="Infomaniak.Style.Thickness.Left.XS">8,0,0,0</Thickness>
@@ -117,6 +118,8 @@
     <Thickness x:Key="Infomaniak.Style.Thickness.Right.XXXL">0,0,48,0</Thickness>
 
     <Thickness x:Key="Infomaniak.Style.Thickness.TextBadge">4,2</Thickness>
+    
+    <Thickness x:Key="Infomaniak.Style.Thickness.FullScreenCard">16,0,16,16</Thickness>
 
     <!-- Corner Radius -->
     <CornerRadius x:Key="Infomaniak.Style.CornerRadius.Uniform.XS">2</CornerRadius>
@@ -282,5 +285,15 @@
                 Value="{StaticResource Infomaniak.Style.CornerRadius.Uniform.M}" />
         <Setter Property="BorderBrush"
                 Value="{ThemeResource SystemControlBackgroundBaseLowRevealBorderBrush}" />
+    </Style>
+    <Style x:Key="Infomaniak.Style.Border.TextBorder"
+           TargetType="Border">
+        <Setter Property="Padding"
+                Value="5,3,7,3" />
+        <Setter Property="CornerRadius"
+                Value="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}" />
+
+        <Setter Property="Background"
+                Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
     </Style>
 </ResourceDictionary>

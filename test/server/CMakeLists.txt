@@ -66,6 +66,8 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.h ${server_srcs_path}/comm/guijobs/nodeconflictinfojob.cpp
     ${server_srcs_path}/comm/guijobs/errorinfolistjob.h ${server_srcs_path}/comm/guijobs/errorinfolistjob.cpp
     ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/abstracterrorresolveconflictsjob.cpp
+    ${server_srcs_path}/comm/guijobs/errordeletejob.h ${server_srcs_path}/comm/guijobs/errordeletejob.cpp
+    ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.h ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
@@ -117,7 +119,7 @@ set(server_SRCS
     ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
-    ${server_srcs_path}/updater/updatechecker.h ${server_srcs_path}/updater/updatechecker.cpp
+    ${server_srcs_path}/updater/versionretriever.h ${server_srcs_path}/updater/versionretriever.cpp
     ${server_srcs_path}/requests/offlinefilessizeestimator.h ${server_srcs_path}/requests/offlinefilessizeestimator.cpp
     ${server_srcs_path}/app_resources.rc
 )
@@ -175,9 +177,9 @@ else()
 endif()
 
 set(testserver_SRCS
-    ../libsyncengine/jobs/network/mockgetappversionjob.h
     updater/mockupdater.h
-    updater/mockupdatechecker.h
+    updater/mockversionretriever.h
+    updater/mockgetappversionjob.h
     ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
     ../test_utility/testbase.h
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
@@ -185,7 +187,6 @@ set(testserver_SRCS
     ../test.cpp
 
     test.cpp
-    updater/testupdatechecker.h updater/testupdatechecker.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
     workers/testworkers.h workers/testworkers.cpp
     requests/testserverrequests.h requests/testserverrequests.cpp
@@ -214,6 +215,7 @@ if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_mac.cpp)
 elseif(UNIX)
+    list(APPEND server_SRCS ${server_srcs_path}/runningprocessinfo_linux.h ${server_srcs_path}/runningprocessinfo_linux.cpp)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_linux.cpp)
 elseif(WIN32)
     list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)
@@ -226,7 +228,6 @@ endif()
 
 if(WIN32)
     include_directories("C:/Program Files (x86)/cppunit/include")
-    include_directories("C:/Program Files (x86)/Sentry-Native/include")
     include_directories("C:/Program Files (x86)/libzip/include")
 else()
     include_directories("/usr/local/include")
@@ -236,6 +237,37 @@ add_executable(${testserver_NAME}
     ${server_SRCS}
     ${3rdparty_SRC}
     ${testserver_SRCS})
+
+# Precompiled headers
+set(PC_HEADER_FILES)
+if(UNIX AND NOT APPLE)
+    set(PC_HEADER_FILES
+        "$<$<COMPILE_LANGUAGE:CXX>:<gio/gio.h$<ANGLE-R>>"
+    )
+endif()
+
+list(APPEND PC_HEADER_FILES
+    # std c++
+    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"
+    # Qt
+    "$<$<COMPILE_LANGUAGE:CXX>:<qdir.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qfileinfo.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qstandardpaths.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<qtimer.h$<ANGLE-R>>"
+    # CppUnit
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/TestFixture.h$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<cppunit/extensions/HelperMacros.h$<ANGLE-R>>"
+    # log4cplus
+    "$<$<COMPILE_LANGUAGE:CXX>:<log4cplus/loggingmacros.h$<ANGLE-R>>"
+    # kDrive
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/types.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommon/utility/utility.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/log/log.h>"
+    "$<$<COMPILE_LANGUAGE:CXX>:libcommonserver/utility/utility.h>"
+)
+
+target_precompile_headers(${testserver_NAME} PRIVATE ${PC_HEADER_FILES})
 
 set_target_properties(${testserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})

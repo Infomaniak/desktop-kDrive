@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,11 +89,11 @@ struct RightsSet {
         RightsSet(int rights) :
             read(rights & 4),
             write(rights & 2),
-            execute(rights & 1) {};
+            execute(rights & 1){};
         RightsSet(bool read, bool write, bool execute) :
             read(read),
             write(write),
-            execute(execute) {};
+            execute(execute){};
         bool read;
         bool write;
         bool execute;
@@ -102,6 +102,7 @@ struct RightsSet {
 void generateTestFile(const SyncPath &path, const uint64_t size = 0);
 void generateOrEditTestFile(const SyncPath &path);
 void setTestFileSize(const SyncPath &path, uint64_t size);
+bool generateTestFolder(const SyncPath &path);
 
 /**
  * @brief Generate test files.
@@ -133,6 +134,11 @@ void eraseFromTrash(const SyncPath &relativePath);
  */
 bool isInTrash(const SyncPath &path);
 
+#if defined(KD_LINUX)
+bool hasTrashInfo();
+void showTrashInfo();
+#endif
+
 // Create two symbolic links that refer to each other:
 // filepath1 -> filepath2,
 // filepath2 -> filepath1
@@ -154,5 +160,7 @@ void setupLogging();
  */
 bool setDehydratedPlaceholderStatus(const SyncPath &path, IoError &ioError) noexcept;
 #endif
+
+SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix);
 
 } // namespace KDC::testhelpers

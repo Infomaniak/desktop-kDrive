@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ namespace KDC {
 
 class SyncDb : public Db {
     public:
-        SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
+        SyncDb(const std::string &dbPath, const std::string &targetNodeId = std::string());
 
         std::string dbType() const override { return "Sync"; }
 
@@ -61,7 +61,7 @@ class SyncDb : public Db {
         bool size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found);
         bool created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
         bool lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
         bool path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found);
         bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
         bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);

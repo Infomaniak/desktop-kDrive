@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ struct SyncCompletedItemParsingTest {
         #expect(signal.id == 16967)
         #expect(signal.num == SignalNum.SYNC_COMPLETEDITEM)
         #expect(signal.body.syncDbId == 1)
-        #expect(signal.body.itemInfo.type == .File)
+        #expect(signal.body.itemInfo.type == KDC.NodeType.File)
         #expect(signal.body.itemInfo.direction == .Down)
         #expect(signal.body.itemInfo.instruction == .Update)
         #expect(signal.body.itemInfo.status == .Success)

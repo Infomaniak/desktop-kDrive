@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -237,11 +237,8 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
             assert(false && "Invalid app type for sentry initialization");
             return;
     }
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(__x86_64__)
-    // TODO: On Linux arm64, Sentry is built with breakpad instead of crashpad_handler until support of Ubuntu 20.04 is
-    // discontinued
+
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
-#endif
 
     SyncPath appSupportPath = CommonUtility::getAppSupportDir();
     switch (_appType) {
@@ -261,7 +258,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
     sentry_options_set_database_pathw(options, appSupportPath.c_str());
-#elif defined(Q_OS_MAC) || defined(__x86_64__)
+#elif defined(Q_OS_MAC) || defined(Q_OS_LINUX)
     sentry_options_set_handler_path(options, appWorkingPath.c_str());
     sentry_options_set_database_path(options, appSupportPath.c_str());
 #endif
@@ -307,7 +304,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
         std::cerr << "sentry_init returned " << res << std::endl;
     }
     assert(res == 0);
-    _instance->setDistributionChannel(VersionChannel::Unknown);
+    _instance->setDistributionChannel(DistributionChannel::Unknown);
 }
 
 void Handler::setAuthenticatedUser(const SentryUser &user) {
@@ -502,37 +499,12 @@ void Handler::writeEvent(const std::string &eventStr, bool crash) noexcept {
     }
 }
 
-void Handler::setDistributionChannel(const VersionChannel channel) {
+void Handler::setDistributionChannel(const DistributionChannel channel) {
     // Editing the "distribution_channel" value implies reflecting the change in the Sentry project settings.
     // (Settings > Projects > kdrive-[client/server] > Tags & Context).
     // It is not recommended to change this value or the channelStr values, as some Sentry dashboards/alerts might rely
     // on them and should be updated accordingly.
-
-    std::string channelStr;
-    switch (channel) {
-        case VersionChannel::Prod:
-            channelStr = "Production";
-            break;
-        case VersionChannel::Next:
-            channelStr = "Next";
-            break;
-        case VersionChannel::Beta:
-            channelStr = "Beta";
-            break;
-        case VersionChannel::Internal:
-            channelStr = "Internal";
-            break;
-        case VersionChannel::Legacy:
-            channelStr = "Legacy";
-            break;
-        case VersionChannel::Unknown:
-            channelStr = "Unknown";
-            break;
-        default:
-            channelStr = "Error";
-            break;
-    }
-    setTag("distribution_channel", channelStr);
+    setTag("distribution_channel", toString(channel));
 }
 
 void Handler::setAppUUID(std::string appUUID) {
@@ -676,7 +648,7 @@ bool Handler::arePtracesEnabled() const {
     return _isSentryActivated && _appType != AppType::Test;
 }
 
-pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) {
+pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, const SyncDbId syncDbId) {
     if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return 0;
 
     std::scoped_lock lock(_mutex);
@@ -716,7 +688,7 @@ pTraceId Handler::startPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId) 
     return newPTraceId;
 }
 
-void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, int syncDbId, PTraceStatus status) {
+void Handler::stopPTrace(const PTraceDescriptor &pTraceInfo, const SyncDbId syncDbId, PTraceStatus status) {
     if (!_isSentryActivated || !arePtracesEnabled() || pTraceInfo.pTraceName() == PTraceName::None) return;
 
     std::scoped_lock lock(_mutex);

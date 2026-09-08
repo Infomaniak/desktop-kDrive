@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,10 +43,10 @@ class NodeCreateMissingFoldersJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
 
-        ExitInfo pauseDriveSyncs(std::vector<int> &pausedSyncs);
+        ExitInfo pauseDriveSyncs(std::vector<SyncDbId> &pausedSyncs);
         ExitInfo createMissingFolders(NodeId &firstCreatedNodeId);
         ExitInfo blacklistNodeOnAllDriveSyncs(const NodeId &nodeId);
-        void resumeSyncs(const std::vector<int> &pausedSyncs);
+        void resumeSyncs(const std::vector<SyncDbId> &pausedSyncs);
 
         friend class TestGuiCommChannel;
 };

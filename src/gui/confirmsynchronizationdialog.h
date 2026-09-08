@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class ConfirmSynchronizationDialog : public CustomDialog {
         Q_PROPERTY(QColor arrow_icon_color READ arrowIconColor WRITE setArrowIconColor)
 
     public:
-        explicit ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, int userDbId, int driveId,
+        explicit ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, UserDbId userDbId, DriveId driveId,
                                               const QString &serverFolderNodeId, const QString &localFolderName,
                                               qint64 localFolderSize, const QString &serverFolderName, qint64 serverFolderSize,
                                               QWidget *parent = nullptr);

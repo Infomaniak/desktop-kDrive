@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@ using DynamicData;
 using DynamicData.Binding;
 using Infomaniak.kDrive.Pages.Settings;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
+using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
-using Microsoft.VisualBasic.Devices;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -74,10 +74,10 @@ namespace Infomaniak.kDrive.ViewModels
         public Settings Settings { get; } = new Settings();
 
         // Helpers
-        private readonly Network _network = new();
         private readonly Task? _networkWatcher;
         private readonly CancellationTokenSource _networkWatcherCancellationSource = new();
-        private bool _networkAvailable;
+        private bool _networkAvailable = true;
+        private bool _updateRequired;
 
         public class SelectedSyncChangedEventArgs : EventArgs
         {
@@ -121,20 +121,21 @@ namespace Infomaniak.kDrive.ViewModels
             AllSyncs = allSyncs;
 
             // Create a read-only observable collection of all drives across all users
-            AllSyncs.ToObservableChangeSet()
-                .AutoRefresh(s => s.Drive) // Refresh when the Drive property changes
-                .Transform(s => s.Drive) // Transform Sync to Drive
-                .DistinctValues(d => d)
-                .Bind(out var allDrives) // Bind to a read-only observable collection
-                .Subscribe();
+            _users.ToObservableChangeSet()
+               .AutoRefresh(u => u.Accounts.Count)
+               .TransformMany(a => a.Accounts)
+               .AutoRefresh(a => a.Drives.Count)
+               .TransformMany(a => a.Drives)
+               .Sort(SortExpressionComparer<Drive>.Ascending(d => d.DbId))
+               .Bind(out var allDrives)
+               .Subscribe();
             AllDrives = allDrives;
 
             // Observe changes to ActiveDrives list and ensure SelectedSync is valid
             AllSyncs.ToObservableChangeSet()
                                        .Subscribe(_ => UIThreadDispatcher.TryEnqueue(EnsureValidSelectedSync));
 
-            _networkAvailable = _network.IsAvailable;
-            _networkWatcher = WatchNetworkAsync(_networkWatcherCancellationSource.Token);
+            _networkWatcher = Task.Run(() => WatchNetworkAsync(_networkWatcherCancellationSource.Token));
         }
 
         ~AppModel()
@@ -170,7 +171,7 @@ namespace Infomaniak.kDrive.ViewModels
                 if (previousStatus != isAvailable)
                 {
                     previousStatus = isAvailable;
-                    UIThreadDispatcher.TryEnqueue(() => NetworkAvailable = isAvailable);
+                    NetworkAvailable = isAvailable;
                 }
 
                 try
@@ -216,6 +217,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _networkAvailable;
             set => SetPropertyInUIThread(ref _networkAvailable, value);
+        }
+
+        public bool UpdateRequired
+        {
+            get => _updateRequired;
+            set => SetPropertyInUIThread(ref _updateRequired, value);
         }
 
         /** Initialize the model by loading data from the server.
@@ -271,20 +278,23 @@ namespace Infomaniak.kDrive.ViewModels
                         return false;
                     }
 
-                    if (!await serverCommService.RefreshUpdaterVersionInfo(cts.Token))
-                    {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh updater version info during AppModel initialization.");
-                        // This is not critical, we can continue without this info
-                    }
-
-                    if (!await serverCommService.ActivateLoadInfo(CancellationToken.None))
-                    {
-                        Logger.Log(Logger.Level.Error, "Failed to ActivateLoadInfo during AppModel initialization.");
-                        // This is not critical, we can continue without this info
-                    }
-
                     Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
                     IsInitialized = true;
+
+
+                    // Refresh updater version info and load info in parallel, they are not critical for the app to function and can be slow to load
+                    _ = Task.Run(async () =>
+                    {
+                        if (!await serverCommService.RefreshUpdaterVersionInfo(null, CancellationToken.None))
+                            Logger.Log(Logger.Level.Warning, "RefreshUpdaterVersionInfo returned false during AppModel initialization.");
+
+                    });
+
+                    _ = Task.Run(async () =>
+                    {
+                        if (!await serverCommService.ActivateLoadInfo(CancellationToken.None))
+                            Logger.Log(Logger.Level.Warning, "Failed to ActivateLoadInfo during AppModel initialization.");
+                    });
                     return true;
                 }
             }
@@ -314,9 +324,11 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task AddErrorAsync(Error error)
         {
             Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
-            if (error.ErrorLevel == Types.ErrorLevel.Server)
+            if (error.ErrorLevel == Types.ErrorLevel.Server || error.ExitCode == ExitCode.UpdateRequired) // Treat any UpdateRequired error as a Server level error
             {
-                AppErrors.Add(error);
+                error.ErrorLevel = ErrorLevel.Server;
+                await Utility.RunOnUIThread(() => AppErrors.Add(error));
+                await RefreshErrorState();
                 return;
             }
 
@@ -334,7 +346,8 @@ namespace Infomaniak.kDrive.ViewModels
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
             if (appError is not null)
             {
-                await Utility.RunOnUIThread(void () => AppErrors.Remove(appError));
+                await Utility.RunOnUIThread(() => AppErrors.Remove(appError));
+                await RefreshErrorState();
                 return;
             }
 
@@ -343,7 +356,6 @@ namespace Infomaniak.kDrive.ViewModels
                 var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
                 if (syncError != null)
                 {
-                    // TODO: Check special errors and update related viewmodels if needed
                     await sync.RemoveErrorAsync(syncError);
                     return;
                 }
@@ -355,15 +367,18 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task ClearAllErrorsAsync()
         {
             Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
-            foreach (var appError in AppErrors)
-            {
-                await RemoveErrorByDbIdAsync(appError.DbId);
-            }
-
+            
+            await Utility.RunOnUIThread(() => AppErrors.Clear());
+            await RefreshErrorState();
             foreach (var sync in AllSyncs)
             {
                 await sync.ClearAllErrorsAsync();
             }
+        }
+
+        public async Task RefreshErrorState()
+        {
+            await Utility.RunOnUIThread(() => UpdateRequired = AppErrors.Any(e => e.ExitCode == Types.ExitCode.UpdateRequired));
         }
     }
 }

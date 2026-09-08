@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ static int textLineHeightOffset = 15;
 static int notifBoxXMargin = 10;
 static int notifBoxHeight = 20;
 static float notifBoxRadius = 9.5;
-static int maxNbNotif = 99;
+static uint16_t maxNbNotif = 99;
 static int notifTextPadding = 15;
 
 CustomTabBar::CustomTabBar(QWidget *parent) :
@@ -46,13 +46,13 @@ void CustomTabBar::paintEvent(QPaintEvent *) {
     QStylePainter p(this);
 
     for (int i = 0; i < count(); ++i) {
-        int notifCount = i == 0 ? _unResolvedNotifCount : _autoResolvedNotifCount;
+        const auto notifCount = i == 0 ? _unResolvedNotifCount : _autoResolvedNotifCount;
 
         QStyleOptionTab option;
         initStyleOption(&option, i);
 
-        bool curr = i == currentIndex();
-        bool notifDisplay = notifCount > 0;
+        const bool curr = i == currentIndex();
+        const bool notifDisplay = notifCount > 0;
         p.setPen(curr ? _tabSelectedTextColor : _tabTextColor);
 
         QRect textBounding = option.fontMetrics.boundingRect(option.text);
@@ -61,12 +61,11 @@ void CustomTabBar::paintEvent(QPaintEvent *) {
         textRect.moveCenter(QPoint(textRect.center().x(), textRect.center().y() - textLineHeightOffset));
         p.drawItemText(textRect, Qt::AlignBottom | Qt::AlignLeft, palette(), true, option.text);
 
-        QString notifText = notifCount > maxNbNotif ? "+99" : QString::number(notifCount);
+        const QString notifText = notifCount > maxNbNotif ? "+99" : QString::number(notifCount);
         QRect notifTextBoundingBox = option.fontMetrics.boundingRect(notifText);
 
-        int textEndPointX = textBounding.bottomRight().x() + textRect.bottomLeft().x();
-
-        int notifBoxWidth = notifTextBoundingBox.width() + notifTextPadding;
+        const auto textEndPointX = textBounding.bottomRight().x() + textRect.bottomLeft().x();
+        const auto notifBoxWidth = notifTextBoundingBox.width() + notifTextPadding;
 
         // draw notif badge
         if (notifDisplay) {
@@ -88,7 +87,7 @@ void CustomTabBar::paintEvent(QPaintEvent *) {
 
         // draw blue underline
         if (curr) {
-            int margin = notifDisplay ? notifBoxWidth + notifBoxXMargin : 0;
+            const auto margin = notifDisplay ? notifBoxWidth + notifBoxXMargin : 0;
 
             p.setPen(QPen(selectLineColor, selectedLineStroke));
             p.drawLine(QLineF(QPoint(textRect.bottomLeft().x(), textRect.bottomLeft().y() + textLineHeightOffset),

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include "utility/testjsonparserutility.h"
 #include "log/testlog.h"
 #include "io/testio.h"
+#include "io/testcachedirectory.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
@@ -36,6 +37,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestUrlHelper);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestJsonParserUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestCacheDirectory);
 } // namespace KDC
 
 int main(int, char **) {

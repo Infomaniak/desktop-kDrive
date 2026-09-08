@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@ class SyncDb;
 class SyncDbReadOnlyCache {
     public:
         explicit SyncDbReadOnlyCache(SyncDb &syncDb) :
-            _syncDb(syncDb) {};
+            _syncDb(syncDb){};
         bool reloadIfNeeded();
         void clear();
         // Getters with replica IDs
-        bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
         bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
         // Returns database ID for the ID nodeId of the snapshot from replica `side`
         bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);

@@ -1,7 +1,7 @@
 //
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ struct UserHeaderCellView: View {
         HStack(spacing: AppPadding.padding8) {
             if let avatar {
                 AvatarView(image: avatar)
-                    .frame(width: 26, height: 26)
+                    .frame(width: 24, height: 24)
             }
 
             VStack(alignment: .leading) {

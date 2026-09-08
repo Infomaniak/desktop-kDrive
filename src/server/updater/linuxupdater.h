@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ namespace KDC {
 class LinuxUpdater final : public AbstractUpdater {
     public:
         void onUpdateFound() override;
-        void startInstaller() override { /* No automatic update on Linux for now */ }
+        void startInstaller() override { /* No automatic update on Linux for now */
+        }
         bool checkMinOsVersion(const std::string &minOsVersion) const override;
 };
 

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDeleteOpNodes);
         CPPUNIT_TEST(testInitSyncFileItem);
         CPPUNIT_TEST(testCheckAlreadyExcluded);
+        CPPUNIT_TEST(testLateJobCallbacksAfterStop);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -54,6 +55,7 @@ class TestExecutorWorker : public CppUnit::TestFixture, public TestBase {
         void testInitSyncFileItem();
         void testDeleteOpNodes();
         void testCheckAlreadyExcluded();
+        void testLateJobCallbacksAfterStop();
 
         bool opsExist(SyncOpPtr op);
         SyncOpPtr generateSyncOperation(const DbNodeId dbNodeId, const SyncName &filename,

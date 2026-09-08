@@ -1,0 +1,5 @@
+# Poco sub used: Foundation JSON Net NetSSL Util XML
+
+versions:
+  "1.13.3":
+    folder: all

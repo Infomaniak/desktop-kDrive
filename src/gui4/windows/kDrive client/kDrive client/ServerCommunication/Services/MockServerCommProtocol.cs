@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 {
     public class MockServerCommProtocol : Interfaces.IServerCommProtocol
     {
-        protected MockServerData _mockData = new MockServerData();
+        protected MockServerData _mockData = new();
 
         private long _requestIdCounter = 0;
         private long NextId
@@ -42,8 +42,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             get => ++_requestIdCounter;
         }
 
+        public Task<bool> InitConnection(CancellationToken cancellationToken) { return Task.FromResult(true); }
         public event EventHandler<SignalEventArgs>? SignalReceived;
+
+#pragma warning disable CS0067 // ConnectionLost is not used in the mock implementation, but we need to declare it to satisfy the IServerCommProtocol interface. We can safely ignore the fact that it's never raised.
         public event EventHandler? ConnectionLost;
+#pragma warning restore CS0067 
+
         protected Queue<KeyValuePair<SignalNum, JsonObject>> PendingSignals { get; } = new Queue<KeyValuePair<SignalNum, JsonObject>>();
         private Task? _signalHandler;
         private Task? _customSignalsHandler;
@@ -54,44 +59,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         public async Task<CommData> SendRequestAsync(RequestNum requestNum, JsonObject parameters, CancellationToken cancellationToken = default)
         {
-            switch (requestNum)
+            return requestNum switch
             {
-                case RequestNum.LOGIN_REQUESTTOKEN:
-                    return await LoginRequestToken(parameters);
-                case RequestNum.USER_DBIDLIST:
-                    return await UserDbIdsRequest(parameters);
-                case RequestNum.USER_INFOLIST:
-                    return await UserInfoListRequest(parameters);
-                case RequestNum.ACCOUNT_INFOLIST:
-                    return await AccountInfoListRequest(parameters);
-                case RequestNum.DRIVE_INFOLIST:
-                    return await DriveInfoListRequest(parameters);
-                case RequestNum.SYNC_INFOLIST:
-                    return await SyncInfoListRequest(parameters);
-                case RequestNum.UPDATER_START_INSTALLER:
-                    return await UpdateStartInstaller(parameters);
-                case RequestNum.UPDATER_VERSION_INFO:
-                    return await UpdaterVersionInfo(parameters);
-                case RequestNum.UPDATER_CHANGE_CHANNEL:
-                    return await UpdaterChangeChannel(parameters);
-                case RequestNum.PARAMETERS_INFO:
-                    return await ParametersInfo(parameters);
-                case RequestNum.PARAMETERS_UPDATE:
-                    return await ParametersUpdate(parameters);
-                default:
-                    throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.");
-            }
+                RequestNum.LOGIN_REQUESTTOKEN => await LoginRequestToken(parameters),
+                RequestNum.USER_DBIDLIST => await UserDbIdsRequest(parameters),
+                RequestNum.USER_INFOLIST => await UserInfoListRequest(parameters),
+                RequestNum.ACCOUNT_INFOLIST => await AccountInfoListRequest(parameters),
+                RequestNum.DRIVE_INFOLIST => await DriveInfoListRequest(parameters),
+                RequestNum.SYNC_INFOLIST => await SyncInfoListRequest(parameters),
+                RequestNum.UPDATER_START_INSTALLER => await UpdateStartInstaller(parameters),
+                RequestNum.UPDATER_SKIP_VERSION => await UpdaterSkipVersion(parameters),
+                RequestNum.UPDATER_VERSION_INFO => await UpdaterVersionInfo(parameters),
+                RequestNum.UPDATER_CHANGE_CHANNEL => await UpdaterChangeChannel(parameters),
+                RequestNum.PARAMETERS_INFO => await ParametersInfo(parameters),
+                RequestNum.PARAMETERS_UPDATE => await ParametersUpdate(parameters),
+                RequestNum.ERROR_DELETE => await ErrorDelete(parameters),
+                _ => throw new NotImplementedException($"RequestNum {requestNum} not implemented in MockServerCommProtocol.")
+            };
         }
 
         private Task<CommData> LoginRequestToken(JsonObject parameters)
         {
             var random = new Random();
             var randomUserIndex = random.Next(0, _mockData.Users.Count);
-            var user = _mockData.Users.ElementAtOrDefault(randomUserIndex);
-            if (user == null)
-            {
-                throw new InvalidOperationException("No users available in mock data.");
-            }
+            var user = _mockData.Users.ElementAtOrDefault(randomUserIndex) ?? throw new InvalidOperationException("No users available in mock data.");
 
             // Simulate UserAdded signal
             var userData = new JsonObject
@@ -122,7 +113,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> UserDbIdsRequest(JsonObject parameters)
         {
-            List<DbId> userDbIds = _mockData.Users.Select(u => u.DbId).ToList();
+            List<DbId> userDbIds = [.. _mockData.Users.Select(u => u.DbId)];
             return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
@@ -277,17 +268,30 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_START_INSTALLER,
-                Params = []
+                Params = new JsonObject()
             };
         }
 
-        private async Task<CommData> UpdaterVersionInfo(JsonObject parameters)
+        private async Task<CommData> UpdaterSkipVersion(JsonObject parameters)
+        {
+            Logger.Log(Logger.Level.Debug, "Received UpdaterSkipVersion request.");
+            await Task.CompletedTask;
+            return new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.UPDATER_SKIP_VERSION,
+                Params = new JsonObject()
+            };
+        }
+
+        private Task<CommData> UpdaterVersionInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
-            VersionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
+            DistributionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
             {
-                channel = (VersionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
+                channel = (DistributionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
             }
 
             AppVersion update = _mockData.VersionsByChannel[channel] ?? _mockData.CurrentVersion;
@@ -300,20 +304,20 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 { "downloadUrl", "" }, // Not used
             };
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_VERSION_INFO,
                 Params = new JsonObject() { { JsonKeys.VersionInfo, versionInfo } }
-            };
+            });
         }
-        private async Task<CommData> UpdaterChangeChannel(JsonObject parameters)
+        private Task<CommData> UpdaterChangeChannel(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
             {
-                _mockData.Settings.DistributionChannel = (VersionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
+                _mockData.Settings.DistributionChannel = (DistributionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
             }
             else
             {
@@ -321,16 +325,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             }
             EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, []);
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.UPDATER_CHANGE_CHANNEL,
-                Params = []
-            };
+                Params = new JsonObject()
+            });
         }
 
-        private async Task<CommData> ParametersInfo(JsonObject parameters)
+        private Task<CommData> ParametersInfo(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received ParametersInfo request.");
             var options = new JsonSerializerOptions
@@ -339,7 +343,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             };
             string parametersInfo = JsonSerializer.Serialize(_mockData.Settings, options);
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
@@ -348,23 +352,23 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     [JsonKeys.ParmsInfo] = JsonNode.Parse(parametersInfo)
                 }
-            };
+            });
         }
 
-        private async Task<CommData> ParametersUpdate(JsonObject parameters)
+        private Task<CommData> ParametersUpdate(JsonObject parameters)
         {
             Logger.Log(Logger.Level.Debug, "Received ParametersUpdate request.");
             if (!parameters.ContainsKey(JsonKeys.ParmsInfo) || parameters[JsonKeys.ParmsInfo] == null)
             {
                 Logger.Log(Logger.Level.Warning, "No parmsInfo specified in ParametersUpdate request, using existing settings.");
 
-                return new CommData
+                return Task.FromResult(new CommData
                 {
                     Type = CommMessageType.Request,
                     Id = (int)NextId,
                     RequestNum = RequestNum.PARAMETERS_UPDATE,
-                    Params = []
-                };
+                    Params = new JsonObject()
+                });
             }
 
             var options = new JsonSerializerOptions
@@ -380,13 +384,26 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             _mockData.Settings = updatedSettings;
 
-            return new CommData
+            return Task.FromResult(new CommData
             {
                 Type = CommMessageType.Request,
                 Id = (int)NextId,
                 RequestNum = RequestNum.PARAMETERS_UPDATE,
-                Params = []
-            };
+                Params = new JsonObject()
+            });
+        }
+
+        private Task<CommData> ErrorDelete(JsonObject parameters)
+        {
+            DbId errorDbId = parameters[JsonKeys.ErrorDbId]?.GetValue<DbId>() ?? -1;
+            EnqueueSignal(SignalNum.UTILITY_ERROR_REMOVED, new JsonObject { [JsonKeys.ErrorDbId] = errorDbId });
+            return Task.FromResult(new CommData
+            {
+                Type = CommMessageType.Request,
+                Id = (int)NextId,
+                RequestNum = RequestNum.ERROR_DELETE,
+                Params = new JsonObject()
+            });
         }
 
         protected void EnqueueSignal(SignalNum signalNum, JsonObject parameters)
@@ -425,7 +442,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
     public struct MockServerData
     {
         // Save the structure to a JSON file
-        public void save(string path)
+        public void Save(string path)
         {
             var options = new JsonSerializerOptions
             {
@@ -440,11 +457,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public AppVersion CurrentVersion { get; set; } = new AppVersion() { BuildVersion = 1, Tag = "3.7.6" };
         public ParmsInfo Settings { get; set; } = new ParmsInfo();
 
-        public Dictionary<VersionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<VersionChannel, AppVersion?>()
+        public Dictionary<DistributionChannel, AppVersion?> VersionsByChannel { get; set; } = new Dictionary<DistributionChannel, AppVersion?>()
         {
-            {VersionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
-            {VersionChannel.Beta, new AppVersion() { BuildVersion = 2, Tag = "3.7.7" } },
-            {VersionChannel.Internal, new AppVersion() { BuildVersion = 2, Tag = "3.7.8" }},
+            {DistributionChannel.Prod, new AppVersion() { BuildVersion = 1, Tag = "3.7.6" } },
+            {DistributionChannel.Beta, new AppVersion() { BuildVersion = 2, Tag = "3.7.7" } },
+            {DistributionChannel.Internal, new AppVersion() { BuildVersion = 2, Tag = "3.7.8" }},
         };
 
         public MockServerData()
@@ -536,13 +553,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             drives[4].Syncs.Add(syncs[17]);
 
             // Create mock ParmsInfo
-            ParmsInfo parmsInfo = new ParmsInfo()
+            ParmsInfo parmsInfo = new()
             {
-                Language = Language.SystemDefault,
+                Language = Language.Default,
                 AutoStart = true,
                 MoveToTrash = true,
                 NotificationsDisabled = NotificationsDisabled.Always,
-                DistributionChannel = VersionChannel.Prod,
+                DistributionChannel = DistributionChannel.Prod,
                 UseLog = false,
                 LogLevel = Logger.Level.Debug,
                 ExtendedLog = false,

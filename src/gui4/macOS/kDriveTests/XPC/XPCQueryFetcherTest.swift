@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -59,6 +59,8 @@ class MCKXPCGuiProtocolWithData: XPCGuiProtocol {
 }
 
 struct MCKXPCConnectionProvider: XPCConnectionProvider {
+    var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
+
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
     let payloadFileName: String
@@ -71,6 +73,8 @@ struct MCKXPCConnectionProvider: XPCConnectionProvider {
 }
 
 struct MCKXPCConnectionProviderWithData: XPCConnectionProvider {
+    var guiConnectionState: kDriveCore.XPCConnectionState = .notConnected
+
     var guiConnectionStatePublisher: AnyPublisher<kDriveCore.XPCConnectionState, Never> = Just(.connected).eraseToAnyPublisher()
 
     let responseData: Data
@@ -112,7 +116,7 @@ struct XPCQueryFetcherTests {
         CallbackMessage<NodeInfoResponse>.self,
         CallbackMessage<NodeSubfoldersResponse>.self,
         CallbackMessage<NodeSizeResponse>.self,
-        CallbackMessage<MissingFolderResponse>.self
+        CallbackMessage<CreateMissingFoldersResponse>.self
     ]
 
     @Test func decodingNoErrorResponse() async throws {
@@ -125,8 +129,8 @@ struct XPCQueryFetcherTests {
         let decodedMessage = try await queryFetcher.query(query, responseType: CallbackMessage<EmptyResponse>.self)
 
         // THEN
-        #expect(decodedMessage.code == .Ok)
-        #expect(decodedMessage.cause == .Unknown)
+        #expect(decodedMessage.code == KDC.ExitCode.Ok)
+        #expect(decodedMessage.cause == KDC.ExitCause.Unknown)
     }
 
     @Test(arguments: allResponseTypes)

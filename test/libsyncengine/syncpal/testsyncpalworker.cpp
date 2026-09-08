@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "libcommonserver/network/proxy.h"
 
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
+#include "libsyncengine/requests/syncnodecache.h"
 
 #include "mocks/libcommonserver/db/mockdb.h"
 
@@ -71,6 +72,8 @@ void TestSyncPalWorker::setUp() {
     _localPath = localPathStr;
     _remotePath = testVariables.remotePath;
     _sync = Sync(1, drive.dbId(), _localPath, "", _remotePath);
+    const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
+    _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
@@ -337,7 +340,6 @@ void TestSyncPalWorker::testInternalPause3() {
     CPPUNIT_ASSERT(!mockLfso->liveSnapshot().updated());
 }
 
-
 // Mocks
 std::shared_ptr<TestSyncPalWorker::MockLFSO> TestSyncPalWorker::MockSyncPal::getMockLFSOWorker() {
     return std::dynamic_pointer_cast<MockLFSO>(_localFSObserverWorker);
@@ -375,9 +377,19 @@ void TestSyncPalWorker::MockSyncPal::createWorkers(const std::chrono::seconds &s
             std::make_shared<MockOperationGeneratorWorker>(shared_from_this(), "Mock Operation Generator", "M_OPGE");
     _operationsSorterWorker = std::make_shared<MockOperationSorterWorker>(shared_from_this(), "Mock Operation Sorter", "M_OPSO");
     _executorWorker = std::make_shared<MockExecutorWorker>(shared_from_this(), "Mock Executor", "M_EXEC");
-    _syncPalWorker = std::make_shared<SyncPalWorker>(shared_from_this(), "Mock Main", "M_MAIN", startDelay);
+    _syncPalWorker = std::make_shared<MockSyncPalWorker>(shared_from_this(), "Mock Main", "M_MAIN", startDelay);
 
     _tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(shared_from_this());
+}
+
+void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
+    // Ensure that no shared_ptr outside of SyncPal holds a reference to the snapshots to avoid them being kept alive while the
+    // workers are being destroyed, which would cause use-after-free when the workers try to access them during their destruction.
+    assert(_localSnapshot.use_count() <= 1);
+    _localSnapshot.reset();
+
+    assert(_remoteSnapshot.use_count() <= 1);
+    _remoteSnapshot.reset();
 }
 
 ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
@@ -407,4 +419,102 @@ ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::generateInitialS
         return ExitCode::NetworkError;
     }
 }
+
+void TestSyncPalWorker::testHandleBackError() {
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+    _syncPal->start();
+
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+
+    auto *syncPalWorker = mockSyncPal->getSyncPalWorker().get();
+
+    // Build a minimal mock worker that exits with BackError.
+    auto makeBackErrorWorker = [&syncPal = _syncPal]() -> std::shared_ptr<ISyncWorker> {
+        auto w = std::make_shared<MockPlatformInconsistencyCheckerWorker>(syncPal, "Mock PIC BackError", "M_PICB");
+        w->setMockExecuteCallback([]() { return ExitInfo{ExitCode::BackError, ExitCause::Unknown}; });
+        return w;
+    };
+
+    // Simulate several consecutive BackError exits and verify exponential growth.
+    for (int64_t i = 0; i < 10; ++i) {
+        const int64_t expected =
+                std::min(static_cast<int64_t>(backoffVariable::baseDelay * std::pow(backoffVariable::multiplicativeFactor, i)),
+                         backoffVariable::maxDelay);
+
+        auto w = makeBackErrorWorker();
+        w->start();
+        w->waitForExit();
+
+        syncPalWorker->handleBackError();
+        CPPUNIT_ASSERT_EQUAL(expected, syncPalWorker->pauseDuration());
+    }
+
+    // Verify the counter resets when the Idle step is initialised (via initStep → resetConsecutiveBackErrors).
+    std::shared_ptr<ISyncWorker> stepWorkers[2] = {nullptr, nullptr};
+    std::shared_ptr<SharedObject> inputSharedObject[2] = {nullptr, nullptr};
+
+    syncPalWorker->initStep(SyncStep::Idle, stepWorkers, inputSharedObject);
+
+    CPPUNIT_ASSERT_EQUAL(int64_t{0}, _syncPal->consecutiveBackErrors());
+
+    // After reset, the first BackError should produce the base delay again.
+    auto w = makeBackErrorWorker();
+    w->start();
+    w->waitForExit();
+
+    syncPalWorker->handleBackError();
+    CPPUNIT_ASSERT_EQUAL(backoffVariable::baseDelay, syncPalWorker->pauseDuration());
+}
+
+void TestSyncPalWorker::testEnsureBlackListIsPropagatedIgnoresMissingNode() {
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+
+    auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
+
+    NodeSet blacklistedNodes = {"missing-remote-node-id"};
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                         SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), syncPalWorker->ensureBlackListIsPropagated());
+}
+
+void TestSyncPalWorker::testEnsureBlackListIsPropagated() {
+    _syncPal = std::make_shared<MockSyncPal>(std::make_shared<VfsOff>(VfsSetupParams(Log::instance()->getLogger())), _sync.dbId(),
+                                             KDRIVE_VERSION_STRING);
+    const auto mockSyncPal = std::dynamic_pointer_cast<MockSyncPal>(_syncPal);
+    CPPUNIT_ASSERT(mockSyncPal);
+
+    auto syncPalWorker = std::make_shared<MockSyncPalWorker>(mockSyncPal, "Mock Main", "M_MAIN", std::chrono::seconds(0));
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, SyncNodeCache::instance()->initCache(mockSyncPal->syncDbId(), mockSyncPal->syncDb()));
+
+    const NodeId blacklistedNodeId = "existing-remote-node-id";
+    const DbNode node(0, mockSyncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "existing-local-node-id",
+                      blacklistedNodeId, testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime,
+                      NodeType::Directory, 0, std::nullopt);
+    DbNodeId dbNodeId = 0;
+    bool constraintError = false;
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->insertNode(node, dbNodeId, constraintError));
+    CPPUNIT_ASSERT(!constraintError);
+
+    NodeSet blacklistedNodes = {blacklistedNodeId};
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok,
+                         SyncNodeCache::instance()->update(mockSyncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes));
+
+    bool found = false;
+    DbNode dbNode;
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
+    CPPUNIT_ASSERT(found);
+
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), syncPalWorker->ensureBlackListIsPropagated());
+
+    CPPUNIT_ASSERT(mockSyncPal->syncDb()->node(dbNodeId, dbNode, found));
+    CPPUNIT_ASSERT(!found);
+}
+
 } // namespace KDC

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,10 +89,10 @@ bool SyncDbReadOnlyCache::reloadIfNeeded() {
     return true;
 }
 
-bool SyncDbReadOnlyCache::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeId, bool &found) {
+bool SyncDbReadOnlyCache::parentId(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     LOG_IF_FAIL(Log::instance()->getLogger(), _cachedRevision != 0);
-    if (_cachedRevision == 0) return _syncDb.parent(side, nodeId, parentNodeId, found); // Fallback to a call in db.
+    if (_cachedRevision == 0) return _syncDb.parentId(side, nodeId, parentNodeId, found); // Fallback to a call in db.
     if (side == ReplicaSide::Unknown) return false;
 
     found = false;

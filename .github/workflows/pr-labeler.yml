@@ -1,4 +1,4 @@
-﻿name: PR Auto Labeler
+name: PR Auto Labeler
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Apply path-based labels
-        uses: actions/labeler@v6
+        uses: actions/labeler@v6.0.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
@@ -22,7 +22,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Check total changed lines and add quick fix label
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,12 +36,12 @@ HRESULT SetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName, PCWSTR
 
     if (SUCCEEDED(hr)) {
         DWORD cbData;
-        const BYTE* lpData;
+        const BYTE *lpData;
 
         if (pszData != nullptr) {
             // Set the specified value of the key.
             cbData = lstrlen(pszData) * sizeof(*pszData);
-            lpData = reinterpret_cast<const BYTE*>(pszData);
+            lpData = reinterpret_cast<const BYTE *>(pszData);
         } else {
             cbData = 0;
             lpData = nullptr;
@@ -75,7 +75,7 @@ HRESULT GetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName, PWSTR 
 
 } // namespace
 
-HRESULT KDContextMenuRegHandler::RegisterInprocServer(PCWSTR pszModule, const CLSID& clsid, PCWSTR pszFriendlyName,
+HRESULT KDContextMenuRegHandler::RegisterInprocServer(PCWSTR pszModule, const CLSID &clsid, PCWSTR pszFriendlyName,
                                                       PCWSTR pszThreadModel) {
     if (pszModule == nullptr || pszThreadModel == nullptr) {
         return E_INVALIDARG;
@@ -116,7 +116,7 @@ HRESULT KDContextMenuRegHandler::RegisterInprocServer(PCWSTR pszModule, const CL
     return hr;
 }
 
-HRESULT KDContextMenuRegHandler::UnregisterInprocServer(const CLSID& clsid) {
+HRESULT KDContextMenuRegHandler::UnregisterInprocServer(const CLSID &clsid) {
     HRESULT hr = S_OK;
 
     wchar_t szCLSID[MAX_PATH];
@@ -134,7 +134,7 @@ HRESULT KDContextMenuRegHandler::UnregisterInprocServer(const CLSID& clsid) {
 }
 
 
-HRESULT KDContextMenuRegHandler::RegisterShellExtContextMenuHandler(PCWSTR pszFileType, const CLSID& clsid,
+HRESULT KDContextMenuRegHandler::RegisterShellExtContextMenuHandler(PCWSTR pszFileType, const CLSID &clsid,
                                                                     PCWSTR pszFriendlyName) {
     if (pszFileType == nullptr) {
         return E_INVALIDARG;

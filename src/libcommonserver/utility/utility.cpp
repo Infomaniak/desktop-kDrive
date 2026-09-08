@@ -25,6 +25,8 @@
 
 #include "libcommon/utility/utility.h"
 
+#include <Poco/StreamCopier.h>
+
 #if defined(KD_MACOS)
 #include <sys/statvfs.h>
 #include <sys/mount.h>
@@ -117,18 +119,15 @@ int64_t Utility::getFreeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
+    static const int64_t limit = 250 * 1000 * 1000LL; // 250MB
+
     return limit;
 }
 
 bool Utility::enoughSpace(const SyncPath &path) {
-    const int64_t freeBytes = getFreeDiskSpace(path);
-    if (freeBytes >= 0) {
-        if (freeBytes < freeDiskSpaceLimit()) {
-            return false;
-        }
-    }
-    return true;
+    const auto freeBytes = getFreeDiskSpace(path);
+
+    return (freeBytes < 0 || freeBytes >= freeDiskSpaceLimit());
 }
 
 bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue) {
@@ -194,13 +193,13 @@ bool Utility::checkIfEqualUpToCaseAndEncoding(const SyncPath &a, const SyncPath 
 
     SyncPath normalizedA;
     if (!Utility::normalizedSyncPath(a, normalizedA)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(a));
         return false;
     }
 
     SyncPath normalizedB;
     if (!Utility::normalizedSyncPath(b, normalizedB)) {
-        LOGW_WARN(_logger, L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
+        LOGW_WARN(logger(), L"Error in Utility::normalizedSyncPath: " << Utility::formatSyncPath(b));
         return false;
     }
 
@@ -337,6 +336,14 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
         output.append(buf);
     }
     return output;
+}
+
+void Utility::unzipStream(std::istream &inputStream, std::stringstream &ss,
+                          const Poco::InflatingStreamBuf::StreamType type /*= Poco::InflatingStreamBuf::STREAM_GZIP*/) {
+    Poco::InflatingInputStream inflater(inputStream, type);
+    while (inputStream) {
+        (void) Poco::StreamCopier::copyStream(inflater, ss);
+    }
 }
 
 #if defined(KD_MACOS)
@@ -478,7 +485,7 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
     return true;
 }
 
-bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
+bool Utility::isLiteSyncExtError([[maybe_unused]] const ExitInfo &exitInfo) {
 #if defined(KD_MACOS)
     return (exitInfo.code() == ExitCode::SystemError &&
             (exitInfo.cause() == ExitCause::LiteSyncNotAllowed || exitInfo.cause() == ExitCause::LiteSyncExtNotRunning));
@@ -487,77 +494,24 @@ bool Utility::isLiteSyncExtError(const ExitInfo &exitInfo) {
 #endif
 }
 
-#if defined(KD_WINDOWS)
-bool Utility::longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound) {
-    int length = GetLongPathNameW(shortPathIn.native().c_str(), 0, 0);
-    if (!length) {
-        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            notFound = true;
-        }
-        return false;
-    }
-
-    SyncChar *buffer = new SyncChar[length + 1];
-    if (!buffer) {
-        return false;
-    }
-
-    length = GetLongPathNameW(shortPathIn.native().c_str(), buffer, length);
-    if (!length) {
-        const bool exists = !utility_base::isLikeFileNotFoundError(GetLastError());
-        if (!exists) {
-            notFound = true;
-        }
-        delete[] buffer;
-        return false;
-    }
-
-    buffer[length] = 0;
-    longPathOut = SyncPath(buffer);
-    delete[] buffer;
-
-    return true;
+SyncName Utility::commonDocumentsFolderName() {
+    static const auto name = Str2SyncName(COMMON_DOC_FOLDER);
+    return name;
 }
 
-bool Utility::runDetachedProcess(std::wstring cmd) {
-    PROCESS_INFORMATION pinfo;
-    STARTUPINFOW startupInfo = {sizeof(STARTUPINFO),
-                                0,
-                                0,
-                                0,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                (ulong) CW_USEDEFAULT,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0};
-    bool success = success = CreateProcess(0, cmd.data(), 0, 0, FALSE, CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_CONSOLE, 0, 0,
-                                           &startupInfo, &pinfo);
-
-    if (success) {
-        CloseHandle(pinfo.hThread);
-        CloseHandle(pinfo.hProcess);
-    }
-    return success;
+SyncPath Utility::commonDocumentsFolderPath() {
+    static const auto path = Str("/") + Str2SyncName(COMMON_DOC_FOLDER);
+    return path;
 }
 
-#endif
-
-SyncPath Utility::commonDocumentsFolderName() {
-    return Str2SyncName(COMMON_DOC_FOLDER);
+SyncName Utility::sharedFolderName() {
+    static const auto name = Str2SyncName(SHARED_FOLDER);
+    return name;
 }
 
-SyncPath Utility::sharedFolderName() {
-    return Str2SyncName(SHARED_FOLDER);
+SyncPath Utility::sharedFolderPath() {
+    static const auto path = Str("/") + Str2SyncName(SHARED_FOLDER);
+    return path;
 }
 
 bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode) {
@@ -580,14 +534,19 @@ bool Utility::isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode
 }
 
 static constexpr uint64_t maxNbCreationTmpFolderRetries = 3;
-IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
+ExitInfo Utility::tryCreateTmpDir([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                  const SyncName &name /*= Str("testDir")*/) {
 #if defined(KD_MACOS)
-    SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::appTempDirectoryPath(tmpDirPath, ioError)) {
-        return ioError;
+    if (!cacheDirectory) {
+        LOG_WARN(logger(), "Cache directory not provided!");
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
     }
 
-    SyncPath tmpPath = tmpDirPath / name;
+    SyncPath cacheDirectoryPath;
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
+        return exitInfo;
+    }
+    SyncPath tmpPath = cacheDirectoryPath / name;
     std::error_code ec;
     uint64_t retries = 0;
     bool directoryCreated = false;
@@ -595,89 +554,127 @@ IoError Utility::tryCreateTmpDir(const SyncName &name /*= Str("testDir")*/) {
         directoryCreated = std::filesystem::create_directory(tmpPath, ec);
         if (!directoryCreated || ec.value()) {
             if (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence)) {
-                return IoError::InvalidFileName;
+                return {ExitCode::SystemError, ExitCause::InvalidName};
             }
             retries++;
             // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + CommonUtility::generateRandomStringAlphaNum());
+            tmpPath = cacheDirectoryPath / (name + CommonUtility::generateRandomStringAlphaNum());
         }
     } while ((!directoryCreated || ec.value()) && retries < maxNbCreationTmpFolderRetries);
 
-    if (ec.value()) return IoHelper::stdError2ioError(ec);
-
-    auto ioError = IoError::Unknown;
-    (void) IoHelper::deleteItem(tmpPath, ioError);
-    return ioError;
-#else
-    (void) name;
-    return IoError::Success;
-#endif
-}
-
-IoError Utility::tryCreateTmpFile(const SyncName &name /*= Str("testFile")*/) {
-    SyncPath tmpDirPath;
-    if (auto ioError = IoError::Unknown; !IoHelper::appTempDirectoryPath(tmpDirPath, ioError)) {
-        return ioError;
+    if (ec.value()) {
+        LOGW_WARN(logger(), L"Failed to create directory " << Utility::formatStdError(tmpPath, ec));
+        return {ExitCode::SystemError,
+                IoHelper::stdError2ioError(ec) == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
     }
 
-    SyncPath tmpPath = tmpDirPath / name;
-    uint64_t retries = 0;
-    bool ok = false;
-    do {
-        bool exists = false;
-        auto ioError = IoError::Unknown;
-        // Check if item already exist (it should not exist at this point)
-        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
-            return ioError;
-        }
-        if (exists) {
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
-            continue;
-        }
-
-        std::ofstream output = std::ofstream(tmpPath.native().c_str(), std::ios::binary);
-        if (!output) {
-            bool read = false;
-            bool write = false;
-            bool exec = false;
-            if (!IoHelper::getRights(tmpDirPath, read, write, exec, ioError)) {
-                return ioError;
-            }
-            if (!read || !write) {
-                return IoError::AccessDenied;
-            }
-
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
-            continue;
-        }
-        output.close();
-
-        // Check again if item already exist (it should exist at this point)
-        if (!IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
-            return ioError;
-        }
-        if (!exists) {
-            retries++;
-            // Retry with a random suffix added to item name
-            tmpPath = tmpDirPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
-            continue;
-        }
-        ok = true;
-    } while (!ok && retries < maxNbCreationTmpFolderRetries);
-
     auto ioError = IoError::Unknown;
     (void) IoHelper::deleteItem(tmpPath, ioError);
-    return ioError;
+#else
+    (void) name;
+#endif
+    return ExitCode::Ok;
 }
 
-void Utility::msleep(int msec) {
-    std::chrono::milliseconds dura(msec);
+namespace {
+ExitInfo checkTmpDirectoryRights(const SyncPath &path) {
+    bool read = false;
+    bool write = false;
+    bool exec = false;
+    if (auto ioError = IoError::Unknown; !IoHelper::getRights(path, read, write, exec, ioError)) {
+        return {ExitCode::SystemError};
+    }
+    if (!read || !write) {
+        return {ExitCode::SystemError, ExitCause::TmpDirAccessError};
+    }
+    return ExitCode::Ok;
+}
+} // namespace
+
+ExitInfo Utility::tryCreateTmpFile(const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                   const SyncName &name /*= Str("testFile")*/) {
+    if (!cacheDirectory) {
+        LOG_WARN(logger(), "Cache directory not provided!");
+        return {ExitCode::SystemError, ExitCause::InvalidArgument};
+    }
+
+    SyncPath cacheDirectoryPath;
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) return exitInfo;
+
+    SyncPath tmpPath = cacheDirectoryPath / name;
+    Count retries = 0;
+    bool exists = false;
+
+    const auto createPathInCacheWithRandomSuffix = [&cacheDirectoryPath, &name]() {
+        return cacheDirectoryPath / (name + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()));
+    };
+
+    do {
+        if (auto output = std::ofstream(tmpPath.native().c_str(), std::ios::binary); !output) {
+            if (const auto exitInfo = checkTmpDirectoryRights(cacheDirectoryPath); !exitInfo) return exitInfo;
+
+            ++retries;
+            tmpPath = createPathInCacheWithRandomSuffix();
+
+            continue;
+        } else
+            output.close();
+
+        // Check if item already exist (it should exist at this point)
+        if (auto ioError = IoError::Unknown;
+            !IoHelper::checkIfPathExists(tmpPath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(tmpPath, ioError));
+            return {ExitCode::SystemError, ioError == IoError::AccessDenied ? ExitCause::TmpDirAccessError : ExitCause::Unknown};
+        }
+
+        if (!exists) {
+            ++retries;
+            tmpPath = createPathInCacheWithRandomSuffix();
+        }
+    } while (!exists && retries < maxNbCreationTmpFolderRetries);
+
+    if (!exists) return {ExitCode::SystemError, ExitCause::InvalidName};
+
+    (void) IoHelper::deleteItem(tmpPath);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo Utility::checkIfFileNamesCanEndWithSpace([[maybe_unused]] const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                                  bool &canEndWithSpace) {
+    canEndWithSpace = true;
+
+#if defined(KD_LINUX)
+    SyncPath localSyncPath;
+    if (const auto exitInfo = cacheDirectory->path(localSyncPath); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+        }
+
+        return exitInfo;
+    }
+    if (CommonUtility::isEXT234(localSyncPath)) {
+        constexpr auto fileNameWithEndingSpace = "a ";
+
+        const auto exitInfo = tryCreateTmpFile(cacheDirectory, fileNameWithEndingSpace);
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) {
+            LOG_WARN(logger(), "Cannot access tmp directory.");
+
+            return exitInfo;
+        }
+
+        if (!exitInfo) {
+            LOG_DEBUG(logger(), "The file system in use does not support file names with an ending space.");
+            canEndWithSpace = false;
+        }
+    }
+#endif
+
+    return ExitCode::Ok;
+}
+
+void Utility::msleep(const int64_t msec) {
+    const std::chrono::milliseconds dura(msec);
     std::this_thread::sleep_for(dura);
 }
 
@@ -766,6 +763,12 @@ std::wstring Utility::formatSyncPath(const SyncPath &path) {
     return ss.str();
 }
 
+std::wstring Utility::formatExitInfo(const SyncPath &path, const ExitInfo &exitInfo) {
+    std::wstringstream ss;
+    ss << L"path='" << Path2WStr(path) << L"' " << exitInfo;
+    return ss.str();
+}
+
 std::wstring Utility::formatPath(const QString &path) {
     std::wstringstream ss;
     ss << L"path='" << QStr2WStr(path) << L"'";
@@ -780,7 +783,7 @@ std::wstring Utility::formatSystemError(const std::system_error &exception) {
     return ss.str();
 }
 
-ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, SourceLocation srcLoc) {
+ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDir, std::source_location srcLoc) {
     IoError ioError = IoError::Unknown;
     bool diskMounted = false;
     if (!IoHelper::isPathOnMountedDisk(syncDir, diskMounted, ioError) || ioError != IoError::Success) {
@@ -789,7 +792,7 @@ ExitCause Utility::exitCauseFromInaccessibleSyncDirectory(const SyncPath &syncDi
     }
 
     if (!diskMounted) {
-        LOGW_INFO(logger(), CommonUtility::s2ws(srcLoc.toString())
+        LOGW_INFO(logger(), CommonUtility::s2ws(toString(srcLoc))
                                     << L" Disk is not mounted for " << Utility::formatSyncPath(syncDir));
         return ExitCause::SyncDirDiskMissing;
     }

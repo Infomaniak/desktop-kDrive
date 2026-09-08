@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "syncpalworker.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/computefsoperationworker.h"
 #include "update_detection/update_detector/updatetreeworker.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerworker.h"
@@ -26,16 +27,24 @@
 #include "reconciliation/operation_generator/operationgeneratorworker.h"
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
+#include "requests/syncnodecache.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/ptraces.h"
 #include "libcommon/log/sentry/utility.h"
+
 #include <log4cplus/loggingmacros.h>
 
+#include <cmath>
+#include "useractionscopedlock.h"
+
 #define UPDATE_PROGRESS_DELAY 1
+
 namespace KDC {
+
+static constexpr auto snapshotMinSizeForDeleteAlert = 100; // 100 items
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
                              const std::chrono::seconds &startDelay) :
@@ -45,26 +54,6 @@ namespace {
 
 bool hasSuccessfullyFinished(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
     return (!w1 || w1->exitCode() == ExitCode::Ok) && (!w2 || w2->exitCode() == ExitCode::Ok);
-}
-
-bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
-    const auto networkIssue =
-            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
-    const auto httpBlockingError =
-            (w1 && w1->exitCode() == ExitCode::BackError &&
-             (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
-              w1->exitCause() == ExitCause::FullListParsingError || w1->exitCause() == ExitCause::MissingReplyData)) ||
-            (w2 && w2->exitCode() == ExitCode::BackError &&
-             (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
-              w2->exitCause() == ExitCause::FullListParsingError || w2->exitCause() == ExitCause::MissingReplyData));
-    const auto syncDirNotAccessible =
-            (w1 && w1->exitCode() == ExitCode::SystemError &&
-             (w1->exitCause() == ExitCause::SyncDirAccessError || w1->exitCause() == ExitCause::SyncDirDiskMissing)) ||
-            (w2 && w2->exitCode() == ExitCode::SystemError &&
-             (w2->exitCause() == ExitCause::SyncDirAccessError || w2->exitCause() == ExitCause::SyncDirDiskMissing));
-    const auto invalidOperation =
-            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
-    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
 }
 
 bool shouldBeStoppedAndRestarted(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr) {
@@ -91,9 +80,183 @@ bool shouldBeStopped(const std::shared_ptr<ISyncWorker> w1, const std::shared_pt
 
 } // namespace
 
+bool SyncPalWorker::shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 /*= nullptr*/) {
+    resetPauseDuration();
+
+    const auto networkIssue =
+            (w1 && w1->exitCode() == ExitCode::NetworkError) || (w2 && w2->exitCode() == ExitCode::NetworkError);
+    const auto httpBlockingError = (w1 && w1->exitCode() == ExitCode::BackError &&
+                                    (w1->exitCause() == ExitCause::Http5xx || w1->exitCause() == ExitCause::HttpErr ||
+                                     w1->exitCause() == ExitCause::MissingReplyData)) ||
+                                   (w2 && w2->exitCode() == ExitCode::BackError &&
+                                    (w2->exitCause() == ExitCause::Http5xx || w2->exitCause() == ExitCause::HttpErr ||
+                                     w2->exitCause() == ExitCause::MissingReplyData));
+
+    const auto syncDirNotAccessible =
+            (w1 && w1->exitCode() == ExitCode::SystemError &&
+             (w1->exitCause() == ExitCause::SyncDirAccessError || w1->exitCause() == ExitCause::SyncDirDiskMissing)) ||
+            (w2 && w2->exitCode() == ExitCode::SystemError &&
+             (w2->exitCause() == ExitCause::SyncDirAccessError || w2->exitCause() == ExitCause::SyncDirDiskMissing));
+    const auto invalidOperation =
+            (w1 && w1->exitCode() == ExitCode::InvalidOperation) || (w2 && w2->exitCode() == ExitCode::InvalidOperation);
+
+    std::shared_ptr<RemoteFileSystemObserverWorker> r1 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w1);
+    std::shared_ptr<RemoteFileSystemObserverWorker> r2 = std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(w2);
+    const auto rfsoError = (r1 != nullptr && r1->exitCode() != ExitCode::Ok) || (r2 != nullptr && r2->exitCode() != ExitCode::Ok);
+
+    if (handleRateLimited(w1, w2)) return true;
+
+    if (httpBlockingError || rfsoError) {
+        handleBackError();
+        return true;
+    }
+
+    return networkIssue || httpBlockingError || syncDirNotAccessible || invalidOperation;
+}
+
+bool SyncPalWorker::handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2) {
+    if ((w1 && w1->exitCode() == ExitCode::RateLimited) || (w2 && w2->exitCode() == ExitCode::RateLimited)) {
+        const auto newPauseDuration =
+                std::max(w1 ? w1->pauseDuration() : defaultPauseDuration, w2 ? w2->pauseDuration() : defaultPauseDuration);
+        if (newPauseDuration != pauseDuration()) {
+            LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
+            setPauseDuration(newPauseDuration);
+        }
+        return true;
+    }
+    return false;
+}
+
+void SyncPalWorker::handleBackError(void) {
+    auto computedDelay = static_cast<int64_t>(
+            backoffVariable::baseDelay *
+            std::pow(backoffVariable::multiplicativeFactor, std::min(_syncPal->consecutiveBackErrors(), (int64_t) 10)));
+    _syncPal->incrementConsecutiveBackErrors();
+
+    const double jitterFactor = jitter(); // 40% of the computed delay
+    const int64_t newPauseDuration =
+            std::min(static_cast<int64_t>(static_cast<double>(computedDelay) * jitterFactor), backoffVariable::maxDelay);
+    LOG_SYNCPAL_INFO(_logger, "Changing pause duration to " << newPauseDuration << " ms");
+    setPauseDuration(newPauseDuration);
+}
+
+double SyncPalWorker::jitter() const {
+    return static_cast<double>(CommonUtility::generateRandomNumber(1000, 1400)) / 1000.0;
+}
+
+void SyncPalWorker::checkForMassDeletions() const {
+    const auto nbOfLocalDeleteOpsToPropagate = _syncPal->_syncOps->countOps(ReplicaSide::Local, OperationType::Delete);
+    if (!nbOfLocalDeleteOpsToPropagate) return;
+
+    // Cumulative count of local deletions that were propagated across successive synchronizations, none of which reached the idle
+    // state.
+    const auto totalCountOfLocalDeleteOps = _syncPal->nbOfPropagatedLocalDeleteOps() + nbOfLocalDeleteOpsToPropagate;
+
+    // Approximation of the local snapshot size before deletions
+    const auto totalCountOfLocalSnapshotItems = _syncPal->snapshot(ReplicaSide::Local)->nbItems() + totalCountOfLocalDeleteOps;
+
+    // Calculate alert threshold = size / ln(size)
+    Count alertThreshold = 0;
+    if (totalCountOfLocalSnapshotItems > snapshotMinSizeForDeleteAlert) {
+        static_assert(snapshotMinSizeForDeleteAlert > 1);
+        alertThreshold = static_cast<Count>(static_cast<double>(totalCountOfLocalSnapshotItems) /
+                                            log(static_cast<double>(totalCountOfLocalSnapshotItems)));
+    }
+
+    // Check for mass deletions
+    if (alertThreshold && totalCountOfLocalDeleteOps >= alertThreshold) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "Mass deletions detected: " << totalCountOfLocalDeleteOps << "/" << totalCountOfLocalSnapshotItems);
+        sentry::Handler::captureMessage(sentry::Level::Warning, "SyncPalWorker::checkForMassDeletions",
+                                        "Mass deletions detected: " + std::to_string(totalCountOfLocalDeleteOps) + "/" +
+                                                std::to_string(totalCountOfLocalSnapshotItems));
+    }
+}
+
+ExitInfo SyncPalWorker::ensureBlackListIsPropagated() {
+    // Check if any of the Blacklisted directory still in the db, if yes, restart the blacklist propagator.
+    // It might happen if it as previously been stopped or encountered a locked directory / file.
+    NodeSet blacklistedNodes;
+    if (ExitInfo exitInfo = SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blacklistedNodes);
+        !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncNodeCache::syncNodes");
+        return exitInfo;
+    }
+
+    std::function<ExitInfo(const NodeSet &, bool &)> areBlacklistedNodesStillInDb = [this](const NodeSet &nodes, bool &found) {
+        found = false;
+        for (const auto &nodeId: nodes) {
+            DbNodeId dbNodeId = 0;
+            if (!_syncPal->syncDb()->dbId(ReplicaSide::Remote, nodeId, dbNodeId, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
+                return ExitInfo(ExitCode::DbError, ExitCause::DbAccessError);
+            }
+
+            if (found) return ExitInfo(ExitCode::Ok);
+        }
+        return ExitInfo(ExitCode::Ok);
+    };
+
+    bool found = false;
+    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
+        return exitInfo;
+    }
+
+    if (!found) return ExitCode::Ok;
+
+    LOG_WARN(_logger, "Blacklisted nodes still exist in SyncDb, restarting blacklist propagator");
+
+    {
+        UserActionScopedLock lock;
+        const std::chrono::milliseconds timeout(5000);
+        if (!lock.tryLock(_syncPal, timeout)) {
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                             "Could not acquire user action lock for propagateSyncIdSetChange. Another user action is "
+                             "running, aborting.");
+            return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+        }
+
+
+        if (ExitInfo exitInfo = _syncPal->propagateSyncIdSetChange(false); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error propagating blacklist changes");
+            return exitInfo;
+        }
+    }
+
+    if (ExitInfo exitInfo = areBlacklistedNodesStillInDb(blacklistedNodes, found); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error while checking if blacklisted nodes still exist in SyncDb");
+        return exitInfo;
+    }
+
+    if (found) {
+        LOG_SYNCPAL_WARN(_logger, "Blacklisted nodes still exist after retry, giving up");
+        return {ExitCode::DataError, ExitCause::BlackListPropagationError};
+    }
+
+    return ExitCode::Ok;
+}
+
+void SyncPalWorker::ensureMinimumPermission() {
+    std::function<void(SyncPath)> trySetFullAcess = [this](SyncPath path) {
+        if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
+            LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
+        } else {
+            LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+        }
+    };
+
+    if (!_syncPal->isAdvancedSync()) {
+        trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
+        trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+    }
+}
+
 void SyncPalWorker::execute() {
     ExitCode exitCode(ExitCode::Unknown);
     LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " started");
+
+    // Ensure the pin states are coherent with hydration states.
     if (_syncPal->vfsMode() != VirtualFileMode::Off) {
 #if defined(KD_WINDOWS)
         auto resetFunc = std::function<void()>([this]() { resetVfsFilesStatus(); });
@@ -102,6 +265,16 @@ void SyncPalWorker::execute() {
         resetVfsFilesStatus();
 #endif
     }
+
+    // Ensure blacklist is propagated
+    if (ExitInfo exitInfo = ensureBlackListIsPropagated(); !exitInfo) {
+        LOG_SYNCPAL_INFO(_logger, "Worker " << name() << " stopped");
+        setExitCause(exitInfo.cause());
+        setDone(exitInfo.code());
+        return;
+    }
+
+    ensureMinimumPermission();
 
     // Wait before really starting
     bool awakenByStop = false;
@@ -235,11 +408,13 @@ void SyncPalWorker::execute() {
                 if ((stepWorkers[0] && stepWorkers[0]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[0]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[0]->exitCause() == ExitCause::TmpDirAccessError ||
                       stepWorkers[0]->exitCause() == ExitCause::SyncDirAccessError ||
                       stepWorkers[0]->exitCause() == ExitCause::SyncDirDiskMissing)) ||
                     (stepWorkers[1] && stepWorkers[1]->exitCode() == ExitCode::SystemError &&
                      (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
                       stepWorkers[1]->exitCause() == ExitCause::FileAccessError ||
+                      stepWorkers[1]->exitCause() == ExitCause::TmpDirAccessError ||
                       stepWorkers[1]->exitCause() == ExitCause::SyncDirAccessError ||
                       stepWorkers[1]->exitCause() == ExitCause::SyncDirDiskMissing))) {
                     // Exit without error
@@ -347,6 +522,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->refreshTmpBlacklist();
             _syncPal->freeSnapshotsCopies();
             _syncPal->syncDb()->cache().clear();
+            _syncPal->resetConsecutiveBackErrors();
             break;
         case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->computeFSOperationsWorker();
@@ -454,11 +630,13 @@ SyncStep SyncPalWorker::nextStep() const {
             const bool areLiveSnapshotsUpdated =
                     _syncPal->liveSnapshot(ReplicaSide::Local).updated() || _syncPal->liveSnapshot(ReplicaSide::Remote).updated();
 
-
-            return areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
-                                   (areLiveSnapshotsUpdated || _syncPal->restart())
-                           ? SyncStep::UpdateDetection1
-                           : SyncStep::Idle;
+            if (areLiveSnapshotsValid && areFSOWorkersRunning && !areFSOWorkersInitializing && !areFSOWorkersUpdating &&
+                (areLiveSnapshotsUpdated || _syncPal->restart()))
+                return SyncStep::UpdateDetection1;
+            else {
+                _syncPal->resetNbOfPropagatedLocalDeleteOps();
+                return SyncStep::Idle;
+            }
         }
         case SyncStep::UpdateDetection1: {
             auto logNbOps = [this](const ReplicaSide side) {
@@ -498,6 +676,7 @@ SyncStep SyncPalWorker::nextStep() const {
             return SyncStep::Propagation2; // Go directly to the Executor step
         case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated")
+            checkForMassDeletions();
             return SyncStep::Propagation1;
         case SyncStep::Propagation1:
             return SyncStep::Propagation2;
@@ -577,6 +756,9 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
                                                     "Sync Dir migration failure");
         return false;
     }
+
+    _syncPal->resolveSyncErrorsByExitCause(ExitCause::SyncDirChanged);
+
     LOG_SYNCPAL_INFO(_logger, "SyncDb successfully fixed after sync dir change, new local node ID is " << newLocalRootNodeId);
     sentry::Handler::instance()->captureMessage(KDC::sentry::Level::Info, "SyncDb successfully fixed after sync dir change",
                                                 "Sync Dir migration success");

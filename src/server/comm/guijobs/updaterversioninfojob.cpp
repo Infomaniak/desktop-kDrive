@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,6 @@
 
 #include "libcommon/comm.h"
 
-
-// Input parameters keys
-static const auto inParamsChannel = "channel";
 // Output parameters keys
 static const auto outParamsVersionInfo = "versionInfo";
 
@@ -35,32 +32,13 @@ UpdaterVersionInfoJob::UpdaterVersionInfoJob(std::shared_ptr<CommManager> commMa
     _requestNum = RequestNum::UPDATER_VERSION_INFO;
 }
 
-ExitInfo UpdaterVersionInfoJob::deserializeInputParms() {
-    constexpr auto logMessage = "Exception in UpdaterVersionInfoJob::readParamValue: error=";
-    try {
-        readParamValue(inParamsChannel, _channel);
-    } catch (const Poco::Exception &pocoException) {
-        LOG_WARN(_logger, logMessage << pocoException.message());
-
-        return ExitCode::LogicError;
-    } catch (const CommonUtility::InvalidEnumerationValue &cuException) {
-        LOG_WARN(_logger, logMessage << cuException.what());
-
-        return ExitCode::LogicError;
-    }
-
-    return ExitCode::Ok;
-}
-
 ExitInfo UpdaterVersionInfoJob::serializeOutputParms() {
     writeParamValue(outParamsVersionInfo, _versionInfo, info2DynamicVar<VersionInfo>);
-
     return ExitCode::Ok;
 }
 
 ExitInfo UpdaterVersionInfoJob::process() {
-    _versionInfo = _commManager->appServer().getVersionInfo(_channel);
-
+    _versionInfo = _commManager->appServer().getVersionInfo();
     return ExitCode::Ok;
 }
 

@@ -17,6 +17,7 @@
  */
 
 #include "errorresolveconflictsjob.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "libcommon/comm.h"
 #include "libcommonserver/log/log.h"
 
@@ -75,7 +76,7 @@ ExitInfo ErrorResolveConflictsJob::process() {
         return ExitCode::Ok;
     }
 
-    int32_t syncDbId = 0;
+    SyncDbId syncDbId = 0;
     if (ExitInfo exitInfo = getSyncDbIdFromErrors(keepLocalErrors, keepRemoteErrors, syncDbId); !exitInfo) {
         return exitInfo;
     }
@@ -83,6 +84,13 @@ ExitInfo ErrorResolveConflictsJob::process() {
     std::shared_ptr<SyncPal> syncPal;
     if (ExitInfo exitInfo = getSyncPal(syncDbId, syncPal); !exitInfo) {
         return exitInfo;
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockLongTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << syncDbId << ". Another user action is running. Aborting ErrorResolveConflictsJob.");
+        return ExitCode::OperationCanceled;
     }
 
     return fixConflictsAndNotify(syncPal, keepLocalErrors, keepRemoteErrors);

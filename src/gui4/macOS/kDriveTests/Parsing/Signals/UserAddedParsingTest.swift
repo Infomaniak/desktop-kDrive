@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ struct UserAddedParsingTest {
         #expect(signal.body.userInfo.dbId == 1)
         #expect(signal.body.userInfo.userId == 12_345_678)
         #expect(signal.body.userInfo.name == "duck mc duckface")
+        #expect(signal.body.userInfo.firstName == "duck")
         #expect(signal.body.userInfo.email == "duck@me.com")
         #expect(signal.body.userInfo.isConnected == true)
         #expect(signal.body.userInfo.isStaff == true)

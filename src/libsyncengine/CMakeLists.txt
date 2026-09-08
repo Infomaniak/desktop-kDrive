@@ -22,11 +22,12 @@ set(syncengine_SRCS
     # Jobs
     jobs/jobmanager.h jobs/jobmanager.cpp
     jobs/syncjobmanager.h jobs/syncjobmanager.cpp
-    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp 
+    jobs/jobmanagerdata.h jobs/jobmanagerdata.cpp
     jobs/abstractjob.h jobs/abstractjob.cpp
     jobs/syncjob.h jobs/syncjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
+    jobs/network/jobexceptions.h jobs/network/jobexceptions.cpp
     jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
     jobs/network/abstractnetworkjob.h jobs/network/abstractnetworkjob.cpp
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
@@ -39,9 +40,15 @@ set(syncengine_SRCS
     jobs/network/directdownloadjob.h jobs/network/directdownloadjob.cpp
     jobs/network/infomaniak_API/getaccountinfojob.h jobs/network/infomaniak_API/getaccountinfojob.cpp
     jobs/network/infomaniak_API/getinfouserjob.h jobs/network/infomaniak_API/getinfouserjob.cpp
+    ### API translator
+    jobs/network/kDrive_API/apitranslator.h jobs/network/kDrive_API/apitranslator.cpp
     ### API v2 jobs
     jobs/network/kDrive_API/backerror.h jobs/network/kDrive_API/backerror.cpp
     jobs/network/kDrive_API/getrootfilelistjob.h jobs/network/kDrive_API/getrootfilelistjob.cpp
+    jobs/network/kDrive_API/listingconf.h
+    jobs/network/kDrive_API/getfilesindirectoryjob.h jobs/network/kDrive_API/getfilesindirectoryjob.cpp
+    jobs/network/kDrive_API/getallfilesindirectoryjob.h jobs/network/kDrive_API/getallfilesindirectoryjob.cpp
+    jobs/network/kDrive_API/filelistjob.h jobs/network/kDrive_API/filelistjob.cpp
     jobs/network/kDrive_API/getfilelistjob.h jobs/network/kDrive_API/getfilelistjob.cpp
     jobs/network/kDrive_API/listing/initfilelistwithcursorjob.h jobs/network/kDrive_API/listing/initfilelistwithcursorjob.cpp
     jobs/network/kDrive_API/listing/abstractlistingjob.h jobs/network/kDrive_API/listing/abstractlistingjob.cpp
@@ -53,6 +60,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getfileinfojobV3.h jobs/network/kDrive_API/getfileinfojobV3.cpp
     jobs/network/kDrive_API/deletejob.h jobs/network/kDrive_API/deletejob.cpp
     jobs/network/kDrive_API/createdirjob.h jobs/network/kDrive_API/createdirjob.cpp
+    jobs/network/kDrive_API/checkhashmatchjob.h jobs/network/kDrive_API/checkhashmatchjob.cpp
     jobs/network/kDrive_API/movejob.h jobs/network/kDrive_API/movejob.cpp
     jobs/network/kDrive_API/renamejob.h jobs/network/kDrive_API/renamejob.cpp
     jobs/network/kDrive_API/duplicatejob.h jobs/network/kDrive_API/duplicatejob.cpp
@@ -74,6 +82,7 @@ set(syncengine_SRCS
     jobs/network/kDrive_API/getdriveslistjob.h jobs/network/kDrive_API/getdriveslistjob.cpp
     jobs/network/kDrive_API/getthumbnailjob.h jobs/network/kDrive_API/getthumbnailjob.cpp
     jobs/network/kDrive_API/postfilelinkjob.h jobs/network/kDrive_API/postfilelinkjob.cpp
+    jobs/network/kDrive_API/postfilemodificationdatejob.h jobs/network/kDrive_API/postfilemodificationdatejob.cpp
     jobs/network/kDrive_API/getfilelinkjob.h jobs/network/kDrive_API/getfilelinkjob.cpp
     jobs/network/kDrive_API/getsizejob.h jobs/network/kDrive_API/getsizejob.cpp
     jobs/network/kDrive_API/searchjob.h jobs/network/kDrive_API/searchjob.cpp
@@ -135,6 +144,8 @@ set(syncengine_SRCS
     syncpal/excludelistpropagator.h syncpal/excludelistpropagator.cpp
     syncpal/tmpblacklistmanager.h syncpal/tmpblacklistmanager.cpp
     syncpal/conflictingfilescorrector.h syncpal/conflictingfilescorrector.cpp
+    syncpal/useractionscopedlock.h
+
     # Progress Dispatcher
     progress/estimates.h
     progress/progressitem.h
@@ -169,7 +180,6 @@ add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS})
 set(PC_HEADER_FILES
     # std c++
     "$<$<COMPILE_LANGUAGE:CXX>:<cstdint$<ANGLE-R>>"
-    "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<list$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<map$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<memory$<ANGLE-R>>"

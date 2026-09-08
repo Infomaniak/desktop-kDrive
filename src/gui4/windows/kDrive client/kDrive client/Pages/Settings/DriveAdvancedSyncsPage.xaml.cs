@@ -1,4 +1,23 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.CustomControls;
+using Infomaniak.kDrive.Pages.DriveSetupContentDialog;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -14,6 +33,7 @@ namespace Infomaniak.kDrive.Pages.Settings;
 
 public sealed partial class DriveAdvancedSyncsPage : Page
 {
+    private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
     private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
     private IDrive? _baseDrive;
     private Drive? ManagedDrive { get; set; }
@@ -24,7 +44,6 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         InitializeComponent();
         SetupNavBar("");
     }
-
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         _baseDrive = e.Parameter as IDrive;
@@ -48,7 +67,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
             ManagedDrive = drive;
         }
-        else if (_viewModel.AllDrives.FirstOrDefault(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId, null) is not null)
+        else if (_viewModel.AllDrives.Any(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId))
         {
             // Can happen if a user uses the back button after setting up a new drive.
             Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
@@ -67,11 +86,13 @@ public sealed partial class DriveAdvancedSyncsPage : Page
     {
         if (args.Index == 0)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.DriveBreadcrumbs);
             Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
         else if (args.Index == 1)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.DriveManagementBreadcrumbs);
             Logger.Log(Logger.Level.Debug, "Navigating to DriveManagementPage");
             Frame.Navigate(typeof(DriveManagementPage), _baseDrive);
         }
@@ -85,6 +106,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
+        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.OpenSyncDir);
         await Utility.OpenFolderSecurely(sync.LocalPath);
     }
 
@@ -126,7 +148,17 @@ public sealed partial class DriveAdvancedSyncsPage : Page
             return;
         }
 
-        var dialogResult = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncDeletionWarning");
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = Localizer.Instance.GetString("dialogSyncDeletionWarningTitle"),
+            PrimaryButtonText = Localizer.Instance.GetString("buttonRemove"),
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = Localizer.Instance.GetString("dialogSyncDeletionWarningContent")
+        };
+
+        var dialogResult = await dialog.ShowAsync();
         if (dialogResult != ContentDialogResult.Primary)
         {
             Logger.Log(Logger.Level.Info, "User canceled sync removal");
@@ -135,6 +167,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         }
 
         Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
+        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.Delete);
         if (!await sync.Drive.RemoveSync(sync, CancellationToken.None))
         {
             Logger.Log(Logger.Level.Error, "Failed to remove sync");
@@ -149,7 +182,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var radioButton = sender as RadioButton;
         if (radioButton is null)
         {
-            Logger.Log(Logger.Level.Error, "Online sync mode radio button is null when clicking on online sync mode radio button");
+            Logger.Log(Logger.Level.Error, "Sender of SyncTypeRadioButton_Click is not a RadioButton");
             return;
         }
 
@@ -159,16 +192,48 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         Sync? sync = radioButton.DataContext as Sync;
         if (sync is null)
         {
-            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on online sync mode radio button");
+            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync mode radio button");
             return;
         }
 
-        bool canceledByUser = await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeWarning") == ContentDialogResult.Primary;
+        bool targetOnline = radioButton.Name == "OnlineRadioButton";
+        bool targetOffline = radioButton.Name == "OfflineRadioButton";
+
+        if (!targetOffline && !targetOnline)
+        {
+            Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+            return;
+        }
+
+        if (targetOffline && sync.SyncType == Types.SyncType.Offline)
+        {
+            Logger.Log(Logger.Level.Info, "User clicked on Offline sync mode radio button while already in Offline mode");
+            return;
+        }
+
+        if (targetOnline && sync.SyncType == Types.SyncType.Online)
+        {
+            Logger.Log(Logger.Level.Info, "User clicked on Online sync mode radio button while already in Online mode");
+            return;
+        }
+
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = Localizer.Instance.GetString("dialogSyncModeChangeWarningTitle"),
+            PrimaryButtonText = targetOnline ? Localizer.Instance.GetString("buttonChangeToOnline") : Localizer.Instance.GetString("buttonChangeToOffline"),
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            DefaultButton = ContentDialogButton.Close,
+            Content = Localizer.Instance.GetString("dialogSyncModeChangeWarningContent")
+        };
+
+        bool canceledByUser = await dialog.ShowAsync() != ContentDialogResult.Primary;
         if (canceledByUser)
         {
+            _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
             Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
             // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
-            if (radioButton.Name == "OnlineRadioButton")
+            if (targetOnline)
             {
                 sync.SyncType = Types.SyncType.Online;
                 sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
@@ -182,23 +247,34 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         }
 
 
+        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.ConfirmSyncModeSwitch);
+
         bool success = false;
-        if (radioButton.Name == "OnlineRadioButton")
+        if (targetOnline)
             success = await sync.ChangeSyncType(Types.SyncType.Online);
-        else if (radioButton.Name == "OfflineRadioButton")
+        else
             success = await sync.ChangeSyncType(Types.SyncType.Offline);
 
         if (!success)
-            await Utility.ShowContentDialogAsync(this.XamlRoot, "dialogSyncModeChangeError");
+        {
+            ContentDialog errorDialog = new ContentDialog
+            {
+                XamlRoot = XamlRoot,
+                Title = Localizer.Instance.GetString("dialogSyncModeChangeErrorTitle"),
+                CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+                Content = Localizer.Instance.GetString("dialogSyncModeChangeErrorContent")
+            };
+            await errorDialog.ShowAsync();
+        }
     }
 
     private void FixForegroundOnPointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         if (sender is Control control)
         {
-            var curentForeground = control.Foreground;
+            var currentForeground = control.Foreground;
             control.Foreground = null;
-            control.Foreground = curentForeground;
+            control.Foreground = currentForeground;
         }
     }
 
@@ -236,6 +312,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         }
 
         Logger.Log(Logger.Level.Info, "User confirmed new advanced sync creation in content dialog, creating sync");
+        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.Create);
 
         var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
         Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
@@ -250,5 +327,47 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         if (control is not null)
             control.IsEnabled = true;
+    }
+
+    private async void SyncExclusionButton_Click(object sender, RoutedEventArgs e)
+    {
+        Control? control = sender as Control;
+        if (control is null)
+        {
+            Logger.Log(Logger.Level.Error, "Sync exclusion button is null when clicking on sync exclusion button");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        ISync? sync = control.DataContext as ISync;
+        if (sync is null)
+        {
+            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync exclusion button");
+            Utility.ShowUnexpectedErrorTeachingTip();
+            return;
+        }
+
+        ContentDialog dialog = new ContentDialog
+        {
+            XamlRoot = this.XamlRoot,
+            CloseButtonText = Localizer.Instance.GetString("buttonCancel"),
+            PrimaryButtonText = Localizer.Instance.GetString("buttonConfirm"),
+            DefaultButton = ContentDialogButton.Primary
+        };
+        var exclusionPage = new SyncExclusionPage(sync);
+        dialog.Content = exclusionPage;
+
+        _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.ShowItemExclusion);
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");
+            await exclusionPage.SaveChanges();
+        }
+        else
+        {
+            Logger.Log(Logger.Level.Info, "User canceled sync exclusion changes");
+        }
+
     }
 }

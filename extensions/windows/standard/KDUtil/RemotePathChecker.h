@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,10 +42,10 @@ class __declspec(dllexport) RemotePathChecker {
         RemotePathChecker();
         ~RemotePathChecker();
         std::shared_ptr<const std::vector<std::wstring>> WatchedDirectories() const;
-        bool IsMonitoredPath(const wchar_t* filePath, int* state);
+        bool IsMonitoredPath(const wchar_t *filePath, int *state);
 
     private:
-        FileState _StrToFileState(const std::wstring& str);
+        FileState _StrToFileState(const std::wstring &str);
         std::mutex _mutex;
         std::atomic<bool> _stop;
 

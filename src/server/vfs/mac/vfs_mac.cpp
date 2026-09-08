@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -212,7 +212,8 @@ ExitInfo VfsMac::updateMetadata(const SyncPath &absoluteFilePath, time_t creatio
     Q_UNUSED(fileIdStr);
 
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatSyncPath(absoluteFilePath));
+        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatSyncPath(absoluteFilePath) << L" creation time: "
+                                                  << creationTime << L" modification time: " << modtime << L" size: " << size);
     }
 
     if (!_connector) {
@@ -690,7 +691,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus 
                 _workerInfo[workerDehydration]._mutex.unlock();
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
-                bool syncing;
+                bool syncing = false;
                 _syncFileSyncing(_vfsSetupParams.syncDbId, relativeFilePath, syncing);
                 if (!syncing) {
                     // Set hydrating indicator (avoid double hydration)

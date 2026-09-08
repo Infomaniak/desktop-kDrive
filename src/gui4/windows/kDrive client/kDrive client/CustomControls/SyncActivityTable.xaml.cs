@@ -1,5 +1,23 @@
+﻿/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 using DynamicData;
 using DynamicData.Binding;
+using Infomaniak.kDrive.Analytics;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -8,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading;
@@ -19,6 +36,7 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public sealed partial class SyncActivityTable : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         private readonly AppModel _viewModel = App.ServiceProvider.GetRequiredService<AppModel>();
         public AppModel ViewModel => _viewModel;
 
@@ -29,7 +47,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             InitializeComponent();
 
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            ViewModel.SelectedSyncChanged += ViewModel_SelectedSyncChanged;
 
             if (ViewModel.SelectedSync != null)
             {
@@ -38,18 +56,16 @@ namespace Infomaniak.kDrive.CustomControls
             RefreshFilteredActivities();
         }
 
-        private void SyncActivityTable_Unloaded(object sender, RoutedEventArgs e)
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
         {
             _activitySubscription?.Dispose();
-            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            _outGoingActivities.Clear();
+            ViewModel.SelectedSyncChanged -= ViewModel_SelectedSyncChanged;
         }
 
-        private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void ViewModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.SelectedSync) && ViewModel.SelectedSync is not null)
-            {
-                RefreshFilteredActivities();
-            }
+            RefreshFilteredActivities();
         }
 
         private void SubscribeToActivities(Sync sync)
@@ -60,7 +76,14 @@ namespace Infomaniak.kDrive.CustomControls
                 .ToObservableChangeSet()
                 .Filter(a => a.Direction == SyncDirection.Up)
                 .Sort(SortExpressionComparer<SyncFileItem>.Ascending(a => a.Timestamp))
-                .OnItemAdded(a => _outGoingActivities.Insert(0, a))
+                .OnItemAdded(a =>
+                {
+                    _outGoingActivities.Insert(0, a);
+                    const int maxActivities = 200;
+                    while (_outGoingActivities.Count > maxActivities)
+                        _outGoingActivities.RemoveAt(_outGoingActivities.Count - 1);
+                })
+                .OnItemRemoved(a => _outGoingActivities.Remove(a))
                 .Subscribe();
         }
 
@@ -93,8 +116,11 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (ActivityList == null)
                 return;
+
             if (ShowIncomingActivity == null || ShowIncomingActivity == true)
             {
+                _activitySubscription?.Dispose();
+                _outGoingActivities.Clear();
                 ActivityList.ItemsSource = ViewModel.SelectedSync?.SyncActivities;
             }
             else if (ViewModel.SelectedSync is not null)
@@ -116,6 +142,7 @@ namespace Infomaniak.kDrive.CustomControls
                 {
                     btn.IsEnabled = false;
                     await Utility.OpenFolderSecurely(activity.ParentFolderPath);
+                    _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemFolder);
                     await Task.Delay(5000); // As the explorer might take some time to open avoid multiple clicks
                     btn.IsEnabled = true;
                 }
@@ -136,6 +163,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemErrorFromIcon);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
@@ -161,8 +189,8 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
                 return;
             }
-
             await Utility.OpenFolderSecurely(activity.LocalPath);
+            _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItem);
         }
 
         private async void OpenOnline_Click(object sender, RoutedEventArgs e)
@@ -184,6 +212,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             Uri uri = App.Constants.Drive.itemUri(activity.Sync.Drive.DriveId, activity.RemoteNodeId);
             await Windows.System.Launcher.LaunchUriAsync(uri);
+            _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemWeb);
         }
 
         private async void CopyPublicLink_Click(object sender, RoutedEventArgs e)
@@ -196,7 +225,6 @@ namespace Infomaniak.kDrive.CustomControls
                 return;
             }
 
-            // Find parrent button to anchor teaching tip
             DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), true);
 
             FrameworkElement? parentElement = element.DataContext as FrameworkElement;
@@ -226,6 +254,7 @@ namespace Infomaniak.kDrive.CustomControls
                 Logger.Log(Logger.Level.Error, "Could not retrieve public link");
                 DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
             }
+            _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.CopyItemWebLink);
         }
 
         private void NavigateToErrorPageButton_Click(object sender, RoutedEventArgs e)
@@ -234,6 +263,7 @@ namespace Infomaniak.kDrive.CustomControls
             if (frame is not null)
             {
                 Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemError);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else

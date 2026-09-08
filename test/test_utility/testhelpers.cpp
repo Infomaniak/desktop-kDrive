@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,15 +162,30 @@ void createSymLinkLoop(const SyncPath &filepath1, const SyncPath &filepath2, con
 }
 
 void setupLogging() {
-    IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {}
+    (void) CommonUtility::logDirectoryPath(logDirPath);
 
     // Setup log4cplus
     const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
     if (!Log::instance(Path2WStr(logFilePath))) {
         assert(false);
     }
+}
+
+SyncPath findLocalFileByNamePrefix(const SyncPath &parentAbsolutePath, const SyncName &namePrefix) {
+    IoError ioError(IoError::Unknown);
+    IoHelper::DirectoryIterator dirIt(parentAbsolutePath, false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+        if (CommonUtility::startsWith(entry.path().filename(), namePrefix)) return entry.path();
+    }
+    return {};
+}
+
+bool generateTestFolder(const SyncPath &path) {
+    std::error_code ec;
+    return std::filesystem::create_directory(path, ec) && !ec.value();
 }
 
 } // namespace KDC::testhelpers

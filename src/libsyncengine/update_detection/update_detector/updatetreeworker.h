@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,6 +166,8 @@ class UpdateTreeWorker : public ISyncWorker {
         bool checkTreeIntegrity();
         bool checkNodeIntegrity(const std::shared_ptr<Node> node);
         bool checkOperationTypes(const std::shared_ptr<Node> node);
+
+        bool resetNodes();
 
         friend class TestUpdateTreeWorker;
 };

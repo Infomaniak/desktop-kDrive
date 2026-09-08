@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-block">ms-appx:///Assets/DS/Icons/Actions/circle-block.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-maybe-check">ms-appx:///Assets/DS/Icons/Actions/circle-maybe-check.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-question">ms-appx:///Assets/DS/Icons/Actions/circle-question.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Actions.circle-information-outline">ms-appx:///Assets/DS/Icons/Actions/circle-information-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.copy-paste">ms-appx:///Assets/DS/Icons/Actions/copy-paste.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Actions.eye">ms-appx:///Assets/DS/Icons/Actions/eye.svg</x:String>
 
@@ -45,6 +46,7 @@
 
     <!-- Edition -->
     <x:String x:Key="Infomaniak.DS.Icons.Edition.list-bullets">ms-appx:///Assets/DS/Icons/Edition/list-bullets.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Edition.pencil">ms-appx:///Assets/DS/Icons/Edition/pencil.svg</x:String>
 
     <!-- Essentials -->
     <x:String x:Key="Infomaniak.DS.Icons.Essentials.house">ms-appx:///Assets/DS/Icons/Essentials/house.svg</x:String>
@@ -85,20 +87,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Users.users-circle-question-mark">ms-appx:///Assets/DS/Icons/Users/users-circle-question-mark.svg</x:String>
 
     <!-- Documents -->
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file">ms-appx:///Assets/DS/Icons/Documents/file.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file3d">ms-appx:///Assets/DS/Icons/Documents/file3d.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-audio">ms-appx:///Assets/DS/Icons/Documents/file-audio.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-chart">ms-appx:///Assets/DS/Icons/Documents/file-chart.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-code">ms-appx:///Assets/DS/Icons/Documents/file-code.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-diagram">ms-appx:///Assets/DS/Icons/Documents/file-diagram.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-font">ms-appx:///Assets/DS/Icons/Documents/file-font.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-grid">ms-appx:///Assets/DS/Icons/Documents/file-grid.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-image">ms-appx:///Assets/DS/Icons/Documents/file-image.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-pdf">ms-appx:///Assets/DS/Icons/Documents/file-pdf.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-text">ms-appx:///Assets/DS/Icons/Documents/file-text.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-video">ms-appx:///Assets/DS/Icons/Documents/file-video.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.file-zip">ms-appx:///Assets/DS/Icons/Documents/file-zip.svg</x:String>
-    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder">ms-appx:///Assets/DS/Icons/Documents/folder.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-outline">ms-appx:///Assets/DS/Icons/Documents/folder-outline.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-open">ms-appx:///Assets/DS/Icons/Documents/folder-open.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-connect">ms-appx:///Assets/DS/Icons/Documents/folder-connect.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-circle-plus">ms-appx:///Assets/DS/Icons/Documents/folder-circle-plus.svg</x:String>
@@ -108,6 +97,7 @@
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-block">ms-appx:///Assets/DS/Icons/Documents/folder-block.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Documents.folder-share">ms-appx:///Assets/DS/Icons/Documents/folder-share.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.folder-circle-arrow-right">ms-appx:///Assets/DS/Icons/Documents/folder-circle-arrow-right.svg</x:String>
+    <x:String x:Key="Infomaniak.DS.Icons.Documents.folder">ms-appx:///Assets/DS/Icons/Documents/folder.svg</x:String>
 
     <!-- Devices -->
     <x:String x:Key="Infomaniak.DS.Icons.Devices.computer">ms-appx:///Assets/DS/Icons/Devices/computer.svg</x:String>
@@ -116,5 +106,8 @@
     <!-- Products -->
     <x:String x:Key="Infomaniak.DS.Icons.Products.kDrive">ms-appx:///Assets/DS/Icons/Products/kDrive.svg</x:String>
     <x:String x:Key="Infomaniak.DS.Icons.Products.kDrive-outline">ms-appx:///Assets/DS/Icons/Products/kDrive-outline.svg</x:String>
+    
+    <!-- Time -->
+    <x:String x:Key="Infomaniak.DS.Icons.Time.hourglass">ms-appx:///Assets/DS/Icons/Time/hourglass.svg</x:String>
 
 </ResourceDictionary>

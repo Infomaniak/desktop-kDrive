@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,20 +26,20 @@ class TimeoutHelper {
     public:
         /* Wait for condition() to return true,
          * Return false if timed out */
-        static bool waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration& duration,
-                            const std::chrono::steady_clock::duration& loopWait);
+        static bool waitFor(std::function<bool()> condition, const std::chrono::steady_clock::duration &duration,
+                            const std::chrono::steady_clock::duration &loopWait);
 
         /* Wait for condition() to return true, and run stateCheck() after each loop,
          * Return false if timed out */
         static bool waitFor(std::function<bool()> condition, std::function<void()> stateCheck,
-                            const std::chrono::steady_clock::duration& duration,
-                            const std::chrono::steady_clock::duration& loopWait);
+                            const std::chrono::steady_clock::duration &duration,
+                            const std::chrono::steady_clock::duration &loopWait);
 
         /* Waits for function() to return. If, when function() returns, more than the specified duration has elapsed, it will
          * return false. */
         template<typename T>
-        static bool checkExecutionTime(std::function<T()> function, T& result,
-                                       const std::chrono::steady_clock::duration& maximumDuration) {
+        static bool checkExecutionTime(std::function<T()> function, T &result,
+                                       const std::chrono::steady_clock::duration &maximumDuration) {
             TimeoutHelper timeoutHelper(maximumDuration);
             result = function();
             return !timeoutHelper.timedOut();
@@ -48,9 +48,9 @@ class TimeoutHelper {
         /* Waits for function() to return. If, when function() returns, less than minimumDuration or more than maximumDuration has
          * elapsed, it will return false. */
         template<typename T>
-        static bool checkExecutionTime(std::function<T()> function, T& result,
-                                       const std::chrono::steady_clock::duration& minimumDuration,
-                                       const std::chrono::steady_clock::duration& maximumDuration) {
+        static bool checkExecutionTime(std::function<T()> function, T &result,
+                                       const std::chrono::steady_clock::duration &minimumDuration,
+                                       const std::chrono::steady_clock::duration &maximumDuration) {
             TimeoutHelper timeoutHelper(maximumDuration);
             result = function();
             if (timeoutHelper.elapsed() < minimumDuration) {
@@ -70,9 +70,11 @@ class TimeoutHelper {
         }
 
     private:
-        TimeoutHelper(const std::chrono::steady_clock::duration& duration,
-                      const std::chrono::steady_clock::duration& loopWait = std::chrono::milliseconds(0)) :
-            _start(std::chrono::steady_clock::now()), _duration(duration), _loopWait(loopWait) {}
+        TimeoutHelper(const std::chrono::steady_clock::duration &duration,
+                      const std::chrono::steady_clock::duration &loopWait = std::chrono::milliseconds(0)) :
+            _start(std::chrono::steady_clock::now()),
+            _duration(duration),
+            _loopWait(loopWait) {}
 
         bool timedOut();
         std::chrono::milliseconds elapsed() const {

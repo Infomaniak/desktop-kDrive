@@ -1,6 +1,6 @@
 /*
  Infomaniak kDrive - Desktop
- Copyright (C) 2023-2025 Infomaniak Network SA
+ Copyright (C) 2023-2026 Infomaniak Network SA
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import CppInterop
 import Foundation
 
 public enum SyncOrigin: Sendable {
     case storedDrive(Drive)
     case availableDrive(AvailableDrive)
 
-    var drive: any DriveRepresentation {
+    public var drive: any DriveRepresentation {
         switch self {
         case .storedDrive(let drive):
             return drive
@@ -60,16 +61,17 @@ public struct NewSyncCandidate {
 
 public protocol SyncCreator: Sendable {
     func create(from sync: NewSyncCandidate) async throws -> SyncInfo
-    func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> URL
+    func preferredLocalPath(for driveName: String) async throws -> URL
 }
 
 public final class SyncCreationService: SyncCreator {
     private let useLightSyncIfPossible: Bool
 
-    init(useLightSyncIfPossible: Bool = true) {
+    public init(useLightSyncIfPossible: Bool = true) {
         self.useLightSyncIfPossible = useLightSyncIfPossible
     }
 
+    @discardableResult
     public func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
         let identifier = getIdentifier(from: sync.origin)
 
@@ -80,25 +82,24 @@ public final class SyncCreationService: SyncCreator {
 
         try createDestinationIfNecessary(at: localFolderURL)
 
-        let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
-        return syncInfo
+        return try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
     }
 
-    public func preferredLocalPath(for syncOrigin: SyncOrigin) async throws -> URL {
-        let defaultPath = computeDefaultFolderPath(drive: syncOrigin.drive)
+    public func preferredLocalPath(for driveName: String) async throws -> URL {
+        let defaultPath = computeDefaultFolderPath(driveName: driveName)
         let path = try await UtilityJobs().getGoodPathForNewSynchro(basePath: defaultPath.path)
         return URL(fileURLWithPath: path)
     }
 
-    private func computeDefaultFolderPath(drive: any DriveRepresentation) -> URL {
+    private func computeDefaultFolderPath(driveName: String) -> URL {
         let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
 
-        var driveName = drive.name
+        var name = driveName
         if driveName.lowercased().hasPrefix("kdrive") {
-            driveName = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
+            name = driveName.replacingOccurrences(of: "kdrive", with: "", options: .caseInsensitive)
         }
 
-        let folderName = "kDrive \(driveName)".trimmingCharacters(in: .whitespacesAndNewlines)
+        let folderName = "kDrive \(name)".trimmingCharacters(in: .whitespacesAndNewlines)
 
         return homeDirectory.appendingPathComponent(folderName)
     }
@@ -143,7 +144,7 @@ public final class SyncCreationService: SyncCreator {
         if let providedPath = sync.localFolder {
             return providedPath
         } else {
-            return try await preferredLocalPath(for: sync.origin)
+            return try await preferredLocalPath(for: sync.origin.drive.name)
         }
     }
 

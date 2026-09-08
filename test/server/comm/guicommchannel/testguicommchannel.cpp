@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ void TestGuiCommChannel::testLoginRequestTokenJob() {
                          R"( "params": {)"
                          R"( "userDbId": 1 },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto loginRequestTokenJob = std::dynamic_pointer_cast<LoginRequestTokenJob>(job);
@@ -241,7 +241,7 @@ void TestGuiCommChannel::testUserDbIdListJob() {
                          R"( "params": {)"
                          R"( "userDbIdList": [ 1, 2, 3 ] },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto userDbIdListJob = std::dynamic_pointer_cast<UserDbIdListJob>(job);
@@ -284,6 +284,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
     (void) userInfoObj1.set("isConnected", true);
     (void) userInfoObj1.set("isStaff", false);
     (void) userInfoObj1.set("name", toBase64(Str("aaaaa")));
+    (void) userInfoObj1.set("firstName", toBase64(Str("a1a1a1")));
     (void) userInfoObj1.set("userId", 1001);
 
     Poco::JSON::Object userInfoObj2;
@@ -294,6 +295,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
     (void) userInfoObj2.set("isConnected", false);
     (void) userInfoObj2.set("isStaff", false);
     (void) userInfoObj2.set("name", toBase64(Str("bbbbb")));
+    (void) userInfoObj2.set("firstName", toBase64(Str("b1b1b1")));
     (void) userInfoObj2.set("userId", 1002);
 
     Poco::JSON::Array userInfoListObj;
@@ -306,7 +308,7 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::USER_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -323,8 +325,8 @@ void TestGuiCommChannel::testUserInfoListJob() {
         QImage avatar;
         (void) avatar.loadFromData(avatarQBA);
 
-        const UserInfo ui1(1, 1001, "aaaaa", "aaaaa@xxx.com", avatar, true);
-        const UserInfo ui2(2, 1002, "bbbbb", "bbbbb@xxx.com", avatar, false);
+        const UserInfo ui1(1, 1001, "aaaaa", "a1a1a1", "aaaaa@xxx.com", avatar, true);
+        const UserInfo ui2(2, 1002, "bbbbb", "b1b1b1", "bbbbb@xxx.com", avatar, false);
 
         userInfoListJob->_userInfoList = {ui1, ui2};
     };
@@ -362,7 +364,7 @@ void TestGuiCommChannel::testUserDeleteJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -425,7 +427,7 @@ void TestGuiCommChannel::testUserAvailableDrivesJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::USER_AVAILABLEDRIVES));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -487,7 +489,7 @@ void TestGuiCommChannel::testAccountInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::ACCOUNT_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -528,7 +530,7 @@ std::vector<DriveInfo> createDriveInfoList() {
     di1.setAccessDenied(false);
     di1.setSize(1000000000);
     di1.setUsedSize(50000000);
-    di1.setPackIsFree(true);
+    di1.setPackInfo(PackInfo(1, "pack_free", "PackFree", true));
 
     DriveInfo di2;
     di2.setDbId(2);
@@ -543,7 +545,7 @@ std::vector<DriveInfo> createDriveInfoList() {
     di2.setAccessDenied(true);
     di2.setSize(2000000000);
     di2.setUsedSize(60000000);
-    di2.setPackIsFree(false);
+    di2.setPackInfo(PackInfo(2, "pack_pro", "PackPro", false));
 
     return {di1, di2};
 }
@@ -562,7 +564,12 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj1.set("notifications", true);
     (void) driveInfoObj1.set("size", 1000000000);
     (void) driveInfoObj1.set("usedSize", 50000000);
-    (void) driveInfoObj1.set("isFree", true);
+    Poco::JSON::Object packInfoObj1;
+    (void) packInfoObj1.set("id", 1);
+    (void) packInfoObj1.set("name", toBase64(Str("pack_free")));
+    (void) packInfoObj1.set("displayName", toBase64(Str("PackFree")));
+    (void) packInfoObj1.set("isFree", true);
+    (void) driveInfoObj1.set("packInfo", packInfoObj1);
 
     Poco::JSON::Object driveInfoObj2;
     (void) driveInfoObj2.set("accessDenied", true);
@@ -577,7 +584,12 @@ Poco::JSON::Array createDriveInfoObjList() {
     (void) driveInfoObj2.set("notifications", false);
     (void) driveInfoObj2.set("size", 2000000000);
     (void) driveInfoObj2.set("usedSize", 60000000);
-    (void) driveInfoObj2.set("isFree", false);
+    Poco::JSON::Object packInfoObj2;
+    (void) packInfoObj2.set("id", 2);
+    (void) packInfoObj2.set("name", toBase64(Str("pack_pro")));
+    (void) packInfoObj2.set("displayName", toBase64(Str("PackPro")));
+    (void) packInfoObj2.set("isFree", false);
+    (void) driveInfoObj2.set("packInfo", packInfoObj2);
 
     Poco::JSON::Array driveInfoObjList;
 
@@ -614,7 +626,7 @@ void TestGuiCommChannel::testDriveInfoListJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_INFOLIST));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -662,7 +674,7 @@ void TestGuiCommChannel::testDriveUpdateJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_UPDATE));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
@@ -707,7 +719,7 @@ void TestGuiCommChannel::testDriveDeleteJob() {
                          R"(,)"
                          R"( "params": {  },)"
                          R"( "type": )" +
-                         std::to_string(toInt(AbstractGuiJob::GuiJobType::Query)) + R"( })"};
+                         std::to_string(toInt(GuiJobType::Query)) + R"( })"};
 
     auto processFct = [](std::shared_ptr<AbstractGuiJob>) {
         // No output parameters
@@ -775,7 +787,7 @@ void TestGuiCommChannel::testDriveSearchJob() {
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
     (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_SEARCH));
-    (void) answerObjWithNumAndType.set("type", toInt(AbstractGuiJob::GuiJobType::Query));
+    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
 
     // Job expected answers
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);

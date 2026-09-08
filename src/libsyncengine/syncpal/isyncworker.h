@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@
 
 namespace KDC {
 
+const int64_t defaultPauseDuration = 60000; // 1 min
+
 class ISyncWorker {
     public:
         ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
@@ -41,15 +43,22 @@ class ISyncWorker {
         // Will not return until the internal thread has exited
         void waitForExit();
 
-        inline std::string name() const { return _name; }
-        inline std::string shortName() const { return _shortName; }
+        std::string name() const { return _name; }
+        std::string shortName() const { return _shortName; }
 
-        inline bool isRunning() const { return _isRunning; }
-        inline bool stopAsked() const { return _stopAsked; }
-        inline ExitCode exitCode() const { return _exitCode; }
-        inline ExitCause exitCause() const { return _exitCause; }
+        bool isRunning() const { return _isRunning; }
+        bool stopAsked() const { return _stopAsked; }
+        ExitCode exitCode() const { return _exitCode; }
+        ExitCause exitCause() const { return _exitCause; }
 
-        inline void setTesting(bool testing) { _testing = testing; }
+        [[nodiscard]] const int64_t &pauseDuration() const { return _pauseDuration; }
+        void setPauseDuration(const int64_t &pauseDuration) {
+            _pauseDuration = std::max(pauseDuration, defaultPauseDuration);
+        } // Minimum pause duration is 1 min
+        void resetPauseDuration() { _pauseDuration = defaultPauseDuration; }
+
+        void setTesting(bool testing) { _testing = testing; }
+        [[nodiscard]] std::shared_ptr<CacheDirectory> cacheDirectory() const { return _syncPal->cacheDirectory(); }
 
     protected:
         log4cplus::Logger _logger;
@@ -70,7 +79,7 @@ class ISyncWorker {
         // Implement this method in your subclass with the code you want your thread to run
         virtual void execute() = 0;
 
-        inline int syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
+        virtual SyncDbId syncDbId() const { return _syncPal ? _syncPal->syncDbId() : -1; }
 
     private:
         const std::string _name;
@@ -81,6 +90,7 @@ class ISyncWorker {
         bool _isRunning{false};
         ExitCode _exitCode{ExitCode::Unknown};
         ExitCause _exitCause{ExitCause::Unknown};
+        int64_t _pauseDuration{defaultPauseDuration};
 };
 
 } // namespace KDC

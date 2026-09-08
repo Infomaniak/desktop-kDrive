@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "syncstopjob.h"
+#include "libsyncengine/syncpal/useractionscopedlock.h"
 #include "appserver.h"
 #include "requests/serverrequests.h"
 #include "server/comm/guijobmanager.h"
@@ -51,6 +52,21 @@ ExitInfo SyncStopJob::serializeOutputParms() {
 }
 
 ExitInfo SyncStopJob::process() {
+    std::shared_ptr<SyncPal> syncPal;
+    if (ExitInfo exitInfo = getSyncPal(_syncDbId, syncPal); !exitInfo) {
+        LOG_INFO(_logger,
+                 "Error in getSyncPal for syncDbId=" << _syncDbId << " : " << exitInfo
+                                                     << " This means that the sync pal is not running, which is expected at "
+                                                        "this step. The sync will be started later in the process.");
+    }
+
+    UserActionScopedLock lock;
+    if (syncPal != nullptr && !lock.tryLock(syncPal, std::chrono::milliseconds(userActionLockShortTimeoutMs))) {
+        LOG_WARN(_logger, "Could not acquire user action lock for syncDbId="
+                                  << _syncDbId << ". Another user action is running. Aborting SyncStopJob.");
+        return ExitCode::OperationCanceled;
+    }
+
     _commManager->appServer().clearSyncCacheMap();
 
     // Stop SyncPal

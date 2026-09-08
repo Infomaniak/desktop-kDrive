@@ -42,6 +42,20 @@ if not deepl_key:
 
 translator = deepl.Translator(deepl_key)
 
+DEEPL_LANGUAGE_CODES = {
+    "de": "DE",
+    "es": "ES",
+    "fr": "FR",
+    "it": "IT",
+    "nb": "NB",
+    "fi": "FI",
+    "da": "DA",
+    "el": "EL",
+    "pl": "PL",
+    "sv": "SV",
+    "pt": "PT-PT",
+}
+
 def fill_missing_translations(git_dir_path, language):
     file_name = f"client_{language}.ts"
     file_path = Path(git_dir_path) / "translations" / file_name
@@ -53,14 +67,16 @@ def fill_missing_translations(git_dir_path, language):
 
     print(f"Detecting missing translations in client_{language}.ts ...")
 
+    deepl_target = DEEPL_LANGUAGE_CODES.get(language, language.upper())
+
     for context in contexts:
         messages = context.find_all("message")
         for message in messages:
             if not message.translation.text:
-                    source_text = message.source.get_text()
-                    message.translation.string = html.unescape(translator.translate_text(source_text, target_lang=language).text)
-                    del message.translation["type"] # Mark translation as finished
-                    changes[(message.location.get("filename"), message.location.get("line"))] = message.translation
+                source_text = message.source.get_text()
+                message.translation.string = html.unescape(translator.translate_text(source_text, target_lang=deepl_target).text)
+                del message.translation["type"] # Mark translation as finished
+                changes[(message.location.get("filename"), message.location.get("line"))] = message.translation
 
     
     if changes:
@@ -70,7 +86,7 @@ def fill_missing_translations(git_dir_path, language):
     
     
 
-languages = ["de", "es", "fr", "it"]
+languages = ["de", "es", "fr", "it", "sv", "pt", "pl", "nb", "fi", "da", "el"]
 
 for language in languages:
     fill_missing_translations(args.git_dir_path, language)

@@ -1,0 +1,91 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2025 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import kDriveCoreUI
+import kDriveResources
+import SwiftUI
+
+struct SearchSheetView: View {
+    @ObservedObject var viewModel: SearchViewModel
+
+    @FocusState private var isSearchFieldFocused: Bool
+
+    var body: some View {
+        VStack(spacing: 0) {
+            SearchBarView(
+                searchText: $viewModel.searchText,
+                focusState: $isSearchFieldFocused
+            )
+
+            List(viewModel.displayedResults) { file in
+                Button {
+                    viewModel.openFile(file)
+                } label: {
+                    SearchResultRowView(file: file)
+                }
+                .buttonStyle(.plain)
+                .listRowInsets(
+                    EdgeInsets(
+                        top: 0,
+                        leading: AppPadding.padding16,
+                        bottom: 0,
+                        trailing: AppPadding.padding16
+                    )
+                )
+                .hideRowSeparatorIfAvailable()
+            }
+            .listStyle(.plain)
+            .redacted(reason: viewModel.shouldRedact ? .placeholder : [])
+            .disabled(viewModel.shouldRedact)
+            .opacity(viewModel.displayedResults.isEmpty ? 0 : 1)
+            .accessibilityElement(children: viewModel.shouldRedact ? .ignore : .contain)
+            .accessibilityLabel(viewModel.shouldRedact ? KDriveLocalizable.accessibilitySearching : "")
+            .overlay {
+                if viewModel.displayedResults.isEmpty {
+                    emptyStateView
+                }
+            }
+        }
+        .frame(minWidth: 600, minHeight: 368)
+        .accessibilityLabel(KDriveLocalizable.accessibilitySearchSheetLabel)
+        .onAppear {
+            isSearchFieldFocused = true
+        }
+    }
+
+    @ViewBuilder
+    private var emptyStateView: some View {
+        if viewModel.hasSearchQuery {
+            IKContentUnavailableView(
+                image: KDriveResources.mountainsTreesSun.swiftUIImage,
+                title: KDriveLocalizable.noResultsFound,
+                subtitle: KDriveLocalizable.tryDifferentSearchTerm
+            )
+        } else {
+            IKContentUnavailableView(
+                image: KDriveResources.mountainsTreesSun.swiftUIImage,
+                title: KDriveLocalizable.searchYourFiles,
+                subtitle: KDriveLocalizable.typeToStartSearching
+            )
+        }
+    }
+}
+
+#Preview {
+    SearchSheetView(viewModel: SearchViewModel(syncDbId: 0, driveId: 0, synchroLocalPath: URL(fileURLWithPath: "/")))
+}

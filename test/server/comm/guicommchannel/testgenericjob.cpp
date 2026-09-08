@@ -1,6 +1,6 @@
 ﻿/*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@ namespace KDC {
 void TestGuiCommChannel::testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                                         const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct) {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    assert(cbkAnswer.empty());
+    CPPUNIT_ASSERT(cbkAnswer.empty());
 #else
-    assert(!cbkAnswer.empty());
+    CPPUNIT_ASSERT(!cbkAnswer.empty());
 #endif
 
     auto test = [&](const CommString &testQuery, std::shared_ptr<AbstractCommChannel> testChannel) {

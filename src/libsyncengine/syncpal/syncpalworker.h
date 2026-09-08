@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,12 @@
 #include "libcommon/utility/types.h"
 
 #include <ctime>
+
+namespace backoffVariable {
+constexpr double multiplicativeFactor = 2; // binary exponential backoff
+constexpr int64_t baseDelay(60000); // 1 min
+constexpr int64_t maxDelay(14400000); // 4 hour
+} // namespace backoffVariable
 
 namespace KDC {
 
@@ -50,6 +56,7 @@ class SyncPalWorker : public ISyncWorker {
 #if defined(KD_WINDOWS)
         std::unique_ptr<StdLoggingThread> _resetVfsFilesStatusThread{nullptr};
 #endif
+
         void initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&workers)[2],
                       std::shared_ptr<SharedObject> (&inputSharedObject)[2]);
         void initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2], std::shared_ptr<SharedObject> (&inputSharedObject)[2],
@@ -68,6 +75,11 @@ class SyncPalWorker : public ISyncWorker {
          */
         bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
         void resetVfsFilesStatus();
+
+        ExitInfo ensureBlackListIsPropagated();
+
+        void ensureMinimumPermission();
+
         /**
          * @brief Attempts to repair local node IDs in the SyncDb after the sync directory has changed its node ID.
          *
@@ -87,6 +99,15 @@ class SyncPalWorker : public ISyncWorker {
          *         false otherwise.
          */
         bool tryToFixDbNodeIdsAfterSyncDirChange();
+        void removeSyncDirChangedErrorIfAny();
+
+        bool shouldBePaused(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+        bool handleRateLimited(const std::shared_ptr<ISyncWorker> w1, const std::shared_ptr<ISyncWorker> w2 = nullptr);
+        void handleBackError();
+
+        virtual double jitter() const;
+
+        void checkForMassDeletions() const;
 
         friend class TestSyncPalWorker;
 };

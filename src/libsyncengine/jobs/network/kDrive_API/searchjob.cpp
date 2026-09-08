@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,18 @@
 
 #include "info/searchinfo.h"
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/jobexceptions.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
 
 namespace KDC {
 
-static constexpr auto privateFolder = "Private/";
-static constexpr auto sharedFolder = "Shared/";
+static constexpr auto privateFolder = Str("/Private/");
+static constexpr auto sharedFolder = Str("/Shared/");
 
-SearchJob::SearchJob(int driveDbId, int syncDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
+SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
+                     const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _searchString(searchString),
     _cursorInput(cursorInput) {
@@ -57,7 +59,7 @@ SearchJob::SearchJob(int driveDbId, int syncDbId, const std::string &searchStrin
     _syncRootPath = sync.localPath();
 }
 
-SearchJob::SearchJob(int driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
+SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _searchString(searchString),
     _cursorInput(cursorInput) {
@@ -124,10 +126,11 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
 
-        std::string path;
-        if (!JsonParserUtility::extractValue(obj, pathKey, path)) {
+        SyncName pathStr;
+        if (!JsonParserUtility::extractValue(obj, pathKey, pathStr)) {
             return {ExitCode::BackError, ExitCause::MissingReplyData};
         }
+        SyncPath path(pathStr);
 
         SyncTime modifiedTime = 0;
         if (!JsonParserUtility::extractValue(obj, lastModifiedAtKey, modifiedTime, false)) {
@@ -142,14 +145,15 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         bool isAvailableLocally = false;
 
         if (!_syncRootPath.empty()) {
-            if (path.starts_with('/') || path.starts_with('\\')) {
-                path.erase(0, 1);
+            if (path.native().starts_with(privateFolder)) {
+                path = path.native().substr(
+                        std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
+            } else if (path.native().starts_with(sharedFolder)) {
+                path = path.native().substr(std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
             }
 
-            if (path.starts_with(privateFolder)) {
-                path.erase(0, std::char_traits<char>::length(privateFolder));
-            } else if (path.starts_with(sharedFolder)) {
-                path.erase(0, std::char_traits<char>::length(sharedFolder));
+            if (path.native().starts_with(Str("/")) || path.native().starts_with(Str("\\"))) {
+                path = path.relative_path();
             }
 
             SyncPath absolutePath = _syncRootPath / path;

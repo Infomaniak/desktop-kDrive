@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "update_detection/update_detector/testupdatetree.h"
 #include "update_detection/update_detector/testnode.h"
 #include "update_detection/update_detector/testupdatetreeworker.h"
+#include "reconciliation/testsyncoperation.h"
 #include "reconciliation/platform_inconsistency_checker/testplatforminconsistencycheckerworker.h"
 #include "reconciliation/conflict_finder/testconflictfinderworker.h"
 #include "reconciliation/operation_generator/testoperationgeneratorworker.h"
@@ -39,9 +40,12 @@
 #include "integration/testintegration.h"
 #include "propagation/executor/testexecutorworker.h"
 #include "jobs/network/testnetworkjobs.h"
+#include "jobs/network/kDrive_API/testapitranslator.h"
 #include "jobs/network/kDrive_API/testloguploadjob.h"
+#include "jobs/network/kDrive_API/testsearchjob.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
+#include "jobs/testabstractjob.h"
 #include "jobs/testsyncjobmanagersingleton.h"
 #include "propagation/executor/testfilerescuer.h"
 #include "requests/testexclusiontemplatecache.h"
@@ -59,12 +63,15 @@ namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationProcessor);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestApiTranslator);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogUploadJob);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSearchJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncJobManagerSingleton);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
@@ -82,6 +89,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNode);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(BenchUpdateTreeWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);

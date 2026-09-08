@@ -1,4 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ -->
 <toolKit:SettingsExpander x:Class="Infomaniak.kDrive.CustomControls.UpdateExpander"
                           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,7 +27,7 @@
                           xmlns:converters="using:Infomaniak.kDrive.Converters"
                           xmlns:kDrive="using:Infomaniak.kDrive"
                           Loaded="UpdateExpander_Loaded"
-                          Unloaded="UpdateExpander_Unloaded"
+                          Unloaded="UserControl_Unloaded"
                           mc:Ignorable="d">
     <toolKit:SettingsExpander.Resources>
         <!-- Converters -->
@@ -27,11 +44,27 @@
                        Height="32"
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
     </toolKit:SettingsExpander.HeaderIcon>
+    <StackPanel Orientation="Horizontal"
+                Spacing="{StaticResource Infomaniak.Style.Spacing.XXS}"
+                Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}">
+        <Button Style="{ThemeResource TextBlockButtonStyle}"
+                Background="Transparent"
+                Click="KnowMoreButton_Click">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="{x:Bind kDrive:Localizer.Instance.GetString('learnMore'), Mode=OneWay}" />
+            </ToolTipService.ToolTip>
+            <local:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.circle-information-outline}"
+                           Height="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Button>
 
-    <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpdate'), Mode=OneWay}"
-            Style="{ThemeResource AccentButtonStyle}"
-            Visibility="{x:Bind ViewModel.Settings.UpdateManager.AvailableUpdate, Converter={StaticResource IsNullToBoolOrVisibilityConverter}, ConverterParameter='Inverted=True', Mode=OneWay}"
-            Click="UpdateButton_Click" />
+
+        <Button Content="{x:Bind kDrive:Localizer.Instance.GetString('buttonUpdate'), Mode=OneWay}"
+                Style="{ThemeResource AccentButtonStyle}"
+                Click="UpdateButton_Click" />
+    </StackPanel>
+
+
 
     <toolKit:SettingsExpander.Items>
         <toolKit:SettingsCard Background="{ThemeResource LayerFillColorDefault}"
@@ -49,12 +82,14 @@
                                Height="32"
                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             </toolKit:SettingsCard.HeaderIcon>
-            <ToggleSwitch IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
+            <ToggleSwitch OnContent="{x:Bind kDrive:Localizer.Instance.GetString('labelActivated')}"
+                          OffContent="{x:Bind kDrive:Localizer.Instance.GetString('labelDeactivated')}"
+                          IsOn="{x:Bind ViewModel.Settings.UpdateManager.AutoUpdateEnabled, Mode=OneWay}"
                           Tapped="AutoUpdateToggleSwitch_Tapped"
                           IsEnabled="False" />
         </toolKit:SettingsCard>
 
-        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaSettings'), Mode=OneWay}"
+        <toolKit:SettingsCard Header="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramTitle'), Mode=OneWay}"
                               Description="{x:Bind kDrive:Localizer.Instance.GetString('betaProgramDescription'), Mode=OneWay}"
                               Background="{ThemeResource LayerFillColorDefault}">
             <ComboBox x:Name="UpdateChannelComboBox"
@@ -64,11 +99,18 @@
                 <ComboBoxItem Tag="Prod"
                               Content="{x:Bind kDrive:Localizer.Instance.GetString('doNotJoin'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Beta"
-                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelbeta'), Mode=OneWay}" />
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelBeta'), Mode=OneWay}" />
                 <ComboBoxItem Tag="Internal"
                               x:Name="UpdateChannelComboBox_Internal"
                               Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelInternal'), Mode=OneWay}"
-                              Foreground="{ThemeResource SystemErrorTextColor}"
+                              Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                              Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                              Visibility="Collapsed" />
+                <ComboBoxItem Tag="Test"
+                              x:Name="UpdateChannelComboBox_Test"
+                              Content="{x:Bind kDrive:Localizer.Instance.GetString('releaseChannelTest'), Mode=OneWay}"
+                              Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                              Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                               Visibility="Collapsed" />
             </ComboBox>
         </toolKit:SettingsCard>

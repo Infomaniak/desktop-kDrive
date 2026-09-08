@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,10 +42,11 @@ static const int arrowSize = 30;
 
 Q_LOGGING_CATEGORY(lcConfirmSynchronizationDialog, "gui.confirmsynchronizationdialog", QtInfoMsg)
 
-ConfirmSynchronizationDialog::ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, int userDbId, int driveId,
-                                                           const QString &serverFolderNodeId, const QString &localFolderName,
-                                                           qint64 localFolderSize, const QString &serverFolderName,
-                                                           qint64 serverFolderSize, QWidget *parent) :
+ConfirmSynchronizationDialog::ConfirmSynchronizationDialog(std::shared_ptr<ClientGui> gui, const UserDbId userDbId,
+                                                           const DriveId driveId, const QString &serverFolderNodeId,
+                                                           const QString &localFolderName, qint64 localFolderSize,
+                                                           const QString &serverFolderName, qint64 serverFolderSize,
+                                                           QWidget *parent) :
     CustomDialog(true, parent),
     _gui(gui),
     _localFolderName(localFolderName),

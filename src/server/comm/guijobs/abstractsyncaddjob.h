@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2025 Infomaniak Network SA
+ * Copyright (C) 2023-2026 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class AbstractSyncAddJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override { return ExitCode::Ok; }
 
-        ExitInfo process(SyncInfo &syncInfo);
+        ExitInfo process(const SyncInfo &syncInfo);
 
         auto localFolderPath() const { return _localFolderPath; }
         auto serverFolderPath() const { return _serverFolderPath; }
