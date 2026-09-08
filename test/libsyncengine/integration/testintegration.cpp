@@ -1051,7 +1051,8 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
+    // Create links with non-compliant target paths. These links should also be synchronized to the remote replica
+    // as long as the backend does not reject them.
     std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
 
@@ -1071,11 +1072,11 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     const auto remoteTestFileInfo7 =
             getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
 
-    CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo5.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo6.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo7.isValid());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(int64_t{9}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
 
     logStep("testSynchronizationOfSymLinks");
