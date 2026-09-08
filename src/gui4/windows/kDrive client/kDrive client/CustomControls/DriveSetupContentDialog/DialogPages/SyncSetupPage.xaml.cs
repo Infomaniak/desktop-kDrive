@@ -24,11 +24,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Windows.Storage.Pickers;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Windows.Storage.Pickers;
 
 namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 {
@@ -136,13 +136,17 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             control.IsEnabled = false;
 
             // Create a folder picker
-            FolderPicker openPicker = new();
             var window = ((App)Application.Current)?.CurrentWindow;
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
-            WinRT.Interop.InitializeWithWindow.Initialize(openPicker, hWnd);
-            openPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
-            Windows.Storage.StorageFolder folder = await openPicker.PickSingleFolderAsync();
+            if (window is null)
+            {
+                Logger.Log(Logger.Level.Error, "No CurrentWindow available to attach the folder picker to");
+                control.IsEnabled = true;
+                return;
+            }
 
+            FolderPicker openPicker = new(window.AppWindow.Id);
+            openPicker.SuggestedStartLocation = PickerLocationId.ComputerFolder;
+            PickFolderResult folder = await openPicker.PickSingleFolderAsync();
             if (folder is null)
             {
                 Logger.Log(Logger.Level.Info, "No folder was picked");
