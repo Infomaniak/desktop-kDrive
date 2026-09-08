@@ -231,6 +231,8 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
 };
 
 std::string ParmsDb::appUID() {
+    assert(Log::isSet() && "Log is not initialized, cannot retrieve AppUid.");
+
     if (!_instance) {
         LOG_WARN(Log::instance()->getLogger(), "ParmsDb is not initialized, cannot retrieve " << AppStateKey::AppUid);
         return {};
