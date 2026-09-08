@@ -2618,6 +2618,21 @@ odblokowany i dostępny z Twojego komputera.</translation>
                 <numerusform>Usuń (%1 reguły)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Sprawdzanie aktualizacji…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Nie udało się zapisać tego ustawienia. Spróbuj ponownie.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Nie można sprawdzić aktualizacji</translation>
+        </message>
     </context> 
     <context>
         <name></name> 
