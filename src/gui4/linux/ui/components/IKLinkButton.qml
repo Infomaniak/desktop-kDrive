@@ -28,10 +28,14 @@ Button {
     id: root
 
     property bool actionEnabled: true
+    // Appends the external-link glyph. Set it whenever the action hands the user over to the web browser.
+    property bool external: false
+
+    readonly property real externalIconAllowance: external ? externalIcon.width + IKLinkTokens.externalIconSpacing : 0
 
     enabled: actionEnabled
     padding: 0
-    implicitWidth: linkText.implicitWidth
+    implicitWidth: linkText.implicitWidth + externalIconAllowance
     implicitHeight: Math.max(linkText.implicitHeight, IKLinkTokens.minimumHeight)
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
@@ -46,15 +50,36 @@ Button {
         border.color: IKColors.accentPrimary
     }
 
-    contentItem: Text {
-        id: linkText
+    contentItem: Item {
+        id: linkContent
 
-        text: root.text
-        color: root.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
-        font.pixelSize: IKFonts.bodySize
-        font.underline: root.hovered || root.down
-        horizontalAlignment: Text.AlignLeft
-        verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
+        Row {
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: root.external ? IKLinkTokens.externalIconSpacing : 0
+
+            Text {
+                id: linkText
+
+                // Width is taken from the content Item rather than from the Row, whose implicit width this feeds back into.
+                width: Math.min(implicitWidth, Math.max(0, linkContent.width - root.externalIconAllowance))
+                text: root.text
+                color: root.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
+                font.pixelSize: IKFonts.bodySize
+                font.underline: root.hovered || root.down
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+
+            IKExternalLinkIcon {
+                id: externalIcon
+
+                anchors.verticalCenter: parent.verticalCenter
+                visible: root.external
+                // A glyph paler than its own label would read as disabled on an otherwise active link.
+                color: linkText.color
+            }
+        }
     }
 }
