@@ -305,12 +305,12 @@ void AppClientLinux::quitOnServerDisconnection() {
 void AppClientLinux::retranslatePresentation() {
     _systemTrayController.retranslate();
     _activitiesController.retranslate();
-    emit _storageController.storageChanged();
+    _storageController.retranslate();
 
     if (auto *session = _onboardingSessionManager.activeSession()) {
         emit session->flowController()->titleChanged();
         session->availableDrivesModel()->retranslate();
-        emit session->syncConfigurationController()->presentationChanged();
+        session->syncConfigurationController()->retranslate();
     }
 }
 
