@@ -20,12 +20,15 @@
 
 #include "libcommon/utility/types.h"
 
+#include <config.h>
 #include <QColor>
 #include <QObject>
 #include <QString>
 #include <QUrl>
 
 #include <cstdint>
+
+using namespace Qt::StringLiterals;
 
 namespace KDC::AppConstants::Drive {
 
@@ -98,3 +101,18 @@ Q_ENUM_NS(Destination)
 }
 
 } // namespace KDC::AppConstants::WebDrive
+
+namespace KDC::AppConstants::Settings {
+[[nodiscard]] inline QUrl downloadUri() {
+    return QUrl{QString::fromLatin1(APPLICATION_DOWNLOAD_URL)};
+}
+[[nodiscard]] inline QUrl trashHelpUri() {
+    return QUrl{QString::fromLatin1(LEARNMORE_MOVE_TO_TRASH_URL)};
+}
+[[nodiscard]] inline QUrl licenseUri() {
+    return QUrl{"https://github.com/Infomaniak/desktop-kDrive/blob/develop/LICENSE"_L1};
+}
+[[nodiscard]] inline QUrl sourcesUri() {
+    return QUrl{"https://github.com/Infomaniak/desktop-kDrive"_L1};
+}
+} // namespace KDC::AppConstants::Settings
