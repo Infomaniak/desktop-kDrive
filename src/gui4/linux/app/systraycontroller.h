@@ -66,6 +66,7 @@ class SystemTrayController final : public QObject {
 
         Q_INVOKABLE void showMainWindow() const;
         Q_INVOKABLE static void showSettingsWindow();
+        void retranslate() const;
         Q_INVOKABLE void hideMainWindow();
 
         /** Requests a complete application shutdown at most once. */
