@@ -50,7 +50,7 @@ Extract or ask for only information that materially narrows the search:
 - Scope requested: one occurrence, one issue group, a release regression, or highest-impact crashes.
 - Available logs/support archive and whether customer data may be inspected.
 
-If the user provides a Sentry URL, fetch that exact resource first. Otherwise discover the organization/project and search the narrowest reasonable period. For broad ranking requests, default to unresolved crash-like issues in the last 30 days. Search crash/exception mechanisms as well as `level:fatal`, because SDK crashes are not consistently labeled fatal.
+If the user provides a Sentry URL whose host is exactly `sentry-desktop.infomaniak.com`, fetch that exact resource first. If the URL uses another host, do not fetch it; ask for the corresponding self-hosted issue/event URL or issue ID. Otherwise discover the organization/project and search the narrowest reasonable period. For broad ranking requests, default to unresolved crash-like issues in the last 30 days. Search crash/exception mechanisms as well as `level:fatal`, because SDK crashes are not consistently labeled fatal.
 
 Prefer explicit Sentry query syntax. If the local MCP reports that AI-powered search is unavailable, continue with direct filters and aggregate fields rather than treating it as a connectivity failure.
 
