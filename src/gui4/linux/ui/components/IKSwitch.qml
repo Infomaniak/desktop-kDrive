@@ -33,6 +33,8 @@ AbstractButton {
     Accessible.checkable: true
     Accessible.checked: value
     Accessible.name: text
+    Accessible.onPressAction: root.clicked()
+    Accessible.onToggleAction: root.clicked()
     onClicked: toggleRequested(!value)
     background: Item {}
     contentItem: Item {
