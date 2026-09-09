@@ -90,6 +90,10 @@ std::optional<bool> SentryService::readCachedConsent() {
 
 void SentryService::writeCachedConsent(const bool enabled) {
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, settingsOrganization, settingsApplication);
+    if (settings.contains(sentryConsentKey) && settings.value(sentryConsentKey).toBool() == enabled) {
+        return;
+    }
+
     settings.setValue(sentryConsentKey, enabled);
     settings.sync();
 
@@ -271,12 +275,19 @@ void SentryService::reconcileConsentWithParametersStore() {
         return;
     }
 
-    qCInfo(lcSentryService) << "Sentry consent reconciled with parameters store | enabled:"
-                            << currentParametersInfo->sentryEnabled();
-    writeCachedConsent(currentParametersInfo->sentryEnabled());
-    applyConsent(currentParametersInfo->sentryEnabled());
-    if (isInitialized()) {
-        sentry::Handler::instance()->setDistributionChannel(currentParametersInfo->distributionChannel());
+    if (const bool sentryEnabled = currentParametersInfo->sentryEnabled();
+        _appliedConsent != sentryEnabled || sentryEnabled != isInitialized()) {
+        qCInfo(lcSentryService) << "Sentry consent reconciled with parameters store | enabled:" << sentryEnabled;
+        writeCachedConsent(sentryEnabled);
+        applyConsent(sentryEnabled);
+        _appliedConsent = sentryEnabled;
+        _appliedDistributionChannel.reset();
+    }
+
+    const auto distributionChannel = currentParametersInfo->distributionChannel();
+    if (isInitialized() && _appliedDistributionChannel != distributionChannel) {
+        sentry::Handler::instance()->setDistributionChannel(distributionChannel);
+        _appliedDistributionChannel = distributionChannel;
     }
 }
 
