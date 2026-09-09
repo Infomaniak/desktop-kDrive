@@ -27,8 +27,6 @@
 
 #include <cstdint>
 
-using namespace Qt::StringLiterals;
-
 #ifndef KDRIVE_QML_MODULE_URI
 #error "KDRIVE_QML_MODULE_URI is not defined, check target_compile_definitions in src/gui4/linux/CMakeLists.txt"
 #endif
@@ -43,7 +41,7 @@ inline constexpr char moduleUri[] = KDRIVE_QML_MODULE_URI;
 namespace KDC::AppConstants::Drive {
 
 [[nodiscard]] inline QColor defaultColor() {
-    return QColor{"#0098FF"_L1};
+    return QColor{QStringLiteral("#0098FF")};
 }
 
 } // namespace KDC::AppConstants::Drive
@@ -51,7 +49,7 @@ namespace KDC::AppConstants::Drive {
 namespace KDC::AppConstants::Login {
 
 [[nodiscard]] inline QUrl signupUri() {
-    return QUrl{"https://welcome.infomaniak.com/signup"_L1};
+    return QUrl{QStringLiteral("https://welcome.infomaniak.com/signup")};
 }
 
 } // namespace KDC::AppConstants::Login
@@ -59,11 +57,11 @@ namespace KDC::AppConstants::Login {
 namespace KDC::AppConstants::Onboarding {
 
 [[nodiscard]] inline QUrl driveOffersUri() {
-    return QUrl{"https://www.infomaniak.com/gtl/myksuite#prices"_L1};
+    return QUrl{QStringLiteral("https://www.infomaniak.com/gtl/myksuite#prices")};
 }
 
 [[nodiscard]] inline QUrl freeDriveOrderUri() {
-    return QUrl{"https://shop.infomaniak.com/order/select/drive"_L1};
+    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/select/drive")};
 }
 
 } // namespace KDC::AppConstants::Onboarding
@@ -71,7 +69,7 @@ namespace KDC::AppConstants::Onboarding {
 namespace KDC::AppConstants::Support {
 
 [[nodiscard]] inline QUrl helpUri() {
-    return QUrl{"https://support.infomaniak.com/"_L1};
+    return QUrl{QStringLiteral("https://support.infomaniak.com/")};
 }
 
 } // namespace KDC::AppConstants::Support
@@ -89,21 +87,23 @@ enum class Destination : uint8_t {
 Q_ENUM_NS(Destination)
 
 [[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
+    using namespace Qt::StringLiterals;
+
     // TODO manage Custom brand here.
 
     QString path;
     switch (destination) {
         case Destination::Favorites:
-            path = "favorites"_L1;
+            path = u"favorites"_s;
             break;
         case Destination::Shared:
-            path = "shared-with-me"_L1;
+            path = u"shared-with-me"_s;
             break;
         case Destination::OnlineDrive:
-            path = "files"_L1;
+            path = u"files"_s;
             break;
         case Destination::Trash:
-            path = "trash"_L1;
+            path = u"trash"_s;
             break;
     }
 
@@ -120,9 +120,9 @@ namespace KDC::AppConstants::Settings {
     return QUrl{QString::fromLatin1(LEARNMORE_MOVE_TO_TRASH_URL)};
 }
 [[nodiscard]] inline QUrl licenseUri() {
-    return QUrl{"https://github.com/Infomaniak/desktop-kDrive/blob/develop/LICENSE"_L1};
+    return QUrl{QStringLiteral("https://github.com/Infomaniak/desktop-kDrive/blob/develop/LICENSE")};
 }
 [[nodiscard]] inline QUrl sourcesUri() {
-    return QUrl{"https://github.com/Infomaniak/desktop-kDrive"_L1};
+    return QUrl{QStringLiteral("https://github.com/Infomaniak/desktop-kDrive")};
 }
 } // namespace KDC::AppConstants::Settings
