@@ -95,7 +95,7 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, so we check them here.
-    if (error.path().filename().empty() || error.destinationPath().filename().empty()) {
+    if (error.path().filename().empty() || error.destinationPath().filename().empty() || error.destinationPath().is_absolute()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error paths in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.path()) << L" / destination "
                                                         << Utility::formatSyncPath(error.destinationPath()));
@@ -127,7 +127,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, so we check it
     // here.
-    if (error.destinationPath().filename().empty()) {
+    if (error.destinationPath().filename().empty() || error.destinationPath().is_absolute()) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"ConflictingFilesCorrector::keepRemoteVersion got an invalid error path: destination "
                           << Utility::formatSyncPath(error.destinationPath()));
