@@ -252,17 +252,22 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
 }
 
 void SyncPalWorker::ensureMinimumPermission() {
-    std::function<void(SyncPath)> trySetFullAcess = [this](SyncPath path) {
+    std::function<void(SyncPath)> trySetFullAccess = [this](const SyncPath &path) {
         if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
-            LOGW_ERROR(_logger, L"Failed to set full access rights - " << Utility::formatIoError(path, ioError));
+            const auto errorMsg = L"Failed to set full access rights - " + Utility::formatIoError(path, ioError);
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                LOGW_DEBUG(_logger, errorMsg);
+            } else {
+                LOGW_WARN(_logger, errorMsg);
+            }
         } else {
             LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
         }
     };
 
     if (!_syncPal->isAdvancedSync()) {
-        trySetFullAcess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
-        trySetFullAcess(_syncPal->localPath() / Utility::sharedFolderName());
+        trySetFullAccess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
+        trySetFullAccess(_syncPal->localPath() / Utility::sharedFolderName());
     }
 }
 
