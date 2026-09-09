@@ -127,6 +127,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/updatestatusservice.h
         app/services/userservice.cpp
         app/services/userservice.h
+        app/settings/generalsettingscontroller.cpp
+        app/settings/generalsettingscontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
         ui/chrome/windowdecorationcontroller.cpp
