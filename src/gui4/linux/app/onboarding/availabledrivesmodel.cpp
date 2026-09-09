@@ -188,6 +188,12 @@ UserDbId AvailableDrivesModel::selectedUserDbId() const {
     return _onboardingState.typedSelectedUserDbId();
 }
 
+void AvailableDrivesModel::retranslate() {
+    if (rowCount() > 0) {
+        emit dataChanged(index(0), index(rowCount() - 1), {TooltipRole});
+    }
+}
+
 void AvailableDrivesModel::rebuild() {
     const auto userDbId = selectedUserDbId();
     auto contexts = userDbId == 0 ? std::vector<AvailableDriveContext>{} : _cache.availableDriveContexts(userDbId);
