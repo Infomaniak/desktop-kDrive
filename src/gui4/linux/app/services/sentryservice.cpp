@@ -240,7 +240,7 @@ void SentryService::updateAuthenticatedUser() const {
                             << "/ connected:" << userIt->connected();
 }
 
-void SentryService::applyConsent(const bool enabled) {
+void SentryService::applyConsent(const bool enabled) const {
     const bool initialized = isInitialized();
     qCInfo(lcSentryService) << "Applying Sentry consent | enabled:" << enabled << "/ initialized:" << initialized;
     if (enabled) {
@@ -284,8 +284,8 @@ void SentryService::reconcileConsentWithParametersStore() {
         _appliedDistributionChannel.reset();
     }
 
-    const auto distributionChannel = currentParametersInfo->distributionChannel();
-    if (isInitialized() && _appliedDistributionChannel != distributionChannel) {
+    if (const auto distributionChannel = currentParametersInfo->distributionChannel();
+        isInitialized() && _appliedDistributionChannel != distributionChannel) {
         sentry::Handler::instance()->setDistributionChannel(distributionChannel);
         _appliedDistributionChannel = distributionChannel;
     }
