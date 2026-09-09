@@ -28,6 +28,7 @@ import "windows/waiting"
 IKShadowedWindow {
     id: mainWindow
 
+    required property var settingsController
     required property var appRouter
     required property var activitiesController
     required property var homeController
@@ -96,6 +97,7 @@ IKShadowedWindow {
         }
 
         MainToolbar {
+            onSettingsRequested: mainWindow.settingsController.requestOpen()
             anchors.left: parent.left
             anchors.leftMargin: IKMainWindow.sidebarWidth
             anchors.right: parent.right
