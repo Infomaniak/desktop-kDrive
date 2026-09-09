@@ -172,6 +172,7 @@ IKModal {
 
             Layout.fillWidth: root.actionsStacked
             actionEnabled: root.controller.canOpenTrash && !root.controller.busy
+            external: true
             role: IKModalButton.Secondary
             text: qsTrId("buttonOpenTrash")
             visible: root.softLimit
