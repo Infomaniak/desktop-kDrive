@@ -43,6 +43,7 @@
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
+#include "app/settings/generalsettingscontroller.h"
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
@@ -51,7 +52,9 @@
 #include <QApplication>
 #include <QIcon>
 #include <QLoggingCategory>
+#include <QPointer>
 #include <QQmlApplicationEngine>
+#include <QWindow>
 
 namespace KDC {
 
@@ -110,6 +113,7 @@ class AppClientLinux : public QApplication {
         void setupIpcConnection();
         void handleIpcDisconnection();
         void handleBootstrapCompletion();
+        void openSettingsWindow();
         void retranslatePresentation();
         void updateLoggerMinLevel() const;
         void requestQuit();
@@ -152,6 +156,9 @@ class AppClientLinux : public QApplication {
         StorageController _storageController{_mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
+        GeneralSettingsController _generalSettingsController{_parametersStore, _parametersService, _translationService,
+                                                             _updateStatusService, this};
+        QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
         bool _mainWindowActivationPending{false};
