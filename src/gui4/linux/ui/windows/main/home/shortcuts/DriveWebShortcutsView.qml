@@ -86,7 +86,7 @@ Rectangle {
                 }
 
                 IKToolTip {
-                    visible: driveNamePointer.containsMouse && driveNameLabel.truncated
+                    showRequested: driveNamePointer.containsMouse && driveNameLabel.truncated
                     text: root.controller.driveName
                 }
             }

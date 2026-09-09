@@ -17,17 +17,23 @@
  */
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls.Basic
 import kDrive.UI
 
 ToolTip {
     id: root
+
+    property var targetButton: null
+    property bool showRequested: targetButton && (targetButton.hovered || targetButton.visualFocus)
 
     property real maximumTextWidth: IKMainWindow.syncSelectorTooltipMaxWidth
     property color foregroundColor: IKColors.tooltipText
     property color surfaceColor: IKColors.tooltipSurface
     property real textLineHeight: 0
 
+    visible: showRequested && text.length > 0 && parent && parent.Window.active
+             && (!targetButton || (targetButton.visible && targetButton.enabled && !targetButton.down))
+    focus: false
     delay: IKMainWindow.tooltipDelay
     timeout: -1
     padding: IKMainWindow.syncSelectorTooltipPadding
