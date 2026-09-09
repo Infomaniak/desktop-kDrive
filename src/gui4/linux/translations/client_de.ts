@@ -2621,7 +2621,7 @@ entriegelt und von Ihrem Computer aus zugänglich ist.</translation>
         <message id="linuxSettingsSaveError">
             <source>Unable to save this setting. Please try again.</source>
             <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
-            <translation>Diese Einstellung konnte nicht gespeichert werden. Bitte versuche es erneut.</translation>
+            <translation>Diese Einstellung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.</translation>
         </message>
         <message id="linuxSettingsUpdateUnavailable">
             <source>Unable to check for updates</source>
