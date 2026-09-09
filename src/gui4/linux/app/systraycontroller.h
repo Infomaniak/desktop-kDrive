@@ -65,7 +65,7 @@ class SystemTrayController final : public QObject {
         [[nodiscard]] bool trayModeActive() const { return _isTrayModeActive; }
 
         Q_INVOKABLE void showMainWindow() const;
-        Q_INVOKABLE static void showSettingsWindow();
+        Q_INVOKABLE void showSettingsWindow();
         void retranslate() const;
         Q_INVOKABLE void hideMainWindow();
 
@@ -77,6 +77,7 @@ class SystemTrayController final : public QObject {
         void quitConfirmationRequested();
         void quitRequested();
         void openMainWindowRequested();
+        void openSettingsWindowRequested();
         void trayModeActiveChanged(bool active);
 
     private:
