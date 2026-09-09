@@ -103,6 +103,7 @@ ExitInfo UploadJob::canRun() {
 }
 
 ExitInfo UploadJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri) {
+    disableRetry();
     std::string replyBody;
     getStringFromStream(inputStream, replyBody);
 
