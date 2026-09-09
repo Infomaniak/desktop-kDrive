@@ -23,6 +23,7 @@ import kDrive.UI
 
 AbstractButton {
     id: root
+    required text
     property bool value: false
     signal toggleRequested(bool value)
     implicitWidth: IKSettings.switchWidth
