@@ -81,6 +81,8 @@ class OnboardingSyncConfigurationController final : public QObject {
         [[nodiscard]] bool currentHasCustomSelection() const;
         [[nodiscard]] SelectedSyncConfigurationsModel *selectedDrivesModel() { return &_selectedDrivesModel; }
         [[nodiscard]] RemoteFolderTreeModel *folderTreeModel() { return &_folderTreeModel; }
+        /** Refreshes locale-dependent controller and folder-tree presentation. */
+        void retranslate();
 
         Q_INVOKABLE void open();
         Q_INVOKABLE void configureDrive(int32_t row);

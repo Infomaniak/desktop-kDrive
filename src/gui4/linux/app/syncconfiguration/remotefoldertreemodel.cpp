@@ -166,6 +166,10 @@ std::vector<NodeId> RemoteFolderTreeModel::blackList() const {
     return result;
 }
 
+void RemoteFolderTreeModel::retranslate() {
+    notifySizeTextDataChanged(_root.get());
+}
+
 void RemoteFolderTreeModel::retryRoot() {
     if (_initialPathsState == InitialPathsState::Failed) {
         _initialPathsState = InitialPathsState::Resolving;
@@ -421,6 +425,15 @@ void RemoteFolderTreeModel::notifySelectionDataChanged(const TreeNode *const par
     emit dataChanged(indexForNode(parentNode->children.front().get()), indexForNode(parentNode->children.back().get()),
                      {CheckStateRole});
     for (const auto &child: parentNode->children) notifySelectionDataChanged(child.get());
+}
+
+// Size text is formatted on demand with the current default locale. Notify every loaded row without resetting the tree,
+// so expanded folders and the current selection remain unchanged.
+void RemoteFolderTreeModel::notifySizeTextDataChanged(const TreeNode *const parentNode) {
+    if (!parentNode || parentNode->children.empty()) return;
+    emit dataChanged(indexForNode(parentNode->children.front().get()), indexForNode(parentNode->children.back().get()),
+                     {SizeTextRole});
+    for (const auto &child: parentNode->children) notifySizeTextDataChanged(child.get());
 }
 
 void RemoteFolderTreeModel::queueSize(TreeNode *const node) {

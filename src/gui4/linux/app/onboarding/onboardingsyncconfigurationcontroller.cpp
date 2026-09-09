@@ -61,6 +61,11 @@ bool OnboardingSyncConfigurationController::canValidate() const {
     return !_drafts.empty() && std::ranges::all_of(_drafts, [](const Draft &draft) { return !draft.config.localPath.isEmpty(); });
 }
 
+void OnboardingSyncConfigurationController::retranslate() {
+    _folderTreeModel.retranslate();
+    emit presentationChanged();
+}
+
 QString OnboardingSyncConfigurationController::currentDriveName() const {
     return currentDraft() ? currentDraft()->driveName : QString{};
 }
