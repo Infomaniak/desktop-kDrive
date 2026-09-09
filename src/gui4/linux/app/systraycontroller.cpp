@@ -251,6 +251,20 @@ void SystemTrayController::showMainWindow() const {
     _mainWindow->requestActivate();
 }
 
+void SystemTrayController::retranslate() const {
+    if (_openAction) {
+        _openAction->setText(qtTrId("statusBarOpenApp"));
+    }
+
+    if (_settingsAction) {
+        _settingsAction->setText(qtTrId("statusBarSettings"));
+    }
+
+    if (_quitAction) {
+        _quitAction->setText(qtTrId("statusBarQuitApp"));
+    }
+}
+
 void SystemTrayController::showSettingsWindow() {
     qCWarning(lcSystemTrayController) << "Settings window action triggered from system tray, but not implemented yet";
 }
