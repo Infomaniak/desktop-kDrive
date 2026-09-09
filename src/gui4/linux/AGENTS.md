@@ -62,6 +62,10 @@
   The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
 - Do not place a `Secondary` `IKModalButton` on a card surface: its outline is too close to that surface in both
   themes. Use the `Tonal` role there, and keep `Secondary` for a plain modal or page background.
+- Set `external: true` on every `IKLinkButton` and `IKModalButton` whose action opens the web browser, so the trailing
+  `IKExternalLinkIcon` announces the context switch. The marker must be exhaustive across labelled controls: once some
+  carry it, its absence reads as a promise that the action stays in the app. Icon-only controls are the exception, as a
+  second glyph is unreadable at that size; state the external destination in their tooltip instead.
 - Size Home Quick Access from the widest translated shortcut label or the drive name capped to the Windows-aligned
   display width. Keep shortcut labels fully visible, while the drive name wraps to two lines before eliding. Let the
   Home status panel consume the remaining horizontal space.
