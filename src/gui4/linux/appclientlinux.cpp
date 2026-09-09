@@ -46,8 +46,6 @@
 
 namespace KDC {
 
-using namespace Qt::StringLiterals;
-
 Q_LOGGING_CATEGORY(lcAppClientLinux, "gui.v4.app", QtInfoMsg)
 
 namespace {
