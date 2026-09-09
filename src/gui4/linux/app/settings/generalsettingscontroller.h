@@ -59,7 +59,7 @@ class GeneralSettingsController final : public QObject {
         [[nodiscard]] bool notificationsEnabled() const;
         [[nodiscard]] bool moveToTrash() const;
         [[nodiscard]] int32_t language() const;
-        [[nodiscard]] QVariantList languages() const;
+        [[nodiscard]] static QVariantList languages();
 
         [[nodiscard]] QString errorText() const;
 
