@@ -159,7 +159,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static QString canonicalPath(const QString &path);
         static ExitCode checkPathValidityRecursive(const QString &path, QString &error);
         static ExitInfo checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error);
-        static ExitCode syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId);
+        static bool syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId);
         static QString excludeFile(bool liteSync);
         static ExitInfo createUser(User &user);
         static ExitInfo updateUser(User &user);

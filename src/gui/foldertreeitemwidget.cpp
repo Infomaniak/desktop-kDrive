@@ -251,6 +251,9 @@ QSet<QString> FolderTreeItemWidget::createBlackSet() {
 }
 
 QString FolderTreeItemWidget::getPath(const QString &nodeId) {
+    if (!_syncDbId)
+        return {}; // `_syncDbId` can be 0 for a non-LiteSync `FolderTreeItemWidget` that is not fully initialized yet.
+
     QString path;
 
     if (_blacklistCache.contains(nodeId)) {
@@ -264,6 +267,8 @@ QString FolderTreeItemWidget::getPath(const QString &nodeId) {
 }
 
 void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset) {
+    if (!_syncDbId) return; // `_syncDbId` can be 0 for a non-LiteSync `FolderTreeItemWidget` that is not fully initialized.
+
     if (!parentItem) parentItem = topLevelItem(0);
     if (!parentItem) return;
 
