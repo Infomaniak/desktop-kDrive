@@ -65,7 +65,7 @@ class SentryService final : public QObject {
     private:
         static void updateLinuxRuntimeTags();
         void reconcileConsentWithParametersStore();
-        void applyConsent(bool enabled);
+        void applyConsent(bool enabled) const;
 
         ParametersService &_parametersService;
         AppCache &_appCache;
