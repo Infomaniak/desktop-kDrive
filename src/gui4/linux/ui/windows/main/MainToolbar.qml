@@ -25,6 +25,8 @@ import kDrive.UI
 Rectangle {
     id: root
 
+    signal settingsRequested
+
     required property var appRouter
     required property var controller
 
@@ -94,9 +96,10 @@ Rectangle {
                     onClicked: root.controller.toggleSync()
                 }
 
-                FutureGroupedIconButton {
+                GroupedIconButton {
                     iconSource: "qrc:/assets/main/home/cog.svg"
-                    accessibleName: qsTrId("buttonSettings")
+                    text: qsTrId("buttonSettings")
+                    onClicked: root.settingsRequested()
                 }
             }
         }
@@ -176,45 +179,4 @@ Rectangle {
             text: groupedButton.text
         }
     }
-
-    component FutureGroupedIconButton: Item {
-        id: futureGroupedButton
-
-        required property url iconSource
-        required property string accessibleName
-
-        width: IKMainWindow.toolbarActionGroupButtonSize
-        height: IKMainWindow.toolbarActionGroupButtonSize
-
-        ToolButton {
-            id: settingsButton
-
-            anchors.fill: parent
-            display: AbstractButton.IconOnly
-            focusPolicy: Qt.StrongFocus
-            hoverEnabled: true
-            Accessible.name: futureGroupedButton.accessibleName
-            Accessible.description: qsTrId("comingSoon")
-
-            contentItem: IKTintedIcon {
-                width: IKIconSizes.medium
-                height: IKIconSizes.medium
-                source: futureGroupedButton.iconSource
-                color: IKColors.textSecondary
-            }
-
-            background: Rectangle {
-                radius: width / 2
-                color: settingsButton.hovered || settingsButton.down ? IKColors.toolbarControlHover : "transparent"
-                border.width: settingsButton.visualFocus ? 2 : 0
-                border.color: IKColors.accentPrimary
-            }
-        }
-
-        IKToolTip {
-            targetButton: settingsButton
-            text: qsTrId("comingSoon")
-        }
-    }
-
 }
