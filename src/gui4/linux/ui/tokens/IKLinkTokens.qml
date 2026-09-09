@@ -22,4 +22,5 @@ import QtQuick
 QtObject {
     readonly property real minimumHeight: 20
     readonly property real focusRingWidth: 2
+    readonly property real externalIconSpacing: IKSpacing.s4
 }

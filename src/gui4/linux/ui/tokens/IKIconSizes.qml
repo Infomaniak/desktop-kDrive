@@ -20,6 +20,7 @@ pragma Singleton
 import QtQuick
 
 QtObject {
+    readonly property real externalLink: 10
     readonly property real small: 12
     readonly property real medium: 16
     readonly property real large: 24
