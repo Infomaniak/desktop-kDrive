@@ -2622,7 +2622,7 @@ desbloqueado e acessível no seu computador.</translation>
         <message id="linuxSettingsSaveError">
             <source>Unable to save this setting. Please try again.</source>
             <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
-            <translation>Não foi possível guardar esta definição. Tenta novamente.</translation>
+            <translation>Não foi possível guardar esta definição. Tente novamente.</translation>
         </message>
         <message id="linuxSettingsUpdateUnavailable">
             <source>Unable to check for updates</source>
