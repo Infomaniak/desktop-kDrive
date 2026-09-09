@@ -77,6 +77,8 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
 
         void configure(UserDbId userDbId, DriveId driveId, const NodeId &rootNodeId, const std::vector<NodeId> &initialBlackList);
         [[nodiscard]] std::vector<NodeId> blackList() const;
+        /** Invalidates locale-dependent role data without resetting the loaded tree. */
+        void retranslate();
 
         /** Parent of a row, for keyboard navigation: QAbstractItemModel::parent() is not callable from QML. */
         Q_INVOKABLE [[nodiscard]] QModelIndex parentIndex(const QModelIndex &modelIndex) const { return parent(modelIndex); }
@@ -156,6 +158,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void removeExclusionsAtOrBelow(const TreeNode *node);
         void notifySelectionDataChanged();
         void notifySelectionDataChanged(const TreeNode *parentNode);
+        void notifySizeTextDataChanged(const TreeNode *parentNode);
         void queueSize(TreeNode *node);
         void processSizeQueue();
         void handleSizeResult(const QString &nodeId, uint64_t generation, bool success, qint64 size);
