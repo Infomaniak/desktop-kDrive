@@ -425,6 +425,38 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     return ExitCode::Ok;
 }
 
+namespace {
+ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName, SyncPath &path) {
+    auto attempt = 1;
+    path = homeFolder / initialFolderName;
+
+    forever {
+        // Check if the local directory already exists
+        auto ioError = IoError::Success;
+        bool alreadyExists = false;
+        if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+            return ExitCode::SystemError;
+        }
+        if (!alreadyExists) {
+            break;
+        }
+
+        // Count attempts and give up eventually
+        if (attempt >= 100) {
+            LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
+            return ExitCode::SystemError;
+        }
+        attempt++;
+
+        path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attempt)));
+    }
+
+    return ExitCode::Ok;
+}
+} // namespace
+
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
@@ -436,58 +468,33 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     if (const auto exitCode = CommonUtility::homeDirectoryPath(homeFolder); !exitCode) {
         return exitCode;
     }
-    const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
-    SyncPath initialPath = homeFolder / initialFolderName;
 
-    // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
+    // If `homeFolder` is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
     SyncDbId syncDbId = 0;
-    if (const auto exitCode = syncForPath(syncList, Path2QStr(homeFolder), syncDbId); exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath: code=" << exitCode);
-        return exitCode;
-    }
-
-    if (syncDbId) {
+    if (const bool someSyncFolderContainsHome = syncForPath(syncList, Path2QStr(homeFolder), syncDbId);
+        someSyncFolderContainsHome) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"The parent folder is a sync folder or contained in one : " << Utility::formatSyncPath(homeFolder));
-        error = "The parent folder is a sync folder or contained in one";
+                  L"The home folder is a sync folder or contained in one : " << Utility::formatSyncPath(homeFolder));
+        error = "The home folder is a sync folder or contained in one";
+
         return ExitCode::SystemError;
     }
 
+    const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
+    SyncPath nonExistingPath;
+    if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, nonExistingPath); !exitInfo)
+        return exitInfo;
+
     QString errorMessage;
-    const ExitInfo exitInfo = checkSyncNesting(syncList, Path2QStr(initialPath), errorMessage);
-    if (!exitInfo) {
+    if (const auto exitInfo = checkSyncNesting(syncList, Path2QStr(nonExistingPath), errorMessage); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), QStr2WStr(errorMessage));
+
         return exitInfo;
     }
 
-    auto attempt = 1;
-    SyncPath finalPath = initialPath;
-    forever {
-        // Check if the local directory already exists
-        auto ioError = IoError::Success;
-        bool alreadyExists = false;
-        if (!IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(finalPath, ioError));
-            return ExitCode::SystemError;
-        }
-        if (!alreadyExists) {
-            break;
-        }
-
-        // Count attempts and give up eventually
-        if (attempt >= 100) {
-            LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
-            error = "Can't find a valid path";
-            return ExitCode::SystemError;
-        }
-        attempt++;
-
-        finalPath = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attempt)));
-    }
-
-    path = finalPath;
+    path = nonExistingPath;
     error = "";
+
     return ExitCode::Ok;
 }
 
@@ -2097,7 +2104,7 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
+bool ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
     QString absolutePath = QDir::cleanPath(path) + QLatin1Char('/');
 
     for (const BaseSync &sync: syncList) {
@@ -2106,11 +2113,11 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
         if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive
                                                                                                       : Qt::CaseSensitive)) {
             syncDbId = sync.dbId();
-            break;
+            return true;
         }
     }
 
-    return ExitCode::Ok;
+    return false;
 }
 
 void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {
