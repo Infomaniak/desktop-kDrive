@@ -203,8 +203,8 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
     DWORD numBytesWritten = 0;
     if (!WriteFile(s_pipe, msg.c_str(), DWORD(msg.size() * sizeof(wchar_t)), &numBytesWritten, NULL)) {
         TRACE_ERROR(L"Error writing on sync engine pipe: %ls", getLastErrorMessage().c_str());
-
-        if (GetLastError() == ERROR_PIPE_NOT_CONNECTED) {
+        const auto err = GetLastError();
+        if (err == ERROR_PIPE_NOT_CONNECTED || err == ERROR_NO_DATA) {
             // Try to reconnect
             if (!disconnectFromPipeServer()) {
                 TRACE_ERROR(L"Error in disconnectFromPipeServer");
