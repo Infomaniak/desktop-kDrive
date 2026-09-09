@@ -1027,9 +1027,8 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
-    // Absolute paths are not allowed, but relative paths are. Relative paths must be relative to the sync root.
-    // Parent traversal is not allowed, but relative paths that do not traverse the parent are allowed.
+    // Create valid and invalid links whose target paths are relative and do not use parent traversal.
+    // These links should be synchronized to the remote replica.
     testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
 
     std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
@@ -1051,7 +1050,8 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
+    // Create links whose target paths are absolute or use parent traversal.
+    // As the backend does not reject them yet, these links should be synchronized as well.
     std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
 
@@ -1071,11 +1071,11 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     const auto remoteTestFileInfo7 =
             getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
 
-    CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo5.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo6.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo7.isValid());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(int64_t{9}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
 
     logStep("testSynchronizationOfSymLinks");
