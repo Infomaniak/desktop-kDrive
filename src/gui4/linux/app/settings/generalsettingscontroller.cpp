@@ -84,8 +84,8 @@ int32_t GeneralSettingsController::language() const {
     return static_cast<int32_t>(parametersInfo ? parametersInfo->language() : Language::Default);
 }
 
-QVariantList GeneralSettingsController::languages() const {
-    return _translationService.languages();
+QVariantList GeneralSettingsController::languages() {
+    return TranslationService::languages();
 }
 
 QString GeneralSettingsController::errorText() const {
@@ -148,7 +148,9 @@ void GeneralSettingsController::save(const ParametersService::ParametersMutation
         }
 
         self->_saving = false;
-        self->_error = result ? Error::None : Error::Save;
+        if (!result) {
+            self->_error = Error::Save;
+        }
         emit self->changed();
     });
 }
@@ -224,7 +226,7 @@ void GeneralSettingsController::openSupport() {
 }
 
 void GeneralSettingsController::openFeedback() {
-    openUrl(QUrl{Theme::instance()->feedbackUrl(_translationService.language())});
+    openUrl(QUrl{Theme::feedbackUrl(_translationService.language())});
 }
 
 void GeneralSettingsController::openLicense() {
