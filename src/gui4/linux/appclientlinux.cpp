@@ -56,7 +56,8 @@ constexpr int32_t serverDisconnectionTimeoutMs = 5000;
 AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
-    setupTranslations();
+    _translationService.initialize();
+    _translationService.setEngine(&_qmlEngine);
     setQuitOnLastWindowClosed(false);
     QIcon appIcon;
     ApplicationIdentity::configureApplication(appIcon);
