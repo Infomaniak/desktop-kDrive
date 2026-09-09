@@ -84,25 +84,25 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
-    (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
+    (void) qmlRegisterUncreatableType<AppRouter>(AppConstants::Qml::moduleUri, 1, 0, "AppRouter",
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
-    (void) qmlRegisterUncreatableType<SyncSelectorModel>("kDrive.UI", 1, 0, "SyncSelectorModel",
+    (void) qmlRegisterUncreatableType<SyncSelectorModel>(AppConstants::Qml::moduleUri, 1, 0, "SyncSelectorModel",
                                                          "SyncSelectorModel is owned by MainSidebarController.");
-    (void) qmlRegisterUncreatableType<HomeController>("kDrive.UI", 1, 0, "HomeController",
+    (void) qmlRegisterUncreatableType<HomeController>(AppConstants::Qml::moduleUri, 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
-    (void) qmlRegisterUncreatableType<ActivityListModel>("kDrive.UI", 1, 0, "ActivityListModel",
+    (void) qmlRegisterUncreatableType<ActivityListModel>(AppConstants::Qml::moduleUri, 1, 0, "ActivityListModel",
                                                          "ActivityListModel is owned by ActivitiesController.");
-    (void) qmlRegisterUncreatableType<ActivitiesController>("kDrive.UI", 1, 0, "ActivitiesController",
+    (void) qmlRegisterUncreatableType<ActivitiesController>(AppConstants::Qml::moduleUri, 1, 0, "ActivitiesController",
                                                             "ActivitiesController is owned by AppClientLinux.");
-    (void) qmlRegisterUncreatableType<ManyDeletesController>("kDrive.UI", 1, 0, "ManyDeletesController",
+    (void) qmlRegisterUncreatableType<ManyDeletesController>(AppConstants::Qml::moduleUri, 1, 0, "ManyDeletesController",
                                                              "ManyDeletesController is owned by AppClientLinux.");
-    (void) qmlRegisterUncreatableType<StorageController>("kDrive.UI", 1, 0, "StorageController",
+    (void) qmlRegisterUncreatableType<StorageController>(AppConstants::Qml::moduleUri, 1, 0, "StorageController",
                                                          "StorageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<OnboardingSyncConfigurationController>(
-            "kDrive.UI", 1, 0, "OnboardingSyncConfigurationController",
+            AppConstants::Qml::moduleUri, 1, 0, "OnboardingSyncConfigurationController",
             "OnboardingSyncConfigurationController is owned by OnboardingSession.");
-    (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
-                                            QStringLiteral("WebDrive only exposes enums."));
+    (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
+                                            "WebDrive", QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
@@ -120,7 +120,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
-    _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
+    _qmlEngine.loadFromModule(AppConstants::Qml::moduleUri, QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";
         SentryService::reportFatalAndExit("QML root object creation failed", "QQmlApplicationEngine returned no root object.");
@@ -313,7 +313,7 @@ void AppClientLinux::quitOnServerDisconnection() {
 void AppClientLinux::openSettingsWindow() {
     if (!_settingsWindow) {
         QQmlComponent component(&_qmlEngine);
-        component.loadFromModule("kDrive.UI"_L1, "SettingsWindow"_L1);
+        component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow"_L1);
         auto *object = component.createWithInitialProperties(
                 {{"controller"_L1, QVariant::fromValue<QObject *>(&_generalSettingsController)}});
         auto *window = qobject_cast<QWindow *>(object);
