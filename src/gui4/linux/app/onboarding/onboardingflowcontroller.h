@@ -46,7 +46,7 @@ class OnboardingFlowController final : public QObject {
         Q_PROPERTY(bool synchronizationFailed READ synchronizationFailed NOTIFY synchronizationFailedChanged)
         Q_PROPERTY(bool readyActive READ readyActive NOTIFY currentStepChanged)
         Q_PROPERTY(bool readyActionEnabled READ readyActionEnabled NOTIFY readyActionEnabledChanged)
-        Q_PROPERTY(QString title READ title NOTIFY currentStepChanged)
+        Q_PROPERTY(QString title READ title NOTIFY titleChanged)
 
     public:
         enum Step : uint8_t {
@@ -99,6 +99,7 @@ class OnboardingFlowController final : public QObject {
         void completeLogin(qint64 userDbId);
 
     signals:
+        void titleChanged();
         void currentStepChanged();
         void loginStateChanged();
         void loginRequested();
