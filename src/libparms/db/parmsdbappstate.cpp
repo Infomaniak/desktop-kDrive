@@ -106,7 +106,7 @@ bool ParmsDb::insertDefaultAppState() {
     }
 
     if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
-        LOG_WARN(_logger, "Error while inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error while inserting default value for AppUid");
         return false;
     }
 
@@ -231,19 +231,23 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
 };
 
 std::string ParmsDb::appUID() {
-    assert(Log::isSet() && "Log is not initialized, cannot retrieve AppUid.");
-
     if (!_instance) {
-        LOG_WARN(Log::instance()->getLogger(), "ParmsDb is not initialized, cannot retrieve " << AppStateKey::AppUid);
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "ParmsDb is not initialized, cannot retrieve AppUid (key " << AppStateKey::AppUid << ").");
+        }
+
         return {};
     }
 
     AppStateValue appStateValue = "";
     if (bool found = false; !_instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState.");
+
         return {};
     } else if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), AppStateKey::AppUid << " key not found in appstate table");
+        LOG_WARN(Log::instance()->getLogger(), "AppUid (key " << AppStateKey::AppUid << ") not found in appstate table.");
+
         return {};
     }
 
