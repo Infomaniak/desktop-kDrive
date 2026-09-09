@@ -30,6 +30,7 @@ namespace KDC {
 
 struct StorageSnapshot {
         QString volumeName;
+        bool usesDefaultRootName{false};
         SyncPath volumeRoot;
         uint64_t totalBytes{0};
         uint64_t availableBytes{0};
