@@ -462,7 +462,7 @@ void SynthesisBar::onDisplayHelp() {
 
 void SynthesisBar::onSendFeedback() {
     MatomoClient::sendEvent("synthesisKebab", MatomoEventAction::Click, "sendFeedbackButton");
-    const auto url = QUrl(Theme::instance()->feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
+    const auto url = QUrl(Theme::feedbackUrl(ParametersCache::instance()->parametersInfo().language()));
     QDesktopServices::openUrl(url);
 }
 
