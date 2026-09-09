@@ -45,6 +45,7 @@ ToolButton {
         border.color: IKColors.accentPrimary
     }
     IKToolTip {
+        targetButton: root
         text: root.text
     }
 }

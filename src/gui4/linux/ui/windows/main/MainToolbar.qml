@@ -141,7 +141,7 @@ Rectangle {
         }
 
         IKToolTip {
-            visible: buttonRoot.hovered || buttonRoot.activeFocus
+            targetButton: buttonRoot
             text: buttonRoot.tooltipText
         }
     }
@@ -172,7 +172,7 @@ Rectangle {
         }
 
         IKToolTip {
-            visible: groupedButton.hovered || groupedButton.activeFocus
+            targetButton: groupedButton
             text: groupedButton.text
         }
     }
