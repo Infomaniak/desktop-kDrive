@@ -141,6 +141,7 @@ AbstractButton {
                 }
 
                 IKToolTip {
+                    targetButton: root
                     showRequested: root.cellEnabled && driveNameHover.hovered && driveNameText.truncated
                     delay: IKOnboarding.driveSelectionTooltipDelay
                     text: root.driveName
@@ -177,6 +178,7 @@ AbstractButton {
     }
 
     IKToolTip {
+        targetButton: root
         showRequested: !root.cellEnabled && cellHover.hovered && root.disabledTooltip.length > 0
         delay: IKOnboarding.driveSelectionTooltipDelay
         text: root.disabledTooltip
