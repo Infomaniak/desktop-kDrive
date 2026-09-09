@@ -23,7 +23,7 @@ import kDrive.UI
 
 ComboBox {
     id: root
-    property string accessibleName: ""
+    required property string accessibleName
     implicitWidth: Math.max(IKSettings.comboWidth, implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: IKSettings.buttonHeight
     leftPadding: IKSpacing.s8
@@ -56,6 +56,7 @@ ComboBox {
         id: optionDelegate
         required property int index
         width: root.width
+        hoverEnabled: true
         text: root.textAt(index)
         font: root.font
         highlighted: root.highlightedIndex === index
