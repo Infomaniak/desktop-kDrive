@@ -13,6 +13,9 @@
 
 ### Local Norms (Linux v4)
 
+- Keep new C++ readable: separate method definitions and logical steps with blank lines, use explicit names, and expand
+  conditional bodies with braces. Do not compact multiple operations onto one line or conflate readability cleanup with
+  architectural simplification.
 - Search existing Loco IDs and reuse equivalent translated labels before introducing Linux-specific wording or new keys.
 - Display language choices as capitalized native language names without regional qualifiers; keep the system-default
   choice translated in the system language independently of the app language, with English as fallback.
@@ -44,6 +47,11 @@
 - For shared infrastructure classes, document the class role explicitly in the header comment when relevant.
 - Keep `ParametersStore` as a server-confirmed parameters snapshot only. Do not add global draft/pending state there;
   screen-specific drafts, such as proxy edition, belong to the owning UI/view model.
+- Let `ParametersService` serialize full-snapshot mutations and publish only server-confirmed results. Skip IPC requests
+  when a mutation leaves the confirmed snapshot unchanged. Consumers must also compare their relevant values before
+  reapplying side effects or logging; an unrelated parameter change must not reconfigure Sentry.
+- Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
+  independent updater states.
 - Keep per-sync runtime status and progress exclusively in `AppCache`. Consumers such as the system tray and future UI
   adapters must observe and query that shared state instead of maintaining private copies.
 - Design feature storage and presentation contracts for their intended final lifecycle. A temporarily unavailable UI or
