@@ -240,13 +240,14 @@ std::string ParmsDb::appUID() {
         return {};
     }
 
+    auto logger = Log::isSet() ? Log::instance()->getLogger() : _instance->_logger;
     AppStateValue appStateValue = "";
     if (bool found = false; !_instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState.");
+        LOG_WARN(logger, "Error in ParmsDb::selectAppState.");
 
         return {};
     } else if (!found) {
-        LOG_WARN(Log::instance()->getLogger(), "AppUid (key " << AppStateKey::AppUid << ") not found in appstate table.");
+        LOG_WARN(logger, "AppUid (key " << AppStateKey::AppUid << ") not found in appstate table.");
 
         return {};
     }
