@@ -212,7 +212,7 @@ Rectangle {
         }
 
         IKToolTip {
-            visible: settingsButton.hovered || settingsButton.activeFocus
+            targetButton: settingsButton
             text: qsTrId("comingSoon")
         }
     }
