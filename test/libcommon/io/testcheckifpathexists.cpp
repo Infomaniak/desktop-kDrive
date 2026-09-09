@@ -157,27 +157,31 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non_existing.jpg";
-        bool exists = false;
-        IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
-        CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        for (const auto &pathCheckOption: {IoHelper::PathCheckOption::Insensitive, IoHelper::PathCheckOption::Sensitive}) {
+            const SyncPath path = _localTestDirPath / "non_existing.jpg";
+            bool exists = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, pathCheckOption));
+            CPPUNIT_ASSERT(!exists);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+        }
     }
 
     // A non-existing file whose name is too long for the OS.
     {
-        const SyncPath path = std::string(1000, 'a');
-        bool exists = false;
-        IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive));
-        CPPUNIT_ASSERT(!exists);
+        for (const auto &pathCheckOption: {IoHelper::PathCheckOption::Insensitive, IoHelper::PathCheckOption::Sensitive}) {
+            const SyncPath path = std::string(1000, 'a');
+            bool exists = false;
+            IoError ioError = IoError::Unknown;
+            CPPUNIT_ASSERT(IoHelper::checkIfPathExists(path, exists, ioError, pathCheckOption));
+            CPPUNIT_ASSERT(!exists);
 #if defined(KD_WINDOWS)
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
 #else
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
-                                     ioError);
+            CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
+                                         ioError);
 #endif
+        }
     }
     // A dangling symbolic link
     {
