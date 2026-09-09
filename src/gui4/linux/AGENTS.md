@@ -95,6 +95,10 @@
   so both outer circles remain identical.
 - Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
+- Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items supply
+  `showRequested`.
+  Never use `activeFocus` to trigger a tooltip. Hide tooltips when their window is inactive, their anchor is hidden, or their
+  button is pressed; clicking or restoring focus after Alt-Tab must not keep a tooltip open.
 - For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
 - Keep Activities geometry in `IKActivities` and Activities-specific colors in the T3 section of `IKColors`. Store exact
