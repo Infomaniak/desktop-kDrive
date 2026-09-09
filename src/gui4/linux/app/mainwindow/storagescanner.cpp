@@ -91,7 +91,7 @@ void logFilesystemError(const char *operation, const SyncPath &path, const int e
     }
 
     if (storage.isRoot()) {
-        return qtTrId("storageThisComputer");
+        return {};
     }
 
     return titleWithDevice(QDir::toNativeSeparators(storage.rootPath()), device);
@@ -282,6 +282,7 @@ StorageScanResult StorageScanner::scan(const SyncPath &syncRoot, const Cancellat
 
     StorageSnapshot snapshot;
     snapshot.volumeName = volumeName(storage);
+    snapshot.usesDefaultRootName = snapshot.volumeName.isEmpty() && storage.isRoot();
     snapshot.volumeRoot = volumeRoot;
     snapshot.totalBytes = totalBytes;
     snapshot.availableBytes = availableBytes;
