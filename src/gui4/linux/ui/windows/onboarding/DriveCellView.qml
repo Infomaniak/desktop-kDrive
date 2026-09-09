@@ -141,7 +141,7 @@ AbstractButton {
                 }
 
                 IKToolTip {
-                    visible: root.cellEnabled && driveNameHover.hovered && driveNameText.truncated
+                    showRequested: root.cellEnabled && driveNameHover.hovered && driveNameText.truncated
                     delay: IKOnboarding.driveSelectionTooltipDelay
                     text: root.driveName
                     padding: IKOnboarding.driveSelectionTooltipPadding
@@ -177,7 +177,7 @@ AbstractButton {
     }
 
     IKToolTip {
-        visible: !root.cellEnabled && cellHover.hovered && root.disabledTooltip.length > 0
+        showRequested: !root.cellEnabled && cellHover.hovered && root.disabledTooltip.length > 0
         delay: IKOnboarding.driveSelectionTooltipDelay
         text: root.disabledTooltip
         padding: IKOnboarding.driveSelectionTooltipPadding

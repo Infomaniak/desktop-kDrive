@@ -226,7 +226,7 @@ Button {
     }
 
     IKToolTip {
-        visible: root.truncatedText.length > 0
+        showRequested: root.truncatedText.length > 0
         text: root.truncatedText
     }
 }
