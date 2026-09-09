@@ -30,7 +30,7 @@ UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionReque
     _versionRequest(std::move(versionRequest)) {}
 
 bool UpdateStatusService::available() const {
-    // The linux updater on the server side only return ManualUpdateAvailable for the moment.
+    // The Linux updater on the server side currently returns only ManualUpdateAvailable.
     return _state == UpdateState::ManualUpdateAvailable || _state == UpdateState::Available || _state == UpdateState::Ready;
 }
 
