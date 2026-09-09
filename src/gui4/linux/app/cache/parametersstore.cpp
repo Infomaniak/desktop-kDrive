@@ -33,7 +33,7 @@ void ParametersStore::replaceParametersInfo(const ParametersInfo &parametersInfo
     if (_parametersInfo.has_value() && *_parametersInfo == parametersInfo) {
         return;
     }
-
+    
     _parametersInfo = parametersInfo;
     qCInfo(lcParametersStore) << "Parameters snapshot updated";
     emit parametersInfoChanged();
