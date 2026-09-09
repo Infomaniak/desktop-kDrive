@@ -29,6 +29,17 @@
 
 using namespace Qt::StringLiterals;
 
+#ifndef KDRIVE_QML_MODULE_URI
+#error "KDRIVE_QML_MODULE_URI is not defined, check target_compile_definitions in src/gui4/linux/CMakeLists.txt"
+#endif
+
+namespace KDC::AppConstants::Qml {
+
+// URI of the QML module, defined by CMake so C++ and qt_add_qml_module() can never disagree.
+inline constexpr char moduleUri[] = KDRIVE_QML_MODULE_URI;
+
+} // namespace KDC::AppConstants::Qml
+
 namespace KDC::AppConstants::Drive {
 
 [[nodiscard]] inline QColor defaultColor() {

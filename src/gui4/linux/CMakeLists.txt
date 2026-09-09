@@ -342,13 +342,21 @@ set_target_properties(${APPLICATION_CLIENTV4_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
+# Single source of truth for the QML module URI: the C++ side reads it through
+# KDRIVE_QML_MODULE_URI (see AppConstants::Qml::moduleUri in app/appconstants.h).
+set(KDRIVE_QML_MODULE_URI kDrive.UI)
+
 qt_add_qml_module(${APPLICATION_CLIENTV4_EXECUTABLE}
-        URI kDrive.UI
+        URI ${KDRIVE_QML_MODULE_URI}
         VERSION 1.0
         QML_FILES
         ${GUI_QML_FILES}
         RESOURCES
         ${GUI_QML_RESOURCE_FILES}
+)
+
+target_compile_definitions(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
+        KDRIVE_QML_MODULE_URI="${KDRIVE_QML_MODULE_URI}"
 )
 
 # Compile the .ts catalogs to .qm and embed them under :/i18n (loaded in setupTranslations()).
