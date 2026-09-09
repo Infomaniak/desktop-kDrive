@@ -110,6 +110,7 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/cachepopulator.h
         app/services/driveservice.cpp
         app/services/driveservice.h
+        app/services/settingsservicebindings.cpp
         app/services/parametersservice.cpp
         app/services/parametersservice.h
         app/services/serviceactiontracker.cpp
@@ -120,6 +121,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/sentryservice.h
         app/services/syncservice.cpp
         app/services/syncservice.h
+        app/services/updatestatusservice.cpp
+        app/services/updatestatusservice.h
         app/services/userservice.cpp
         app/services/userservice.h
         app/systraycontroller.cpp
