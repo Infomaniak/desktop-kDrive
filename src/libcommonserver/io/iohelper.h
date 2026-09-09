@@ -252,6 +252,15 @@ struct IoHelper {
         static bool createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept;
 
         static bool createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept;
+
+        //! Read a Finder alias file.
+        /*!
+         \param aliasPath is the file system location of the alias file to read.
+         \param data is set with the alias data read from the alias file.
+         \param targetPath is set with the file system path of the target item.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
         static bool readAlias(const SyncPath &aliasPath, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
 #endif
 
@@ -570,6 +579,14 @@ struct IoHelper {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
 #if defined(KD_MACOS)
+        /**
+         * @brief Check if a file with a given path is an alias. Relies on the file's metadata; does not check if the alias is
+         * valid.
+         * @param path The absolute path to the file.
+         * @param isAlias A boolean value indicating whether the file is an alias.
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if the process succeeds, false otherwise.
+         */
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
