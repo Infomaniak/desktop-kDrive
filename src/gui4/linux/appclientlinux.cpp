@@ -30,6 +30,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QLocale>
+#include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlError>
@@ -44,6 +45,8 @@
 #include <unistd.h>
 
 namespace KDC {
+
+using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcAppClientLinux, "gui.v4.app", QtInfoMsg)
 
@@ -108,6 +111,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     });
     _qmlEngine.setInitialProperties({
             {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
+            {QStringLiteral("settingsController"), QVariant::fromValue<QObject *>(&_generalSettingsController)},
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
@@ -141,6 +145,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
 }
 
 void AppClientLinux::setupSignalConnections() {
+    (void) connect(&_generalSettingsController, &GeneralSettingsController::openRequested, this,
+                   &AppClientLinux::openSettingsWindow);
+    (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
+                   &AppClientLinux::openSettingsWindow);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
@@ -157,7 +165,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_updateStatusService, &UpdateStatusService::stateChanged, &_systemTrayController,
                    &SystemTrayController::handleUpdateStateChanged);
-    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openSettingsWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
     (void) connect(&_manyDeletesController, &ManyDeletesController::presentationRequested, this,
@@ -300,6 +308,40 @@ void AppClientLinux::quitOnServerDisconnection() {
                                     << "ms, quitting anyway";
         QCoreApplication::quit();
     });
+}
+
+void AppClientLinux::openSettingsWindow() {
+    if (!_settingsWindow) {
+        QQmlComponent component(&_qmlEngine);
+        component.loadFromModule("kDrive.UI"_L1, "SettingsWindow"_L1);
+        auto *object = component.createWithInitialProperties(
+                {{"controller"_L1, QVariant::fromValue<QObject *>(&_generalSettingsController)}});
+        auto *window = qobject_cast<QWindow *>(object);
+        if (!window) {
+            qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
+            if (object) {
+                object->deleteLater();
+            }
+            emit _serviceEventBus.genericErrorOccurred();
+            return;
+        }
+
+        object->setParent(&_qmlEngine);
+        _settingsWindow = window;
+    }
+
+    if (_settingsWindow->visibility() == QWindow::Minimized) {
+        _settingsWindow->showNormal();
+    } else {
+        _settingsWindow->show();
+    }
+
+    _settingsWindow->raise();
+    _settingsWindow->requestActivate();
+
+    if (_bootstrapCompleted) {
+        _generalSettingsController.refreshUpdates();
+    }
 }
 
 void AppClientLinux::retranslatePresentation() {
