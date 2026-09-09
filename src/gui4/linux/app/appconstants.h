@@ -87,7 +87,7 @@ enum class Destination : uint8_t {
 Q_ENUM_NS(Destination)
 
 [[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
-    using namespace Qt::StringLiterals;
+    using Qt::StringLiterals::operator""_s;
 
     // TODO manage Custom brand here.
 
