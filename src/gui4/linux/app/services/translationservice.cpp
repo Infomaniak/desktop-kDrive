@@ -33,8 +33,7 @@ using namespace Qt::StringLiterals;
 namespace {
 Q_LOGGING_CATEGORY(lcTranslationService, "gui.v4.translations", QtInfoMsg)
 
-// This methods return the trad 'labelSameAsSystem' in the system language, or English if the translation is not available.
-// Evaluate once and cache the result.
+// Returns the "Same as system" label in the system language, or English when unavailable. Evaluated once and cached.
 QString systemLanguageLabel() {
     static const QString label = [] {
         constexpr auto translationId = QT_TRID_NOOP("labelSameAsSystem");
@@ -118,7 +117,7 @@ void TranslationService::applyLanguage(const Language language) {
     (void) QCoreApplication::removeTranslator(&_localizedTranslator);
 
     const auto locale = language == Language::Default ? QLocale::system() : QLocale(CommonUtility::languageCode(language));
-    
+
     if (!_localizedTranslator.load(locale, u"client"_s, u"_"_s, u":/i18n"_s)) {
         qCWarning(lcTranslationService) << "Localized translation catalog unavailable; using English fallback"
                                         << "| language:" << QString::fromStdString(toString(language))
