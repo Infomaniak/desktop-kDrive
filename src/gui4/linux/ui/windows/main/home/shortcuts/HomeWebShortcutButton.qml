@@ -66,14 +66,10 @@ Button {
             }
         }
 
-        IKTintedIcon {
+        IKExternalLinkIcon {
             id: externalIcon
 
-            width: 10
-            height: 10
             anchors.verticalCenter: parent.verticalCenter
-            source: "qrc:/assets/main/home/external-link.svg"
-            color: IKColors.textTertiary
         }
     }
 

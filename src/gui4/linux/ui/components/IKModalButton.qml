@@ -35,6 +35,10 @@ Button {
     property int role: IKModalButton.Primary
     property bool actionEnabled: true
     property bool busy: false
+    // Appends the external-link glyph. Set it whenever the action hands the user over to the web browser.
+    property bool external: false
+
+    readonly property real externalIconAllowance: external ? externalIcon.width + IKModalTokens.buttonExternalIconSpacing : 0
 
     readonly property color foregroundColor: {
         if (!actionEnabled && !busy) {
@@ -55,7 +59,7 @@ Button {
 
     enabled: actionEnabled && !busy
     implicitWidth: Math.max(IKModalTokens.buttonMinimumWidth,
-                            buttonText.implicitWidth + 2 * IKModalTokens.buttonHorizontalPadding)
+                            buttonText.implicitWidth + externalIconAllowance + 2 * IKModalTokens.buttonHorizontalPadding)
     implicitHeight: IKModalTokens.buttonHeight
     padding: 0
     leftPadding: IKModalTokens.buttonHorizontalPadding
@@ -67,18 +71,35 @@ Button {
     opacity: actionEnabled || busy ? 1 : IKModalTokens.disabledOpacity
 
     contentItem: Item {
-        Text {
-            id: buttonText
+        id: buttonContent
 
-            anchors.fill: parent
+        Row {
+            anchors.centerIn: parent
             visible: !root.busy
-            text: root.text
-            color: root.foregroundColor
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.emphasized
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
+            spacing: root.external ? IKModalTokens.buttonExternalIconSpacing : 0
+
+            Text {
+                id: buttonText
+
+                // Width is taken from the content Item rather than from the Row, whose implicit width this feeds back into.
+                width: Math.min(implicitWidth, Math.max(0, buttonContent.width - root.externalIconAllowance))
+                text: root.text
+                color: root.foregroundColor
+                font.pixelSize: IKFonts.bodySize
+                font.weight: IKFonts.emphasized
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
+
+            IKExternalLinkIcon {
+                id: externalIcon
+
+                anchors.verticalCenter: parent.verticalCenter
+                visible: root.external
+                // Follows the label: textTertiary falls short of 4.5:1 on the Tonal surface in light mode.
+                color: root.foregroundColor
+            }
         }
 
         IKLoadingSpinner {
