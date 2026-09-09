@@ -22,7 +22,6 @@
 
 #include <config.h>
 #include <QColor>
-#include <QObject>
 #include <QString>
 #include <QUrl>
 
@@ -33,7 +32,7 @@ using namespace Qt::StringLiterals;
 namespace KDC::AppConstants::Drive {
 
 [[nodiscard]] inline QColor defaultColor() {
-    return QColor{QStringLiteral("#0098FF")};
+    return QColor{"#0098FF"_L1};
 }
 
 } // namespace KDC::AppConstants::Drive
@@ -41,7 +40,7 @@ namespace KDC::AppConstants::Drive {
 namespace KDC::AppConstants::Login {
 
 [[nodiscard]] inline QUrl signupUri() {
-    return QUrl{QStringLiteral("https://welcome.infomaniak.com/signup")};
+    return QUrl{"https://welcome.infomaniak.com/signup"_L1};
 }
 
 } // namespace KDC::AppConstants::Login
@@ -49,11 +48,11 @@ namespace KDC::AppConstants::Login {
 namespace KDC::AppConstants::Onboarding {
 
 [[nodiscard]] inline QUrl driveOffersUri() {
-    return QUrl{QStringLiteral("https://www.infomaniak.com/gtl/myksuite#prices")};
+    return QUrl{"https://www.infomaniak.com/gtl/myksuite#prices"_L1};
 }
 
 [[nodiscard]] inline QUrl freeDriveOrderUri() {
-    return QUrl{QStringLiteral("https://shop.infomaniak.com/order/select/drive")};
+    return QUrl{"https://shop.infomaniak.com/order/select/drive"_L1};
 }
 
 } // namespace KDC::AppConstants::Onboarding
@@ -61,7 +60,7 @@ namespace KDC::AppConstants::Onboarding {
 namespace KDC::AppConstants::Support {
 
 [[nodiscard]] inline QUrl helpUri() {
-    return QUrl{QStringLiteral("https://support.infomaniak.com/")};
+    return QUrl{"https://support.infomaniak.com/"_L1};
 }
 
 } // namespace KDC::AppConstants::Support
@@ -84,20 +83,20 @@ Q_ENUM_NS(Destination)
     QString path;
     switch (destination) {
         case Destination::Favorites:
-            path = QStringLiteral("favorites");
+            path = "favorites"_L1;
             break;
         case Destination::Shared:
-            path = QStringLiteral("shared-with-me");
+            path = "shared-with-me"_L1;
             break;
         case Destination::OnlineDrive:
-            path = QStringLiteral("files");
+            path = "files"_L1;
             break;
         case Destination::Trash:
-            path = QStringLiteral("trash");
+            path = "trash"_L1;
             break;
     }
 
-    return QUrl{QStringLiteral("https://kdrive.infomaniak.com/app/drive/%1/%2").arg(static_cast<qulonglong>(driveId)).arg(path)};
+    return QUrl{u"https://kdrive.infomaniak.com/app/drive/%1/%2"_s.arg(static_cast<qulonglong>(driveId)).arg(path)};
 }
 
 } // namespace KDC::AppConstants::WebDrive
