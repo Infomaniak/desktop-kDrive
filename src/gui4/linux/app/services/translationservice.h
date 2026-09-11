@@ -40,7 +40,7 @@ class TranslationService final : public QObject {
         explicit TranslationService(ParametersStore &parametersStore, QObject *parent = nullptr);
         void initialize();
 
-        void setEngine(QQmlEngine *engine) { _qmlEngine = engine; }
+        void setEngine(QQmlEngine *const engine) { _qmlEngine = engine; }
 
         [[nodiscard]] static QVariantList languages();
 
