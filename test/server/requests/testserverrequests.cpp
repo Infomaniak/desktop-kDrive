@@ -145,7 +145,6 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     CPPUNIT_ASSERT(!std::filesystem::exists(returnedPath));
 
     // Case 2: The default path does not exist, but it is the folder path of an existing sync.
-    (void) ParmsDb::instance()->insertSync(sync);
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
                          ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
 
