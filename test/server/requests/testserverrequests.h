@@ -99,7 +99,10 @@ class TestServerRequests : public CppUnit::TestFixture, public TestBase {
 #endif
 
     private:
-        int _driveDbId{0};
+        DriveId _driveId{1};
+        DriveDbId _driveDbId{1};
+        UserId _userId{1};
+        AccountId _accountId{1};
         std::string _keychainKey{"123"};
         LocalTemporaryDirectory _localTempDir{"testServerRequests"};
 };
