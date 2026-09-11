@@ -417,7 +417,10 @@ void RemoteFolderTreeModel::notifySelectionDataChanged() {
 }
 
 void RemoteFolderTreeModel::notifySelectionDataChanged(const TreeNode *const parentNode) {
-    if (!parentNode || parentNode->children.empty()) return;
+    if (!parentNode || parentNode->children.empty()) {
+        return;
+    }
+
     emit dataChanged(indexForNode(parentNode->children.front().get()), indexForNode(parentNode->children.back().get()),
                      {CheckStateRole});
     for (const auto &child: parentNode->children) notifySelectionDataChanged(child.get());
