@@ -22,6 +22,7 @@
 #include "providerinfo.h"
 
 #include <cfapi.h>
+#include <ntstatus.h>
 
 class CloudProvider {
     public:
@@ -36,7 +37,8 @@ class CloudProvider {
         bool hydrate(const wchar_t *path);
         bool updateTransfer(const wchar_t *filePath, const wchar_t *fromFilePath, LONGLONG completed, bool *canceled,
                             bool *finished);
-        static bool cancelTransfer(ProviderInfo *providerInfo, const wchar_t *filePath, bool updateStatus);
+        static bool cancelTransfer(ProviderInfo *providerInfo, const wchar_t *filePath, bool updateStatus,
+                                   NTSTATUS status = STATUS_UNSUCCESSFUL);
 
     private:
         bool connectSyncRootTransferCallbacks();
@@ -89,5 +91,5 @@ class CloudProvider {
 
         static bool addFolderToSearchIndexer(const PCWSTR folder);
         static bool cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
-                                    LARGE_INTEGER requiredFileOffset);
+                                    LARGE_INTEGER requiredFileOffsetNTSTATU, NTSTATUS status = STATUS_UNSUCCESSFUL);
 };
