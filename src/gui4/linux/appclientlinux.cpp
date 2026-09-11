@@ -311,9 +311,9 @@ void AppClientLinux::quitOnServerDisconnection() {
 void AppClientLinux::openSettingsWindow() {
     if (!_settingsWindow) {
         QQmlComponent component(&_qmlEngine);
-        component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow"_L1);
+        component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
         auto *object = component.createWithInitialProperties(
-                {{"controller"_L1, QVariant::fromValue<QObject *>(&_generalSettingsController)}});
+                {{"controller", QVariant::fromValue<QObject *>(&_generalSettingsController)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
