@@ -95,15 +95,23 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, so we check them here.
-    if (error.path().filename().empty() || error.destinationPath().filename().empty()) {
+    if (error.path().filename().empty() || error.destinationPath().filename().empty() || error.destinationPath().is_absolute()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error paths in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.path()) << L" / destination "
                                                         << Utility::formatSyncPath(error.destinationPath()));
         return false;
     }
 
-    // Delete remote version locally
     SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
+    originalAbsolutePath = originalAbsolutePath.lexically_normal();
+
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), originalAbsolutePath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
+                                                        << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
+    // Delete remote version locally
     SyncLocalDeleteJob deleteJob(_syncPal, originalAbsolutePath);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
@@ -127,15 +135,25 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, so we check it
     // here.
-    if (error.destinationPath().filename().empty()) {
+    if (error.destinationPath().filename().empty() || error.destinationPath().is_absolute()) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"ConflictingFilesCorrector::keepRemoteVersion got an invalid error path: destination "
                           << Utility::formatSyncPath(error.destinationPath()));
         return false;
     }
 
+    SyncPath absoluteDestinationPath = _syncPal->localPath() / error.destinationPath();
+    absoluteDestinationPath = absoluteDestinationPath.lexically_normal();
+
+
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
+                                                        << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
     // Delete local version
-    SyncLocalDeleteJob deleteJob(_syncPal, _syncPal->localPath() / error.destinationPath());
+    SyncLocalDeleteJob deleteJob(_syncPal, absoluteDestinationPath);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
