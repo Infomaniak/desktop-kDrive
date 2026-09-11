@@ -332,7 +332,7 @@ ExitCode ConflictResolverWorker::generateUndoMoveOperation(const Conflict &confl
 }
 
 void ConflictResolverWorker::rescueModifiedLocalNodes(const Conflict &conflict, const std::shared_ptr<Node> node) {
-    if (node && node->side() != ReplicaSide::Local) return;
+    if (!node || node->side() != ReplicaSide::Local) return;
 
     generateRescueOperation(conflict, node);
     for (const auto &[_, child]: node->children()) {
