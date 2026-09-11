@@ -251,33 +251,32 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
     return ExitCode::Ok;
 }
 
-void SyncPalWorker::ensureMinimumPermission() {
-    std::function<void(SyncPath)> trySetFullAccess = [this](const SyncPath &path) {
-        bool exists = false;
-        if (auto checkIfPathExistsError = IoError::Success;
-            !IoHelper::checkIfPathExists(path, exists, checkIfPathExistsError, IoHelper::PathCheckOption::Sensitive)) {
-            LOGW_WARN(_logger, L"Failed to check if path exists - " << Utility::formatIoError(path, checkIfPathExistsError));
-            return;
-        }
+void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
+    bool exists = false;
+    if (auto checkIfPathExistsError = IoError::Success;
+        !IoHelper::checkIfPathExists(path, exists, checkIfPathExistsError, IoHelper::PathCheckOption::Sensitive)) {
+        LOGW_WARN(_logger, L"Failed to check if path exists - " << Utility::formatIoError(path, checkIfPathExistsError));
+        return;
+    }
 
-        if (!exists) {
-            LOGW_INFO(_logger,
-                      L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
-            return;
-        }
+    if (!exists) {
+        LOGW_INFO(_logger, L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
+        return;
+    }
 
-        if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
-            const auto errorMsg = L"Failed to set full access rights - " + Utility::formatIoError(path, ioError);
-            if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_DEBUG(_logger, errorMsg);
-            } else {
-                LOGW_WARN(_logger, errorMsg);
-            }
+    if (const auto ioError = IoHelper::setFullAccess(path); ioError != IoError::Success) {
+        const auto errorMsg = L"Failed to set full access rights - " + Utility::formatIoError(path, ioError);
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_DEBUG(_logger, errorMsg);
         } else {
-            LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+            LOGW_WARN(_logger, errorMsg);
         }
-    };
+    } else {
+        LOGW_DEBUG(_logger, L"Full access rights set: " << Utility::formatSyncPath(path));
+    }
+}
 
+void SyncPalWorker::ensureMinimumPermission() {
     if (!_syncPal->isAdvancedSync()) {
         trySetFullAccess(_syncPal->localPath() / Utility::commonDocumentsFolderName());
         trySetFullAccess(_syncPal->localPath() / Utility::sharedFolderName());

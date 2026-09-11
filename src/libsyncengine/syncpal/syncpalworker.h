@@ -117,6 +117,7 @@ class SyncPalWorker : public ISyncWorker {
         virtual double jitter() const;
 
         void checkForMassDeletions() const;
+        void trySetFullAccess(const SyncPath &path);
 
         friend class TestSyncPalWorker;
 };
