@@ -108,6 +108,7 @@ enum class ExitCode {
     LogUploadFailed,
     UpdateFailed,
     TooManyDeleteOperations,
+    SyncPaused,
     EnumEnd
 };
 

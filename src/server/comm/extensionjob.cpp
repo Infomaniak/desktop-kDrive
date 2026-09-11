@@ -96,8 +96,7 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {
-        {"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
+    _commands = {{"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
                  {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
                  {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
                  {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
@@ -298,15 +297,27 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 
         if (fileData.isLink) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"Don't hydrate symlinks - " << Utility::formatSyncPath(filePath));
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, ExitCode::Unknown);
+                !cancelHydrateExitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": "
+                                                                << cancelHydrateExitInfo);
+            }
             continue;
         }
 
         // Check file status
         auto status = SyncFileStatus::Unknown;
         VfsStatus vfsStatus;
-        if (!syncFileStatus(fileData, status, vfsStatus)) {
+        if (ExitInfo exitInfo = syncFileStatus(fileData, status, vfsStatus); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(filePath));
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, exitInfo);
+                !cancelHydrateExitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": "
+                                                                << cancelHydrateExitInfo);
+            }
             continue;
         }
 
@@ -341,14 +352,15 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         }
 #endif
 
-        if (!addDownloadJob(fileData, parentFolder)) {
+        if (ExitInfo exitInfo = addDownloadJob(fileData, parentFolder); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath) << exitInfo);
 
-            // Cancel hydration and reset pin state to initial value
-            if (const auto exitInfo = cancelHydrate(fileData, PinState::OnlineOnly); !exitInfo) {
-                LOGW_INFO(Log::instance()->getLogger(),
-                          L"Error in ExtensionJob::cancelHydrate - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, exitInfo);
+                !cancelHydrateExitInfo) {
+                LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
+                                                                << Utility::formatSyncPath(filePath) << L": "
+                                                                << cancelHydrateExitInfo);
             }
 
             continue;
@@ -862,24 +874,24 @@ void ExtensionJob::fetchPrivateLinkUrlHelper(const SyncPath &localFile,
     targetFun(linkUrl.toStdString());
 }
 
-bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus) {
+ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &status, VfsStatus &vfsStatus) {
     status = SyncFileStatus::Unknown;
     vfsStatus.isPlaceholder = false;
     vfsStatus.isHydrated = false;
 
-    if (!fileData.isValid()) return false;
+    if (!fileData.isValid()) return ExitCode::LogicError;
 
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex, _commManager->appServer().vfsMapMutex);
 
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
-    if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return false;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
 
     bool exists = false;
     if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists)) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
-        return false;
+        return ExitCode::SyncPaused;
     }
 
     if (exists) {
@@ -887,12 +899,12 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
     }
 
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
-    if (vfsMapIt == _commManager->appServer().vfsMap.end() || !vfsMapIt->second) return false;
+    if (vfsMapIt == _commManager->appServer().vfsMap.end() || !vfsMapIt->second) return ExitCode::SyncPaused;
 
     if (vfsMapIt->second->mode() == VirtualFileMode::Mac || vfsMapIt->second->mode() == VirtualFileMode::Win) {
-        if (!vfsMapIt->second->status(fileData.localPath, vfsStatus)) {
+        if (ExitInfo exitInfo = vfsMapIt->second->status(fileData.localPath, vfsStatus); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::status - " << Utility::formatSyncPath(fileData.localPath));
-            return false;
+            return exitInfo;
         }
 
         if (vfsStatus.isSyncing) {
@@ -900,7 +912,7 @@ bool ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &stat
         }
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 SyncPalMap::const_iterator ExtensionJob::retrieveSyncPalMapIt(const SyncDbId syncDbId) const {
@@ -944,14 +956,14 @@ ExitInfo ExtensionJob::setPinState(const FileData &fileData, PinState pinState) 
     return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
 }
 
-ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState) {
+ExitInfo ExtensionJob::cancelHydrate(const FileData &fileData, PinState pinState, ExitInfo exitInfo) {
     if (!fileData.syncDbId) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
     const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
     const auto vfsMapIt = retrieveVfsMapIt(fileData.syncDbId);
     if (vfsMapIt == _commManager->appServer().vfsMap.cend() || !vfsMapIt->second) return {ExitCode::LogicError};
 
-    vfsMapIt->second->cancelHydrate(fileData.localPath);
+    vfsMapIt->second->cancelHydrate(fileData.localPath, exitInfo);
 
     if (pinState != PinState::Unknown) return vfsMapIt->second->setPinState(fileData.relativePath, pinState);
 
@@ -974,24 +986,26 @@ ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
     return vfsMapIt->second->dehydratePlaceholder(fileData.relativePath);
 }
 
-bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
-    if (!fileData.syncDbId) return false;
+ExitInfo ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
+    if (!fileData.syncDbId) {
+        return ExitCode::LogicError;
+    }
 
     const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
 
-    if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return false;
+    if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
 
     // Create download job
-    if (const ExitCode exitCode =
+    if (const ExitInfo exitInfo =
                 syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
-        exitCode != ExitCode::Ok) {
+        !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
-        return false;
+        return exitInfo;
     }
 
-    return true;
+    return ExitCode::Ok;
 }
 
 #if defined(KD_MACOS)

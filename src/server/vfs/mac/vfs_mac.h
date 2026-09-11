@@ -68,7 +68,8 @@ class VfsMac : public Vfs {
 
         void dehydrate(const SyncPath &absoluteFilepath) override;
         void hydrate(const SyncPath &absoluteFilepath) override;
-        void cancelHydrate(const SyncPath &absoluteFilepath) override;
+        void cancelHydrate(const SyncPath &absoluteFilepath,
+                           ExitInfo exitInfo = ExitCode::Unknown) override;
 
         void convertDirContentToPlaceholder(const QString &filePath, bool isHydratedIn) override;
 

@@ -19,6 +19,8 @@
 #pragma once
 
 #include <functional>
+#include <ntstatus.h>
+#include <winternl.h> 
 
 #if defined(_WINDLL)
 #define DLL_EXP __declspec(dllexport)
@@ -65,7 +67,7 @@ DLL_EXP int __cdecl vfsUpdatePlaceHolder(const wchar_t *filePath, const WIN32_FI
 DLL_EXP int __cdecl vfsUpdateFetchStatus(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath,
                                          const wchar_t *fromFilePath, LONGLONG completed, bool *canceled, bool *finished);
 
-DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath);
+DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath, NTSTATUS status);
 
 DLL_EXP int __cdecl vfsGetPinState(const wchar_t *path, VfsPinState *state);
 
