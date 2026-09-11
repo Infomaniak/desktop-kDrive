@@ -241,6 +241,7 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
     std::unique_lock<std::mutex> lck(_providerInfo->_fetchMapMutex);
     if (_providerInfo->_fetchMap.find(filePath) == _providerInfo->_fetchMap.end()) {
         TRACE_DEBUG(L"No fetch in progress: path='%ls'", filePath);
+        *canceled = true;
         return true;
     }
 
