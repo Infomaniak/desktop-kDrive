@@ -104,7 +104,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate a delete operation.
     {
-        GenericLocalDeleteJob deleteJob(subDirPath);
+        GenericLocalDeleteJob deleteJob(subDirPath, _syncPal->_cacheDirectory);
         (void) deleteJob.runSynchronously();
     }
     waitForSyncToBeIdle(std::source_location::current());
