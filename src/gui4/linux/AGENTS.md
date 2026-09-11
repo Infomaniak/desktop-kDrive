@@ -21,7 +21,8 @@
   choice translated in the system language independently of the app language, with English as fallback.
 
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
-- Treat Qt 6.11.1 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing behavior
+- Treat Qt 6.11.1 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing
+  behavior
   to an older Qt release.
 - Do not add links to `.md` files that are not versioned in git.
 - Use Swiss German orthography for German Linux v4 translations: write `ss` instead of `ß`.
@@ -52,6 +53,11 @@
   reapplying side effects or logging; an unrelated parameter change must not reconfigure Sentry.
 - Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
   independent updater states.
+- Let `TranslationService` own the English fallback and selected locale. Language changes retranslate QML and notify C++
+  presentation models without resetting navigation or selections. New translated model properties must not be
+  `CONSTANT`.
+- Recompute cached translated strings before notifying QML on language changes; emitting a property-change signal alone
+  does not retranslate a value stored by a controller.
 - Keep per-sync runtime status and progress exclusively in `AppCache`. Consumers such as the system tray and future UI
   adapters must observe and query that shared state instead of maintaining private copies.
 - Design feature storage and presentation contracts for their intended final lifecycle. A temporarily unavailable UI or
@@ -103,9 +109,11 @@
   so both outer circles remain identical.
 - Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
-- Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items supply
+- Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items
+  supply
   `showRequested`.
-  Never use `activeFocus` to trigger a tooltip. Hide tooltips when their window is inactive, their anchor is hidden, or their
+  Never use `activeFocus` to trigger a tooltip. Hide tooltips when their window is inactive, their anchor is hidden, or
+  their
   button is pressed; clicking or restoring focus after Alt-Tab must not keep a tooltip open.
 - For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
@@ -377,10 +385,13 @@
       the current row is a navigation cursor drawn as a tint, kept distinct from the keyboard focus ring.
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
       primitives accept display values and emit interactions; they do not read `AppCache`, own selection, or call
-      services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action roles;
-      feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard cancel/confirm
+      services directly. `IKModal` and `IKModalButton` provide the styled in-app modal surface and semantic action
+      roles;
+      feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard
+      cancel/confirm
       prompts so consumers only provide copy, busy state, and the confirmed/dismissed workflows. `IKLinkButton` is the
-      inline textual action for rows and cards that must not carry a button surface of their own. `IKCheckBox` is the shared tri-state indicator: it
+      inline textual action for rows and cards that must not carry a button surface of their own. `IKCheckBox` is the
+      shared tri-state indicator: it
       renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
     - `ui/chrome/`: shared window chrome: frameless shell, header bar, controls, resize handles, and shadow wrapper.
       Top-level app-owned QML windows should use `IKShadowedWindow`; its `headerBackgroundData` and `headerData` slots
@@ -389,7 +400,8 @@
       by an interaction layer above a modal overlay without unblocking the underlying application content. Onboarding
       uses `headerOverlaysContent` so window controls do not shift its fixed visual composition. The window decoration
       controller limits input to the surface and resize handles without clipping the diffuse shadow. It publishes
-      `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible surface rather than the transparent
+      `_GTK_FRAME_EXTENTS` on X11/XWayland so those window managers align the visible surface rather than the
+      transparent
       shadow during snapping and maximization. Native Wayland intentionally uses public Qt APIs only and therefore snaps
       the complete native window, including its transparent shadow margin.
     - `ui/windows/onboarding/animations/`: versioned generated QML animation components produced from Lottie JSON

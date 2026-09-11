@@ -61,6 +61,11 @@ bool OnboardingSyncConfigurationController::canValidate() const {
     return !_drafts.empty() && std::ranges::all_of(_drafts, [](const Draft &draft) { return !draft.config.localPath.isEmpty(); });
 }
 
+void OnboardingSyncConfigurationController::retranslate() {
+    _folderTreeModel.retranslate();
+    emit presentationChanged();
+}
+
 QString OnboardingSyncConfigurationController::currentDriveName() const {
     return currentDraft() ? currentDraft()->driveName : QString{};
 }
@@ -89,7 +94,7 @@ void OnboardingSyncConfigurationController::open() {
     ++_requestGeneration;
     _visible = true;
     _busy = false;
-    _localFolderErrorText.clear();
+    _localFolderErrorId.clear();
     _currentRow = -1;
     setPage(Summary);
     emit visibleChanged();
@@ -166,7 +171,7 @@ void OnboardingSyncConfigurationController::applyCustomFolder(const QUrl &folder
     const QString path = QDir::cleanPath(folderUrl.toLocalFile());
     if (!draft || path.isEmpty()) return;
     if (conflictsWithAnotherDraft(path, _currentRow)) {
-        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+        setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
         return;
     }
 
@@ -179,7 +184,7 @@ void OnboardingSyncConfigurationController::applyCustomFolder(const QUrl &folder
                                                   if (!self || generation != self->_requestGeneration) return;
                                                   self->setBusy(false);
                                                   if (!exitInfo || !valid || !self->currentDraft()) {
-                                                      self->setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+                                                      self->setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
                                                       return;
                                                   }
                                                   self->currentDraft()->config.localPath = path;
@@ -196,7 +201,7 @@ void OnboardingSyncConfigurationController::returnToDefaultFolder() {
     if (!draft || draft->config.defaultLocalPath.isEmpty()) return;
     // Another drive may have taken that folder while this one sat on a custom path.
     if (conflictsWithAnotherDraft(draft->config.defaultLocalPath, _currentRow)) {
-        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+        setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
         return;
     }
     draft->config.localPath = draft->config.defaultLocalPath;
@@ -318,12 +323,16 @@ void OnboardingSyncConfigurationController::abortPendingRequest() {
 }
 
 void OnboardingSyncConfigurationController::clearLocalFolderError() {
-    setLocalFolderError({});
+    setLocalFolderErrorId({});
 }
 
-void OnboardingSyncConfigurationController::setLocalFolderError(const QString &text) {
-    if (_localFolderErrorText == text) return;
-    _localFolderErrorText = text;
+QString OnboardingSyncConfigurationController::localFolderErrorText() const {
+    return _localFolderErrorId.isEmpty() ? QString{} : qtTrId(qPrintable(_localFolderErrorId));
+}
+
+void OnboardingSyncConfigurationController::setLocalFolderErrorId(const QString &text) {
+    if (_localFolderErrorId == text) return;
+    _localFolderErrorId = text;
     emit presentationChanged();
 }
 
@@ -336,7 +345,7 @@ void OnboardingSyncConfigurationController::closeWithoutCommit() {
     _driveSnapshot.reset();
     _currentRow = -1;
     setPage(Summary);
-    _localFolderErrorText.clear();
+    _localFolderErrorId.clear();
     emit visibleChanged();
     emit presentationChanged();
 }
