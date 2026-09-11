@@ -24,7 +24,6 @@
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
-#include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
 #include "syncpal_test_helper/syncpaltesthelper.h"
