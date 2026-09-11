@@ -463,7 +463,7 @@ ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncNam
         for (const auto &sync: syncList) {
             if (sync.localPath() == path) {
                 ++newAttemptCount;
-                path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
+path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(newAttemptCount)));
             }
             if (newAttemptCount >= 100) {
                 LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
