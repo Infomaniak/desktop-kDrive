@@ -682,7 +682,11 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfs()->cancelHydrate(downloadJob->localPath());
+        vfs()->cancelHydrate(downloadJob->localPath(), {ExitCode::BackError, ExitCause::NotFound});
+    }
+
+    if (!downloadJob->exitInfo()) {
+        vfs()->cancelHydrate(downloadJob->localPath(), downloadJob->exitInfo());
     }
 
     (void) _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
@@ -719,14 +723,14 @@ void SyncPal::resetSnapshotInvalidationCounters() {
     _remoteFSObserverWorker->resetInvalidateCounter();
 }
 
-ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                  const SyncPath &parentFolderPath) {
     // Get the nodeId from the File System (not from the DB).
     // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
     NodeId localNodeId;
     if (!IoHelper::getNodeId(absoluteLocalPath, localNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(absoluteLocalPath));
-        return ExitCode::DataError;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     NodeId remoteNodeId;
@@ -737,7 +741,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     int64_t expectedSize = -1;
@@ -747,7 +751,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     // Hydration job

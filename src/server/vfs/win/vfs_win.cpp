@@ -137,11 +137,21 @@ void VfsWin::hydrate(const SyncPath &pathStd) {
     _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsWin::cancelHydrate(const SyncPath &pathStd) {
+void VfsWin::cancelHydrate(const SyncPath &pathStd, ExitInfo exitInfo) {
     LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(pathStd));
     const QString path = SyncName2QStr(pathStd.native());
+
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    if (exitInfo.cause() == ExitCause::NotFound) {
+        status = STATUS_CLOUD_FILE_NOT_IN_SYNC;
+    } else if (exitInfo.code() == ExitCode::SyncPaused) {
+        status = STATUS_CLOUD_FILE_PROVIDER_NOT_RUNNING;
+    } else if (exitInfo.code() == ExitCode::NetworkError) {
+        status = STATUS_CLOUD_FILE_NETWORK_UNAVAILABLE;
+    }
+
     if (vfsCancelFetch(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
-                       QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
+                       QStr2Path(QDir::toNativeSeparators(path)).c_str(), status) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCancelFetch: " << Utility::formatSyncPath(QStr2Path(path)));
         return;
     }

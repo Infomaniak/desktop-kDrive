@@ -72,7 +72,7 @@ class VFS_EXPORT VfsWin : public Vfs {
 
         void dehydrate(const SyncPath &path) override;
         void hydrate(const SyncPath &path) override;
-        void cancelHydrate(const SyncPath &path) override;
+        void cancelHydrate(const SyncPath &path, ExitInfo exitInfo = ExitCode::Unknown) override;
 
 
     public slots:

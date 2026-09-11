@@ -273,7 +273,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void resetSnapshotInvalidationCounters();
 
-        ExitCode addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+        ExitInfo addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                 const SyncPath &parentFolderPath);
         void monitorFolderHydration(const SyncPath &absoluteLocalPath);
         ExitCode cancelDlDirectJobs(const std::vector<SyncPath> &fileList);
