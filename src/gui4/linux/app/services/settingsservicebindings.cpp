@@ -25,7 +25,7 @@ namespace KDC {
 
 // Production constructor that adapts CommService's PARAMETERS_UPDATE request to the injectable update function used by
 // ParametersService. Keeping this binding here lets the service serialize mutations without depending on IPC details.
-ParametersService::ParametersService(CommService &commService, ParametersStore &parametersStore, QObject *parent) :
+ParametersService::ParametersService(const CommService &commService, ParametersStore &parametersStore, QObject *const parent) :
     ParametersService(
             [&commService](const ParametersInfo &parametersInfo, const UpdateCallback &callback) {
                 commService.requestParametersUpdate(parametersInfo, callback);
@@ -34,7 +34,8 @@ ParametersService::ParametersService(CommService &commService, ParametersStore &
 
 // Production constructor that binds updater state and version requests to CommService. The distribution channel comes
 // from the latest confirmed parameters, while server-pushed state changes update the same shared service instance.
-UpdateStatusService::UpdateStatusService(CommService &commService, ParametersStore &parametersStore, QObject *parent) :
+UpdateStatusService::UpdateStatusService(const CommService &commService, const ParametersStore &parametersStore,
+                                         QObject *const parent) :
     UpdateStatusService(
             [&commService](const CommService::UpdateStateCallback &callback) { commService.requestUpdaterState(callback); },
             [&commService, &parametersStore](const CommService::VersionInfoCallback &callback) {
