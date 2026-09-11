@@ -392,7 +392,7 @@ void TestIntegration::testGlobalFramework() {
     logStep("testGlobalFramework");
 }
 
-void TestIntegration::testParentDeleteRescuesModifiedLocalChildrenOnceWithFramework() {
+void TestIntegration::testParentDeleteRescuesModifiedLocalChildren() {
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
@@ -457,11 +457,11 @@ void TestIntegration::testParentDeleteRescuesModifiedLocalChildrenOnceWithFramew
         return count;
     };
 
-    CPPUNIT_ASSERT_EQUAL(size_t(1), countRescuedByPrefix(Str("AAA")));
+    CPPUNIT_ASSERT_EQUAL(size_t(0), countRescuedByPrefix(Str("AAA"))); // AAA was only moved to A/AB/AAA, so it should not be rescued.
     CPPUNIT_ASSERT_EQUAL(size_t(1), countRescuedByPrefix(Str("ABB")));
     CPPUNIT_ASSERT_EQUAL(size_t(1), countRescuedByPrefix(Str("AAD")));
 
-    logStep("testParentDeleteRescuesModifiedLocalChildrenOnceWithFramework");
+    logStep("testParentDeleteRescuesModifiedLocalChildren");
 }
 
 void TestIntegration::testNestedRemoteOperations() {
