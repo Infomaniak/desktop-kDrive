@@ -319,7 +319,7 @@ class Vfs : public QObject {
 
         virtual void dehydrate(const SyncPath &path) = 0;
         virtual void hydrate(const SyncPath &path) = 0;
-        virtual void cancelHydrate(const SyncPath &) = 0;
+        virtual void cancelHydrate(const SyncPath &, ExitInfo exitInfo = ExitCode::Unknown) = 0;
 
     signals:
         /// Emitted when a user-initiated hydration starts
@@ -447,7 +447,7 @@ class VfsOff : public Vfs {
         void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
         void dehydrate(const SyncPath &) override { /*VfsOff*/ }
         void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &) override { /*VfsOff*/ }
+        void cancelHydrate(const SyncPath &, ExitInfo exitInfo = ExitCode::Unknown) override { /*VfsOff*/ }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
