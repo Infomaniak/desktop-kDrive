@@ -649,6 +649,10 @@ void TestParmsDb::testAppUID() {
     // A missing key must yield an empty UID.
     CPPUNIT_ASSERT(deleteAppState(AppStateKey::AppUid));
     CPPUNIT_ASSERT(ParmsDb::appUID().empty());
+
+    // An uninitialized database must also yield an empty UID.
+    ParmsDb::reset();
+    CPPUNIT_ASSERT(ParmsDb::appUID().empty());
 }
 
 #if defined(KD_MACOS)
