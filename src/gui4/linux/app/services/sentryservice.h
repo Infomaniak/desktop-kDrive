@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "libcommon/utility/types.h"
+
 #include <QObject>
 #include <QString>
 
@@ -63,11 +65,13 @@ class SentryService final : public QObject {
     private:
         static void updateLinuxRuntimeTags();
         void reconcileConsentWithParametersStore();
-        void applyConsent(bool enabled);
+        void applyConsent(bool enabled) const;
 
         ParametersService &_parametersService;
         AppCache &_appCache;
         ParametersStore &_parametersStore;
+        std::optional<bool> _appliedConsent;
+        std::optional<DistributionChannel> _appliedDistributionChannel;
 };
 
 } // namespace KDC
