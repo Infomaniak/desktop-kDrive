@@ -679,8 +679,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     ioError = IoError::Success;
     std::error_code ec;
 
-    [[maybe_unused]] const auto status =
-            std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    [[maybe_unused]] const auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
 
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -1241,8 +1240,10 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = true;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        // This is the best effort to re-apply the existing exec rights, therefor we do not return in case of error.
+        LOGW_DEBUG(logger(), L"Failed to set rights for " << Utility::formatIoError(path, ioError));
+        // This is the best effort to re-apply the existing exec rights, therefore we do not return in case of error, except if
+        // the file does not exist.
+        if (ioError == IoError::NoSuchFileOrDirectory) return ioError;
     }
 
     // The file must be unlocked before changing its access rights.
@@ -1253,8 +1254,9 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     // Set full access rights.
     if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
         LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        return IoError::Unknown;
+        return ioError;
     }
+
     return IoError::Success;
 }
 

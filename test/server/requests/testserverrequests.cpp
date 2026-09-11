@@ -54,17 +54,16 @@ void TestServerRequests::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    const int userId(atoi(testVariables.userId.c_str()));
-    const User user(1, userId, _keychainKey);
+    _userId = atoi(testVariables.userId.c_str());
+    const User user(UserDbId{1}, _userId, _keychainKey);
     (void) ParmsDb::instance()->insertUser(user);
 
-    const int accountId(atoi(testVariables.accountId.c_str()));
-    const Account account(1, accountId, user.dbId(), "account1");
+    _accountId = atoi(testVariables.accountId.c_str());
+    const Account account(AccountDbId{1}, _accountId, user.dbId(), "account1");
     (void) ParmsDb::instance()->insertAccount(account);
 
-    _driveDbId = 1;
-    const int driveId = atoi(testVariables.driveId.c_str());
-    const Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    _driveId = atoi(testVariables.driveId.c_str());
+    const Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 }
 
@@ -115,14 +114,44 @@ void TestServerRequests::testFindGoodPathForNewSync() {
 
     // Check again but returnedPath already exists
     const auto previousPath = returnedPath;
-    LocalTemporaryDirectoryFromAbsolutePath localTempDir(previousPath,
-                                                         LocalTemporaryDirectoryFromAbsolutePath::RecursiveMode::Recursive);
+    {
+        LocalTemporaryDirectoryFromAbsolutePath localTempDir(previousPath,
+                                                             LocalTemporaryDirectoryFromAbsolutePath::RecursiveMode::Recursive);
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
-                         ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
+    }
     CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
     CPPUNIT_ASSERT(error.empty());
     CPPUNIT_ASSERT(previousPath != returnedPath);
+
+    // A sync with default folder path already exists for the same drive.
+    // In this case, `ServerRequests::findGoodPathForNewSync` should also successfully return a path that is different from the
+    // default path.
+    auto sync = Sync(1, _driveDbId, defaultPath, "", SyncPath{"remote_path"});
+    const auto syncDbPath = MockDb::makeDbName(_userId, _accountId, _driveDbId, sync.dbId());
+    sync.setDbPath(syncDbPath);
+    // Case 1: The default path exists and is the folder path of an existing sync.
+    (void) ParmsDb::instance()->insertSync(sync);
+    {
+        LocalTemporaryDirectoryFromAbsolutePath localTempDir(defaultPath,
+                                                             LocalTemporaryDirectoryFromAbsolutePath::RecursiveMode::Recursive);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                             ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
+    }
+    CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
+    CPPUNIT_ASSERT(error.empty());
+    CPPUNIT_ASSERT(defaultPath != returnedPath);
+    CPPUNIT_ASSERT(!std::filesystem::exists(returnedPath));
+
+    // Case 2: The default path does not exist, but it is the folder path of an existing sync.
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok, ExitCause::Unknown),
+                         ServerRequests::findGoodPathForNewSync(driveName, returnedPath, error));
+
+    CPPUNIT_ASSERT(CommonUtility::startsWith(returnedPath, defaultPath));
+    CPPUNIT_ASSERT(error.empty());
+    CPPUNIT_ASSERT(defaultPath != returnedPath);
+    CPPUNIT_ASSERT(!std::filesystem::exists(returnedPath));
 }
 
 static void insertRule(const SyncPath &path, SyncFolderRuleType type) {
