@@ -426,10 +426,12 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
 }
 
 namespace {
-ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName, SyncPath &path) {
-    auto attempt = 1;
+ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
+                                       const std::vector<Sync> &syncList, SyncPath &path) {
+    auto attemptCount = 0;
     path = homeFolder / initialFolderName;
 
+    // Avoid collisions with existing directories by appending a suffix.
     forever {
         // Check if the local directory already exists
         auto ioError = IoError::Success;
@@ -439,19 +441,36 @@ ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncNam
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
             return ExitCode::SystemError;
         }
-        if (!alreadyExists) {
-            break;
-        }
+
+        if (!alreadyExists) break;
 
         // Count attempts and give up eventually
-        if (attempt >= 100) {
-            LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
+        if (attemptCount >= 100) {
+            LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
             return ExitCode::SystemError;
         }
-        attempt++;
 
-        path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attempt)));
+        ++attemptCount;
+        path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
     }
+
+    // Avoid collisions with directories of existing syncs by appending a suffix.
+    // Note that this is a separate check from the previous one, because the local directory may not exist yet, or may have been
+    // deleted, but is still registered as a sync folder in the database.
+    auto newAttemptCount = 0;
+    do {
+        newAttemptCount = attemptCount;
+        for (const auto &sync: syncList) {
+            if (sync.localPath() == path) {
+                ++newAttemptCount;
+                path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
+            }
+            if (newAttemptCount >= 100) {
+                LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
+                return ExitCode::SystemError;
+            }
+        }
+    } while (newAttemptCount != attemptCount);
 
     return ExitCode::Ok;
 }
@@ -482,7 +501,8 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
 
     const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
     SyncPath nonExistingPath;
-    if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, nonExistingPath); !exitInfo) {
+    if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath);
+        !exitInfo) {
         error = "Failed to find a non-existing folder path for new sync";
 
         return exitInfo;
