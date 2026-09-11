@@ -171,9 +171,9 @@ void RemoteFolderTreeModel::retranslate() {
     // Size text is formatted on demand with the current default locale. Notify every loaded row without resetting the
     // tree, so expanded folders and the current selection remain unchanged. Use an explicit stack because the depth of a
     // remote folder hierarchy is not bounded.
-    std::vector<TreeNode *> pendingParents{_root.get()};
+    std::vector pendingParents{_root.get()};
     while (!pendingParents.empty()) {
-        TreeNode *const parentNode = pendingParents.back();
+        const TreeNode *const parentNode = pendingParents.back();
         pendingParents.pop_back();
         if (parentNode->children.empty()) {
             continue;
