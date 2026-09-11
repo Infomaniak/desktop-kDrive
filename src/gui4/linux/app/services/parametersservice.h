@@ -43,7 +43,7 @@ class ParametersService final : public QObject {
         using ParametersMutation = std::function<void(ParametersInfo &)>;
         using UpdateCallback = CommService::VoidCallback;
 
-        explicit ParametersService(CommService &commService, ParametersStore &parametersStore, QObject *parent = nullptr);
+        explicit ParametersService(const CommService &commService, ParametersStore &parametersStore, QObject *parent = nullptr);
 
         using UpdateRequest = std::function<void(const ParametersInfo &, const UpdateCallback &)>;
         ParametersService(UpdateRequest request, ParametersStore &parametersStore, QObject *parent = nullptr);
