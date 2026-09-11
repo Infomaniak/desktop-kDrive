@@ -442,35 +442,40 @@ ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncNam
             return ExitCode::SystemError;
         }
 
-        if (!alreadyExists) break;
-
-        // Count attempts and give up eventually
-        if (attemptCount >= 100) {
-            LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
-            return ExitCode::SystemError;
-        }
-
-        ++attemptCount;
-        path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
-    }
-
-    // Avoid collisions with directories of existing syncs by appending a suffix.
-    // Note that this is a separate check from the previous one, because the local directory may not exist yet, or may have been
-    // deleted, but is still registered as a sync folder in the database.
-    auto newAttemptCount = 0;
-    do {
-        newAttemptCount = attemptCount;
-        for (const auto &sync: syncList) {
-            if (sync.localPath() == path) {
-                ++newAttemptCount;
-path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(newAttemptCount)));
-            }
-            if (newAttemptCount >= 100) {
+        if (alreadyExists) {
+            ++attemptCount;
+            // Count attempts and give up eventually
+            if (attemptCount >= 100) {
                 LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
                 return ExitCode::SystemError;
             }
+            path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
+
+            continue;
         }
-    } while (newAttemptCount != attemptCount);
+
+        // Avoid collisions with directories of existing syncs by appending a suffix.
+        // Note that this is a separate check from the previous one, because the local directory may not exist yet, or may have
+        // been deleted, but is still registered as a sync folder in the database.
+        bool newIncrement = false;
+        auto newAttemptCount = attemptCount;
+        do {
+            attemptCount = newAttemptCount;
+            if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(),
+                                                     [&path](const Sync &sync) { return sync.localPath() == path; });
+                it != syncList.cend()) {
+                ++newAttemptCount;
+                newIncrement = true;
+                if (newAttemptCount >= 100) {
+                    LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
+                    return ExitCode::SystemError;
+                }
+                path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(newAttemptCount)));
+            }
+        } while (newAttemptCount != attemptCount);
+
+        if (!newIncrement) break;
+    }
 
     return ExitCode::Ok;
 }
