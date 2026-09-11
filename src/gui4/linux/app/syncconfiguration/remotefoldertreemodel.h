@@ -158,7 +158,6 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void removeExclusionsAtOrBelow(const TreeNode *node);
         void notifySelectionDataChanged();
         void notifySelectionDataChanged(const TreeNode *parentNode);
-        void notifySizeTextDataChanged(const TreeNode *parentNode);
         void queueSize(TreeNode *node);
         void processSizeQueue();
         void handleSizeResult(const QString &nodeId, uint64_t generation, bool success, qint64 size);
