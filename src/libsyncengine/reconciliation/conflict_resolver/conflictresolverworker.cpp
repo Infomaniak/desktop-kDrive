@@ -294,14 +294,15 @@ ExitCode ConflictResolverWorker::generateMoveDeleteConflictOperation(const Confl
 }
 
 ExitCode ConflictResolverWorker::generateParentDeleteConflictOperation(const Conflict &conflict) {
-    // We need to check if any item has been modified locally
-    rescueModifiedLocalNodes(conflict, conflict.localNode());
+    const auto deleteNode = conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.otherNode();
+    const auto correspondingDeleteNode = correspondingNodeDirect(deleteNode);
 
-    // Then propagate the delete operation (any modified children should have already been rescued since EditDelete and MoveDelete
-    // conflicts have higher priority)
+    // We need to check if any item has been modified locally
+    rescueModifiedLocalNodes(conflict, deleteNode->side() == ReplicaSide::Local ? deleteNode : correspondingDeleteNode);
+
+    // Then propagate the delete operation
     const auto deleteOp = std::make_shared<SyncOperation>();
     deleteOp->setType(OperationType::Delete);
-    const auto deleteNode = conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.otherNode();
     deleteOp->setAffectedNode(deleteNode);
     const auto correspondingNode = correspondingNodeInOtherTree(deleteNode);
     if (!correspondingNode) {
@@ -331,7 +332,7 @@ ExitCode ConflictResolverWorker::generateUndoMoveOperation(const Conflict &confl
 }
 
 void ConflictResolverWorker::rescueModifiedLocalNodes(const Conflict &conflict, const std::shared_ptr<Node> node) {
-    if (node->side() != ReplicaSide::Local) return;
+    if (node && node->side() != ReplicaSide::Local) return;
 
     generateRescueOperation(conflict, node);
     for (const auto &[_, child]: node->children()) {
