@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *parent) :
+UpdateStatusService::UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *const parent) :
     QObject(parent),
     _stateRequest(std::move(stateRequest)),
     _versionRequest(std::move(versionRequest)) {}
