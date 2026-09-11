@@ -134,8 +134,8 @@ void TranslationService::applyLanguage(const Language language) {
     _currentLanguage = language;
 
     if (_qmlEngine) {
-        // _qmlEngine can be null because the TranslationService is initialized in the constructor of AppClientLinux
-        // before the QML engine is set up.
+        // The engine is intentionally null during the initial language application, as translations are installed before any QML
+        // components are loaded.
         _qmlEngine->retranslate();
     }
 
