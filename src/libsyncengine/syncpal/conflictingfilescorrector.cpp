@@ -146,7 +146,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     absoluteDestinationPath = absoluteDestinationPath.lexically_normal();
 
     if (!CommonUtility::isSubDir(absoluteDestinationPath, _syncPal->localPath())) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
                                                         << Utility::formatSyncPath(error.destinationPath()));
         return false;
     }
