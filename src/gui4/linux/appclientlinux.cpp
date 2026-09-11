@@ -307,7 +307,7 @@ void AppClientLinux::retranslatePresentation() {
     _activitiesController.retranslate();
     _storageController.retranslate();
 
-    if (auto *session = _onboardingSessionManager.activeSession()) {
+    if (auto *const session = _onboardingSessionManager.activeSession()) {
         emit session->flowController()->titleChanged();
         session->availableDrivesModel()->retranslate();
         session->syncConfigurationController()->retranslate();
