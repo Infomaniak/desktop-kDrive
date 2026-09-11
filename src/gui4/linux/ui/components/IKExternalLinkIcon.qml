@@ -9,19 +9,23 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma Singleton
-import QtQuick
+pragma ComponentBehavior: Bound
 
-QtObject {
-    readonly property real externalLink: 10
-    readonly property real small: 12
-    readonly property real medium: 16
-    readonly property real large: 24
+import QtQuick
+import kDrive.UI
+
+// Trailing glyph marking an action that leaves the app for the web browser. Deliberately smaller than the label it
+// annotates so it does not read as a second icon competing with the control's own leading glyph.
+IKTintedIcon {
+    width: IKIconSizes.externalLink
+    height: width
+    source: "qrc:/assets/common/external-link.svg"
+    color: IKColors.textTertiary
 }

@@ -143,6 +143,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKOnboarding.qml
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
+        ui/tokens/IKSettings.qml
         ui/tokens/IKStorage.qml
         ui/tokens/IKSyncConfiguration.qml
         ui/tokens/IKWaiting.qml
@@ -164,6 +165,11 @@ set_source_files_properties(${GUI_GENERATED_QML_FILES} PROPERTIES QT_QML_SKIP_QM
 
 set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
+        ui/components/IKComboBox.qml
+        ui/components/IKSwitch.qml
+        ui/windows/settings/SettingsGroup.qml
+        ui/windows/settings/SettingsInfoButton.qml
+        ui/windows/settings/SettingsRow.qml
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
@@ -181,6 +187,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKDriveSyncSelectorItem.qml
         ui/components/IKToolTip.qml
         ui/components/IKTintedIcon.qml
+        ui/components/IKExternalLinkIcon.qml
         ui/components/IKErrorBanner.qml
         ui/features/syncconfiguration/RemoteFolderTree.qml
         ui/features/syncconfiguration/SyncConfigurationDialog.qml
@@ -246,6 +253,10 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 )
 
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
+        ui/assets/settings/accounts.svg
+        ui/assets/settings/advanced.svg
+        ui/assets/settings/general.svg
+        ui/assets/settings/information.svg
         ui/assets/main/activities.svg
         ui/assets/main/activities/empty.svg
         ui/assets/main/activities/empty-dark.svg
@@ -290,7 +301,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/folder.svg
         ui/assets/main/house.svg
         ui/assets/main/home/cog.svg
-        ui/assets/main/home/external-link.svg
+        ui/assets/common/external-link.svg
         ui/assets/main/home/folder-share.svg
         ui/assets/main/home/headphones.svg
         ui/assets/main/home/kdrive-folders-stacked.svg
