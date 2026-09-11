@@ -118,13 +118,15 @@ void TranslationService::applyLanguage(const Language language) {
 
     const auto locale = language == Language::Default ? QLocale::system() : QLocale(CommonUtility::languageCode(language));
 
+    const char *warningMessage = nullptr;
     if (!_localizedTranslator.load(locale, u"client"_s, u"_"_s, u":/i18n"_s)) {
-        qCWarning(lcTranslationService) << "Localized translation catalog unavailable; using English fallback"
-                                        << "| language:" << QString::fromStdString(toString(language))
-                                        << "| locale:" << locale.name();
+        warningMessage = "Localized translation catalog unavailable; using English fallback";
     } else if (!QCoreApplication::installTranslator(&_localizedTranslator)) {
-        qCWarning(lcTranslationService) << "Failed to install localized translation catalog"
-                                        << "| language:" << QString::fromStdString(toString(language))
+        warningMessage = "Failed to install localized translation catalog";
+    }
+
+    if (warningMessage) {
+        qCWarning(lcTranslationService) << warningMessage << "| language:" << QString::fromStdString(toString(language))
                                         << "| locale:" << locale.name();
     }
 
