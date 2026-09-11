@@ -31,7 +31,7 @@ namespace {
 Q_LOGGING_CATEGORY(lcParametersService, "gui.v4.parametersservice", QtInfoMsg)
 } // namespace
 
-ParametersService::ParametersService(UpdateRequest request, ParametersStore &parametersStore, QObject *parent) :
+ParametersService::ParametersService(UpdateRequest request, ParametersStore &parametersStore, QObject *const parent) :
     QObject(parent),
     _request(std::move(request)),
     _parametersStore(parametersStore) {}
