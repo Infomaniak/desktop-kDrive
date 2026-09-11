@@ -430,7 +430,10 @@ void RemoteFolderTreeModel::notifySelectionDataChanged(const TreeNode *const par
 // Size text is formatted on demand with the current default locale. Notify every loaded row without resetting the tree,
 // so expanded folders and the current selection remain unchanged.
 void RemoteFolderTreeModel::notifySizeTextDataChanged(const TreeNode *const parentNode) {
-    if (!parentNode || parentNode->children.empty()) return;
+    if (!parentNode || parentNode->children.empty()) {
+        return;
+    }
+
     emit dataChanged(indexForNode(parentNode->children.front().get()), indexForNode(parentNode->children.back().get()),
                      {SizeTextRole});
     for (const auto &child: parentNode->children) notifySizeTextDataChanged(child.get());
