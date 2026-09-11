@@ -90,7 +90,7 @@ QString languageDisplayName(const Language language) {
 }
 } // namespace
 
-TranslationService::TranslationService(ParametersStore &parametersStore, QObject *parent) :
+TranslationService::TranslationService(ParametersStore &parametersStore, QObject *const parent) :
     QObject(parent),
     _parametersStore(parametersStore) {
     (void) connect(&parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
@@ -141,7 +141,7 @@ void TranslationService::applyLanguage(const Language language) {
 QVariantList TranslationService::languages() {
     QVariantList availableLanguages;
 
-    for (int32_t languageValue = static_cast<int32_t>(Language::Default); languageValue < static_cast<int32_t>(Language::EnumEnd);
+    for (auto languageValue = static_cast<int32_t>(Language::Default); languageValue < static_cast<int32_t>(Language::EnumEnd);
          ++languageValue) {
         const auto language = static_cast<Language>(languageValue);
         const auto languageName = languageDisplayName(language);
