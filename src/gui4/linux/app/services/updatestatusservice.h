@@ -38,7 +38,7 @@ class UpdateStatusService final : public QObject {
         using StateRequest = std::function<void(const CommService::UpdateStateCallback &)>;
         using VersionRequest = std::function<void(const CommService::VersionInfoCallback &)>;
 
-        UpdateStatusService(CommService &commService, ParametersStore &parametersStore, QObject *parent = nullptr);
+        UpdateStatusService(const CommService &commService, const ParametersStore &parametersStore, QObject *parent = nullptr);
         UpdateStatusService(StateRequest stateRequest, VersionRequest versionRequest, QObject *parent = nullptr);
 
         void refresh();
