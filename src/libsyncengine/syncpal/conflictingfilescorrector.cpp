@@ -102,8 +102,16 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
         return false;
     }
 
-    // Delete remote version locally
     SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
+    originalAbsolutePath = originalAbsolutePath.lexically_normal();
+
+    if (!CommonUtility::isSubDir(originalAbsolutePath, _syncPal->localPath())) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
+                                                        << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
+    // Delete remote version locally
     SyncLocalDeleteJob deleteJob(_syncPal, originalAbsolutePath);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
@@ -134,8 +142,17 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
         return false;
     }
 
+    SyncPath absoluteDestinationPath = _syncPal->localPath() / error.destinationPath();
+    absoluteDestinationPath = absoluteDestinationPath.lexically_normal();
+
+    if (!CommonUtility::isSubDir(absoluteDestinationPath, _syncPal->localPath())) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
+                                                        << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
     // Delete local version
-    SyncLocalDeleteJob deleteJob(_syncPal, _syncPal->localPath() / error.destinationPath());
+    SyncLocalDeleteJob deleteJob(_syncPal, absoluteDestinationPath);
     deleteJob.runSynchronously();
     if (deleteJob.exitInfo().code() != ExitCode::Ok) {
         return false;
