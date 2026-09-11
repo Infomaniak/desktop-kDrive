@@ -482,8 +482,11 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
 
     const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
     SyncPath nonExistingPath;
-    if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, nonExistingPath); !exitInfo)
+    if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, nonExistingPath); !exitInfo) {
+        error = "Failed to find a non-existing folder path for new sync";
+
         return exitInfo;
+    }
 
     QString errorMessage;
     if (const auto exitInfo = checkSyncNesting(syncList, Path2QStr(nonExistingPath), errorMessage); !exitInfo) {
