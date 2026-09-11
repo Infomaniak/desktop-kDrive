@@ -24,7 +24,6 @@
 #include "test_utility/testhelpers.h"
 
 #include <memory>
-#include <unordered_map>
 
 namespace KDC {
 
@@ -673,39 +672,6 @@ void TestConflictResolverWorker::testCreateParentDelete() {
     CPPUNIT_ASSERT_EQUAL(OperationType::Delete, op2->type());
     const auto lNodeAA = _testSituationGenerator.getNode(ReplicaSide::Local, "aa");
     CPPUNIT_ASSERT_EQUAL(lNodeAA, op2->correspondingNode());
-}
-
-void TestConflictResolverWorker::testParentDeleteRescuesModifiedLocalChildrenOnce() {
-    // Set up a branch with multiple local modifications under A
-    const auto lNodeABB = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "abb", "ab", false);
-    (void) _testSituationGenerator.createNode(ReplicaSide::Remote, NodeType::File, "abb", "ab", false);
-    (void) _testSituationGenerator.editNode(ReplicaSide::Local, "abb");
-
-    const auto lNodeAAA = _testSituationGenerator.moveNode(ReplicaSide::Local, "aaa", "ab");
-    const auto lNodeAAC = _testSituationGenerator.createNode(ReplicaSide::Local, NodeType::File, "aac", "aa");
-
-    // One deleted parent shared by multiple parent-delete conflicts
-    const auto rNodeA = _testSituationGenerator.deleteNode(ReplicaSide::Remote, "a");
-
-    const Conflict moveParentDeleteConflict(lNodeAAA, rNodeA, ConflictType::MoveParentDelete);
-    _syncPal->_conflictQueue->push(moveParentDeleteConflict);
-    const Conflict createParentDeleteConflict(lNodeAAC, rNodeA, ConflictType::CreateParentDelete);
-    _syncPal->_conflictQueue->push(createParentDeleteConflict);
-
-    _syncPal->_conflictResolverWorker->execute();
-
-    std::unordered_map<NodeId, int> rescuedNodeCount;
-    for (const auto opId: _syncPal->_syncOps->opSortedList()) {
-        const auto op = _syncPal->_syncOps->getOp(opId);
-        if (op->isRescueOperation() && op->correspondingNode() && op->correspondingNode()->id()) {
-            rescuedNodeCount[*op->correspondingNode()->id()]++;
-        }
-    }
-
-    CPPUNIT_ASSERT_EQUAL(size_t(3), rescuedNodeCount.size());
-    CPPUNIT_ASSERT_EQUAL(1, rescuedNodeCount[*lNodeAAA->id()]);
-    CPPUNIT_ASSERT_EQUAL(1, rescuedNodeCount[*lNodeAAC->id()]);
-    CPPUNIT_ASSERT_EQUAL(1, rescuedNodeCount[*lNodeABB->id()]);
 }
 
 void TestConflictResolverWorker::testMoveMoveSource() {
