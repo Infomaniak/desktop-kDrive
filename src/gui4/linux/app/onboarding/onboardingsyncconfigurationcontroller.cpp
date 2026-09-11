@@ -335,10 +335,9 @@ void OnboardingSyncConfigurationController::closeWithoutCommit() {
     _drafts.clear();
     _driveSnapshot.reset();
     _currentRow = -1;
-    setPage(Summary);
     _localFolderErrorText.clear();
+    // Page and presentation stay unnotified so the modal fades out unchanged; open() resets and notifies them.
     emit visibleChanged();
-    emit presentationChanged();
 }
 
 void OnboardingSyncConfigurationController::commitAndClose() {
