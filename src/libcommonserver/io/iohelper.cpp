@@ -984,8 +984,13 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     // directory of the rename target. Check if the source item exists. If it does not exist, return success.
     if (ioError == IoError::NoSuchFileOrDirectory) {
         bool sourceItemExists = true;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        const auto checkOption = PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+        const auto checkOption = PathCheckOption::Sensitive;
+#endif
         if (auto checkIfPathExistsError = IoError::Success;
-            !checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, PathCheckOption::Sensitive)) {
+            !checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, checkOption)) {
             LOGW_WARN(logger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, checkIfPathExistsError));
             return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
