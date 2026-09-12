@@ -41,25 +41,25 @@ The exact set of redistributed binaries can vary by platform:
 
 ### OpenSSL
 
-- **Version:** 3.2.4
+- **Version:** 3.6.3
 - **License:** Apache-2.0
 - **Copyright:** Copyright (c) 1998-2024 The OpenSSL Project Authors
 - **Repository:** https://www.openssl.org/
-- **Note:** Declared in `conanfile.py`. macOS uses the local `openssl-macos/3.2.4` recipe, other platforms use
-  `openssl/3.2.4`.
+- **Note:** Declared in `conanfile.py`. macOS uses the local `openssl-macos/3.6.3` recipe, other platforms use
+  `openssl/3.6.3`.
 
 ### Qt 6
 
-- **Version:** 6.2.3 / 6.8.3
+- **Version:** 6.8.3
 - **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
 - **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
 - **Repository:** https://www.qt.io/
-- **Note:** Declared in `conanfile.py`. This application is built against Qt 6.2.3. Qt is deployed with the application
+- **Note:** Declared in `conanfile.py`. This application is built against Qt 6.8.3. Qt is deployed with the application
   on supported platforms. Qt source packages are available from https://download.qt.io/
 
 ### Poco
 
-- **Version:** 1.13.3
+- **Version:** 1.15.3
 - **License:** BSL-1.0
 - **Copyright:** Copyright (c) 2006-2024, Applied Informatics Software Engineering GmbH and Contributors
 - **Repository:** https://github.com/pocoproject/poco
@@ -132,7 +132,8 @@ The exact set of redistributed binaries can vary by platform:
   contributors
 - **Original Copyright:** Copyright (c) 2009, 2013 Public Software Group e. V., Berlin, Germany
 - **Repository:** https://github.com/JuliaStrings/utf8proc
-- **Note:** Built from vendored source on Unix platforms.
+- **Note:** Built from vendored source on Unix platforms. Also a Conan-transitive dependency pulled in by Poco 1.15.x
+  (Foundation's Unicode support was unbundled onto utf8proc starting in Poco 1.15.x).
 
 ### keychain
 

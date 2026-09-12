@@ -47,6 +47,7 @@
 #include <Poco/Base64Decoder.h>
 #include <Poco/Base64Encoder.h>
 #include <Poco/StreamCopier.h>
+#include <Poco/Dynamic/Struct.h>
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
 #include <sys/statvfs.h>

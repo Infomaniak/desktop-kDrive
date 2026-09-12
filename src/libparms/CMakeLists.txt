@@ -4,7 +4,7 @@ else()
     project(libparms LANGUAGES C CXX)
 endif()
 
-find_package(Poco 1.13.3 REQUIRED Foundation)
+find_package(Poco 1.15.2 REQUIRED Foundation)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
