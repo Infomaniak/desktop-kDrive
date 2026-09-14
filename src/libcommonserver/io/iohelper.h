@@ -580,10 +580,10 @@ struct IoHelper {
 
 #if defined(KD_MACOS)
         /**
-         * @brief Check if a file with a given path is an alias. Relies on the file's metadata; does not check if the alias is
-         * valid.
+         * @brief Check if a file with a given path is a symlink or an alias. Relies on the file's metadata; does not check if the
+         * alias is valid. To distinguish between the two cases, first test whether the file is a symbolic link.
          * @param path The absolute path to the file.
-         * @param isAlias A boolean value indicating whether the file is an alias.
+         * @param isAlias A boolean value indicating whether the file is a symlink and for a Finder alias.
          * @param ioError holds the error returned when an underlying OS API call fails.
          * @return true if the process succeeds, false otherwise.
          */

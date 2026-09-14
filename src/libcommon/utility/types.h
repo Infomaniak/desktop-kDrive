@@ -280,6 +280,7 @@ enum class IoError {
     CrossDeviceLink,
     FileOrDirectoryCorrupted,
     TooManySymbolicLinkLevels,
+    CorruptedLink,
     Unknown,
     EnumEnd
 };

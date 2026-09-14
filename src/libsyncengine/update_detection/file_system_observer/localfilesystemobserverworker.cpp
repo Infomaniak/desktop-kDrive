@@ -766,6 +766,12 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             dirIt.disableRecursionPending();
             continue;
         }
+
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+            dirIt.disableRecursionPending();
+            continue;
+        }
+
         if (itemType.ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_DEBUG(_logger, L"getItemType failed for item: " << Utility::formatIoError(absolutePath, itemType.ioError)
                                                                          << L". Blacklisting it temporarily");

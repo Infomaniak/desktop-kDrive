@@ -181,6 +181,8 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "File or directory corrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "Too many symbolic link levels";
+        case IoError::CorruptedLink:
+            return "Corrupted link";
         case IoError::Unknown:
         default:
             return "Unknown";
@@ -400,18 +402,18 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 
     if (isSymlink) {
+        itemType.nodeType = NodeType::File;
+        itemType.linkType = LinkType::Symlink;
+
         itemType.targetPath = _readSymlink(path, ec);
         itemType.ioError = IoHelper::stdError2ioError(ec);
         if (itemType.ioError != IoError::Success) {
-            const bool success = isExpectedError(itemType.ioError);
+            const bool success = isExpectedError(itemType.ioError) || itemType.ioError == IoError::TooManySymbolicLinkLevels;
             if (!success) {
                 LOGW_WARN(logger(), L"Failed to read symlink: " << Utility::formatStdError(path, ec));
             }
             return success;
         }
-
-        itemType.nodeType = NodeType::File;
-        itemType.linkType = LinkType::Symlink;
 
         // Get target type
         FileStat filestat;
@@ -421,7 +423,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         }
 
         if (itemType.ioError != IoError::Success) {
-            return isExpectedError(itemType.ioError);
+            return isExpectedError(itemType.ioError) || itemType.ioError == IoError::TooManySymbolicLinkLevels;
         }
 
         itemType.targetType = filestat.nodeType;
@@ -441,19 +443,17 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 
     if (isAlias) {
-        // !!! isAlias is true for a symlink and for a Finder alias !!!
-        if (!_readAlias(path, itemType.targetPath, itemType.ioError)) {
-            LOGW_WARN(logger(),
-                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
-
-            return false;
-        }
-
         itemType.nodeType = NodeType::File;
         itemType.linkType = LinkType::FinderAlias;
 
+        if (!_readAlias(path, itemType.targetPath, itemType.ioError)) {
+            LOGW_WARN(logger(),
+                      L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
+            return false;
+        }
+
         if (itemType.ioError != IoError::Success) {
-            return isExpectedError(itemType.ioError);
+            return isExpectedError(itemType.ioError) || itemType.ioError == IoError::CorruptedLink;
         }
 
         return _setTargetType(itemType);
