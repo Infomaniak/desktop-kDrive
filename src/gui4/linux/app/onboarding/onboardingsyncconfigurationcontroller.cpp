@@ -192,18 +192,25 @@ void OnboardingSyncConfigurationController::applyCustomFolder(const QUrl &folder
 
 void OnboardingSyncConfigurationController::returnToDefaultFolder() {
     if (_busy) return;
-    Draft *const draft = currentDraft();
-    if (!draft || draft->config.defaultLocalPath.isEmpty()) return;
-    // Another drive may have taken that folder while this one sat on a custom path.
-    if (conflictsWithAnotherDraft(draft->config.defaultLocalPath, _currentRow)) {
+    const Draft *const draft = currentDraft();
+    if (!draft) return;
+
+    const auto availableDrive = _appCache.availableDrive(draft->key);
+    if (!availableDrive) {
         setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
         return;
     }
-    draft->config.localPath = draft->config.defaultLocalPath;
-    draft->config.usesDefaultLocalPath = true;
+
+    setBusy(true);
     clearLocalFolderError();
-    refreshSummaryModel();
-    emit presentationChanged();
+    const AvailableDriveKey key = draft->key;
+    const uint64_t generation = ++_requestGeneration;
+    const QPointer self(this);
+    _commService.requestFindGoodPathForNewSync(CommonUtility::str2CommString(availableDrive->name()),
+                                               [self, key, generation](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                                                   if (!self || generation != self->_requestGeneration) return;
+                                                   self->handleDefaultFolderProposal(key, generation, exitInfo, result);
+                                               });
 }
 
 void OnboardingSyncConfigurationController::selectFolders() {
@@ -234,6 +241,59 @@ bool OnboardingSyncConfigurationController::conflictsWithAnotherDraft(const QStr
         if (localPathsOverlap(path, _drafts[static_cast<std::size_t>(row)].config.localPath)) return true;
     }
     return false;
+}
+
+// Resolves collisions with the other selected drives. A client-derived candidate is checked by the server because the
+// fresh proposal only vouches for the exact path returned by `UTILITY_FINDGOODPATHFORNEWSYNC`.
+void OnboardingSyncConfigurationController::handleDefaultFolderProposal(const AvailableDriveKey &key, const uint64_t generation,
+                                                                        const ExitInfo &exitInfo, const GoodPathResult &result) {
+    if (generation != _requestGeneration) return;
+    if (!exitInfo) {
+        finishDefaultFolderRequest(key, generation, {});
+        return;
+    }
+
+    const QString serverPath = QDir::cleanPath(Path2QStr(result.goodPath));
+    const QString defaultPath = makeUniqueLocalPath(
+            serverPath, [this](const QString &candidate) { return conflictsWithAnotherDraft(candidate, _currentRow); });
+    if (defaultPath.isEmpty() || defaultPath == serverPath) {
+        finishDefaultFolderRequest(key, generation, defaultPath);
+        return;
+    }
+
+    const QPointer self(this);
+    _commService.requestIsPathValidForNewSync(QStr2Path(defaultPath), SyncConfiguration::Classic,
+                                              [self, key, generation, defaultPath](const ExitInfo &checkInfo, const bool valid) {
+                                                  if (!self || generation != self->_requestGeneration) return;
+                                                  self->finishDefaultFolderRequest(key, generation,
+                                                                                   checkInfo && valid ? defaultPath : QString{});
+                                              });
+}
+
+// Commits the refreshed default atomically. Failures leave the user's current custom folder and the previous default
+// untouched, so retrying does not destroy a valid draft.
+void OnboardingSyncConfigurationController::finishDefaultFolderRequest(const AvailableDriveKey &key, const uint64_t generation,
+                                                                       const QString &defaultPath) {
+    if (generation != _requestGeneration) return;
+
+    Draft *const draft = currentDraft();
+    if (!draft || draft->key != key) {
+        setBusy(false);
+        return;
+    }
+
+    setBusy(false);
+    if (defaultPath.isEmpty()) {
+        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+        return;
+    }
+
+    draft->config.defaultLocalPath = defaultPath;
+    draft->config.localPath = defaultPath;
+    draft->config.usesDefaultLocalPath = true;
+    clearLocalFolderError();
+    refreshSummaryModel();
+    emit presentationChanged();
 }
 
 void OnboardingSyncConfigurationController::buildDrafts() {
