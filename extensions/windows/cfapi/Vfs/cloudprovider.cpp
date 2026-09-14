@@ -386,7 +386,7 @@ bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *fi
     }
 
     if (updateStatus) {
-        if (!cancelFetchData(fetchInfo._connectionKey, fetchInfo._transferKey, fetchInfo._length)) {
+        if (!cancelFetchData(fetchInfo._connectionKey, fetchInfo._transferKey, {0}, fetchInfo._length)) {
             TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", filePath);
             return false;
         }
@@ -435,7 +435,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
 
     if (callbackParameters->FetchData.Flags & CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
         if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
-                             callbackParameters->FetchData.RequiredFileOffset)) {
+                             callbackParameters->FetchData.RequiredFileOffset, callbackParameters->FetchData.RequiredLength)) {
             TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
         }
         return;
@@ -466,7 +466,8 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         } catch (winrt::hresult_error const &ex) {
             TRACE_WARNING(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
-                                 callbackParameters->FetchData.RequiredFileOffset)) {
+                                 callbackParameters->FetchData.RequiredFileOffset,
+                                 callbackParameters->FetchData.RequiredLength)) {
                 TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
             }
         }
@@ -496,7 +497,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
     if (!PipeClient::getInstance().sendMessageWithoutAnswer(L"MAKE_AVAILABLE_LOCALLY_DIRECT", fullPath.wstring())) {
         TRACE_ERROR(L"Error in Utilities::writeMessage!");
         if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
-                             callbackParameters->FetchData.RequiredFileOffset)) {
+                             callbackParameters->FetchData.RequiredFileOffset, callbackParameters->FetchData.RequiredLength)) {
             TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
         }
     }
@@ -661,7 +662,7 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
 }
 
 bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
-                                    LARGE_INTEGER requiredFileOffset) {
+                                    LARGE_INTEGER requiredFileOffset, LARGE_INTEGER requiredFileLength) {
     // Update transfer status
     CF_OPERATION_INFO opInfo = {0};
     CF_OPERATION_PARAMETERS opParams = {0};
@@ -673,8 +674,8 @@ bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER
     opParams.ParamSize = CF_SIZE_OF_OP_PARAM(TransferData);
     opParams.TransferData.CompletionStatus = STATUS_UNSUCCESSFUL;
     opParams.TransferData.Buffer = nullptr;
-    opParams.TransferData.Offset = {0}; // Cancel entire transfer
-    opParams.TransferData.Length = requiredFileOffset;
+    opParams.TransferData.Offset = requiredFileOffset;
+    opParams.TransferData.Length = requiredFileLength;
 
     try {
         winrt::check_hresult(CfExecute(&opInfo, &opParams));
