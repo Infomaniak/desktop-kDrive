@@ -105,7 +105,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
     originalAbsolutePath = originalAbsolutePath.lexically_normal();
 
-    if (!CommonUtility::isSubDir(_syncPal->localPath(), originalAbsolutePath)) {
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), originalAbsolutePath) || originalAbsolutePath == _syncPal->localPath()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.destinationPath()));
         return false;
@@ -119,7 +119,14 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     }
 
     // Rename the local version
-    LocalMoveJob renameJob(_syncPal->localPath() / error.destinationPath(), originalAbsolutePath);
+    const SyncPath sourceAbsoluteLocalPath = (_syncPal->localPath() / error.path()).lexically_normal();
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), sourceAbsoluteLocalPath) ||
+        sourceAbsoluteLocalPath == _syncPal->localPath()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error path in ConflictingFilesCorrector::keepLocalVersion: "
+                                                        << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+    LocalMoveJob renameJob(sourceAbsoluteLocalPath, originalAbsolutePath);
     renameJob.runSynchronously();
     if (renameJob.exitInfo().code() != ExitCode::Ok) {
         return false;
@@ -142,13 +149,12 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
         return false;
     }
 
-    SyncPath absoluteDestinationPath = _syncPal->localPath() / error.destinationPath();
-    absoluteDestinationPath = absoluteDestinationPath.lexically_normal();
-
-
-    if (!CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath)) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
-                                                        << Utility::formatSyncPath(error.destinationPath()));
+    const SyncPath absoluteDestinationPath = (_syncPal->localPath() / error.destinationPath()).lexically_normal();
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath) ||
+        absoluteDestinationPath == _syncPal->localPath()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
+                          << Utility::formatSyncPath(error.destinationPath()));
         return false;
     }
 
