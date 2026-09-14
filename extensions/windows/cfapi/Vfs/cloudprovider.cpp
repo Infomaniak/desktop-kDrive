@@ -448,7 +448,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
     }
 
     if (callbackParameters->FetchData.RequiredFileOffset.QuadPart != 0) {
-        TRACE_DEBUG(L"Fetch already in progress: path='%ls', offset=%lld", fullPath.wstring().c_str(),
+        TRACE_DEBUG(L"Restarting hydration: path='%ls', offset=%lld", fullPath.wstring().c_str(),
                     callbackParameters->FetchData.RequiredFileOffset.QuadPart);
 
         // Discard any remaining data from a previous partial hydration
