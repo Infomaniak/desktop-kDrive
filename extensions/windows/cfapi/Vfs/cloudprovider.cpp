@@ -422,6 +422,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
     ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
     if (!providerInfo) {
         TRACE_ERROR(L"Empty CallbackContext");
+        return;
     }
 
     std::filesystem::path fullPath =
