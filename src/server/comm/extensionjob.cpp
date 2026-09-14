@@ -332,10 +332,10 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
             continue;
         }
 
+        PinState ps{PinState::Unknown};
 #if defined(KD_MACOS)
         // Not done in Windows case: triggers a hydration
         // Get pin state
-        PinState ps{PinState::Unknown};
         if (const auto exitInfo = getPinState(fileData, ps); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::getPinState - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
@@ -350,13 +350,15 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
                 continue;
             }
         }
+#else
+        ps = PinState::OnlineOnly;
 #endif
 
         if (ExitInfo exitInfo = addDownloadJob(fileData, parentFolder); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
 
-            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, exitInfo);
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, ps, exitInfo);
                 !cancelHydrateExitInfo) {
                 LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
                                                                 << Utility::formatSyncPath(filePath) << L": "
