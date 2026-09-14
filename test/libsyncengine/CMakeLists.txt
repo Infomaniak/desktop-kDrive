@@ -76,6 +76,7 @@ set(testsyncengine_SRCS
         integration/testintegration_basics.cpp
         integration/testintegration_conflicts.cpp
         integration/testintegration_nodeid_reuse.cpp
+        integration/testintegration_move_delete_rename.h integration/testintegration_move_delete_rename.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
