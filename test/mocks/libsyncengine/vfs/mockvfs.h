@@ -144,7 +144,7 @@ class MockVfs : public T {
         }
         void setMockDehydrate(std::function<void(const SyncPath &)> dehydrate) { _dehydrate = dehydrate; }
         void setMockHydrate(std::function<void(const SyncPath &)> hydrate) { _hydrate = hydrate; }
-        void setMockCancelHydrate(std::function<void(const SyncPath &, ExitInfo)> cancelHydrate) {
+        void setMockCancelHydrate(std::function<void(const SyncPath &, const ExitInfo &)> cancelHydrate) {
             _cancelHydrate = cancelHydrate;
         }
 
@@ -195,6 +195,6 @@ class MockVfs : public T {
         std::function<void(const SyncPath &)> _clearFileAttributes;
         std::function<void(const SyncPath &)> _dehydrate;
         std::function<void(const SyncPath &)> _hydrate;
-        std::function<void(const SyncPath &)> _cancelHydrate;
+        std::function<void(const SyncPath &, const ExitInfo &)> _cancelHydrate;
 };
 } // namespace KDC
