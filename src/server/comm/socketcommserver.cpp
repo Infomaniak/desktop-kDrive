@@ -368,11 +368,10 @@ void SocketCommServer::execute() {
             continue;
         }
 
-#ifndef NDEBUG
+#ifdef NDEBUG
         // All TLS material in the keychain (server cert, client cert, client private key) has been
         // consumed: the handshake verified the client, and the client already pinned the server cert
         // before connecting. Erase them to avoid leaving sensitive material accessible.
-#ifdef NDEBUG
         if (const auto keychain = KeyChainManager::instance()) {
             (void) keychain->deleteData(std::string(certKeychainKey));
             (void) keychain->deleteData(std::string(clientCertKeychainKey));

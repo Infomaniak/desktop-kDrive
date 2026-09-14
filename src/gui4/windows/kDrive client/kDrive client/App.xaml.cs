@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive
             services.AddSingleton<IKeychainStore, WindowsKeychainStore>();
             services.AddSingleton<IServerCommClient, TcpServerCommClient>();
             services.AddSingleton<IServerCommService, ServerCommService>();
-            services.AddSingleton<AppStateModel>();
+            services.AddSingleton<AppStateService>();
             services.AddSingleton<UserDefaults>();
             services.AddSingleton<TrayIconManager>();
             services.AddSingleton<NotificationManager>();

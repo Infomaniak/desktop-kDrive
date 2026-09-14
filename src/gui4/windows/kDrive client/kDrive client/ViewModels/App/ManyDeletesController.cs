@@ -34,6 +34,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         private List<string> _filesPaths;
         private int _totalFilesCount;
+        private int _truncatedFilesCount;
 
         public ManyDeletesNotification(ManyDeletesInfo manyDeletesInfo)
         {
@@ -44,6 +45,7 @@ namespace Infomaniak.kDrive.ViewModels
             NotificationType = manyDeletesInfo.NotificationType;
             _filesPaths = Cap(manyDeletesInfo.FilesPaths.Distinct());
             _totalFilesCount = manyDeletesInfo.FilesPaths.Count;
+            _truncatedFilesCount = Math.Max(0, _totalFilesCount - _filesPaths.Count);
         }
         public Sync? AssociatedSync { get; }
 
@@ -60,6 +62,11 @@ namespace Infomaniak.kDrive.ViewModels
         }
 
         public bool IsTruncated => _filesPaths.Count < TotalFilesCount;
+        public int TruncatedFilesCount
+        {
+            get => _truncatedFilesCount;
+            private set => SetPropertyInUIThread(ref _truncatedFilesCount, value);
+        }
 
         public void Merge(ManyDeletesInfo manyDeletesInfo)
         {
@@ -67,6 +74,7 @@ namespace Infomaniak.kDrive.ViewModels
 
             SetPropertyInUIThread(ref _filesPaths, Cap(_filesPaths.Concat(addedPaths)), nameof(FilesPaths));
             TotalFilesCount += addedPaths.Count;
+            TruncatedFilesCount = Math.Max(0, _totalFilesCount - _filesPaths.Count);
             OnPropertyChangedInUIThread(nameof(IsTruncated));
         }
 
@@ -270,9 +278,12 @@ namespace Infomaniak.kDrive.ViewModels
                 }
                 else if (userAction == ManyDeletesUserAction.IgnoreNext)
                 {
-                    if (!await ViewModel.Settings.ChangeNotifyBeforeDelete(false))
+                    var appStateService = App.ServiceProvider.GetRequiredService<AppStateService>();
+
+
+                    if (!await appStateService.SetNotifyAfterDelete(false))
                     {
-                        Logger.Log(Logger.Level.Warning, "Failed to apply NotifyBeforeDelete preferences");
+                        Logger.Log(Logger.Level.Warning, "Failed to apply NotifyAfterDelete preferences");
                     }
 
                     _queue.RemoveAll(queued => !queued.IsHardLimit);
