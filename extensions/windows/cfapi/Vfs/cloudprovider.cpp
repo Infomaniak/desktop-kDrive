@@ -269,25 +269,6 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
     fetchInfo.setUpdating(true);
     lck.unlock();
 
-    // Discard any remaining data from a previous partial hydration
-    if (fetchInfo._offset.QuadPart == 0) {
-        TRACE_DEBUG(L"Discarding any remaining data from a previous partial hydration: path='%ls'", filePath);
-        CF_OPERATION_INFO opInfo = {0};
-        CF_OPERATION_PARAMETERS opParams = {0};
-        opInfo.StructSize = sizeof(opInfo);
-        opInfo.Type = CF_OPERATION_TYPE_RESTART_HYDRATION;
-        opInfo.ConnectionKey = fetchInfo._connectionKey;
-        opInfo.TransferKey = fetchInfo._transferKey;
-        opParams.ParamSize = CF_SIZE_OF_OP_PARAM(RestartHydration);
-        opParams.RestartHydration.Flags = CF_OPERATION_RESTART_HYDRATION_FLAG_MARK_IN_SYNC;
-
-        try {
-            winrt::check_hresult(CfExecute(&opInfo, &opParams));
-        } catch (winrt::hresult_error const &ex) {
-            TRACE_WARNING(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
-        }
-    }
-
     // Fetch data from temporary file to destination file
     bool res = true;
     std::ifstream fromFilePathStream(fromFilePath, std::ios::binary);
@@ -460,6 +441,29 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         if (providerInfo->_fetchMap.find(fullPath.wstring()) != providerInfo->_fetchMap.end()) {
             TRACE_DEBUG(L"Fetch already in progress: path='%ls'", fullPath.wstring().c_str());
             return;
+        }
+
+        if (callbackParameters->FetchData.RequiredFileOffset.QuadPart != 0) {
+            TRACE_DEBUG(L"Fetch already in progress: path='%ls', offset=%lld", fullPath.wstring().c_str(),
+                        callbackParameters->FetchData.RequiredFileOffset);
+
+            // Discard any remaining data from a previous partial hydration
+            CF_OPERATION_INFO opInfo = {0};
+            CF_OPERATION_PARAMETERS opParams = {0};
+            opInfo.StructSize = sizeof(opInfo);
+            opInfo.Type = CF_OPERATION_TYPE_RESTART_HYDRATION;
+            opInfo.ConnectionKey = callbackInfo->ConnectionKey;
+            opInfo.TransferKey = callbackInfo->TransferKey;
+            opParams.ParamSize = CF_SIZE_OF_OP_PARAM(RestartHydration);
+            opParams.RestartHydration.Flags = CF_OPERATION_RESTART_HYDRATION_FLAG_MARK_IN_SYNC;
+
+            try {
+                winrt::check_hresult(CfExecute(&opInfo, &opParams));
+            } catch (winrt::hresult_error const &ex) {
+                TRACE_WARNING(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            }
+
+            return; // The api will recall us with a 0 offset
         }
 
         // Store fetch info
