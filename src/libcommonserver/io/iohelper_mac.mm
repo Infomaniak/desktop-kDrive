@@ -165,11 +165,9 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     if (bookmarkRef == nil) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            if (ioError != IoError::Unknown) {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-            } else {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << formatCFError(aliasPath, error));
-            }
+            LOGW_DEBUG(logger(), L"Error in CFURLCreateBookmarkDataFromFile: "
+                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                         : Utility::formatIoError(aliasPath, ioError)));
             CFRelease(error);
         } else {
             // Should not happen
@@ -191,21 +189,22 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
+        IoError targetIoError = IoError::Success;
         if (error) {
-            ioError = nsError2ioError((__bridge NSError *) error);
-            if (ioError != IoError::Unknown) {
-                LOGW_WARN(logger(),
-                          L"Error in CFURLCreateByResolvingBookmarkData: " << Utility::formatIoError(aliasPath, ioError));
-            } else {
-                LOGW_WARN(logger(), L"Error in CFURLCreateByResolvingBookmarkData: " << formatCFError(aliasPath, error));
-            }
+            targetIoError = nsError2ioError((__bridge NSError *) error);
+            LOGW_DEBUG(logger(),
+                       L"Error in CFURLCreateByResolvingBookmarkData: "
+                               << (targetIoError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                     : Utility::formatIoError(aliasPath, targetIoError)));
             CFRelease(error);
         } else {
             // Should not happen
             assert(false);
-            ioError = IoError::Unknown;
+            targetIoError = IoError::Unknown;
         }
-        return isExpectedError(ioError) || ioError == IoError::CorruptedLink;
+
+        if (targetIoError == IoError::CorruptedLink) ioError = targetIoError;
+        return true;
     }
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
