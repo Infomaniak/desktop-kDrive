@@ -203,7 +203,8 @@ SyncPath getUserAutostartDir() {
 
 bool Utility::hasLaunchOnStartup(const std::string &appName) {
     const auto desktopFileLocation = getUserAutostartDir() / (appName + ".desktop");
-    return std::filesystem::exists(desktopFileLocation);
+    std::error_code ec;
+    return std::filesystem::exists(desktopFileLocation, ec);
 }
 
 bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &guiName, bool enable) {
@@ -211,7 +212,9 @@ bool Utility::setLaunchOnStartup(const std::string &appName, const std::string &
     const auto userAutoStartFilePath = userAutoStartDirPath / (appName + ".desktop");
     if (enable) {
         IoError ioError = IoError::Unknown;
-        if (!std::filesystem::exists(userAutoStartDirPath) && !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
+        std::error_code ec;
+        if (!std::filesystem::exists(userAutoStartDirPath, ec) &&
+            !IoHelper::createDirectory(userAutoStartDirPath, false, ioError)) {
             LOGW_WARN(logger(), L"Could not create autostart folder: " << Utility::formatIoError(userAutoStartDirPath, ioError));
             return false;
         }

@@ -66,7 +66,7 @@ class SyncFileItem {
         int64_t size() const { return _size; }
         void setSize(const int64_t newSize) { _size = newSize; }
         int progress() const { return _progress; }
-        void setProgress(const int newProgress) { _progress = newProgress; }
+        void setProgress(const int16_t newProgress) { _progress = newProgress; }
         UniqueId operationId() const { return _operationId; }
         void setOperationId(const UniqueId newOperationId) { _operationId = newOperationId; }
         SyncTime modTime() const { return _modTime; }

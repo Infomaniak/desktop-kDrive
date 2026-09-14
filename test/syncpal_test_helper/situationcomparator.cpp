@@ -59,17 +59,17 @@ void flatten(const Poco::JSON::Object::Ptr &obj, const SyncPath &parentPath, Sit
 }
 
 void flatten(const Poco::JSON::Array::Ptr &arr, const SyncPath &parentPath, SituationMap &out) {
-    for (size_t i = 0; i < arr->size(); ++i) {
-        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
+    for (uint32_t i = 0; i < arr->size(); ++i) {
+        const auto &itemObj = arr->getObject(i);
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
 
-        const std::string typeStr = itemObj->optValue<std::string>("type", "File");
+        const auto typeStr = itemObj->optValue<std::string>("type", "File");
         const NodeType type = (typeStr == "Directory") ? NodeType::Directory : NodeType::File;
-        const std::string nameStr = itemObj->optValue<std::string>("name", "");
+        const auto nameStr = itemObj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
 
         const SyncPath path = parentPath / Str2SyncName(nameStr);
-        const int64_t size = itemObj->optValue<int64_t>(
+        const auto size = itemObj->optValue<int64_t>(
                 "size", type == NodeType::File ? testhelpers::defaultFileSize : testhelpers::defaultDirSize);
         out.add(path, {type, size});
 
@@ -235,13 +235,15 @@ SituationMap SituationComparator::getLocalSituation() const {
 
     DirectoryEntry entry;
     bool endOfDirectory = false;
-    bool exceptionOccurred = false;
-
     while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         std::error_code ec;
         const SyncPath relativePath = std::filesystem::relative(entry.path(), rootPath, ec);
-        if (ec || relativePath.empty()) {
-            exceptionOccurred = true;
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::relative " << Utility::formatStdError(rootPath, ec));
+            continue;
+        }
+        if (relativePath.empty()) {
             continue;
         }
 
@@ -249,29 +251,42 @@ SituationMap SituationComparator::getLocalSituation() const {
         if (relativePath.filename().string().starts_with("tmpFile_")) continue;
         if (relativePath.filename().string().starts_with(".kDrive-cache")) continue;
 
-        SituationMap::ItemInfo info;
-        if (entry.is_directory(ec)) {
-            info.type = NodeType::Directory;
-            info.size = testhelpers::defaultDirSize;
-        } else if (entry.is_regular_file(ec)) {
-            info.type = NodeType::File;
-            info.size = static_cast<int64_t>(entry.file_size(ec));
-        } else {
-            continue; // Skip symlinks / special files.
+        const auto isDirectory = entry.is_directory(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::directory_entry::is_directory " << Utility::formatStdError(entry.path(), ec));
+            continue;
         }
 
-        if (ec) {
-            exceptionOccurred = true;
+        const auto isRegularFile = entry.is_regular_file(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
+                                                            << Utility::formatStdError(entry.path(), ec));
             continue;
+        }
+
+        SituationMap::ItemInfo info;
+        if (isDirectory) {
+            info.type = NodeType::Directory;
+            info.size = testhelpers::defaultDirSize;
+        } else if (isRegularFile) {
+            info.type = NodeType::File;
+            const auto fileSize = entry.file_size(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in std::filesystem::directory_entry::file_size " << Utility::formatStdError(entry.path(), ec));
+                continue;
+            }
+            info.size = static_cast<int64_t>(fileSize);
+        } else {
+            continue; // Skip symlinks / special files.
         }
 
         situationMap.add(relativePath, info);
     }
 
-    const auto exitInfo = IoHelper::checkDirectoryIteratorInterruption(endOfDirectory, ioError, entry, exceptionOccurred);
-    if (!exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Directory iteration did not complete cleanly for local path: " << rootPath.string());
+    if (ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in DirectoryIterator for " << Utility::formatIoError(rootPath, ioError));
     }
 
     return situationMap;
@@ -289,7 +304,8 @@ bool SituationComparator::compareRemote(const Situation &expectedRemoteSituation
     return expected == actual;
 }
 
-bool SituationComparator::compareSituation(const Situation &expectedLocalSituation, const Situation &expectedRemoteSituation) const {
+bool SituationComparator::compareSituation(const Situation &expectedLocalSituation,
+                                           const Situation &expectedRemoteSituation) const {
     return compareLocal(expectedLocalSituation) && compareRemote(expectedRemoteSituation);
 }
 

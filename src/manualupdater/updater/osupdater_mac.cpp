@@ -83,7 +83,8 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
         return false;
     }
 
-    if (!std::filesystem::exists(SyncPath(pkgPath.toStdString()))) {
+    std::error_code ec;
+    if (!std::filesystem::exists(SyncPath(pkgPath.toStdString()), ec) || ec.value()) {
         outMessage = QObject::tr("Package file not found after download.");
         return false;
     }
@@ -94,13 +95,13 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
     }
 
     progressCallback(InstallStep::Preparing, QObject::tr("Removing old application..."));
-    if (std::filesystem::exists("/Applications/kDrive/kDrive Uninstaller.app")) {
+    if (std::filesystem::exists("/Applications/kDrive/kDrive Uninstaller.app", ec) && !ec.value()) {
         (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive Uninstaller.app"));
     }
-    if (std::filesystem::exists("/Applications/kDrive/kDrive.app")) {
+    if (std::filesystem::exists("/Applications/kDrive/kDrive.app", ec) && !ec.value()) {
         (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive/kDrive.app"));
     }
-    if (std::filesystem::exists("/Applications/kDrive")) {
+    if (std::filesystem::exists("/Applications/kDrive", ec) && !ec.value()) {
         (void) runOsascriptDelete(QStringLiteral("/Applications/kDrive"));
     }
 

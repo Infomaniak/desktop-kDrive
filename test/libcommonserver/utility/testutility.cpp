@@ -486,6 +486,7 @@ void TestUtility::testTryCreateTmpDir() {
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
     }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp dir but a directory already exist with the same name
@@ -528,6 +529,7 @@ void TestUtility::testTryCreateTmpFile() {
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
     }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp file but a file already exist with the same name but different capitalization.

@@ -55,6 +55,7 @@ static constexpr std::string_view pinStateExcluded("E");
 } // namespace litesync_attrs
 #endif
 
+class CacheDirectory;
 struct FileStat;
 
 struct IoHelper {
@@ -88,9 +89,7 @@ struct IoHelper {
             EnumEnd
         };
 
-        static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
-        static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
-                                                           bool directoryIterationException = false);
+        static ExitInfo directoryIteratorExitCode(const IoError ioError);
 
         IoHelper() = default;
 
@@ -309,6 +308,17 @@ struct IoHelper {
          * @return true if no unexpected error occurred, false otherwise.
          */
         static bool deleteItem(const SyncPath &path) noexcept;
+
+        //! Remove an item located under the specified path.
+        //! If the function fails, the item is left unmodified and an error ExitInfo is returned.
+        //! If it succeeds, the item is removed from its original path and ExitCode::Ok is returned.
+        /*!
+         \param path is the file system path of the item to remove.
+         \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
+         being deleted.
+         \return ExitInfo.
+         */
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.

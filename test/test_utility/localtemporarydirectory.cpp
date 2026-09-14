@@ -45,7 +45,7 @@ AbstractLocalTemporaryDirectory::~AbstractLocalTemporaryDirectory() {
     DirectoryEntry entry;
     ioError = IoError::Success;
     bool endOfDirectory = false;
-    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         (void) IoHelper::unlock(entry.path());
         (void) IoHelper::setRights(entry.path(), true, true, true, ioError);
     }

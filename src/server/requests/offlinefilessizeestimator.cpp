@@ -37,11 +37,26 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
         DirectoryEntry entry;
         bool endOfDir = false;
         while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-            if (entry.is_symlink() || entry.is_directory()) continue;
+            std::error_code ec;
+            const auto isSymlink = entry.is_symlink(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+                continue; // We simply ignore the file.
+            }
+
+            const auto isDirectory = entry.is_directory(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_directory "
+                                                                << Utility::formatStdError(entry.path(), ec));
+                continue; // We simply ignore the file.
+            }
+
+            if (isSymlink || isDirectory) continue;
 
             VfsStatus vfsStatus;
             if (const auto exitInfo = syncPal->vfs()->status(entry.path(), vfsStatus); !exitInfo) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(),
+                LOGW_WARN(Log::instance()->getLogger(),
                           L"Failed to get VFS status for file " << Utility::formatSyncPath(entry.path()));
                 continue; // We simply ignore the file.
             }
@@ -49,16 +64,20 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
 
             uint64_t entrySize = 0;
             if (!IoHelper::getFileSize(entry.path(), entrySize, ioError) || ioError != IoError::Success) {
-                LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for "
-                                                                     << Utility::formatSyncPath(entry.path()) << L" - "
-                                                                     << Utility::formatIoError(ioError));
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getFileSize for "
+                                                                << Utility::formatSyncPath(entry.path()) << L" - "
+                                                                << Utility::formatIoError(ioError));
                 continue; // We simply ignore the file.
             }
 
             _offlineFilesTotalSize += entrySize;
         }
 
-        if (!endOfDir || ioError == IoError::InvalidDirectoryIterator) return ExitCode::Unknown;
+        if (ioError != IoError::Success) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in DirectoryIterator for " << Utility::formatIoError(basePath, ioError));
+            return IoHelper::directoryIteratorExitCode(ioError);
+        }
     }
     return ExitCode::Ok;
 }

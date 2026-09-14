@@ -40,10 +40,16 @@ void TestIo::testCheckDirectoryIterator() {
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
     // Check that the directory iterator returns an error when the path does not exist
     {
-        IoError error;
-        const IoHelper::DirectoryIterator it("C:\\nonexistingpath", false, error);
+        IoError error = IoError::Unknown;
+        IoHelper::DirectoryIterator it("C:\\nonexistingpath", false, error);
 
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, error);
+
+        DirectoryEntry entry;
+        bool endOfDirectory = false;
+        error = IoError::Unknown;
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidDirectoryIterator, error);
     }
 
     // Check that the directory iterator returns an error when the path syntax is invalid
