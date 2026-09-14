@@ -384,11 +384,9 @@ bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *fi
         providerInfo->_cancelFetchCV.wait(lck);
     }
 
-    if (updateStatus) {
-        if (!cancelFetchData(fetchInfo._connectionKey, fetchInfo._transferKey, {0}, fetchInfo._length, status)) {
-            TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", filePath);
-            return false;
-        }
+    if (updateStatus && !cancelFetchData(fetchInfo._connectionKey, fetchInfo._transferKey, {0}, fetchInfo._length, status)) {
+        TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", filePath);
+        return false;
     }
 
     providerInfo->_fetchMap.erase(filePath);

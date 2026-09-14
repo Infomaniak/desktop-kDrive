@@ -474,7 +474,7 @@ ExitInfo VfsMac::updateFetchStatus(const SyncPath &absolutePath, const std::stri
     return ExitCode::Ok;
 }
 
-void VfsMac::cancelHydrate(const SyncPath &absoluteFilepath, [[maybe_unused]] ExitInfo exitInfo) {
+void VfsMac::cancelHydrate(const SyncPath &absoluteFilepath, [[maybe_unused]] const ExitInfo &exitInfo) {
     _connector->vfsCancelHydrate(absoluteFilepath);
 }
 
