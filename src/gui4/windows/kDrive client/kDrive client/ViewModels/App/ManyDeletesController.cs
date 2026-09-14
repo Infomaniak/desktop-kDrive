@@ -186,13 +186,14 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task RunDisplayLoop(Func<ManyDeletesNotification, Task<ManyDeletesUserAction?>> showDialogAsync)
         {
             if (!await _displaySemaphore.WaitAsync(0))
-                return; // Another loop is already running
+                return;
 
             try
             {
                 while (CurrentManyDeleteNotification is ManyDeletesNotification notification)
                 {
                     _displayed = notification;
+
                     ManyDeletesUserAction? action;
                     try
                     {
@@ -205,10 +206,13 @@ namespace Infomaniak.kDrive.ViewModels
                     }
 
                     if (action is null)
-                        return; // The dialog could not be shown; it will be retried later.
+                    {
+                        AppModel.UIThreadDispatcher.TryEnqueue(() => _ = RetryAsync(showDialogAsync));
+                        return;
+                    }
 
                     if (action == ManyDeletesUserAction.Dismissed)
-                        continue; // Superseded by another notification, nothing to acknowledge.
+                        continue;
 
                     if (!await AcknowledgeManyDeletes(notification, action.Value))
                         return;
@@ -218,6 +222,13 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 _displaySemaphore.Release();
             }
+        }
+        async Task RetryAsync(Func<ManyDeletesNotification, Task<ManyDeletesUserAction?>> showDialogAsync)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            AppModel.UIThreadDispatcher.TryEnqueue(
+                () => _ = RunDisplayLoop(showDialogAsync));
         }
 
         public void AddOrMergeManyDeletes(ManyDeletesInfo manyDeletesInfo)
