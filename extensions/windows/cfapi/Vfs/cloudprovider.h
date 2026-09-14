@@ -92,7 +92,8 @@ class CloudProvider {
 
         static bool addFolderToSearchIndexer(const PCWSTR folder);
         static bool cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
-                                    LARGE_INTEGER requiredFileOffset, LARGE_INTEGER requiredFileLength, NTSTATUS status = STATUS_UNSUCCESSFUL);
+                                    const LARGE_INTEGER &requiredFileOffset, const LARGE_INTEGER &requiredFileLength,
+                                    NTSTATUS status = STATUS_UNSUCCESSFUL);
         static void restartHydration(const std::filesystem::path &fullPath, const CF_CALLBACK_PARAMETERS &callbackParameters,
                                      const CF_CALLBACK_INFO &callbackInfo);
 };
