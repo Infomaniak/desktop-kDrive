@@ -17,6 +17,7 @@
  */
 
 #include "parmsdb.h"
+#include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 #include "libcommon/utility/types.h"
@@ -105,7 +106,7 @@ bool ParmsDb::insertDefaultAppState() {
     }
 
     if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25), true)) {
-        LOG_WARN(_logger, "Error while inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error while inserting default value for AppUid");
         return false;
     }
 
@@ -116,7 +117,7 @@ bool ParmsDb::insertDefaultAppState() {
 
     // This AppState was added in version <= 4.x. If an update needs to insert it, the application necessarily comes from a
     // version <= 4.0.0, so the OnboardingV4 banner should be shown. Otherwise, if it is not inserted during an update, there is
-    // no need to display the banner. 
+    // no need to display the banner.
     if (!insertAppState(AppStateKey::ShowV4Onboarding, _versionUpdated ? "1" : "0")) {
         LOG_WARN(_logger, "Error while inserting default value for ShowV4Onboarding");
         return false;
@@ -228,4 +229,29 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
     return true;
 };
+
+std::string ParmsDb::appUID() {
+    if (!_instance) {
+        if (Log::isSet()) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "ParmsDb is not initialized, cannot retrieve AppUid (key " << AppStateKey::AppUid << ").");
+        }
+
+        return {};
+    }
+
+    auto logger = Log::isSet() ? Log::instance()->getLogger() : _instance->_logger;
+    AppStateValue appStateValue = "";
+    if (bool found = false; !_instance->selectAppState(AppStateKey::AppUid, appStateValue, found)) {
+        LOG_WARN(logger, "Error in ParmsDb::selectAppState.");
+
+        return {};
+    } else if (!found) {
+        LOG_WARN(logger, "AppUid (key " << AppStateKey::AppUid << ") not found in appstate table.");
+
+        return {};
+    }
+
+    return std::get<std::string>(appStateValue);
+}
 } // namespace KDC

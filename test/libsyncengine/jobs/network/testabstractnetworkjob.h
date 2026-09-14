@@ -19,39 +19,26 @@
 #pragma once
 
 #include "testincludes.h"
-#include "syncpal/syncpal.h"
 #include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
 namespace KDC {
-
-class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
+class TestAbstractNetworkJob : public CppUnit::TestFixture, public TestBase {
     public:
-        CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testLocalJobs);
-        CPPUNIT_TEST(testLocalDeleteJob);
-        CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
-#if defined(KD_MACOS) || defined(KD_WINDOWS)
-        CPPUNIT_TEST(testDeleteExcludedDehydratedPlaceholderJob);
-#endif
-        CPPUNIT_TEST(testGenericLocalDeleteJobHardDelete);
+        CPPUNIT_TEST_SUITE(TestAbstractNetworkJob);
+        CPPUNIT_TEST(testAppUIDIsSentInClientAppIdHeader);
+        CPPUNIT_TEST(testExplicitContextIsPassedThroughRequestContext);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
 
-    protected:
-        void testLocalJobs();
-        void testLocalDeleteJob();
-        void testDeleteFilesWithDuplicateNames();
-        void testDeleteExcludedDehydratedPlaceholderJob();
-        void testGenericLocalDeleteJobHardDelete();
-
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
-        LocalTemporaryDirectory _localTempDir{"TestLocalJobs"};
-};
+        void testAppUIDIsSentInClientAppIdHeader();
+        void testExplicitContextIsPassedThroughRequestContext();
 
+        LocalTemporaryDirectory _localTempDir{"testAbstractNetworkJob"};
+};
 } // namespace KDC

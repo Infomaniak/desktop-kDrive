@@ -19,31 +19,28 @@
 #pragma once
 
 #include "testincludes.h"
-#include "update_detection/file_system_observer/folderwatcher_linux.h"
 
 namespace KDC {
+class CacheDirectory;
 
-class TestFolderWatcherLinux final : public CppUnit::TestFixture, public TestBase {
-        CPPUNIT_TEST_SUITE(TestFolderWatcherLinux);
-        CPPUNIT_TEST(testMakeSyncPath);
-        CPPUNIT_TEST(testAddFolderRecursive);
-        CPPUNIT_TEST(testAddFolderRecursiveDisappearingChild);
-        CPPUNIT_TEST(testRemoveFoldersBelow);
-        CPPUNIT_TEST(testInotifyRegisterPath);
-        CPPUNIT_TEST(testFindSubFolders);
+class TestDeleteItemAtomically final : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestDeleteItemAtomically);
+        CPPUNIT_TEST(testDeleteRegularFile);
+        CPPUNIT_TEST(testDeleteDirectory);
+        CPPUNIT_TEST(testDeleteNonExistingItem);
+        CPPUNIT_TEST(testDeleteItemWithoutRights);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void) final { TestBase::start(); }
-        void tearDown(void) final { TestBase::stop(); }
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
     private:
-        void testMakeSyncPath();
-        void testAddFolderRecursive();
-        void testAddFolderRecursiveDisappearingChild();
-        void testRemoveFoldersBelow();
-        void testInotifyRegisterPath();
-        void testFindSubFolders();
+        void testDeleteRegularFile();
+        void testDeleteDirectory();
+        void testDeleteNonExistingItem();
+        void testDeleteItemWithoutRights();
 };
+
 
 } // namespace KDC

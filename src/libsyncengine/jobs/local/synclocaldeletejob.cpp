@@ -56,11 +56,11 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
 
     return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
 }
-
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativeLocalPath,
                                        const bool liteSyncIsEnabled, RemoteNodeId remoteNodeId,
                                        ForceToTrash forceToTrash /* = ForceToTrash::No */) :
-    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativeLocalPath : ""),
+    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativeLocalPath : SyncPath{},
+                          syncPal ? syncPal->cacheDirectory() : nullptr),
     _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncPal(syncPal),
     _relativeLocalPath(relativeLocalPath),
@@ -68,7 +68,7 @@ SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, c
     _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absoluteLocalPath) :
-    GenericLocalDeleteJob(absoluteLocalPath),
+    GenericLocalDeleteJob(absoluteLocalPath, syncPal ? syncPal->cacheDirectory() : nullptr),
     _syncPal(syncPal) {
     setBypassCheck(true);
 }
