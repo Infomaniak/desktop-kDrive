@@ -24,6 +24,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 #include "libcommonserver/utility/truststorehelper.h"
+#include "libparms/db/parmsdb.h"
 #include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -467,6 +468,7 @@ void AbstractNetworkJob::setHeaders(Poco::Net::HTTPRequest &req) {
     }
     if (scope() != Scope::None) req.add("ik-client-scope", toString(scope()));
     if (!context().empty()) req.add("ik-client-context", context());
+    if (const std::string appUID = ParmsDb::appUID(); !appUID.empty()) req.add("ik-client-app-id", appUID);
 }
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
