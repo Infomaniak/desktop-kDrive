@@ -38,6 +38,7 @@
 #include "reconciliation/conflict_resolver/testconflictresolverworker.h"
 #include "propagation/operation_sorter/testoperationsorterworker.h"
 #include "integration/testintegration.h"
+#include "integration/testintegration_move_delete_rename.h"
 #include "propagation/executor/testexecutorworker.h"
 #include "jobs/network/testnetworkjobs.h"
 #include "jobs/network/testabstractnetworkjob.h"
@@ -102,6 +103,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestFileRescuer);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPalWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestMoveDeleteRename);
 // CPPUNIT_TEST_SUITE_REGISTRATION(BenchmarkParallelJobs);
 } // namespace KDC
 
