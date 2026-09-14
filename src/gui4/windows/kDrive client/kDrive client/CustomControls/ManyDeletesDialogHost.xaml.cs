@@ -90,16 +90,17 @@ namespace Infomaniak.kDrive.CustomControls
                 return null;
             }
 
-            if (result == ContentDialogResult.None)
-                return ManyDeletesUserAction.Dismissed; // Closed programmatically to give priority to another notification.
+            ManyDeletesUserAction manyDeletesUserAction = (DoNotShowAgainCheckBox.IsChecked ?? false) ? ManyDeletesUserAction.IgnoreNext : ManyDeletesUserAction.Dismissed;
 
-            if (notification.IsHardLimit)
-                return result == ContentDialogResult.Secondary ? ManyDeletesUserAction.Continue : ManyDeletesUserAction.Revert;
-
-            if (DoNotShowAgainCheckBox.IsChecked == true)
-                return ManyDeletesUserAction.IgnoreNext;
-
-            return result == ContentDialogResult.Secondary ? ManyDeletesUserAction.OpenTrash : ManyDeletesUserAction.Close;
+            switch (result)
+            {
+                case ContentDialogResult.Primary:
+                    return manyDeletesUserAction | (notification.IsHardLimit ? ManyDeletesUserAction.Revert : ManyDeletesUserAction.Close);
+                case ContentDialogResult.Secondary:
+                    return manyDeletesUserAction | (notification.IsHardLimit ? ManyDeletesUserAction.Continue : ManyDeletesUserAction.OpenTrash);
+                default:
+                    return manyDeletesUserAction | ManyDeletesUserAction.Dismissed; // Closed programmatically to give priority to another notification.
+            }
         }
 
         // Prevents the dialog from being light-dismissed (e.g. clicking outside or pressing Escape).
