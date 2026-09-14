@@ -458,7 +458,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
             opParams.RestartHydration.Flags = CF_OPERATION_RESTART_HYDRATION_FLAG_MARK_IN_SYNC;
 
             try {
-                winrt::check_hresult(CfExecute(&opInfo, &opParams));
+                (void) winrt::check_hresult(CfExecute(&opInfo, &opParams));
             } catch (winrt::hresult_error const &ex) {
                 TRACE_WARNING(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             }
