@@ -35,6 +35,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_TEST(testDeleteExcludedDehydratedPlaceholderJob);
 #endif
+        CPPUNIT_TEST(testGenericLocalDeleteJobHardDelete);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -46,6 +47,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
         void testLocalDeleteJob();
         void testDeleteFilesWithDuplicateNames();
         void testDeleteExcludedDehydratedPlaceholderJob();
+        void testGenericLocalDeleteJobHardDelete();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;

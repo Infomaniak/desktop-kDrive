@@ -188,7 +188,8 @@ void TestTypes::testExitInfo() {
             "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) + "[KDC::TestTypes::testExitInfo])}";
     std::string expectedString2 = "ExitInfo{DataError-NotFound from (testtypes.cpp:" + std::to_string(lineNumber) +
                                   "[testExitInfo])}"; // Some compilers may not include the namespace in the function name, so we
-                                                      // allow for that possibility as well.
+    // allow for that possibility as well.
+
     CPPUNIT_ASSERT_MESSAGE(expectedString, toString(exitInfo) == expectedString || toString(exitInfo) == expectedString2);
 }
 
