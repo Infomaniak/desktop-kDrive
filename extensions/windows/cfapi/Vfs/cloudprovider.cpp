@@ -30,7 +30,6 @@
 #include <shobjidl_core.h>
 #include <shlobj_core.h>
 #include <winrt/base.h>
-#include <filesystem>
 
 #define MSSEARCH_INDEX L"SystemIndex"
 
@@ -425,11 +424,11 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
-    std::filesystem::path fullPath =
+    const auto fullPath =
             std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
     if (wcsncmp(fullPath.wstring().c_str(), providerInfo->folderPath(), wcslen(providerInfo->folderPath()))) {
-        TRACE_DEBUG(L"File not synchronized: %ls", fullPath.wstring().c_str());
+        TRACE_DEBUG(L"File not synchronized: '%ls'", fullPath.wstring().c_str());
         return;
     }
 
@@ -447,33 +446,8 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
-    if (callbackParameters->FetchData.RequiredFileOffset.QuadPart != 0) {
-        TRACE_DEBUG(L"Restarting hydration: path='%ls', offset=%lld", fullPath.wstring().c_str(),
-                    callbackParameters->FetchData.RequiredFileOffset.QuadPart);
-
-        // Discard any remaining data from a previous partial hydration
-        CF_OPERATION_INFO opInfo = {0};
-        CF_OPERATION_PARAMETERS opParams = {0};
-        opInfo.StructSize = sizeof(opInfo);
-        opInfo.Type = CF_OPERATION_TYPE_RESTART_HYDRATION;
-        opInfo.ConnectionKey = callbackInfo->ConnectionKey;
-        opInfo.TransferKey = callbackInfo->TransferKey;
-        opParams.ParamSize = CF_SIZE_OF_OP_PARAM(RestartHydration);
-        opParams.RestartHydration.Flags = CF_OPERATION_RESTART_HYDRATION_FLAG_MARK_IN_SYNC;
-
-        try {
-            (void) winrt::check_hresult(CfExecute(&opInfo, &opParams));
-        } catch (winrt::hresult_error const &ex) {
-            TRACE_WARNING(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
-            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
-                                 callbackParameters->FetchData.RequiredFileOffset,
-                                 callbackParameters->FetchData.RequiredLength)) {
-                TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
-            }
-        }
-
-        return; // The api will recall us with a 0 offset
-    }
+    if (callbackParameters->FetchData.RequiredFileOffset.QuadPart != 0)
+        return restartHydration(fullPath, callbackParameters, callbackInfo);
 
     // Store fetch info
     FetchInfo fetchInfo;
@@ -500,6 +474,36 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
                              callbackParameters->FetchData.RequiredFileOffset, callbackParameters->FetchData.RequiredLength)) {
             TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
         }
+    }
+}
+
+void CloudProvider::restartHydration(const std::filesystem::path &fullPath, const CF_CALLBACK_PARAMETERS &callbackParameters,
+                                     const CF_CALLBACK_INFO &callbackInfo) {
+    {
+        TRACE_DEBUG(L"Restarting hydration: path='%ls', offset=%lld", fullPath.wstring().c_str(),
+                    callbackParameters.FetchData.RequiredFileOffset.QuadPart);
+
+        // Discard any remaining data from a previous partial hydration
+        CF_OPERATION_INFO opInfo = {0};
+        CF_OPERATION_PARAMETERS opParams = {0};
+        opInfo.StructSize = sizeof(opInfo);
+        opInfo.Type = CF_OPERATION_TYPE_RESTART_HYDRATION;
+        opInfo.ConnectionKey = callbackInfo.ConnectionKey;
+        opInfo.TransferKey = callbackInfo.TransferKey;
+        opParams.ParamSize = CF_SIZE_OF_OP_PARAM(RestartHydration);
+        opParams.RestartHydration.Flags = CF_OPERATION_RESTART_HYDRATION_FLAG_MARK_IN_SYNC;
+
+        try {
+            (void) winrt::check_hresult(CfExecute(&opInfo, &opParams));
+        } catch (winrt::hresult_error const &ex) {
+            TRACE_WARNING(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            if (!cancelFetchData(callbackInfo.ConnectionKey, callbackInfo.TransferKey,
+                                 callbackParameters.FetchData.RequiredFileOffset, callbackParameters.FetchData.RequiredLength)) {
+                TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
+            }
+        }
+
+        return; // The api will recall us with a 0 offset
     }
 }
 
