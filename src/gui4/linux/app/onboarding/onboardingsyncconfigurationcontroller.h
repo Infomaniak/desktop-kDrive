@@ -33,6 +33,7 @@ namespace KDC {
 
 class AppCache;
 class CommService;
+struct GoodPathResult;
 class OnboardingFlowController;
 class OnboardingState;
 
@@ -111,6 +112,9 @@ class OnboardingSyncConfigurationController final : public QObject {
         [[nodiscard]] Draft *currentDraft();
         [[nodiscard]] const Draft *currentDraft() const;
         [[nodiscard]] bool conflictsWithAnotherDraft(const QString &path, int32_t excludedRow) const;
+        void handleDefaultFolderProposal(const AvailableDriveKey &key, uint64_t generation, const ExitInfo &exitInfo,
+                                         const GoodPathResult &result);
+        void finishDefaultFolderRequest(const AvailableDriveKey &key, uint64_t generation, const QString &defaultPath);
         void buildDrafts();
         void showInitialPage();
         void openDrive(int32_t row);
