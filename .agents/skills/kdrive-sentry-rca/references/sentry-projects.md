@@ -34,7 +34,6 @@ Search only the server project for incidents wholly inside sync detection, recon
 
 - Production incidents: `environment:production` where the project supplies environment metadata.
 - Crashes: start with `level:fatal`, but inspect exception mechanisms because SDKs may report crashes at other levels.
-- Native server channel: use `distribution_channel` when present.
 - Native installation: use `appUUID` when present.
 - Release regression: compare first seen, release distribution, event volume, and affected users; do not infer regression from first seen alone.
 - “Biggest” without another metric: rank affected users first, then event volume. Always show both because throttling and repeated crashes can make either metric misleading alone.
