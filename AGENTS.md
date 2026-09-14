@@ -64,6 +64,7 @@ clang-format -i <file>
 
 ### Local Norms
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
+- For project crash lookups, use the self-hosted Sentry instance at `https://sentry-desktop.infomaniak.com`, not Sentry SaaS.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
@@ -92,6 +93,7 @@ clang-format -i <file>
 ### Infrastructure
 - Shell extensions (macOS/Windows): `extensions/` → [see AGENTS.md](extensions/AGENTS.md)
 - Conan dependencies & recipes: `infomaniak-build-tools/conan/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
+- Sentry crash and log root-cause analysis: `.agents/skills/kdrive-sentry-rca/`
 
 ### Legal & Licensing
 - Third-party licenses and attributions: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
