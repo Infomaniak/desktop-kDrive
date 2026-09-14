@@ -787,10 +787,10 @@ void TestIntegration::initTestMoveDeleteRename(const RemoteTemporaryDirectory &r
                                                NodeId &nodeIdAAA, NodeId &nodeIdB) {
     // Setup initial situation:
     // .
-    // ├── A (a)
-    // │   └── AA (aa)
-    // │       └── AAA (aaa)
-    // └── B (b)
+    // ├── A
+    // │   └── AA
+    // │       └── AAA
+    // └── B
 
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
 
@@ -805,9 +805,11 @@ void TestIntegration::initTestMoveDeleteRename(const RemoteTemporaryDirectory &r
         (void) jobB.runSynchronously();
         nodeIdB = jobB.nodeId();
 
+        // Choose a random name for the file to avoid conflicts with other tests that might be running in parallel.
+        const auto temporaryFileName = Str2SyncName(std::string("AAA_") + CommonUtility::generateRandomStringAlphaNum());
+        nodeIdAAA = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, temporaryFileName);
         const auto filename = Str("AAA");
-        nodeIdAAA = testhelpers::duplicateRemoteItem(_driveDbId, _testFileRemoteId, filename);
-        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, nodeIdAA);
+        testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, nodeIdAA, filename);
     }
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause(); // Synchronize the initial situation
@@ -828,17 +830,18 @@ void TestIntegration::testMoveDeleteRename() {
         NodeId nodeIdAAA;
         NodeId nodeIdB;
         initTestMoveDeleteRename(tmpRemoteDir, nodeIdA, nodeIdAA, nodeIdAAA, nodeIdB);
-        // Generate final situation on remote side:
+        // Setup initial situation:
         // .
-        // └── A (b)
-        //     └── AA (aa)
-        //         └── AAA (aaa)
+        // ├── A
+        // │   └── AA
+        // │       └── AAA
+        // └── B
 
-        // Move aa
+        // Move AA into B
         testhelpers::moveRemoteItem(_driveDbId, nodeIdAA, nodeIdB);
-        // Delete a
+        // Delete A
         testhelpers::deleteRemoteItem(_driveDbId, nodeIdA);
-        // Rename b
+        // Rename B with AA
         testhelpers::renameRemoteItem(_driveDbId, nodeIdB, Str("A"));
         _syncPal->unpause();
         waitForSyncToBeIdle(std::source_location::current());
@@ -858,20 +861,22 @@ void TestIntegration::testMoveDeleteRename() {
         NodeId nodeIdAAA;
         NodeId nodeIdB;
         initTestMoveDeleteRename(tmpRemoteDir, nodeIdA, nodeIdAA, nodeIdAAA, nodeIdB);
-        // Generate final situation on local side:
+        // Setup initial situation:
         // .
-        // └── A (b)
-        //     └── AA (aa)
-        //         └── AAA (aaa)
-        // Move aa
+        // ├── A
+        // │   └── AA
+        // │       └── AAA
+        // └── B
+
+        // Move AA
         const auto moveSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
         const auto moveDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "B" / "AA";
         (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
-        // Delete a
+        // Delete A
         const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
         (void) GenericLocalDeleteJob(deletedPath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes)
                 .runSynchronously();
-        // Rename b
+        // Rename B with A
         const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         const auto renameDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
         (void) LocalMoveJob(renameSourcePath, renameDestPath).runSynchronously();
