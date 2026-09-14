@@ -247,7 +247,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         public bool? MatomoEnabled { get; set; }
         public bool? SentryEnabled { get; set; }
         public DistributionChannel? DistributionChannel { get; set; }
-        public bool? AskBeforeDelete { get; set; }
     }
     public static partial class ConversionHelper
     {
@@ -261,7 +260,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
             CopyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
             CopyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
-            CopyProperty(source, target, nameof(source.AskBeforeDelete), nameof(target.AskBeforeDelete));
 
             if (source.ProxyConfigInfo is ProxyConfigInfo proxyConfigInfo)
                 CopyToProxyConfig(proxyConfigInfo, target.ProxyConfig);
@@ -286,7 +284,6 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
             CopyProperty(source, target, nameof(source.PurgeOldLogs), nameof(target.PurgeOldLogs));
             CopyProperty(source, target, nameof(source.MatomoEnabled), nameof(target.MatomoEnabled));
             CopyProperty(source, target, nameof(source.SentryEnabled), nameof(target.SentryEnabled));
-            CopyProperty(source, target, nameof(source.AskBeforeDelete), nameof(target.AskBeforeDelete));
 
             if (target.ProxyConfigInfo is null)
                 target.ProxyConfigInfo = new();

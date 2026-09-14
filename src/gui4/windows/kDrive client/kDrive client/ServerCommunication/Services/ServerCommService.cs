@@ -2140,16 +2140,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     notificationType.Value,
                     filesPaths
                 ));
-
-                if (App.Current is not App app)
-                    return;
-
-                // The ManyDeletesDialogHost, hosted by the main window, displays the notification as
-                // soon as it is loaded. We only need to make sure that window exists and is visible.
-                if (app.CurrentWindow is null)
-                    app.CreateWindow(App.CreateWindowOptions.Foreground);
-                else if (app.CurrentWindow is MainWindow mainWindow)
-                    Utility.BringWindowToFront(mainWindow);
             });
         }
 
