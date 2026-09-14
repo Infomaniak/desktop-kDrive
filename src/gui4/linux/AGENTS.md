@@ -130,6 +130,8 @@
   simple.
 - Keep simple onboarding external-link actions in `OnboardingFlowController` when they do not mutate app/backend state;
   put multi-service onboarding backend effects in a dedicated onboarding coordinator.
+- When onboarding returns a synchronization to its default local folder, request a fresh server proposal instead of
+  reusing the cached `defaultLocalPath`; the filesystem and synchronization context may have changed meanwhile.
 - Keep only `OnboardingSessionManager` process-long. Onboarding state, flow, coordinators, and view models belong to an
   ephemeral `OnboardingSession` and must not be exposed as root QML context properties.
 - Route tray and server main-window activation requests through `AppClientLinux::openMainWindow()`. It delegates to
