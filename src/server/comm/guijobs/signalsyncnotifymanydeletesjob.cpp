@@ -30,7 +30,7 @@ SignalSyncNotifyManyDeletesJob::SignalSyncNotifyManyDeletesJob(const SyncDbId sy
                                                                std::vector<SyncPath> filesPaths) :
     _syncDbId(syncDbId),
     _notificationType(notificationType),
-    _filesPaths(filesPaths) {
+    _filesPaths(std::move(filesPaths)) {
     _signalNum = SignalNum::SYNC_NOTIFY_MANY_DELETES;
 }
 
