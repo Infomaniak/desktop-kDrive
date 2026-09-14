@@ -94,7 +94,7 @@ class MockVfs : public T {
         }
         void dehydrate(const SyncPath &path) override { return _dehydrate ? _dehydrate(path) : T::dehydrate(path); }
         void hydrate(const SyncPath &path) override { return _hydrate ? _hydrate(path) : T::hydrate(path); }
-        void cancelHydrate(const SyncPath &path, ExitInfo exitInfo = ExitCode::Unknown) override {
+        void cancelHydrate(const SyncPath &path, const ExitInfo &exitInfo = ExitCode::Unknown) override {
             return _cancelHydrate ? _cancelHydrate(path, exitInfo) : T::cancelHydrate(path, exitInfo);
         }
 

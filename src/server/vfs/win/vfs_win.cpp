@@ -137,11 +137,11 @@ void VfsWin::hydrate(const SyncPath &pathStd) {
     _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsWin::cancelHydrate(const SyncPath &pathStd, ExitInfo exitInfo) {
+void VfsWin::cancelHydrate(const SyncPath &pathStd, const ExitInfo &exitInfo) {
     LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(pathStd));
     const QString path = SyncName2QStr(pathStd.native());
 
-    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    auto status = STATUS_UNSUCCESSFUL;
     if (exitInfo.cause() == ExitCause::NotFound) {
         status = STATUS_CLOUD_FILE_NOT_IN_SYNC;
     } else if (exitInfo.code() == ExitCode::SyncPaused) {
