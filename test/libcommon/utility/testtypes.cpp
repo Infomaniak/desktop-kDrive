@@ -200,8 +200,8 @@ void testToStringIntValues() {
         if (fromInt<T>(i) == T::EnumEnd) {
             break;
         }
-        auto test1 = toString(fromInt<T>(i));
-        if (test1 == noConversionStr || test1 == "") {
+        auto convertedStr = toString(fromInt<T>(i));
+        if (convertedStr == noConversionStr || convertedStr == "") {
             const std::string failStr = std::string("No string conversion for value ") + std::to_string(i) + std::string(" of ") +
                                         std::string(typeid(T).name());
             CPPUNIT_FAIL(failStr);
