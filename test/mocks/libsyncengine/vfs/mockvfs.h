@@ -94,8 +94,8 @@ class MockVfs : public T {
         }
         void dehydrate(const SyncPath &path) override { return _dehydrate ? _dehydrate(path) : T::dehydrate(path); }
         void hydrate(const SyncPath &path) override { return _hydrate ? _hydrate(path) : T::hydrate(path); }
-        void cancelHydrate(const SyncPath &path) override {
-            return _cancelHydrate ? _cancelHydrate(path) : T::cancelHydrate(path);
+        void cancelHydrate(const SyncPath &path, ExitInfo exitInfo = ExitCode::Unknown) override {
+            return _cancelHydrate ? _cancelHydrate(path, exitInfo) : T::cancelHydrate(path, exitInfo);
         }
 
         // Mock functions setters
@@ -144,7 +144,9 @@ class MockVfs : public T {
         }
         void setMockDehydrate(std::function<void(const SyncPath &)> dehydrate) { _dehydrate = dehydrate; }
         void setMockHydrate(std::function<void(const SyncPath &)> hydrate) { _hydrate = hydrate; }
-        void setMockCancelHydrate(std::function<void(const SyncPath &)> cancelHydrate) { _cancelHydrate = cancelHydrate; }
+        void setMockCancelHydrate(std::function<void(const SyncPath &, ExitInfo)> cancelHydrate) {
+            _cancelHydrate = cancelHydrate;
+        }
 
 
         // Mock functions resetters

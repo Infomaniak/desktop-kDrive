@@ -354,7 +354,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
 
         if (ExitInfo exitInfo = addDownloadJob(fileData, parentFolder); !exitInfo) {
             LOGW_INFO(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath) << exitInfo);
+                      L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
 
             if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, exitInfo);
                 !cancelHydrateExitInfo) {
@@ -887,11 +887,11 @@ ExitInfo ExtensionJob::syncFileStatus(const FileData &fileData, SyncFileStatus &
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return ExitCode::SyncPaused;
 
     bool exists = false;
-    if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists)) {
+    if (ExitInfo exitInfo = syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, exists); !exitInfo) {
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
         // Occurs when the sync is stopped
-        return ExitCode::SyncPaused;
+        return exitInfo;
     }
 
     if (exists) {
@@ -1098,17 +1098,17 @@ void ExtensionJob::sendSharingContextMenuOptions(const FileData &fileData, std::
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return;
 
     bool isOnTheServer = false;
-    if (!syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer)) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfExistsOnServer: " << Utility::formatSyncPath(fileData.relativePath));
+    if (ExitInfo exitInfo = syncPalMapIt->second->checkIfExistsOnServer(fileData.relativePath, isOnTheServer); !exitInfo) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Error in SyncPal::checkIfExistsOnServer: "
+                                                         << Utility::formatSyncPath(fileData.relativePath) << L" " << exitInfo);
         // Occurs when the sync is stopped
         return;
     }
 
     bool canShare = false;
-    if (!syncPalMapIt->second->checkIfCanShareItem(fileData.relativePath, canShare)) {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in SyncPal::checkIfCanShareItem: " << Utility::formatSyncPath(fileData.relativePath));
+    if (ExitInfo exitInfo = syncPalMapIt->second->checkIfCanShareItem(fileData.relativePath, canShare); !exitInfo) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Error in SyncPal::checkIfCanShareItem: "
+                                                         << Utility::formatSyncPath(fileData.relativePath) << L" " << exitInfo);
         // Occurs when the sync is stopped
         return;
     }

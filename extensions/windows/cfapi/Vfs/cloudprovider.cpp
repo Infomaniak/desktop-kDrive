@@ -359,8 +359,7 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
     return res;
 }
 
-bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *filePath, bool updateStatus,
-                                   NTSTATUS status) {
+bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *filePath, bool updateStatus, NTSTATUS status) {
     if (!providerInfo || !filePath) {
         TRACE_ERROR(L"Invalid parameters");
         return false;
