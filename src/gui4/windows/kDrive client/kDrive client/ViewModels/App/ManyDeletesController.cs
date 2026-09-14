@@ -152,8 +152,6 @@ namespace Infomaniak.kDrive.ViewModels
         /// this apart from a light dismiss (which must be prevented).
         public bool IsDismissing { get; private set; }
 
-        public bool AskBeforeDelete => ViewModel.Settings.AskBeforeDelete;
-
         private void OnCurrentNotificationPropertyChanged(object? sender, PropertyChangedEventArgs e) => RaiseInUIThread(NotificationChanged);
 
         private void RaiseInUIThread(EventHandler? handler)
@@ -244,6 +242,7 @@ namespace Infomaniak.kDrive.ViewModels
             var notification = new ManyDeletesNotification(manyDeletesInfo);
             _queue.Insert(isHardLimit ? _queue.FindLastIndex(queued => queued.IsHardLimit) + 1 : _queue.Count, notification);
             CurrentManyDeleteNotification = _queue[0];
+            Utility.BringCurrentWindowToFront();
         }
 
         public async Task<bool> AcknowledgeManyDeletes(ManyDeletesNotification acknowledgedNotification, ManyDeletesUserAction userAction)
