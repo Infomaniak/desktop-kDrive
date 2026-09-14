@@ -214,7 +214,7 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
                 return false;
             }
 
-            if (!WriteFile(s_pipe, msg.c_str(), DWORD(msg.size()), &numBytesWritten, NULL)) {
+            if (!WriteFile(s_pipe, msg.c_str(), DWORD(msg.size() * sizeof(wchar_t)), &numBytesWritten, NULL)) {
                 TRACE_ERROR(L"Error writing on sync engine pipe (trial 2): %ls", getLastErrorMessage().c_str());
                 return false;
             }
