@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.CustomControls
 {
-    /// Hosts the "too many deletes" dialogs and forwards the user's answer to the
+    /// Hosts the "too many deletes" dialog and forwards the user's answer to the
     /// <see cref="ManyDeletesController"/>, which owns all the decision logic.
     public sealed partial class ManyDeletesDialogHost : UserControl
     {
@@ -40,6 +40,11 @@ namespace Infomaniak.kDrive.CustomControls
 
         /// The notification currently displayed, exposed for x:Bind only.
         public ManyDeletesNotification? Notification => _controller.CurrentManyDeleteNotification;
+
+        public bool IsSoftLimit => Notification?.IsHardLimit == false;
+        public string PrimaryButtonText => Localizer.Instance.GetString(IsSoftLimit ? "buttonClose" : "manyDeleteDialogHardLimitPrimary");
+        public string SecondaryButtonText => Localizer.Instance.GetString(IsSoftLimit ? "buttonOpenTrash" : "manyDeleteDialogHardLimitSecondary");
+        public string Description => Localizer.Instance.GetString(IsSoftLimit ? "manyDeleteDialogSoftLimitContent" : "manyDeleteDialogHardLimitContent");
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -62,27 +67,22 @@ namespace Infomaniak.kDrive.CustomControls
         private async void OnShowRequested(object? sender, EventArgs e) => await _controller.RunDisplayLoop(ShowDialogAsync);
 
         // The controller asks for the open dialog to be closed (a higher priority notification arrived).
-        private void OnDismissRequested(object? sender, EventArgs e)
-        {
-            HardLimitDialog.Hide();
-            SoftLimitDialog.Hide();
-        }
+        private void OnDismissRequested(object? sender, EventArgs e) => ManyDeletesDialog.Hide();
 
-        /// Shows the dialog matching the given notification and returns the action chosen by the user,
+        /// Shows the dialog for the given notification and returns the action chosen by the user,
         /// or <c>null</c> when the dialog could not be shown.
         private async Task<ManyDeletesUserAction?> ShowDialogAsync(ManyDeletesNotification notification)
         {
             Bindings.Update();
 
-            ContentDialog dialog = notification.IsHardLimit ? HardLimitDialog : SoftLimitDialog;
-            dialog.XamlRoot = XamlRoot;
-            
+            ManyDeletesDialog.XamlRoot = XamlRoot;
+
             Utility.BringCurrentWindowToFront();
 
             ContentDialogResult result;
             try
             {
-                result = await dialog.ShowAsync();
+                result = await ManyDeletesDialog.ShowAsync();
             }
             catch (Exception ex)
             {
@@ -102,7 +102,7 @@ namespace Infomaniak.kDrive.CustomControls
             return result == ContentDialogResult.Secondary ? ManyDeletesUserAction.OpenTrash : ManyDeletesUserAction.Close;
         }
 
-        // Prevents the dialogs from being light-dismissed (e.g. clicking outside or pressing Escape).
+        // Prevents the dialog from being light-dismissed (e.g. clicking outside or pressing Escape).
         // Programmatic Hide() calls are not affected as they do not raise a Closing event with a button result.
         private void Dialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs e)
         {
