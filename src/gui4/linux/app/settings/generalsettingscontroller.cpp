@@ -24,7 +24,7 @@
 #include "app/services/updatestatusservice.h"
 #include "libcommon/theme/theme.h"
 
-#include <version.h>
+#include "version.h"
 
 #include <QDate>
 #include <QDesktopServices>
