@@ -53,11 +53,11 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <!-- This control has no visual footprint: the dialogs below only render as popups when ShowAsync() is called. -->
+    <!-- This control has no visual footprint: the dialog below only renders as a popup when ShowAsync() is called. -->
     <Grid>
-        <ContentDialog x:Name="HardLimitDialog"
-                       PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('manyDeleteDialogHardLimitPrimary')}"
-                       SecondaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('manyDeleteDialogHardLimitSecondary')}"
+        <ContentDialog x:Name="ManyDeletesDialog"
+                       PrimaryButtonText="{x:Bind PrimaryButtonText}"
+                       SecondaryButtonText="{x:Bind SecondaryButtonText}"
                        DefaultButton="Primary"
                        Closing="Dialog_Closing">
             <ContentDialog.Title>
@@ -92,78 +92,7 @@
             </ContentDialog.Title>
             <StackPanel HorizontalAlignment="Stretch"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('manyDeleteDialogHardLimitContent')}"
-                           TextWrapping="Wrap" />
-                <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Uniform.S}">
-                    <StackPanel>
-                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.M}"
-                                CornerRadius="{StaticResource Infomaniak.Style.CornerRadius.Top.S}">
-
-                            <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1i('manyDeleteDialogFilesHeader', Notification.TotalFilesCount), Mode=OneWay}"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       FontSize="{StaticResource Infomaniak.Style.FontSize.Body}" />
-                        </Border>
-                        <ListView MaxHeight="200"
-                                  Width="400"
-                                  SelectionMode="None"
-                                  ItemsSource="{x:Bind Notification.FilesPaths, Mode=OneWay}"
-                                  ItemTemplate="{StaticResource ManyDeletesFilePathTemplate}"
-                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  ScrollViewer.VerticalScrollMode="Auto">
-                            <ListView.Footer>
-                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetStringWithPlural1i('manyDeleteDialogOtherPlaceholder', Notification.TruncatedFilesCount, Notification.TruncatedFilesCount), Mode=OneWay}"
-                                           Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
-                                           HorizontalAlignment="Center"
-                                           Visibility="{x:Bind Notification.IsTruncated, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                            </ListView.Footer>
-                        </ListView>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </ContentDialog>
-
-        <ContentDialog x:Name="SoftLimitDialog"
-                       PrimaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonClose')}"
-                       SecondaryButtonText="{x:Bind kDrive:Localizer.Instance.GetString('buttonOpenTrash')}"
-                       DefaultButton="Primary"
-                       Closing="Dialog_Closing">
-            <ContentDialog.Title>
-                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
-                    </Grid.RowDefinitions>
-                    <controls:SvgIcon Grid.Column="0"
-                                      Grid.RowSpan="2"
-                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
-                                      Foreground="{ThemeResource Infomaniak.DS.colors.status.medium.warning}"
-                                      Width="24"
-                                      Height="24"
-                                      VerticalAlignment="Center" />
-                    <TextBlock  Grid.Column="1"
-                                Grid.Row="0"
-                                Text="{x:Bind kDrive:Localizer.Instance.GetString1i('manyDeleteDialogTitle', Notification.TotalFilesCount), Mode=OneWay}"
-                                TextWrapping="Wrap"
-                                VerticalAlignment="Center" />
-                    <TextBlock  Grid.Column="1"
-                                Grid.Row="1"
-                                Text="{x:Bind Notification.AssociatedSync.LocalPath}"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                TextWrapping="Wrap"
-                                VerticalAlignment="Center" />
-                </Grid>
-            </ContentDialog.Title>
-            <StackPanel HorizontalAlignment="Stretch"
-                        Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
-                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString('manyDeleteDialogSoftLimitContent')}"
+                <TextBlock Text="{x:Bind Description}"
                            TextWrapping="Wrap" />
                 <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -195,6 +124,7 @@
                 </Border>
 
                 <CheckBox x:Name="DoNotShowAgainCheckBox"
+                          Visibility="{x:Bind IsSoftLimit, Converter={StaticResource BooleanToVisibilityConverter}}"
                           Content="{x:Bind kDrive:Localizer.Instance.GetString('manyDeleteDialogSoftLimitDoNotShowAgain')}" />
             </StackPanel>
         </ContentDialog>
