@@ -447,7 +447,7 @@ class VfsOff : public Vfs {
         void clearFileAttributes(const SyncPath &) override { /*VfsOff*/ }
         void dehydrate(const SyncPath &) override { /*VfsOff*/ }
         void hydrate(const SyncPath &) override { /*VfsOff*/ }
-        void cancelHydrate(const SyncPath &, const ExitInfo &exitInfo = ExitCode::Unknown) override { /*VfsOff*/ }
+        void cancelHydrate(const SyncPath &, [[maybe_unused]] const ExitInfo &exitInfo = ExitCode::Unknown) override { /*VfsOff*/ }
 
     protected:
         ExitInfo startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) override;
