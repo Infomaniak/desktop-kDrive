@@ -742,8 +742,8 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
         return ExitCode::SystemError;
     }
 
-    // Validate the real directory after its creation. The path may have changed since the GUI last checked it, and
-    // validating only its nearest existing parent cannot guarantee the final folder is still suitable for a sync.
+    // Revalidate the final local directory after creation because its filesystem state may have changed since the GUI check.
+    // An empty remote path identifies a classic drive-root sync; a non-empty one identifies an advanced sync.
     bool pathValid = false;
     const auto syncConfiguration = serverFolderPath.empty() ? SyncConfiguration::Classic : SyncConfiguration::Advanced;
     if (const auto exitInfo = isPathValidForNewSync(localFolderPath, syncConfiguration, pathValid); !exitInfo) {
