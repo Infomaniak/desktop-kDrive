@@ -23,12 +23,12 @@ using System.Threading.Tasks;
 namespace Infomaniak.kDrive.ViewModels
 {
     /* Exposes async getters/setters for application state values stored on the server. */
-    public class AppStateModel
+    public class AppStateService
     {
         private readonly IServerCommService _serverCommService;
         private bool? _showV4OnboardingCachedValue = null;
 
-        public AppStateModel(IServerCommService serverCommService)
+        public AppStateService(IServerCommService serverCommService)
         {
             _serverCommService = serverCommService;
         }
@@ -60,6 +60,17 @@ namespace Infomaniak.kDrive.ViewModels
             }
 
             Logger.LogWarning("Failed to set ShowV4Onboarding state on the server.");
+            return false;
+        }
+
+        public async Task<bool> SetNotifyAfterDelete(bool notifyAfterDelete, CancellationToken cancellationToken = default)
+        {
+            if (await _serverCommService.SetAppState(AppStateKey.NotifyAfterDelete, notifyAfterDelete ? "1" : "0", cancellationToken))
+            {
+                _showV4OnboardingCachedValue = null;
+                return true;
+            }
+            Logger.Log(Logger.Level.Warning, "Failed to clear ShowV4Onboarding state on the server.");
             return false;
         }
     }
