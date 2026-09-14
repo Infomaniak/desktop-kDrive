@@ -61,17 +61,34 @@
                        DefaultButton="Primary"
                        Closing="Dialog_Closing">
             <ContentDialog.Title>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="{StaticResource Infomaniak.Style.Spacing.S}">
-                    <controls:SvgIcon UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
+                <Grid ColumnSpacing="{StaticResource Infomaniak.Style.Spacing.S}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <controls:SvgIcon Grid.Column="0"
+                                      Grid.RowSpan="2"
+                                      UriString="{StaticResource Infomaniak.DS.Icons.Actions.triangle-alert-outline}"
                                       Foreground="{ThemeResource Infomaniak.DS.colors.status.medium.warning}"
                                       Width="24"
                                       Height="24"
                                       VerticalAlignment="Center" />
-                    <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetString1i('manyDeleteDialogTitle', Notification.TotalFilesCount), Mode=OneWay}"
-                               TextWrapping="Wrap"
-                               VerticalAlignment="Center" />
-                </StackPanel>
+                    <TextBlock  Grid.Column="1"
+                                Grid.Row="0"
+                                Text="{x:Bind kDrive:Localizer.Instance.GetString1i('manyDeleteDialogTitle', Notification.TotalFilesCount), Mode=OneWay}"
+                                TextWrapping="Wrap"
+                                VerticalAlignment="Center" />
+                    <TextBlock  Grid.Column="1"
+                                Grid.Row="1"
+                                Text="{x:Bind Notification.AssociatedSync.LocalPath}"
+                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                TextWrapping="Wrap"
+                                VerticalAlignment="Center" />
+                </Grid>
             </ContentDialog.Title>
             <StackPanel HorizontalAlignment="Stretch"
                         Spacing="{StaticResource Infomaniak.Style.Spacing.M}">
@@ -96,7 +113,14 @@
                                   ItemsSource="{x:Bind Notification.FilesPaths, Mode=OneWay}"
                                   ItemTemplate="{StaticResource ManyDeletesFilePathTemplate}"
                                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                  ScrollViewer.VerticalScrollMode="Auto" />
+                                  ScrollViewer.VerticalScrollMode="Auto">
+                            <ListView.Footer>
+                                <TextBlock Text="{x:Bind kDrive:Localizer.Instance.GetStringWithPlural1i('manyDeleteDialogOtherPlaceholder', Notification.TruncatedFilesCount, Notification.TruncatedFilesCount), Mode=OneWay}"
+                                           Padding="{StaticResource Infomaniak.Style.Thickness.Uniform.S}"
+                                           HorizontalAlignment="Center"
+                                           Visibility="{x:Bind Notification.IsTruncated, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </ListView.Footer>
+                        </ListView>
                     </StackPanel>
                 </Border>
             </StackPanel>
