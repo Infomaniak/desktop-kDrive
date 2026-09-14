@@ -681,8 +681,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     ioError = IoError::Success;
     std::error_code ec;
 
-    [[maybe_unused]] const auto status =
-            std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+    [[maybe_unused]] const auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
 
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
@@ -963,8 +962,13 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
     // If the cache directory is invalid and if the path does not exist, return success.
     if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
         bool sourceItemExists = true;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        const auto checkOption = PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+        const auto checkOption = PathCheckOption::Sensitive;
+#endif
         if (auto checkIfPathExistsError = IoError::Success;
-            checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, PathCheckOption::Sensitive) && !sourceItemExists) {
+            checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, checkOption) && !sourceItemExists) {
             return ExitCode::Ok;
         }
         return exitInfo;
