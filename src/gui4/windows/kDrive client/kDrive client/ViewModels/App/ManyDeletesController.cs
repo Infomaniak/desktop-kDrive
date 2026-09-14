@@ -87,17 +87,17 @@ namespace Infomaniak.kDrive.ViewModels
     public enum ManyDeletesUserAction
     {
         /// The dialog was closed programmatically, no choice was made.
-        Dismissed,
+        Dismissed = 0,
         /// Hard limit only: keep the deletions and let the sync continue.
-        Continue,
+        Continue = 1,
         /// Hard limit only: restore the deleted files.
-        Revert,
+        Revert = 2,
         /// Soft limit only: acknowledge the deletions.
-        Close,
+        Close = 4,
         /// Soft limit only: acknowledge the deletions and open the drive's online trash.
-        OpenTrash,
+        OpenTrash = 8,
         /// Soft limit only: acknowledge the deletions and stop notifying before deletions.
-        IgnoreNext
+        IgnoreNext = 16
     }
 
     public class ManyDeletesController : UISafeObservableObject
@@ -257,6 +257,19 @@ namespace Infomaniak.kDrive.ViewModels
             IsAcknowledging = true;
             try
             {
+                if (userAction.HasFlag(ManyDeletesUserAction.IgnoreNext))
+                {
+                    var appStateService = App.ServiceProvider.GetRequiredService<AppStateService>();
+
+                    if (!await appStateService.SetNotifyAfterDelete(false))
+                    {
+                        Logger.Log(Logger.Level.Warning, "Failed to apply NotifyAfterDelete preferences");
+                    }
+
+                    _queue.RemoveAll(queued => !queued.IsHardLimit);
+                }
+
+
                 if (notification.IsHardLimit)
                 {
                     if (userAction is not (ManyDeletesUserAction.Continue or ManyDeletesUserAction.Revert))
@@ -272,28 +285,14 @@ namespace Infomaniak.kDrive.ViewModels
                         Logger.Log(Logger.Level.Warning, $"Failed to acknowledge many deletes on the server. SyncDbId: {notification.AssociatedSync?.DbId}");
                         return false;
                     }
-
-                    _queue.Remove(notification);
                 }
-                else if (userAction == ManyDeletesUserAction.IgnoreNext)
+                else if (userAction == ManyDeletesUserAction.OpenTrash)
                 {
-                    var appStateService = App.ServiceProvider.GetRequiredService<AppStateService>();
-
-
-                    if (!await appStateService.SetNotifyAfterDelete(false))
-                    {
-                        Logger.Log(Logger.Level.Warning, "Failed to apply NotifyAfterDelete preferences");
-                    }
-
-                    _queue.RemoveAll(queued => !queued.IsHardLimit);
+                    await OpenTrash(notification.AssociatedSync.DbId);
                 }
-                else
-                {
-                    if (userAction == ManyDeletesUserAction.OpenTrash)
-                        await OpenTrash(notification.AssociatedSync.DbId);
 
-                    _queue.Remove(notification);
-                }
+                _queue.Remove(notification);
+
 
                 CurrentManyDeleteNotification = _queue.FirstOrDefault();
                 return true;
