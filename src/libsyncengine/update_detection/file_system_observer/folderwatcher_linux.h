@@ -40,7 +40,7 @@ class FolderWatcher_linux : public FolderWatcher {
 
         bool findSubFolders(const SyncPath &dir, std::list<SyncPath> &fullList);
         ExitInfo inotifyRegisterPath(const SyncPath &path);
-        ExitInfo addFolderRecursive(const SyncPath &path);
+        ExitInfo watchDirectoryTree(const SyncPath &path);
         void removeFoldersBelow(const SyncPath &dirPath);
         struct AddWatchOutcome {
                 std::int64_t returnValue{0};
