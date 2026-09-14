@@ -664,7 +664,8 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
 }
 
 bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
-                                    LARGE_INTEGER requiredFileOffset, LARGE_INTEGER requiredFileLength, NTSTATUS status) {
+                                    const LARGE_INTEGER &requiredFileOffset, const LARGE_INTEGER &requiredFileLength,
+                                    NTSTATUS status) {
     // Update transfer status
     CF_OPERATION_INFO opInfo = {0};
     CF_OPERATION_PARAMETERS opParams = {0};
