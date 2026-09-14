@@ -311,7 +311,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
         VfsStatus vfsStatus;
         if (ExitInfo exitInfo = syncFileStatus(fileData, status, vfsStatus); !exitInfo) {
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(filePath));
+                      L"Error in ExtensionJob::syncFileStatus - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
             if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, PinState::OnlineOnly, exitInfo);
                 !cancelHydrateExitInfo) {
                 LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
@@ -358,8 +358,7 @@ void ExtensionJob::commandMakeAvailableLocallyDirect(const CommString &argument,
             LOGW_INFO(Log::instance()->getLogger(),
                       L"Error in ExtensionJob::addDownloadJob - " << Utility::formatSyncPath(filePath) << L": " << exitInfo);
 
-            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, ps, exitInfo);
-                !cancelHydrateExitInfo) {
+            if (const auto cancelHydrateExitInfo = cancelHydrate(fileData, ps, exitInfo); !cancelHydrateExitInfo) {
                 LOGW_INFO(Log::instance()->getLogger(), L"Error in ExtensionJob::cancelHydrate - "
                                                                 << Utility::formatSyncPath(filePath) << L": "
                                                                 << cancelHydrateExitInfo);
