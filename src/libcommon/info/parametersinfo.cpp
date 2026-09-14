@@ -32,7 +32,9 @@ static const auto parametersInfoLogLevel = "logLevel";
 static const auto parametersInfoExtendedLog = "extendedLog";
 static const auto parametersInfoPurgeOldLogs = "purgeOldLogs";
 static const auto parametersInfoProxyConfigInfo = "proxyConfigInfo";
+#ifdef KD_MACOS
 static const auto parametersInfoDarkTheme = "darkTheme";
+#endif
 static const auto parametersInfoDialogGeometry = "dialogGeometry";
 static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";

@@ -787,7 +787,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             return;
         }
 
-        if (!setProgress(job->affectedFilePath(), progress)) {
+        if (!setProgress(job->affectedFilePath(), static_cast<int16_t>(progress))) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
     };
@@ -1464,9 +1464,9 @@ void SyncPal::fixInconsistentFileNames() {
             }
 
             GenericLocalDeleteJob deleteJob(
-                    oldLocalPath,
-                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put dehydrated placeholder
-                                                                  // in the trash.
+                    oldLocalPath, _cacheDirectory,
+                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put
+                                                                  // dehydrated placeholder in the trash.
             deleteJob.runSynchronously();
         }
     }

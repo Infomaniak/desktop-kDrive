@@ -155,13 +155,13 @@ void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Object:
 }
 
 void InitialSituationSetter::addItem(const ReplicaSide side, Poco::JSON::Array::Ptr arr, const SyncName &parentId) {
-    for (size_t i = 0; i < arr->size(); ++i) {
-        const auto &itemObj = arr->getObject(static_cast<uint64_t>(i));
+    for (uint32_t i = 0; i < arr->size(); ++i) {
+        const auto &itemObj = arr->getObject(i);
         if (!itemObj) throw SituationGeneratorException("Extended format: each 'content' element must be an object");
 
-        const std::string typeStr = itemObj->optValue<std::string>("type", "File");
+        const auto typeStr = itemObj->optValue<std::string>("type", "File");
         const NodeType type = (typeStr == "Directory") ? NodeType::Directory : NodeType::File;
-        const std::string nameStr = itemObj->optValue<std::string>("name", "");
+        const auto nameStr = itemObj->optValue<std::string>("name", "");
         if (nameStr.empty()) throw SituationGeneratorException("Extended format: missing 'name' field");
 
         const auto lowerName = Str2SyncName(CommonUtility::toLower(nameStr));
@@ -272,7 +272,7 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
             const ExitInfo exitInfo = job.runSynchronously();
             if (!exitInfo) {
                 throw SituationGeneratorException("Failed to create remote directory '" + SyncName2Str(desc.name) +
-                                                   "': " + std::string(exitInfo));
+                                                  "': " + std::string(exitInfo));
             }
             _remoteNodeIds[desc.id] = job.nodeId();
         } else {
@@ -283,7 +283,7 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
             const ExitInfo exitInfo = job.runSynchronously();
             if (!exitInfo) {
                 throw SituationGeneratorException("Failed to upload remote file '" + SyncName2Str(desc.name) +
-                                                   "': " + std::string(exitInfo));
+                                                  "': " + std::string(exitInfo));
             }
             _remoteNodeIds[desc.id] = job.nodeId();
         }

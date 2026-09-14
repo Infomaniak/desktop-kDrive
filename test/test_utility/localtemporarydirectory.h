@@ -26,7 +26,7 @@ namespace KDC {
 class AbstractLocalTemporaryDirectory {
     public:
         explicit AbstractLocalTemporaryDirectory(const SyncPath &inputPath = {});
-        ~AbstractLocalTemporaryDirectory();
+        virtual ~AbstractLocalTemporaryDirectory();
 
         [[nodiscard]] const std::filesystem::path &path() const { return _path; }
         [[nodiscard]] const NodeId &id() const { return _id; }
