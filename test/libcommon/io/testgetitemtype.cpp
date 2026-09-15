@@ -526,6 +526,7 @@ void TestIo::testGetItemTypeAllBranches() {
         });
 
         const auto result = checker.checkItemIsNotFound(path);
+
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 
         _testObj->resetFunctions();

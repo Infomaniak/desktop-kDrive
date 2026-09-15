@@ -404,9 +404,6 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 
     if (isSymlink) {
-        itemType.nodeType = NodeType::File;
-        itemType.linkType = LinkType::Symlink;
-
         itemType.targetPath = _readSymlink(path, ec);
         itemType.ioError = IoHelper::stdError2ioError(ec);
         if (itemType.ioError != IoError::Success) {
@@ -416,6 +413,9 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             }
             return success;
         }
+
+        itemType.nodeType = NodeType::File;
+        itemType.linkType = LinkType::Symlink;
 
         // Get target type
         FileStat filestat;
@@ -445,9 +445,6 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     }
 
     if (isAlias) {
-        itemType.nodeType = NodeType::File;
-        itemType.linkType = LinkType::FinderAlias;
-
         if (!_readAlias(path, itemType.targetPath, itemType.ioError)) {
             LOGW_WARN(logger(),
                       L"Failed to read an item first identified as an alias: " << Utility::formatIoError(path, itemType.ioError));
@@ -455,8 +452,16 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         }
 
         if (itemType.ioError != IoError::Success) {
-            return isExpectedError(itemType.ioError) || itemType.ioError == IoError::CorruptedLink;
+            const bool success = isExpectedError(itemType.ioError) || itemType.ioError == IoError::CorruptedLink ||
+                                 itemType.ioError == IoError::InvalidFileName;
+            if (!success) {
+                LOGW_WARN(logger(), L"Failed to read alias: " << Utility::formatStdError(path, ec));
+            }
+            return success;
         }
+
+        itemType.nodeType = NodeType::File;
+        itemType.linkType = LinkType::FinderAlias;
 
         return _setTargetType(itemType);
     }

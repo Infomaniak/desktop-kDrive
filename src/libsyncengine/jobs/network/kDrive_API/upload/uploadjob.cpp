@@ -328,7 +328,7 @@ ExitInfo UploadJob::readLink() {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        assert(ioError == IoError::Success); // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);

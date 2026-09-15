@@ -174,7 +174,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             assert(false);
             ioError = IoError::Unknown;
         }
-        return isExpectedError(ioError) || ioError == IoError::CorruptedLink;
+        return isExpectedError(ioError) || ioError == IoError::CorruptedLink || ioError == IoError::InvalidFileName;
     }
 
     const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
