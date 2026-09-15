@@ -37,6 +37,7 @@ Popup {
     property Item initialFocusItem: null
     property real scrimInset: 0
     property real scrimRadius: 0
+    property real preferredWidth: IKModalTokens.width
     property alias bodyData: bodyColumn.data
     property alias footerData: footerLayout.data
 
@@ -45,8 +46,8 @@ Popup {
     parent: Overlay.overlay
     x: parent ? Math.round((parent.width - width) / 2) : 0
     y: parent ? Math.round((parent.height - height) / 2) : 0
-    width: parent ? Math.min(IKModalTokens.width, Math.max(0, parent.width - 2 * IKModalTokens.screenMargin))
-                  : IKModalTokens.width
+    width: parent ? Math.min(root.preferredWidth, Math.max(0, parent.width - 2 * IKModalTokens.screenMargin))
+                  : root.preferredWidth
     implicitHeight: modalContent.implicitHeight + topPadding + bottomPadding
     padding: IKModalTokens.contentPadding
     popupType: Popup.Item
