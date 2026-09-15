@@ -50,7 +50,7 @@
 "activitiesTypeAllActivities" = "Alle aktiviteter";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activitiesTypeMyActivity" = "Kun min aktivitet";
+"activitiesTypeThisComputer" = "Aktiviteter fra denne computer";
 
 /* loco:6a69c2a7fb376e733f092008 */
 "activityInstructionGetLabel" = "Importeret";
@@ -1355,7 +1355,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+"searchResultOpenInBrowserTooltip" = "Denne funktion er ikke tilgængelig på denne enhed. Den åbnes i kDrive online.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */

@@ -47,7 +47,7 @@ public enum KDriveLocalizable {
   /// loco:6981b68a251c4a36c1078274
   public static let activitiesTypeAllActivities = KDriveLocalizable.tr("Localizable", "activitiesTypeAllActivities", fallback: "All activities")
   /// loco:6981b68a1e51fbe933040213
-  public static let activitiesTypeMyActivity = KDriveLocalizable.tr("Localizable", "activitiesTypeMyActivity", fallback: "My activity only")
+  public static let activitiesTypeThisComputer = KDriveLocalizable.tr("Localizable", "activitiesTypeThisComputer", fallback: "Activities from this computer")
   /// loco:6a69c2a7fb376e733f092008
   public static let activityInstructionGetLabel = KDriveLocalizable.tr("Localizable", "activityInstructionGetLabel", fallback: "Imported")
   /// loco:6a69c75cb90e0a6f370caf93
