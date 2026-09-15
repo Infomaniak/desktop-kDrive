@@ -74,7 +74,6 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
 };
 
 void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -121,10 +120,6 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoVersionChannel, _distributionChannel);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
-
-    if (dstruct.contains(parametersInfoAskBeforeDelete)) { // Not implemented in new clients yet
-        CommonUtility::readValueFromStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
-    }
 };
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
@@ -132,8 +127,7 @@ QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
             parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfig >>
-            parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled >>
-            parametersInfo._notifyBeforeDelete;
+            parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled;
     return in;
 }
 
@@ -142,8 +136,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
         << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfig
-        << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled
-        << parametersInfo._notifyBeforeDelete;
+        << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled;
     return out;
 }
 
