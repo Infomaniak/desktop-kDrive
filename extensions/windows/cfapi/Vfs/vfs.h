@@ -20,7 +20,11 @@
 
 #include <functional>
 #include <ntstatus.h>
-#include <winternl.h> 
+// Prevent the application CLIENT_ID macro from replacing the Windows SDK type.
+#pragma push_macro("CLIENT_ID")
+#undef CLIENT_ID
+#include <winternl.h>
+#pragma pop_macro("CLIENT_ID")
 
 #if defined(_WINDLL)
 #define DLL_EXP __declspec(dllexport)
