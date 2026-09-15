@@ -58,7 +58,11 @@ StorageController::~StorageController() {
 }
 
 QString StorageController::volumeName() const {
-    return _currentSnapshot ? _currentSnapshot->volumeName : QString{};
+    if (!_currentSnapshot) {
+        return {};
+    }
+
+    return _currentSnapshot->usesDefaultRootName ? qtTrId("storageThisComputer") : _currentSnapshot->volumeName;
 }
 
 QString StorageController::usageText() const {
@@ -115,6 +119,10 @@ void StorageController::retry() {
         return;
     }
     startScan(ScanTrigger::Retry);
+}
+
+void StorageController::retranslate() {
+    emit storageChanged();
 }
 
 void StorageController::refreshSelectedContext() {
