@@ -436,7 +436,17 @@ qt_deploy_runtime_dependencies(
     ADDITIONAL_MODULES \\\${plugins_found}
     GENERATE_QT_CONF
     NO_TRANSLATIONS
-    INCLUDE_PLUGINS qwayland
+    INCLUDE_PLUGINS
+        qgtk3
+        qnetworkmanager
+        qopensslbackend
+        qsvg
+        qsvgicon
+        qwayland
+        qxcb
+        qxcb-glx-integration
+        qxdgdesktopportal
+        xdg-shell
     EXCLUDE_PLUGIN_TYPES qmltooling egldeviceintegrations)
 qt_deploy_translations(CATALOGS qtbase qtdeclarative LOCALES da de en es fi fr it nl pl pt_BR sv)
 ")

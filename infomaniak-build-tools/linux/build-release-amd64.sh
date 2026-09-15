@@ -322,12 +322,12 @@ EOF
     cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
 
-  extra="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64"
-  cd "$build_dir"
-  v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra"
-  v4_strip_debug_symbols "$updater_appdir"
-  v4_verify_bundle "$updater_appdir"
-  v4_package_appimage "$updater_appdir" "$extra"
+  export NO_STRIP=1
+  linuxdeploy --appdir "$updater_appdir" \
+    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
+    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
+    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
+    --plugin qt --output appimage -v0
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
