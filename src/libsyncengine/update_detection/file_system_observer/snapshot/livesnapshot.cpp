@@ -93,8 +93,10 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
 
     bool parentChanged = false;
     auto item = findItem(newItem.id());
+    bool hasChanged = false;
     // Update old parent's children lists if the item already exists
     if (item) {
+        hasChanged = *item != newItem;
         parentChanged = item->id() != rootFolderId() && item->parentId() != newItem.parentId();
         // Remove children from previous parent
         if (parentChanged) {
@@ -128,15 +130,15 @@ bool LiveSnapshot::updateItem(const SnapshotItem &newItem, NodeId &removedNodeId
             newParent->addChild(item);
         }
     }
-    if (parentChanged || !isOrphan(item->id())) {
+    if (hasChanged || (parentChanged && !isOrphan(item->id()))) {
         startUpdate();
+        if (ParametersCache::isExtendedLogEnabled()) {
+            LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" ("
+                                                               << CommonUtility::s2ws(item->id()) << L") updated at:"
+                                                               << item->lastModified());
+        }
     }
 
-    if (ParametersCache::isExtendedLogEnabled()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << Utility::formatSyncName(item->name()) << L" ("
-                                                           << CommonUtility::s2ws(item->id()) << L") updated at:"
-                                                           << item->lastModified());
-    }
     return true;
 }
 

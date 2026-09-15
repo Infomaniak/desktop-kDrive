@@ -96,26 +96,27 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     _commManager(commManager),
     _commandLineStr(commandLineStr),
     _channels(channels) {
-    _commands = {{"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
-                 {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
-                 {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
-                 {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
-                 {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
-                 {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
-                 {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
-                 {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
-                 {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
-                 {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
+    _commands = {
+        {"REGISTER_PATH", std::bind_front(&ExtensionJob::commandRegisterFolder, this)},
+        {"UNREGISTER_PATH", std::bind_front(&ExtensionJob::commandUnregisterFolder, this)},
+        {"GET_STRINGS", std::bind_front(&ExtensionJob::commandGetStrings, this)},
+        {"STATUS", std::bind_front(&ExtensionJob::commandForceStatus, this)},
+        {"GET_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetMenuItems, this)},
+        {"COPY_PUBLIC_LINK", std::bind_front(&ExtensionJob::commandCopyPublicLink, this)},
+        {"COPY_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandCopyPrivateLink, this)},
+        {"OPEN_PRIVATE_LINK", std::bind_front(&ExtensionJob::commandOpenPrivateLink, this)},
+        {"MAKE_AVAILABLE_LOCALLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeAvailableLocallyDirect, this)},
+        {"RETRIEVE_FILE_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFileStatus, this)},
 #if defined(KD_WINDOWS)
-                 {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
-                 {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
+        {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
+        {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
 #endif
 #if defined(KD_MACOS)
-                 {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
-                 {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
-                 {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
-                 {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
-                 {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
+        {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
+        {"MAKE_ONLINE_ONLY_DIRECT", std::bind_front(&ExtensionJob::commandMakeOnlineOnlyDirect, this)},
+        {"CANCEL_DEHYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelDehydrationDirect, this)},
+        {"CANCEL_HYDRATION_DIRECT", std::bind_front(&ExtensionJob::commandCancelHydrationDirect, this)},
+        {"SET_THUMBNAIL", std::bind_front(&ExtensionJob::commandSetThumbnail, this)}
 #endif
     };
 }
@@ -788,7 +789,7 @@ void ExtensionJob::executeCommand(const CommString &commandLineStr, std::shared_
 
 void ExtensionJob::manageActionsOnSingleFile(std::shared_ptr<AbstractCommChannel> channel, const SyncPath &path,
                                              SyncPalMap::const_iterator syncPalMapIt, VfsMap::const_iterator vfsMapIt,
-                                             const Sync &sync) {
+                                             const BaseSync &sync) {
     bool exists = false;
     auto ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive) || !exists) {
@@ -977,13 +978,16 @@ ExitInfo ExtensionJob::dehydratePlaceholder(const FileData &fileData) {
 
 bool ExtensionJob::addDownloadJob(const FileData &fileData, const SyncPath &parentFolderPath) {
     if (!fileData.syncDbId) return false;
-    const std::scoped_lock lock(_commManager->appServer().vfsMapMutex);
+
+    const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
     const auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
+
     if (syncPalMapIt == _commManager->appServer().syncPalMap.end() || !syncPalMapIt->second) return false;
 
     // Create download job
-    const ExitCode exitCode = syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
-    if (exitCode != ExitCode::Ok) {
+    if (const ExitCode exitCode =
+                syncPalMapIt->second->addDlDirectJob(fileData.relativePath, fileData.localPath, parentFolderPath);
+        exitCode != ExitCode::Ok) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatSyncPath(fileData.relativePath));
         return false;
@@ -1202,34 +1206,32 @@ void ExtensionJob::processFileList(const std::vector<CommString> &inFileList, st
             bool endOfDir = false;
             DirectoryEntry entry;
 
-            try {
-                if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
-                    LOGW_WARN(_logger, L"Error in IoHelper::recursiveDirectoryIterator");
+            if (!IoHelper::getRecursiveDirectoryIterator(path, ioError, dirIt, true)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator");
+                continue;
+            }
+
+            while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
+                FileData tmpFileData = FileData::get(entry.path());
+                if (!tmpFileData.isValid() || tmpFileData.isLink || tmpFileData.isDirectory) continue;
+
+                auto status = SyncFileStatus::Unknown;
+                if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
+                    LOGW_WARN(Log::instance()->getLogger(),
+                              L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
                     continue;
                 }
 
-                while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
-                    FileData tmpFileData = FileData::get(entry.path());
-                    if (!tmpFileData.isValid() || tmpFileData.isLink || tmpFileData.isDirectory) continue;
-
-                    auto status = SyncFileStatus::Unknown;
-                    if (VfsStatus vfsStatus; !syncFileStatus(tmpFileData, status, vfsStatus)) {
-                        LOGW_WARN(Log::instance()->getLogger(),
-                                  L"Error in ExtensionJob::syncFileStatus: " << Utility::formatSyncPath(entry.path()));
-                        continue;
-                    }
-
-                    if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
-                        continue;
-                    }
-
-                    outFileList.push_back(entry.path());
+                if (status == SyncFileStatus::Unknown || status == SyncFileStatus::Ignored) {
+                    continue;
                 }
-            } catch (std::filesystem::filesystem_error &e) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error caught in ExtensionJob::processFileList: code=" << e.code() << " error=" << e.what());
-            } catch (...) {
-                LOG_WARN(Log::instance()->getLogger(), "Error caught in ExtensionJob::processFileList");
+
+                outFileList.push_back(entry.path());
+            }
+
+            if (ioError != IoError::Success) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError));
             }
         } else {
             outFileList.push_back(path);

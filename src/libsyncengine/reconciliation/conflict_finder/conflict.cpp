@@ -118,8 +118,8 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) const {
                 break;
         }
 
-        int pathDepth1 = Utility::pathDepth(path1);
-        int pathDepth2 = Utility::pathDepth(path2);
+        int pathDepth1 = CommonUtility::pathDepth(path1);
+        int pathDepth2 = CommonUtility::pathDepth(path2);
         if (pathDepth1 == pathDepth2) {
             // Compare with lexicographical order
             ret = (path1 > path2);

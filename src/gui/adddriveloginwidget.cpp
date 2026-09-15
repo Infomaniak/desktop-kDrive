@@ -33,7 +33,10 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QDesktopServices>
+#include <QTimer>
 #include <QUrlQuery>
+
+#include <chrono>
 
 namespace KDC {
 
@@ -50,6 +53,12 @@ const QString responseType = "code";
 const QString authorizePath = "/authorize";
 
 const int stateStringLength = 8;
+
+static constexpr int warningIconSize = 16;
+static constexpr int warningLayoutSpacing = 8;
+static constexpr auto warningIconColor = QColor(255, 133, 0);
+
+static constexpr std::chrono::milliseconds browserLaunchDelay(250);
 
 Q_LOGGING_CATEGORY(lcAddDriveLoginWidget, "gui.adddriveloginwidget", QtInfoMsg)
 
@@ -82,6 +91,26 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
 
     leftPartLayout->addStretch(1);
 
+    auto *warningLayout = new QHBoxLayout();
+    warningLayout->setContentsMargins(0, 0, 0, 0);
+    warningLayout->setSpacing(warningLayoutSpacing);
+    leftPartLayout->addItem(warningLayout);
+
+    auto *warningIconLabel = new QLabel(this);
+    warningIconLabel->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", warningIconColor)
+                                        .pixmap(QSize(warningIconSize, warningIconSize)));
+    warningIconLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+    warningIconLabel->setAlignment(Qt::AlignTop);
+    warningLayout->addWidget(warningIconLabel);
+
+    auto *warningLabel = new QLabel(tr("Do not close this window to complete the connection."), this);
+    warningLabel->setObjectName("textLabel");
+    warningLabel->setWordWrap(true);
+    warningLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    warningLayout->addWidget(warningLabel);
+
+    leftPartLayout->addStretch(1);
+
     auto *connectButton = new CustomPushButton(tr("Open the login page"), this);
     connectButton->setObjectName("nondefaultbutton");
     connectButton->setFlat(true);
@@ -104,7 +133,26 @@ AddDriveLoginWidget::AddDriveLoginWidget(QWidget *parent) :
 }
 
 void AddDriveLoginWidget::init() {
-    onOpenLoginInBrowser();
+    if (isVisible()) {
+        scheduleOpenLoginInBrowser();
+    } else {
+        // The window is not on screen yet, wait for it (see showEvent).
+        _openInBrowserPending = true;
+    }
+}
+
+void AddDriveLoginWidget::showEvent(QShowEvent *event) {
+    QWidget::showEvent(event);
+
+    if (!_openInBrowserPending) return;
+    _openInBrowserPending = false;
+    scheduleOpenLoginInBrowser();
+}
+
+void AddDriveLoginWidget::scheduleOpenLoginInBrowser() {
+    // Give the window time to be mapped and activated before handing the focus over to the browser, otherwise the browser
+    // window opens behind ours.
+    QTimer::singleShot(browserLaunchDelay, this, &AddDriveLoginWidget::onOpenLoginInBrowser);
 }
 
 void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString &code, const QString &state) {

@@ -18,19 +18,20 @@
 
 #include "testwindowsupdater.h"
 
-#include "testabstractupdater.h"
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
 #include "io/iohelper.h"
 #include "jobs/network/kDrive_API/downloadjob.h"
+#include "jobs/network/directdownloadjob.h"
+#include "jobs/network/infomaniak_API/getappversionjob.h"
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/testhelpers.h"
 #include "updater/windowsupdater.h"
+#include "libcommonserver/utility/checksumverifier.h"
 #include "utility/digitalsignaturechecker_win.h"
-#include "mockversionretriever.h"
 #include "jobs/syncjobmanager.h"
 
 namespace KDC {
@@ -47,7 +48,7 @@ void TestWindowsUpdater::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
     // Create parmsDb
     bool alreadyExists = false;
     (void) ParmsDb::instance(MockDb::makeDbName(alreadyExists), KDRIVE_VERSION_STRING, true, true);
@@ -95,7 +96,9 @@ void TestWindowsUpdater::testOnUpdateFound() {
 
             std::streamsize getExpectedInstallerSize([[maybe_unused]] const std::string &downloadUrl) override { return 10; }
 
-            bool verifyDigitalSignature(const SyncPath &filepath) override { return true; }
+            bool verifyInstallerChecksum([[maybe_unused]] const SyncPath &filepath) override { return true; }
+
+            bool verifyDigitalSignature([[maybe_unused]] const SyncPath &filepath) override { return true; }
 
             SyncPath _installerPath;
     };
@@ -133,7 +136,7 @@ void TestWindowsUpdater::testOnUpdateFound() {
 
 void TestWindowsUpdater::testIsSignatureValid() {
     // Empty path.
-    CPPUNIT_ASSERT(!DigitalSignatureChecker_win({}).isSignatureValid());
+    CPPUNIT_ASSERT(!DigitalSignatureChecker_win("").isSignatureValid());
     // Path to non-existing file.
     CPPUNIT_ASSERT(!DigitalSignatureChecker_win(SyncPath("A/B/C")).isSignatureValid());
     // Path to existing file but not signed.
@@ -149,51 +152,106 @@ void TestWindowsUpdater::testIsSignatureValid() {
         const auto signedFilePath = tmpDir.path() / "testfile.exe";
         DownloadJob job(nullptr, cacheDirectory, DownloadJob::FileDownloadInfo{_driveDbId, signedFileId, signedFilePath, 0},
                         DownloadJob::DateTimePolicy::ApplyDateTime);
-        (void) job.runSynchronously();
+        CPPUNIT_ASSERT(job.runSynchronously());
         CPPUNIT_ASSERT(DigitalSignatureChecker_win(SyncPath(signedFilePath)).isSignatureValid());
     }
 }
 
+void TestWindowsUpdater::testIsSignatureValidExtended() {
+    if (!testhelpers::isExtendedTest()) return;
+
+    static const std::string appUid("1234567890");
+    static const std::vector<DistributionChannel> channels = {DistributionChannel::Internal, DistributionChannel::Beta,
+                                                              DistributionChannel::Prod};
+
+    User user;
+    bool found = false;
+    (void) ParmsDb::instance()->selectUser(1, user, found);
+    CPPUNIT_ASSERT(found);
+    const std::vector<UserId> userIdList = {user.userId()};
+
+    const LocalTemporaryDirectory tmpDir("TestWindowsUpdater");
+
+    // Fetch the download link of each channel, keeping only distinct URLs to avoid downloading the same version twice.
+    std::map<std::string, DistributionChannel, std::less<>> downloadUrls;
+    for (const auto channel: channels) {
+        GetAppVersionJob job(channel, appUid, userIdList);
+        (void) job.runSynchronously();
+        CPPUNIT_ASSERT(!job.hasHttpError());
+
+        const auto &versionInfo = job.versionInfo();
+        CPPUNIT_ASSERT(versionInfo.isValid());
+        CPPUNIT_ASSERT(!versionInfo.downloadUrl.empty());
+
+        (void) downloadUrls.try_emplace(versionInfo.downloadUrl, channel);
+    }
+
+    // Download each distinct version and check its digital signature.
+    int8_t index = 0;
+    for (const auto &[downloadUrl, channel]: downloadUrls) {
+        const auto installerPath = tmpDir.path() / ("installer-" + std::to_string(index++) + ".exe");
+
+        DirectDownloadJob downloadJob(installerPath, downloadUrl);
+        (void) downloadJob.runSynchronously();
+        CPPUNIT_ASSERT(!downloadJob.hasHttpError());
+        CPPUNIT_ASSERT(std::filesystem::exists(installerPath));
+
+        CPPUNIT_ASSERT_MESSAGE(
+                "Digital signature is invalid for installer: " + toString(channel) + " - " + installerPath.string(),
+                DigitalSignatureChecker_win(SyncPath(installerPath)).isSignatureValid());
+    }
+}
+
 void TestWindowsUpdater::testIsChecksumValid() {
-    struct TestCase {
-            std::string checksumValue;
-            std::string fileName;
-            bool expectedValid;
-    };
-
-    static const std::string noChecksumValue("");
-    static const std::string invalidChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c");
     static const std::string validChecksumValue("3d735840895bcb958f359009b06cbe9b840ae9e2df22651f431bfec4ac7b696f");
+    static const std::string invalidChecksumValue("083a301369cd711e9803f7d90d342a3778f9cb864ab22992b49fccddc3b9256c");
 
-    const std::vector<TestCase> testCases = {
-            {noChecksumValue, "picture-1.jpg", true}, // kstore is missing checksum
-            {invalidChecksumValue, "picture-1111.jpg", false}, // can't calculate checksum (file doesn't exist)
-            {invalidChecksumValue, "picture-1.jpg", false}, // checksum is invalid
-            {validChecksumValue, "picture-1.jpg", true}, // checksum is valid
-    };
+    const LocalTemporaryDirectory tmpDir("TestWindowsUpdater");
+    IoError ioError = IoError::Success;
+    (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(), ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+    const SyncPath installerPath = tmpDir.path() / "picture-1.jpg";
 
-    for (const auto &testCase: testCases) {
-        LocalTemporaryDirectory tmpDir;
-        IoError ioError = IoError::Success;
+    // Case 1: sha256 sidecar download fails -> update must be blocked.
+    {
+        const ChecksumVerifier::Sha256Fetcher failingFetcher = [](const std::string &) { return std::string{}; };
+        CPPUNIT_ASSERT(
+                !ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", failingFetcher));
+    }
 
-        // Only copy file if it's expected to exist
-        if (testCase.fileName == "picture-1.jpg") {
-            (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
-                                                 ioError);
-            CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-        }
+    // Case 2: sha256 sidecar downloaded but is empty -> update must be blocked.
+    {
+        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                             ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        WindowsUpdater updater;
+        const ChecksumVerifier::Sha256Fetcher emptyFetcher = [](const std::string &) { return std::string{""}; };
+        CPPUNIT_ASSERT(
+                !ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", emptyFetcher));
+    }
 
-        VersionInfo versionInfo;
-        TestAbstractUpdater::generateValidVersionInfo(versionInfo);
-        auto mockVersionRetriever = std::make_shared<MockVersionRetriever>();
-        mockVersionRetriever->setVersionInfo(versionInfo);
-        mockVersionRetriever->setVersionReceived(true);
-        mockVersionRetriever->setChecksum(testCase.checksumValue);
-        updater._versionRetriever = mockVersionRetriever;
+    // Case 3: sha256 sidecar downloaded, checksum matches -> verification passes.
+    // The file must still exist after the call.
+    {
+        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                             ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
-        CPPUNIT_ASSERT_EQUAL(testCase.expectedValid, updater.verifyFileChecksum(tmpDir.path() / testCase.fileName));
+        const ChecksumVerifier::Sha256Fetcher validFetcher = [&](const std::string &) { return validChecksumValue; };
+        CPPUNIT_ASSERT(ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", validFetcher));
+        CPPUNIT_ASSERT(std::filesystem::exists(installerPath));
+    }
+
+    // Case 4: sha256 sidecar downloaded, checksum mismatch -> verification fails, file deleted.
+    {
+        (void) IoHelper::copyFileOrDirectory(testhelpers::localTestDirPath() / "test_pictures/picture-1.jpg", tmpDir.path(),
+                                             ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        const ChecksumVerifier::Sha256Fetcher invalidFetcher = [&](const std::string &) { return invalidChecksumValue; };
+        CPPUNIT_ASSERT(
+                !ChecksumVerifier::verifyFileChecksum(installerPath, "https://downloads/kDrive-3.8.2.3.exe", invalidFetcher));
+        CPPUNIT_ASSERT(!std::filesystem::exists(installerPath));
     }
 }
 

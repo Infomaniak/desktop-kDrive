@@ -6,7 +6,7 @@
   Locale: el, Greek
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Μόνο η δική μου δραστηριότητα</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Εισήχθη</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Εισαγωγή %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Αγνοημένος</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Μετακινήθηκε</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Μετακινήθηκε %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Προστέθηκε</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Προστέθηκε %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Μετακινήθηκε στα απορρίμματα</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Τοποθετήθηκε στον κάδο %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Μετονομάστηκε</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Μετονομάστηκε σε %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Τροποποιημένο</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Τροποποιήθηκε %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Συγχρονισμός φακέλου με το kDrive</value> 
@@ -314,6 +353,9 @@
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Άνοιγμα ρυθμίσεων συγχρονισμού</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Άνοιγμα του κάδου απορριμμάτων</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Παύση</value> 
@@ -605,8 +647,7 @@
     <value>Εισαγάγετε τον κωδικό πρόσβασής σας</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>Ένα άλλο %@ του οποίου το όνομα διαφέρει μόνο στα κεφαλαία/μικρά γράμματα υπάρχει ήδη σε αυτόν το φάκελο. Αυτός ο τύπος ονόματος δεν υποστηρίζεται από την εφαρμογή kDrive Windows. Μετονομάστε έναν από τους φακέλους %@ από το kDrive online, ώστε να μπορείτε να τον συγχρονίσετε στον υπολογιστή σας.
-</value> 
+    <value>Ένα άλλο %@ του οποίου το όνομα διαφέρει μόνο στα κεφαλαία/μικρά γράμματα υπάρχει ήδη σε αυτόν το φάκελο. Αυτός ο τύπος ονόματος δεν υποστηρίζεται από την εφαρμογή kDrive Windows. Μετονομάστε έναν από τους φακέλους %@ από το kDrive online, ώστε να μπορείτε να τον συγχρονίσετε στον υπολογιστή σας.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Συγκρουόμενα ονόματα, ευαίσθητα στην πεζότητα</value> 
@@ -701,7 +742,6 @@
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Απαγορευμένη πρόσβαση</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %@ από το kDrive online.</value> 
@@ -1218,7 +1258,6 @@
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Εκτεταμένο</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Κρίσιμο</value> 
@@ -1254,6 +1293,25 @@
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ συγκρούσεις εκδόσεων εντοπίστηκαν</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>Ο συγχρονισμός έχει τεθεί σε παύση για να αποφευχθεί η ακούσια διαγραφή.
+Τι θέλετε να κάνετε;</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Επαναφορά αρχείων</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Διαγραφή και από το διαδίκτυο</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Αυτά τα αρχεία παραμένουν διαθέσιμα για ανάκτηση στον κάδο απορριμμάτων του kDrive.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Να μην εμφανίζεται πλέον αυτή η προειδοποίηση</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ στοιχεία που διαγράφηκαν από το φάκελό σας</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Το Matomo είναι ένα εργαλείο ανάλυσης που φιλοξενείται και διαχειρίζεται αποκλειστικά από την Infomaniak για να κατανοεί πώς χρησιμοποιείται η εφαρμογή.
@@ -1303,7 +1361,7 @@
     <value>Ο επιλεγμένος φάκελος πρέπει να είναι κενός για να λειτουργεί σωστά ο συγχρονισμός.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Επιλέξτε τους φακέλους για συγχρονισμό σε αυτόν τον υπολογιστή:</value> 
+    <value>Επιλέξτε τους φακέλους που θέλετε να συγχρονίσετε σε αυτόν τον υπολογιστή:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Συγχρονισμένοι φάκελοι</value> 
@@ -1389,6 +1447,12 @@
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Συγχρονισμός σε εξέλιξη…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Ανακαλύψτε την εφαρμογή</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Η νέα σας εφαρμογή kDrive είναι εδώ!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Άνοιγμα kDrive κατά την εκκίνηση του υπολογιστή</value> 
@@ -1552,7 +1616,7 @@
     <value>τα αρχεία σας συγχρονίζονται</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>ο συγχρονισμός είναι σε παύση</value> 
+    <value>ο συγχρονισμός έχει τεθεί σε παύση</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Τα πρόσφατα αρχεία σας ενημερώνονται.</value> 
@@ -1561,8 +1625,8 @@
     <value>Συγχρονισμός σε εξέλιξη</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Τα τοπικά αρχεία σας παραμένουν προσβάσιμα.
-Ο συγχρονισμός θα συνεχιστεί αυτόματα μόλις συνδεθείτε ξανά.</value> 
+    <value>Τα αρχεία που έχετε κατεβάσει παραμένουν προσβάσιμα.
+Ο συγχρονισμός θα ξαναρχίσει αυτόματα μόλις συνδεθείτε ξανά.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Εκτός σύνδεσης</value> 
@@ -1571,7 +1635,7 @@
     <value>Ο συγχρονισμός έχει σταματήσει προσωρινά.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Παύση ενεργοποιημένη</value> 
+    <value>Συγχρονισμός κατά τη διακοπή</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Τα αρχεία σας είναι προσβάσιμα και συγχρονισμένα.</value> 

@@ -28,11 +28,9 @@ namespace Infomaniak.kDrive.CustomControls
 {
     public class SvgIconSource : ImageIconSource
     {
-        private CancellationTokenSource? _refreshCts;
-
         public SvgIconSource()
         {
-            RegisterPropertyChangedCallback(ForegroundProperty, OnDependencyPropertyChanged);
+            RegisterPropertyChangedCallback(ForegroundProperty, OnForegroundChanged);
         }
 
         public Uri? UriSource
@@ -45,36 +43,30 @@ namespace Infomaniak.kDrive.CustomControls
                 nameof(UriSource),
                 typeof(Uri),
                 typeof(SvgIconSource),
-                new PropertyMetadata(null, OnDependencyPropertyChanged));
+                new PropertyMetadata(null, OnUriSourceChanged));
 
 
-        private static void OnDependencyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnUriSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is SvgIconSource source)
             {
-                source.ScheduleRefresh();
+                _ = source.RefreshSource();
             }
         }
 
-        private void OnDependencyPropertyChanged(DependencyObject sender, DependencyProperty dp)
+        private void OnForegroundChanged(DependencyObject sender, DependencyProperty dp)
         {
-            ScheduleRefresh();
+            _ = RefreshSource();
         }
 
-        private void ScheduleRefresh()
-        {
-            _refreshCts = SvgHelper.ScheduleOnDispatcher(_refreshCts, DispatcherQueue, RefreshSource, "SvgIconSource");
-        }
-
-        private async Task RefreshSource(CancellationToken token)
+        private async Task RefreshSource()
         {
             try
             {
-                token.ThrowIfCancellationRequested();
                 if (UriSource is null)
                     return;
 
-                var result = SvgHelper.TryLoad(UriSource, Foreground, token);
+                var result = SvgHelper.TryLoad(UriSource, Foreground, CancellationToken.None);
                 if (result is null)
                 {
                     TryFallback();
@@ -82,19 +74,16 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 var (pixelWidth, pixelHeight) = ComputeRasterSize(result.Value.Doc);
 
-                ImageSource = new SvgImageSource
+                var svgImageSource = new SvgImageSource
                 {
                     RasterizePixelWidth = pixelWidth,
                     RasterizePixelHeight = pixelHeight
                 };
-                var svgImageSource = (SvgImageSource)ImageSource;
+
+                ImageSource = svgImageSource;
 
                 using var memoryStream = result.Value.Stream;
-                await svgImageSource.SetSourceAsync(memoryStream.AsRandomAccessStream()).AsTask(token);
-            }
-            catch (OperationCanceledException)
-            {
-                Logger.Log(Logger.Level.Extended, $"SvgIconSource refresh canceled");
+                await svgImageSource.SetSourceAsync(memoryStream.AsRandomAccessStream());
             }
             catch (Exception ex)
             {

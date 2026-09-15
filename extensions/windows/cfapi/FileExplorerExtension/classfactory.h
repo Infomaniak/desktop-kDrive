@@ -20,7 +20,7 @@
 
 #include "..\Common\utilities.h"
 
-#include <winrt\base.h>
+#include <winrt/base.h>
 
 template<typename T>
 class ClassFactory : public winrt::implements<ClassFactory<T>, IClassFactory> {

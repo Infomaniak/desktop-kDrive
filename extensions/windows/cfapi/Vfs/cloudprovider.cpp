@@ -29,7 +29,7 @@
 #include <propvarutil.h>
 #include <shobjidl_core.h>
 #include <shlobj_core.h>
-#include <winrt\base.h>
+#include <winrt/base.h>
 #include <filesystem>
 
 #define MSSEARCH_INDEX L"SystemIndex"

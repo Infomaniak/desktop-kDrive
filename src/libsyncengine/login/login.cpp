@@ -77,14 +77,14 @@ ExitInfo Login::requestToken(const std::string &authorizationCode, const std::st
         return ExitCode::SystemError;
     }
 
-    LOG_DEBUG(_logger, "KeyChainManager.writeToken");
-    if (!KeyChainManager::instance()->writeToken(_keychainKey, _apiToken.rawData())) {
+    LOG_DEBUG(_logger, "KeyChainManager.writeData");
+    if (!KeyChainManager::instance()->writeData(_keychainKey, _apiToken.rawData())) {
         LOG_WARN(_logger, "Failed to write authentification token into keychain");
         _error = std::string("Failed to write authentification token into keychain");
         _errorDescr = std::string();
         return ExitCode::SystemError;
     }
-    LOG_DEBUG(_logger, "KeyChainManager.writeToken done");
+    LOG_DEBUG(_logger, "KeyChainManager.writeData done");
 
     return ExitCode::Ok;
 }
@@ -154,7 +154,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     LOG_DEBUG(Log::instance()->getLogger(), "Token successfully refreshed");
 
-    if (!KeyChainManager::instance()->writeToken(keychainKey, apiToken.rawData())) {
+    if (!KeyChainManager::instance()->writeData(keychainKey, apiToken.rawData())) {
         LOG_WARN(Log::instance()->getLogger(), "Failed to write authentication token into keychain");
         error = std::string("Failed to write authentication token into keychain");
         errorDescr = std::string();

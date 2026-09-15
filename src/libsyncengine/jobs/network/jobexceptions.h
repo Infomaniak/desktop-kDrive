@@ -36,7 +36,7 @@ struct DataError : JobException {
         using JobException::JobException;
 };
 
-struct TokenError : JobException {
+struct EmptyTokenError : JobException {
         using JobException::JobException;
 };
 

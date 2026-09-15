@@ -59,6 +59,7 @@ using UserDbId = int64_t;
 using GenericId = int64_t;
 
 using Count = uint64_t;
+using Port = uint16_t;
 using SyncTime = int64_t;
 
 using SyncDbRevision = uint64_t;
@@ -226,21 +227,6 @@ enum class ActionType {
     EnumEnd
 };
 
-enum class AppStateKey {
-    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
-    LastServerSelfRestartDate,
-    LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, // Format: "month,day,year,hour,minute,second"
-    LastLogUploadArchivePath,
-    LogUploadState,
-    LogUploadPercent,
-    LogUploadToken,
-    AppUid,
-    NoUpdate,
-    Unknown, // Only for initialization purpose
-    EnumEnd
-};
-
 enum class AppType {
     None,
     Server,
@@ -267,6 +253,14 @@ enum class ExclusionTemplateComplexity {
     EnumEnd
 };
 
+enum class SyncFolderRuleType {
+    None,
+    BlackList,
+    WhiteList,
+    WhiteListSubFolder
+};
+
+
 enum class IoError {
     Success = 0,
     AccessDenied,
@@ -285,6 +279,7 @@ enum class IoError {
     ResultOutOfRange,
     CrossDeviceLink,
     FileOrDirectoryCorrupted,
+    TooManySymbolicLinkLevels,
     Unknown,
     EnumEnd
 };
@@ -487,6 +482,7 @@ std::string toString(ConflictType e);
 std::string toString(ConflictResolutionStrategy e);
 std::string toString(ErrorLevel e);
 std::string toString(ExclusionTemplateComplexity e);
+std::string toString(SyncFolderRuleType e);
 std::string toString(ExitCode e);
 std::string toString(ExitCause e);
 std::string toString(InconsistencyType e);
@@ -616,19 +612,17 @@ struct VersionInfo {
         std::string tag; // Version number. Example: 3.6.4
         uint64_t buildVersion{0}; // Build number. Should be > 0.
         std::string downloadUrl; // URL to download the version
-        std::string checksum; // Verify if the downloaded file is correct, and not corrupted. Uses a SHA-256
         std::string minOsVersion; // Optional. Minimum supported version of the OS. Examples: 26.3.1, 22.04, 10.0.26200, ...
         std::string minAppVersion; // Optional. Minimum supported version of the application. Example: 3.6.4
 
         bool operator==(const VersionInfo &other) const {
             return channel == other.channel && tag == other.tag && buildVersion == other.buildVersion &&
-                   downloadUrl == other.downloadUrl && checksum == other.checksum && minOsVersion == other.minOsVersion &&
-                   minAppVersion == other.minAppVersion;
+                   downloadUrl == other.downloadUrl && minOsVersion == other.minOsVersion && minAppVersion == other.minAppVersion;
         }
         std::string toString() const {
             return "VersionInfo{tag: " + tag + " / buildVersion: " + std::to_string(buildVersion) +
-                   " / downloadUrl: " + downloadUrl + " / checksum: " + checksum + " / minOsVersion: " + minOsVersion +
-                   " / minAppVersion: " + minAppVersion + "}";
+                   " / downloadUrl: " + downloadUrl + " / minOsVersion: " + minOsVersion + " / minAppVersion: " + minAppVersion +
+                   "}";
         }
 
         [[nodiscard]] bool isValid() const {
@@ -646,7 +640,6 @@ struct VersionInfo {
             tag.clear();
             buildVersion = 0;
             downloadUrl.clear();
-            checksum.clear();
             minOsVersion.clear();
             minAppVersion.clear();
         }
@@ -676,7 +669,6 @@ struct VersionInfo {
             versionInfo.tag = tmpTag.toStdString();
             versionInfo.buildVersion = tmpBuildVersion;
             versionInfo.downloadUrl = tmpDownloadUrl.toStdString();
-            versionInfo.checksum = tmpChecksum.toStdString();
             versionInfo.minOsVersion = tmpBuildMinOsVersion.toStdString();
             versionInfo.minAppVersion = tmpBuildMinAppVersion.toStdString();
 
@@ -686,8 +678,7 @@ struct VersionInfo {
         friend QDataStream &operator<<(QDataStream &out, const VersionInfo &versionInfo) {
             out << versionInfo.channel << QString::fromStdString(versionInfo.tag)
                 << static_cast<quint64>(versionInfo.buildVersion) << QString::fromStdString(versionInfo.downloadUrl)
-                << QString::fromStdString(versionInfo.checksum) << QString::fromStdString(versionInfo.minOsVersion)
-                << QString::fromStdString(versionInfo.minAppVersion);
+                << QString::fromStdString(versionInfo.minOsVersion) << QString::fromStdString(versionInfo.minAppVersion);
             return out;
         }
 };

@@ -19,6 +19,7 @@
 #include "driveuploadsession.h"
 
 #include "io/filestat.h"
+#include "jobs/network/kDrive_API/upload/uploadhelpers.h"
 #include "utility/utility.h"
 
 namespace KDC {
@@ -26,8 +27,7 @@ namespace KDC {
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
                                        const NodeId &remoteParentDirId, const SyncTime creationTime,
-                                       const SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread) :
+                                       const SyncTime modificationTime, const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),
     _syncDb(syncDb),
@@ -35,22 +35,22 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
     _modificationTimeIn(modificationTime),
     _remoteParentDirId(remoteParentDirId),
     _vfs(vfs) {
-    (void) liteSyncActivated;
     _uploadSessionType = UploadSessionType::Drive;
 }
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
-                                       const SyncTime modificationTime, const bool liteSyncActivated,
-                                       const uint64_t nbParallelThread) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, liteSyncActivated,
-                       nbParallelThread) {
+                                       const SyncTime modificationTime, const uint64_t nbParallelThread,
+                                       const int64_t remoteSize /*= -1*/) :
+    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
     _fileId = fileId;
+    _remoteSize = remoteSize;
 
     // Retrieve creation date from the local file
     FileStat fileStat;
-    auto ioError = IoError::Unknown;
-    if (!IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
+
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::getFileStat(filepath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive) ||
         ioError != IoError::Success) {
         LOGW_WARN(getLogger(), L"Failed to get FileStat for " << Utility::formatSyncPath(filepath) << L": " << ioError);
     }
@@ -63,6 +63,22 @@ DriveUploadSession::~DriveUploadSession() {
     if (const auto exitInfo = _vfs->forceStatus(getFilePath(), vfsStatus); !exitInfo) {
         LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L": " << exitInfo);
     }
+}
+
+ExitInfo DriveUploadSession::runJob() noexcept {
+    if (!_fileId.empty()) {
+        const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize, _creationTimeIn,
+                                                   _modificationTimeIn);
+        if (result.applyFileDatesResult) {
+            _nodeId = result.applyFileDatesResult->nodeId;
+            _creationTimeOut = result.applyFileDatesResult->creationTime;
+            _modificationTimeOut = result.applyFileDatesResult->modificationTime;
+            _sizeOut = result.applyFileDatesResult->size;
+        }
+        if (!result.shouldUpload && result.exitInfo) return ExitCode::Ok;
+        LOGW_DEBUG(getLogger(), L"resolveUploadNeed: proceeding with upload - " << result.exitInfo);
+    }
+    return AbstractUploadSession::runJob();
 }
 
 ExitInfo DriveUploadSession::runJobInit() {

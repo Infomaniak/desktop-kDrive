@@ -20,7 +20,6 @@
 
 #include "libcommon/utility/utility.h"
 
-#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -84,9 +83,6 @@ ExitInfo LocalMoveJob::runJob() {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }
-
-    // Make sure we are allowed to propagate the change
-    PermissionsGiver _(_dest.parent_path(), _logger);
 
     std::error_code ec;
     std::filesystem::rename(_source, _dest, ec);

@@ -151,6 +151,19 @@ if [ -n "$TEAM_IDENTIFIER" ] && [ -n "$APP_DOMAIN" ] && [ -n "$SIGN_IDENTITY" ];
 	sign_files+=("$install_dir/$app_name.app")
 fi
 
+# Sign the recovery updater (if it was built and installed)
+# We don't create another script (e.g. src_dir/admin/osx/sign_app.sh) because its simpler to sign the .app
+updater_app="$install_dir/kDriveRecoveryUpdater.app"
+if [ -d "$updater_app" ]; then
+	if [ -n "$SIGN_IDENTITY" ]; then
+		echo "Signing kDriveRecoveryUpdater..."
+		codesign -s "$SIGN_IDENTITY" --force --verbose=4 --deep --options=runtime "$updater_app"
+		codesign -dv "$updater_app"
+		codesign --verify -v --strict "$updater_app"
+		sign_files+=("$updater_app")
+	fi
+fi
+
 if [ -n "$INSTALLER_SIGN_IDENTITY" ]; then
 	# xcrun stapler staple $package_file
 	"$build_dir/admin/osx/create_mac.sh" "$install_dir" "$build_dir" "$INSTALLER_SIGN_IDENTITY"
@@ -191,4 +204,41 @@ if [ -n "$sign_files" ]; then
 			"$install_dir/InfomaniakDrive.zip" \
 			--progress --wait
 	fi
+
+	# Staple the notarization ticket to the recovery updater app
+	if [ -d "$updater_app" ]; then
+		echo "Stapling notarization ticket to kDriveRecoveryUpdater..."
+		xcrun stapler staple "$updater_app"
+	fi
+fi
+
+# Create a distributable zip of the recovery updater
+if [ -d "$updater_app" ]; then
+	updater_version=$(grep "KDRIVE_VERSION_FULL" "$build_dir/version.h" | awk '{print $3}')
+	updater_zip="$install_dir/kDriveRecoveryUpdater-${updater_version}.zip"
+	echo "Creating distributable zip for kDriveRecoveryUpdater..."
+	# Use zip -X to exclude extended attributes (com.apple.provenance, etc.)
+	# ditto and zip without -X both preserve xattrs as ._ AppleDouble files,
+	# which appear as unsealed contents in framework directories and break
+	# code signature validation (codesign --verify rejects them).
+	updater_basename=$(basename "$updater_app")
+	(cd "$install_dir" && zip -r -X -y "$updater_zip" "$updater_basename")
+	echo "Recovery updater zip created: $updater_zip"
+
+	# Verify the code signature survives the zip round-trip
+	echo "Verifying code signature in distributable zip..."
+	verify_tmp=$(mktemp -d)
+	unzip -q "$updater_zip" -d "$verify_tmp"
+	if find "$verify_tmp" -name "._*" | grep -q .; then
+		echo "ERROR: AppleDouble (._*) files found in zip — extended attributes were not excluded" >&2
+		rm -rf "$verify_tmp"
+		exit 1
+	fi
+	if ! codesign --verify -v --strict "$verify_tmp/$updater_basename"; then
+		echo "ERROR: Code signature verification failed after zip round-trip!" >&2
+		rm -rf "$verify_tmp"
+		exit 1
+	fi
+	echo "Code signature verified successfully after zip round-trip."
+	rm -rf "$verify_tmp"
 fi

@@ -20,9 +20,9 @@
 
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/itemsexistjob.h"
+#include "requests/exclusiontemplatecache.h"
 #include "requests/parameterscache.h"
 
-#include "libcommonserver/io/permissionsgiver.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 
@@ -44,18 +44,23 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
     // Case of an advanced synchronization.
     // The remote target path is of the form /path/to/target_folder where to root is the remote drive root.
     // We remove the "/" at the beginning to compare it with a reconstructed relative path.
-    const auto relativeRemoteTargetPath = std::filesystem::relative(remoteTargetPath, remoteTargetPath.root_path());
+    SyncPath relativeRemoteTargetPath;
+    try {
+        relativeRemoteTargetPath = remoteTargetPath.lexically_relative(remoteTargetPath.root_path());
+    } catch (const std::exception &) {
+        return false;
+    }
 
     if (relativeRemoteTargetPath.begin() == relativeRemoteTargetPath.end() || relativeRemoteTargetPath == SyncPath{"."})
         return remoteRelativePath == localRelativePath;
 
     return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
 }
-
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativeLocalPath,
                                        const bool liteSyncIsEnabled, RemoteNodeId remoteNodeId,
                                        ForceToTrash forceToTrash /* = ForceToTrash::No */) :
-    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativeLocalPath : ""),
+    GenericLocalDeleteJob(syncPal ? syncPal->localPath() / relativeLocalPath : SyncPath{},
+                          syncPal ? syncPal->cacheDirectory() : nullptr),
     _liteSyncIsEnabled(liteSyncIsEnabled),
     _syncPal(syncPal),
     _relativeLocalPath(relativeLocalPath),
@@ -63,7 +68,7 @@ SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, c
     _forceToTrash(forceToTrash == ForceToTrash::Yes) {}
 
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absoluteLocalPath) :
-    GenericLocalDeleteJob(absoluteLocalPath),
+    GenericLocalDeleteJob(absoluteLocalPath, syncPal ? syncPal->cacheDirectory() : nullptr),
     _syncPal(syncPal) {
     setBypassCheck(true);
 }
@@ -133,7 +138,7 @@ ExitInfo SyncLocalDeleteJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalPath()));
-        return {ExitCode::DataError, ExitCause::NotFound};
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     if (_remoteNodeId.empty()) {
@@ -186,7 +191,7 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
         return {ExitCode::DbError, ExitCause::DbAccessError};
     }
     if (!found) {
-        LOGW_ERROR(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(relativeLocalPath));
+        LOGW_DEBUG(_logger, L"Node DB ID not found for " << Utility::formatSyncPath(relativeLocalPath));
         return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
@@ -218,19 +223,43 @@ ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     DirectoryEntry entry;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if ((entry.is_symlink() || entry.is_regular_file()) && isFileDehydrated(entry.path(), _logger)) {
-            auto exitInfo = hardDelete(entry.path());
-            if (!exitInfo) return exitInfo;
+        std::error_code ec;
+        const auto isSymlink = entry.is_symlink(ec);
+        if (ec.value()) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in std::filesystem::directory_entry::is_symlink " << Utility::formatStdError(entry.path(), ec));
+            continue;
+        }
+
+        bool isRegularFile = false;
+        if (!isSymlink) {
+            isRegularFile = entry.is_regular_file(ec);
+            if (ec.value()) {
+                LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::directory_entry::is_regular_file "
+                                                                << Utility::formatStdError(entry.path(), ec));
+                continue;
+            }
+        }
+
+        if ((isSymlink || isRegularFile) && isFileDehydrated(entry.path(), _logger)) {
+            if (const auto exitInfo = hardDelete(entry.path()); !exitInfo) return exitInfo;
 
             const auto relativeLocalPath = CommonUtility::relativePath(_syncPal->localPath(), entry.path());
-            exitInfo = deleteFromDB(relativeLocalPath);
-            if (!exitInfo) return exitInfo;
+
+            if (const auto exitInfo = deleteFromDB(relativeLocalPath);
+                exitInfo == ExitInfo{ExitCode::DataError, ExitCause::DbEntryNotFound}) {
+                LOG_IF_FAIL(ExclusionTemplateCache::instance()->isExcluded(relativeLocalPath));
+                continue; // The item was already removed from the DB because it is excluded, so we can
+                          // ignore this error.
+            } else if (!exitInfo)
+                return exitInfo;
         }
     }
 
-    if (!endOfDirectory) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
-        return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error iterating directory with IoHelper::DirectoryIterator: "
+                                   << Utility::formatIoError(absoluteLocalPath(), ioError));
+        return IoHelper::directoryIteratorExitCode(ioError);
     }
 
     return ExitCode::Ok;
@@ -263,10 +292,6 @@ ExitInfo SyncLocalDeleteJob::runJob() {
         return ExitCode::LogicError;
     }
     if (const auto exitInfo = canRun(); !exitInfo) return exitInfo;
-
-    // Make sure we are allowed to propagate the change
-    PermissionsGiver permsGiver(absoluteLocalPath().parent_path(), _logger);
-    PermissionsGiver permsGiver2(absoluteLocalPath(), _logger);
 
     if (const bool tryMoveToTrash = ParametersCache::instance()->parameters().moveToTrash(); tryMoveToTrash || _forceToTrash) {
         return moveToTrash();

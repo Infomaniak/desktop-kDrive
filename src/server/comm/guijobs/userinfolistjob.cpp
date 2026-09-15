@@ -38,15 +38,15 @@ ExitInfo UserInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo UserInfoListJob::serializeOutputParms() {
-    writeParamValues(outParamsUserInfoList, _userInfoList, info2DynamicVar<UserInfo>);
+    writeParamValues(outParamsUserInfoList, _userInfoList, info2DynamicVar<User>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo UserInfoListJob::process() {
-    ExitCode exitCode = ServerRequests::getUserInfoList(_userInfoList);
+    ExitCode exitCode = ServerRequests::getUserList(_userInfoList);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getUserInfoList: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::getUserList: code=" << exitCode);
     }
 
     return exitCode;

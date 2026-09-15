@@ -515,7 +515,7 @@ SectionGroup $SectionGroup_Shortcuts
 		DetailPrint $OPTION_SECTION_SC_START_MENU_DetailPrint
 		SetDetailsPrint listonly
 		SetShellVarContext all
-		CreateShortCut "$SMPROGRAMS\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
+		CreateShortCut "$SMPROGRAMS\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "--synthesis" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
 		SetShellVarContext current
 	${MementoSectionEnd}
 !endif
@@ -527,7 +527,7 @@ SectionGroup $SectionGroup_Shortcuts
 		DetailPrint $OPTION_SECTION_SC_DESKTOP_DetailPrint
 		SetDetailsPrint listonly
 		SetShellVarContext all
-		CreateShortCut "$DESKTOP\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
+		CreateShortCut "$DESKTOP\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "--synthesis" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
 		SetShellVarContext current
 	${MementoSectionEnd}
 !endif
@@ -539,7 +539,7 @@ SectionGroup $SectionGroup_Shortcuts
 		DetailPrint $OPTION_SECTION_SC_QUICK_LAUNCH_DetailPrint
 		SetShellVarContext all
 		SetDetailsPrint listonly
-		CreateShortCut "$QUICKLAUNCH\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
+		CreateShortCut "$QUICKLAUNCH\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "--synthesis" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
 		SetShellVarContext current
 	${MementoSectionEnd}
 !endif

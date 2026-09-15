@@ -19,6 +19,8 @@ using Infomaniak.kDrive.Converters;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.Types;
 using System;
+using System.IO;
+using System.Linq;
 
 namespace Infomaniak.kDrive.ViewModels
 {
@@ -197,5 +199,39 @@ namespace Infomaniak.kDrive.ViewModels
         {
             get => _parentFolderName;
         }
+
+        public string RelevantFilePath
+        {
+            get => String.IsNullOrEmpty(_newPath) ? _path : _newPath;
+        }
+        public string RelevantParentFolderPath
+        {
+            get => System.IO.Path.Combine(Sync.LocalPath, System.IO.Path.GetDirectoryName(RelevantFilePath) ?? "");
+        }
+
+        public string SyncFileItemToInstructionText(SyncFileInstruction instruction, SyncFileStatus status, DateTime timeStamp)
+        {
+            switch (instruction)
+            {
+                case SyncFileInstruction.Get:
+                    return Localizer.Instance.GetString1s("activityInstructionGetWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+                case SyncFileInstruction.Put:
+                    return Localizer.Instance.GetString1s("activityInstructionPutWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+                case SyncFileInstruction.Move:
+                    if (System.IO.Path.GetDirectoryName(Path) != System.IO.Path.GetDirectoryName(NewPath))
+                        return Localizer.Instance.GetString1s("activityInstructionMoveWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+                    else
+                        return Localizer.Instance.GetString1s("activityInstructionRenameWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+
+                case SyncFileInstruction.Remove:
+                    return Localizer.Instance.GetString1s("activityInstructionRemoveWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+                case SyncFileInstruction.Update:
+                case SyncFileInstruction.UpdateMetadata:
+                    return Localizer.Instance.GetString1s("activityInstructionUpdateWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+                default:
+                    return Localizer.Instance.GetString1s("activityInstructionUpdateWithTimeLabel", Utilities.Time.DateTimeElapsedToString(timeStamp, Utilities.DateTimeToStringMode.ElapsedAgo));
+            }
+        }
+
     }
 }

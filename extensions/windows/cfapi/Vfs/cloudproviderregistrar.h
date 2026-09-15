@@ -22,8 +22,7 @@
 #include "providerinfo.h"
 
 #include <sddl.h>
-#include <winrt\base.h>
-#include <filesystem>
+#include <winrt/base.h>
 
 class CloudProviderRegistrar {
     public:

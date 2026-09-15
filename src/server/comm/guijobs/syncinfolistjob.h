@@ -19,7 +19,7 @@
 #pragma once
 
 #include "server/comm/guijobs/abstractguijob.h"
-#include "libcommon/info/syncinfo.h"
+#include "libcommon/data/sync.h"
 
 namespace KDC {
 
@@ -30,7 +30,7 @@ class SyncInfoListJob : public AbstractGuiJob {
 
     private:
         // Output parameters
-        std::vector<SyncInfo> _syncInfoList;
+        std::vector<Sync> _syncInfoList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

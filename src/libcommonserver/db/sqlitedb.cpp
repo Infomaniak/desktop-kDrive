@@ -57,27 +57,7 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
         return false;
     }
 
-    auto checkResult = checkDb();
-    if (checkResult != CheckDbResult::Ok) {
-        if (checkResult == CheckDbResult::CantPrepare) {
-            // When disk space is low, preparing may fail even though the db is fine.
-            // Typically CANTOPEN or IOERR.
-            int64_t freeSpace = Utility::getFreeDiskSpace(dbPath);
-            if (freeSpace != -1 && freeSpace < 1000000) {
-                LOG_WARN(_logger, "Can't prepare consistency check and disk space is low: " << freeSpace);
-                close();
-                return false;
-            }
-
-            // Even when there's enough disk space, it might very well be that the
-            // file is on a read-only filesystem and can't be opened because of that.
-            if (_errId == SQLITE_CANTOPEN) {
-                LOG_WARN(_logger, "Can't open db to prepare consistency check, aborting");
-                close();
-                return false;
-            }
-        }
-
+    const auto removeAndReopen = [this, &dbPath]() -> bool {
         LOGW_FATAL(_logger, L"Consistency check failed, removing broken db " << Path2WStr(dbPath));
         close();
         if (auto ioError = IoError::Unknown; !IoHelper::deleteItem(dbPath, ioError)) {
@@ -85,11 +65,57 @@ bool SqliteDb::openOrCreateReadWrite(const std::filesystem::path &dbPath) {
             close();
             return false;
         }
-
         return openHelper(dbPath, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-    }
+    };
 
-    return true;
+
+    const auto handleLockedDb = [this, &dbPath]() -> bool {
+        LOGW_WARN(_logger, L"Database is locked, aborting open (db not removed): " << Path2WStr(dbPath));
+        close();
+        return false;
+    };
+
+    const auto handleCantPrepare = [this, &dbPath, removeAndReopen]() -> bool {
+        // When disk space is low, preparing may fail even though the db is fine.
+        // Typically CANTOPEN or IOERR.
+        if (const int64_t freeSpace = Utility::getFreeDiskSpace(dbPath); freeSpace != -1 && freeSpace < 1000000) {
+            LOG_WARN(_logger, "Can't prepare consistency check and disk space is low: " << freeSpace);
+            close();
+            return false;
+        }
+
+        // Even when there's enough disk space, it might very well be that the
+        // file is on a read-only filesystem and can't be opened because of that.
+        if (_errId == SQLITE_CANTOPEN) {
+            LOG_WARN(_logger, "Can't open db to prepare consistency check, aborting");
+            close();
+            return false;
+        }
+        return removeAndReopen(); // we assume the db is corrupted and delete the db
+    };
+
+
+    switch (checkDb()) {
+        case CheckDbResult::Ok:
+            return true;
+        case CheckDbResult::Locked:
+            return handleLockedDb();
+        case CheckDbResult::CantPrepare:
+            return handleCantPrepare();
+        case CheckDbResult::NotOk:
+        {
+            LOGW_WARN(_logger, L"Database is not ok " << Path2WStr(dbPath));
+            close();
+            return removeAndReopen(); // we assume the db is corrupted and delete the db
+        }
+        case CheckDbResult::CantExec: // error never returned by checkDb yet
+        {
+            LOGW_WARN(_logger, L"Database can't exec " << Path2WStr(dbPath));
+            close();
+            return false;
+        }
+    }
+    return false;
 }
 
 bool SqliteDb::openReadOnly(const std::filesystem::path &dbPath) {
@@ -398,14 +424,29 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
 
 SqliteDb::CheckDbResult SqliteDb::checkDb() {
     // quick_check can fail with a disk IO error when diskspace is low
+    auto isDbLocked = [](const int32_t errId) { return errId == SQLITE_BUSY || errId == SQLITE_LOCKED; };
+
     LOG_IF_FAIL(queryCreate(PRAGMA_QUICK_CHECK_ID));
     if (!queryPrepare(PRAGMA_QUICK_CHECK_ID, PRAGMA_QUICK_CHECK, true, _errId, _error)) {
+        // A persistent lock is not a sign of corruption — abort without deleting the db.
+        if (isDbLocked(_errId)) {
+            LOG_WARN(_logger, "Database is locked, consistency check aborted: " << PRAGMA_QUICK_CHECK_ID);
+            queryFree(PRAGMA_QUICK_CHECK_ID);
+            return CheckDbResult::Locked;
+        }
         LOG_WARN(_logger, "Error preparing query: " << PRAGMA_QUICK_CHECK_ID);
         queryFree(PRAGMA_QUICK_CHECK_ID);
         return CheckDbResult::CantPrepare;
     }
     bool hasData;
     if (!queryNext(PRAGMA_QUICK_CHECK_ID, hasData) || !hasData) {
+        // Same as above: a lock during step is transient, the db must not be removed.
+        const int32_t stepErrId = _queries.at(PRAGMA_QUICK_CHECK_ID)._query->errorId();
+        if (isDbLocked(stepErrId)) {
+            LOG_WARN(_logger, "Database is locked during consistency check step: " << PRAGMA_QUICK_CHECK_ID);
+            queryFree(PRAGMA_QUICK_CHECK_ID);
+            return CheckDbResult::Locked;
+        }
         LOG_WARN(_logger, "Error getting query result: " << PRAGMA_QUICK_CHECK_ID);
         queryFree(PRAGMA_QUICK_CHECK_ID);
         return CheckDbResult::NotOk;

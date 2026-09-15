@@ -24,7 +24,7 @@ namespace KDC {
 
 class LongPollJob final : public AbstractListingJob {
     public:
-        LongPollJob(int driveDbId, const std::string &cursor, const NodeSet &blacklist = {});
+        LongPollJob(DriveDbId driveDbId, const std::string &cursor, const NodeSet &blacklist = {});
 
     private:
         std::string getSpecificUrl() override;

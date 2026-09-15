@@ -38,15 +38,15 @@ ExitInfo SyncInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo SyncInfoListJob::serializeOutputParms() {
-    writeParamValues(outParamsSyncInfoList, _syncInfoList, info2DynamicVar<SyncInfo>);
+    writeParamValues(outParamsSyncInfoList, _syncInfoList, info2DynamicVar<Sync>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo SyncInfoListJob::process() {
-    ExitCode exitCode = ServerRequests::getSyncInfoList(_syncInfoList);
+    ExitCode exitCode = ServerRequests::getSyncList(_syncInfoList);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getSyncInfoList: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::getSyncList: code=" << exitCode);
     }
 
     return exitCode;

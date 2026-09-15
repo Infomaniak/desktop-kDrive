@@ -58,6 +58,11 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         void sendGuiSignal(const std::shared_ptr<AbstractGuiJob> signal);
         bool hasActiveGuiConnection();
 
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        // Get the communication port used by the GUI when it relies on socket-based communication (e.g. Windows & Linux)
+        int32_t tryGetGUICommPort() const;
+#endif
+
     private:
         // AppServer maps
         AppServer &_appServer;
@@ -69,7 +74,7 @@ class CommManager : public std::enable_shared_from_this<CommManager> {
         std::shared_ptr<AbstractCommServer> _guiCommServer;
 
         std::unique_ptr<GuiJobFactory> _guiJobFactory;
-        std::recursive_mutex _mutex;
+        mutable std::recursive_mutex _mutex;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
         // Execute a command received from an extension, which does not require an answer

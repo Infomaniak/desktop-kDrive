@@ -81,6 +81,9 @@ class COMMONSERVER_EXPORT Db {
 
         [[nodiscard]] bool versionUpdated() const { return _versionUpdated; }
 
+        bool selectVersion(std::string &version, bool &found);
+
+
     protected:
         void startTransaction();
         void commitTransaction();
@@ -108,7 +111,6 @@ class COMMONSERVER_EXPORT Db {
     private:
         bool insertVersion(const std::string &version);
         bool updateVersion(const std::string &version, bool &found);
-        bool selectVersion(std::string &version, bool &found);
 
         friend class TestDb;
 };

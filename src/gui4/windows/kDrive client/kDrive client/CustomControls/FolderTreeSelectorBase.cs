@@ -125,7 +125,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Failed to reset CancellationTokenSource on reload. A new instance will be created.");
+                Logger.Log(Logger.Level.Debug, "Failed to reset CancellationTokenSource on reload. A new instance will be created.");
                 CancellationTokenSource = new CancellationTokenSource();
             }
         }

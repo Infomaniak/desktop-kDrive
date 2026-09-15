@@ -22,7 +22,7 @@
 
 #include "customtoolbutton.h"
 #include "gui/customradiobutton.h"
-#include "info/errorinfo.h"
+#include "libcommon/data/error.h"
 
 class QStackedWidget;
 class QListWidget;
@@ -52,7 +52,7 @@ class FixConflictingFilesDialog final : public CustomDialog {
 
         std::shared_ptr<ClientGui> _gui;
         DriveDbId _driveDbId = 0;
-        QList<ErrorInfo> _conflictList;
+        QList<Error> _conflictList;
 
         bool _keepLocalVersion = false;
 

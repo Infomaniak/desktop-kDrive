@@ -260,7 +260,7 @@ QString FixConflictingFilesDialog::descriptionText() const {
 void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
     int max = (std::min)(_fileListWidget->count() + nbItems, static_cast<int>(_conflictList.size()));
     for (auto i = _fileListWidget->count(); i < max; i++) {
-        QString fullpath = _gui->folderPath(_conflictList[i].syncDbId(), _conflictList[i].destinationPath());
+        QString fullpath = _gui->folderPath(_conflictList[i].syncDbId(), Path2QStr(_conflictList[i].destinationPath()));
         const auto w = new FileItemWidget(fullpath, _conflictList[i].nodeType(), this);
 
         const auto listWidgetItem = new QListWidgetItem();

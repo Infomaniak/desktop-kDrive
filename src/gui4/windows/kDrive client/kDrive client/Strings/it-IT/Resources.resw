@@ -6,7 +6,7 @@
   Locale: it, Italian
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Solo la mia attività</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importato</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importato %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignorato</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Spostato</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Spostato %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Aggiunto</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Aggiunto %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Spostato nel cestino</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Spostato nel cestino %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Rinominato</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Rinominato %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Modificato</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Modificato %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Sincronizza una cartella con kDrive</value> 
@@ -314,6 +353,9 @@ Puoi aprirli in qualsiasi momento, anche senza connessione a internet.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Apri impostazioni di sincronizzazione</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Apri il cestino</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Sospendi</value> 
@@ -605,8 +647,7 @@ Accedi di nuovo con l’indirizzo email corretto %@</value>
     <value>Inserisci la tua password</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall'applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.
-</value> 
+    <value>In questa cartella esiste già un altro %@ il cui nome differisce solo per le lettere maiuscole/minuscole. Questo tipo di nome non è supportato dall’applicazione kDrive per Windows. Rinominare una delle cartelle %@ da kDrive online per poterla sincronizzare sul PC.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Nomi contrastanti, sensibili alle maiuscole e alle minuscole</value> 
@@ -701,7 +742,6 @@ Contatta il tuo amministratore per aumentare il limite di dimensione del file.</
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Accesso vietato</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Il nome di questo %@ contiene uno o più caratteri non supportati dall’applicazione kDrive per Windows. Rinomina il %@ da kDrive online.</value> 
@@ -1123,7 +1163,7 @@ Attenzione, questa operazione potrebbe sovrascrivere il lavoro dei tuoi collabor
     <comment>Abbreviated unit for second used in relative timestamps.</comment> 
   </data> 
   <data name="labelSince" xml:space="preserve"> 
-    <value>Dal: %@</value> 
+    <value>Da: %@</value> 
     <comment>Label showing the start time of a synchronization pause or event; %@ is the formatted date/time.</comment> 
   </data> 
   <data name="labelSize" xml:space="preserve"> 
@@ -1218,7 +1258,6 @@ Per velocizzare il caricamento, ti consigliamo di inviare solo l’ultima sessio
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Esteso</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Fatale</value> 
@@ -1254,6 +1293,25 @@ Verifica e rinomina i file contenenti caratteri insoliti, quindi riprova.</value
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflitti di versione rilevati</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>La sincronizzazione è stata sospesa per evitare una cancellazione involontaria.
+Cosa desideri fare?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Ripristinare i file</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Eliminare anche online</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Questi file rimangono recuperabili nel cestino di kDrive.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Non mostrare più questo avviso</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ elementi eliminati dalla cartella</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo è uno strumento di analisi ospitato e gestito esclusivamente da Infomaniak per comprendere come viene utilizzata l’applicazione.
@@ -1303,7 +1361,7 @@ L’analisi di questi dati consente al nostro team di migliorare continuamente l
     <value>La cartella scelta deve essere vuota per il corretto funzionamento della sincronizzazione.</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionDescription" xml:space="preserve"> 
-    <value>Scegli le cartelle da sincronizzare su questo computer:</value> 
+    <value>Seleziona le cartelle da sincronizzare su questo computer:</value> 
   </data> 
   <data name="onboardingAdvancedSettingsDriveExclusionTitle" xml:space="preserve"> 
     <value>Cartelle sincronizzate</value> 
@@ -1389,6 +1447,12 @@ Attendi qualche istante.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Sincronizzazione in corso…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Scopri l’app</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>La tua nuova app kDrive è disponibile!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Apri kDrive all’avvio del computer</value> 
@@ -1552,7 +1616,7 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>i tuoi file sono in sincronizzazione</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>la sincronizzazione è sospesa</value> 
+    <value>la sincronizzazione è in pausa</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>I tuoi file recenti sono in fase di aggiornamento.</value> 
@@ -1561,8 +1625,8 @@ Questi dati consentono al nostro team di correggere e ottimizzare rapidamente l�
     <value>Sincronizzazione in corso</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>I tuoi file locali restano accessibili.
-La sincronizzazione riprenderà automaticamente non appena sarai nuovamente connesso.</value> 
+    <value>I file scaricati rimangono accessibili.
+La sincronizzazione riprenderà automaticamente non appena ti ricollegherai.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
@@ -1571,7 +1635,7 @@ La sincronizzazione riprenderà automaticamente non appena sarai nuovamente conn
     <value>La sincronizzazione è stata temporaneamente interrotta.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Sospesa</value> 
+    <value>Sincronizzazione in pausa</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>I tuoi file sono accessibili e sincronizzati.</value> 

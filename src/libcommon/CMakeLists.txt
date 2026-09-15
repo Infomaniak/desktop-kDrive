@@ -30,32 +30,31 @@ set(libcommon_SRCS
     utility/logiffail.h utility/qlogiffail.h
     utility/urlhelper.h utility/urlhelper.cpp
     utility/timerutility.h
+    data/account.h data/account.cpp
     data/drive.h data/drive.cpp
     data/driveavailable.h data/driveavailable.cpp
-    info/userinfo.h info/userinfo.cpp
-    info/accountinfo.h info/accountinfo.cpp
-    info/syncinfo.h info/syncinfo.cpp
+    data/user.h data/user.cpp
+    data/sync.h data/sync.cpp
+    data/error.h data/error.cpp
+    data/exclusiontemplate.h data/exclusiontemplate.cpp
+    data/exclusionapp.h data/exclusionapp.cpp
+    data/proxyconfig.h data/proxyconfig.cpp
+    data/syncfileitem.h data/syncfileitem.cpp
     info/nodeinfo.h info/nodeinfo.cpp
     info/nodeconflictinfo.h info/nodeconflictinfo.cpp
-    info/errorinfo.h info/errorinfo.cpp
     info/parametersinfo.h info/parametersinfo.cpp
-    info/syncfileiteminfo.h info/syncfileiteminfo.cpp
-    info/exclusiontemplateinfo.h info/exclusiontemplateinfo.cpp
-    info/exclusionappinfo.h info/exclusionappinfo.cpp
-    info/proxyconfiginfo.h info/proxyconfiginfo.cpp
     info/searchinfo.h info/searchinfo.cpp
     info/packinfo.h info/packinfo.cpp
+    info/maintenanceinfo.h info/maintenanceinfo.cpp
     log/sentry/handler.h log/sentry/handler.cpp
-    log/sentry/abstractptrace.h 
+    log/sentry/abstractptrace.h
     log/sentry/abstractcounterscopedptrace.h
-    log/sentry/abstractscopedptrace.h 
-    log/sentry/ptraces.h log/sentry/user.h 
+    log/sentry/abstractscopedptrace.h
+    log/sentry/ptraces.h log/sentry/user.h
     log/sentry/ptracedescriptor.h
     log/sentry/ptrace.h log/sentry/utility.h
     log/customlogstreams.h
     theme/theme.h theme/theme.cpp
-        info/maintenanceinfo.cpp
-        info/maintenanceinfo.h
 )
 
 if(APPLE)
@@ -137,7 +136,8 @@ if(UNIX)
         utf8proc)
     if(NOT APPLE)
         target_link_libraries(${libcommon_NAME}
-                "uuid")   # For UUID generation
+                "uuid"  # For UUID generation
+                mount)
     endif()
 elseif(WIN32)
     target_link_libraries(${libcommon_NAME}

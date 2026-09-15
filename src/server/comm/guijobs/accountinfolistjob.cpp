@@ -38,15 +38,15 @@ ExitInfo AccountInfoListJob::deserializeInputParms() {
 }
 
 ExitInfo AccountInfoListJob::serializeOutputParms() {
-    writeParamValues(outParamsAccountInfoList, _accountInfoList, info2DynamicVar<AccountInfo>);
+    writeParamValues(outParamsAccountInfoList, _accountList, info2DynamicVar<Account>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo AccountInfoListJob::process() {
-    ExitCode exitCode = ServerRequests::getAccountInfoList(_accountInfoList);
+    const auto exitCode = ServerRequests::getAccountList(_accountList);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in ServerRequests::getAccountInfoList: code=" << exitCode);
+        LOG_WARN(_logger, "Error in ServerRequests::getAccountList: code=" << exitCode);
     }
 
     return exitCode;

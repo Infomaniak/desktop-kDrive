@@ -28,7 +28,7 @@ using namespace testcommhelpers;
 
 namespace {
 ParametersInfo getExpectedParametersInfo() {
-    const ProxyConfigInfo proxyConfigInfo(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
+    const ProxyConfig proxyConfig(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
 
     ParametersInfo parametersInfo;
     parametersInfo.setLanguage(Language::Default);
@@ -48,7 +48,7 @@ ParametersInfo getExpectedParametersInfo() {
     parametersInfo.setDialogGeometry("preferencesWindow", "blob1234");
     parametersInfo.setDialogGeometry("drivePreferencesPanel", "blob4567");
     parametersInfo.setMaxAllowedCpu(50);
-    parametersInfo.setProxyConfigInfo(proxyConfigInfo);
+    parametersInfo.setProxyConfig(proxyConfig);
     return parametersInfo;
 };
 
@@ -64,15 +64,15 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) parametersInfoObj.set("extendedLog", true);
     (void) parametersInfoObj.set("purgeOldLogs", true);
 
-    Poco::JSON::Object proxyConfigInfoObj;
-    (void) proxyConfigInfoObj.set("type", toInt(ProxyType::HTTP));
-    (void) proxyConfigInfoObj.set("hostName", toBase64(Str("myHostName")));
-    (void) proxyConfigInfoObj.set("port", 6666);
-    (void) proxyConfigInfoObj.set("needsAuth", true);
-    (void) proxyConfigInfoObj.set("user", toBase64(Str("john.doe")));
-    (void) proxyConfigInfoObj.set("pwd", toBase64(Str("1234")));
+    Poco::JSON::Object proxyConfigObj;
+    (void) proxyConfigObj.set("type", toInt(ProxyType::HTTP));
+    (void) proxyConfigObj.set("hostName", toBase64(Str("myHostName")));
+    (void) proxyConfigObj.set("port", 6666);
+    (void) proxyConfigObj.set("needsAuth", true);
+    (void) proxyConfigObj.set("user", toBase64(Str("john.doe")));
+    (void) proxyConfigObj.set("pwd", toBase64(Str("1234")));
 
-    (void) parametersInfoObj.set("proxyConfigInfo", proxyConfigInfoObj);
+    (void) parametersInfoObj.set("proxyConfigInfo", proxyConfigObj);
 #ifdef KD_MACOS
     (void) parametersInfoObj.set("darkTheme", true);
 #endif

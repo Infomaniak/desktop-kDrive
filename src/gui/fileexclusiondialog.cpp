@@ -184,9 +184,9 @@ void FileExclusionDialog::updateUI() {
     setResizable(true);
 }
 
-void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo, const bool readOnly, int &row,
+void FileExclusionDialog::addTemplate(const ExclusionTemplate &templateInfo, const bool readOnly, int &row,
                                       const QString &scrollToTemplate, int &scrollToRow) {
-    auto *const patternItem = new QStandardItem(templateInfo.templ());
+    auto *const patternItem = new QStandardItem(QString::fromStdString(templateInfo.templ()));
     auto *const warningItem = new QStandardItem();
     auto *const actionItem = new QStandardItem();
 
@@ -212,7 +212,7 @@ void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo,
         auto *const warningCheckBox = new CustomCheckBox(this);
         warningCheckBox->setChecked(templateInfo.warning());
         warningCheckBox->setAutoFillBackground(true);
-        warningCheckBox->setProperty(patternProperty, templateInfo.templ());
+        warningCheckBox->setProperty(patternProperty, QString::fromStdString(templateInfo.templ()));
         noWarningHBox->addWidget(warningCheckBox);
         int rowNum = _filesTableModel->rowCount() - 1;
         _filesTableView->setIndexWidget(_filesTableModel->index(rowNum, tableColumn::Warning), warningWidget);
@@ -223,7 +223,7 @@ void FileExclusionDialog::addTemplate(const ExclusionTemplateInfo &templateInfo,
     }
 
     row++;
-    if (!scrollToTemplate.isEmpty() && templateInfo.templ() == scrollToTemplate) {
+    if (!scrollToTemplate.isEmpty() && QString::fromStdString(templateInfo.templ()) == scrollToTemplate) {
         scrollToRow = row;
     }
 }
@@ -335,13 +335,13 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
         normalizedTemplate = QStr2SyncName(template_);
     }
 
-    const auto predicate = [&normalizedTemplate](const ExclusionTemplateInfo &templateInfo) {
+    const auto predicate = [&normalizedTemplate](const ExclusionTemplate &templateInfo) {
         SyncName existingNormalizedTemplate;
-        if (!CommonUtility::normalizedSyncName(QStr2SyncName(templateInfo.templ()), existingNormalizedTemplate,
+        if (!CommonUtility::normalizedSyncName(Str2SyncName(templateInfo.templ()), existingNormalizedTemplate,
                                                UnicodeNormalization::NFC)) {
-            qCWarning(lcFileExclusionDialog())
-                    << "Failed to NFC-normalize the template, might cause duplicates: " << templateInfo.templ();
-            existingNormalizedTemplate = QStr2SyncName(templateInfo.templ());
+            qCWarning(lcFileExclusionDialog()) << "Failed to NFC-normalize the template, might cause duplicates: "
+                                               << QString::fromStdString(templateInfo.templ());
+            existingNormalizedTemplate = Str2SyncName(templateInfo.templ());
         }
         return existingNormalizedTemplate == normalizedTemplate;
     };
@@ -355,7 +355,7 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
         return;
     }
 
-    _userTemplateList.append(template_);
+    _userTemplateList.append(ExclusionTemplate(template_.toStdString()));
 
     loadPatternTable(template_); // Reload and scroll to newly inserted entry.
     setNeedToSave(true);
@@ -383,7 +383,7 @@ void FileExclusionDialog::onTableViewClicked(const QModelIndex &index) {
     // Delete template
     const QString &template_ = templateItem->data(Qt::DisplayRole).toString();
     for (auto templateIt = _userTemplateList.begin(); templateIt != _userTemplateList.end(); ++templateIt) {
-        if (templateIt->templ() == template_) {
+        if (templateIt->templ() == template_.toStdString()) {
             _userTemplateList.erase(templateIt);
             break;
         }
@@ -406,7 +406,7 @@ void FileExclusionDialog::onWarningCheckBoxClicked(bool checked) {
     bool done = false;
 
     for (auto &templateInfo: _defaultTemplateList) {
-        if (template_ == templateInfo.templ()) {
+        if (template_ == QString::fromStdString(templateInfo.templ())) {
             templateInfo.setWarning(checked);
             done = true;
             break;
@@ -415,7 +415,7 @@ void FileExclusionDialog::onWarningCheckBoxClicked(bool checked) {
 
     if (!done) {
         for (auto &templateInfo: _userTemplateList) {
-            if (template_ == templateInfo.templ()) {
+            if (template_ == QString::fromStdString(templateInfo.templ())) {
                 templateInfo.setWarning(checked);
                 break;
             }

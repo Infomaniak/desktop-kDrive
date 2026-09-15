@@ -10,7 +10,8 @@ Foundational shared library. **Everything depends on it** (`libcommonserver` →
 | `utility/cstypes.h` | All primitive enums — **no Qt/Poco dependency** |
 | `utility/types.h` | Type aliases, `ExitInfo`, concepts, bitwise ops, string conversion macros |
 | `comm.h` | Full IPC protocol: `RequestNum`, `SignalNum`, timeout constants |
-| `info/*.h` | All DTO classes (UserInfo, DriveInfo, SyncInfo, ErrorInfo, …) |
+| `info/*.h` | Remaining DTO classes (ErrorInfo, ParametersInfo, …) |
+| `data/*.h` | Unified entity classes (User, Account, Drive, DriveAvailable, Sync, …) |
 | `utility/utility.h` | `CommonUtility` — static helpers (paths, strings, UUID, disk space, URL, …) |
 | `utility/urlhelper.h` | `UrlHelper` — all Infomaniak API base URLs |
 | `log/customlogstreams.h` | `CustomLogStream` / `CustomLogWStream` — typed log stream wrappers |
@@ -62,9 +63,9 @@ All info classes are plain-data DTOs. Pattern is identical across all of them:
 Reference: `src/libcommon/info/userinfo.h`
 
 Key info classes:
-- `UserInfo` → `AccountInfo` → `DriveInfo` → `SyncInfo` (ownership chain)
+- `User` → `Account` → `Drive` → `Sync` (ownership chain)
 - `ErrorInfo` — full error record with all context fields
-- `SyncFileItemInfo` — live sync progress event
+- `SyncFileItem` (`data/syncfileitem.h`) — live sync progress event shared by sync engine and IPC
 - `ParametersInfo` + `ProxyConfigInfo` — all app settings
 
 **Adding a new entity:** copy the pattern from `userinfo.h`. Register both `toDynamicStruct` and the `QDataStream` operators.
@@ -129,3 +130,4 @@ rg -n "PTraceName::" src/libcommon/log/sentry/
 ```bash
 cmake --build build-macos --target kDrive_test_common && ./build-macos/bin/kDrive_test_common
 ```
+

@@ -237,6 +237,10 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
             return;
         }
 
+        if (!GuiUtility::validateLocalFolderForNewSync(dirPath, this)) {
+            return;
+        }
+
         QDir dir(dirPath);
         _localFolderPath = dir.canonicalPath();
         updateUI();

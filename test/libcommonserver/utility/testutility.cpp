@@ -167,25 +167,6 @@ void TestUtility::testJoinStr() {
     CPPUNIT_ASSERT(Utility::joinStr(strList, '@') == "C'est@ @un @test!");
 }
 
-void TestUtility::testPathDepth() {
-    CPPUNIT_ASSERT_EQUAL(0, Utility::pathDepth({}));
-    CPPUNIT_ASSERT_EQUAL(1, Utility::pathDepth(SyncPath{"/"}));
-    CPPUNIT_ASSERT_EQUAL(1, Utility::pathDepth(SyncPath{"A"}));
-    CPPUNIT_ASSERT_EQUAL(2, Utility::pathDepth(SyncPath{"A/"}));
-    CPPUNIT_ASSERT_EQUAL(2, Utility::pathDepth(SyncPath{"/A"}));
-    CPPUNIT_ASSERT_EQUAL(3, Utility::pathDepth(SyncPath{"/A/"}));
-    CPPUNIT_ASSERT_EQUAL(2, Utility::pathDepth(SyncPath{"A/B"}));
-    CPPUNIT_ASSERT_EQUAL(3, Utility::pathDepth(SyncPath{"A/B/C"}));
-    CPPUNIT_ASSERT_EQUAL(4, Utility::pathDepth(SyncPath{"/A/B/C"}));
-    CPPUNIT_ASSERT_EQUAL(5, Utility::pathDepth(SyncPath{"/A/B/C/"}));
-
-    SyncPath path;
-    for (int i = 1; i < 5; i++) {
-        path /= "dir";
-        CPPUNIT_ASSERT_EQUAL(i, Utility::pathDepth(path));
-    }
-}
-
 void TestUtility::testComputeMd5Hash() {
     std::vector<std::pair<std::string, std::string>> testCases = {
             {"", "d41d8cd98f00b204e9800998ecf8427e"},
@@ -505,6 +486,7 @@ void TestUtility::testTryCreateTmpDir() {
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
     }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp dir but a directory already exist with the same name
@@ -547,6 +529,7 @@ void TestUtility::testTryCreateTmpFile() {
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) counter++; // Count only directories to ignore ".DS_Store" files
     }
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(0, counter);
 
     // Try to create a tmp file but a file already exist with the same name but different capitalization.
@@ -565,5 +548,30 @@ void TestUtility::testTryCreateTmpFile() {
         CPPUNIT_ASSERT(Utility::tryCreateTmpFile(cacheDirectory));
     }
 }
+
+#if defined(KD_MACOS) || defined(KD_LINUX)
+void TestUtility::testEscapePath() {
+    // Test simple path without special characters
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test"), Utility::escapePath(SyncPath("/tmp/test")));
+
+    // Test path with single quotes — each ' is replaced by '\'' (4 chars: quote, backslash, quote, quote)
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test'\\''file"), Utility::escapePath(SyncPath("/tmp/test'file")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/'\\''quoted'\\''path"), Utility::escapePath(SyncPath("/tmp/'quoted'path")));
+
+    // Test path with multiple single quotes
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test'\\'''\\''file"), Utility::escapePath(SyncPath("/tmp/test''file")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/'\\''test'\\''file'\\''path"), Utility::escapePath(SyncPath("/tmp/'test'file'path")));
+
+    // Test path with spaces and other characters (no quotes, so unchanged)
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test file"), Utility::escapePath(SyncPath("/tmp/test file")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test;command"), Utility::escapePath(SyncPath("/tmp/test;command")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test&command"), Utility::escapePath(SyncPath("/tmp/test&command")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test|command"), Utility::escapePath(SyncPath("/tmp/test|command")));
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test$(command)"), Utility::escapePath(SyncPath("/tmp/test$(command)")));
+
+    // Test path with quote followed by semicolon (injection attempt - quote gets escaped)
+    CPPUNIT_ASSERT_EQUAL(std::string("/tmp/test'\\''; rm -rf /"), Utility::escapePath(SyncPath("/tmp/test'; rm -rf /")));
+}
+#endif
 
 } // namespace KDC

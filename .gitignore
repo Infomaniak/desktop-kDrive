@@ -210,3 +210,7 @@ enc_temp_folder
 # ImportLoco
 .import_loco_api
 /list_unresolved_pr_comments.py
+
+# QT Creator
+.qtcreator
+/src/libcommonserver/vfs/win

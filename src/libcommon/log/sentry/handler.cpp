@@ -265,6 +265,7 @@ void Handler::init(AppType appType, int breadCrumbsSize) {
     sentry_options_set_release(options, KDRIVE_VERSION_STRING);
     sentry_options_set_debug(options, false);
     sentry_options_set_max_breadcrumbs(options, static_cast<size_t>(breadCrumbsSize));
+    sentry_options_set_require_user_consent(options, true);
 
     // !!! Not Supported in Crashpad on macOS & Limitations in Crashpad on Windows for Fast-fail Crashes !!!
     // See https://docs.sentry.io/platforms/native/configuration/filtering/
@@ -460,10 +461,15 @@ SyncPath Handler::getSentryTemporaryDir() {
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y%m");
 
-    const auto sentryDirectory = std::filesystem::temp_directory_path() / "sentry" / oss.str();
+    SyncPath tmpDir;
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        return {};
+    }
+
+    const auto sentryDirectory = tmpDir / "sentry" / oss.str();
+
     std::error_code ec;
     (void) std::filesystem::create_directories(sentryDirectory, ec);
-
     assert(!ec && "Sentry temporary directory failed to be created.");
 
     return sentryDirectory;
@@ -509,6 +515,14 @@ void Handler::setDistributionChannel(const DistributionChannel channel) {
 
 void Handler::setAppUUID(std::string appUUID) {
     setTag("appUUID", appUUID);
+}
+
+void Handler::setIsSentryActivated(bool isSentryActivated) {
+    _isSentryActivated = isSentryActivated;
+    if (isSentryActivated)
+        sentry_user_consent_give();
+    else
+        sentry_user_consent_revoke();
 }
 
 Handler::~Handler() {

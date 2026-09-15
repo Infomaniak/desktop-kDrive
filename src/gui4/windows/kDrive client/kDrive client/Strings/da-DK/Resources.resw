@@ -6,7 +6,7 @@
   Locale: da, Danish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Fri, 29 May 2026 15:56:50 +0200 
+  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -102,6 +102,45 @@
   </data> 
   <data name="activitiesTypeMyActivity" xml:space="preserve"> 
     <value>Kun min aktivitet</value> 
+  </data> 
+  <data name="activityInstructionGetLabel" xml:space="preserve"> 
+    <value>Importeret</value> 
+  </data> 
+  <data name="activityInstructionGetWithTimeLabel" xml:space="preserve"> 
+    <value>Importeret %@</value> 
+  </data> 
+  <data name="activityInstructionIgnoreLabel" xml:space="preserve"> 
+    <value>Ignoreret</value> 
+  </data> 
+  <data name="activityInstructionMoveLabel" xml:space="preserve"> 
+    <value>Flyttet</value> 
+  </data> 
+  <data name="activityInstructionMoveWithTimeLabel" xml:space="preserve"> 
+    <value>Flyttet %@</value> 
+  </data> 
+  <data name="activityInstructionPutLabel" xml:space="preserve"> 
+    <value>Tilføjet</value> 
+  </data> 
+  <data name="activityInstructionPutWithTimeLabel" xml:space="preserve"> 
+    <value>Tilføjet %@</value> 
+  </data> 
+  <data name="activityInstructionRemoveLabel" xml:space="preserve"> 
+    <value>Flyttet til papirkurv</value> 
+  </data> 
+  <data name="activityInstructionRemoveWithTimeLabel" xml:space="preserve"> 
+    <value>Flyttet til papirkurven %@</value> 
+  </data> 
+  <data name="activityInstructionRenameLabel" xml:space="preserve"> 
+    <value>Omdøbt</value> 
+  </data> 
+  <data name="activityInstructionRenameWithTimeLabel" xml:space="preserve"> 
+    <value>Omdøbt til %@</value> 
+  </data> 
+  <data name="activityInstructionUpdateLabel" xml:space="preserve"> 
+    <value>Ændret</value> 
+  </data> 
+  <data name="activityInstructionUpdateWithTimeLabel" xml:space="preserve"> 
+    <value>Ændret %@</value> 
   </data> 
   <data name="addAdvancedSyncDialogTitle" xml:space="preserve"> 
     <value>Synkroniser en mappe med kDrive</value> 
@@ -314,6 +353,9 @@ Du kan åbne dem til enhver tid, selv uden en internetforbindelse.</value>
   </data> 
   <data name="buttonOpenSyncSettings" xml:space="preserve"> 
     <value>Åbn synkroniseringsindstillinger</value> 
+  </data> 
+  <data name="buttonOpenTrash" xml:space="preserve"> 
+    <value>Åbn papirkurven</value> 
   </data> 
   <data name="buttonPause" xml:space="preserve"> 
     <value>Pause</value> 
@@ -605,8 +647,7 @@ Log venligst ind igen med den korrekte e-mailadresse %@</value>
     <value>Indtast din adgangskode</value> 
   </data> 
   <data name="errCaseDescription" xml:space="preserve"> 
-    <value>En anden %@, hvis navn kun adskiller sig ved store/små bogstaver, findes allerede i denne mappe. Denne type navn understøttes ikke af kDrive Windows-applikationen. Omdøb en af %@-mapperne fra kDrive online, så du kan synkronisere den på din pc.
-</value> 
+    <value>En anden %@, hvis navn kun adskiller sig ved store/små bogstaver, findes allerede i denne mappe. Denne type navn understøttes ikke af kDrive Windows-applikationen. Omdøb en af %@-mapperne fra kDrive online, så du kan synkronisere den på din pc.</value> 
   </data> 
   <data name="errCaseTitle" xml:space="preserve"> 
     <value>Modstridende navne, skelner mellem store og små bogstaver</value> 
@@ -701,7 +742,6 @@ Kontakt din administrator for at øge filstørrelsesgrænsen.</value>
   </data> 
   <data name="errForbiddenActionTitle" xml:space="preserve"> 
     <value>Adgang forbudt</value> 
-    <comment>Title shown when a forbidden or unauthorized action is attempted.</comment> 
   </data> 
   <data name="errForbiddenCharDescription" xml:space="preserve"> 
     <value>Navnet på dette %@ indeholder et eller flere tegn, der ikke understøttes af kDrive Windows-programmet. Omdøb %@ fra kDrive online.</value> 
@@ -1218,7 +1258,6 @@ For at fremskynde overførslen anbefaler vi at sende kun den seneste kDrive-sess
   </data> 
   <data name="logLevelExtended" xml:space="preserve"> 
     <value>Udvidet</value> 
-    <comment>Extended log level option in the debug level dropdown in advanced settings.</comment> 
   </data> 
   <data name="logLevelFatal" xml:space="preserve"> 
     <value>Kritisk</value> 
@@ -1254,6 +1293,25 @@ Kontrollér venligst og omdøb filer med usædvanlige tegn, og prøv derefter ig
   </data> 
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versionskonflikter registreret</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
+    <value>Synkroniseringen er sat på pause for at undgå utilsigtet sletning.
+Hvad vil du gøre?</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitPrimary" xml:space="preserve"> 
+    <value>Gendan filerne</value> 
+  </data> 
+  <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
+    <value>Slet også online</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
+    <value>Disse filer kan stadig gendannes fra kDrive-papirkurven.</value> 
+  </data> 
+  <data name="manyDeleteDialogSoftLimitDoNotShowAgain" xml:space="preserve"> 
+    <value>Vis ikke denne advarsel igen</value> 
+  </data> 
+  <data name="manyDeleteDialogTitle" xml:space="preserve"> 
+    <value>%@ elementer er blevet slettet fra din mappe</value> 
   </data> 
   <data name="matomoDescription" xml:space="preserve"> 
     <value>Matomo er et analyseværktøj hostet og administreret udelukkende af Infomaniak for at forstå, hvordan programmet bruges.
@@ -1389,6 +1447,12 @@ Vent venligst et øjeblik.</value>
   </data> 
   <data name="onboardingSynchronizationInProgressTitle" xml:space="preserve"> 
     <value>Synkronisering i gang…</value> 
+  </data> 
+  <data name="onboardingV4Faq" xml:space="preserve"> 
+    <value>Udforsk appen</value> 
+  </data> 
+  <data name="onboardingV4Title" xml:space="preserve"> 
+    <value>Din nye kDrive-app er her!</value> 
   </data> 
   <data name="openKDriveAtStartupSetting" xml:space="preserve"> 
     <value>Åbn kDrive, når computeren starter</value> 
@@ -1552,7 +1616,7 @@ En internetforbindelse er nødvendig for at få adgang til dem.</value>
     <value>dine filer synkroniseres</value> 
   </data> 
   <data name="synchroPaused" xml:space="preserve"> 
-    <value>synkronisering er sat på pause</value> 
+    <value>synkroniseringen er sat på pause</value> 
   </data> 
   <data name="synchroStatusInProgressDescription" xml:space="preserve"> 
     <value>Dine seneste filer opdateres.</value> 
@@ -1561,8 +1625,8 @@ En internetforbindelse er nødvendig for at få adgang til dem.</value>
     <value>Synkronisering i gang</value> 
   </data> 
   <data name="synchroStatusOfflineDescription" xml:space="preserve"> 
-    <value>Dine lokale filer er stadig tilgængelige.
-Synkronisering genoptages automatisk, når du er forbundet igen.</value> 
+    <value>Dine downloadede filer forbliver tilgængelige.
+Synkroniseringen genoptages automatisk, så snart du er online igen.</value> 
   </data> 
   <data name="synchroStatusOfflineTitle" xml:space="preserve"> 
     <value>Offline</value> 
@@ -1571,7 +1635,7 @@ Synkronisering genoptages automatisk, når du er forbundet igen.</value>
     <value>Synkronisering er midlertidigt stoppet.</value> 
   </data> 
   <data name="synchroStatusPausedTitle" xml:space="preserve"> 
-    <value>Sat på pause</value> 
+    <value>Synkronisering under pause</value> 
   </data> 
   <data name="synchroStatusUpToDateDescription" xml:space="preserve"> 
     <value>Dine filer er tilgængelige og synkroniserede.</value> 

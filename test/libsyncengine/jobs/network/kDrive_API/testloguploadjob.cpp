@@ -252,7 +252,7 @@ void TestLogUploadJob::insertUserInDb() {
     // Insert user, account & drive
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);

@@ -23,13 +23,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="using:Infomaniak.kDrive.Converters"
+             xmlns:utilities="using:Infomaniak.kDrive.Utilities"
              xmlns:kDrive="using:Infomaniak.kDrive"
              mc:Ignorable="d">
     <UserControl.Resources>
         <converters:FilePathToIconResourceKeyConverter x:Key="FilePathToIconResourceKeyConverter" />
         <converters:StringPathToFileNameConverter x:Key="StringPathToFileNameConverter" />
         <converters:BytesToHumanReadableStringConverter x:Key="BytesToHumanReadableStringConverter" />
-        <converters:DateTimeToTimeAgoConverter x:Key="DateTimeToTimeAgoConverter" />
         <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <converters:BooleanToInvertedBooleanConverter x:Key="BooleanToInvertedBooleanConverter" />
         <converters:IsNullToBoolOrVisibilityConverter x:Key="IsNullToBoolOrVisibilityConverter" />
@@ -70,7 +70,7 @@
                                        TextWrapping="Wrap">
                                  <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                                  <Run Text=" -" />
-                                 <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                                 <Run Text="{x:Bind utilities:Time.DateTimeElapsedToString(SearchItem.ModifiedTime, utilities:DateTimeToStringMode.ElapsedAgo), Mode=OneWay}" />
                                  <Run Text="-" />
                                  <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                             </TextBlock>
@@ -94,7 +94,7 @@
                            TextTrimming="CharacterEllipsis">
                     <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text=" -" />
-                    <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                    <Run Text="{x:Bind utilities:Time.DateTimeElapsedToString(SearchItem.ModifiedTime, utilities:DateTimeToStringMode.ElapsedAgo)}" />
                     <Run Text="-" />
                     <Run Text="{x:Bind SearchItem.Size, Converter={StaticResource BytesToHumanReadableStringConverter}}" />
                 </TextBlock>
@@ -135,7 +135,7 @@
                                        TextWrapping="Wrap">
                                  <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                                  <Run Text=" -" />
-                                 <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                                 <Run Text="{x:Bind utilities:Time.DateTimeElapsedToString(SearchItem.ModifiedTime, utilities:DateTimeToStringMode.ElapsedAgo)}" />
                             </TextBlock>
                         </StackPanel>
                     </ToolTip>
@@ -167,7 +167,7 @@
                            TextTrimming="CharacterEllipsis">
                     <Run Text="{x:Bind SearchItem.DisplayPath, Converter={StaticResource StringPathToFileNameConverter}, ConverterParameter='Parent=True'}" />
                     <Run Text="-" />
-                    <Run Text="{x:Bind SearchItem.ModifiedTime, Converter={StaticResource DateTimeToTimeAgoConverter}, ConverterParameter='Format=Ago'}" />
+                    <Run Text="{x:Bind utilities:Time.DateTimeElapsedToString(SearchItem.ModifiedTime, utilities:DateTimeToStringMode.ElapsedAgo)}" />
                 </TextBlock>
                 <local:SvgIcon Grid.Column="2"
                                Grid.Row="0"

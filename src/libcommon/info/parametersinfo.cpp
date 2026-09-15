@@ -32,7 +32,9 @@ static const auto parametersInfoLogLevel = "logLevel";
 static const auto parametersInfoExtendedLog = "extendedLog";
 static const auto parametersInfoPurgeOldLogs = "purgeOldLogs";
 static const auto parametersInfoProxyConfigInfo = "proxyConfigInfo";
+#ifdef KD_MACOS
 static const auto parametersInfoDarkTheme = "darkTheme";
+#endif
 static const auto parametersInfoDialogGeometry = "dialogGeometry";
 static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";
@@ -50,7 +52,7 @@ void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLogLevel, _logLevel);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::writeValueToStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
-    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo, info2DynamicVar<ProxyConfigInfo>);
+    CommonUtility::writeValueToStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfig, info2DynamicVar<ProxyConfig>);
 #ifdef KD_MACOS
     CommonUtility::writeValueToStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
 #endif // KD_MACOS
@@ -88,8 +90,7 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoExtendedLog, _extendedLog);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoPurgeOldLogs, _purgeOldLogs);
 
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfigInfo,
-                                       dynamicVar2Struct<ProxyConfigInfo>);
+    CommonUtility::readValueFromStruct(dstruct, parametersInfoProxyConfigInfo, _proxyConfig, dynamicVar2Struct<ProxyConfig>);
 #ifdef KD_MACOS
     CommonUtility::readValueFromStruct(dstruct, parametersInfoDarkTheme, _darkTheme);
 #endif // KD_MACOS
@@ -121,15 +122,16 @@ void ParametersInfo::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersInfoSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersInfoMatomoEnabled, _matomoEnabled);
 
-    if (dstruct.contains(parametersInfoAskBeforeDelete)) // Not implemented in new clients yet
-    CommonUtility::readValueFromStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
+    if (dstruct.contains(parametersInfoAskBeforeDelete)) { // Not implemented in new clients yet
+        CommonUtility::readValueFromStruct(dstruct, parametersInfoAskBeforeDelete, _notifyBeforeDelete);
+    }
 };
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
             parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
             parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._darkTheme >>
-            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfigInfo >>
+            parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >> parametersInfo._proxyConfig >>
             parametersInfo._distributionChannel >> parametersInfo._sentryEnabled >> parametersInfo._matomoEnabled >>
             parametersInfo._notifyBeforeDelete;
     return in;
@@ -139,7 +141,7 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
     out << parametersInfo._language << parametersInfo._monoIcons << parametersInfo._autoStart << parametersInfo._moveToTrash
         << parametersInfo._notificationsDisabled << parametersInfo._useLog << parametersInfo._logLevel
         << parametersInfo._extendedLog << parametersInfo._purgeOldLogs << parametersInfo._darkTheme
-        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfigInfo
+        << parametersInfo._dialogGeometry << parametersInfo._maxAllowedCpu << parametersInfo._proxyConfig
         << parametersInfo._distributionChannel << parametersInfo._sentryEnabled << parametersInfo._matomoEnabled
         << parametersInfo._notifyBeforeDelete;
     return out;

@@ -56,10 +56,11 @@ SyncName makeNfcSyncName() {
     return nfcNormalized;
 }
 
-void generateTestFile(const SyncPath &path, const uint64_t size /*= 0*/) {
+void generateTestFile(const SyncPath &path, const uint64_t size /*= 0*/,
+                      TestFileGenerationMode mode /*= TestFileGenerationMode::Deterministic*/) {
     std::ofstream testFile(path, std::ios_base::in | std::ios_base::trunc);
     if (size) {
-        setTestFileSize(path, size);
+        setTestFileSize(path, size, mode);
     }
     testFile.close();
 }
@@ -70,12 +71,30 @@ void generateOrEditTestFile(const SyncPath &path) {
     testFile.close();
 }
 
-void setTestFileSize(const SyncPath &path, uint64_t size) {
-    const std::string str{"0123456789"};
+void setTestFileSize(const SyncPath &path, uint64_t size,
+                     TestFileGenerationMode mode /*= TestFileGenerationMode::Deterministic*/) {
     std::ofstream ofs(path, std::ios_base::in | std::ios_base::trunc);
-    for (uint64_t i = 0; i < static_cast<uint64_t>(round(static_cast<double>(size) / static_cast<double>(str.length()))); i++) {
-        ofs << str;
+
+    if (mode == TestFileGenerationMode::PseudoRandom) {
+        ofs << CommonUtility::generateRandomStringAlphaNum(static_cast<int>(size)) << std::endl;
+        ofs.close();
+        return;
     }
+
+    const std::string str{"0123456789"};
+    size_t writtenSize = 0;
+    while (writtenSize < size) {
+        const auto remainingSize = size - writtenSize;
+        if (remainingSize >= str.length()) {
+            ofs << str;
+            writtenSize += str.length();
+        } else {
+            ofs << str.substr(0, remainingSize);
+            writtenSize += remainingSize;
+        }
+    }
+
+    ofs.close();
 }
 
 void generateBigFiles(const SyncPath &dirPath, const uint16_t size, const uint16_t count) {

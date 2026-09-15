@@ -185,6 +185,8 @@ set(final_src
 # list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 include(ECMAddAppIcon)
 
+message(STATUS "theme_dir=${theme_dir}")
+message(STATUS "APPLICATION_ICON_NAME=${APPLICATION_ICON_NAME}")
 file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
 ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
 

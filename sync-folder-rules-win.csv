@@ -1,0 +1,8 @@
+Path,Type
+$SYSROOT,BlackList
+$HOME,WhiteListSubFolder
+$HOME/AppData,BlackList
+$HOME/NTUSER.DAT,BlackList
+$HOME/ntuser.dat.LOG1,BlackList
+$HOME/ntuser.dat.LOG2,BlackList
+$HOME/Application Data,BlackList

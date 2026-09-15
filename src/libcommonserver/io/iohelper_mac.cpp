@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "permissionsgiver.h"
 #include "utility/types.h"
 #include "utility/utility.h"
 
@@ -96,7 +95,6 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
     }
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
-    PermissionsGiver permsGiver(path, logger());
     if (setxattr(path.native().c_str(), attrName.data(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
         ioError = posixError2ioError(errno);
         return _isXAttrValueExpectedError(ioError);
@@ -108,7 +106,6 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
 }
 
 bool IoHelper::removeXAttrs(const SyncPath &path, const std::vector<std::string_view> &attrNames, IoError &ioError) noexcept {
-    PermissionsGiver permsGiver(path, logger());
     for (const auto &attrName: attrNames) {
         if (removexattr(path.native().c_str(), attrName.data(), XATTR_NOFOLLOW) == -1) {
             ioError = posixError2ioError(errno);

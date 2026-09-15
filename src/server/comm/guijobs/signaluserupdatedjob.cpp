@@ -25,13 +25,13 @@ static const auto outParamsUserInfo = "userInfo";
 
 namespace KDC {
 
-SignalUserUpdatedJob::SignalUserUpdatedJob(const UserInfo &userInfo) :
-    _userInfo(userInfo) {
+SignalUserUpdatedJob::SignalUserUpdatedJob(const User &user) :
+    _user(user) {
     _signalNum = SignalNum::USER_UPDATED;
 }
 
 ExitInfo SignalUserUpdatedJob::serializeOutputParms() {
-    writeParamValue(outParamsUserInfo, _userInfo, info2DynamicVar<UserInfo>);
+    writeParamValue(outParamsUserInfo, _user, info2DynamicVar<User>);
 
     return ExitCode::Ok;
 }

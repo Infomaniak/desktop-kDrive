@@ -26,6 +26,11 @@ set(testsyncengine_SRCS
         ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
         ../test_classes/syncpaltest.h
         ../test_classes/testsituationgenerator.h ../test_classes/testsituationgenerator.cpp
+        # SyncpalTestHelper
+        ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
+        ../syncpal_test_helper/initialsituationsetter.h ../syncpal_test_helper/initialsituationsetter.cpp
+        ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
+        ../syncpal_test_helper/situationcomparator.h ../syncpal_test_helper/situationcomparator.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         # Jobs
@@ -34,6 +39,7 @@ set(testsyncengine_SRCS
         ## Network jobs
         jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
+        jobs/network/testabstractnetworkjob.h jobs/network/testabstractnetworkjob.cpp
         jobs/network/kDrive_API/testapitranslator.h jobs/network/kDrive_API/testapitranslator.cpp
         jobs/network/kDrive_API/testloguploadjob.h jobs/network/kDrive_API/testloguploadjob.cpp
         jobs/network/kDrive_API/testsearchjob.h jobs/network/kDrive_API/testsearchjob.cpp

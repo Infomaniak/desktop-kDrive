@@ -22,6 +22,8 @@
 #include "libcommongui/commclient.h"
 #include "libcommon/utility/utility.h"
 
+Q_LOGGING_CATEGORY(lcGuiRequests, "gui.guirequests", QtInfoMsg)
+
 namespace KDC {
 
 bool GuiRequests::isConnnected() {
@@ -47,7 +49,7 @@ ExitCode GuiRequests::getUserDbIdList(QList<UserDbId> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
+ExitCode GuiRequests::getUserList(QList<User> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::USER_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
@@ -61,7 +63,7 @@ ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<ErrorInfo> &list) {
+ExitCode GuiRequests::getErrorList(const ErrorLevel level, const SyncDbId syncDbId, const int limit, QList<Error> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << level;
@@ -81,7 +83,7 @@ ExitCode GuiRequests::getErrorInfoList(const ErrorLevel level, const SyncDbId sy
     return exitCode;
 }
 
-ExitCode GuiRequests::getConflictList(const DriveDbId driveDbId, const QList<ConflictType> &filter, QList<ErrorInfo> &list) {
+ExitCode GuiRequests::getConflictList(const DriveDbId driveDbId, const QList<ConflictType> &filter, QList<Error> &list) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << static_cast<qint64>(driveDbId);
@@ -215,7 +217,7 @@ ExitInfo GuiRequests::acknowledgeManyDelete(const SyncDbId syncDbId, const TooMa
     return exitCode;
 }
 
-ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
+ExitCode GuiRequests::getAccountList(QList<Account> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::ACCOUNT_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
@@ -299,7 +301,7 @@ ExitCode GuiRequests::searchItemInDrive(const DriveDbId driveDbId, const QString
     return exitCode;
 }
 
-ExitCode GuiRequests::getSyncInfoList(QList<SyncInfo> &list) {
+ExitCode GuiRequests::getSyncList(QList<BaseSync> &list) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::SYNC_INFOLIST, {}, results)) {
         return ExitCode::SystemError;
@@ -451,10 +453,10 @@ ExitCode GuiRequests::getNodePath(const SyncDbId syncDbId, const QString &nodeId
     return exitCode;
 }
 
-ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &path, QString &error) {
+ExitCode GuiRequests::findGoodPathForNewSync(const QString &driveName, QString &path, QString &error) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << basePath;
+    paramsStream << driveName;
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, params, results)) {
@@ -466,6 +468,30 @@ ExitCode GuiRequests::findGoodPathForNewSync(const QString &basePath, QString &p
     resultStream >> exitCode;
     resultStream >> path;
     resultStream >> error;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::isPathValidForNewSync(const QString &path, const SyncConfiguration syncConfig, bool &valid) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << path;
+    paramsStream << syncConfig;
+
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC, params, results)) {
+        qCWarning(lcGuiRequests) << "isPathValidForNewSync: execute FAILED (timeout or comm error) for path=" << path
+                                 << ", RequestNum=" << RequestNum::UTILITY_ISPATHVALIDFORNEWSYNC
+                                 << ", timeout=" << COMM_SHORT_TIMEOUT << "ms";
+        return ExitCode::SystemError;
+    }
+
+    auto exitCode = ExitCode::Unknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> valid;
+
 
     return exitCode;
 }
@@ -507,7 +533,7 @@ ExitCode GuiRequests::getNodeInfo(const UserDbId userDbId, const DriveId driveId
     paramsStream << withPath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::NODE_INFO, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_INFO_REMOTE, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -937,7 +963,7 @@ ExitCode GuiRequests::getNameExcluded(const QString &name, bool excluded) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplateInfo> &templateList) {
+ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate> &templateList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << def;
@@ -955,7 +981,7 @@ ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate
     return exitCode;
 }
 
-ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplateInfo> &templateList) {
+ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplate> &templateList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << templateList;
@@ -973,7 +999,7 @@ ExitCode GuiRequests::setUserExclusionTemplateList(const QList<ExclusionTemplate
 }
 
 #ifdef Q_OS_MAC
-ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &appList) {
+ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionApp> &appList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << def;
@@ -991,7 +1017,7 @@ ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &app
     return exitCode;
 }
 
-ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo> &appList) {
+ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionApp> &appList) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << def;

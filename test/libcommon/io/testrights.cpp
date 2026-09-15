@@ -17,7 +17,6 @@
  */
 
 #include "testio.h"
-#include "libcommonserver/io/permissionsgiver.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
@@ -624,25 +623,6 @@ void TestIo::testReadOnly() {
     CPPUNIT_ASSERT_EQUAL(true, write);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::isLocked(filePath, isLocked));
     CPPUNIT_ASSERT(!isLocked);
-}
-
-void TestIo::testPermissionsGiver() {
-    const LocalTemporaryDirectory tempDir("testPermissionsHolderDir");
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::setReadOnly(tempDir.path()));
-
-    const auto filePath = tempDir.path() / "testPermissionsHolderFile";
-    testhelpers::generateOrEditTestFile(filePath);
-    CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
-
-    {
-        const PermissionsGiver permsGiver(tempDir.path(), Log::instance()->getLogger());
-        testhelpers::generateOrEditTestFile(filePath);
-        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
-    }
-
-    const auto filePath2 = tempDir.path() / "testPermissionsHolderFile2";
-    testhelpers::generateOrEditTestFile(filePath2);
-    CPPUNIT_ASSERT(std::filesystem::exists(filePath2));
 }
 
 } // namespace KDC

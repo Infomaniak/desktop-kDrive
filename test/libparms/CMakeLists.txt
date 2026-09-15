@@ -62,6 +62,9 @@ if(APPLE)
     # Default sync exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
 
+    # Default sync folder rules
+    install(FILES ${CMAKE_SOURCE_DIR}/sync-folder-rules-osx.csv DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-folder-rules.csv)
+
     # Default Lite Sync app exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
 endif()

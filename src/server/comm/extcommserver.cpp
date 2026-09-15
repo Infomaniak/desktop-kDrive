@@ -61,7 +61,7 @@ CommString ExtCommChannel::readMessage() {
 }
 
 bool ExtCommChannel::canReadMessage() {
-    while (bytesAvailable() > 0) {
+    while (isReadable()) {
         CommChar data[1024];
         if (uint64_t charRead = readData(data, 1024); charRead > 0) {
             _readBuffer.append(data, charRead);

@@ -18,14 +18,14 @@
 
 #pragma once
 
-#include "libcommon/info/userinfo.h"
+#include "libcommon/data/user.h"
 
 namespace KDC {
 
-class UserInfoClient : public UserInfo {
+class UserInfoClient : public User {
     public:
-        UserInfoClient();
-        UserInfoClient(const UserInfo &userInfo);
+        UserInfoClient() = default;
+        UserInfoClient(const User &userInfo);
 
         inline const QString &connectionError() const { return _connectionError; }
         inline void setConnectionError(const QString &newConnectionError) { _connectionError = newConnectionError; }

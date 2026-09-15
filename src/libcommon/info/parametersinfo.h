@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "info/proxyconfiginfo.h"
+#include "data/proxyconfig.h"
 #include "utility/types.h"
 
 #include <Poco/Dynamic/Struct.h>
@@ -55,8 +55,8 @@ class ParametersInfo {
         inline bool extendedLog() const { return _extendedLog; }
         inline void setPurgeOldLogs(bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
         inline bool purgeOldLogs() const { return _purgeOldLogs; }
-        inline const ProxyConfigInfo &proxyConfigInfo() const { return _proxyConfigInfo; }
-        inline void setProxyConfigInfo(const ProxyConfigInfo &proxyConfigInfo) { _proxyConfigInfo = proxyConfigInfo; }
+        inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
+        inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
         inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
         inline bool darkTheme() const { return _darkTheme; }
         inline void setDialogGeometry(const QString &objectName, const QByteArray &saveGeometry) {
@@ -75,16 +75,7 @@ class ParametersInfo {
         [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
         void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
 
-        friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) {
-            return (lhs.language() == rhs.language()) && (lhs.monoIcons() == rhs.monoIcons()) &&
-                   (lhs.autoStart() == rhs.autoStart()) && (lhs.moveToTrash() == rhs.moveToTrash()) &&
-                   (lhs.notificationsDisabled() == rhs.notificationsDisabled()) && (lhs.useLog() == rhs.useLog()) &&
-                   (lhs.logLevel() == rhs.logLevel()) && (lhs.extendedLog() == rhs.extendedLog()) &&
-                   (lhs.purgeOldLogs() == rhs.purgeOldLogs()) && (lhs.darkTheme() == rhs.darkTheme()) &&
-                   (lhs.dialogGeometry() == rhs.dialogGeometry()) && (lhs.maxAllowedCpu() == rhs.maxAllowedCpu()) &&
-                   (lhs.distributionChannel() == rhs.distributionChannel()) && (lhs.sentryEnabled() == rhs.sentryEnabled()) &&
-                   (lhs.matomoEnabled() == rhs.matomoEnabled()) && (lhs.notifyBeforeDelete() == rhs.notifyBeforeDelete());
-        }
+        friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) = default;
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
@@ -102,7 +93,7 @@ class ParametersInfo {
         LogLevel _logLevel{LogLevel::Debug};
         bool _extendedLog{false};
         bool _purgeOldLogs{true};
-        ProxyConfigInfo _proxyConfigInfo;
+        ProxyConfig _proxyConfig;
         bool _darkTheme{false};
         DialogGeometry _dialogGeometry;
         int _maxAllowedCpu{50};

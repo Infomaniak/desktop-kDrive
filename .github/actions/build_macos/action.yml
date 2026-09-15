@@ -131,8 +131,10 @@ runs:
           mkdir uncached_dependencies
           if [ "${{ inputs.release_build }}" = "true" ]; then
                 cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Resources/*.lst ./uncached_dependencies/
+                cp ${{ github.workspace }}/build-macos/client/install/kDrive.app/Contents/Resources/sync-folder-rules.csv ./uncached_dependencies/
           else
                 cp ${{ github.workspace }}/build-macos/client/bin/*.lst ./uncached_dependencies/
+                cp ${{ github.workspace }}/build-macos/client/bin/sync-folder-rules.csv ./uncached_dependencies/
           fi
 
           cp ${{ github.workspace }}/build-macos/client/bin/kDrive_vfs_mac.dylib ./uncached_dependencies/
@@ -158,7 +160,7 @@ runs:
         run: |
           sentry-cli debug-files bundle-sources ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM
           mkdir ${{ github.workspace }}/build-macos/sentry-client-artifacts
-          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
+          cp -r ${{ github.workspace }}/build-macos/client/install/kDrive_client.dSYM ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.dSYM
           cp ${{ github.workspace }}/build-macos/client/install/kDrive_client.src.zip ${{ github.workspace }}/build-macos/sentry-client-artifacts/kDrive_client.src.zip
         shell: bash
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
@@ -289,6 +291,27 @@ runs:
         with:
           name: macos-release-artifacts-package
           path: ${{ github.workspace }}/build-macos/client/install/kDrive-*.*
+          retention-days: 1
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+
+      - name: Generate recovery updater SHA256
+        shell: bash
+        if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
+        run: |
+          FILE=$(ls "${{ github.workspace }}/build-macos/client/install/kDriveRecoveryUpdater-"*.zip | head -n 1)
+
+          HASH=$(shasum -a 256 "$FILE" | awk '{print $1}')
+
+          echo "### macOS Recovery Updater SHA256" >> "$GITHUB_STEP_SUMMARY"
+          echo "$HASH" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "$HASH  $(basename "$FILE")" > "${FILE}.sha256"
+
+      - name: Upload recovery updater
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macos-release-artifacts-recovery-updater
+          path: ${{ github.workspace }}/build-macos/client/install/kDriveRecoveryUpdater-*.zip*
           retention-days: 1
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
 

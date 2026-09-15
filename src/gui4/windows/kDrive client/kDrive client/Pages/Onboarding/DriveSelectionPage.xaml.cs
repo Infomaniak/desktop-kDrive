@@ -95,10 +95,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingSyncConfigurationPage, Analytics.Keys.EventName.SelectDrive);
                 cb.IsEnabled = false;
                 var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
-                string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                string desiredFolderName = drive.Name.StartsWith("kDrive") ? drive.Name : $"kDrive {drive.Name}";
-                string desiredPath = Path.Combine(userProfile, desiredFolderName);
-                string? result = await commServices.GetGoodPathForNewSync(drive, desiredPath, CancellationToken.None);
+                string? result = await commServices.GetGoodPathForNewSync(drive, CancellationToken.None);
                 if (result is null)
                 {
                     Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{drive.Name}'");

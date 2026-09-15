@@ -18,12 +18,13 @@
 
 #include "abstractnetworkjob.h"
 
-#include "network/proxy.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/syncjob.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
+#include "libcommonserver/utility/truststorehelper.h"
+#include "libparms/db/parmsdb.h"
 #include "utility/timerutility.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -33,10 +34,8 @@
 #include <Poco/DOM/DOMParser.h>
 #include <Poco/DOM/AutoPtr.h>
 #include <Poco/SharedPtr.h>
-#include <Poco/InflatingStream.h>
 #include <Poco/Error.h>
 
-#include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <atomic>
 #include <functional>
 #include <thread>
@@ -64,9 +63,19 @@ AbstractNetworkJob::AbstractNetworkJob() :
     if (!_context) {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
-                _context =
-                        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+                // VERIFY_STRICT enables peer certificate verification.
+                // loadDefaultCAs is false because the bundled OpenSSL build does not ship a CA
+                // bundle; instead we load the platform-native trust store below.
+                _context = new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
+                                                  Poco::Net::Context::VERIFY_STRICT, 9, false);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+
+                // Load the platform-native trust store (macOS keychain / Windows cert store /
+                // Linux ca-certificates) into the underlying OpenSSL SSL_CTX.
+                if (TrustStoreHelper::loadSystemCAs(_context->sslContext())) {
+                    break;
+                }
+                LOG_ERROR(_logger, "Failed to load system CAs, peer verification may fail");
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
                     LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e) << ", retrying...");
@@ -345,11 +354,12 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
     }
 
     // Set proxy params
-    if (Proxy::instance()->proxyConfig().type() == ProxyType::HTTP) {
-        _session->setProxy(Proxy::instance()->proxyConfig().hostName(),
-                           static_cast<Poco::UInt16>(Proxy::instance()->proxyConfig().port()));
-        if (Proxy::instance()->proxyConfig().needsAuth()) {
-            _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
+    if (ParametersCache::instance()->parameters().proxyConfig().type() == ProxyType::HTTP) {
+        _session->setProxy(ParametersCache::instance()->parameters().proxyConfig().hostName(),
+                           static_cast<Poco::UInt16>(ParametersCache::instance()->parameters().proxyConfig().port()));
+        if (ParametersCache::instance()->parameters().proxyConfig().needsAuth()) {
+            _session->setProxyCredentials(ParametersCache::instance()->parameters().proxyConfig().user(),
+                                          ParametersCache::instance()->parameters().proxyConfig().pwd());
         }
     }
 }
@@ -458,6 +468,7 @@ void AbstractNetworkJob::setHeaders(Poco::Net::HTTPRequest &req) {
     }
     if (scope() != Scope::None) req.add("ik-client-scope", toString(scope()));
     if (!context().empty()) req.add("ik-client-context", context());
+    if (const std::string appUID = ParmsDb::appUID(); !appUID.empty()) req.add("ik-client-app-id", appUID);
 }
 
 ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
@@ -476,6 +487,16 @@ ExitInfo AbstractNetworkJob::receiveResponseFromSession(StreamVector &stream) {
     }
 
     return ExitCode::Ok;
+}
+
+ExitInfo AbstractNetworkJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &) {
+    disableRetry();
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+    LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+    _backError = BackError(replyBody);
+
+    return {ExitCode::BackError, ExitCause::HttpErr};
 }
 
 ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
@@ -515,12 +536,7 @@ ExitInfo AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             return ExitCode::Ok;
         }
         case Poco::Net::HTTPResponse::HTTP_UNPROCESSABLE_ENTITY: {
-            disableRetry();
-            std::string replyBody;
-            getStringFromStream(stream[0].get(), replyBody);
-            LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
-            _backError = BackError(replyBody);
-            return {ExitCode::BackError, ExitCause::HttpErr};
+            return handleUnprocessableEntity(stream[0].get(), uri);
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
             LOG_WARN(_logger, "Received HTTP_UPGRADE_REQUIRED, update required");

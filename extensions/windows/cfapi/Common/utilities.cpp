@@ -19,7 +19,7 @@
 #include "utilities.h"
 #include "../../../../src/libcommon/utility/utility_base.h"
 
-#include <winrt\base.h>
+#include <winrt/base.h>
 
 #include <vector>
 #include <array>

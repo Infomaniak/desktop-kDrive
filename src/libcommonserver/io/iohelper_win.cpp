@@ -77,6 +77,8 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
         case ERROR_FILE_CORRUPT:
         case ERROR_DISK_CORRUPT:
             return IoError::FileOrDirectoryCorrupted;
+        case ERROR_CANT_RESOLVE_FILENAME:
+            return IoError::TooManySymbolicLinkLevels;
         default:
             if (Log::isSet()) {
                 LOGW_WARN(logger, L"Unhandled DWORD error: " << utility_base::getErrorMessage(error));
@@ -172,14 +174,15 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
     return dWordError2ioError(static_cast<DWORD>(error), logger());
 }
 
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+bool IoHelper::_getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept {
     if (path == path.root_path()) {
         return getRootNodeId(path, nodeId);
     }
 
     // Get parent folder handle
-    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, nullptr,
-                                 OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    HANDLE hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY,
+                                 FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+                                 FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
     if (hParent == INVALID_HANDLE_VALUE) {
         LOGW_INFO(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()) << L", "
@@ -249,6 +252,8 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
         ioError = dWordError2ioError(dwError, logger());
         exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
     }
+
+    if (ioError == IoError::NoSuchFileOrDirectory) ioError = IoError::Success;
 
     return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
@@ -499,8 +504,8 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    if (const auto exitInfo = CommonUtility::deviceTempDirectoryPath(tmpDir); !exitInfo) {
-        LOGW_WARN(logger(), L"Error in CommonUtility::deviceTempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
+    if (const auto exitInfo = CommonUtility::tempDirectoryPath(tmpDir); !exitInfo) {
+        LOGW_WARN(logger(), L"Error in CommonUtility::tempDirectoryPath: " << Utility::formatExitInfo(tmpDir, exitInfo));
         return;
     }
 

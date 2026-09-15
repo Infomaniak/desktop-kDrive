@@ -42,7 +42,7 @@ public struct NodeJobs: Sendable {
                             withPath: Bool = true) async throws -> NodeInfo {
         IKLogger.data.log("Query to get node info")
         let query = NodeQuery(userDbId: userDbId, driveId: driveId, nodeId: nodeId, withPath: withPath)
-        let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO, body: query)
+        let request = await RequestMessage<NodeQuery>(num: RequestNum.NODE_INFO_REMOTE, body: query)
 
         let decodedMessage = try await queryFetcher.query(request, responseType: CallbackMessage<NodeInfoResponse>.self)
 

@@ -75,14 +75,14 @@ void UserSelectionWidget::clear() {
     _downIconLabel->setVisible(false);
 }
 
-void UserSelectionWidget::addOrUpdateUser(const UserDbId userDbId, const UserInfo &userInfo) {
-    _userMap[userDbId] = userInfo;
+void UserSelectionWidget::addOrUpdateUser(const UserDbId userDbId, const User &user) {
+    _userMap[userDbId] = user;
 }
 
 void UserSelectionWidget::selectUser(const UserDbId userDbId) {
     if (_userMap.find(userDbId) != _userMap.end()) {
         _downIconLabel->setVisible(true);
-        setUserAvatar(_userMap[userDbId].avatar());
+        setUserAvatar(CommonUtility::toQImage(_userMap[userDbId].avatar()));
         _currentUserDbId = userDbId;
         emit userSelected(userDbId);
     }
@@ -120,9 +120,8 @@ void UserSelectionWidget::onClick(bool checked) {
         }
 
         for (auto &userMapElt: _userMap) {
-            UserInfo userInfo = userMapElt.second;
-            if (userInfo.dbId() != _currentUserDbId) {
-                addMenuItem(menu, userInfo, false);
+            if (userMapElt.second.dbId() != _currentUserDbId) {
+                addMenuItem(menu, userMapElt.second, false);
             }
         }
 
@@ -138,11 +137,12 @@ void UserSelectionWidget::onClick(bool checked) {
     }
 }
 
-void UserSelectionWidget::addMenuItem(MenuWidget *menu, UserInfo &userInfo, bool current) {
+void UserSelectionWidget::addMenuItem(MenuWidget *menu, const User &userInfo, bool current) {
     QWidgetAction *selectUserAction = new QWidgetAction(this);
     selectUserAction->setProperty(userDbIdProperty, toInt(userInfo.dbId()));
-    MenuItemUserWidget *userMenuItemWidget = new MenuItemUserWidget(userInfo.name(), userInfo.email(), current);
-    userMenuItemWidget->setLeftImage(userInfo.avatar());
+    MenuItemUserWidget *userMenuItemWidget =
+            new MenuItemUserWidget(QString::fromStdString(userInfo.name()), QString::fromStdString(userInfo.email()), current);
+    userMenuItemWidget->setLeftImage(CommonUtility::toQImage(userInfo.avatar()));
 
     selectUserAction->setDefaultWidget(userMenuItemWidget);
     menu->addAction(selectUserAction);

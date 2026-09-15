@@ -19,7 +19,7 @@
 #pragma once
 
 #include "syncenginelib.h"
-#include "libparms/db/exclusiontemplate.h"
+#include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/utility/types.h"
 
 #include <vector>

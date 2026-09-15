@@ -135,7 +135,12 @@ ExitInfo ApiTranslator::translateV2ToV3(const DriveDbId driveDbId, RemoteNodeId 
 void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialFolder::Private)) return;
 
-    remotePath = std::filesystem::relative(remotePath, v3SpecialFolderNames.at(SpecialFolder::Private));
+    try {
+        remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialFolder::Private));
+    } catch (const std::exception &) {
+        remotePath = SyncPath{};
+    }
+
     if (remotePath == ".") remotePath = SyncPath{};
 }
 

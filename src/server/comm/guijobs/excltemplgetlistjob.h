@@ -20,7 +20,7 @@
 
 #include "server/comm/guijobs/abstractguijob.h"
 
-#include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/data/exclusiontemplate.h"
 
 namespace KDC {
 
@@ -31,7 +31,7 @@ class ExclTemplGetListJob : public AbstractGuiJob {
 
         // Setters for compatibility with legacy comm layer
         void setInParms(bool def) { _default = def; }
-        std::vector<ExclusionTemplateInfo> getOutParmsExclusionTemplateList() const { return _exclusionTemplateList; }
+        std::vector<ExclusionTemplate> getOutParmsExclusionTemplateList() const { return _exclusionTemplateList; }
         ExitInfo process() override;
 
     private:
@@ -39,7 +39,7 @@ class ExclTemplGetListJob : public AbstractGuiJob {
         bool _default = false;
 
         // Output parameters
-        std::vector<ExclusionTemplateInfo> _exclusionTemplateList;
+        std::vector<ExclusionTemplate> _exclusionTemplateList;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

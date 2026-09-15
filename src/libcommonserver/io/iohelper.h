@@ -55,6 +55,7 @@ static constexpr std::string_view pinStateExcluded("E");
 } // namespace litesync_attrs
 #endif
 
+class CacheDirectory;
 struct FileStat;
 
 struct IoHelper {
@@ -88,9 +89,7 @@ struct IoHelper {
             EnumEnd
         };
 
-        static bool recursiveDirectoryIterator(const SyncPath &path, IoHelper::DirectoryIterator &dirIt);
-        static ExitInfo checkDirectoryIteratorInterruption(bool endOfDir, IoError ioError, const DirectoryEntry &entry,
-                                                           bool directoryIterationException = false);
+        static ExitInfo directoryIteratorExitCode(const IoError ioError);
 
         IoHelper() = default;
 
@@ -101,6 +100,7 @@ struct IoHelper {
         static std::string ioError2StdString(IoError ioError) noexcept;
 
         //! Get the item type of the item indicated by `path`.
+        //! Hardlinks are not supported
         /*!
           \param path is the file system path of the inspected item.
           \param itemType is the type of the item indicated by `path`.
@@ -137,11 +137,11 @@ struct IoHelper {
         //! Get the checksum of the file indicated by `path`.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
-         \param ifs is an input file stream used to read the file contents.
          \param checksum is set with the checksum of the file indicated by `path`, or empty on error.
+         \param chunkSize is the size of the chunks to be used for computing the checksum.
          \return the IoError representing the success or failure of the operation.
          */
-        static IoError getFileChecksum(const SyncPath &path, std::string &checksum) noexcept;
+        static IoError getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize = 0) noexcept;
 
         //! Check if the item indicated by path has a size or a modification date different from the specified ones.
         /*!
@@ -185,6 +185,8 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
+
+         \note This method never sets ioError with `IoError::NoSuchFileOrDirectory`.
          */
         static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
@@ -309,6 +311,17 @@ struct IoHelper {
          */
         static bool deleteItem(const SyncPath &path) noexcept;
 
+        //! Remove an item located under the specified path.
+        //! If the function fails, the item is left unmodified and an error ExitInfo is returned.
+        //! If it succeeds, the item is removed from its original path and ExitCode::Ok is returned.
+        /*!
+         \param path is the file system path of the item to remove.
+         \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
+         being deleted.
+         \return ExitInfo.
+         */
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
+
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.
         /*!
@@ -344,6 +357,7 @@ struct IoHelper {
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
+        //! If the destination item is a link, remove it before copying.
         /*!
           \param sourcePath is the file system path of the item to copy.
           \param destinationPath is the file system path of the location to copy the item to.
@@ -351,7 +365,6 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise.
         */
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-
 
 #if defined(KD_MACOS)
         // From `man xattr`:
@@ -559,9 +572,11 @@ struct IoHelper {
                                   IoError &ioError)>
                 _checkIfPathExistsSensitive;
         static std::function<bool(const SyncPath &path, FileStat *filestat, IoError &ioError)> _getFileStat;
+        static std::function<bool(const SyncPath &path, NodeId &nodeId)> _getNodeId;
         static bool _checkIfPathExistsSensitiveFn(const SyncPath &path, const std::filesystem::file_status &status, bool &exists,
                                                   IoError &ioError) noexcept;
         static bool _getFileStatFn(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool _getNodeIdFn(const SyncPath &path, NodeId &nodeId) noexcept;
         static bool _unsuportedFSLogged;
 
     private:

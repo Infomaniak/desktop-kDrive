@@ -35,6 +35,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "test_utility/testhelpers.h"
 
+#include <memory>
 #include <qbytearray.h>
 
 namespace KDC {
@@ -320,13 +321,12 @@ void TestGuiCommChannel::testUserInfoListJob() {
 
         CommBLOB avatarBLOB;
         CommonUtility::convertFromBase64Str(avatarBase64StdStr, avatarBLOB);
-        QByteArray avatarQBA;
-        (void) std::copy(avatarBLOB.begin(), avatarBLOB.end(), std::back_inserter(avatarQBA));
-        QImage avatar;
-        (void) avatar.loadFromData(avatarQBA);
+        auto avatar = std::make_shared<std::vector<char>>(avatarBLOB.begin(), avatarBLOB.end());
 
-        const UserInfo ui1(1, 1001, "aaaaa", "a1a1a1", "aaaaa@xxx.com", avatar, true);
-        const UserInfo ui2(2, 1002, "bbbbb", "b1b1b1", "bbbbb@xxx.com", avatar, false);
+        User ui1(1, 1001, "", "aaaaa", "a1a1a1", "aaaaa@xxx.com", "", avatar, false);
+        ui1.setConnected(true);
+        User ui2(2, 1002, "", "bbbbb", "b1b1b1", "bbbbb@xxx.com", "", avatar, false);
+        ui2.setConnected(false);
 
         userInfoListJob->_userInfoList = {ui1, ui2};
     };
@@ -497,14 +497,14 @@ void TestGuiCommChannel::testAccountInfoListJob() {
     auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
         const auto accountInfoListJob = std::dynamic_pointer_cast<AccountInfoListJob>(job);
 
-        AccountInfo ai1(1, 1);
-        ai1.setId(1111);
+        Account ai1(1, 1);
+        ai1.setAccountId(1111);
         ai1.setName("account1");
-        AccountInfo ai2(2, 1);
-        ai2.setId(2222);
+        Account ai2(2, 1);
+        ai2.setAccountId(2222);
         ai2.setName("account2");
 
-        accountInfoListJob->_accountInfoList = {ai1, ai2};
+        accountInfoListJob->_accountList = {ai1, ai2};
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

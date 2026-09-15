@@ -26,7 +26,11 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testGetFileChecksum() {
+    // The coherance between backend and client hash calculation is verified in the syncengine unit tests. Here we just verify
+    // that the checksum is correctly calculated on the client side.
+
     constexpr std::string_view hash1 = "xxh3:5dcc477e35136516";
+    constexpr std::string_view hash1N = "N:xxh3:dda9955597f24762";
     constexpr std::string_view hash2 = "xxh3:91f9d1732ca53515";
     // A regular file
     {
@@ -36,6 +40,16 @@ void TestIo::testGetFileChecksum() {
         CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         CPPUNIT_ASSERT(!checksum.empty());
         CPPUNIT_ASSERT_EQUAL(std::string(hash1), checksum);
+    }
+
+    // A regular file with a chunked checksum "N:xxh3:"
+    {
+        const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
+        std::string checksum;
+        const IoError ioError = IoHelper::getFileChecksum(path, checksum, 1024);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+        CPPUNIT_ASSERT(!checksum.empty());
+        CPPUNIT_ASSERT_EQUAL(std::string(hash1N), checksum);
     }
 
     // A regular file whose name exists with a different capitalization

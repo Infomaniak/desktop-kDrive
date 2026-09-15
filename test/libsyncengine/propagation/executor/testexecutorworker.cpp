@@ -24,7 +24,6 @@
 #include "keychainmanager/keychainmanager.h"
 #include "mocks/mockkeychainstorage.h"
 #include "mocks/libsyncengine/vfs/mockvfs.h"
-#include "network/proxy.h"
 #include "propagation/executor/filerescuer.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
 
@@ -38,6 +37,13 @@
 
 namespace KDC {
 
+namespace {
+class LateCallbackJob final : public SyncJob {
+    public:
+        ExitInfo runJob() override { return ExitCode::Ok; }
+};
+} // namespace
+
 void TestExecutorWorker::setUp() {
     TestBase::start();
     const testhelpers::TestVariables testVariables;
@@ -50,7 +56,7 @@ void TestExecutorWorker::setUp() {
 
     const std::string keychainKey("123");
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
-    (void) KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     (void) ParmsDb::instance(_localTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -73,12 +79,6 @@ void TestExecutorWorker::setUp() {
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, _sync.dbId());
     _sync.setDbPath(syncDbPath);
     (void) ParmsDb::instance()->insertSync(_sync);
-
-    // Setup proxy
-    Parameters parameters;
-    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
 
     _mockVfs = std::make_shared<MockVfs<VfsOff>>(VfsSetupParams(Log::instance()->getLogger()));
     _syncPal = std::make_shared<SyncPal>(_mockVfs, _sync.dbId(), KDRIVE_VERSION_STRING);
@@ -399,6 +399,23 @@ void TestExecutorWorker::testTerminatedJobsQueue() {
     t2.join();
     t3.join();
     t4.join(); // Wait for all threads to finish.
+}
+
+void TestExecutorWorker::testLateJobCallbacksAfterStop() {
+    const auto job = std::make_shared<LateCallbackJob>();
+    _executorWorker->setJobCallbacks(job);
+    job->setMainCallback([]([[maybe_unused]] const UniqueId jobId) {});
+
+    const std::weak_ptr<ExecutorWorker> weakExecutor = _executorWorker;
+    _executorWorker.reset();
+    _syncPal->clearProgressInfo();
+
+    CPPUNIT_ASSERT(weakExecutor.expired());
+    CPPUNIT_ASSERT(!_syncPal->setProgress(SyncPath("late-callback"), 1));
+
+    // Both callbacks used to retain raw pointers into state released by SyncPal::stop().
+    job->setProgress(1);
+    CPPUNIT_ASSERT(job->runSynchronously());
 }
 
 void TestExecutorWorker::testPropagateConflictToDbAndTree() {
