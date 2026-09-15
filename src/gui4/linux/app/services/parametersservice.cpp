@@ -21,7 +21,9 @@
 #include "app/cache/parametersstore.h"
 
 #include <QLoggingCategory>
-#include <QString>
+#include <QPointer>
+
+#include <utility>
 
 namespace KDC {
 
@@ -29,48 +31,87 @@ namespace {
 Q_LOGGING_CATEGORY(lcParametersService, "gui.v4.parametersservice", QtInfoMsg)
 } // namespace
 
-ParametersService::ParametersService(CommService &commService, ParametersStore &parametersStore, QObject *const parent) :
+ParametersService::ParametersService(UpdateRequest request, ParametersStore &parametersStore, QObject *const parent) :
     QObject(parent),
-    _commService(commService),
+    _request(std::move(request)),
     _parametersStore(parametersStore) {}
 
-void ParametersService::updateParameters(const ParametersMutation &mutation, const UpdateCallback &callback) const {
+void ParametersService::updateParameters(const ParametersMutation &mutation, const UpdateCallback &callback) {
     if (!mutation) {
-        qCWarning(lcParametersService) << "Parameters update ignored because no mutation was provided";
         if (callback) {
             callback({ExitCode::LogicError, ExitCause::InvalidArgument});
         }
         return;
     }
 
-    const auto currentParametersInfo = _parametersStore.parametersInfo();
-    if (!currentParametersInfo.has_value()) {
-        qCWarning(lcParametersService) << "Parameters update ignored because server parameters are not loaded yet";
-        if (callback) {
-            callback({ExitCode::DataError, ExitCause::NotFound});
-        }
+    _updates.push_back({.mutation = mutation, .callback = callback});
+    startNextUpdate();
+}
+
+// Serialize full-snapshot writes. Queued mutations must start from the previous confirmed result, not the snapshot
+// that existed when the user clicked. Keep the queue locked through notifications and callbacks, which may enqueue work.
+void ParametersService::startNextUpdate() {
+    if (_updating || _updates.empty()) {
         return;
     }
 
-    ParametersInfo updatedParametersInfo = *currentParametersInfo;
-    mutation(updatedParametersInfo);
-    _commService.requestParametersUpdate(
-            updatedParametersInfo, [this, updatedParametersInfo, callback](const ExitInfo &exitInfo) {
-                if (!exitInfo) {
-                    qCWarning(lcParametersService)
-                            << "Parameters update rejected by server | ExitInfo:" << QString::fromStdString(toString(exitInfo));
-                    if (callback) {
-                        callback(exitInfo);
-                    }
-                    return;
-                }
+    _updating = true;
+    const auto update = _updates.front();
+    auto parametersInfo = _parametersStore.parametersInfo();
+    if (!parametersInfo) {
+        _updates.pop_front();
 
-                qCInfo(lcParametersService) << "Parameters update confirmed by server";
-                _parametersStore.replaceParametersInfo(updatedParametersInfo);
-                if (callback) {
-                    callback(exitInfo);
-                }
-            });
+        const QPointer self(this);
+        if (update.callback) {
+            update.callback({ExitCode::DataError, ExitCause::NotFound});
+        }
+
+        if (!self) {
+            return;
+        }
+
+        _updating = false;
+        startNextUpdate();
+        return;
+    }
+
+    const auto confirmedParametersInfo = *parametersInfo;
+    update.mutation(*parametersInfo);
+
+    const auto finishUpdate = [self = QPointer(this), parametersInfo = *parametersInfo, update](const ExitInfo &result) {
+        if (!self) {
+            return;
+        }
+
+        self->_updates.pop_front();
+        if (result) {
+            self->_parametersStore.replaceParametersInfo(parametersInfo);
+        } else {
+            qCWarning(lcParametersService) << "Parameters update rejected:" << QString::fromStdString(toString(result));
+        }
+
+        if (!self) {
+            return;
+        }
+
+        if (update.callback) {
+            update.callback(result);
+        }
+
+        if (!self) {
+            return;
+        }
+
+        self->_updating = false;
+        self->startNextUpdate();
+    };
+
+    if (*parametersInfo == confirmedParametersInfo) {
+        finishUpdate(ExitInfo{ExitCode::Ok});
+        return;
+    }
+
+    _request(*parametersInfo, finishUpdate);
 }
 
 } // namespace KDC
