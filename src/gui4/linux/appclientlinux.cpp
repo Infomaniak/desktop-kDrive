@@ -30,6 +30,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QLocale>
+#include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlError>
@@ -81,25 +82,25 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("syncService"), &_syncService);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("serviceEventBus"), &_serviceEventBus);
     _qmlEngine.rootContext()->setContextProperty(QStringLiteral("windowDecorationController"), &_windowDecorationController);
-    (void) qmlRegisterUncreatableType<AppRouter>("kDrive.UI", 1, 0, "AppRouter",
+    (void) qmlRegisterUncreatableType<AppRouter>(AppConstants::Qml::moduleUri, 1, 0, "AppRouter",
                                                  "AppRouter is owned by AppClientLinux and exposed as appRouter.");
-    (void) qmlRegisterUncreatableType<SyncSelectorModel>("kDrive.UI", 1, 0, "SyncSelectorModel",
+    (void) qmlRegisterUncreatableType<SyncSelectorModel>(AppConstants::Qml::moduleUri, 1, 0, "SyncSelectorModel",
                                                          "SyncSelectorModel is owned by MainSidebarController.");
-    (void) qmlRegisterUncreatableType<HomeController>("kDrive.UI", 1, 0, "HomeController",
+    (void) qmlRegisterUncreatableType<HomeController>(AppConstants::Qml::moduleUri, 1, 0, "HomeController",
                                                       "HomeController is owned by AppClientLinux.");
-    (void) qmlRegisterUncreatableType<ActivityListModel>("kDrive.UI", 1, 0, "ActivityListModel",
+    (void) qmlRegisterUncreatableType<ActivityListModel>(AppConstants::Qml::moduleUri, 1, 0, "ActivityListModel",
                                                          "ActivityListModel is owned by ActivitiesController.");
-    (void) qmlRegisterUncreatableType<ActivitiesController>("kDrive.UI", 1, 0, "ActivitiesController",
+    (void) qmlRegisterUncreatableType<ActivitiesController>(AppConstants::Qml::moduleUri, 1, 0, "ActivitiesController",
                                                             "ActivitiesController is owned by AppClientLinux.");
-    (void) qmlRegisterUncreatableType<ManyDeletesController>("kDrive.UI", 1, 0, "ManyDeletesController",
+    (void) qmlRegisterUncreatableType<ManyDeletesController>(AppConstants::Qml::moduleUri, 1, 0, "ManyDeletesController",
                                                              "ManyDeletesController is owned by AppClientLinux.");
-    (void) qmlRegisterUncreatableType<StorageController>("kDrive.UI", 1, 0, "StorageController",
+    (void) qmlRegisterUncreatableType<StorageController>(AppConstants::Qml::moduleUri, 1, 0, "StorageController",
                                                          "StorageController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<OnboardingSyncConfigurationController>(
-            "kDrive.UI", 1, 0, "OnboardingSyncConfigurationController",
+            AppConstants::Qml::moduleUri, 1, 0, "OnboardingSyncConfigurationController",
             "OnboardingSyncConfigurationController is owned by OnboardingSession.");
-    (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, "kDrive.UI", 1, 0, "WebDrive",
-                                            QStringLiteral("WebDrive only exposes enums."));
+    (void) qmlRegisterUncreatableMetaObject(AppConstants::WebDrive::staticMetaObject, AppConstants::Qml::moduleUri, 1, 0,
+                                            "WebDrive", QStringLiteral("WebDrive only exposes enums."));
     _qmlEngine.setOutputWarningsToStandardError(false);
     (void) connect(&_qmlEngine, &QQmlApplicationEngine::warnings, this, [](const QList<QQmlError> &warnings) {
         for (const auto &warning: warnings) {
@@ -108,6 +109,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     });
     _qmlEngine.setInitialProperties({
             {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
+            {QStringLiteral("settingsController"), QVariant::fromValue<QObject *>(&_generalSettingsController)},
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
@@ -116,7 +118,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
-    _qmlEngine.loadFromModule(QStringLiteral("kDrive.UI"), QStringLiteral("Main"));
+    _qmlEngine.loadFromModule(AppConstants::Qml::moduleUri, QStringLiteral("Main"));
     if (_qmlEngine.rootObjects().isEmpty()) {
         qCCritical(lcAppClientLinux) << "QML root object creation failed";
         SentryService::reportFatalAndExit("QML root object creation failed", "QQmlApplicationEngine returned no root object.");
@@ -141,6 +143,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
 }
 
 void AppClientLinux::setupSignalConnections() {
+    (void) connect(&_generalSettingsController, &GeneralSettingsController::openRequested, this,
+                   &AppClientLinux::openSettingsWindow);
+    (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
+                   &AppClientLinux::openSettingsWindow);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
@@ -157,7 +163,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_updateStatusService, &UpdateStatusService::stateChanged, &_systemTrayController,
                    &SystemTrayController::handleUpdateStateChanged);
-    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
+    (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openSettingsWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::quit, this, [] { QCoreApplication::quit(); });
     (void) connect(&_manyDeletesController, &ManyDeletesController::presentationRequested, this,
@@ -300,6 +306,40 @@ void AppClientLinux::quitOnServerDisconnection() {
                                     << "ms, quitting anyway";
         QCoreApplication::quit();
     });
+}
+
+void AppClientLinux::openSettingsWindow() {
+    if (!_settingsWindow) {
+        QQmlComponent component(&_qmlEngine);
+        component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
+        auto *object = component.createWithInitialProperties(
+                {{"controller", QVariant::fromValue<QObject *>(&_generalSettingsController)}});
+        auto *window = qobject_cast<QWindow *>(object);
+        if (!window) {
+            qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
+            if (object) {
+                object->deleteLater();
+            }
+            emit _serviceEventBus.genericErrorOccurred();
+            return;
+        }
+
+        object->setParent(&_qmlEngine);
+        _settingsWindow = window;
+    }
+
+    if (_settingsWindow->visibility() == QWindow::Minimized) {
+        _settingsWindow->showNormal();
+    } else {
+        _settingsWindow->show();
+    }
+
+    _settingsWindow->raise();
+    _settingsWindow->requestActivate();
+
+    if (_bootstrapCompleted) {
+        _generalSettingsController.refreshUpdates();
+    }
 }
 
 void AppClientLinux::retranslatePresentation() {
