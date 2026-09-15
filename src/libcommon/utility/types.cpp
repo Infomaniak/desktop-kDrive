@@ -124,6 +124,8 @@ std::string toString(const ExitCode e) {
             return "UpdateFailed";
         case ExitCode::TooManyDeleteOperations:
             return "TooManyDeleteOperations";
+        case ExitCode::SyncPaused:
+            return "SyncPaused";
         default:
             return noConversionStr;
     }
