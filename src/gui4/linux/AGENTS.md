@@ -13,6 +13,10 @@
 
 ### Local Norms (Linux v4)
 
+- Search existing Loco IDs and reuse equivalent translated labels before introducing Linux-specific wording or new keys.
+- Display language choices as capitalized native language names without regional qualifiers; keep the system-default
+  choice translated in the system language independently of the app language, with English as fallback.
+
 - In versioned documentation, use repo-relative paths, not hardcoded absolute paths.
 - Treat Qt 6.11.1 as the authoritative Qt version for Linux v4; verify the configured dependency before attributing behavior
   to an older Qt release.
@@ -58,6 +62,10 @@
   The overlay spans the complete native window, so an un-inset scrim also dims the transparent custom-shadow margin.
 - Do not place a `Secondary` `IKModalButton` on a card surface: its outline is too close to that surface in both
   themes. Use the `Tonal` role there, and keep `Secondary` for a plain modal or page background.
+- Set `external: true` on every `IKLinkButton` and `IKModalButton` whose action opens the web browser, so the trailing
+  `IKExternalLinkIcon` announces the context switch. The marker must be exhaustive across labelled controls: once some
+  carry it, its absence reads as a promise that the action stays in the app. Icon-only controls are the exception, as a
+  second glyph is unreadable at that size; state the external destination in their tooltip instead.
 - Size Home Quick Access from the widest translated shortcut label or the drive name capped to the Windows-aligned
   display width. Keep shortcut labels fully visible, while the drive name wraps to two lines before eliding. Let the
   Home status panel consume the remaining horizontal space.
@@ -87,6 +95,10 @@
   so both outer circles remain identical.
 - Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
+- Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items supply
+  `showRequested`.
+  Never use `activeFocus` to trigger a tooltip. Hide tooltips when their window is inactive, their anchor is hidden, or their
+  button is pressed; clicking or restoring focus after Alt-Tab must not keep a tooltip open.
 - For Activities status presentation, mirror the Windows fallback: `Unknown`, `Error`, `Conflict`, `Inconsistency`, and
   `Ignored` are all visible error activities; only `Success` and `Syncing` use non-error presentations.
 - Keep Activities geometry in `IKActivities` and Activities-specific colors in the T3 section of `IKColors`. Store exact

@@ -64,7 +64,7 @@ Item {
     }
 
     IKToolTip {
-        visible: hoverHandler.hovered
+        showRequested: hoverHandler.hovered
         text: root.tooltipText
     }
 
