@@ -183,8 +183,8 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "File or directory corrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "Too many symbolic link levels";
-        case IoError::CorruptedLink:
-            return "Corrupted link";
+        case IoError::CorruptedFile:
+            return "Corrupted file";
         case IoError::Unknown:
         default:
             return "Unknown";
@@ -451,17 +451,17 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return false;
         }
 
+        itemType.nodeType = NodeType::File;
+        itemType.linkType = LinkType::FinderAlias;
+
         if (itemType.ioError != IoError::Success) {
-            const bool success = isExpectedError(itemType.ioError) || itemType.ioError == IoError::CorruptedLink ||
+            const bool success = isExpectedError(itemType.ioError) || itemType.ioError == IoError::CorruptedFile ||
                                  itemType.ioError == IoError::InvalidFileName;
             if (!success) {
                 LOGW_WARN(logger(), L"Failed to read alias: " << Utility::formatStdError(path, ec));
             }
             return success;
         }
-
-        itemType.nodeType = NodeType::File;
-        itemType.linkType = LinkType::FinderAlias;
 
         return _setTargetType(itemType);
     }

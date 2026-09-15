@@ -50,7 +50,7 @@ IoError nsError2ioError(NSError *nsError) noexcept {
             case NSFileReadInvalidFileNameError:
                 return IoError::InvalidFileName;
             case NSFileReadUnknownError:
-                return IoError::CorruptedLink;
+                return IoError::CorruptedFile;
             default:
                 return IoError::Unknown;
         }
@@ -174,7 +174,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             assert(false);
             ioError = IoError::Unknown;
         }
-        return isExpectedError(ioError) || ioError == IoError::CorruptedLink || ioError == IoError::InvalidFileName;
+        return isExpectedError(ioError) || ioError == IoError::CorruptedFile || ioError == IoError::InvalidFileName;
     }
 
     const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
@@ -203,7 +203,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             targetIoError = IoError::Unknown;
         }
 
-        if (targetIoError == IoError::CorruptedLink) ioError = targetIoError;
+        if (targetIoError == IoError::CorruptedFile) ioError = targetIoError;
         return true;
     }
 

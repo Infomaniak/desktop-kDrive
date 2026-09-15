@@ -473,12 +473,12 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
             return false;
         }
 
-        if (ioError == IoError::Success || ioError == IoError::TooManySymbolicLinkLevels || ioError == IoError::CorruptedLink) {
+        if (ioError == IoError::Success || ioError == IoError::TooManySymbolicLinkLevels || ioError == IoError::CorruptedFile) {
             if (ioError == IoError::TooManySymbolicLinkLevels) {
                 LOGW_DEBUG(logger(), L"Invalid symbolic link with "
                                              << Utility::formatSyncPath(dirEntry.path())
                                              << L" is managed although it has too many levels of indirection.");
-            } else if (ioError == IoError::CorruptedLink) {
+            } else if (ioError == IoError::CorruptedFile) {
                 LOGW_DEBUG(logger(), L"Invalid link with " << Utility::formatSyncPath(dirEntry.path())
                                                            << L" is managed although it is corrupted.");
             }
