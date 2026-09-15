@@ -89,10 +89,9 @@ void OnboardingSyncConfigurationController::open() {
     ++_requestGeneration;
     _visible = true;
     _busy = false;
-    _errorTitle.clear();
-    _errorText.clear();
-    _page = Summary;
+    _localFolderErrorText.clear();
     _currentRow = -1;
+    setPage(Summary);
     emit visibleChanged();
     showInitialPage();
 }
@@ -105,9 +104,9 @@ void OnboardingSyncConfigurationController::configureDrive(const int32_t row) {
 void OnboardingSyncConfigurationController::cancelCurrentPage() {
     // Leaving the page drops the path validation it started: its result would land on a page the user has left.
     abortPendingRequest();
-    clearError();
+    clearLocalFolderError();
     if (_page == FolderSelection) {
-        _page = DriveConfiguration;
+        setPage(DriveConfiguration);
         emit presentationChanged();
         return;
     }
@@ -117,8 +116,8 @@ void OnboardingSyncConfigurationController::cancelCurrentPage() {
         if (_drafts.size() == 1) {
             closeWithoutCommit();
         } else {
-            _page = Summary;
             _currentRow = -1;
+            setPage(Summary);
             emit presentationChanged();
         }
         return;
@@ -127,11 +126,11 @@ void OnboardingSyncConfigurationController::cancelCurrentPage() {
 }
 
 void OnboardingSyncConfigurationController::validateCurrentPage() {
-    clearError();
+    clearLocalFolderError();
     if (!canValidate()) return;
     if (_page == FolderSelection) {
         if (Draft *const draft = currentDraft()) draft->config.blackList = _folderTreeModel.blackList();
-        _page = DriveConfiguration;
+        setPage(DriveConfiguration);
         refreshSummaryModel();
         emit presentationChanged();
         return;
@@ -141,8 +140,8 @@ void OnboardingSyncConfigurationController::validateCurrentPage() {
         if (_drafts.size() == 1) {
             commitAndClose();
         } else {
-            _page = Summary;
             _currentRow = -1;
+            setPage(Summary);
             emit presentationChanged();
         }
         return;
@@ -167,44 +166,51 @@ void OnboardingSyncConfigurationController::applyCustomFolder(const QUrl &folder
     const QString path = QDir::cleanPath(folderUrl.toLocalFile());
     if (!draft || path.isEmpty()) return;
     if (conflictsWithAnotherDraft(path, _currentRow)) {
-        setError(qtTrId("teachingTipInvalidFolderTitle"), qtTrId("teachingTipInvalidFolderContent"));
+        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
         return;
     }
 
     setBusy(true);
-    clearError();
+    clearLocalFolderError();
     const uint64_t generation = ++_requestGeneration;
     const QPointer self(this);
-    _commService.requestIsPathValidForNewSync(
-            QStr2Path(path), SyncConfiguration::Classic, [self, generation, path](const ExitInfo &exitInfo, const bool valid) {
-                if (!self || generation != self->_requestGeneration) return;
-                self->setBusy(false);
-                if (!exitInfo || !valid || !self->currentDraft()) {
-                    self->setError(qtTrId("teachingTipInvalidFolderTitle"), qtTrId("teachingTipInvalidFolderContent"));
-                    return;
-                }
-                self->currentDraft()->config.localPath = path;
-                self->currentDraft()->config.usesDefaultLocalPath =
-                        QDir::cleanPath(self->currentDraft()->config.defaultLocalPath) == path;
-                self->refreshSummaryModel();
-                emit self->presentationChanged();
-            });
+    _commService.requestIsPathValidForNewSync(QStr2Path(path), SyncConfiguration::Classic,
+                                              [self, generation, path](const ExitInfo &exitInfo, const bool valid) {
+                                                  if (!self || generation != self->_requestGeneration) return;
+                                                  self->setBusy(false);
+                                                  if (!exitInfo || !valid || !self->currentDraft()) {
+                                                      self->setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+                                                      return;
+                                                  }
+                                                  self->currentDraft()->config.localPath = path;
+                                                  self->currentDraft()->config.usesDefaultLocalPath =
+                                                          QDir::cleanPath(self->currentDraft()->config.defaultLocalPath) == path;
+                                                  self->refreshSummaryModel();
+                                                  emit self->presentationChanged();
+                                              });
 }
 
 void OnboardingSyncConfigurationController::returnToDefaultFolder() {
     if (_busy) return;
-    Draft *const draft = currentDraft();
-    if (!draft || draft->config.defaultLocalPath.isEmpty()) return;
-    // Another drive may have taken that folder while this one sat on a custom path.
-    if (conflictsWithAnotherDraft(draft->config.defaultLocalPath, _currentRow)) {
-        setError(qtTrId("teachingTipInvalidFolderTitle"), qtTrId("teachingTipInvalidFolderContent"));
+    const Draft *const draft = currentDraft();
+    if (!draft) return;
+
+    const auto availableDrive = _appCache.availableDrive(draft->key);
+    if (!availableDrive) {
+        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
         return;
     }
-    draft->config.localPath = draft->config.defaultLocalPath;
-    draft->config.usesDefaultLocalPath = true;
-    clearError();
-    refreshSummaryModel();
-    emit presentationChanged();
+
+    setBusy(true);
+    clearLocalFolderError();
+    const AvailableDriveKey key = draft->key;
+    const uint64_t generation = ++_requestGeneration;
+    const QPointer self(this);
+    _commService.requestFindGoodPathForNewSync(CommonUtility::str2CommString(availableDrive->name()),
+                                               [self, key, generation](const ExitInfo &exitInfo, const GoodPathResult &result) {
+                                                   if (!self || generation != self->_requestGeneration) return;
+                                                   self->handleDefaultFolderProposal(key, generation, exitInfo, result);
+                                               });
 }
 
 void OnboardingSyncConfigurationController::selectFolders() {
@@ -212,8 +218,8 @@ void OnboardingSyncConfigurationController::selectFolders() {
     if (!draft || _busy) return;
     _folderTreeModel.configure(draft->key.userDbId, draft->key.driveId, QStr2Str(draft->config.targetNodeId),
                                draft->config.blackList);
-    _page = FolderSelection;
-    clearError();
+    clearLocalFolderError();
+    setPage(FolderSelection);
     emit presentationChanged();
 }
 
@@ -235,6 +241,59 @@ bool OnboardingSyncConfigurationController::conflictsWithAnotherDraft(const QStr
         if (localPathsOverlap(path, _drafts[static_cast<std::size_t>(row)].config.localPath)) return true;
     }
     return false;
+}
+
+// Resolves collisions with the other selected drives. A client-derived candidate is checked by the server because the
+// fresh proposal only vouches for the exact path returned by `UTILITY_FINDGOODPATHFORNEWSYNC`.
+void OnboardingSyncConfigurationController::handleDefaultFolderProposal(const AvailableDriveKey &key, const uint64_t generation,
+                                                                        const ExitInfo &exitInfo, const GoodPathResult &result) {
+    if (generation != _requestGeneration) return;
+    if (!exitInfo) {
+        finishDefaultFolderRequest(key, generation, {});
+        return;
+    }
+
+    const QString serverPath = QDir::cleanPath(Path2QStr(result.goodPath));
+    const QString defaultPath = makeUniqueLocalPath(
+            serverPath, [this](const QString &candidate) { return conflictsWithAnotherDraft(candidate, _currentRow); });
+    if (defaultPath.isEmpty() || defaultPath == serverPath) {
+        finishDefaultFolderRequest(key, generation, defaultPath);
+        return;
+    }
+
+    const QPointer self(this);
+    _commService.requestIsPathValidForNewSync(QStr2Path(defaultPath), SyncConfiguration::Classic,
+                                              [self, key, generation, defaultPath](const ExitInfo &checkInfo, const bool valid) {
+                                                  if (!self || generation != self->_requestGeneration) return;
+                                                  self->finishDefaultFolderRequest(key, generation,
+                                                                                   checkInfo && valid ? defaultPath : QString{});
+                                              });
+}
+
+// Commits the refreshed default atomically. Failures leave the user's current custom folder and the previous default
+// untouched, so retrying does not destroy a valid draft.
+void OnboardingSyncConfigurationController::finishDefaultFolderRequest(const AvailableDriveKey &key, const uint64_t generation,
+                                                                       const QString &defaultPath) {
+    if (generation != _requestGeneration) return;
+
+    Draft *const draft = currentDraft();
+    if (!draft || draft->key != key) {
+        setBusy(false);
+        return;
+    }
+
+    setBusy(false);
+    if (defaultPath.isEmpty()) {
+        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+        return;
+    }
+
+    draft->config.defaultLocalPath = defaultPath;
+    draft->config.localPath = defaultPath;
+    draft->config.usesDefaultLocalPath = true;
+    clearLocalFolderError();
+    refreshSummaryModel();
+    emit presentationChanged();
 }
 
 void OnboardingSyncConfigurationController::buildDrafts() {
@@ -274,8 +333,8 @@ void OnboardingSyncConfigurationController::showInitialPage() {
     if (_drafts.size() == 1) {
         openDrive(0);
     } else {
-        _page = Summary;
         _currentRow = -1;
+        setPage(Summary);
         emit presentationChanged();
     }
 }
@@ -283,9 +342,15 @@ void OnboardingSyncConfigurationController::showInitialPage() {
 void OnboardingSyncConfigurationController::openDrive(const int32_t row) {
     _currentRow = row;
     _driveSnapshot = _drafts[static_cast<std::size_t>(row)].config;
-    _page = DriveConfiguration;
-    clearError();
+    clearLocalFolderError();
+    setPage(DriveConfiguration);
     emit presentationChanged();
+}
+
+void OnboardingSyncConfigurationController::setPage(const Page page) {
+    if (_page == page) return;
+    _page = page;
+    emit pageChanged();
 }
 
 void OnboardingSyncConfigurationController::refreshSummaryModel() {
@@ -312,14 +377,13 @@ void OnboardingSyncConfigurationController::abortPendingRequest() {
     setBusy(false);
 }
 
-void OnboardingSyncConfigurationController::clearError() {
-    setError({}, {});
+void OnboardingSyncConfigurationController::clearLocalFolderError() {
+    setLocalFolderError({});
 }
 
-void OnboardingSyncConfigurationController::setError(const QString &title, const QString &text) {
-    if (_errorTitle == title && _errorText == text) return;
-    _errorTitle = title;
-    _errorText = text;
+void OnboardingSyncConfigurationController::setLocalFolderError(const QString &text) {
+    if (_localFolderErrorText == text) return;
+    _localFolderErrorText = text;
     emit presentationChanged();
 }
 
@@ -331,11 +395,9 @@ void OnboardingSyncConfigurationController::closeWithoutCommit() {
     _drafts.clear();
     _driveSnapshot.reset();
     _currentRow = -1;
-    _page = Summary;
-    _errorTitle.clear();
-    _errorText.clear();
+    _localFolderErrorText.clear();
+    // Page and presentation stay unnotified so the modal fades out unchanged; open() resets and notifies them.
     emit visibleChanged();
-    emit presentationChanged();
 }
 
 void OnboardingSyncConfigurationController::commitAndClose() {
@@ -345,14 +407,13 @@ void OnboardingSyncConfigurationController::commitAndClose() {
     if (!_onboardingState.replacePendingSyncConfigs(configs)) {
         // The selected drives changed under the modal, so the drafts no longer describe them. Closing here would
         // silently drop everything the user configured.
-        setError({}, qtTrId("onboardingLoginErrorDescription"));
         buildDrafts();
         if (_drafts.empty()) {
             closeWithoutCommit();
             return;
         }
-        _page = Summary;
         _currentRow = -1;
+        setPage(Summary);
         emit presentationChanged();
         return;
     }
