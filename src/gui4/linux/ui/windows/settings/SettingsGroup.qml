@@ -16,12 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma Singleton
+pragma ComponentBehavior: Bound
 import QtQuick
+import kDrive.UI
 
-QtObject {
-    readonly property real externalLink: 10
-    readonly property real small: 12
-    readonly property real medium: 16
-    readonly property real large: 24
+Rectangle {
+    id: root
+    default property alias rows: column.data
+    implicitHeight: column.implicitHeight
+    radius: IKRadius.r12
+    color: IKColors.settingsCardSurface
+    Column {
+        id: column
+        x: IKSettings.groupPadding
+        width: root.width - 2 * IKSettings.groupPadding
+    }
 }
