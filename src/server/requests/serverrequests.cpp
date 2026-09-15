@@ -742,6 +742,21 @@ ExitInfo ServerRequests::addSync(const DriveDbId driveDbId, const SyncPath &loca
         return ExitCode::SystemError;
     }
 
+    // Revalidate the final local directory after creation because its filesystem state may have changed since the GUI check.
+    // An empty remote path identifies a classic drive-root sync; a non-empty one identifies an advanced sync.
+    bool pathValid = false;
+    const auto syncConfiguration = serverFolderPath.empty() ? SyncConfiguration::Classic : SyncConfiguration::Advanced;
+    if (const auto exitInfo = isPathValidForNewSync(localFolderPath, syncConfiguration, pathValid); !exitInfo) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error validating created local sync folder - path=" << Utility::formatSyncPath(localFolderPath));
+        return exitInfo;
+    }
+    if (!pathValid) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Created local sync folder is not valid - path=" << Utility::formatSyncPath(localFolderPath));
+        return ExitCode::InvalidSync;
+    }
+
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
     Q_UNUSED(liteSync)
 #endif

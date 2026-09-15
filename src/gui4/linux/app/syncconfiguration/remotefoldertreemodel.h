@@ -90,7 +90,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
          * descendant is excluded, it is never a state the user selects.
          */
         Q_INVOKABLE void toggleSelection(const QModelIndex &modelIndex);
-        /** Restores a complete selection. The drive root itself can never be excluded. */
+        /** Selects or deselects every folder directly below the drive root. The drive root itself can never be excluded. */
         Q_INVOKABLE void toggleRootSelection();
         /**
          * Reports that a row entered or left the viewport.
@@ -109,6 +109,12 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
             NotLoaded,
             Loading,
             Loaded,
+            Failed,
+        };
+
+        enum class InitialPathsState : uint8_t {
+            Ready,
+            Resolving,
             Failed,
         };
 
@@ -165,7 +171,8 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         uint64_t _generation{0};
         uint8_t _activeSizeRequests{0};
         uint32_t _pendingInitialPathRequests{0};
-        bool _initialPathsFailed{false};
+        InitialPathsState _initialPathsState{InitialPathsState::Ready};
+        bool _initialPathRequestFailed{false};
 };
 
 } // namespace KDC
