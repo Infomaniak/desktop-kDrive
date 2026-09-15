@@ -266,7 +266,7 @@ void SystemTrayController::retranslate() const {
 }
 
 void SystemTrayController::showSettingsWindow() {
-    qCWarning(lcSystemTrayController) << "Settings window action triggered from system tray, but not implemented yet";
+    emit openSettingsWindowRequested();
 }
 
 void SystemTrayController::hideMainWindow() {
