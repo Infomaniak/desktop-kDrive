@@ -536,6 +536,11 @@ void ActivityListModel::scheduleProjectionReconciliation() {
     }
 }
 
+void ActivityListModel::retranslate() {
+    reconcileProjection();
+    emit translationChanged();
+}
+
 void ActivityListModel::reconcileProjection() {
     const auto nextRows = buildProjection();
     bool changed = removeStaleRows(nextRows);

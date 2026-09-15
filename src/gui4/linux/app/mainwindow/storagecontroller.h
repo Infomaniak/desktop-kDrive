@@ -81,6 +81,8 @@ class StorageController final : public QObject {
         [[nodiscard]] double availableRatio() const;
         Q_INVOKABLE void setViewActive(bool active);
         Q_INVOKABLE void retry();
+        /** Notifies views that locale-dependent storage labels must be read again. */
+        void retranslate();
 
     signals:
         void storageChanged();

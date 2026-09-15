@@ -22,6 +22,7 @@
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/utility.h"
 
+#include <QCollator>
 #include <QLocale>
 #include <QPointer>
 
@@ -164,6 +165,26 @@ std::vector<NodeId> RemoteFolderTreeModel::blackList() const {
     result.reserve(static_cast<std::size_t>(sortedIds.size()));
     for (const auto &nodeId: sortedIds) result.push_back(QStr2Str(nodeId));
     return result;
+}
+
+void RemoteFolderTreeModel::retranslate() {
+    // Size text is formatted on demand with the current default locale. Notify every loaded row without resetting the
+    // tree, so expanded folders and the current selection remain unchanged. Use an explicit stack because the depth of a
+    // remote folder hierarchy is not bounded.
+    std::vector pendingParents{_root.get()};
+    while (!pendingParents.empty()) {
+        const TreeNode *const parentNode = pendingParents.back();
+        pendingParents.pop_back();
+        if (parentNode->children.empty()) {
+            continue;
+        }
+
+        emit dataChanged(indexForNode(parentNode->children.front().get()), indexForNode(parentNode->children.back().get()),
+                         {SizeTextRole});
+        for (const auto &child: parentNode->children) {
+            pendingParents.push_back(child.get());
+        }
+    }
 }
 
 void RemoteFolderTreeModel::retryRoot() {
@@ -341,8 +362,11 @@ void RemoteFolderTreeModel::handleChildrenResult(TreeNode *const node, const uin
     }
 
     std::vector<NodeInfo> sortedChildren = children;
-    (void) std::ranges::sort(sortedChildren, [](const NodeInfo &lhs, const NodeInfo &rhs) {
-        return QString::localeAwareCompare(lhs.name(), rhs.name()) < 0;
+    // Folder names are user data rather than translated UI text. Keep their ordering tied to the system locale so a
+    // runtime application-language change cannot give already loaded and newly loaded branches different collations.
+    const QCollator systemCollator(QLocale::system());
+    (void) std::ranges::sort(sortedChildren, [&systemCollator](const NodeInfo &lhs, const NodeInfo &rhs) {
+        return systemCollator.compare(lhs.name(), rhs.name()) < 0;
     });
     const QModelIndex parentIndex = indexForNode(node);
     if (!sortedChildren.empty()) beginInsertRows(parentIndex, 0, static_cast<int>(sortedChildren.size()) - 1);
