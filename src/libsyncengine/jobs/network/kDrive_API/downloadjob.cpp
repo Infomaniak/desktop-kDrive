@@ -464,12 +464,10 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                     if (!IoHelper::readAlias(_tmpPath, data2, targetPath, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::readAlias: " << Utility::formatIoError(_tmpPath, ioError));
                         if (ioError == IoError::NoSuchFileOrDirectory) {
-                            LOGW_WARN(_logger,
-                                      L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_tmpPath));
                             return {ExitCode::SystemError, ExitCause::NotFound};
                         } else if (ioError == IoError::AccessDenied) {
-                            LOGW_WARN(_logger,
-                                      L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_tmpPath));
                             return {ExitCode::SystemError, ExitCause::FileAccessError};
                         } else {
                             return {ExitCode::SystemError, ExitCause::OperationCanceled};
