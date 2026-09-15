@@ -23,6 +23,7 @@
 
 #include <QObject>
 
+#include <deque>
 #include <functional>
 
 namespace KDC {
@@ -42,12 +43,24 @@ class ParametersService final : public QObject {
         using ParametersMutation = std::function<void(ParametersInfo &)>;
         using UpdateCallback = CommService::VoidCallback;
 
-        explicit ParametersService(CommService &commService, ParametersStore &parametersStore, QObject *parent = nullptr);
+        explicit ParametersService(const CommService &commService, ParametersStore &parametersStore, QObject *parent = nullptr);
 
-        void updateParameters(const ParametersMutation &mutation, const UpdateCallback &callback) const;
+        using UpdateRequest = std::function<void(const ParametersInfo &, const UpdateCallback &)>;
+        ParametersService(UpdateRequest request, ParametersStore &parametersStore, QObject *parent = nullptr);
+
+        void updateParameters(const ParametersMutation &mutation, const UpdateCallback &callback);
 
     private:
-        CommService &_commService;
+        struct PendingUpdate {
+                ParametersMutation mutation;
+                UpdateCallback callback;
+        };
+
+        void startNextUpdate();
+
+        UpdateRequest _request;
+        std::deque<PendingUpdate> _updates;
+        bool _updating{false};
         ParametersStore &_parametersStore;
 };
 
