@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Kaikki toiminnot</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Vain oma toimintani</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve">
+    <value>Tämän tietokoneen toiminta</value>
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Tuotu</value> 
