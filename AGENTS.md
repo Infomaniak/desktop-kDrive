@@ -87,6 +87,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 - Do not pass `--update` to Conan dependency builds in CI; reserve it for explicit local dependency refreshes.
+- Do not modify the recovery updater as part of Linux v4 GUI release work unless the user explicitly requests it.
 <!-- Add project-specific user corrections here -->
 - Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
