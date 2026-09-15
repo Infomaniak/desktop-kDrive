@@ -289,7 +289,7 @@ void OnboardingSyncConfigurationController::finishDefaultFolderRequest(const Ava
 
     setBusy(false);
     if (defaultPath.isEmpty()) {
-        setLocalFolderError(qtTrId("teachingTipInvalidFolderContent"));
+        setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
         return;
     }
 
