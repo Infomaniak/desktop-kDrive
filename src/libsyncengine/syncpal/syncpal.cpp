@@ -842,6 +842,7 @@ ExitCode SyncPal::cancelAllDlDirectJobs() {
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         directDownloadJobsMapElt.second->abort();
+        _vfs->cancelHydrate(directDownloadJobsMapElt.second->localPath(), ExitCode::SyncPaused);
     }
 
     _directDownloadJobsMap.clear();
