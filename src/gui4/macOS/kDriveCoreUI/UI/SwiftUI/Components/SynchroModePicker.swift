@@ -23,21 +23,27 @@ import SwiftUI
 
 public struct SynchroModePicker: View {
     @LazyInjectService private var matomo: MatomoUtils
-    @State private var isConvertingSynchro = false
 
     @State private var selectedMode: UISynchroMode
     @State private var modePendingConfirmation: UISynchroMode?
 
     private var isCallFromAdvancedSync: Bool
+    private let isConverting: Bool
 
     @Binding var synchroMode: UISynchroMode
 
     let synchroDbId: Int
 
-    public init(synchroDbId: Int, synchroMode: Binding<UISynchroMode>, isCallFromAdvancedSync: Bool = false) {
+    public init(
+        synchroDbId: Int,
+        synchroMode: Binding<UISynchroMode>,
+        isConverting: Bool = false,
+        isCallFromAdvancedSync: Bool = false
+    ) {
         self.synchroDbId = synchroDbId
         _synchroMode = synchroMode
         _selectedMode = State(initialValue: synchroMode.wrappedValue)
+        self.isConverting = isConverting
         self.isCallFromAdvancedSync = isCallFromAdvancedSync
     }
 
@@ -59,7 +65,7 @@ public struct SynchroModePicker: View {
             .pickerStyle(.radioGroup)
             .labelsHidden()
         }
-        .disabled(isConvertingSynchro)
+        .disabled(isConverting)
         .onChange(of: selectedMode) { newValue in
             guard newValue != synchroMode else { return }
             modePendingConfirmation = newValue
