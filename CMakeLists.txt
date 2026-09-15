@@ -160,11 +160,18 @@ option(BUILD_DOCS "BUILD_DOCS" OFF)
 option(BUILD_LIBRARIES_ONLY "BUILD_LIBRARIES_ONLY" OFF)
 
 # this option enables the default GUI for the current platform when building the src folder
-# (src/gui4 on Windows/macOS, Qt GUI in src/gui on Linux)
+# (src/gui4 on Windows, macOS and Linux)
 option(BUILD_GUI "BUILD_GUI" ON)
 
 # this option enables the legacy Qt GUI on Windows/macOS
 option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
+
+option(KDRIVE_DEPLOY_QT_RUNTIME
+       "Linux AppImage: deploy Qt libraries, plugins, QML modules, qt.conf, Qt translations and Conan libraries at install time"
+       OFF)
+if(KDRIVE_DEPLOY_QT_RUNTIME AND (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT BUILD_GUI OR BUILD_LIBRARIES_ONLY))
+    message(FATAL_ERROR "KDRIVE_DEPLOY_QT_RUNTIME requires Linux, BUILD_GUI=ON and BUILD_LIBRARIES_ONLY=OFF.")
+endif()
 
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
