@@ -40,6 +40,7 @@
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
 #include "app/services/syncservice.h"
+#include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
 #include "app/systraycontroller.h"
@@ -51,7 +52,6 @@
 #include <QIcon>
 #include <QLoggingCategory>
 #include <QQmlApplicationEngine>
-#include <QTranslator>
 
 namespace KDC {
 
@@ -104,13 +104,13 @@ class AppClientLinux : public QApplication {
         static void logDisplayInformation();
         static void logQtInformation();
         static void logScreenInformation();
-        void setupTranslations();
         void setupSystemTray();
         void setupSignalConnections();
         void setupQmlEngine(const QIcon &appIcon);
         void setupIpcConnection();
         void handleIpcDisconnection();
         void handleBootstrapCompletion();
+        void retranslatePresentation();
         void updateLoggerMinLevel() const;
         void requestQuit();
         void quitOnServerDisconnection();
@@ -150,9 +150,8 @@ class AppClientLinux : public QApplication {
         ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
                                                    _networkStatusObserver, _activityService, this};
         StorageController _storageController{_mainSelectionStore, this};
+        TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        QTranslator _baseTranslator{this};
-        QTranslator _localizedTranslator{this};
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
         bool _mainWindowActivationPending{false};
