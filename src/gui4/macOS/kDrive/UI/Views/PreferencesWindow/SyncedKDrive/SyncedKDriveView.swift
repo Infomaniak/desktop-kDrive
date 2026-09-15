@@ -107,7 +107,11 @@ struct SyncedKDriveView: View {
 
                 Section {
                     VStack(alignment: .leading, spacing: AppPadding.padding8) {
-                        SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
+                        SynchroModePicker(
+                            synchroDbId: mainSynchro.dbId,
+                            synchroMode: $mainSynchroMode,
+                            isConverting: isUpdatingMainSynchroMode
+                        )
                             .disabled(!mainSynchro.supportsVirtualFileSystem || isUpdatingMainSynchroMode)
                             .onChange(of: mainSynchroMode) { newValue in
                                 guard newValue != committedMainSynchroMode else { return }

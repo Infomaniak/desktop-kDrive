@@ -80,7 +80,11 @@ struct HomeView: View {
 
             GeometryReader { proxy in
                 HStack(spacing: HomeView.spacing) {
-                    SynchroStatusView(state: state, synchroDbId: mainViewModel.currentSynchro?.id)
+                    SynchroStatusView(
+                        state: state,
+                        synchroDbId: mainViewModel.currentSynchro?.id,
+                        isConverting: mainViewModel.currentSynchro?.isConverting == true
+                    )
                         .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 
                     DriveWebShortcutsView(avatar: avatar, drive: mainViewModel.currentDrive)
