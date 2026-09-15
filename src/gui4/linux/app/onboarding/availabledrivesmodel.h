@@ -58,6 +58,8 @@ class AvailableDrivesModel final : public QAbstractListModel {
         [[nodiscard]] qint32 selectedCount() const;
         [[nodiscard]] qint32 configuredCount() const;
 
+        void retranslate();
+
         Q_INVOKABLE void toggleDrive(qint32 row);
 
     signals:

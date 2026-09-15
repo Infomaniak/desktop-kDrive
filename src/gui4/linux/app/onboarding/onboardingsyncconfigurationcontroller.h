@@ -73,7 +73,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         [[nodiscard]] bool folderSelectionPage() const { return _page == FolderSelection; }
         [[nodiscard]] bool busy() const { return _busy; }
         [[nodiscard]] bool canValidate() const;
-        [[nodiscard]] QString localFolderErrorText() const { return _localFolderErrorText; }
+        [[nodiscard]] QString localFolderErrorText() const;
         [[nodiscard]] QString currentDriveName() const;
         [[nodiscard]] QColor currentDriveColor() const;
         /** Local folder of the drive being configured, in its `~`-shortened display form. */
@@ -82,6 +82,8 @@ class OnboardingSyncConfigurationController final : public QObject {
         [[nodiscard]] bool currentHasCustomSelection() const;
         [[nodiscard]] SelectedSyncConfigurationsModel *selectedDrivesModel() { return &_selectedDrivesModel; }
         [[nodiscard]] RemoteFolderTreeModel *folderTreeModel() { return &_folderTreeModel; }
+        /** Refreshes locale-dependent controller and folder-tree presentation. */
+        void retranslate();
 
         Q_INVOKABLE void open();
         Q_INVOKABLE void configureDrive(int32_t row);
@@ -123,7 +125,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         void setBusy(bool busy);
         void abortPendingRequest();
         void clearLocalFolderError();
-        void setLocalFolderError(const QString &text);
+        void setLocalFolderErrorId(const QString &text);
         void closeWithoutCommit();
         void commitAndClose();
 
@@ -140,7 +142,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         Page _page{Summary};
         bool _visible{false};
         bool _busy{false};
-        QString _localFolderErrorText;
+        QString _localFolderErrorId;
         uint64_t _requestGeneration{0};
 };
 
