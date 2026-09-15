@@ -60,7 +60,6 @@ public struct NewSyncMetadata: Sendable {
 
 public struct SyncJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
-    @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
 
     public init() {}
@@ -159,7 +158,6 @@ public struct SyncJobs: Sendable {
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         try? await coherentCache.removeSynchro(synchroDbId: syncDbId)
-        await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
@@ -193,10 +191,15 @@ public struct SyncJobs: Sendable {
         )
 
         do {
-            await vfsConversionStore.conversionStarted(synchroDbId: syncDbId)
+            await updateSynchroVfsMode(syncDbId: syncDbId, isUpdatingVfsMode: true)
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
+            await updateSynchroVfsMode(
+                syncDbId: syncDbId,
+                virtualFileMode: value ? .Mac : .Off,
+                isUpdatingVfsMode: false
+            )
         } catch {
-            await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+            await updateSynchroVfsMode(syncDbId: syncDbId, isUpdatingVfsMode: false)
             throw error
         }
     }
@@ -241,5 +244,22 @@ public struct SyncJobs: Sendable {
         synchro.progress = previousProgress
 
         try? await coherentCache.updateSynchro(synchro)
+    }
+
+    private func updateSynchroVfsMode(
+        syncDbId: Int32,
+        virtualFileMode: KDC.VirtualFileMode? = nil,
+        isUpdatingVfsMode: Bool
+    ) async {
+        guard let synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else {
+            return
+        }
+
+        let updatedSynchro = synchro.updating(
+            virtualFileMode: virtualFileMode,
+            isUpdatingVfsMode: isUpdatingVfsMode
+        )
+
+        try? await coherentCache.updateSynchro(updatedSynchro)
     }
 }

@@ -38,7 +38,6 @@ enum SignalError: Error {
     case unableToGetSyncDbIdFromSignal
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
-    case unableToGetVfsConversionCompletedFromSignal
     case unableToGetManyDeletesFromSignal
     case unableToGetNotificationFromSignal
     case unableToGetErrorInfoFromSignal
@@ -124,9 +123,6 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
 
         case .SYNC_COMPLETEDITEM:
             try await synchroHandler.handleSyncCompleted(signal)
-
-        case .SYNC_VFS_CONVERSION_COMPLETED:
-            try await synchroHandler.handleVfsConversionCompleted(signal)
 
         case .SYNC_NOTIFY_MANY_DELETES:
             try await synchroHandler.handleNotifyManyDeletes(signal)
