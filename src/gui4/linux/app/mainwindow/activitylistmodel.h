@@ -46,8 +46,8 @@ namespace KDC {
  */
 class ActivityListModel final : public QAbstractListModel {
         Q_OBJECT
-        Q_PROPERTY(QStringList timeTextSamples READ timeTextSamples CONSTANT)
-        Q_PROPERTY(QStringList sizeTextSamples READ sizeTextSamples CONSTANT)
+        Q_PROPERTY(QStringList timeTextSamples READ timeTextSamples NOTIFY translationChanged)
+        Q_PROPERTY(QStringList sizeTextSamples READ sizeTextSamples NOTIFY translationChanged)
 
     public:
         enum class Filter : uint8_t {
@@ -109,6 +109,8 @@ class ActivityListModel final : public QAbstractListModel {
                 std::vector<ErrorDbId> activeErrorDbIds;
         };
 
+        void retranslate();
+
         explicit ActivityListModel(const ActivityStore &activityStore, const AppCache &appCache,
                                    MainSelectionStore &selectionStore, QObject *parent = nullptr);
 
@@ -120,7 +122,7 @@ class ActivityListModel final : public QAbstractListModel {
          *
          * Both columns are fixed-width, so the view sizes them from these samples instead of a hard-coded constant that
          * would truncate in the languages with the longest wordings. The values are the real per-tier maxima, not
-         * estimates. Constant because translations are installed once at startup and never swapped at runtime.
+         * estimates. Notified when the application language changes.
          */
         [[nodiscard]] static QStringList timeTextSamples();
         [[nodiscard]] static QStringList sizeTextSamples();
@@ -137,6 +139,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] std::optional<ActionTarget> actionTarget(const QString &rowId) const;
 
     signals:
+        void translationChanged();
         void filterChanged();
         void projectionChanged();
 
