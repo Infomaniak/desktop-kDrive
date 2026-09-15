@@ -34,6 +34,8 @@ DWORD Utilities::s_processId = 0;
 std::wstring Utilities::s_version = std::wstring();
 std::wstring Utilities::s_trashURI = std::wstring();
 std::wstring Utilities::s_pipeName = std::wstring();
+std::recursive_mutex Utilities::s_pipeMutex = std::recursive_mutex();
+
 HANDLE Utilities::s_pipe = INVALID_HANDLE_VALUE;
 
 // Definitions for DeviceIoControl - Begin
@@ -148,6 +150,7 @@ void Utilities::initPipeName(const wchar_t *appName) {
 
 bool Utilities::connectToPipeServer() {
     TRACE_DEBUG(L"connectToPipeServer");
+    const auto lock = std::scoped_lock(s_pipeMutex);
 
     if (s_pipe != INVALID_HANDLE_VALUE) {
         return true;
@@ -183,6 +186,8 @@ bool Utilities::connectToPipeServer() {
 }
 
 bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path, LONGLONG msgId) {
+    const auto lock = std::scoped_lock(s_pipeMutex);
+
     if (s_pipe == INVALID_HANDLE_VALUE) {
         TRACE_ERROR(L"Invalid pipe!");
 
@@ -204,7 +209,7 @@ bool Utilities::writeMessage(const std::wstring &verb, const std::wstring &path,
     if (!WriteFile(s_pipe, msg.c_str(), DWORD(msg.size() * sizeof(wchar_t)), &numBytesWritten, NULL)) {
         const auto err = GetLastError();
         TRACE_ERROR(L"Error writing on sync engine pipe: %ls", getLastErrorMessage().c_str());
-        if (err == ERROR_PIPE_NOT_CONNECTED || err == ERROR_NO_DATA) {
+        if (err == ERROR_PIPE_NOT_CONNECTED || err == ERROR_NO_DATA || err == ERROR_BROKEN_PIPE) {
             // Try to reconnect
             if (!disconnectFromPipeServer()) {
                 TRACE_ERROR(L"Error in disconnectFromPipeServer");
@@ -233,7 +238,7 @@ bool Utilities::readMessage(std::wstring *response) {
         TRACE_ERROR(L"Invalid parameter!");
         return false;
     }
-
+    const auto lock = std::scoped_lock(s_pipeMutex);
     if (s_pipe == INVALID_HANDLE_VALUE) {
         TRACE_ERROR(L"Invalid pipe!");
 
@@ -300,7 +305,7 @@ bool Utilities::readMessage(std::wstring *response) {
 
 bool Utilities::disconnectFromPipeServer() {
     TRACE_DEBUG(L"disconnectFromPipeServer");
-
+    const auto lock = std::scoped_lock(s_pipeMutex);
     if (s_pipe == INVALID_HANDLE_VALUE) {
         TRACE_ERROR(L"Invalid pipe!");
         return false;
