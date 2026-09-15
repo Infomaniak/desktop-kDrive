@@ -21,6 +21,7 @@
 #include "app/appconstants.h"
 #include "app/applicationidentity.h"
 #include "app/navigation/mainwindowactivationdecision.h"
+#include "app/onboarding/onboardingsyncconfigurationcontroller.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/logger.h"
 
@@ -33,10 +34,8 @@
 #include <QQmlEngine>
 #include <QQmlError>
 #include <QScreen>
-#include <QStringList>
 #include <QSysInfo>
 #include <QTimer>
-#include <QTranslator>
 #include <QVariant>
 #include <QWindow>
 
@@ -56,7 +55,8 @@ constexpr int32_t serverDisconnectionTimeoutMs = 5000;
 AppClientLinux::AppClientLinux(int &argc, char **argv) :
     QApplication(argc, argv) {
     setupLogging();
-    setupTranslations();
+    _translationService.initialize();
+    _translationService.setEngine(&_qmlEngine);
     setQuitOnLastWindowClosed(false);
     QIcon appIcon;
     ApplicationIdentity::configureApplication(appIcon);
@@ -141,6 +141,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
 }
 
 void AppClientLinux::setupSignalConnections() {
+    (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
@@ -301,28 +302,15 @@ void AppClientLinux::quitOnServerDisconnection() {
     });
 }
 
-void AppClientLinux::setupTranslations() {
-    // Catalogs are id-based: qsTrId(id) returns the raw id when no translation is loaded. Install
-    // client_en as a base so every id always resolves (keys not yet translated degrade to English),
-    // then overlay the system locale on top. Qt queries translators last-installed-first, so the
-    // locale wins where it has a translation and falls back to the English base otherwise.
-    if (_baseTranslator.load(QStringLiteral("client_en"), QStringLiteral(":/i18n"))) {
-        if (!installTranslator(&_baseTranslator)) {
-            qCWarning(lcAppClientLinux) << "Failed to install base English translation catalog";
-        }
-    } else {
-        qCWarning(lcAppClientLinux) << "base English translation catalog missing; UI may show source ids";
-    }
+void AppClientLinux::retranslatePresentation() {
+    _systemTrayController.retranslate();
+    _activitiesController.retranslate();
+    _storageController.retranslate();
 
-    if (const QLocale locale = QLocale::system();
-        _localizedTranslator.load(locale, QStringLiteral("client"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
-        if (!installTranslator(&_localizedTranslator)) {
-            qCWarning(lcAppClientLinux) << "Failed to install localized translation catalog for locale" << locale.name();
-        } else {
-            qCInfo(lcAppClientLinux) << "translations loaded for locale" << locale.name();
-        }
-    } else {
-        qCInfo(lcAppClientLinux) << "no catalog for locale" << locale.name() << "- using English base";
+    if (auto *const session = _onboardingSessionManager.activeSession()) {
+        emit session->flowController()->titleChanged();
+        session->availableDrivesModel()->retranslate();
+        session->syncConfigurationController()->retranslate();
     }
 }
 

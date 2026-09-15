@@ -54,6 +54,7 @@ class ActivitiesController final : public QObject {
         [[nodiscard]] ActivityListModel *model() { return &_model; }
         [[nodiscard]] ActivityListModel::Filter filter() const { return _model.filter(); }
         void setFilter(ActivityListModel::Filter filter);
+        void retranslate();
         [[nodiscard]] const QString &title() const { return _title; }
         [[nodiscard]] bool loading() const { return _loading; }
         [[nodiscard]] bool hasActivities() const { return _hasActivities; }

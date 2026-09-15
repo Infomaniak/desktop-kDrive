@@ -181,6 +181,7 @@ void OnboardingFlowController::setCurrentStep(const Step step) {
 
     _currentStep = step;
     emit currentStepChanged();
+    emit titleChanged();
 }
 
 void OnboardingFlowController::handleAuthorizationCodeReady() {
