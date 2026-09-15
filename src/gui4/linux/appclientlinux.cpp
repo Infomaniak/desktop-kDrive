@@ -152,9 +152,9 @@ void AppClientLinux::setupSignalConnections() {
                    &SentryService::updateAuthenticatedUser);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
-    (void) connect(this, &AppClientLinux::ipcConnected, this, &AppClientLinux::refreshUpdaterState);
+    (void) connect(this, &AppClientLinux::ipcConnected, &_updateStatusService, &UpdateStatusService::refresh);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
-    (void) connect(&_serverCommService, &CommService::updateStateChanged, &_systemTrayController,
+    (void) connect(&_updateStatusService, &UpdateStatusService::stateChanged, &_systemTrayController,
                    &SystemTrayController::handleUpdateStateChanged);
     (void) connect(&_serverCommService, &CommService::showSettings, this, &AppClientLinux::openMainWindow);
     (void) connect(&_serverCommService, &CommService::showSynthesis, this, &AppClientLinux::openMainWindow);
@@ -217,18 +217,6 @@ void AppClientLinux::handleIpcDisconnection() {
     _parametersStore.clear();
 }
 
-void AppClientLinux::refreshUpdaterState() {
-    _serverCommService.requestUpdaterState([this](const ExitInfo &exitInfo, const UpdateState state) {
-        if (!exitInfo) {
-            qCWarning(lcAppClientLinux) << "Failed to refresh updater state | code:" << exitInfo.code()
-                                        << "| cause:" << exitInfo.cause();
-            return;
-        }
-
-        _systemTrayController.handleUpdateStateChanged(state);
-    });
-}
-
 void AppClientLinux::handleBootstrapCompletion() {
     _bootstrapCompleted = true;
     _hadConfiguredSync = hasConfiguredSyncs();
@@ -257,7 +245,7 @@ void AppClientLinux::handleBootstrapCompletion() {
 
 void AppClientLinux::updateLoggerMinLevel() const {
     const auto parametersInfo = _parametersStore.parametersInfo();
-    if (!parametersInfo.has_value()) {
+    if (!parametersInfo.has_value() || Logger::instance()->minLogLevel() == toInt(parametersInfo->logLevel())) {
         return;
     }
 
