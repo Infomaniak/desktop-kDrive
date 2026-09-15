@@ -25,7 +25,7 @@
     Infomaniak kDrive Desktop – build dependencies via Conan (Windows only)
 
 .DESCRIPTION
-    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]
+    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]
 
 .PARAMETER BuildType
     Build configuration: Debug (default), Release or RelWithDebInfo.
@@ -42,6 +42,9 @@
 .PARAMETER MakeRelease
     Use the 'infomaniak_release' Conan profile.
 
+.PARAMETER Update
+    Ask Conan to check remotes for newer versions/revisions.
+    Disabled by default to keep CI deterministic and avoid local recipe revision/timestamp conflicts.
 #>
 
 param(
@@ -65,12 +68,15 @@ param(
     [switch]$UpdateEnvironment,
 
     [Parameter(Mandatory = $false, HelpMessage = "Clean the Conan cache after installation to save disk space.")]
-    [switch]$CleanCache
+    [switch]$CleanCache,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Ask Conan to check remotes for newer versions/revisions.")]
+    [switch]$Update
 )
 
 function Show-Help
 {
-    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache]"; exit 0
+    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]"; exit 0
 }
 if ($Help)
 {
@@ -204,7 +210,6 @@ if (-not (Test-Path -Path "infomaniak-build-tools/conan" -PathType Container))
 
 $ConanRemoteBaseFolder = Join-Path $CurrentDir "infomaniak-build-tools/conan"
 $LocalRemoteName = "localrecipes"
-$LocalRecipePatterns = @("openssl-macos/*", "poco/*", "qt/*", "sentry/*", "xxhash/*")
 
 Log "Current conan home configuration:"
 & $ConanExe config home
@@ -299,18 +304,6 @@ else
     }
 }
 
-$remoteUpdateArgs = @("remote", "update", $LocalRemoteName)
-foreach ($recipePattern in $LocalRecipePatterns)
-{
-    $remoteUpdateArgs += "-ap"
-    $remoteUpdateArgs += $recipePattern
-}
-& $ConanExe @remoteUpdateArgs
-if ($LASTEXITCODE -ne 0)
-{
-    Err "Failed to configure allowed packages for Conan remote '$LocalRemoteName'."
-}
-
 # Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
@@ -331,31 +324,7 @@ if ($CI)
     $conanInstallArgs += "-o"
     $conanInstallArgs += "qt/*:qt_login_type=envvars"
 }
-if ($CI)
-{
-    # Conan has no update-exclusion syntax. Keep this list aligned with the dependency graph so CI refreshes every
-    # recipe except Qt, whose installer-backed recipe must stay pinned to the cached revision during CI builds.
-    $ciUpdatePackages = @(
-        "cmake",
-        "ninja",
-        "bzip2",
-        "zlib",
-        "xxhash",
-        "sqlite3",
-        "log4cplus",
-        "openssl-macos",
-        "openssl",
-        "sentry",
-        "poco",
-        "pcre2",
-        "expat"
-    )
-    foreach ($packageName in $ciUpdatePackages)
-    {
-        $conanInstallArgs += "--update=$packageName"
-    }
-}
-else
+if ($Update)
 {
     $conanInstallArgs += "--update"
 }

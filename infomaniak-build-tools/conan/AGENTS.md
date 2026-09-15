@@ -151,10 +151,7 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 - **Qt login**: The Qt installer requires authentication. Three modes: `ini` (default, reads `qtaccount.ini`), `envvars` (`QT_EMAIL`/`QT_PW`), `cli` (interactive)
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
-- **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated;
-  its allowlist must cover every recipe stored under `recipes/` using `<name>/*` patterns.
-- **Recipe updates**: Dependency builds always refresh recipes. CI refreshes every known recipe except the installer-backed Qt
-  recipe; local builds refresh the complete dependency graph.
+- **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 

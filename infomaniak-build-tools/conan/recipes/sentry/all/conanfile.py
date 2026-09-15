@@ -26,8 +26,11 @@ class SentryNativeConan(ConanFile):
     package_type = "library"
     settings = "os", "arch", "compiler", "build_type"
 
-    options = {"shared": [True, False]}
-    default_options = {"shared": True}
+    options = {
+        "shared": [True, False],
+        "qt_version": ["6.2.3", "6.5.3", "6.8.3", "6.11.1"],
+    }
+    default_options = {"shared": True, "qt_version": "6.2.3"}
 
     @property
     def _is_linux_arm(self):
@@ -83,6 +86,10 @@ class SentryNativeConan(ConanFile):
         )
 
     def requirements(self):
+        # Qt is private (headers=True, libs=False) because it uses cmake_find_mode="none"
+        # and cannot be propagated via Conan - consumers must find Qt via find_package(Qt6)
+        self.requires(f"qt/{self.options.qt_version}", headers=True, libs=False, visible=False)
+
         if self.settings.os == "Linux":
             # zlib is required explicitly because Crashpad uses it for compression
             self.requires("zlib/[>=1.2.11 <2]", options={"shared": True})
@@ -93,9 +100,13 @@ class SentryNativeConan(ConanFile):
                   args=["-b", str(self.version), "--recurse-submodules"])
 
     def _cache_variables(self):
+        qt = self.dependencies["qt"]
+        if qt is None:
+            raise ConanInvalidConfiguration("The 'qt' dependency is required for the 'sentry' recipe.")
         cache_variables = {
-            "SENTRY_INTEGRATION_QT": "NO",
+            "SENTRY_INTEGRATION_QT": "YES",
             "SENTRY_BACKEND": "crashpad",
+            "CMAKE_PREFIX_PATH": qt.package_folder,
             "SENTRY_BUILD_TESTS": "OFF",
             "SENTRY_BUILD_EXAMPLES": "OFF",
             "SENTRY_BUILD_SHARED_LIBS": "ON" if self.options.shared else "OFF",
