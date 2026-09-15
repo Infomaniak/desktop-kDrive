@@ -120,7 +120,6 @@ namespace Infomaniak.kDrive.ViewModels
                         Logger.StopSentry();
             }
         }
-
         public AppNotificationAvailability AppNotificationAvailability => App.ServiceProvider.GetRequiredService<NotificationManager>().Availability;
 
         public bool ShowNotificationsSettings => AppNotificationAvailability != AppNotificationAvailability.NotSupportedByOS;

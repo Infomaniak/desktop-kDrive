@@ -45,8 +45,8 @@ namespace Infomaniak.kDrive.Types
         AppUid = 7,
         NoUpdate = 8,
         ShowV4Onboarding = 9,
-        Unknown, // Only for initialization purpose, never use it in the database
-        EnumEnd
+        NotifyAfterDelete = 10,
+        Unknown // Only for initialization purpose, never use it in the database
     };
     public enum RequestNum
     {
@@ -398,4 +398,19 @@ namespace Infomaniak.kDrive.Types
         Classic,
         Advanced
     };
+    public enum TooManyDeletesNotificationType
+    {
+        Unknown,
+        SoftLimit,
+        HardLimit,
+        EnumEnd
+    };
+    public enum TooManyDeletesUserChoice
+    {
+        None,
+        Continue,
+        Revert,
+        EnumEnd
+    };
+
 }
