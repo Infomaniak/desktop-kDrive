@@ -227,8 +227,14 @@ Column {
                 }
             }
 
+            SyncConfigurationErrorBlock {
+                width: parent.width
+                errorText: root.controller.localFolderErrorText
+            }
+
             Text {
                 width: parent.width
+                visible: root.controller.localFolderErrorText.length === 0
                 text: qsTrId("onboardingAdvancedSettingsDriveCustomizeLocationTip")
                 color: IKColors.textTertiary
                 font.pixelSize: IKFonts.subheadlineSize
@@ -320,11 +326,5 @@ Column {
                 wrapMode: Text.WordWrap
             }
         }
-    }
-
-    SyncConfigurationErrorBlock {
-        width: parent.width
-        errorTitle: root.controller.errorTitle
-        errorText: root.controller.errorText
     }
 }
