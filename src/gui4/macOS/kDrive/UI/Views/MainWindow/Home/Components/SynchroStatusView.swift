@@ -149,7 +149,6 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
-        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 

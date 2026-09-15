@@ -60,7 +60,6 @@ public struct SynchroModePicker: View {
             .labelsHidden()
         }
         .disabled(isConvertingSynchro)
-        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
         .onChange(of: selectedMode) { newValue in
             guard newValue != synchroMode else { return }
             modePendingConfirmation = newValue

@@ -82,7 +82,6 @@ struct BlockingErrorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
-        .observingSynchroConversion(synchroDbId: blockingError.synchro.dbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 

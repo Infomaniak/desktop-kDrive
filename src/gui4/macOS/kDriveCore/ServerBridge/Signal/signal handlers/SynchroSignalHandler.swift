@@ -22,7 +22,6 @@ import InfomaniakDI
 struct SynchroSignalHandler {
     private let decoder = JSONDecoder()
     @LazyInjectService private var coherentCache: CoherentCache
-    @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var manyDeletesCache: ManyDeletesCache
 
     func handleSyncAddedOrUpdated(_ signal: Data) async throws {
@@ -41,7 +40,6 @@ struct SynchroSignalHandler {
 
         let syncDbId = syncRemoveSignal.body.syncDbId
         try await coherentCache.removeSynchro(synchroDbId: syncDbId)
-        await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
     }
 
     func handleSyncProgress(_ signal: Data) async throws {
@@ -60,14 +58,6 @@ struct SynchroSignalHandler {
 
         let syncFileItem = syncFileItemInfo.body
         try await coherentCache.updateSyncFileItemInfoSignal(syncFileItem)
-    }
-
-    func handleVfsConversionCompleted(_ signal: Data) async throws {
-        guard let vfsConversionSignal = try? decoder.decode(SignalMessage<SyncVfsConversionCompletedSignal>.self, from: signal)
-        else { throw SignalError.unableToGetVfsConversionCompletedFromSignal }
-
-        let syncDbId = vfsConversionSignal.body.syncDbId
-        try await coherentCache.vfsConversionCompleted(synchroDbId: syncDbId)
     }
 
     func handleNotifyManyDeletes(_ signal: Data) async throws {

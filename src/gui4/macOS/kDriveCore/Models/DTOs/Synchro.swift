@@ -76,6 +76,29 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     }
 }
 
+public extension Synchro {
+    func updating(
+        virtualFileMode: KDC.VirtualFileMode? = nil,
+        isUpdatingVfsMode: Bool? = nil
+    ) -> Synchro {
+        var updatedSynchro = Synchro(
+            dbId: dbId,
+            driveDbId: driveDbId,
+            localPath: localPath,
+            targetPath: targetPath,
+            targetNodeId: targetNodeId,
+            supportVfs: supportVfs,
+            virtualFileMode: virtualFileMode ?? self.virtualFileMode
+        )
+        updatedSynchro.isUpdatingVfsMode = isUpdatingVfsMode ?? self.isUpdatingVfsMode
+        updatedSynchro.progress = progress
+        updatedSynchro.synchNodes = synchNodes
+        updatedSynchro.errors = errors
+        updatedSynchro.latestError = latestError
+        return updatedSynchro
+    }
+}
+
 public struct SynchroProgressInfo: Hashable, Sendable {
     public let syncStatus: KDC.SyncStatus
     public let syncStep: KDC.SyncStep
