@@ -52,6 +52,10 @@ struct SyncedKDriveView: View {
         cacheObservable.usersPublisher.drivePublisher(driveDbId: Int32(drive.dbId))
     }
 
+    private var isUpdatingMainSynchroMode: Bool {
+        mainSynchro?.isConverting == true
+    }
+
     var body: some View {
         Form {
             Section { /* Empty on purpose */ } header: {
@@ -102,12 +106,25 @@ struct SyncedKDriveView: View {
                 }
 
                 Section {
-                    SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
-                        .disabled(!mainSynchro.supportsVirtualFileSystem)
-                        .onChange(of: mainSynchroMode) { newValue in
-                            guard newValue != committedMainSynchroMode else { return }
-                            switchSynchroMode(mainSynchro, mode: newValue)
+                    VStack(alignment: .leading, spacing: AppPadding.padding8) {
+                        SynchroModePicker(synchroDbId: mainSynchro.dbId, synchroMode: $mainSynchroMode)
+                            .disabled(!mainSynchro.supportsVirtualFileSystem || isUpdatingMainSynchroMode)
+                            .onChange(of: mainSynchroMode) { newValue in
+                                guard newValue != committedMainSynchroMode else { return }
+                                switchSynchroMode(mainSynchro, mode: newValue)
+                            }
+
+                        if isUpdatingMainSynchroMode {
+                            HStack(spacing: AppPadding.padding8) {
+                                ProgressView()
+                                    .controlSize(.small)
+
+                                Text(KDriveLocalizable.syncModeApplying)
+                                    .font(.Tokens.body)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                    }
                 }
 
                 Section {
@@ -183,8 +200,18 @@ struct SyncedKDriveView: View {
         let fetchedMode: UISynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
         withAnimation {
             mainSynchro = freshMainSynchro
+
+            guard freshMainSynchro?.isConverting != true else {
+                return
+            }
+
             mainSynchroMode = fetchedMode
         }
+
+        guard freshMainSynchro?.isConverting != true else {
+            return
+        }
+
         committedMainSynchroMode = fetchedMode
     }
 
