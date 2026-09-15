@@ -142,13 +142,13 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, so we check it
     // here.
-    bool invvalidDestinationPath = error.destinationPath().filename().empty() || error.destinationPath().is_absolute();
+    bool invalidDestinationPath = error.destinationPath().filename().empty() || error.destinationPath().is_absolute();
     const SyncPath absoluteDestinationPath = (_syncPal->localPath() / error.destinationPath()).lexically_normal();
-    invvalidDestinationPath = invvalidDestinationPath ||
-                              !CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath) ||
-                              absoluteDestinationPath == _syncPal->localPath();
+    invalidDestinationPath = invalidDestinationPath ||
+                             !CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath) ||
+                             absoluteDestinationPath == _syncPal->localPath();
 
-    if (invvalidDestinationPath) {
+    if (invalidDestinationPath) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
                           << Utility::formatSyncPath(error.destinationPath()));
