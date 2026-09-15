@@ -94,8 +94,9 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 - Do not run `clang-format` on `CMakeLists.txt` files (it can break formatting/structure unexpectedly in this project).
 - Keep the Linux v4 frameless header and custom shadow on native Wayland without introducing a `Qt6::GuiPrivate`
   dependency; accept the transparent shadow margin during Wayland edge snapping.
-- For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
-  default. `linux-v4/main` is the feature-integration branch regularly rebased on `develop`.
+- For any branch named `linux-v4/*`: create it from `protected/linux-v4`, and compute diffs against
+  `protected/linux-v4` by default. `protected/linux-v4` is the feature-integration branch regularly rebased on
+  `develop`.
 
 ## JIT Index
 
