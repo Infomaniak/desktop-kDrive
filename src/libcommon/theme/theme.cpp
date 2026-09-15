@@ -130,8 +130,13 @@ QString Theme::helpUrl() const {
 #endif
 }
 
-QString Theme::feedbackUrl(const Language language) const {
-    switch (language) {
+QString Theme::feedbackUrl(const Language language) {
+    auto resolvedLanguage = language;
+    if (resolvedLanguage == Language::Default) {
+        resolvedLanguage = CommonUtility::strToLanguage(CommonUtility::languageCode(Language::Default));
+    }
+
+    switch (resolvedLanguage) {
         case Language::French:
             return FEEDBACK_FR_URL;
         case Language::German:
@@ -140,7 +145,6 @@ QString Theme::feedbackUrl(const Language language) const {
             return FEEDBACK_ES_URL;
         case Language::Italian:
             return FEEDBACK_IT_URL;
-        case Language::Default:
         case Language::English:
         case Language::Dutch:
         case Language::Swedish:
@@ -150,6 +154,7 @@ QString Theme::feedbackUrl(const Language language) const {
         case Language::Finnish:
         case Language::Danish:
         case Language::Greek:
+        case Language::Default:
         case Language::EnumEnd:
         default:
             break;

@@ -20,12 +20,23 @@
 
 #include "libcommon/utility/types.h"
 
+#include <config.h>
 #include <QColor>
-#include <QObject>
 #include <QString>
 #include <QUrl>
 
 #include <cstdint>
+
+#ifndef KDRIVE_QML_MODULE_URI
+#error "KDRIVE_QML_MODULE_URI is not defined, check target_compile_definitions in src/gui4/linux/CMakeLists.txt"
+#endif
+
+namespace KDC::AppConstants::Qml {
+
+// URI of the QML module, defined by CMake so C++ and qt_add_qml_module() can never disagree.
+inline constexpr char moduleUri[] = KDRIVE_QML_MODULE_URI;
+
+} // namespace KDC::AppConstants::Qml
 
 namespace KDC::AppConstants::Drive {
 
@@ -76,25 +87,42 @@ enum class Destination : uint8_t {
 Q_ENUM_NS(Destination)
 
 [[nodiscard]] inline QUrl destinationUri(const DriveId driveId, const Destination destination) {
+    using Qt::StringLiterals::operator""_s;
+
     // TODO manage Custom brand here.
 
     QString path;
     switch (destination) {
         case Destination::Favorites:
-            path = QStringLiteral("favorites");
+            path = u"favorites"_s;
             break;
         case Destination::Shared:
-            path = QStringLiteral("shared-with-me");
+            path = u"shared-with-me"_s;
             break;
         case Destination::OnlineDrive:
-            path = QStringLiteral("files");
+            path = u"files"_s;
             break;
         case Destination::Trash:
-            path = QStringLiteral("trash");
+            path = u"trash"_s;
             break;
     }
 
-    return QUrl{QStringLiteral("https://kdrive.infomaniak.com/app/drive/%1/%2").arg(static_cast<qulonglong>(driveId)).arg(path)};
+    return QUrl{u"https://kdrive.infomaniak.com/app/drive/%1/%2"_s.arg(static_cast<qulonglong>(driveId)).arg(path)};
 }
 
 } // namespace KDC::AppConstants::WebDrive
+
+namespace KDC::AppConstants::Settings {
+[[nodiscard]] inline QUrl downloadUri() {
+    return QUrl{QString::fromLatin1(APPLICATION_DOWNLOAD_URL)};
+}
+[[nodiscard]] inline QUrl trashHelpUri() {
+    return QUrl{QString::fromLatin1(LEARNMORE_MOVE_TO_TRASH_URL)};
+}
+[[nodiscard]] inline QUrl licenseUri() {
+    return QUrl{QStringLiteral("https://github.com/Infomaniak/desktop-kDrive/blob/develop/LICENSE")};
+}
+[[nodiscard]] inline QUrl sourcesUri() {
+    return QUrl{QStringLiteral("https://github.com/Infomaniak/desktop-kDrive")};
+}
+} // namespace KDC::AppConstants::Settings
