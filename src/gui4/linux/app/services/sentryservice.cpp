@@ -24,6 +24,7 @@
 #include "config.h"
 #include "libcommon/log/sentry/handler.h"
 #include "libcommon/utility/utility.h"
+#include "libcommongui/logger.h"
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -122,6 +123,7 @@ void SentryService::initializeWithLinuxConfig() {
     if (sentry::Handler::isInitialized()) {
         qCInfo(lcSentryService) << "Sentry already initialized; activating handler";
         sentry::Handler::instance()->setIsSentryActivated(true);
+        Logger::setSentryBreadcrumbsEnabled(true);
         updateLinuxRuntimeTags();
         return;
     }
@@ -136,6 +138,7 @@ void SentryService::initializeWithLinuxConfig() {
 
     sentry::Handler::instance()->setGlobalConfidentialityLevel(sentry::ConfidentialityLevel::Authenticated);
     sentry::Handler::instance()->setIsSentryActivated(true);
+    Logger::setSentryBreadcrumbsEnabled(true);
     updateLinuxRuntimeTags();
     qCInfo(lcSentryService) << "Sentry initialized and activated";
 }
@@ -162,6 +165,7 @@ bool SentryService::isInitialized() {
 }
 
 void SentryService::shutdown() {
+    Logger::setSentryBreadcrumbsEnabled(false);
     if (!isInitialized()) {
         qCInfo(lcSentryService) << "Sentry shutdown skipped because handler is not initialized";
         return;
@@ -219,8 +223,9 @@ void SentryService::setConsent(const bool enabled) const {
 }
 
 void SentryService::updateAuthenticatedUser() const {
-    if (!isInitialized()) {
-        qCDebug(lcSentryService) << "Sentry user update skipped because handler is not initialized";
+    if (const auto parametersInfo = _parametersStore.parametersInfo();
+        !isInitialized() || !parametersInfo || !parametersInfo->sentryEnabled()) {
+        qCDebug(lcSentryService) << "Sentry user update skipped because Sentry is not initialized or consent is disabled";
         return;
     }
 
@@ -261,6 +266,7 @@ void SentryService::applyConsent(const bool enabled) const {
 
     if (initialized) {
         qCInfo(lcSentryService) << "Shutting down Sentry after consent opt-out";
+        Logger::setSentryBreadcrumbsEnabled(false);
         sentry::Handler::shutdown();
         return;
     }
@@ -275,8 +281,8 @@ void SentryService::reconcileConsentWithParametersStore() {
         return;
     }
 
-    if (const bool sentryEnabled = currentParametersInfo->sentryEnabled();
-        _appliedConsent != sentryEnabled || sentryEnabled != isInitialized()) {
+    const bool sentryEnabled = currentParametersInfo->sentryEnabled();
+    if (_appliedConsent != sentryEnabled || sentryEnabled != isInitialized()) {
         qCInfo(lcSentryService) << "Sentry consent reconciled with parameters store | enabled:" << sentryEnabled;
         writeCachedConsent(sentryEnabled);
         applyConsent(sentryEnabled);
@@ -285,7 +291,7 @@ void SentryService::reconcileConsentWithParametersStore() {
     }
 
     if (const auto distributionChannel = currentParametersInfo->distributionChannel();
-        isInitialized() && _appliedDistributionChannel != distributionChannel) {
+        sentryEnabled && isInitialized() && _appliedDistributionChannel != distributionChannel) {
         sentry::Handler::instance()->setDistributionChannel(distributionChannel);
         _appliedDistributionChannel = distributionChannel;
     }

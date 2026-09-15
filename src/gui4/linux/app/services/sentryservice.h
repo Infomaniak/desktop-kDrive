@@ -37,6 +37,7 @@ class ParametersStore;
  *
  * Role: own Linux v4 Sentry consent reconciliation, delayed initialization, runtime context, user identity, and UI/process
  * capture helpers.
+ * Consent opt-out stops log breadcrumbs and shuts down the native SDK; a later opt-in reinitializes it with a fresh state.
  * Non-role: decide server-side persistence; the server remains the source of truth for ParametersInfo.
  */
 class SentryService final : public QObject {

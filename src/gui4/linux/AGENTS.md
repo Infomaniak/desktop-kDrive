@@ -51,6 +51,8 @@
 - Let `ParametersService` serialize full-snapshot mutations and publish only server-confirmed results. Skip IPC requests
   when a mutation leaves the confirmed snapshot unchanged. Consumers must also compare their relevant values before
   reapplying side effects or logging; an unrelated parameter change must not reconfigure Sentry.
+- Treat Sentry consent opt-out as a complete lifecycle boundary: stop collecting breadcrumbs and shut down the native
+  SDK so a later opt-in starts with a fresh scope, session, and handler state.
 - Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
   independent updater states.
 - Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
@@ -233,7 +235,9 @@
   cross-service failures). Owned once by `AppClientLinux` and injected by reference into app services.
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
-  breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
+  breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry. Interactive
+  opt-out shuts down the native SDK; the shared Sentry recipe disables sentry-native's redundant Qt integration so a
+  later initialization cannot retain or recursively reinstall its message handler.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.

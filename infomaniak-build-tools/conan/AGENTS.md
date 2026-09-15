@@ -93,7 +93,6 @@ xxhash/0.8.2
   └── ninja [>=1.11.1] (Windows, tool_requires)
 
 sentry/0.7.10
-  ├── qt [>=6 <7] (headers only, private)
   └── zlib [>=1.2.11 <2] (Linux)
 
 poco/1.13.3
