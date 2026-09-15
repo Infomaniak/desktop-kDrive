@@ -18,7 +18,6 @@
 using DynamicData;
 using Infomaniak.kDrive.ServerCommunication.CommStruct;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
-using Infomaniak.kDrive.OnBoarding;
 using Infomaniak.kDrive.ServerCommunication.JsonConverters;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
@@ -2164,20 +2163,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
-
-            if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncDbId))
+            if(signalData is null || !signalData.ContainsKey(JsonKeys.SyncDbId) || !signalData.ContainsKey(JsonKeys.NotificationType) || !signalData.ContainsKey(JsonKeys.FilesPaths))
             {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.SyncDbId} not found in parameters.");
-                return;
-            }
-            if (signalData == null || !signalData.ContainsKey(JsonKeys.NotificationType))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.NotificationType} not found in parameters.");
-                return;
-            }
-            if (signalData == null || !signalData.ContainsKey(JsonKeys.FilesPaths))
-            {
-                Logger.Log(Logger.Level.Error, $"{JsonKeys.FilesPaths} not found in parameters.");
+                Logger.Log(Logger.Level.Error, $"One or more required parameters are missing in signal data: {JsonKeys.SyncDbId}, {JsonKeys.NotificationType}, {JsonKeys.FilesPaths}. Signal data: {signalData}");
                 return;
             }
 
