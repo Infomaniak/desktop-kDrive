@@ -32,6 +32,11 @@ class CloudProviderRegistrar {
     private:
         static std::unique_ptr<TOKEN_USER> getTokenInformation();
         static std::wstring getSyncRootId(const ProviderInfo *providerInfo);
+        static std::filesystem::path getSyncRootPath(const std::wstring &syncRootID);
+        static void updateRegistrationWithShell(std::wstring &syncRootID, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+        static bool createRegistrationWithShell(ProviderInfo *providerInfo, std::wstring &syncRootID, wchar_t *namespaceCLSID,
+                                                DWORD *namespaceCLSIDSize);
+
         /*static void addCustomState(
             _In_ winrt::IVector<winrt::StorageProviderItemPropertyDefinition> &customStates,
             _In_ LPCWSTR displayNameResource,
