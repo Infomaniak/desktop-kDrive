@@ -578,6 +578,10 @@ function Prepare-Archive {
 
     }
 
+    $repairScriptPath = "$buildPath/repair-shell-extension.ps1"
+    Copy-Item -LiteralPath "$repositoryRootPath/admin/win/repair-shell-extension.ps1" -Destination $repairScriptPath -Force -ErrorAction Stop
+    Sign-File -FilePath $repairScriptPath -Thumbprint $thumbprint -Description "repair-shell-extension.ps1"
+
     Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
     Write-Host "newGui is set to : $newGui"
 
