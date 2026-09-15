@@ -21,36 +21,18 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import kDrive.UI
 
-// Inline failure report for the sync-configuration pages. It states what cannot be done and why, so a rejected folder
-// explains the rule it broke instead of only saying that it was refused.
-Column {
+// Inline failure report for the sync-configuration pages.
+Text {
     id: root
 
-    property string errorTitle: ""
     property string errorText: ""
 
-    visible: errorTitle.length > 0 || errorText.length > 0
-    spacing: IKSyncConfiguration.cardTitleSpacing
+    visible: root.errorText.length > 0
+    text: root.errorText
+    color: IKColors.syncConfigurationError
+    font.pixelSize: IKFonts.subheadlineSize
+    wrapMode: Text.WordWrap
     // Announced as an alert so a failure is reported without moving the focus away from what the user was doing.
     Accessible.role: Accessible.AlertMessage
-    Accessible.name: [root.errorTitle, root.errorText].filter(part => part.length > 0).join(". ")
-
-    Text {
-        width: parent.width
-        visible: text.length > 0
-        text: root.errorTitle
-        color: IKColors.syncConfigurationError
-        font.pixelSize: IKFonts.subheadlineSize
-        font.weight: IKFonts.emphasized
-        wrapMode: Text.WordWrap
-    }
-
-    Text {
-        width: parent.width
-        visible: text.length > 0
-        text: root.errorText
-        color: IKColors.syncConfigurationError
-        font.pixelSize: IKFonts.subheadlineSize
-        wrapMode: Text.WordWrap
-    }
+    Accessible.name: root.errorText
 }
