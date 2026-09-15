@@ -34,7 +34,7 @@ extension VisibleActivities {
     var title: String {
         switch self {
         case .myActivityOnly:
-            return KDriveLocalizable.activitiesTypeMyActivity
+            return KDriveLocalizable.activitiesTypeThisComputer
         case .allActivities:
             return KDriveLocalizable.activitiesTypeAllActivities
         }
