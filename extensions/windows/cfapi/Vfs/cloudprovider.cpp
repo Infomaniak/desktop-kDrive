@@ -89,7 +89,7 @@ bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
         TRACE_ERROR(L"Error in CloudProviderRegistrar::registerWithShell!");
         return false;
     }
-    TRACE_DEBUG(L"CloudProviderRegistrar::registerWithShell done: syncRootID = %ls", _synRootID.c_str());
+    TRACE_DEBUG(L"CloudProviderRegistrar::registerWithShell done: syncRootID = '%ls'", _synRootID.c_str());
 
     // Hook up callback methods for transferring files between client and server
     TRACE_DEBUG(L"Calling connectSyncRootTransferCallbacks");
@@ -126,7 +126,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
 
     winrt::handle fileHandle(CreateFile(path, WRITE_DAC, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_NO_RECALL, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile: %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
@@ -193,7 +193,7 @@ bool CloudProvider::hydrate(const wchar_t *path) {
 
     winrt::handle fileHandle(CreateFile(path, WRITE_DAC, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OPEN_NO_RECALL, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
-        TRACE_ERROR(L"Error in CreateFile: %ls", Utilities::getLastErrorMessage().c_str());
+        TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
         return false;
     }
 
@@ -366,20 +366,20 @@ bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *fi
     }
 
     if (wcsncmp(filePath, providerInfo->folderPath(), wcslen(providerInfo->folderPath()))) {
-        TRACE_DEBUG(L"File not synchronized: path = %lls", filePath);
+        TRACE_DEBUG(L"File not synchronized: path = '%ls'", filePath);
         return true;
     }
 
     std::unique_lock<std::mutex> lck(providerInfo->_fetchMapMutex);
     if (providerInfo->_fetchMap.find(filePath) == providerInfo->_fetchMap.end()) {
-        TRACE_DEBUG(L"No fetch in progress: path = %lls", filePath);
+        TRACE_DEBUG(L"No fetch in progress: path = '%ls'", filePath);
         return true;
     }
 
     FetchInfo &fetchInfo = providerInfo->_fetchMap[filePath];
     if (fetchInfo.getUpdating()) {
         // If updating, set cancel indicator and wait for notification
-        TRACE_DEBUG(L"Cancel updating: path = %lls", filePath);
+        TRACE_DEBUG(L"Cancel updating: path = '%ls'", filePath);
         fetchInfo.setCancel();
         providerInfo->_cancelFetchCV.wait(lck);
     }
@@ -395,14 +395,14 @@ bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *fi
     lck.unlock();
 
     // Reset pin state
-    TRACE_DEBUG(L"Set pin state to UNPINNED: path = %lls", filePath);
+    TRACE_DEBUG(L"Set pin state to UNPINNED: path = '%ls'", filePath);
     if (!Placeholders::setPinState(filePath, CF_PIN_STATE_UNPINNED)) {
         TRACE_ERROR(L"Error in setPinState");
         return false;
     }
 
     // Dehydrate file
-    TRACE_DEBUG(L"Dehydrate: path = %lls", filePath);
+    TRACE_DEBUG(L"Dehydrate: path = '%ls'", filePath);
     if (!dehydrate(filePath)) {
         TRACE_ERROR(L"Error in dehydrate");
         return false;
@@ -447,7 +447,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
     }
 
     if (callbackParameters->FetchData.RequiredFileOffset.QuadPart != 0)
-        return restartHydration(fullPath, callbackParameters, callbackInfo);
+        return restartHydration(fullPath, *callbackParameters, *callbackInfo);
 
     // Store fetch info
     FetchInfo fetchInfo;
@@ -462,9 +462,9 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
     lck.unlock();
 
     if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId) {
-        TRACE_DEBUG(L"Hydration asked by app: path = %lls", fullPath.wstring().c_str());
+        TRACE_DEBUG(L"Hydration asked by app: path = '%ls'", fullPath.wstring().c_str());
     } else {
-        TRACE_DEBUG(L"Hydration asked: processId = %ld, path = %lls", callbackInfo->ProcessInfo->ProcessId,
+        TRACE_DEBUG(L"Hydration asked: processId = %ld, path = '%ls'", callbackInfo->ProcessInfo->ProcessId,
                     fullPath.wstring().c_str());
     }
 
@@ -525,7 +525,7 @@ void CALLBACK CloudProvider::onCancelFetchData(_In_ CONST CF_CALLBACK_INFO *call
                 std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (!cancelTransfer(providerInfo, fullPath.wstring().c_str(), false)) {
-            TRACE_ERROR(L"Error in cancelTransfer: path = %lls", fullPath.wstring().c_str());
+            TRACE_ERROR(L"Error in cancelTransfer: path = '%ls'", fullPath.wstring().c_str());
             return;
         }
     }
@@ -544,9 +544,9 @@ void CloudProvider::onNotifyDehydrate(_In_ CONST CF_CALLBACK_INFO *callbackInfo,
                 std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
 
         if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId) {
-            TRACE_DEBUG(L"Dehydration asked by app: path = %lls", fullPath.wstring().c_str());
+            TRACE_DEBUG(L"Dehydration asked by app: path = '%ls'", fullPath.wstring().c_str());
         } else {
-            TRACE_DEBUG(L"Dehydration asked: processId = %ld, path = %lls", callbackInfo->ProcessInfo->ProcessId,
+            TRACE_DEBUG(L"Dehydration asked: processId = %ld, path = '%ls'", callbackInfo->ProcessInfo->ProcessId,
                         fullPath.wstring().c_str());
         }
 
