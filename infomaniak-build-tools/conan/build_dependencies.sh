@@ -266,6 +266,8 @@ echo
 
 log "Installing dependencies..."
 
+conan remove 'sentry/*' -c
+
 conan_install_cmd=(
   conan install .
   --output-folder="$output_dir"

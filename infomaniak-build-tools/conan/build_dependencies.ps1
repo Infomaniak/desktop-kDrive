@@ -314,6 +314,8 @@ if ($LASTEXITCODE -ne 0)
 # Ensure output directory exists
 New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null # mkdir
 
+& $ConanExe remove sentry/* -c
+
 Log "Installing Conan dependencies..."
 $conanInstallArgs = @(
     "install", ".",
