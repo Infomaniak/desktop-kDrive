@@ -22,6 +22,7 @@
 #include "providerinfo.h"
 
 #include <cfapi.h>
+#include <filesystem>
 
 class CloudProvider {
     public:
@@ -89,5 +90,7 @@ class CloudProvider {
 
         static bool addFolderToSearchIndexer(const PCWSTR folder);
         static bool cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
-                                    LARGE_INTEGER requiredFileOffset);
+                                    LARGE_INTEGER requiredFileOffset, LARGE_INTEGER requiredFileLength);
+        static void restartHydration(const std::filesystem::path &fullPath, const CF_CALLBACK_PARAMETERS &callbackParameters,
+                                     const CF_CALLBACK_INFO &callbackInfo);
 };
