@@ -376,6 +376,7 @@ function build_app_image_v4() {
 
   cd /build || return 1
   v4_linuxdeploy_deploy /app "$extra" || return 1
+  v4_strip_debug_symbols /app || return 1
   v4_verify_bundle /app || return 1
   v4_package_appimage /app "$extra" || return 1
 
@@ -423,17 +424,12 @@ EOF
     cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
 
-  export LD_LIBRARY_PATH="$updater_appdir/usr/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH"
-  export NO_STRIP=1
-  linuxdeploy --appdir "$updater_appdir" \
-    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
-    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
-    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
-    --plugin qt --output appimage -v0
-  if [ "$?" -ne 0 ]; then
-    echo "ERROR: linuxdeploy failed for recovery updater AppImage" >&2
-    return 1
-  fi
+  extra="$QT_BASE_DIR/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64"
+  cd /build || return 1
+  v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra" || return 1
+  v4_strip_debug_symbols "$updater_appdir" || return 1
+  v4_verify_bundle "$updater_appdir" || return 1
+  v4_package_appimage "$updater_appdir" "$extra" || return 1
 
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
   if [ "$?" -ne 0 ]; then
