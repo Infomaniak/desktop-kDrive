@@ -119,7 +119,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     }
 
     // Rename the local version
-    const SyncPath sourceAbsoluteLocalPath = (_syncPal->localPath() / error.path()).lexically_normal();
+    const SyncPath sourceAbsoluteLocalPath = (_syncPal->localPath() / error.destinationPath()).lexically_normal();
     if (!CommonUtility::isSubDir(_syncPal->localPath(), sourceAbsoluteLocalPath) ||
         sourceAbsoluteLocalPath == _syncPal->localPath()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error path in ConflictingFilesCorrector::keepLocalVersion: "
@@ -144,8 +144,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // here.
     bool invalidDestinationPath = error.destinationPath().filename().empty() || error.destinationPath().is_absolute();
     const SyncPath absoluteDestinationPath = (_syncPal->localPath() / error.destinationPath()).lexically_normal();
-    invalidDestinationPath = invalidDestinationPath ||
-                             !CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath) ||
+    invalidDestinationPath = invalidDestinationPath || !CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath) ||
                              absoluteDestinationPath == _syncPal->localPath();
 
     if (invalidDestinationPath) {
