@@ -29,7 +29,7 @@ jobs:
 
 # Build apps
   build-Windows:
-    runs-on: [ self-hosted, Windows, vs2026, test_img ]
+    runs-on: [ self-hosted, Windows, test_img ]
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v6.0.2
