@@ -405,3 +405,40 @@ target_include_directories(${APPLICATION_CLIENTV4_EXECUTABLE} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/src # libcommon header files
 )
+
+install(TARGETS ${APPLICATION_CLIENTV4_EXECUTABLE}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Named after QGuiApplication::desktopFileName() ("kDrive"), see app/applicationidentity.cpp.
+file(READ "${CMAKE_SOURCE_DIR}/kdrive.desktop.in" kdrive_desktop_template)
+string(CONFIGURE "${kdrive_desktop_template}" kdrive_desktop @ONLY)
+string(REPLACE "Type=Application\n" "Type=Application\nStartupWMClass=${APPLICATION_CLIENTV4_EXECUTABLE}\n"
+        kdrive_desktop "${kdrive_desktop}")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_EXECUTABLE}.desktop" "${kdrive_desktop}")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_EXECUTABLE}.desktop" DESTINATION ${DATADIR}/applications)
+
+if(KDRIVE_DEPLOY_QT_RUNTIME)
+    # Qt has no catalogs for el, nb, and pt.
+    qt_generate_deploy_script(
+            TARGET ${APPLICATION_CLIENTV4_EXECUTABLE}
+            NAME kdrive_linux_runtime
+            OUTPUT_SCRIPT kdrive_deploy_script
+            CONTENT "
+if(QT_DEPLOY_PREFIX STREQUAL CMAKE_INSTALL_PREFIX
+        AND CMAKE_INSTALL_PREFIX MATCHES \"^/(usr(/local)?)?/?$\")
+    message(FATAL_ERROR \"Refusing to deploy the Qt runtime into /usr without DESTDIR\")
+endif()
+qt_deploy_qml_imports(TARGET ${APPLICATION_CLIENTV4_EXECUTABLE} PLUGINS_FOUND plugins_found)
+qt_deploy_runtime_dependencies(
+    EXECUTABLE \"$<TARGET_FILE:${APPLICATION_CLIENTV4_EXECUTABLE}>\"
+    ADDITIONAL_EXECUTABLES \"$<TARGET_FILE:${APPLICATION_EXECUTABLE}>\"
+    ADDITIONAL_MODULES \\\${plugins_found}
+    GENERATE_QT_CONF
+    NO_TRANSLATIONS
+    INCLUDE_PLUGINS qwayland
+    EXCLUDE_PLUGIN_TYPES qmltooling egldeviceintegrations)
+qt_deploy_translations(CATALOGS qtbase qtdeclarative LOCALES da de en es fi fr it nl pl pt_BR sv)
+")
+    install(SCRIPT "${kdrive_deploy_script}")
+endif()

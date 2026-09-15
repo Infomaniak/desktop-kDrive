@@ -20,6 +20,7 @@
 
 script_directory_path="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 source "$script_directory_path/build-utils.sh"
+source "$script_directory_path/appimage-v4.sh"
 
 program_name="$(basename "$0")"
 
@@ -135,6 +136,60 @@ function build_client_via_cmake() {
   bundle_sources_for_sentry ../kDrive_client.dbg
 
   make DESTDIR=/app install
+}
+
+function build_client_via_cmake_v4() {
+  build_type=$1
+  conan_dependencies_folder=$2
+
+  echo "Building Linux v4 client via CMake..."
+
+  cd /build/client
+
+  CMAKE_PARAMS=()
+
+  if [ -n "$APPLICATION_SERVER_URL" ]; then
+    CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
+  fi
+
+  export KDRIVE_DEBUG=0
+
+  conan_folder=/build/conan
+  conan_toolchain_file="$(find "$conan_folder" -name 'conan_toolchain.cmake' -print -quit 2>/dev/null | head -n 1)"
+
+  if [ ! -f "$conan_toolchain_file" ]; then
+    echo "ERROR: Conan toolchain file not found: $conan_toolchain_file" >&2
+    return 1
+  fi
+
+  architecture=$(get_host_arch)
+  qt_neon_activation="ON"
+
+  if [[ "$architecture" == "amd64" ]]; then
+    qt_neon_activation="OFF"
+  fi
+
+  cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DQT_FEATURE_neon="$qt_neon_activation" \
+      -DCMAKE_MODULE_PATH="$QT_BASE_DIR/lib/cmake/" \
+      -DCMAKE_BUILD_TYPE=$build_type \
+      -DKDRIVE_THEME_DIR="/src/infomaniak" \
+      -DBUILD_UNIT_TESTS=0 \
+      -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
+      -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
+      -DCONAN_DEP_DIR="$conan_dependencies_folder" \
+      -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
+      "${CMAKE_PARAMS[@]}" \
+      /src || return 1
+  make "-j$(nproc)" || return 1
+
+  v4_extract_debug_symbols ./bin /build kDrive kdrive_qml || return 1
+
+  bundle_sources_for_sentry /build/kDrive.dbg
+  bundle_sources_for_sentry /build/kdrive_qml.dbg
+
+  make DESTDIR=/app install || return 1
 }
 
 function bundle_sources_for_sentry() {
@@ -310,6 +365,23 @@ function build_app_image() {
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
 
+function build_app_image_v4() {
+  local conan_lib_path
+  local extra
+  conan_lib_path="$(v4_conan_runtime_lib_path /build/conan)" || return 1
+  extra="$conan_lib_path:/usr/local/lib:/usr/local/lib64"
+
+  v4_prepare_appdir /app || return 1
+  v4_check_appdir /app || return 1
+
+  cd /build || return 1
+  v4_linuxdeploy_deploy /app "$extra" || return 1
+  v4_verify_bundle /app || return 1
+  v4_package_appimage /app "$extra" || return 1
+
+  mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
+}
+
 function build_recovery_updater_image() {
   architecture=$1
   updater_bin="/app/usr/bin/kDriveRecoveryUpdater"
@@ -430,6 +502,11 @@ fi
 architecture="$(get_host_arch)"
 build_type="RelWithDebInfo"
 conan_dependencies_folder="/build/conan/dependencies"
+release_flavor="$(get_linux_release_flavor /src)" || {
+    echo "Unable to determine the release flavor." >&2
+    exit 1
+}
+echo "Release flavor: $release_flavor"
 
 echo "Detecting Qt and building Conan dependencies for ${architecture}..."
 find_qt_from_conan "$build_type"
@@ -451,44 +528,65 @@ fi
 echo
 
 echo "Building desktop-kDrive application with type ${build_type} via CMake for architecture ${architecture}..."
-build_client_via_cmake "$build_type" "$conan_dependencies_folder"
+if [[ "$release_flavor" == "v4" ]]; then
+    build_client_via_cmake_v4 "$build_type" "$conan_dependencies_folder" || {
+        printf "\nCMake build failed." >&2
+        exit 1
+    }
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nCMake build failed." >&2
-    exit 1
-fi
+    echo
+    echo "Building recovery updater AppImage ..."
+    build_recovery_updater_image "$architecture" || {
+        printf "\nBuild of the recovery updater AppImage failed." >&2
+        exit 1
+    }
 
-echo
+    echo
+    echo "Building AppImage ..."
+    build_app_image_v4 || {
+        printf "\nBuild of the AppImage failed." >&2
+        exit 1
+    }
+else
+    build_client_via_cmake "$build_type" "$conan_dependencies_folder"
 
-echo "Moving dependencies ..."
-move_dependencies "$architecture" "$conan_dependencies_folder"
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nCMake build failed." >&2
+        exit 1
+    fi
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nMove of dependencies failed." >&2
-    exit 1
-fi
+    echo
 
-# TODO enable the cleaning of the appimage folder once the build is stable.
-echo
-echo "Cleaning unnecessary files ..."
-clean_app_directory "$architecture"
+    echo "Moving dependencies ..."
+    move_dependencies "$architecture" "$conan_dependencies_folder"
 
-echo
-echo "Building AppImage ..."
-build_app_image "$architecture"
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nMove of dependencies failed." >&2
+        exit 1
+    fi
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nBuild of the AppImage failed." >&2
-    exit 1
-fi
+    # TODO enable the cleaning of the appimage folder once the build is stable.
+    echo
+    echo "Cleaning unnecessary files ..."
+    clean_app_directory "$architecture"
 
-echo
-echo "Building recovery updater AppImage ..."
-build_recovery_updater_image "$architecture"
+    echo
+    echo "Building AppImage ..."
+    build_app_image "$architecture"
 
-if [ ! "$?" -eq "0" ]; then
-    printf "\nBuild of the recovery updater AppImage failed." >&2
-    exit 1
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nBuild of the AppImage failed." >&2
+        exit 1
+    fi
+
+    echo
+    echo "Building recovery updater AppImage ..."
+    build_recovery_updater_image "$architecture"
+
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nBuild of the recovery updater AppImage failed." >&2
+        exit 1
+    fi
 fi
 
 echo "Build of AppImage successfully completed for architecture ${architecture}."

@@ -200,8 +200,11 @@
 
 ## Current Structure
 
-- `main.cpp`: process entry point, single-instance lock file, and Linux-v4 opt-in for forwarding Qt logs to Sentry
-  breadcrumbs.
+- `main.cpp`: process entry point, single-instance lock file, Linux-v4 opt-in for forwarding Qt logs to Sentry
+  breadcrumbs, and XDG desktop portal selection for native file dialogs when the user has not selected another Qt
+  platform theme.
+- `CMakeLists.txt`: installs `kdrive_qml` and its desktop entry. With `KDRIVE_DEPLOY_QT_RUNTIME=ON`, it also generates
+  the Qt runtime deployment script used exclusively by Linux v4 AppImage release builds.
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.

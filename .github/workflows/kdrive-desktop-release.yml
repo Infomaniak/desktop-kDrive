@@ -27,10 +27,10 @@ on:
         description: Build Linux executables
         options:
           - Do not build
-          - Legacy client (all)
-          - Legacy client (amd64)
-          - Legacy client (arm64)
-        default: Legacy client (all)
+          - Build (all)
+          - Build (amd64)
+          - Build (arm64)
+        default: Build (all)
       enable_safety_checks_and_upload_builds_to_kdrive:
         type: boolean
         description: Enable safety checks and upload builds to kDrive
@@ -220,7 +220,7 @@ jobs:
           build_new_client: ${{ inputs.build_windows == 'New client' }}
 
   build-Linux-amd:
-    if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)' }}
+    if: ${{ inputs.build_linux == 'Build (all)' || inputs.build_linux == 'Build (amd64)' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
@@ -234,7 +234,7 @@ jobs:
           release_build: true
 
   build-Linux-arm:
-    if: ${{ inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)' }}
+    if: ${{ inputs.build_linux == 'Build (all)' || inputs.build_linux == 'Build (arm64)' }}
     needs: [ check-release-notes, check-translations ]
     runs-on: [ self-hosted, macOS, ARM64, desktop-kdrive ]
     steps:
@@ -317,7 +317,7 @@ jobs:
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-amd:
-    if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (amd64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'Build (all)' || inputs.build_linux == 'Build (amd64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-amd]
     runs-on: [windows-latest]
     env:
@@ -353,14 +353,16 @@ jobs:
 
       - name: Upload sentry artifacts - Linux
         run: |
-          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux\kDrive.dbg
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-linux\kDrive_client.dbg
-          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
+          $major = [int]("${{ steps.get-version.outputs.kDrive_version_linux }}".Split('.')[0])
+          if ($major -ge 4) { $client = "kdrive_qml"; $project = "kdrive-linux-client" } else { $client = "kDrive_client"; $project = "kdrive-client" }
+          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux-amd64\kDrive.dbg
+          .\sentry-cli.exe debug-files upload --project $project .\build-linux-amd64\$client.dbg
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux-amd64\kDrive.src.zip
+          .\sentry-cli.exe debug-files upload --project $project --type sourcebundle .\build-linux-amd64\$client.src.zip
         shell: powershell
 
   upload-to-kDrive-and-sentry-Linux-arm:
-    if: ${{ (inputs.build_linux == 'Legacy client (all)' || inputs.build_linux == 'Legacy client (arm64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
+    if: ${{ (inputs.build_linux == 'Build (all)' || inputs.build_linux == 'Build (arm64)') && inputs.enable_safety_checks_and_upload_builds_to_kdrive }}
     needs: [build-Linux-arm]
     runs-on: [windows-latest]
     env:
@@ -396,10 +398,12 @@ jobs:
 
       - name: Upload sentry artifacts - Linux
         run: |
-          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux\kDrive.dbg
-          .\sentry-cli.exe debug-files upload --project kdrive-client .\build-linux\kDrive_client.dbg
-          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux\kDrive.src.zip
-          .\sentry-cli.exe debug-files upload --project kdrive-client --type sourcebundle .\build-linux\kDrive_client.src.zip
+          $major = [int]("${{ steps.get-version.outputs.kDrive_version_linux }}".Split('.')[0])
+          if ($major -ge 4) { $client = "kdrive_qml"; $project = "kdrive-linux-client" } else { $client = "kDrive_client"; $project = "kdrive-client" }
+          .\sentry-cli.exe debug-files upload --project kdrive-server .\build-linux-arm64\kDrive.dbg
+          .\sentry-cli.exe debug-files upload --project $project .\build-linux-arm64\$client.dbg
+          .\sentry-cli.exe debug-files upload --project kdrive-server --type sourcebundle .\build-linux-arm64\kDrive.src.zip
+          .\sentry-cli.exe debug-files upload --project $project --type sourcebundle .\build-linux-arm64\$client.src.zip
         shell: powershell
 
   upload-to-kDrive-and-sentry-macOS:

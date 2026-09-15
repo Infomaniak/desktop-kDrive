@@ -79,14 +79,16 @@ clang-format -i <file>
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
+- Do not pass `--update` to Conan dependency builds in CI; reserve it for explicit local dependency refreshes.
 <!-- Add project-specific user corrections here -->
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 - Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
 - Do not run `clang-format` on `CMakeLists.txt` files (it can break formatting/structure unexpectedly in this project).
 - Keep the Linux v4 frameless header and custom shadow on native Wayland without introducing a `Qt6::GuiPrivate`
   dependency; accept the transparent shadow margin during Wayland edge snapping.
-- For any branch named `linux-v4/*`: create it from `linux-v4/main`, and compute diffs against `linux-v4/main` by
-  default. `linux-v4/main` is the feature-integration branch regularly rebased on `develop`.
+- For any branch named `linux-v4/*`: create it from `protected/linux-v4`, and compute diffs against
+  `protected/linux-v4` by default. `protected/linux-v4` is the feature-integration branch regularly rebased on
+  `develop`.
 
 ## JIT Index
 
