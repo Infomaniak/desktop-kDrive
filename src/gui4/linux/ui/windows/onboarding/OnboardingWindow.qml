@@ -19,15 +19,21 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import kDrive.UI
 
 Item {
     id: root
 
     required property var session
+    // Modal scrim geometry of the hosting window: the overlay also covers the transparent custom-shadow margin, which
+    // must not be dimmed because it is not part of the visible application surface.
+    required property real surfaceInset
+    required property real surfaceRadius
     readonly property var onboardingFlowController: session.flowController
     readonly property var driveSelectionController: session.driveSelectionController
     readonly property var drivesModel: session.availableDrivesModel
+    readonly property var syncConfigurationController: session.syncConfigurationController
     readonly property var onboardingStepComponents: [
         loginComponent,
         driveSelectionComponent,
@@ -38,6 +44,32 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: IKColors.onboardingSurfacePrimary
+    }
+
+    SyncConfigurationDialog {
+        controller: root.syncConfigurationController
+        scrimInset: root.surfaceInset
+        scrimRadius: root.surfaceRadius
+    }
+
+    FolderDialog {
+        id: localFolderDialog
+
+        title: qsTrId("buttonSelectFolder")
+        onAccepted: {
+            root.syncConfigurationController.applyCustomFolder(selectedFolder)
+            root.syncConfigurationController.notifyCustomFolderDialogClosed()
+        }
+        onRejected: root.syncConfigurationController.notifyCustomFolderDialogClosed()
+    }
+
+    Connections {
+        target: root.syncConfigurationController
+
+        function onCustomFolderRequested(initialFolder) {
+            localFolderDialog.currentFolder = initialFolder
+            localFolderDialog.open()
+        }
     }
 
     Row {
