@@ -85,16 +85,16 @@ extension HomeState {
 }
 
 struct SynchroStatusView: View {
-    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let state: HomeState
     let synchroDbId: UISynchro.ID?
+    let isConverting: Bool
 
     private var buttonIsEnabled: Bool {
         switch state {
         case .synchroIsPaused:
-            return !isConvertingSynchro
+            return !isConverting
         default:
             return true
         }
@@ -149,7 +149,6 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
-        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
@@ -190,21 +189,21 @@ struct SynchroStatusView: View {
 }
 
 #Preview("Up To Date") {
-    SynchroStatusView(state: .synchroIsUpToDate, synchroDbId: nil)
+    SynchroStatusView(state: .synchroIsUpToDate, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Running") {
-    SynchroStatusView(state: .synchroIsRunning, synchroDbId: nil)
+    SynchroStatusView(state: .synchroIsRunning, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Paused") {
-    SynchroStatusView(state: .synchroIsPaused, synchroDbId: nil)
+    SynchroStatusView(state: .synchroIsPaused, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Offline") {
-    SynchroStatusView(state: .offline, synchroDbId: nil)
+    SynchroStatusView(state: .offline, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Loading") {
-    SynchroStatusView(state: .loading, synchroDbId: nil)
+    SynchroStatusView(state: .loading, synchroDbId: nil, isConverting: false)
 }

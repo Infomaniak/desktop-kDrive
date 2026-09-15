@@ -24,7 +24,6 @@ import SwiftUI
 struct BlockingErrorView: View {
     @InjectService private var matomo: MatomoUtils
 
-    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let blockingError: UIBlockingError
@@ -33,12 +32,12 @@ struct BlockingErrorView: View {
         switch blockingError.error {
         case .notRenew:
             if !blockingError.drive.isAdmin {
-                return !isConvertingSynchro
+                return !blockingError.synchro.isConverting
             } else {
                 return true
             }
         case .wakingUp, .maintenance, .accessDenied:
-            return !isConvertingSynchro
+            return !blockingError.synchro.isConverting
         default:
             return true
         }
@@ -82,7 +81,6 @@ struct BlockingErrorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
-        .observingSynchroConversion(synchroDbId: blockingError.synchro.dbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 

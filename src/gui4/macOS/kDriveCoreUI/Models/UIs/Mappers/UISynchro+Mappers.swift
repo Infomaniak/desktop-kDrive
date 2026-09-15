@@ -29,7 +29,8 @@ public extension UISynchro {
             localPath: URL(fileURLWithPath: synchro.localPath),
             targetNodeId: targetNodeId,
             supportsVirtualFileSystem: synchro.supportVfs,
-            useVirtualFileSystem: synchro.virtualFileMode == .Mac
+            useVirtualFileSystem: synchro.virtualFileMode == .Mac,
+            isConverting: synchro.isUpdatingVfsMode
         )
     }
 }
