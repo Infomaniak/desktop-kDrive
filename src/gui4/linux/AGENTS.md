@@ -53,6 +53,10 @@
   reapplying side effects or logging; an unrelated parameter change must not reconfigure Sentry.
 - Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
   independent updater states.
+- Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
+  `AppClientLinux::openSettingsWindow`. Keep General preferences in `GeneralSettingsController`.
+- Keep Settings information dialogs inside the Settings window and restore focus to their trigger. Closing Settings must
+  not quit kDrive. Show the download action only while an update is available.
 - Let `TranslationService` own the English fallback and selected locale. Language changes retranslate QML and notify C++
   presentation models without resetting navigation or selections. New translated model properties must not be
   `CONSTANT`.

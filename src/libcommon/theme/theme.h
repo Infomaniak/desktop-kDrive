@@ -46,7 +46,7 @@ class Theme : public QObject {
         virtual std::string version() const;
 
         virtual QString helpUrl() const;
-        QString feedbackUrl(Language language) const;
+        static QString feedbackUrl(Language language);
 
         virtual QString conflictHelpUrl() const;
 
