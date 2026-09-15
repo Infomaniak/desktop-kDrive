@@ -383,6 +383,10 @@ endif(ZLIB_FOUND)
 # application.cpp still uses QDesktopServices::storageLocation
 target_compile_definitions(${APPLICATION_EXECUTABLE} PRIVATE "QT_DISABLE_DEPRECATED_BEFORE=0")
 
+if(KDRIVE_DEPLOY_QT_RUNTIME)
+    set_target_properties(${APPLICATION_EXECUTABLE} PROPERTIES INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+endif()
+
 # Install
 install(TARGETS ${APPLICATION_EXECUTABLE}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
