@@ -306,3 +306,33 @@ The architecture (`amd64` or `arm64`) used for building is the host architecture
 If you do not want to build through podman, use the `build-release-appimage.sh` script directly.
 
 The generated AppImage file will be located in the `build-linux-[arch]/install` directory.
+
+## Release packaging
+
+The existing AMD64 and ARM64 release entry points select their packaging path from
+`Versions.Linux.major` in `version.json`:
+
+| Linux version | Client | Packaging |
+| --- | --- | --- |
+| 3.x | `kDrive_client` | Legacy bulk copy followed by `linuxdeploy-plugin-qt` |
+| 4.x and newer | `kdrive_qml` | Qt deployment script followed by dependency-only `linuxdeploy` passes |
+
+Any other major version is rejected. The Linux 4.x path configures CMake with
+`KDRIVE_DEPLOY_QT_RUNTIME=ON`. During installation, Qt's deployment API scans the application's
+actual QML imports and runtime dependencies, then installs the required libraries, plugins, QML
+modules, translations, and `qt.conf`. `linuxdeploy` subsequently deploys the system dependencies of
+the installed plugins, verifies the bundle, fixes RPATHs, and creates the AppImage. The main
+AppImage contains `kDrive` and `kdrive_qml`; `kDriveRecoveryUpdater` remains a separate AppImage.
+
+The Linux 4.x packaging path requires a `linuxdeploy` version that supports
+`--deploy-deps-only`, plus the `linuxdeploy-plugin-appimage` plugin. File and folder dialogs use the
+XDG desktop portal by default. An explicit `QT_QPA_PLATFORMTHEME` value remains authoritative; when
+the portal FileChooser is unavailable, Qt falls back to the desktop theme and then Qt Quick's own
+dialog.
+
+To validate the CMake deployment without producing an AppImage, configure a release build with
+`-DKDRIVE_DEPLOY_QT_RUNTIME=ON -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON`, build it, and install it into an
+AppDir with `DESTDIR=<app-dir> cmake --install <build-dir> --prefix /usr`. Then source
+`infomaniak-build-tools/linux/appimage-v4.sh` and run `v4_prepare_appdir`, `v4_check_appdir`, and
+`v4_verify_bundle` on that AppDir. Never set `LD_LIBRARY_PATH` when launching the resulting
+AppImage; it must resolve its bundled runtime on its own.
