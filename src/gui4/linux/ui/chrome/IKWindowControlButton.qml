@@ -75,7 +75,7 @@ ToolButton {
     }
 
     IKToolTip {
-        visible: root.hovered || root.activeFocus
+        targetButton: root
         text: root.text
     }
 

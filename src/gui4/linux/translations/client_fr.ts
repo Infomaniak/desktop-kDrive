@@ -2614,6 +2614,21 @@ déverrouillé et accessible depuis votre ordinateur.</translation>
                 <numerusform>Supprimer (%1 règles)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Recherche de mises à jour…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Impossible d’enregistrer ce réglage. Veuillez réessayer.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Vérification des mises à jour indisponible</translation>
+        </message>
     </context> 
     <context>
         <name></name> 

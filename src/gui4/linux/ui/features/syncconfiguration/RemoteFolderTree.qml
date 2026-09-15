@@ -410,7 +410,7 @@ Rectangle {
                     elide: Text.ElideRight
 
                     IKToolTip {
-                        visible: rowHover.hovered && folderNameText.truncated
+                        showRequested: rowHover.hovered && folderNameText.truncated
                         text: folderRow.folderName
                         maximumTextWidth: IKSyncConfiguration.tooltipMaximumWidth
                     }

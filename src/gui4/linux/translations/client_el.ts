@@ -2614,6 +2614,21 @@ unlocked and accessible from your computer.</source>
                 <numerusform>Κατάργηση (%1 κανόνων)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Έλεγχος για ενημερώσεις…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Δεν ήταν δυνατή η αποθήκευση αυτής της ρύθμισης. Δοκιμάστε ξανά.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Δεν είναι δυνατός ο έλεγχος για ενημερώσεις</translation>
+        </message>
     </context> 
     <context>
         <name></name> 

@@ -141,7 +141,7 @@ Rectangle {
         }
 
         IKToolTip {
-            visible: buttonRoot.hovered || buttonRoot.activeFocus
+            targetButton: buttonRoot
             text: buttonRoot.tooltipText
         }
     }
@@ -172,7 +172,7 @@ Rectangle {
         }
 
         IKToolTip {
-            visible: groupedButton.hovered || groupedButton.activeFocus
+            targetButton: groupedButton
             text: groupedButton.text
         }
     }
@@ -212,7 +212,7 @@ Rectangle {
         }
 
         IKToolTip {
-            visible: settingsButton.hovered || settingsButton.activeFocus
+            targetButton: settingsButton
             text: qsTrId("comingSoon")
         }
     }

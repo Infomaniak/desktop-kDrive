@@ -2614,6 +2614,21 @@ låst opp og tilgjengelig fra datamaskinen din.</translation>
                 <numerusform>Fjern (%1 regler)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Ser etter oppdateringer…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Kunne ikke lagre denne innstillingen. Prøv igjen.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Kan ikke se etter oppdateringer</translation>
+        </message>
     </context> 
     <context>
         <name></name> 
