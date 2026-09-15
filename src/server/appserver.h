@@ -358,7 +358,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendSyncRemoved(SyncDbId syncDbId) const;
         virtual void sendSyncDeletionFailed(SyncDbId syncDbId) const;
         virtual void sendManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
-                                                 uint64_t nbFiles) const;
+                                                 const std::vector<SyncPath> &filesPaths) const;
         virtual void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const;
         virtual void sendErrorsCleared(SyncDbId syncDbId) const;
         virtual void sendQuit() const; // Ask client to quit
