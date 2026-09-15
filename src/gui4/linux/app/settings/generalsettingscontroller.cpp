@@ -49,7 +49,7 @@ QString versionDetails(const QString &version, const uint64_t build) {
 
 GeneralSettingsController::GeneralSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
                                                      TranslationService &translationService,
-                                                     UpdateStatusService &updateStatusService, QObject *parent) :
+                                                     UpdateStatusService &updateStatusService, QObject *const parent) :
     QObject(parent),
     _parametersStore(parametersStore),
     _parametersService(parametersService),
@@ -155,7 +155,7 @@ void GeneralSettingsController::save(const ParametersService::ParametersMutation
     });
 }
 
-void GeneralSettingsController::setAutoStart(bool enabled) {
+void GeneralSettingsController::setAutoStart(const bool enabled) {
     if (enabled == autoStart()) {
         return;
     }
@@ -163,7 +163,7 @@ void GeneralSettingsController::setAutoStart(bool enabled) {
     save([enabled](ParametersInfo &parametersInfo) { parametersInfo.setAutoStart(enabled); });
 }
 
-void GeneralSettingsController::setNotificationsEnabled(bool enabled) {
+void GeneralSettingsController::setNotificationsEnabled(const bool enabled) {
     if (enabled == notificationsEnabled()) {
         return;
     }
@@ -173,7 +173,7 @@ void GeneralSettingsController::setNotificationsEnabled(bool enabled) {
     });
 }
 
-void GeneralSettingsController::setMoveToTrash(bool enabled) {
+void GeneralSettingsController::setMoveToTrash(const bool enabled) {
     if (enabled == moveToTrash()) {
         return;
     }
@@ -181,7 +181,7 @@ void GeneralSettingsController::setMoveToTrash(bool enabled) {
     save([enabled](ParametersInfo &parametersInfo) { parametersInfo.setMoveToTrash(enabled); });
 }
 
-void GeneralSettingsController::setLanguage(int32_t languageValue) {
+void GeneralSettingsController::setLanguage(const int32_t languageValue) {
     if (languageValue < static_cast<int32_t>(Language::Default) || languageValue >= static_cast<int32_t>(Language::EnumEnd)) {
         return;
     }
