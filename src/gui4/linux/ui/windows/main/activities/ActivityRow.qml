@@ -121,7 +121,7 @@ Item {
                         }
 
                         IKToolTip {
-                            visible: nameHover.hovered && nameText.truncated
+                            showRequested: nameHover.hovered && nameText.truncated
                             text: root.name
                         }
                     }
@@ -174,7 +174,7 @@ Item {
                 }
 
                 IKToolTip {
-                    visible: folderHover.hovered && folderLink.truncated
+                    showRequested: folderHover.hovered && folderLink.truncated
                     text: root.folder
                 }
             }
@@ -285,7 +285,7 @@ Item {
             }
 
             IKToolTip {
-                visible: cellHover.hovered && valueText.truncated
+                showRequested: cellHover.hovered && valueText.truncated
                 text: cell.text
             }
         }

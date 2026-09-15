@@ -2614,6 +2614,21 @@ desbloqueado y accesible desde su ordenador.</translation>
                 <numerusform>Eliminar (%1 reglas)</numerusform> 
             </translation>
         </message> 
+        <message id="linuxSettingsCheckingUpdates">
+            <source>Checking for updates…</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>Buscando actualizaciones…</translation>
+        </message>
+        <message id="linuxSettingsSaveError">
+            <source>Unable to save this setting. Please try again.</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>No se ha podido guardar este ajuste. Inténtalo de nuevo.</translation>
+        </message>
+        <message id="linuxSettingsUpdateUnavailable">
+            <source>Unable to check for updates</source>
+            <extracomment>Linux v4 General settings: asynchronous update detection and server-confirmed preference saves.</extracomment>
+            <translation>No se pueden buscar actualizaciones</translation>
+        </message>
     </context> 
     <context>
         <name></name> 

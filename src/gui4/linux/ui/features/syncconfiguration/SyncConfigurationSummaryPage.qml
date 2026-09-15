@@ -126,7 +126,7 @@ Column {
                         }
 
                         IKToolTip {
-                            visible: driveNameHover.hovered && driveNameText.truncated
+                            showRequested: driveNameHover.hovered && driveNameText.truncated
                             text: driveRow.driveName
                             maximumTextWidth: IKSyncConfiguration.tooltipMaximumWidth
                         }
@@ -149,7 +149,7 @@ Column {
                         }
 
                         IKToolTip {
-                            visible: locationHover.hovered && (locationText.truncated || driveRow.customFolder)
+                            showRequested: locationHover.hovered && (locationText.truncated || driveRow.customFolder)
                             text: driveRow.localPath
                             maximumTextWidth: IKSyncConfiguration.tooltipMaximumWidth
                         }
