@@ -458,7 +458,7 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
     return ExitCode::Ok;
 }
 
-ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
+ExitInfo findNonOccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
                                        const std::vector<Sync> &syncList, SyncPath &path) {
     Count attemptCount = 0;
     path = homeFolder / initialFolderName;
@@ -540,7 +540,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
 
     const SyncName initialFolderName = getInitialFolderName(driveName);
     SyncPath nonExistingPath;
-    if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath);
+    if (const auto exitInfo = findNonOccupiedPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath);
         !exitInfo) {
         error = "Failed to find a non-occupied folder path for new sync";
 
