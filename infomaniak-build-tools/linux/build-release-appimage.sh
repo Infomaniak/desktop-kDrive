@@ -462,13 +462,17 @@ function build_recovery_updater_image_v4() {
   # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
   cp -P "$conan_dependencies_folder"/* "$updater_appdir/usr/lib" 2>/dev/null || true
 
-  # Copy Qt platform plugins (required for GUI)
-  cp -P -r "$QT_BASE_DIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
+  # Only deploy the platform plugins supported by the v4 AppImage. In particular,
+  # qeglfs depends on Qt libraries that are intentionally not part of the bundle.
+  local platform_plugin
+  for platform_plugin in libqxcb.so libqwayland.so; do
+    cp -P "$QT_BASE_DIR/plugins/platforms/$platform_plugin" "$updater_appdir/usr/plugins/platforms/" || return 1
+  done
 
   v4_copy_qt_runtime_dependencies /app/usr/lib "$updater_appdir" \
     "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
-    "$updater_appdir/usr/plugins/platforms/"*.so*
-  v4_set_executable_runpath "$updater_appdir" kDriveRecoveryUpdater
+    "$updater_appdir/usr/plugins/platforms/"*.so* || return 1
+  v4_set_executable_runpath "$updater_appdir" kDriveRecoveryUpdater || return 1
 
   # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
   cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
