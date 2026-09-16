@@ -266,20 +266,16 @@ package_release_v4() {
   QTDIR="$(find_qt_conan_path "$build_dir")"
   export QTDIR
 
-  local conan_lib_path
-  local extra
   local full_version
-  conan_lib_path="$(v4_conan_runtime_lib_path "$build_dir/conan")"
-  extra="$conan_lib_path:/usr/local/lib:/usr/local/lib64"
 
   v4_prepare_appdir "$app_dir"
   v4_check_appdir "$app_dir"
 
   cd "$build_dir"
-  v4_linuxdeploy_deploy "$app_dir" "$extra"
+  v4_linuxdeploy_deploy "$app_dir"
   v4_strip_unneeded_symbols "$app_dir"
   v4_verify_bundle "$app_dir"
-  v4_package_appimage "$app_dir" "$extra"
+  v4_package_appimage "$app_dir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   mkdir -p "$artifact_dir"
@@ -346,7 +342,6 @@ EOF
 package_recovery_updater_v4() {
   local updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
   local updater_appdir="$build_dir/updater-app"
-  local extra
   local full_version
   local updater_appimage
 
@@ -379,12 +374,11 @@ EOF
   cp "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png" \
     "$updater_appdir/kDriveRecoveryUpdater.png"
 
-  extra="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64"
   cd "$build_dir"
-  v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra"
+  v4_linuxdeploy_recovery_updater "$updater_appdir"
   v4_strip_unneeded_symbols "$updater_appdir"
   v4_verify_bundle "$updater_appdir"
-  v4_package_appimage "$updater_appdir" "$extra"
+  v4_package_appimage "$updater_appdir"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
