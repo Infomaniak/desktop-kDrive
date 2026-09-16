@@ -190,13 +190,13 @@ namespace Infomaniak.kDrive.ViewModels
             // If AllSync is empty, set SelectedSync to null
             if (AllSyncs.Count == 0)
             {
-                Logger.Log(Logger.Level.Debug, "There are no syncs available, setting SelectedSync to null.");
+                Logger.LogDebug("There are no syncs available, setting SelectedSync to null.");
                 SelectedSync = null;
                 ((App.Current as App)?.CurrentWindow as MainWindow)?.AppNavView?.Frame?.Navigate(typeof(SettingsPage));
             }
             else if (_selectedSync == null || (_selectedSync != null && !AllSyncs.Contains(_selectedSync))) // If SelectedSync is null or not in AllSyncs, pick the first one
             {
-                Logger.Log(Logger.Level.Debug, "SelectedSync is null or not in AllSyncs, selecting the first available sync.");
+                Logger.LogDebug("SelectedSync is null or not in AllSyncs, selecting the first available sync.");
                 SelectedSync = AllSyncs[0];
             }
         }
@@ -232,7 +232,7 @@ namespace Infomaniak.kDrive.ViewModels
         public async Task<bool> InitializeAsync()
         {
 
-            Logger.Log(Logger.Level.Info, "Initializing AppModel...");
+            Logger.LogInfo("Initializing AppModel...");
             Users.Clear();
             SelectedSync = null;
 
@@ -244,41 +244,41 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     if (!await serverCommService.RefreshUsers(cts.Token))
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh users during AppModel initialization.");
+                        Logger.LogError("Failed to refresh users during AppModel initialization.");
                         return false;
                     }
 
                     if (!await serverCommService.RefreshAccounts(cts.Token))
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh accounts during AppModel initialization.");
+                        Logger.LogError("Failed to refresh accounts during AppModel initialization.");
                         return false;
                     }
 
                     if (!await serverCommService.RefreshDrives(cts.Token))
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh drives during AppModel initialization.");
+                        Logger.LogError("Failed to refresh drives during AppModel initialization.");
                         return false;
                     }
 
                     if (!await serverCommService.RefreshSyncs(cts.Token))
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh syncs during AppModel initialization.");
+                        Logger.LogError("Failed to refresh syncs during AppModel initialization.");
                         return false;
                     }
 
                     if (!await serverCommService.RefreshSettings(cts.Token))
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh settings during AppModel initialization.");
+                        Logger.LogError("Failed to refresh settings during AppModel initialization.");
                         return false;
                     }
 
                     if (!await serverCommService.RefreshErrors(cts.Token))
                     {
-                        Logger.Log(Logger.Level.Error, "Failed to refresh errors during AppModel initialization.");
+                        Logger.LogError("Failed to refresh errors during AppModel initialization.");
                         return false;
                     }
 
-                    Logger.Log(Logger.Level.Info, "All server data loaded successfully.");
+                    Logger.LogInfo("All server data loaded successfully.");
                     IsInitialized = true;
 
 
@@ -286,26 +286,27 @@ namespace Infomaniak.kDrive.ViewModels
                     _ = Task.Run(async () =>
                     {
                         if (!await serverCommService.RefreshUpdaterVersionInfo(null, CancellationToken.None))
-                            Logger.Log(Logger.Level.Warning, "RefreshUpdaterVersionInfo returned false during AppModel initialization.");
+                            Logger.LogWarning("RefreshUpdaterVersionInfo returned false during AppModel initialization.");
 
                     });
 
                     _ = Task.Run(async () =>
                     {
                         if (!await serverCommService.ActivateLoadInfo(CancellationToken.None))
-                            Logger.Log(Logger.Level.Warning, "Failed to ActivateLoadInfo during AppModel initialization.");
+                            Logger.LogWarning("Failed to ActivateLoadInfo during AppModel initialization.");
                     });
                     return true;
                 }
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Error, "Operation canceled during AppModel initialization.");
+                Logger.LogError("Operation canceled during AppModel initialization.");
                 return false;
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Exception during AppModel initialization: {ex}");
+                Logger.LogError($"Exception during AppModel initialization: {ex}",
+                    "AppModel: Initialization failed");
                 return false;
             }
         }
@@ -315,7 +316,8 @@ namespace Infomaniak.kDrive.ViewModels
             IServerCommService serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             if (!await serverCommService.RemoveUser(userDbId, CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to disconnect user {userDbId}");
+                Logger.LogError($"Failed to disconnect user {userDbId}",
+                    "AppModel: Failed to disconnect user");
                 return false;
             }
             return true;
@@ -323,7 +325,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task AddErrorAsync(Error error)
         {
-            Logger.Log(Logger.Level.Info, $"AppModel: Adding error - {error}");
+            Logger.LogInfo($"AppModel: Adding error - {error}");
             if (error.ErrorLevel == Types.ErrorLevel.Server || error.ExitCode == ExitCode.UpdateRequired) // Treat any UpdateRequired error as a Server level error
             {
                 error.ErrorLevel = ErrorLevel.Server;
@@ -334,7 +336,8 @@ namespace Infomaniak.kDrive.ViewModels
 
             if (error.Sync == null)
             {
-                Logger.Log(Logger.Level.Error, $"AppModel: Cannot add sync error without associated sync - {error}");
+                Logger.LogError($"AppModel: Cannot add sync error without associated sync - {error}",
+                    "AppModel: Missing sync for error");
                 return;
             }
             await error.Sync.AddErrorAsync(error);
@@ -342,7 +345,7 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task RemoveErrorByDbIdAsync(DbId errorDbId)
         {
-            Logger.Log(Logger.Level.Info, $"AppModel: Removing error - {errorDbId}");
+            Logger.LogInfo($"AppModel: Removing error - {errorDbId}");
             var appError = AppErrors.FirstOrDefault(e => e.DbId == errorDbId);
             if (appError is not null)
             {
@@ -361,13 +364,14 @@ namespace Infomaniak.kDrive.ViewModels
                 }
             }
 
-            Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove.");
+            Logger.LogWarning($"AppModel: Could not find error with DbId {errorDbId} to remove.",
+                "AppModel: Error to remove not found");
         }
 
         public async Task ClearAllErrorsAsync()
         {
-            Logger.Log(Logger.Level.Info, "AppModel: Clearing all errors.");
-            
+            Logger.LogInfo("AppModel: Clearing all errors.");
+
             await Utility.RunOnUIThread(() => AppErrors.Clear());
             await RefreshErrorState();
             foreach (var sync in AllSyncs)

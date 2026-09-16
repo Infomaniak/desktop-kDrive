@@ -256,11 +256,12 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (error.ErrorLevel != Types.ErrorLevel.SyncPal && error.ErrorLevel != Types.ErrorLevel.Node)
             {
-                Logger.Log(Logger.Level.Error, $"Sync {DbId}: Ignoring error {error.ExitCode} - {error.Path} with level {error.ErrorLevel}");
+                Logger.LogError($"Sync {DbId}: Ignoring error {error.ExitCode} - {error.Path} with level {error.ErrorLevel}",
+                    "Sync: Ignoring unsupported error level");
                 return;
             }
 
-            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
+            Logger.LogInfo($"Sync {DbId}: Adding error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() => SyncErrors.Add(error));
 
             await RefreshErrorState();
@@ -268,11 +269,12 @@ namespace Infomaniak.kDrive.ViewModels
 
         public async Task RemoveErrorAsync(Error error, bool refreshErrorState = true)
         {
-            Logger.Log(Logger.Level.Info, $"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
+            Logger.LogInfo($"Sync {DbId}: Removing error {error.ExitCode} - {error.Path}");
             await Utility.RunOnUIThread(() =>
             {
                 if (!SyncErrors.Remove(error))
-                    Logger.Log(Logger.Level.Warning, $"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}");
+                    Logger.LogWarning($"Sync {DbId}: Tried to remove non-existing error {error.ExitCode} - {error.Path}",
+                        "Sync: Error to remove not found");
             });
 
             if (refreshErrorState)
@@ -311,7 +313,7 @@ namespace Infomaniak.kDrive.ViewModels
 
                     if (SyncErrorState != SyncErrorStates.Undefined)
                     {
-                        Logger.Log(Logger.Level.Info, $"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
+                        Logger.LogInfo($"Sync {DbId}: Setting SyncErrorState to {SyncErrorState} based on error {error.ExitCode} - {error.Path}");
                         return;
                     }
 
@@ -334,7 +336,7 @@ namespace Infomaniak.kDrive.ViewModels
 
             if (conflictsToResolve.Count == 0)
             {
-                Logger.Log(Logger.Level.Info, "No user-resolvable conflicts found to resolve.");
+                Logger.LogInfo("No user-resolvable conflicts found to resolve.");
                 return true;
             }
 
@@ -353,7 +355,7 @@ namespace Infomaniak.kDrive.ViewModels
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             if (!await commService.SetBlacklistedNodeIdList(DbId, excludedNodeIds, CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                Logger.LogWarning("Failed to save BlacklistedNodeIdList");
                 return false;
             }
             HasExcludedFolder = excludedNodeIds.Count > 0;
@@ -370,14 +372,14 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (_hasExcludedFolderLoadingTask is not null && !_hasExcludedFolderLoadingTask.IsCompleted)
             {
-                Logger.Log(Logger.Level.Info, $"Sync {DbId}: Already loading excluded folders, skipping refresh.");
+                Logger.LogInfo($"Sync {DbId}: Already loading excluded folders, skipping refresh.");
                 return;
             }
             _hasExcludedFolderLoadingTask = Task.Run(async () =>
             {
                 var excludedNodeIds = await GetExcludedNodeIds();
                 HasExcludedFolder = excludedNodeIds is not null && excludedNodeIds.Count > 0;
-                Logger.Log(Logger.Level.Info, $"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFolder}");
+                Logger.LogInfo($"Sync {DbId}: RefreshHasExcludedFolder completed. HasExcludedFolder set to {HasExcludedFolder}");
             });
         }
 

@@ -35,9 +35,9 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         public TemplateExclusionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to TemplateExclusionPage - Initializing TemplateExclusionPage components");
+            Logger.LogInfo("Navigated to TemplateExclusionPage - Initializing TemplateExclusionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "TemplateExclusionPage components initialized");
+            Logger.LogDebug("TemplateExclusionPage components initialized");
         }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -45,14 +45,14 @@ namespace Infomaniak.kDrive.Pages.Settings
             _templateListModel = new ExclusionTemplateListModel();
             if (!await _templateListModel.LoadTemplates())
             {
-                Logger.Log(Logger.Level.Error, "Failed to load exclusion templates. The template list will be empty.");
+                Logger.LogError("Failed to load exclusion templates. The template list will be empty.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Navigating away from TemplateExclusionPage");
+            Logger.LogInfo("Navigating away from TemplateExclusionPage");
             _templateListModel?.Dispose();
             _templateListModel = null;
         }
@@ -63,7 +63,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         }
         private void NavBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
         {
-            Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
+            Logger.LogDebug("Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
         private async void AddRuleButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -85,22 +85,23 @@ namespace Infomaniak.kDrive.Pages.Settings
                 var template = popupPage.ExclusionRuleTextBox.Text;
                 if (string.IsNullOrEmpty(template))
                 {
-                    Logger.Log(Logger.Level.Info, "Template name is empty. Aborting addition of new exclusion template.");
+                    Logger.LogInfo("Template name is empty. Aborting addition of new exclusion template.");
                     return;
                 }
                 if (_templateListModel is not null)
                 {
                     if (_templateListModel.Templates.Any(t => t.Template.Equals(template, StringComparison.Ordinal)))
                     {
-                        Logger.Log(Logger.Level.Warning, $"An exclusion template with the template '{template}' already exists. Aborting addition.");
+                        Logger.LogWarning($"An exclusion template with the template '{template}' already exists. Aborting addition.",
+                            "TemplateExclusionPage: Exclusion template already exists");
                         return;
                     }
                     await _templateListModel.AddTemplate(new ExclusionTemplate(template, popupPage.WarningCheckBox.IsChecked ?? false));
-                    Logger.Log(Logger.Level.Info, $"Added new exclusion template: {template}");
+                    Logger.LogInfo($"Added new exclusion template: {template}");
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to add new exclusion template: Template list is null");
+                    Logger.LogError("Failed to add new exclusion template: Template list is null");
                 }
             }
         }
@@ -174,21 +175,21 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (_templateListModel is null)
             {
-                Logger.Log(Logger.Level.Error, "Template list model is null. Cannot save template changes.");
+                        Logger.LogError("Template list model is null. Cannot save template changes.");
                 return;
             }
 
             ExclusionTemplate? exclusionTemplate = (sender as FrameworkElement)?.DataContext as ExclusionTemplate;
             if (exclusionTemplate is null)
             {
-                Logger.Log(Logger.Level.Error, "DataContext is not an ExclusionTemplate. Cannot save template changes.");
+                    Logger.LogError("DataContext is not an ExclusionTemplate. Cannot save template changes.");
                 return;
             }
 
             ToggleSwitch? toggleSwitch = sender as ToggleSwitch;
             if (toggleSwitch is null)
             {
-                Logger.Log(Logger.Level.Error, "Sender is not a ToggleSwitch. Cannot save template changes.");
+                Logger.LogError("Sender is not a ToggleSwitch. Cannot save template changes.");
                 return;
             }
 

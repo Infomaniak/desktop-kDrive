@@ -38,7 +38,8 @@ namespace Infomaniak.kDrive.Converters
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Fatal, $"BytesToHumanReadableStringConverter: value is not convertible to a long. Exception: {ex}");
+                Logger.LogFatal($"BytesToHumanReadableStringConverter: value is not convertible to a long. Exception: {ex}",
+                    "BytesToHumanReadableStringConverter: Failed to convert value to long");
                 throw new ArgumentException("Invalid value type", nameof(value));
             }
 
@@ -98,7 +99,7 @@ namespace Infomaniak.kDrive.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "BytesToHumanReadableStringConverter.ConvertBack should never be called.");
+            Logger.LogFatal("BytesToHumanReadableStringConverter.ConvertBack should never be called.");
             throw new NotImplementedException("BytesToHumanReadableStringConverter.ConvertBack should never be called.");
         }
     }

@@ -206,7 +206,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (string.IsNullOrEmpty(RemoteNodeId))
             {
-                Logger.Log(Logger.Level.Error, "Error RemoteNodeId is null or empty. Cannot navigate to node.");
+                Logger.LogError("Error RemoteNodeId is null or empty. Cannot navigate to node.");
                 return false;
             }
 
@@ -214,19 +214,21 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 if (Sync is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Sync is null");
+                Logger.LogError("Sync is null");
                     return false;
                 }
 
                 if (!await Launcher.LaunchUriAsync(App.Constants.Drive.itemUri(Sync.Drive.DriveId, RemoteNodeId)))
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}");
+                    Logger.LogError($"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}",
+                        "Error: Failed to launch node URI");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}. Exception: {ex.Message}");
+                Logger.LogError($"Failed to launch URI for node with RemoteNodeId: {RemoteNodeId}. Exception: {ex.Message}",
+                    "Error: Failed to launch node URI");
                 return false;
             }
             return true;

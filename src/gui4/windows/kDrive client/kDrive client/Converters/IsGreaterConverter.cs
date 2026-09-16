@@ -42,13 +42,13 @@ namespace Infomaniak.kDrive.Converters
                 else
                     throw new ArgumentException("Invalid target type", nameof(targetType));
             }
-            Logger.Log(Logger.Level.Fatal, "IsGreaterToBooleanConverter: value is not an integer.");
+            Logger.LogFatal("IsGreaterToBooleanConverter: value is not an integer.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "IsGreaterToBooleanConverter: ConvertBack is not supported.");
+            Logger.LogFatal("IsGreaterToBooleanConverter: ConvertBack is not supported.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
     }

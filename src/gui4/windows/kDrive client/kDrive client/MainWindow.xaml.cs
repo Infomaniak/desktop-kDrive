@@ -133,7 +133,7 @@ namespace Infomaniak.kDrive
         {
             if (AppNavView?.Frame?.CanGoBack is null)
             {
-                Logger.Log(Logger.Level.Warning, "BackRequested event triggered but AppNavView or its Frame is null. Cannot navigate back.");
+                Logger.LogWarning("BackRequested event triggered but AppNavView or its Frame is null. Cannot navigate back.");
                 return;
             }
 

@@ -87,7 +87,7 @@ namespace Infomaniak.kDrive.CustomControls
             Frame.Navigated += Frame_Navigated;
             if (LandingPageType is not null && LandingPageType.IsSubclassOf(typeof(Page)))
                 Frame.Navigate(LandingPageType);
-            else 
+            else
                 Frame.Navigate(typeof(Pages.HomePage));
 
             // Add an infobadge to SettingsItem
@@ -109,7 +109,7 @@ namespace Infomaniak.kDrive.CustomControls
             NavigationViewItem? settingItem = SettingsItem as NavigationViewItem;
             if (settingItem is null)
             {
-                Logger.Log(Logger.Level.Error, "SettingsItem is not a NavigationViewItem. Cannot add InfoBadge.");
+                Logger.LogError("SettingsItem is not a NavigationViewItem. Cannot add InfoBadge.");
                 return;
             }
 

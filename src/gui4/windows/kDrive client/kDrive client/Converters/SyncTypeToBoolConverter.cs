@@ -33,7 +33,8 @@ namespace Infomaniak.kDrive.Converters
                 return syncType == SyncType.Online;
             }
 
-            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected SyncType, got {value?.GetType().ToString() ?? "null"}");
+            Logger.LogError($"Invalid value type for SyncTypeToBoolConverter: expected SyncType, got {value?.GetType().ToString() ?? "null"}",
+                "SyncTypeToBoolConverter: Expected SyncType value");
             return false;
 
         }
@@ -44,7 +45,8 @@ namespace Infomaniak.kDrive.Converters
             {
                 return boolValue ? SyncType.Online : SyncType.Offline;
             }
-            Logger.Log(Logger.Level.Error, $"Invalid value type for SyncTypeToBoolConverter: expected bool, got {value?.GetType().ToString() ?? "null"}");
+            Logger.LogError($"Invalid value type for SyncTypeToBoolConverter: expected bool, got {value?.GetType().ToString() ?? "null"}",
+                "SyncTypeToBoolConverter: Expected boolean value");
             return SyncType.Offline;
         }
     }

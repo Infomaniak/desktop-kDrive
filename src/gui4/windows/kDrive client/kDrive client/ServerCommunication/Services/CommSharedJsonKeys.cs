@@ -90,7 +90,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string GoodPath = "goodPath";
         static public string BestMode = "bestMode";
         static public string Value = "value";
-        static public string Size= "size";
+        static public string Size = "size";
         static public string Key = "key";
 
         static public string LinkUrl = "linkUrl";

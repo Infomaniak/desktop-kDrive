@@ -39,15 +39,15 @@ namespace Infomaniak.kDrive.Pages
         private NavigationParams? _navigationParams;
         public LogginErrorPage() : base([SyncErrorStates.LoggingError])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to LogginErrorPage - Initializing LogginErrorPage components");
+            Logger.LogInfo("Navigated to LogginErrorPage - Initializing LogginErrorPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "LogginErrorPage components initialized");
+            Logger.LogDebug("LogginErrorPage components initialized");
             Loaded += OnLoaded;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            if(_navigationParams?.TryReconnectOnLoad == true)
+            if (_navigationParams?.TryReconnectOnLoad == true)
             {
                 DispatcherQueue.TryEnqueue(async () => await StartConnection());
             }
@@ -74,23 +74,24 @@ namespace Infomaniak.kDrive.Pages
                 var OAutCodes = await OAuthHelper.GetCode(cts.Token);
                 if (OAutCodes.Code == "")
                 {
-                    Logger.Log(Logger.Level.Warning, "Failed to obtain user code.");
+                    Logger.LogWarning("Failed to obtain user code.");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
 
-                Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
+                Logger.LogDebug("Successfully obtained user code.");
                 User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
                 if (user is null || ViewModel.SelectedSync is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}");
+                            Logger.LogError($"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}",
+                                "LogginErrorPage: Failed to retrieve authenticated user information");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
 
                 if (user.DbId != ViewModel.SelectedSync.Drive.Account.User.DbId)
                 {
-                    Logger.Log(Logger.Level.Info, "Authenticated user does not match the expected user.");
+                    Logger.LogInfo("Authenticated user does not match the expected user.");
                     DisplayUserMismatchContent();
                     return;
                 }
@@ -98,15 +99,16 @@ namespace Infomaniak.kDrive.Pages
                 if (await ViewModel.SelectedSync.Start())
                     return;
 
-                Logger.Log(Logger.Level.Error, "Failed to start sync.");
+                            Logger.LogError("Failed to start sync.");
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Warning, "Authentication process canceled by user.");
+                Logger.LogWarning("Authentication process canceled by user.");
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
+                Logger.LogError($"Authentication process failed {ex.Message}",
+                    "LogginErrorPage: Authentication failed");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
