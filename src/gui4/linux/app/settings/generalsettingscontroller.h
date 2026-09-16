@@ -81,13 +81,10 @@ class GeneralSettingsController final : public QObject {
         Q_INVOKABLE void openLicense();
         Q_INVOKABLE void openSources();
 
-        Q_INVOKABLE void requestOpen() { emit openRequested(); }
-
         void refreshUpdates() const;
 
     signals:
         void changed();
-        void openRequested();
 
     private:
         void save(const ParametersService::ParametersMutation &mutation);
