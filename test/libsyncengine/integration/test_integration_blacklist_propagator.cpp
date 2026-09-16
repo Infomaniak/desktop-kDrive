@@ -179,6 +179,14 @@ void TestIntegration::testBlacklistPropagatorWithMissingLocalDirectory() {
     assertNodeMissing(_syncPal, ReplicaSide::Remote, *dirDbNode.nodeIdRemote());
     assertNodeMissing(_syncPal, ReplicaSide::Local, *fileDbNode.nodeIdLocal());
     assertNodeMissing(_syncPal, ReplicaSide::Remote, *fileDbNode.nodeIdRemote());
+
+    CPPUNIT_ASSERT(testHelper.startSync());
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+    CPPUNIT_ASSERT(!std::filesystem::exists(absoluteLocalPath));
+    assertNodeMissing(_syncPal, ReplicaSide::Local, *dirDbNode.nodeIdLocal());
+    assertNodeMissing(_syncPal, ReplicaSide::Remote, *dirDbNode.nodeIdRemote());
+    assertNodeMissing(_syncPal, ReplicaSide::Local, *fileDbNode.nodeIdLocal());
+    assertNodeMissing(_syncPal, ReplicaSide::Remote, *fileDbNode.nodeIdRemote());
 }
 
 void TestIntegration::testBlacklistPropagatorWithHydrationCancellationFailure() {
@@ -196,11 +204,23 @@ void TestIntegration::testBlacklistPropagatorWithHydrationCancellationFailure() 
     const DbNode fileDbNode = dbNodeForRemotePath(_syncPal, blacklistedFile);
     const SyncPath absoluteLocalPath = _syncPal->localPath() / blacklistedFile;
 
+#if defined(KD_MACOS)
     _syncPal->setVfsMode(VirtualFileMode::Mac);
+#elif defined(KD_WINDOWS)
+    _syncPal->setVfsMode(VirtualFileMode::Win);
+#else
+    CPPUNIT_SKIP();
+#endif
     CPPUNIT_ASSERT(testHelper.stopSync());
 
     runBlacklistPropagator(_syncPal, *fileDbNode.nodeIdRemote());
 
+    CPPUNIT_ASSERT(!std::filesystem::exists(absoluteLocalPath));
+    assertNodeMissing(_syncPal, ReplicaSide::Local, *fileDbNode.nodeIdLocal());
+    assertNodeMissing(_syncPal, ReplicaSide::Remote, *fileDbNode.nodeIdRemote());
+
+    CPPUNIT_ASSERT(testHelper.startSync());
+    CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
     CPPUNIT_ASSERT(!std::filesystem::exists(absoluteLocalPath));
     assertNodeMissing(_syncPal, ReplicaSide::Local, *fileDbNode.nodeIdLocal());
     assertNodeMissing(_syncPal, ReplicaSide::Remote, *fileDbNode.nodeIdRemote());
