@@ -28,12 +28,60 @@ function v4_strip_unneeded_symbols() (
     done < <(find "$app_dir/usr" -type f -print0)
 )
 
+function v4_copy_qt_runtime_dependencies() (
+    set -eo pipefail
+    local source_lib_dir="$1"
+    local app_dir="$2"
+    shift 2
+
+    local report
+    report="$(LD_LIBRARY_PATH="$source_lib_dir:$app_dir/usr/lib" ldd "$@")"
+    if grep -qE 'libQt6[^ ]* => not found' <<<"$report"; then
+        echo "Unable to resolve the recovery updater Qt runtime:" >&2
+        grep -E 'libQt6[^ ]* => not found' <<<"$report" >&2
+        exit 1
+    fi
+
+    local -a qt_libraries=()
+    mapfile -t qt_libraries < <(
+        awk -v prefix="$source_lib_dir/" \
+            '$2 == "=>" && index($3, prefix) == 1 && substr($3, length(prefix) + 1) ~ /^libQt6/ {
+                print substr($3, length(prefix) + 1)
+            }' <<<"$report" | sort -u
+    )
+    ((${#qt_libraries[@]} > 0)) || {
+        echo "No Qt runtime dependency found for the recovery updater" >&2
+        exit 1
+    }
+
+    local library
+    local stem
+    for library in "${qt_libraries[@]}"; do
+        stem="${library%%.so*}.so"
+        find "$source_lib_dir" -maxdepth 1 \( -type f -o -type l \) -name "$stem*" \
+            -exec cp -P -t "$app_dir/usr/lib" -- {} +
+    done
+)
+
+function v4_set_executable_runpath() (
+    set -eo pipefail
+    local app_dir="$1"
+    shift
+
+    local executable
+    for executable in "$@"; do
+        env -u LD_LIBRARY_PATH patchelf --set-rpath '$ORIGIN/../lib' "$app_dir/usr/bin/$executable"
+    done
+)
+
 function v4_prepare_appdir() (
     set -eo pipefail
     cd "$1"
 
     # The recovery updater is packaged separately from the main AppImage.
     rm -f usr/bin/kDriveRecoveryUpdater
+
+    v4_set_executable_runpath "$PWD" kDrive kdrive_qml
 
     # Remove development files installed by submodules such as keychain.
     rm -rf usr/include usr/lib/cmake usr/lib/pkgconfig etc
