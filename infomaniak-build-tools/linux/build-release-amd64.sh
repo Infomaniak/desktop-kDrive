@@ -362,6 +362,11 @@ package_recovery_updater_v4() {
   cp -P "$conan_dependencies_folder/"* "$updater_appdir/usr/lib" 2>/dev/null || true
   cp -P -r "$QTDIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
 
+  v4_copy_qt_runtime_dependencies "$app_dir/usr/lib" "$updater_appdir" \
+    "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
+    "$updater_appdir/usr/plugins/platforms/"*.so*
+  v4_set_executable_runpath "$updater_appdir" kDriveRecoveryUpdater
+
   cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
 [Desktop Entry]
 Type=Application
