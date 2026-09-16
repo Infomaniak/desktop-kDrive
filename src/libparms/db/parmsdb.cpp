@@ -1403,7 +1403,6 @@ bool ParmsDb::upgradeParametersTables() {
     columnName = "distributionChannel";
     if (!addIntegerColumnIfMissing(tableName, columnName, toInt(DistributionChannel::Prod))) {
         return false;
-    }
 
     for (const auto &name: {"sentryEnabled", "matomoEnabled"}) {
         if (!addIntegerColumnIfMissing(tableName, name, 1)) {

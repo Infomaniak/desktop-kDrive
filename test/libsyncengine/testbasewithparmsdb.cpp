@@ -21,7 +21,6 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "mocks/mockkeychainstorage.h"
 
-#include "network/proxy.h"
 #include "requests/parameterscache.h"
 
 #include "libcommonserver/keychainmanager/keychainmanager.h"
@@ -38,7 +37,7 @@ void TestBaseWithParmsDb::initParmsDb() {
 
     (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
     const std::string keychainKey("123");
-    (void) KeyChainManager::instance()->writeToken(keychainKey, _apiToken.reconstructJsonString());
+    (void) KeyChainManager::instance()->writeData(keychainKey, _apiToken.reconstructJsonString());
 
     // Create ParmsDb.
     (void) ParmsDb::instance(_localParmsDbTempDir.path() / MockDb::makeDbMockFileName(), KDRIVE_VERSION_STRING, true, true);
@@ -58,12 +57,5 @@ void TestBaseWithParmsDb::initParmsDb() {
     _driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, _driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
-
-    // Setup proxy
-    Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        (void) Proxy::instance(parameters.proxyConfig());
-    }
 }
 } // namespace KDC
