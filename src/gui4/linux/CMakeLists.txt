@@ -489,6 +489,8 @@ qt_deploy_runtime_dependencies(
     GENERATE_QT_CONF
     NO_TRANSLATIONS
     INCLUDE_PLUGINS
+        composeplatforminputcontextplugin
+        ibusplatforminputcontextplugin
         qgtk3
         qnetworkmanager
         qopensslbackend
