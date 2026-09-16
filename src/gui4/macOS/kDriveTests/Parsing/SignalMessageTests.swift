@@ -55,7 +55,7 @@ struct SignalMessageTests {
             targetPath: "/target",
             targetNodeId: "node-id",
             supportVfs: true,
-            virtualFileMode: .Mac
+            virtualFileMode: KDC.VirtualFileMode.Mac
         )
 
         // WHEN
