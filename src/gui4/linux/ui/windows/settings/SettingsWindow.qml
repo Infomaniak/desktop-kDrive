@@ -174,6 +174,10 @@ IKShadowedWindow {
                 trigger.forceActiveFocus();
                 advancedPane.push(dataManagementComponent);
             }
+            onDebugRequested: trigger => {
+                trigger.forceActiveFocus();
+                advancedPane.push(debugComponent);
+            }
         }
     }
 
@@ -221,6 +225,15 @@ IKShadowedWindow {
         }
     }
 
+    Component {
+        id: debugComponent
+
+        DebugSettingsView {
+            controller: root.controller.advanced
+            onSendLogsRequested: trigger => sendDebugLogsDialog.showFrom(trigger)
+        }
+    }
+
     SettingsInformationDialog {
         id: releaseDialog
 
@@ -238,7 +251,16 @@ IKShadowedWindow {
         scrimRadius: root.surfaceRadius
     }
 
+    SendDebugLogsDialog {
+        id: sendDebugLogsDialog
+
+        controller: root.controller.advanced
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+    }
+
     onClosing: {
+        sendDebugLogsDialog.close();
         releaseDialog.close();
         aboutDialog.close();
     }

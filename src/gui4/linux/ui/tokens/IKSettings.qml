@@ -34,6 +34,14 @@ QtObject {
     readonly property real iconButtonSize: 28
     readonly property real navigationIconSize: 16
     readonly property real informationIconSize: 14
+    readonly property real supportIconSize: 20
+    readonly property real supportIconRadius: 4
+    readonly property real supportIconGlyphInset: 4.6153846
+    readonly property real supportIconBorderWidth: 1
+    readonly property real supportIconShadowBlur: 0.3
+    readonly property real supportIconShadowBlurMax: 4
+    readonly property real supportIconShadowOffsetY: 0.4
+    readonly property real supportIconShadowOpacity: 0.57
     readonly property real switchWidth: 36
     readonly property real switchHeight: 20
     readonly property real switchInset: 2
