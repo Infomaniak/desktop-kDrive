@@ -22,11 +22,11 @@ extension SynchroErrorKind {
     private var matcher: SynchroErrorKindMatcher? {
         switch self {
         case .conflict:
-            return .node(conflictTypes: [.CreateCreate])
+            return .node(conflictTypes: [.CreateCreate, .EditEdit], exitCodes: [.Unknown, .Ok])
         case .caseError:
             return .node(inconsistencyTypes: [.Case])
         case .createCancel:
-            return .node(conflictTypes: [.CreateCreate])
+            return .node(cancelTypes: [.Create])
         case .deleteCancel:
             return .node(cancelTypes: [.Delete])
         case .editCancel:
