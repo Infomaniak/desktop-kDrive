@@ -80,7 +80,9 @@ clang-format -i <file>
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 - Do not pass `--update` to Conan dependency builds in CI; reserve it for explicit local dependency refreshes.
-- Do not modify the recovery updater as part of Linux v4 GUI release work unless the user explicitly requests it.
+- For Linux v4 release work, package the recovery updater as a separate AppImage and never include its binary or
+  AppImage in the main kDrive AppImage. Limit recovery updater changes to build and packaging fixes unless explicitly
+  requested.
 <!-- Add project-specific user corrections here -->
 - Prefer documentation for private implementation methods in the `.cpp` file rather than the header.
 - Do not introduce raw `int` in new code when a named fixed-width type fits the use case (e.g. `uint8_t`, `int32_t`, ...).
