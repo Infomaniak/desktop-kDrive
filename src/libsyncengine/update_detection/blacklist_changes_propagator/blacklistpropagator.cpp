@@ -128,7 +128,7 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
     if (!IoHelper::getRecursiveDirectoryIterator(absoluteLocalPath, ioError, dirIt)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(absoluteLocalPath, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
@@ -173,7 +173,7 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
     if (ioError != IoError::Success) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
                                                                 << Utility::formatIoError(absoluteLocalPath, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancelling hydration of " << Utility::formatSyncPath(absoluteLocalPath));
@@ -200,12 +200,6 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     const SyncPath absoluteLocalPath = _sync.localPath() / localPath;
     const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
 
-    if (liteSyncActivated) {
-        if (const auto cancellationExitInfo = cancelHydration(absoluteLocalPath); !cancellationExitInfo) {
-            return cancellationExitInfo;
-        }
-    }
-
     // Remove item from filesystem
     bool exists = false;
     IoError ioError = IoError::Success;
@@ -222,6 +216,14 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                      << Utility::formatSyncPath(localPath) << L" ("
                                                                      << CommonUtility::s2ws(localNodeId)
                                                                      << L") on local replica because it is blacklisted.");
+        }
+
+        if (liteSyncActivated) {
+            if (const auto cancellationExitInfo = cancelHydration(absoluteLocalPath); !cancellationExitInfo) {
+                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Failed to cancel hydration of: " << Utility::formatExitInfo(
+                                                                         absoluteLocalPath, cancellationExitInfo));
+                // Try to delete anyway
+            }
         }
 
         SyncLocalDeleteJob job(_syncPal, localPath, liteSyncActivated, remoteNodeId);
