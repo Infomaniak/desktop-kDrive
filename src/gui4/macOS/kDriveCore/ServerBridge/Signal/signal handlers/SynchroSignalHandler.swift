@@ -30,7 +30,9 @@ struct SynchroSignalHandler {
         }
 
         let syncInfo = syncInfoSignal.body.syncInfo
-        try await coherentCache.addSynchro(syncInfo.asSynchro)
+        let isUpdatingVfsMode = await coherentCache.getSynchro(synchroDbId: syncInfo.dbId)?.isUpdatingVfsMode ?? false
+
+        try await coherentCache.addSynchro(syncInfo.asSynchro(isUpdatingVfsMode: isUpdatingVfsMode))
     }
 
     func handleSyncRemoved(_ signal: Data) async throws {
