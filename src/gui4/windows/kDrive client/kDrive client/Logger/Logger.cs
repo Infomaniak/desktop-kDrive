@@ -18,6 +18,7 @@
 
 using Infomaniak.kDrive.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml.Media;
 using Sentry;
 using Serilog;
 using Serilog.Events;
@@ -194,13 +195,21 @@ namespace Infomaniak.kDrive
 
             // Initialize Sentry
             StopSentry();
+
+            string environment = Environment.GetEnvironmentVariable("KDRIVE_SENTRY_ENVIRONMENT") ??
+#if DEBUG
+                "dev_unknown";
+#else
+                "production";
+#endif
+
             _sentryHandler = SentrySdk.Init(options =>
             {
                 options.Dsn = App.Constants.Sentry.Dsn;
                 options.SendDefaultPii = true;
                 options.AutoSessionTracking = true;
                 options.IsGlobalModeEnabled = true;
-                options.Environment = App.Constants.Sentry.Environment;
+                options.Environment = environment;
             });
             App.Current.UnhandledException += CaptureExceptionWithSentry;
 
