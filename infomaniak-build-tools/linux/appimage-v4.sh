@@ -44,8 +44,8 @@ function v4_copy_runtime_dependencies() (
 
     local -a runtime_libraries=()
     mapfile -t runtime_libraries < <(
-        awk -v prefix="$source_lib_dir/" \
-            '$2 == "=>" && $3 ~ /^\// && (index($3, prefix) == 1 || index($3, "/.conan2/") > 0) {
+        awk \
+            '$2 == "=>" && $3 ~ /^\// && $3 !~ /^\/lib(64)?\// && $3 !~ /^\/usr\/lib(64)?\// {
                 print $3
             }' <<<"$report" | sort -u
     )
@@ -67,9 +67,9 @@ function v4_copy_runtime_dependencies() (
     done
 
     report="$(LD_LIBRARY_PATH="$app_dir/usr/lib" ldd "$@")"
-    if grep -qE 'not found|/\.conan2/' <<<"$report"; then
+    if grep -qE 'not found|/\.conan2/|=> /usr/local/lib' <<<"$report"; then
         echo "Recovery updater runtime is not self-contained:" >&2
-        grep -E 'not found|/\.conan2/' <<<"$report" >&2
+        grep -E 'not found|/\.conan2/|=> /usr/local/lib' <<<"$report" >&2
         exit 1
     fi
 )
@@ -206,10 +206,37 @@ function v4_linuxdeploy_recovery_updater() (
         exit 1
     }
 
+    # Keep linuxdeploy itself on the host libpng/libz while exposing the other
+    # bundled libraries to its dependency resolver. Loading the AppDir's libpng
+    # or libz into linuxdeploy makes the ARM64 build crash.
+    local resolver_dir
+    resolver_dir="$(mktemp -d)"
+    trap 'rm -rf "$resolver_dir"' EXIT
+
+    local library
+    local library_name
+    while IFS= read -r -d '' library; do
+        library_name="${library##*/}"
+        case "$library_name" in
+            libc.so*|libgcc_s.so*|libjpeg.so*|libm.so*|libpng*.so*|libstdc++.so*|libz.so*) continue ;;
+        esac
+        ln -sfn "$(readlink -f "$library")" "$resolver_dir/$library_name"
+    done < <(find "$app_dir/usr/lib" -maxdepth 1 \( -type f -o -type l \) -print0)
+
+    local report
+    report="$(LD_LIBRARY_PATH="$resolver_dir" ldd \
+        "$app_dir/usr/bin/kDriveRecoveryUpdater" \
+        "$app_dir/usr/plugins/platforms/"*.so*)"
+    if grep -q 'not found' <<<"$report"; then
+        echo "linuxdeploy cannot resolve the prepared recovery updater runtime:" >&2
+        grep 'not found' <<<"$report" >&2
+        exit 1
+    fi
+
     # The Qt plugin deploys every available plugin, including optional SQL drivers.
     # Deploy only the recovery updater and its platform plugins to avoid pulling in
     # unused drivers whose runtime dependencies might not be installed.
-    env -u LD_LIBRARY_PATH NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
+    LD_LIBRARY_PATH="$resolver_dir" NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
         -e "$app_dir/usr/bin/kDriveRecoveryUpdater" \
         -d "$app_dir/kDriveRecoveryUpdater.desktop" \
         -i "$app_dir/kDriveRecoveryUpdater.png" \
