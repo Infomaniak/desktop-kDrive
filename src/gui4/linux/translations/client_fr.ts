@@ -2858,4 +2858,16 @@ Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la derniè
             <translation>Voulez-vous vraiment quitter kDrive ?</translation>
         </message>
     </context>
+    <context>
+        <name></name>
+        <message id="logsUploadCanceled">
+            <source>The debug folder upload was canceled.</source>
+            <extracomment>Terminal canceled state. Keep distinct from the intermediate CancelRequested state.</extracomment>
+            <translation>L’envoi du dossier de débogage a été annulé.</translation>
+        </message>
+        <message id="logsUploadSuccess">
+            <source>The debug folder was successfully sent to Infomaniak Support.</source>
+            <translation>Le dossier de débogage a bien été envoyé au support Infomaniak.</translation>
+        </message>
+    </context>
 </TS>
