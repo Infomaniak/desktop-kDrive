@@ -137,9 +137,7 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb 
                         SyncTime &modificationTimeOut);
         void clearAccessTokenCache();
 
-        DriveDbId _driveDbId = 0;
-        UserDbId _userDbId = 0;
-        NodeId _remoteDirId;
+        RemoteNodeId _remoteDirId;
 
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
