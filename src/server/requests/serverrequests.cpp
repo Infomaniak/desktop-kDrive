@@ -54,6 +54,7 @@
 #include <QDir>
 #include <QUuid>
 
+#include <algorithm>
 #include <sstream>
 #include <fstream>
 
