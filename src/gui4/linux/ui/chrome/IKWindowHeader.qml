@@ -93,7 +93,7 @@ Item {
         id: customContent
 
         anchors.left: root.titleVisible ? windowTitle.right : parent.left
-        anchors.leftMargin: IKSpacing.s16
+        anchors.leftMargin: root.titleVisible ? IKSpacing.s16 : 0
         anchors.right: windowControls.left
         anchors.rightMargin: IKSpacing.s8
         anchors.top: parent.top
