@@ -93,7 +93,7 @@ void TestIntegration::testLocalChanges() {
     }
     waitForSyncToBeIdle(std::source_location::current());
 
-    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, remoteTestDirInfo.nodeId().toStdString(), newName);
+    remoteTestFileInfo = getRemoteFileInfoByName(_driveDbId, QStr2Str(remoteTestDirInfo.nodeId()), newName);
     CPPUNIT_ASSERT(!remoteTestFileInfo.nodeId().isEmpty());
     CPPUNIT_ASSERT_EQUAL(remoteTestDirInfo.nodeId().toStdString(), remoteTestFileInfo.parentNodeId().toStdString());
 
@@ -413,7 +413,7 @@ void TestIntegration::testNestedRemoteOperations() {
 
     CPPUNIT_ASSERT(std::filesystem::exists(_syncPal->localPath() / "A" / "AAA"));
 
-    // Replaces the manual getRemoteFileInfoByPath lookup: confirms A/AAA exists remotely too.
+    // Confirms A/AAA exists remotely too.
     const Situation finalSituation{Str2SyncName(R"({
         "content": [
             { "type": "Directory", "name": "A", "content": [ {"type": "File", "name": "AAA"} ] }

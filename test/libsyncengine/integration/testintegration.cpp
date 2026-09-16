@@ -968,12 +968,9 @@ void TestIntegration::logStep(const std::string &str) {
     LOG_DEBUG(_logger, ss.str());
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const DriveDbId driveDbId, const NodeId &parentId,
-                                                                         const SyncName &name) const {
-    RemoteFileInfo fileInfo;
-
-    GetFileListJob job(driveDbId, parentId);
-
+NodeInfo TestIntegration::getRemoteFileInfoByName(const DriveDbId driveDbId, const RemoteNodeId &parentId,
+                                                  const SyncName &name) const {
+    GetAllFilesInDirectoryJob job(driveDbId, parentId, TranslationMode::V2ToV3);
     (void) job.runSynchronously();
 
     RemoteNodeInfoList nodeInfoList;
@@ -986,21 +983,8 @@ TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByName(const D
     return (it != nodeInfoList.cend()) ? *it : NodeInfo{};
 }
 
-TestIntegration::RemoteFileInfo TestIntegration::getRemoteFileInfoByPath(const DriveDbId driveDbId, const NodeId &rootParentId,
-                                                                         const SyncPath &relativePath) const {
-    RemoteFileInfo fileInfo;
-    NodeId currentParentId = rootParentId;
-    for (const auto &part: relativePath) {
-        fileInfo = getRemoteFileInfoByName(driveDbId, currentParentId, part.native());
-        if (!fileInfo.isValid()) return {};
-        currentParentId = fileInfo.id;
-    }
-    return fileInfo;
-}
-
-int64_t TestIntegration::countItemsInRemoteDir(const DriveDbId driveDbId, const NodeId &parentId) const {
-    GetFileListJob job(driveDbId, parentId);
-
+Count TestIntegration::countItemsInRemoteDir(const DriveDbId driveDbId, const RemoteNodeId &parentId) {
+    GetAllFilesInDirectoryJob job(driveDbId, parentId, TranslationMode::V2ToV3);
     (void) job.runSynchronously();
 
     RemoteNodeInfoList nodeInfoList;
@@ -1068,11 +1052,11 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     const auto remoteTestFileInfo7 =
             getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
 
-    CPPUNIT_ASSERT(remoteTestFileInfo5.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo6.isValid());
-    CPPUNIT_ASSERT(remoteTestFileInfo7.isValid());
+    CPPUNIT_ASSERT(!remoteTestFileInfo5.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo6.nodeId().isEmpty());
+    CPPUNIT_ASSERT(!remoteTestFileInfo7.nodeId().isEmpty());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{9}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(Count{9}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
 
     logStep("testSynchronizationOfSymLinks");

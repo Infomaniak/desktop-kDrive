@@ -330,7 +330,6 @@
 #define SELECT_SYNC_REQUEST                                                                                                   \
     "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
-
     "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
     "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
     "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
@@ -348,7 +347,6 @@
     "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                                  \
     "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
-
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
 #define SELECT_ALL_SYNCS_REQUEST                                                                                              \
@@ -1346,6 +1344,9 @@ bool ParmsDb::upgradeParametersTables() {
     }
 
     if (updateParameters) {
+        int32_t errId = -1;
+        std::string error;
+
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
@@ -2796,7 +2797,6 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
         Sync sync;
         fillSyncWithQueryResult(sync, requestId);
         syncList.push_back(sync);
-
     }
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));

@@ -26,7 +26,7 @@ class CheckHashMatchJob : public AbstractTokenNetworkJob {
     public:
         CheckHashMatchJob(DriveDbId driveDbId, SyncPath filePath, RemoteNodeId remoteNodeId, int64_t remoteSize);
         [[nodiscard]] const RemoteNodeId &remoteNodeId() const { return _remoteNodeId; }
-        [[nodiscard]] bool shouldDownload() const { return _shouldDownload; }
+        [[nodiscard]] bool hashMatch() const { return _hashMatch; }
 
     protected:
         ExitInfo handleResponse(std::istream &is) override;
