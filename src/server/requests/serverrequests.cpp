@@ -491,7 +491,9 @@ SyncName getInitialFolderName(const SyncName &driveName) {
     // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
     // normalize the drive name to NFD as it is done in addSync.
     SyncName normalizedDriveName;
-    (void) Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD);
+    if (!Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD)) {
+        normalizedDriveName = driveName;
+    }
     return Str2SyncName(Theme::instance()->appName()) + Str(" ") + normalizedDriveName;
 #endif
 
