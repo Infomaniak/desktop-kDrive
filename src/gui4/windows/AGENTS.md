@@ -183,8 +183,8 @@ Missing keys render as `!key!` at runtime — always check both compile and run.
 - DON'T: Hardcode any user-visible string in C# or XAML
 
 ### Logging
-Use `Logger.LogExtended|LogDebug|LogInfo(Logger.Level.X, "message")` everywhere. Never use `Console.Write*` or `Debug.Write*`.
-For warnings, errors and ftalas, use `Logger.LogWarning|LogError|LogFatal(message, title)`. When the message contains runtime values (interpolation, concatenation, or other dynamic content), pass a constant second argument in the format `"ClassName: Constant error description"`. Keep runtime details in the message, not the title. Constant messages do not need a separate title.
+Use `Logger.LogExtended|LogDebug|LogInfo("message")` everywhere. Never use `Console.Write*` or `Debug.Write*`.
+For warnings, errors and fatals, use `Logger.LogWarning|LogError|LogFatal(message, title)`. When the message contains runtime values (interpolation, concatenation, or other dynamic content), pass a constant second argument in the format `"ClassName: Constant error description"`. Keep runtime details in the message, not the title. Constant messages do not need a separate title.
 Log levels: `Extended` (verbose),  `Debug`, `Info`, `Warning`, `Error`, `Fatal`.
 Output: rotating Serilog file at `%LOCALAPPDATA%\temp\kDrive-logdir\` + Sentry breadcrumbs/events.
 

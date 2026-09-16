@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.Monitoring
 
                 if (exception is null && !_eventThrottle.TryAcquire(filePath, lineNumber, DateTime.UtcNow))
                 {
-                    AddBreadcrumb($"Monitoring event throttled for this location, message: {message}", level);
+                    AddBreadcrumb($"Monitoring event throttled for this location, message: {title}", level);
                     return;
                 }
 
@@ -132,7 +132,7 @@ namespace Infomaniak.kDrive.Monitoring
 
         private void CaptureUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            CaptureEvent(e.Exception.Message, "", MonitoringEventLevel.Error, e.Exception);
+            CaptureEvent("", e.Exception.Message, MonitoringEventLevel.Error, e.Exception);
         }
 
         private static BreadcrumbLevel ToBreadcrumbLevel(MonitoringEventLevel level) => level switch
