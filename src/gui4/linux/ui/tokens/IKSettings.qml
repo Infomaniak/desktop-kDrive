@@ -32,6 +32,7 @@ QtObject {
     readonly property real rowSpacing: 16
     readonly property real buttonHeight: 28
     readonly property real iconButtonSize: 28
+    readonly property real navigationIconSize: 16
     readonly property real informationIconSize: 14
     readonly property real switchWidth: 36
     readonly property real switchHeight: 20
