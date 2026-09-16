@@ -1586,6 +1586,16 @@ ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list)
 
     list.clear();
     for (const Error &error: errorList) {
+        if (error.isStale()) {
+            bool found = false;
+            LOG_WARN(Log::instance()->getLogger(), "Deleting stale error with dbId: " << error.dbId()); 
+
+            if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+            }
+            continue;
+        }
+
         if (isDisplayableError(error)) {
             list.push_back(error);
         }
