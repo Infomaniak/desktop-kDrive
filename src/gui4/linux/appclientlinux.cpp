@@ -184,7 +184,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &AppClientLinux::handleConfiguredSyncsChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerMinLevel);
+    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerSettings);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, &AppClientLinux::requestQuit);
 }
 
@@ -250,15 +250,25 @@ void AppClientLinux::handleBootstrapCompletion() {
     openMainWindow();
 }
 
-void AppClientLinux::updateLoggerMinLevel() const {
+void AppClientLinux::updateLoggerSettings() const {
     const auto parametersInfo = _parametersStore.parametersInfo();
-    if (!parametersInfo.has_value() || Logger::instance()->minLogLevel() == toInt(parametersInfo->logLevel())) {
+    if (!parametersInfo) {
         return;
     }
 
-    Logger::instance()->setMinLogLevel(toInt(parametersInfo->logLevel()));
-    qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
-                             << QString::fromStdString(toString(parametersInfo->logLevel()));
+    auto *const logger = Logger::instance();
+    if (parametersInfo->useLog() && !logger->isLoggingToFile()) {
+        logger->setupLogDir();
+        logger->enterNextLogFile();
+    } else if (!parametersInfo->useLog() && logger->isLoggingToFile()) {
+        logger->disableLog();
+    }
+
+    if (logger->minLogLevel() != toInt(parametersInfo->logLevel())) {
+        logger->setMinLogLevel(toInt(parametersInfo->logLevel()));
+        qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
+                                 << QString::fromStdString(toString(parametersInfo->logLevel()));
+    }
 }
 
 void AppClientLinux::requestQuit() {
@@ -444,7 +454,6 @@ void AppClientLinux::configureLogger() {
     logger->setIsClientLog(true);
     logger->setLogDebug(true);
     logger->setupLogDir();
-    logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
     logger->enterNextLogFile();
 }
 
