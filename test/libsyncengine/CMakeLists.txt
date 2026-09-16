@@ -73,6 +73,7 @@ set(testsyncengine_SRCS
         propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         propagation/executor/testfilerescuer.h propagation/executor/testfilerescuer.cpp
         integration/testintegration.h integration/testintegration.cpp
+        integration/test_integration_blacklist_propagator.cpp
         integration/testintegration_basics.cpp
         integration/testintegration_conflicts.cpp
         integration/testintegration_nodeid_reuse.cpp

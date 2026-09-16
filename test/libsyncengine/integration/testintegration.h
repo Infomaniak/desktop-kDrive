@@ -47,6 +47,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNestedRemoteOperations);
         CPPUNIT_TEST(testRemoteMoveDirectoryDescendantRekey);
         CPPUNIT_TEST(testExecuteSyncUpToStep);
+        CPPUNIT_TEST(testBlacklistPropagatorWithMissingLocalDirectory);
+        CPPUNIT_TEST(testBlacklistPropagatorWithHydrationCancellationFailure);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -92,6 +94,8 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
 
         void testBreakCycle();
         void testBlacklist();
+        void testBlacklistPropagatorWithMissingLocalDirectory();
+        void testBlacklistPropagatorWithHydrationCancellationFailure();
         void testExclusionTemplates();
         void testEncoding();
         void testParentRename();
