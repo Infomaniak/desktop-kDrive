@@ -74,15 +74,23 @@ function v4_copy_runtime_dependencies() (
     fi
 )
 
-function v4_set_executable_runpath() (
+function v4_create_linuxdeploy_resolver() (
     set -eo pipefail
     local app_dir="$1"
-    shift
+    local resolver_dir
+    resolver_dir="$(mktemp -d)"
 
-    local executable
-    for executable in "$@"; do
-        env -u LD_LIBRARY_PATH patchelf --set-rpath '$ORIGIN/../lib' "$app_dir/usr/bin/$executable"
-    done
+    local library
+    local library_name
+    while IFS= read -r -d '' library; do
+        library_name="${library##*/}"
+        case "$library_name" in
+            libc.so*|libgcc_s.so*|libjpeg.so*|libm.so*|libpng*.so*|libstdc++.so*|libz.so*) continue ;;
+        esac
+        ln -sfn "$(readlink -f "$library")" "$resolver_dir/$library_name"
+    done < <(find "$app_dir/usr/lib" -maxdepth 1 \( -type f -o -type l \) -print0)
+
+    printf '%s\n' "$resolver_dir"
 )
 
 function v4_prepare_appdir() (
@@ -91,8 +99,6 @@ function v4_prepare_appdir() (
 
     # The recovery updater is packaged separately from the main AppImage.
     rm -f usr/bin/kDriveRecoveryUpdater
-
-    v4_set_executable_runpath "$PWD" kDrive kdrive_qml
 
     # Remove development files installed by submodules such as keychain.
     rm -rf usr/include usr/lib/cmake usr/lib/pkgconfig etc
@@ -188,9 +194,13 @@ function v4_linuxdeploy_deploy() (
     done < <(find "$app_dir/usr/plugins" "$app_dir/usr/qml" "$app_dir/usr/lib/gio/modules" \
         -type f -name '*.so*' -printf '%h\n' | sort -u)
 
-    # Keep the host packaging tool isolated from the libraries bundled for kDrive.
-    # Loading the AppDir's libpng/libz makes linuxdeploy crash on ARM64.
-    env -u LD_LIBRARY_PATH NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
+    local resolver_dir
+    resolver_dir="$(v4_create_linuxdeploy_resolver "$app_dir")"
+    trap 'rm -rf "$resolver_dir"' EXIT
+
+    # Keep linuxdeploy itself on the host libpng/libz while exposing the other
+    # bundled libraries to its dependency resolver.
+    LD_LIBRARY_PATH="$resolver_dir" NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
         -e "$app_dir/usr/bin/kDrive" \
         -d "$app_dir/usr/share/applications/kDrive.desktop" \
         "${deps_only[@]}" -v1
@@ -210,18 +220,8 @@ function v4_linuxdeploy_recovery_updater() (
     # bundled libraries to its dependency resolver. Loading the AppDir's libpng
     # or libz into linuxdeploy makes the ARM64 build crash.
     local resolver_dir
-    resolver_dir="$(mktemp -d)"
+    resolver_dir="$(v4_create_linuxdeploy_resolver "$app_dir")"
     trap 'rm -rf "$resolver_dir"' EXIT
-
-    local library
-    local library_name
-    while IFS= read -r -d '' library; do
-        library_name="${library##*/}"
-        case "$library_name" in
-            libc.so*|libgcc_s.so*|libjpeg.so*|libm.so*|libpng*.so*|libstdc++.so*|libz.so*) continue ;;
-        esac
-        ln -sfn "$(readlink -f "$library")" "$resolver_dir/$library_name"
-    done < <(find "$app_dir/usr/lib" -maxdepth 1 \( -type f -o -type l \) -print0)
 
     local report
     report="$(LD_LIBRARY_PATH="$resolver_dir" ldd \
