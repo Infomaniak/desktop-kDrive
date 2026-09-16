@@ -2857,4 +2857,16 @@ Um den Upload zu beschleunigen, empfehlen wir, nur die letzte kDrive-Sitzung zu 
             <translation>Möchtest du kDrive wirklich beenden?</translation>
         </message>
     </context>
+    <context>
+        <name></name>
+        <message id="logsUploadCanceled">
+            <source>The debug folder upload was canceled.</source>
+            <extracomment>Terminal canceled state. Keep distinct from the intermediate CancelRequested state.</extracomment>
+            <translation>Das Hochladen des Debug-Ordners wurde abgebrochen.</translation>
+        </message>
+        <message id="logsUploadSuccess">
+            <source>The debug folder was successfully sent to Infomaniak Support.</source>
+            <translation>Der Debug-Ordner wurde erfolgreich an den Infomaniak-Support gesendet.</translation>
+        </message>
+    </context>
 </TS>
