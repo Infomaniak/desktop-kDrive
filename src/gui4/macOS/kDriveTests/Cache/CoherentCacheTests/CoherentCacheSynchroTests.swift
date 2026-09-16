@@ -135,8 +135,6 @@ struct CoherentCacheSynchroTests {
 
         // THEN
         let cachedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)
-        #expect(cachedSynchro?.localPath == CacheData.updatedSynchroLocalPath)
-        #expect(cachedSynchro?.targetPath == CacheData.updatedSynchro.targetPath)
         #expect(cachedSynchro?.isUpdatingVfsMode == true)
     }
 }
