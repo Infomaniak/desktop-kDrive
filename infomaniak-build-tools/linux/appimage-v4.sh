@@ -22,6 +22,8 @@ function v4_strip_debug_symbols() (
 
     while IFS= read -r -d '' file; do
         readelf -h "$file" >/dev/null 2>&1 || continue
+        readelf -SW "$file" 2>/dev/null | grep -qE '[[:space:]]\.(z?debug)_' || continue
+        echo "Stripping debug symbols: $file"
         objcopy --strip-debug "$file"
     done < <(find "$app_dir/usr" -type f -print0)
 )
