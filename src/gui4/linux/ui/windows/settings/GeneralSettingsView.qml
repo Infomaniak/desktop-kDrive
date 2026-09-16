@@ -119,14 +119,14 @@ ScrollView {
                 title: qsTrId("moveDeletedFilesToRecycleBinSetting")
                 description: qsTrId("moveDeletedFilesToRecycleBinWarning")
                 separator: false
+                SettingsInfoButton {
+                    onClicked: root.controller.openTrashHelp()
+                }
                 IKSwitch {
                     text: qsTrId("moveDeletedFilesToRecycleBinSetting")
                     enabled: root.controller.ready && !root.controller.saving
                     value: root.controller.moveToTrash
                     onToggleRequested: value => root.controller.setMoveToTrash(value)
-                }
-                SettingsInfoButton {
-                    onClicked: root.controller.openTrashHelp()
                 }
             }
         }
