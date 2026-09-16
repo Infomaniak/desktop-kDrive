@@ -198,7 +198,6 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     const SyncPath absoluteLocalPath = _sync.localPath() / localPath;
-    const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
 
     // Remove item from filesystem
     bool exists = false;
@@ -210,6 +209,24 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     bool removeFromDb = true;
+    if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Access denied to " << Utility::formatSyncPath(absoluteLocalPath)
+                                                                             << L", it will be temporarily blacklisted.");
+
+        removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
+                              // remove it from filesystem (we can have transient errors like file locks)
+
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(localPath, false); !exitInfo) {
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                              L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatExitInfo(localPath, exitInfo));
+            return IoHelper::toExitInfo(ioError);
+        }
+    } else if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                          L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
+        return IoHelper::toExitInfo(ioError);
+    }
+
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
@@ -218,6 +235,7 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                      << L") on local replica because it is blacklisted.");
         }
 
+        const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
         if (liteSyncActivated) {
             if (const auto cancellationExitInfo = cancelHydration(absoluteLocalPath); !cancellationExitInfo) {
                 LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Failed to cancel hydration of: " << Utility::formatExitInfo(
