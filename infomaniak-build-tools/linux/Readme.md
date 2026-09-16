@@ -323,6 +323,8 @@ actual QML imports and runtime dependencies, then installs the required librarie
 modules, translations, and `qt.conf`. `linuxdeploy` subsequently deploys the system dependencies of
 the installed plugins, verifies the bundle, fixes RPATHs, and creates the AppImage. The main
 AppImage contains `kDrive` and `kdrive_qml`; `kDriveRecoveryUpdater` remains a separate AppImage.
+The native AMD64 build stages the main application in `build-linux/AppDir` and writes both final
+AppImages to `build-linux/install`; release artifacts are never copied back into the main AppDir.
 
 The Linux 4.x packaging path requires a `linuxdeploy` version that supports
 `--deploy-deps-only`, plus the `linuxdeploy-plugin-appimage` plugin. File and folder dialogs use the

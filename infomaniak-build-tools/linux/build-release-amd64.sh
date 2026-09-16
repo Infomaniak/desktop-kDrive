@@ -94,7 +94,12 @@ if [ -d "$build_dir" ]; then
     rm -rf "$build_dir"
 fi
 
-app_dir="$build_dir/install"
+artifact_dir="$build_dir/install"
+if [[ "$release_flavor" == "v4" ]]; then
+  app_dir="$build_dir/AppDir"
+else
+  app_dir="$artifact_dir"
+fi
 build_type="RelWithDebInfo"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
@@ -106,7 +111,8 @@ echo
 echo "Build type: $build_type"
 echo "Source directory '$src_dir'"
 echo "Build directory '$build_dir'"
-echo "Install directory '$app_dir'"
+echo "AppDir '$app_dir'"
+echo "Artifact directory '$artifact_dir'"
 echo
 
 extract_debug () {
@@ -276,7 +282,8 @@ package_release_v4() {
   v4_package_appimage "$app_dir" "$extra"
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
-  mv kDrive*.AppImage "$app_dir/kDrive-${full_version}-amd64.AppImage"
+  mkdir -p "$artifact_dir"
+  mv kDrive*.AppImage "$artifact_dir/kDrive-${full_version}-amd64.AppImage"
 }
 
 package_recovery_updater() {
@@ -322,6 +329,56 @@ EOF
     cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
 
+  export NO_STRIP=1
+  linuxdeploy --appdir "$updater_appdir" \
+    -e "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
+    -d "$updater_appdir/kDriveRecoveryUpdater.desktop" \
+    -i "$updater_appdir/kDriveRecoveryUpdater.png" \
+    --plugin qt --output appimage -v0
+
+  full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
+  updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
+  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+
+  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
+}
+
+package_recovery_updater_v4() {
+  local updater_bin="$app_dir/usr/bin/kDriveRecoveryUpdater"
+  local updater_appdir="$build_dir/updater-app"
+  local extra
+  local full_version
+  local updater_appimage
+
+  if [ ! -f "$updater_bin" ]; then
+    echo "kDriveRecoveryUpdater not found at '$updater_bin', skipping recovery updater AppImage."
+    return 0
+  fi
+
+  QTDIR="$(find_qt_conan_path "$build_dir")"
+  export QTDIR
+
+  rm -rf "$updater_appdir"
+  mkdir -p "$updater_appdir/usr/bin"
+  mkdir -p "$updater_appdir/usr/lib"
+  mkdir -p "$updater_appdir/usr/plugins/platforms"
+
+  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
+  cp -P "$conan_dependencies_folder/"* "$updater_appdir/usr/lib" 2>/dev/null || true
+  cp -P -r "$QTDIR/plugins/platforms/"* "$updater_appdir/usr/plugins/platforms/" 2>/dev/null || true
+
+  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=kDriveRecoveryUpdater
+Exec=kDriveRecoveryUpdater
+Icon=kDriveRecoveryUpdater
+Categories=Utility;
+EOF
+
+  cp "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png" \
+    "$updater_appdir/kDriveRecoveryUpdater.png"
+
   extra="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64"
   cd "$build_dir"
   v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra"
@@ -331,9 +388,10 @@ EOF
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
-  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+  mkdir -p "$artifact_dir"
+  mv kDriveRecoveryUpdater*.AppImage "$artifact_dir/$updater_appimage"
 
-  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
+  echo "Recovery updater AppImage created: $artifact_dir/$updater_appimage"
 }
 
 if [[ "$release_flavor" == "v4" ]]; then
@@ -342,7 +400,7 @@ if [[ "$release_flavor" == "v4" ]]; then
 
   echo
   echo "Packaging recovery updater ..."
-  package_recovery_updater
+  package_recovery_updater_v4
 
   echo
   echo "Packaging ..."
