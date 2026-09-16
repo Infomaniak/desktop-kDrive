@@ -509,6 +509,7 @@ qt_deploy_runtime_dependencies(
         qsvg
         qsvgicon
         qwayland
+        qt-plugin-wayland-egl
         qxcb
         qxcb-glx-integration
         qxdgdesktopportal
