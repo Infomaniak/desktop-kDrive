@@ -24,7 +24,6 @@
 
 #include <fstream>
 
-#include <ntstatus.h>
 #include <propkey.h>
 #include <propvarutil.h>
 #include <shobjidl_core.h>
@@ -241,6 +240,7 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
     std::unique_lock<std::mutex> lck(_providerInfo->_fetchMapMutex);
     if (_providerInfo->_fetchMap.find(filePath) == _providerInfo->_fetchMap.end()) {
         TRACE_DEBUG(L"No fetch in progress: path='%ls'", filePath);
+        *canceled = true;
         return true;
     }
 
@@ -359,7 +359,7 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
     return res;
 }
 
-bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *filePath, bool updateStatus) {
+bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *filePath, bool updateStatus, NTSTATUS status) {
     if (!providerInfo || !filePath) {
         TRACE_ERROR(L"Invalid parameters");
         return false;
@@ -384,11 +384,9 @@ bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *fi
         providerInfo->_cancelFetchCV.wait(lck);
     }
 
-    if (updateStatus) {
-        if (!cancelFetchData(fetchInfo._connectionKey, fetchInfo._transferKey, {0}, fetchInfo._length)) {
-            TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", filePath);
-            return false;
-        }
+    if (updateStatus && !cancelFetchData(fetchInfo._connectionKey, fetchInfo._transferKey, {0}, fetchInfo._length, status)) {
+        TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", filePath);
+        return false;
     }
 
     providerInfo->_fetchMap.erase(filePath);
@@ -666,7 +664,8 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
 }
 
 bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
-                                    LARGE_INTEGER requiredFileOffset, LARGE_INTEGER requiredFileLength) {
+                                    const LARGE_INTEGER &requiredFileOffset, const LARGE_INTEGER &requiredFileLength,
+                                    const NTSTATUS status) {
     // Update transfer status
     CF_OPERATION_INFO opInfo = {0};
     CF_OPERATION_PARAMETERS opParams = {0};
@@ -676,7 +675,7 @@ bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER
     opInfo.ConnectionKey = connectionKey;
     opInfo.TransferKey = transferKey;
     opParams.ParamSize = CF_SIZE_OF_OP_PARAM(TransferData);
-    opParams.TransferData.CompletionStatus = STATUS_UNSUCCESSFUL;
+    opParams.TransferData.CompletionStatus = status;
     opParams.TransferData.Buffer = nullptr;
     opParams.TransferData.Offset = requiredFileOffset;
     opParams.TransferData.Length = requiredFileLength;
