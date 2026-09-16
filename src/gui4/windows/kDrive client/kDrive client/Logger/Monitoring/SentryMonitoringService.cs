@@ -4,6 +4,7 @@ using Sentry;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
 namespace Infomaniak.kDrive.Monitoring
 {
@@ -13,6 +14,7 @@ namespace Infomaniak.kDrive.Monitoring
         private readonly MonitoringEventThrottle _eventThrottle = new();
         private readonly object _lock = new();
         private IDisposable? _handler;
+        private bool _isFlushing = true;
 
         public SentryMonitoringService(UserDefaults userDefaults)
         {
@@ -61,7 +63,7 @@ namespace Infomaniak.kDrive.Monitoring
         {
             lock (_lock)
             {
-                if (_handler is not null)
+                if (_isFlushing || _handler is not null)
                     return;
 
                 // Sentry's WinUI integration must be initialized outside OnLaunched.
@@ -102,20 +104,53 @@ namespace Infomaniak.kDrive.Monitoring
 
         public void Stop()
         {
+            IDisposable handler;
+
             lock (_lock)
             {
-                if (_handler is null)
+                if (_handler is null || _isFlushing)
                     return;
 
+                _isFlushing = true;
+                handler = _handler;
+
                 App.Current.UnhandledException -= CaptureUnhandledException;
+            }
+
+            _ = StopAsync(handler);
+        }
+
+        private async Task StopAsync(IDisposable handler)
+        {
+            try
+            {
+                await SentrySdk.FlushAsync(TimeSpan.FromSeconds(5));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(
+                    $"Failed to flush Sentry monitoring service: {ex.Message}",
+                    "Monitoring Service Stop Error");
+            }
+            finally
+            {
                 try
                 {
-                    SentrySdk.Flush(TimeSpan.FromSeconds(5));
+                    handler.Dispose();
                 }
-                finally
+                catch (Exception ex)
                 {
-                    _handler.Dispose();
-                    _handler = null;
+                    Logger.LogError(
+                        $"Failed to dispose Sentry monitoring service: {ex.Message}",
+                        "Monitoring Service Stop Error");
+                }
+
+                lock (_lock)
+                {
+                    if (ReferenceEquals(_handler, handler))
+                        _handler = null;
+
+                    _isFlushing = false;
                 }
             }
         }
