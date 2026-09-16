@@ -277,7 +277,7 @@ package_release_v4() {
 
   cd "$build_dir"
   v4_linuxdeploy_deploy "$app_dir" "$extra"
-  v4_strip_debug_symbols "$app_dir"
+  v4_strip_unneeded_symbols "$app_dir"
   v4_verify_bundle "$app_dir"
   v4_package_appimage "$app_dir" "$extra"
 
@@ -382,7 +382,7 @@ EOF
   extra="$QTDIR/lib:$app_dir/usr/lib:/usr/local/lib:/usr/local/lib64"
   cd "$build_dir"
   v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra"
-  v4_strip_debug_symbols "$updater_appdir"
+  v4_strip_unneeded_symbols "$updater_appdir"
   v4_verify_bundle "$updater_appdir"
   v4_package_appimage "$updater_appdir" "$extra"
 

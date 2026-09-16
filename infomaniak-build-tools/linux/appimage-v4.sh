@@ -15,16 +15,16 @@ function v4_extract_debug_symbols() (
     done
 )
 
-function v4_strip_debug_symbols() (
+function v4_strip_unneeded_symbols() (
     set -eo pipefail
     local app_dir="$1"
     local file
 
     while IFS= read -r -d '' file; do
         readelf -h "$file" >/dev/null 2>&1 || continue
-        readelf -SW "$file" 2>/dev/null | grep -qE '[[:space:]]\.(z?debug)_' || continue
-        echo "Stripping debug symbols: $file"
-        env -u LD_LIBRARY_PATH objcopy --strip-debug "$file"
+        readelf -SW "$file" 2>/dev/null | grep -qE '[[:space:]]\.(z?debug)_|[[:space:]]\.symtab[[:space:]]' || continue
+        echo "Stripping unneeded symbols: $file"
+        env -u LD_LIBRARY_PATH objcopy --strip-unneeded "$file"
     done < <(find "$app_dir/usr" -type f -print0)
 )
 
