@@ -156,8 +156,8 @@ class AppClientLinux : public QApplication {
         StorageController _storageController{_mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        SettingsWindowController _settingsWindowController{_parametersStore, _parametersService, _translationService,
-                                                           _updateStatusService, this};
+        SettingsWindowController _settingsWindowController{_parametersStore,     _parametersService, _translationService,
+                                                           _updateStatusService, _sentryService,     this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
