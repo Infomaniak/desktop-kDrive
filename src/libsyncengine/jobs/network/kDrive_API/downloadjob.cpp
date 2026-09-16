@@ -488,12 +488,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
     } else if (mimeType == mimeTypeHardlink) {
         // For safety, cannot happen (Mime Type forbidden on the drive)
         LOGW_WARN(_logger, L"Unable to sync hardlink: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
-<<<<<<< HEAD
-=======
-
->>>>>>> 573d6c144 (fix(compile-errors): Fixes errors introduced while merging)
         return {ExitCode::SystemError, ExitCause::OperationCanceled};
-
     } else if (mimeType == mimeTypeJunction) {
 #if defined(KD_WINDOWS)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_fileDownloadInfo.localPath));
@@ -505,11 +500,7 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
             return {ExitCode::SystemError, ExitCause::FileSystemNotSupported};
         }
 
-<<<<<<< HEAD
         IoError ioError = IoError::Success;
-=======
-        auto ioError = IoError::Success;
->>>>>>> 573d6c144 (fix(compile-errors): Fixes errors introduced while merging)
         if (!IoHelper::createJunction(data, _fileDownloadInfo.localPath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_fileDownloadInfo.localPath, ioError));
             if (ioError == IoError::NoSuchFileOrDirectory) {
