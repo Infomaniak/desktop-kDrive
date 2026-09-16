@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QString>
 
+#include <functional>
 #include <optional>
 #include <string>
 
@@ -43,6 +44,8 @@ class SentryService final : public QObject {
         Q_OBJECT
 
     public:
+        using ConsentCallback = std::function<void(const ExitInfo &)>;
+
         explicit SentryService(ParametersService &parametersService, AppCache &appCache, ParametersStore &parametersStore,
                                QObject *parent = nullptr);
 
@@ -59,7 +62,7 @@ class SentryService final : public QObject {
         [[noreturn]] static void reportFatalAndExit(const char *title, const char *message);
         [[noreturn]] static void reportFatalAndExit(const QString &title, const QString &message);
 
-        void setConsent(bool enabled) const;
+        void setConsent(bool enabled, const ConsentCallback &callback = {}) const;
         void updateAuthenticatedUser() const;
 
     private:
