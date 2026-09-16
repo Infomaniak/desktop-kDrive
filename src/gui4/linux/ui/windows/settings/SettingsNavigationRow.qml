@@ -42,6 +42,7 @@ Button {
     hoverEnabled: enabled
     Accessible.role: Accessible.Button
     Accessible.name: title
+    Accessible.description: description
     onClicked: navigationRequested(root)
 
     background: Rectangle {
