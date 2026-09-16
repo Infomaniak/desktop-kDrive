@@ -191,8 +191,8 @@ Output: rotating Serilog file at `%LOCALAPPDATA%\temp\kDrive-logdir\` + Sentry b
 Monitoring goes through the DI singleton `IMonitoringService` in `Logger/Monitoring/`, with provider-independent breadcrumb and event levels. `SentryMonitoringService` owns consent checks, SDK lifecycle, unhandled exceptions, and event throttling (three message events per minute per source location). Keep Sentry SDK calls inside this implementation; the logger, application lifecycle, and settings use the interface. `Stop()` flushes pending events before shutdown.
 
 ```csharp
-Logger.Log(Logger.Level.Info, "My operation succeeded.");
-Logger.Log(Logger.Level.Error, $"Failed to do X: {ex.Message}");
+Logger.LogInfo("My operation succeeded.");
+Logger.LogError($"Failed to do X: {ex.Message}", "Failed to do X");
 ```
 
 ### Converters
