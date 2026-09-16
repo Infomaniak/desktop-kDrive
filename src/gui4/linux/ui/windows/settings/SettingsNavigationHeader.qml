@@ -45,7 +45,8 @@ FocusScope {
         hoverEnabled: enabled
         display: AbstractButton.IconOnly
         Accessible.role: Accessible.Button
-        Accessible.name: root.previousTitle
+        Accessible.name: qsTrId("accessibilityBack")
+        Accessible.description: root.previousTitle
         onClicked: root.backRequested()
 
         background: Rectangle {
