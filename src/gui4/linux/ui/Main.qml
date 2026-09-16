@@ -91,6 +91,7 @@ IKShadowedWindow {
 
         SidebarHeaderView {
             anchors.left: parent.left
+            anchors.leftMargin: IKSpacing.s16
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             width: IKMainWindow.sidebarWidth
@@ -99,7 +100,7 @@ IKShadowedWindow {
         MainToolbar {
             onSettingsRequested: mainWindow.settingsController.requestOpen()
             anchors.left: parent.left
-            anchors.leftMargin: IKMainWindow.sidebarWidth
+            anchors.leftMargin: IKMainWindow.sidebarWidth + IKSpacing.s16
             anchors.right: parent.right
             anchors.rightMargin: IKSpacing.s8
             anchors.top: parent.top
