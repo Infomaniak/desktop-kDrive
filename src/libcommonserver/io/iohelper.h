@@ -91,6 +91,14 @@ struct IoHelper {
 
         static ExitInfo toExitInfo(const IoError ioError);
 
+        static PathCheckOption getDefaultPathCheckOption() noexcept {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            return PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+            return PathCheckOption::Sensitive;
+#endif
+        }
+        
         IoHelper() = default;
 
         inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
@@ -125,7 +133,8 @@ struct IoHelper {
          successfully retrieved, nullptr otherwise.
          !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept;
@@ -183,7 +192,8 @@ struct IoHelper {
          \param path is the file system path indicating the item to check.
          \param exists is a boolean set with true if an item indicated by the path exists, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
 
          \note This method never sets ioError with `IoError::NoSuchFileOrDirectory`.
@@ -197,7 +207,8 @@ struct IoHelper {
          \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
          false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
