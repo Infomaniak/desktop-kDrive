@@ -112,11 +112,11 @@ struct SyncedKDriveView: View {
                             synchroMode: $mainSynchroMode,
                             isConverting: isUpdatingMainSynchroMode
                         )
-                            .disabled(!mainSynchro.supportsVirtualFileSystem || isUpdatingMainSynchroMode)
-                            .onChange(of: mainSynchroMode) { newValue in
-                                guard newValue != committedMainSynchroMode else { return }
-                                switchSynchroMode(mainSynchro, mode: newValue)
-                            }
+                        .disabled(!mainSynchro.supportsVirtualFileSystem || isUpdatingMainSynchroMode)
+                        .onChange(of: mainSynchroMode) { newValue in
+                            guard newValue != committedMainSynchroMode else { return }
+                            switchSynchroMode(mainSynchro, mode: newValue)
+                        }
 
                         if isUpdatingMainSynchroMode {
                             HStack(spacing: AppPadding.padding8) {
