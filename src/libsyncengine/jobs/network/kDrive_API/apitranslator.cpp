@@ -211,7 +211,7 @@ void ApiTranslator::translateV3ToV2(SyncPath &remotePath) {
     if (remotePath.empty() || *remotePath.begin() != v3SpecialFolderNames.at(SpecialRemoteFolder::Private)) return;
 
     try {
-        remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialFolder::Private));
+        remotePath = remotePath.lexically_relative(v3SpecialFolderNames.at(SpecialRemoteFolder::Private));
     } catch (const std::exception &) {
         remotePath = SyncPath{};
     }

@@ -68,7 +68,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         long tokenUpdateDurationFromNow();
         [[nodiscard]] bool hasAccessToken() const { return !_apiToken.accessToken().empty(); }
 
-        [[nodiscard]] DriveId getDriveId(const DriveDId driveId);
+        [[nodiscard]] DriveId getDriveId(const DriveId driveId);
 
     protected:
         std::string getSpecificUrl() override;
