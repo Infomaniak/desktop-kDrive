@@ -9,9 +9,9 @@ function v4_extract_debug_symbols() (
     shift 2
 
     for exe in "$@"; do
-        objcopy --only-keep-debug "$bin_dir/$exe" "$dbg_dir/$exe.dbg"
-        objcopy --strip-debug "$bin_dir/$exe"
-        objcopy --add-gnu-debuglink="$dbg_dir/$exe.dbg" "$bin_dir/$exe"
+        env -u LD_LIBRARY_PATH objcopy --only-keep-debug "$bin_dir/$exe" "$dbg_dir/$exe.dbg"
+        env -u LD_LIBRARY_PATH objcopy --strip-debug "$bin_dir/$exe"
+        env -u LD_LIBRARY_PATH objcopy --add-gnu-debuglink="$dbg_dir/$exe.dbg" "$bin_dir/$exe"
     done
 )
 
@@ -24,7 +24,7 @@ function v4_strip_debug_symbols() (
         readelf -h "$file" >/dev/null 2>&1 || continue
         readelf -SW "$file" 2>/dev/null | grep -qE '[[:space:]]\.(z?debug)_' || continue
         echo "Stripping debug symbols: $file"
-        objcopy --strip-debug "$file"
+        env -u LD_LIBRARY_PATH objcopy --strip-debug "$file"
     done < <(find "$app_dir/usr" -type f -print0)
 )
 
