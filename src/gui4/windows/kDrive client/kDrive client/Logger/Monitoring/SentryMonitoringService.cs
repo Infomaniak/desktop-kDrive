@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.Monitoring
             }
         }
 
-        public void CaptureEvent(string message, string title, MonitoringEventLevel level, Exception? exception = null,
+        public void CaptureEvent(string title, string message, MonitoringEventLevel level, Exception? exception = null,
             [CallerFilePath] string filePath = "?", [CallerLineNumber] int lineNumber = -1)
         {
             lock (_lock)
