@@ -1577,7 +1577,7 @@ ExitCode ServerRequests::getErrorList(const ErrorLevel level, const SyncDbId syn
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list) {
+ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list, bool &hasMore) {
     const int maxStaleCount = 10;
     int staleCount = 0;
 
@@ -1590,6 +1590,7 @@ ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list)
         }
 
         list.clear();
+        hasMore = list.size() >= limit;
         for (const Error &error: errorList) {
             if (error.isStale()) {
                 bool found = false;
