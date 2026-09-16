@@ -109,4 +109,26 @@ struct CoherentCacheSynchroTests {
             Issue.record("unexpected error: \(error)")
         }
     }
+
+    @Test(.timeLimit(.minutes(1)))
+    func addSynchroPreservesUpdatingVfsModeWhenReplacingExistingSynchro() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = ServerCoherentCache()
+        await cache.addUser(user)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+
+        var existingSynchro = CacheData.expectedSynchro
+        existingSynchro.isUpdatingVfsMode = true
+        try await cache.addSynchro(existingSynchro)
+
+        // WHEN
+        try await cache.addSynchro(CacheData.updatedSynchro)
+
+        // THEN
+        let storedSynchro = try #require(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId))
+        #expect(storedSynchro.localPath == CacheData.updatedSynchroLocalPath)
+        #expect(storedSynchro.isUpdatingVfsMode)
+    }
 }

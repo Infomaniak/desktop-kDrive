@@ -269,7 +269,12 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             throw logged(.driveNotFound(driveDbId))
         }
 
-        drive.synchros[synchro.dbId] = synchro
+        var synchroToStore = synchro
+        if let existingSynchro = drive.synchros[synchro.dbId] {
+            synchroToStore.isUpdatingVfsMode = existingSynchro.isUpdatingVfsMode
+        }
+
+        drive.synchros[synchro.dbId] = synchroToStore
         try updateDrive(drive: drive)
     }
 
