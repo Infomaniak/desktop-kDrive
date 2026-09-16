@@ -53,7 +53,6 @@ ScrollView {
 
             SettingsNavigationRow {
                 title: qsTrId("dataManagementSettings")
-                enabled: false
                 onNavigationRequested: trigger => root.dataManagementRequested(trigger)
             }
 
