@@ -376,7 +376,7 @@ function build_app_image_v4() {
 
   cd /build || return 1
   v4_linuxdeploy_deploy /app "$extra" || return 1
-  v4_strip_debug_symbols /app || return 1
+  v4_strip_unneeded_symbols /app || return 1
   v4_verify_bundle /app || return 1
   v4_package_appimage /app "$extra" || return 1
 
@@ -489,7 +489,7 @@ EOF
   extra="$QT_BASE_DIR/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64"
   cd /build || return 1
   v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra" || return 1
-  v4_strip_debug_symbols "$updater_appdir" || return 1
+  v4_strip_unneeded_symbols "$updater_appdir" || return 1
   v4_verify_bundle "$updater_appdir" || return 1
   v4_package_appimage "$updater_appdir" "$extra" || return 1
 
