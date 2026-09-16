@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Όλες οι δραστηριότητες</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Μόνο η δική μου δραστηριότητα</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve">
+    <value>Δραστηριότητες από αυτόν τον υπολογιστή</value>
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Εισήχθη</value> 

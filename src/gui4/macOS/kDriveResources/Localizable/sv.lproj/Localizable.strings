@@ -50,7 +50,7 @@
 "activitiesTypeAllActivities" = "Alla aktiviteter";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activitiesTypeMyActivity" = "Endast min aktivitet";
+"activitiesTypeThisComputer" = "Aktivitet från den här datorn";
 
 /* loco:6a69c2a7fb376e733f092008 */
 "activityInstructionGetLabel" = "Importerad";

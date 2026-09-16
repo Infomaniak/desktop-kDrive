@@ -50,7 +50,7 @@
 "activitiesTypeAllActivities" = "Kaikki toiminnot";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activitiesTypeMyActivity" = "Vain oma toimintani";
+"activitiesTypeThisComputer" = "Tämän tietokoneen toiminta";
 
 /* loco:6a69c2a7fb376e733f092008 */
 "activityInstructionGetLabel" = "Tuotu";

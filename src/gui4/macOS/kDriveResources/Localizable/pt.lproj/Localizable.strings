@@ -50,7 +50,7 @@
 "activitiesTypeAllActivities" = "Todas as atividades";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activitiesTypeMyActivity" = "Apenas a minha atividade";
+"activitiesTypeThisComputer" = "Atividades deste computador";
 
 /* loco:6a69c2a7fb376e733f092008 */
 "activityInstructionGetLabel" = "Importado";

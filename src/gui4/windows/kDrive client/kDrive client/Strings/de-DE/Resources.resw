@@ -100,8 +100,8 @@
   <data name="activitiesTypeAllActivities" xml:space="preserve"> 
     <value>Alle Aktivitäten</value> 
   </data> 
-  <data name="activitiesTypeMyActivity" xml:space="preserve"> 
-    <value>Nur meine Aktivitäten</value> 
+  <data name="activitiesTypeThisComputer" xml:space="preserve">
+    <value>Aktivitäten dieses Computers</value>
   </data> 
   <data name="activityInstructionGetLabel" xml:space="preserve"> 
     <value>Importiert</value> 
