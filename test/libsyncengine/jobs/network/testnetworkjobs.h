@@ -28,9 +28,6 @@
 #include "io/cachedirectory.h"
 #include "libcommonserver/io/iohelper.h"
 
-#include "network/proxy.h"
-
-
 using namespace CppUnit;
 
 namespace KDC {

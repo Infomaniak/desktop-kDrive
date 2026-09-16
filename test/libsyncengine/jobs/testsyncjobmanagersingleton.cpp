@@ -361,8 +361,8 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
                                                         remoteDirNodeId, testhelpers::defaultTime, testhelpers::defaultTime, 3);
         };
 
-        const auto job1 = createUploadSessionJob(driveDbId, filepath, remoteTmpDir.id());
-        const auto job2 = createUploadSessionJob(driveDbId, filepath, remoteTmpDir.id());
+        const auto job1 = createUploadSessionJob(_driveDbId, filepath, remoteTmpDir.id());
+        const auto job2 = createUploadSessionJob(_driveDbId, filepath, remoteTmpDir.id());
 
         CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job1));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);

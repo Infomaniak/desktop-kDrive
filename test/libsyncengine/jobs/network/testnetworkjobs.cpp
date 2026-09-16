@@ -43,6 +43,7 @@
 #include "jobs/network/kDrive_API/searchjob.h"
 #include "jobs/network/kDrive_API/listing/csvfullfilelistwithcursorjob.h"
 #include "jobs/network/kDrive_API/listing/longpolljob.h"
+#include "jobs/network/kDrive_API/upload/uploadjob.h"
 #include "jobs/network/kDrive_API/upload/upload_session/driveuploadsession.h"
 
 #include "jobs/network/jobexceptions.h"
