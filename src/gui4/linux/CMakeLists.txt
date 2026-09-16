@@ -277,6 +277,10 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/chevron-right.svg
         ui/assets/settings/general.svg
         ui/assets/settings/information.svg
+        ui/assets/settings/matomo-logo.svg
+        ui/assets/settings/matomo-logo-dark.svg
+        ui/assets/settings/sentry-logo.svg
+        ui/assets/settings/sentry-logo-dark.svg
         ui/assets/main/activities.svg
         ui/assets/main/activities/empty.svg
         ui/assets/main/activities/empty-dark.svg
