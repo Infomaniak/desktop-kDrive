@@ -370,7 +370,6 @@ package_recovery_updater_v4() {
   v4_copy_runtime_dependencies "$app_dir/usr/lib" "$updater_appdir" \
     "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
     "$updater_appdir/usr/plugins/platforms/"*.so* || return 1
-  v4_set_executable_runpath "$updater_appdir" kDriveRecoveryUpdater || return 1
 
   cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
 [Desktop Entry]
