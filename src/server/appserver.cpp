@@ -4528,6 +4528,12 @@ ExitInfo AppServer::getNodePath(const SyncDbId syncDbId, const NodeId &nodeId, C
 }
 
 void AppServer::addError(const Error &error) const {
+    if (error.isStale()) {
+        LOG_WARN(Log::instance()->getLogger(), "Cannot add a stale error");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Cannot add a stale error");
+        return;
+    }
+
     Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
