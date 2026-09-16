@@ -421,6 +421,13 @@ bool CommonUtility::containsInsensitive(const std::string &str, const std::strin
     return it != str.end();
 }
 
+bool CommonUtility::equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs) {
+    const SyncName &leftPath = lhs.native();
+    const SyncName &rightPath = rhs.native();
+
+    return leftPath.size() == rightPath.size() && startsWithInsensitive(leftPath, rightPath);
+}
+
 #if defined(KD_WINDOWS)
 bool CommonUtility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
     if (prefix.empty()) return false;
