@@ -461,9 +461,14 @@ ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncNam
         auto newAttemptCount = attemptCount;
         do {
             attemptCount = newAttemptCount;
-            if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(),
-                                                     [&path](const Sync &sync) { return sync.localPath() == path; });
-                it != syncList.cend()) {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            const auto pathComparator = [&path](const Sync &sync) {
+                return CommonUtility::equalsInsensitive(sync.localPath(), path);
+            };
+#elif defined(KD_LINUX)
+            const auto pathComparator = [&path](const Sync &sync) { return sync.localPath() == path; };
+#endif
+            if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
                 ++newAttemptCount;
                 newIncrement = true;
                 if (newAttemptCount >= 100) {
@@ -479,6 +484,19 @@ ExitInfo findNonExistingPathForNewSync(const SyncPath &homeFolder, const SyncNam
 
     return ExitCode::Ok;
 }
+
+SyncName getInitialFolderName(const SyncName &driveName) {
+#if defined(KD_MACOS)
+    // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
+    // normalize the drive name to NFD as it is done in addSync.
+    SyncName normalizedDriveName;
+    (void) Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD);
+    return Str2SyncName(Theme::instance()->appName()) + Str(" ") + normalizedDriveName;
+#endif
+
+    return Str2SyncName(Theme::instance()->appName()) + +Str(" ") + driveName;
+}
+
 } // namespace
 
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error) {
@@ -504,11 +522,11 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
         return ExitCode::SystemError;
     }
 
-    const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
+    const SyncName initialFolderName = getInitialFolderName(driveName);
     SyncPath nonExistingPath;
     if (const auto exitInfo = findNonExistingPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath);
         !exitInfo) {
-        error = "Failed to find a non-existing folder path for new sync";
+        error = "Failed to find a non-occupied folder path for new sync";
 
         return exitInfo;
     }

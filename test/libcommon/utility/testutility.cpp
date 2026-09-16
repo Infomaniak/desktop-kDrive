@@ -875,6 +875,17 @@ void TestUtility::testEndsWithInsensitive() {
     CPPUNIT_ASSERT(CommonUtility::endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
 }
 
+void TestUtility::testEqualsInsensitive() {
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("A/B/C"), SyncPath("a/b/c")));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("a/B/C"), SyncPath("a/B/c")));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("a/b/c"), SyncPath("a/b/c")));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("ax/by/cz"), SyncPath("aX/By/cZ")));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("é/f/g"), SyncPath("é/F/g")));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("éö/ééA/üBè"), SyncPath("éö/ééa/üBè")));
+    CPPUNIT_ASSERT(!CommonUtility::equalsInsensitive(SyncPath("A/B/C"), SyncPath("A/C/B")));
+    CPPUNIT_ASSERT(!CommonUtility::equalsInsensitive(SyncPath("A/B/C"), SyncPath("A/B/D")));
+}
+
 void TestUtility::testContains() {
     CPPUNIT_ASSERT(!CommonUtility::contains("abcdefg", ""));
     CPPUNIT_ASSERT(!CommonUtility::contains("", "defg"));
