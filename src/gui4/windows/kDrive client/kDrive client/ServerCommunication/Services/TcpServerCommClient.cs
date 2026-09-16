@@ -388,7 +388,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             if (_inBuffer[0] != '{')
             {
-                        Logger.LogError("Invalid message format: does not start with '{'.");
+                Logger.LogError("Invalid message format: does not start with '{'.");
                 return false;
             }
             return true;
@@ -419,7 +419,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 ReadOnlySpan<char> jsonSpan = _inBuffer.ToString(0, jsonEndIndex + 1);
                 if (!jsonSpan.EndsWith("}"))
                 {
-                        Logger.LogError("Unexpected end character");
+                    Logger.LogError("Unexpected end character");
                     ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
@@ -431,7 +431,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 var messageObj = JsonSerializer.Deserialize<CommData>(jsonSpan, _jsonOptions);
                 if (messageObj is null)
                 {
-                Logger.LogError("Invalid message format.");
+                    Logger.LogError("Invalid message format.");
                     ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }

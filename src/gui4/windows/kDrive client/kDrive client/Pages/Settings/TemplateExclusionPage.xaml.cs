@@ -175,14 +175,14 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (_templateListModel is null)
             {
-                        Logger.LogError("Template list model is null. Cannot save template changes.");
+                Logger.LogError("Template list model is null. Cannot save template changes.");
                 return;
             }
 
             ExclusionTemplate? exclusionTemplate = (sender as FrameworkElement)?.DataContext as ExclusionTemplate;
             if (exclusionTemplate is null)
             {
-                    Logger.LogError("DataContext is not an ExclusionTemplate. Cannot save template changes.");
+                Logger.LogError("DataContext is not an ExclusionTemplate. Cannot save template changes.");
                 return;
             }
 

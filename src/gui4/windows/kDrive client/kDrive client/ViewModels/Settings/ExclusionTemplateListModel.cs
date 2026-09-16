@@ -67,12 +67,12 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     if (task.Exception is not null)
                     {
-                    Logger.LogError($"Failed to save exclusion templates on dispose: {task.Exception}",
-                        "ExclusionTemplateListModel: Failed to save exclusion templates on disposal");
+                        Logger.LogError($"Failed to save exclusion templates on dispose: {task.Exception}",
+                            "ExclusionTemplateListModel: Failed to save exclusion templates on disposal");
                     }
                     else if (!task.Result)
                     {
-                    Logger.LogError("Failed to save exclusion templates on dispose: server returned failure.");
+                        Logger.LogError("Failed to save exclusion templates on dispose: server returned failure.");
                     }
                 }, TaskScheduler.Default);
         }

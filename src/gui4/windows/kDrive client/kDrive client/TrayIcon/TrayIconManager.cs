@@ -58,7 +58,7 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             else
             {
-                    Logger.LogError("ShowWindowCommand not found in application resources.");
+                Logger.LogError("ShowWindowCommand not found in application resources.");
             }
 
 
@@ -69,7 +69,7 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             else
             {
-                    Logger.LogError("OpenSettingsCommand not found in application resources.");
+                Logger.LogError("OpenSettingsCommand not found in application resources.");
             }
 
             if (Application.Current.Resources["ExitApplicationCommand"] is XamlUICommand exitCommand)
@@ -79,7 +79,7 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             else
             {
-                    Logger.LogError("ExitApplicationCommand not found in application resources.");
+                Logger.LogError("ExitApplicationCommand not found in application resources.");
             }
 
             if (Application.Current.Resources["TrayIcon"] is TaskbarIcon trayIcon)

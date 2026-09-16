@@ -214,7 +214,7 @@ namespace Infomaniak.kDrive.ViewModels
             {
                 if (Sync is null)
                 {
-                Logger.LogError("Sync is null");
+                    Logger.LogError("Sync is null");
                     return false;
                 }
 

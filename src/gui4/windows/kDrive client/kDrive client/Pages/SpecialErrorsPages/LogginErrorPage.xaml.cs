@@ -83,8 +83,8 @@ namespace Infomaniak.kDrive.Pages
                 User? user = await App.ServiceProvider.GetRequiredService<IServerCommService>().AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, CancellationToken.None);
                 if (user is null || ViewModel.SelectedSync is null)
                 {
-                            Logger.LogError($"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}",
-                                "LogginErrorPage: Failed to retrieve authenticated user information");
+                    Logger.LogError($"Failed to retrieve user information after authentication {user} - {ViewModel.SelectedSync}",
+                        "LogginErrorPage: Failed to retrieve authenticated user information");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
@@ -99,7 +99,7 @@ namespace Infomaniak.kDrive.Pages
                 if (await ViewModel.SelectedSync.Start())
                     return;
 
-                            Logger.LogError("Failed to start sync.");
+                Logger.LogError("Failed to start sync.");
             }
             catch (OperationCanceledException)
             {

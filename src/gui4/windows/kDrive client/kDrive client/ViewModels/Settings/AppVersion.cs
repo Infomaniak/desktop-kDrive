@@ -97,14 +97,14 @@ namespace Infomaniak.kDrive.ViewModels
 
                 if (thisTagParts.Length != otherTagParts.Length)
                 {
-                Logger.LogError($"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.",
-                    "AppVersion: Version tag format mismatch");
+                    Logger.LogError($"Tag format mismatch: '{Tag}' vs '{other.Tag}' with same prefix. Considering the longer tag as higher.",
+                        "AppVersion: Version tag format mismatch");
                     return thisTagParts.Length > otherTagParts.Length;
                 }
             }
             catch (System.FormatException)
             {
-            Logger.LogError("Unable to parse the version tag");
+                Logger.LogError("Unable to parse the version tag");
                 return false;
             }
 
