@@ -1,4 +1,4 @@
-SignalMessageTests/*
+/*
  Infomaniak kDrive - Desktop
  Copyright (C) 2023-2026 Infomaniak Network SA
 
@@ -115,11 +115,11 @@ struct AdvancedSynchroCellView: View {
                 isConverting: synchro.isConverting,
                 isCallFromAdvancedSync: true
             )
-            .disabled(!synchro.supportsVirtualFileSystem || synchro.isConverting)
-            .onChange(of: synchroMode) { newValue in
-                guard newValue != committedSynchroMode else { return }
-                switchSynchroMode(newValue)
-            }
+                .disabled(!synchro.supportsVirtualFileSystem || synchro.isConverting)
+                .onChange(of: synchroMode) { newValue in
+                    guard newValue != committedSynchroMode else { return }
+                    switchSynchroMode(newValue)
+                }
         }
     }
 
