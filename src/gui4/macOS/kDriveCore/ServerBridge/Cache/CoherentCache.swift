@@ -53,14 +53,18 @@ public protocol CoherentCache: Sendable {
     func getAvailableDrive(driveDb: Int32, userDbId: Int32) async -> AvailableDrive?
     func getAvailableDrive(driveDb: Int32) async -> AvailableDrive?
 
-    // MARK: - Synchro
+     // MARK: - Synchro
 
-    func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Synchro?
-    func getSynchro(synchroDbId: Int32) async -> Synchro?
-    func addSynchro(_ synchro: Synchro) async throws
-    func removeSynchro(synchroDbId: Int32, driveDbId: Int32) async throws
-    func removeSynchro(synchroDbId: Int32) async throws
-    func updateSynchro(_ synchro: Synchro) async throws
+     func getSynchro(synchroDbId: Int32, driveDbId: Int32, accountDbId: Int32, userDbId: Int32) async -> Synchro?
+     func getSynchro(synchroDbId: Int32) async -> Synchro?
+     func addSynchro(_ synchro: Synchro) async throws
+     func removeSynchro(synchroDbId: Int32, driveDbId: Int32) async throws
+     func removeSynchro(synchroDbId: Int32) async throws
+     func updateSynchro(_ synchro: Synchro) async throws
+     func addOrUpdateSynchroPreservingVfsMode(
+         synchroDbId: Int32,
+         applyUpdate: (Bool) -> Synchro
+     ) async throws
 
     // MARK: - SynchroContexts
 
