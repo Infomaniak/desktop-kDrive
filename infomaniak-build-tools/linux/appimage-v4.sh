@@ -28,20 +28,6 @@ function v4_strip_unneeded_symbols() (
     done < <(find "$app_dir/usr" -type f -print0)
 )
 
-function v4_conan_runtime_lib_path() (
-    set -eo pipefail
-    local conanrun
-    conanrun="$(find "$1" -name conanrun.sh -print -quit)"
-    [[ -n "$conanrun" ]] || {
-        echo "conanrun.sh not found under '$1'" >&2
-        exit 1
-    }
-
-    LD_LIBRARY_PATH=""
-    source "$conanrun"
-    echo "$LD_LIBRARY_PATH"
-)
-
 function v4_prepare_appdir() (
     set -eo pipefail
     cd "$1"
@@ -127,9 +113,8 @@ function v4_check_appdir() (
 function v4_linuxdeploy_deploy() (
     set -eo pipefail
     local app_dir="$1"
-    local extra="$2"
     local linuxdeploy_help
-    linuxdeploy_help="$(linuxdeploy --help 2>&1 || true)"
+    linuxdeploy_help="$(env -u LD_LIBRARY_PATH linuxdeploy --help 2>&1 || true)"
     grep -q -- '--deploy-deps-only' <<<"$linuxdeploy_help" || {
         echo "linuxdeploy does not support --deploy-deps-only" >&2
         exit 1
@@ -144,9 +129,9 @@ function v4_linuxdeploy_deploy() (
     done < <(find "$app_dir/usr/plugins" "$app_dir/usr/qml" "$app_dir/usr/lib/gio/modules" \
         -type f -name '*.so*' -printf '%h\n' | sort -u)
 
-    # The icon is already installed in the AppDir. Passing it again makes the ARM64
-    # linuxdeploy build crash while parsing it, before the dependency pass completes.
-    NO_STRIP=1 LD_LIBRARY_PATH="$app_dir/usr/lib:$extra" linuxdeploy --appdir "$app_dir" \
+    # Keep the host packaging tool isolated from the libraries bundled for kDrive.
+    # Loading the AppDir's libpng/libz makes linuxdeploy crash on ARM64.
+    env -u LD_LIBRARY_PATH NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
         -e "$app_dir/usr/bin/kDrive" \
         -d "$app_dir/usr/share/applications/kDrive.desktop" \
         "${deps_only[@]}" -v1
@@ -155,9 +140,8 @@ function v4_linuxdeploy_deploy() (
 function v4_linuxdeploy_recovery_updater() (
     set -eo pipefail
     local app_dir="$1"
-    local extra="$2"
     local linuxdeploy_help
-    linuxdeploy_help="$(linuxdeploy --help 2>&1 || true)"
+    linuxdeploy_help="$(env -u LD_LIBRARY_PATH linuxdeploy --help 2>&1 || true)"
     grep -q -- '--deploy-deps-only' <<<"$linuxdeploy_help" || {
         echo "linuxdeploy does not support --deploy-deps-only" >&2
         exit 1
@@ -166,7 +150,7 @@ function v4_linuxdeploy_recovery_updater() (
     # The Qt plugin deploys every available plugin, including optional SQL drivers.
     # Deploy only the recovery updater and its platform plugins to avoid pulling in
     # unused drivers whose runtime dependencies might not be installed.
-    NO_STRIP=1 LD_LIBRARY_PATH="$app_dir/usr/lib:$extra" linuxdeploy --appdir "$app_dir" \
+    env -u LD_LIBRARY_PATH NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
         -e "$app_dir/usr/bin/kDriveRecoveryUpdater" \
         -d "$app_dir/kDriveRecoveryUpdater.desktop" \
         -i "$app_dir/kDriveRecoveryUpdater.png" \
@@ -212,10 +196,10 @@ function v4_verify_bundle() (
 
 function v4_package_appimage() (
     set -eo pipefail
-    linuxdeploy --list-plugins 2>&1 | grep -qw appimage || {
+    env -u LD_LIBRARY_PATH linuxdeploy --list-plugins 2>&1 | grep -qw appimage || {
         echo "linuxdeploy-plugin-appimage is not available" >&2
         exit 1
     }
 
-    NO_STRIP=1 LD_LIBRARY_PATH="$1/usr/lib:$2" linuxdeploy --appdir "$1" --output appimage -v1
+    env -u LD_LIBRARY_PATH NO_STRIP=1 linuxdeploy --appdir "$1" --output appimage -v1
 )
