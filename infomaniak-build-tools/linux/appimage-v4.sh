@@ -77,6 +77,7 @@ function v4_check_appdir() (
         usr/bin/{kDrive,kdrive_qml,crashpad_handler,qt.conf,sync-exclude.lst,sync-folder-rules.csv}
         usr/lib/{libQt6Core.so.6,libQt6Quick.so.6,libQt6WaylandClient.so.6,libsentry.so,libssl.so.3,libcrypto.so.3}
         usr/plugins/platforms/{libqxcb.so,libqwayland.so}
+        usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so
         usr/plugins/wayland-shell-integration/libxdg-shell.so
         usr/plugins/xcbglintegrations/libqxcb-glx-integration.so
         usr/plugins/tls/libqopensslbackend.so
