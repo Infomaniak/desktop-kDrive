@@ -254,7 +254,7 @@ ExitInfo SyncPalWorker::ensureBlackListIsPropagated(int16_t trial) {
 void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
     bool exists = false;
     if (auto checkIfPathExistsError = IoError::Success;
-        !IoHelper::checkIfPathExists(path, exists, checkIfPathExistsError, IoHelper::PathCheckOption::Sensitive)) {
+        !IoHelper::checkIfPathExists(path, exists, checkIfPathExistsError, IoHelper::getDefaultPathCheckOption())) {
         LOGW_WARN(_logger, L"Failed to check if path exists - " << Utility::formatIoError(path, checkIfPathExistsError));
         return;
     }
