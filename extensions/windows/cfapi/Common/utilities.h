@@ -34,6 +34,7 @@
 #include <minwinbase.h>
 #include <cfapi.h>
 #include <source_location>
+#include <mutex>
 
 
 #define MAX_URI 255
@@ -117,4 +118,5 @@ class Utilities {
         static std::wstring s_trashURI;
         static std::wstring s_pipeName;
         static HANDLE s_pipe;
+        static std::recursive_mutex s_pipeMutex;
 };
