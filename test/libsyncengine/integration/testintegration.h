@@ -44,6 +44,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testSimpleComparison);
         CPPUNIT_TEST(testSimpleUpload);
         CPPUNIT_TEST(testGlobalFramework);
+        CPPUNIT_TEST(testParentDeleteRescuesModifiedLocalChildren);
         CPPUNIT_TEST(testNestedRemoteOperations);
         CPPUNIT_TEST(testRemoteMoveDirectoryDescendantRekey);
         CPPUNIT_TEST(testExecuteSyncUpToStep);
@@ -69,6 +70,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testSimpleUpload();
         void testSimpleComparison();
         void testGlobalFramework();
+        void testParentDeleteRescuesModifiedLocalChildren();
         void testNestedRemoteOperations();
         void testRemoteMoveDirectoryDescendantRekey();
         void testExecuteSyncUpToStep();
