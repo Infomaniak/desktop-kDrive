@@ -2858,4 +2858,16 @@ För att påskynda uppladdningen rekommenderar vi att du bara skickar den senast
             <translation>Vill du verkligen avsluta kDrive?</translation>
         </message>
     </context>
+    <context>
+        <name></name>
+        <message id="logsUploadCanceled">
+            <source>The debug folder upload was canceled.</source>
+            <extracomment>Terminal canceled state. Keep distinct from the intermediate CancelRequested state.</extracomment>
+            <translation>Uppladdningen av felsökningsmappen avbröts.</translation>
+        </message>
+        <message id="logsUploadSuccess">
+            <source>The debug folder was successfully sent to Infomaniak Support.</source>
+            <translation>Felsökningsmappen har skickats till Infomaniaks support.</translation>
+        </message>
+    </context>
 </TS>
