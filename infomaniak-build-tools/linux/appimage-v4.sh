@@ -142,6 +142,27 @@ function v4_linuxdeploy_deploy() (
         "${deps_only[@]}" -v1
 )
 
+function v4_linuxdeploy_recovery_updater() (
+    set -eo pipefail
+    local app_dir="$1"
+    local extra="$2"
+    local linuxdeploy_help
+    linuxdeploy_help="$(linuxdeploy --help 2>&1 || true)"
+    grep -q -- '--deploy-deps-only' <<<"$linuxdeploy_help" || {
+        echo "linuxdeploy does not support --deploy-deps-only" >&2
+        exit 1
+    }
+
+    # The Qt plugin deploys every available plugin, including optional SQL drivers.
+    # Deploy only the recovery updater and its platform plugins to avoid pulling in
+    # unused drivers whose runtime dependencies might not be installed.
+    NO_STRIP=1 LD_LIBRARY_PATH="$app_dir/usr/lib:$extra" linuxdeploy --appdir "$app_dir" \
+        -e "$app_dir/usr/bin/kDriveRecoveryUpdater" \
+        -d "$app_dir/kDriveRecoveryUpdater.desktop" \
+        -i "$app_dir/kDriveRecoveryUpdater.png" \
+        --deploy-deps-only "$app_dir/usr/plugins/platforms" -v1
+)
+
 function v4_verify_bundle() (
     set -eo pipefail
     local app_dir="$1"
