@@ -92,7 +92,12 @@ function v4_check_appdir() (
         usr/share/applications/kDrive.desktop
         kdrive-win.png
     )
-    local -a forbidden=(usr/bin/kDriveRecoveryUpdater usr/plugins/qmltooling usr/plugins/sqldrivers)
+    local -a forbidden=(
+        usr/bin/kDriveRecoveryUpdater
+        usr/plugins/qmltooling
+        usr/plugins/sqldrivers
+        kDriveRecoveryUpdater*.AppImage
+    )
     local missing=0
     local path
 
