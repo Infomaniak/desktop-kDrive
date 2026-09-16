@@ -2858,4 +2858,16 @@ Om het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te v
             <translation>Weet je zeker dat je kDrive wilt afsluiten?</translation>
         </message>
     </context>
+    <context>
+        <name></name>
+        <message id="logsUploadCanceled">
+            <source>The debug folder upload was canceled.</source>
+            <extracomment>Terminal canceled state. Keep distinct from the intermediate CancelRequested state.</extracomment>
+            <translation>Het uploaden van de debugmap is geannuleerd.</translation>
+        </message>
+        <message id="logsUploadSuccess">
+            <source>The debug folder was successfully sent to Infomaniak Support.</source>
+            <translation>De debugmap is met succes verzonden naar Infomaniak-ondersteuning.</translation>
+        </message>
+    </context>
 </TS>
