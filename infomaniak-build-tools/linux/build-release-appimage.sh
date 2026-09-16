@@ -469,7 +469,7 @@ function build_recovery_updater_image_v4() {
     cp -P "$QT_BASE_DIR/plugins/platforms/$platform_plugin" "$updater_appdir/usr/plugins/platforms/" || return 1
   done
 
-  v4_copy_qt_runtime_dependencies /app/usr/lib "$updater_appdir" \
+  v4_copy_runtime_dependencies /app/usr/lib "$updater_appdir" \
     "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
     "$updater_appdir/usr/plugins/platforms/"*.so* || return 1
   v4_set_executable_runpath "$updater_appdir" kDriveRecoveryUpdater || return 1

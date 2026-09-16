@@ -28,7 +28,7 @@ function v4_strip_unneeded_symbols() (
     done < <(find "$app_dir/usr" -type f -print0)
 )
 
-function v4_copy_qt_runtime_dependencies() (
+function v4_copy_runtime_dependencies() (
     set -eo pipefail
     local source_lib_dir="$1"
     local app_dir="$2"
@@ -36,31 +36,42 @@ function v4_copy_qt_runtime_dependencies() (
 
     local report
     report="$(LD_LIBRARY_PATH="$source_lib_dir:$app_dir/usr/lib" ldd "$@")"
-    if grep -qE 'libQt6[^ ]* => not found' <<<"$report"; then
-        echo "Unable to resolve the recovery updater Qt runtime:" >&2
-        grep -E 'libQt6[^ ]* => not found' <<<"$report" >&2
+    if grep -q 'not found' <<<"$report"; then
+        echo "Unable to resolve the recovery updater runtime:" >&2
+        grep 'not found' <<<"$report" >&2
         exit 1
     fi
 
-    local -a qt_libraries=()
-    mapfile -t qt_libraries < <(
+    local -a runtime_libraries=()
+    mapfile -t runtime_libraries < <(
         awk -v prefix="$source_lib_dir/" \
-            '$2 == "=>" && index($3, prefix) == 1 && substr($3, length(prefix) + 1) ~ /^libQt6/ {
-                print substr($3, length(prefix) + 1)
+            '$2 == "=>" && $3 ~ /^\// && (index($3, prefix) == 1 || index($3, "/.conan2/") > 0) {
+                print $3
             }' <<<"$report" | sort -u
     )
-    ((${#qt_libraries[@]} > 0)) || {
-        echo "No Qt runtime dependency found for the recovery updater" >&2
+    ((${#runtime_libraries[@]} > 0)) || {
+        echo "No bundled runtime dependency found for the recovery updater" >&2
         exit 1
     }
 
     local library
+    local library_dir
+    local library_name
     local stem
-    for library in "${qt_libraries[@]}"; do
-        stem="${library%%.so*}.so"
-        find "$source_lib_dir" -maxdepth 1 \( -type f -o -type l \) -name "$stem*" \
+    for library in "${runtime_libraries[@]}"; do
+        library_dir="${library%/*}"
+        library_name="${library##*/}"
+        stem="${library_name%%.so*}.so"
+        find "$library_dir" -maxdepth 1 \( -type f -o -type l \) -name "$stem*" \
             -exec cp -P -t "$app_dir/usr/lib" -- {} +
     done
+
+    report="$(LD_LIBRARY_PATH="$app_dir/usr/lib" ldd "$@")"
+    if grep -qE 'not found|/\.conan2/' <<<"$report"; then
+        echo "Recovery updater runtime is not self-contained:" >&2
+        grep -E 'not found|/\.conan2/' <<<"$report" >&2
+        exit 1
+    fi
 )
 
 function v4_set_executable_runpath() (
