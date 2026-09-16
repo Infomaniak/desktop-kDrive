@@ -366,19 +366,14 @@ function build_app_image() {
 }
 
 function build_app_image_v4() {
-  local conan_lib_path
-  local extra
-  conan_lib_path="$(v4_conan_runtime_lib_path /build/conan)" || return 1
-  extra="$conan_lib_path:/usr/local/lib:/usr/local/lib64"
-
   v4_prepare_appdir /app || return 1
   v4_check_appdir /app || return 1
 
   cd /build || return 1
-  v4_linuxdeploy_deploy /app "$extra" || return 1
+  v4_linuxdeploy_deploy /app || return 1
   v4_strip_unneeded_symbols /app || return 1
   v4_verify_bundle /app || return 1
-  v4_package_appimage /app "$extra" || return 1
+  v4_package_appimage /app || return 1
 
   mv kDrive*.AppImage "/install/kDrive-$architecture.AppImage"
 }
@@ -486,12 +481,11 @@ EOF
     cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
   fi
 
-  extra="$QT_BASE_DIR/lib:/app/usr/lib:/usr/local/lib:/usr/local/lib64"
   cd /build || return 1
-  v4_linuxdeploy_recovery_updater "$updater_appdir" "$extra" || return 1
+  v4_linuxdeploy_recovery_updater "$updater_appdir" || return 1
   v4_strip_unneeded_symbols "$updater_appdir" || return 1
   v4_verify_bundle "$updater_appdir" || return 1
-  v4_package_appimage "$updater_appdir" "$extra" || return 1
+  v4_package_appimage "$updater_appdir" || return 1
 
   mv kDriveRecoveryUpdater*.AppImage "/install/kDriveRecoveryUpdater-$architecture.AppImage"
   if [ "$?" -ne 0 ]; then
