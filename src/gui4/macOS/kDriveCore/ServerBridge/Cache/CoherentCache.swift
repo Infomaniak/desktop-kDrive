@@ -63,7 +63,7 @@ public protocol CoherentCache: Sendable {
     func updateSynchro(_ synchro: Synchro) async throws
     func addOrUpdateSynchroPreservingVfsMode(
         synchroDbId: Int32,
-        applyUpdate: (Bool) -> Synchro
+        applyUpdate: @Sendable (Bool) -> Synchro
     ) async throws
 
     // MARK: - SynchroContexts

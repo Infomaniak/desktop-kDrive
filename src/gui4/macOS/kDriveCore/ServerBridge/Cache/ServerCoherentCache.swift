@@ -313,7 +313,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func addOrUpdateSynchroPreservingVfsMode(
         synchroDbId: Int32,
-        applyUpdate: (Bool) -> Synchro
+        applyUpdate: @Sendable (Bool) -> Synchro
     ) throws {
         let isUpdatingVfsMode = getSynchro(synchroDbId: synchroDbId)?.isUpdatingVfsMode ?? false
         let synchro = applyUpdate(isUpdatingVfsMode)
