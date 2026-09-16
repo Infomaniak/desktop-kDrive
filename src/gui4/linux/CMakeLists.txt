@@ -179,6 +179,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AdvancedSettingsView.qml
+        ui/windows/settings/DataManagementView.qml
         ui/windows/settings/GeneralSettingsView.qml
         ui/windows/settings/SettingsGroup.qml
         ui/windows/settings/SettingsInfoButton.qml
@@ -188,6 +189,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/SettingsNavigationRow.qml
         ui/windows/settings/SettingsRow.qml
         ui/windows/settings/SettingsWindow.qml
+        ui/windows/settings/TrackingConsentView.qml
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
