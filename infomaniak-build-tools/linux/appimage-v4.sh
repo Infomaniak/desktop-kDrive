@@ -77,6 +77,7 @@ function v4_check_appdir() (
         usr/bin/{kDrive,kdrive_qml,crashpad_handler,qt.conf,sync-exclude.lst,sync-folder-rules.csv}
         usr/lib/{libQt6Core.so.6,libQt6Quick.so.6,libQt6WaylandClient.so.6,libsentry.so,libssl.so.3,libcrypto.so.3}
         usr/plugins/platforms/{libqxcb.so,libqwayland.so}
+        usr/plugins/platforminputcontexts/{libcomposeplatforminputcontextplugin.so,libibusplatforminputcontextplugin.so}
         usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so
         usr/plugins/wayland-shell-integration/libxdg-shell.so
         usr/plugins/xcbglintegrations/libqxcb-glx-integration.so
@@ -143,10 +144,11 @@ function v4_linuxdeploy_deploy() (
     done < <(find "$app_dir/usr/plugins" "$app_dir/usr/qml" "$app_dir/usr/lib/gio/modules" \
         -type f -name '*.so*' -printf '%h\n' | sort -u)
 
+    # The icon is already installed in the AppDir. Passing it again makes the ARM64
+    # linuxdeploy build crash while parsing it, before the dependency pass completes.
     NO_STRIP=1 LD_LIBRARY_PATH="$app_dir/usr/lib:$extra" linuxdeploy --appdir "$app_dir" \
         -e "$app_dir/usr/bin/kDrive" \
         -d "$app_dir/usr/share/applications/kDrive.desktop" \
-        -i "$app_dir/kdrive-win.png" \
         "${deps_only[@]}" -v1
 )
 
