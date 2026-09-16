@@ -50,7 +50,7 @@
 "activitiesTypeAllActivities" = "Alle activiteiten";
 
 /* loco:6981b68a1e51fbe933040213 */
-"activitiesTypeMyActivity" = "Alleen mijn activiteit";
+"activitiesTypeThisComputer" = "Activiteiten van deze computer";
 
 /* loco:6a69c2a7fb376e733f092008 */
 "activityInstructionGetLabel" = "Geïmporteerd";

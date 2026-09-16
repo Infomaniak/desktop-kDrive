@@ -32,7 +32,7 @@
         <key>one</key>
         <string>Tienes **un error** de sincronización</string>
         <key>other</key>
-        <string>Tiene **%lld errores de sincronización**</string>
+        <string>Tienes **%lld errores de sincronización**</string>
       </dict>
     </dict>
   </dict>
