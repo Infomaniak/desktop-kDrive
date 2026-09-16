@@ -1578,28 +1578,38 @@ ExitCode ServerRequests::getErrorList(const ErrorLevel level, const SyncDbId syn
 }
 
 ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list) {
-    std::vector<Error> errorList;
-    if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
-        return ExitCode::DbError;
-    }
+    const int maxStaleCount = 10;
+    int staleCount = 0;
 
-    list.clear();
-    for (const Error &error: errorList) {
-        if (error.isStale()) {
-            bool found = false;
-            LOG_INFO(Log::instance()->getLogger(), "Deleting stale error with dbId: " << error.dbId()); 
+    do {
+        staleCount = 0;
+        std::vector<Error> errorList;
+        if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+            return ExitCode::DbError;
+        }
 
-            if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+        list.clear();
+        for (const Error &error: errorList) {
+            if (error.isStale()) {
+                bool found = false;
+                LOG_INFO(Log::instance()->getLogger(), "Deleting stale error with dbId: " << error.dbId());
+
+                if (ParmsDb::instance()->deleteError(error.dbId(), found)) {
+                    ++staleCount;
+                } else {
+                    LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+                }
+                continue;
             }
-            continue;
-        }
 
-        if (isDisplayableError(error)) {
-            list.push_back(error);
+
+            if (isDisplayableError(error)) {
+                list.push_back(error);
+            }
         }
-    }
+    } while (staleCount > maxStaleCount);
+
 
     return ExitCode::Ok;
 }
