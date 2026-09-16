@@ -302,23 +302,23 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         throw logged(.synchroNotFound(synchroDbId))
     }
 
-     public func updateSynchro(_ synchro: Synchro) throws {
-         guard var drive = getDrive(driveDbId: synchro.driveDbId) else {
-             throw logged(.driveNotFound(synchro.driveDbId))
-         }
+    public func updateSynchro(_ synchro: Synchro) throws {
+        guard var drive = getDrive(driveDbId: synchro.driveDbId) else {
+            throw logged(.driveNotFound(synchro.driveDbId))
+        }
 
-         drive.synchros[synchro.dbId] = synchro
-         try updateDrive(drive: drive)
-     }
+        drive.synchros[synchro.dbId] = synchro
+        try updateDrive(drive: drive)
+    }
 
-     public func addOrUpdateSynchroPreservingVfsMode(
-         synchroDbId: Int32,
-         applyUpdate: (Bool) -> Synchro
-     ) throws {
-         let isUpdatingVfsMode = getSynchro(synchroDbId: synchroDbId)?.isUpdatingVfsMode ?? false
-         let synchro = applyUpdate(isUpdatingVfsMode)
-         try addSynchro(synchro)
-     }
+    public func addOrUpdateSynchroPreservingVfsMode(
+        synchroDbId: Int32,
+        applyUpdate: (Bool) -> Synchro
+    ) throws {
+        let isUpdatingVfsMode = getSynchro(synchroDbId: synchroDbId)?.isUpdatingVfsMode ?? false
+        let synchro = applyUpdate(isUpdatingVfsMode)
+        try addSynchro(synchro)
+    }
 
     // MARK: - SynchroContexts
 
