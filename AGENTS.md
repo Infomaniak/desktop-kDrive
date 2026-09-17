@@ -69,6 +69,10 @@ clang-format -i <file>
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 <!-- Add project-specific user corrections here -->
+- In the macOS GUI, resolve `VFSConversionCache` lazily through DI for coherent-cache cleanup rather than passing it explicitly through the coherent-cache constructor and factory.
+- Register VFS conversion cache DI services through separate `VFSConversionCaching` and `VFSConversionCacheObservable` protocols, following the other caches.
+- In macOS tests, override and restore shared DI registrations directly instead of adding resolver-taking initializers to production types for testing.
+- On macOS, prefer InfomaniakDI's `@LazyInjectService` and `@InjectService` property wrappers over constructor injection of services or resolvers.
 
 ## JIT Index
 

@@ -24,6 +24,7 @@ import InfomaniakDI
     @LazyInjectService var signalProcessor: SignalProcessing
     @LazyInjectService var coherentCache: CoherentCache
     @LazyInjectService var settingsCache: SettingsCaching
+    @LazyInjectService var vfsConversionCache: VFSConversionCaching
 
     @MainActor
     @Published private(set) var guiConnectionState: XPCConnectionState = .notConnected
@@ -290,6 +291,7 @@ import InfomaniakDI
             appConnection?.invalidate()
             appConnection = nil
             Task { @MainActor [weak self] in
+                await self?.vfsConversionCache.clear()
                 self?.guiConnectionState = .serverCrashed
             }
         }
@@ -301,6 +303,7 @@ import InfomaniakDI
             appConnection = nil
             scheduleRetryToConnectToServer()
             Task { @MainActor [weak self] in
+                await self?.vfsConversionCache.clear()
                 self?.guiConnectionState = .error
             }
         }

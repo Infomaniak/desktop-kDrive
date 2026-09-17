@@ -65,6 +65,12 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 - `CoherentCacheObservable` provides `usersPublisher` — use extension methods (`.synchroPublisher(...)`, `.allSynchrosPublisher()`, etc.)
 - DO: Use `ObservedXxx` wrappers or `usersPublisher` chains for reactive UI updates
 - DON'T: Poll the cache — subscribe reactively
+- `VFSConversionCache` owns transient VFS conversions keyed by sync ID, with a UUID per request. Jobs must await
+  `finishConversion(synchroDbId:token:)` on both success and failure; an older completion cannot finish a newer request.
+  Views observe its replaying Combine publishers independently of `Synchro`/`UISynchro`. `ServerCoherentCache` resolves
+  the shared instance lazily through DI for deletion/reset cleanup; XPC GUI disconnection also clears it.
+  DI exposes `VFSConversionCaching` for lifecycle operations and `VFSConversionCacheObservable` for publishers,
+  both backed by the same actor instance.
 
 ### Dependency Injection (InfomaniakDI)
 ```swift
@@ -72,6 +78,12 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 @InjectService var service: MyService                          // immediate, used in functions
 ```
 Services are registered at app startup. Check `AppDelegate` or the DI setup file for registration.
+- Prefer `@LazyInjectService` for lazy service resolution and `@InjectService` for immediate resolution.
+  Use these property wrappers rather than passing DI-managed services or resolvers through `init` methods.
+- In tests, override the shared DI registrations directly rather than adding injection-only production initializers.
+  Restore both the original factories and cached instances afterward;
+  registering a new factory alone does not replace an already resolved service. Keep these tests isolated
+  from parallel consumers (the VFS job tests use serial XCTest cases, separate from Swift Testing suites).
 
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`
