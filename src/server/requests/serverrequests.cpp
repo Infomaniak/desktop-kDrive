@@ -471,7 +471,7 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
         // Check if the local directory already exists
         auto ioError = IoError::Success;
         bool alreadyExists = false;
-        if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+        if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::getDefaultPathCheckOption())) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
             return ExitCode::SystemError;
