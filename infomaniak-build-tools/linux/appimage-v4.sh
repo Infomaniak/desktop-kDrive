@@ -257,6 +257,14 @@ function v4_verify_bundle() (
     local glibc_floor=""
     local glibcxx_floor=""
     local file
+    local verify_bundled_glib=0
+
+    if compgen -G "$app_dir/usr/lib/libglib-2.0.so*" >/dev/null ||
+        compgen -G "$app_dir/usr/lib/libgio-2.0.so*" >/dev/null ||
+        compgen -G "$app_dir/usr/lib/libgobject-2.0.so*" >/dev/null ||
+        compgen -G "$app_dir/usr/lib/libgmodule-2.0.so*" >/dev/null; then
+        verify_bundled_glib=1
+    fi
 
     while IFS= read -r -d '' file; do
         readelf -h "$file" >/dev/null 2>&1 || continue
@@ -282,7 +290,8 @@ function v4_verify_bundle() (
             grep -E '\.conan2/|=> /(usr/)?lib[^ ]*/libQt6' <<<"$report" >&2
             failures=1
         fi
-        if grep -qE '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report"; then
+        if ((verify_bundled_glib)) &&
+            grep -qE '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report"; then
             echo "GLib runtime resolved outside the AppDir: $file" >&2
             grep -E '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report" >&2
             failures=1
