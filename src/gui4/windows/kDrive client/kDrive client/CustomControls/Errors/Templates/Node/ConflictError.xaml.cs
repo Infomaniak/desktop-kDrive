@@ -29,6 +29,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         Levels = new[] { ErrorLevel.Node },
         NodeTypes = new[] { NodeType.File, NodeType.Directory },
         ConflictTypes = new[] { ConflictType.CreateCreate, ConflictType.EditEdit },
+        ExitCodes = new[] { ExitCode.Unknown, ExitCode.Ok }, // Some conflicts created a long time ago have an Ok exit code instead of none (unknown), but we still want to show them in the UI
         ShowInSystemTray = true
     )]
     public sealed partial class ConflictError : UserControl
