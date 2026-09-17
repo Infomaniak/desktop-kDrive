@@ -65,10 +65,10 @@ IKShadowedWindow {
 
         SidebarHeaderView {
             anchors.left: parent.left
-            anchors.leftMargin: IKSpacing.s8
+            anchors.leftMargin: IKSpacing.s16
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: IKSettings.sidebarWidth - IKSpacing.s8
+            width: IKSettings.sidebarWidth - IKSpacing.s16
             title: qsTrId("settingsTitle")
         }
 
