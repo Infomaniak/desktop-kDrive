@@ -1224,7 +1224,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
         case TooManyDeleteOperations:
             return false;
         case Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength;
+            return error.inconsistencyType() != InconsistencyType::PathLength && !error.isStale();
         }
         default:
             return true;
@@ -1577,19 +1577,52 @@ ExitCode ServerRequests::getErrorList(const ErrorLevel level, const SyncDbId syn
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list) {
-    std::vector<Error> errorList;
-    if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
-        return ExitCode::DbError;
+namespace {
+
+bool deleteIfStale(const Error &error) {
+    if (!error.isStale()) {
+        return false;
     }
 
-    list.clear();
-    for (const Error &error: errorList) {
-        if (isDisplayableError(error)) {
-            list.push_back(error);
-        }
+    LOG_INFO(Log::instance()->getLogger(), "Deleting stale error with dbId: " << error.dbId());
+
+    bool found = false;
+    if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+        return false;
     }
+
+    return true;
+}
+
+} // namespace
+
+ExitInfo ServerRequests::getErrorList(const int32_t limit, std::vector<Error> &list, bool &hasMore) {
+    constexpr int32_t maxStaleCount = 10;
+
+    int32_t staleCount = 0;
+    do {
+        std::vector<Error> errorList;
+        if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+            return ExitCode::DbError;
+        }
+
+        list.clear();
+        hasMore = errorList.size() >= limit;
+        staleCount = 0;
+
+        for (const Error &error: errorList) {
+            if (deleteIfStale(error)) {
+                ++staleCount;
+                continue;
+            }
+
+            if (isDisplayableError(error)) {
+                list.push_back(error);
+            }
+        }
+    } while (staleCount > maxStaleCount);
 
     return ExitCode::Ok;
 }
