@@ -676,33 +676,6 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     return true;
 }
 
-std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
-    switch (appStateValue) {
-        case AppStateKey::LastServerSelfRestartDate:
-            return "LastServerSelfRestartDate";
-        case AppStateKey::LastClientSelfRestartDate:
-            return "LastClientSelfRestartDate";
-        case AppStateKey::LastSuccessfulLogUploadDate:
-            return "LastSuccessfulLogUploadDate";
-        case AppStateKey::LastLogUploadArchivePath:
-            return "LastLogUploadArchivePath";
-        case AppStateKey::LogUploadState:
-            return "LogUploadState";
-        case AppStateKey::LogUploadPercent:
-            return "LogUploadPercent";
-        case AppStateKey::LogUploadToken:
-            return "LogUploadToken";
-        case AppStateKey::AppUid:
-            return "AppUid";
-        case AppStateKey::NoUpdate:
-            return "NoUpdate";
-        case AppStateKey::Unknown:
-            return "Unknown";
-        default:
-            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
-    }
-}
-
 bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName,
                                  const std::function<bool(int)> &progressCallback) {
     return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName), progressCallback);
