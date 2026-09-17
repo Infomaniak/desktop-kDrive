@@ -629,8 +629,11 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
     processFileList(fileList, fileListExpanded);
 
     for (const auto &filePath: qAsConst(fileListExpanded)) {
-        if (_dehydrationCanceled) {
-            break;
+        {
+            const std::scoped_lock lock(_dehydrationMutex);
+            if (_dehydrationCanceled) {
+                break;
+            }
         }
 
         const auto fileData = FileData::get(filePath);
@@ -687,6 +690,7 @@ void ExtensionJob::commandMakeOnlineOnlyDirect(const CommString &argument, std::
 
 void ExtensionJob::commandCancelDehydrationDirect(const CommString &, std::shared_ptr<AbstractCommChannel>) {
     LOG_INFO(Log::instance()->getLogger(), "Ongoing files dehydrations canceled");
+    const std::scoped_lock lock(_dehydrationMutex);
     _dehydrationCanceled = true;
     return;
 }

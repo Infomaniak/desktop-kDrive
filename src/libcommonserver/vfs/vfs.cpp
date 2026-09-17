@@ -58,12 +58,33 @@ void Vfs::starVfsWorkers() {
 }
 
 Vfs::~Vfs() {
-    // Ask worker threads to stop
+    // Ask workers to stop
     for (auto &worker: _workerInfo) {
         worker._mutex.lock();
         worker._stop = true;
         worker._mutex.unlock();
         worker._queueWC.wakeAll();
+    }
+
+    // Ask workers' threads to quit
+    for (auto &worker: _workerInfo) {
+        for (QThread *const workerThread: std::as_const(worker._threadList)) {
+            if (workerThread) {
+                workerThread->quit();
+            }
+        }
+    }
+
+    // Terminate workers' threads
+    for (auto &worker: _workerInfo) {
+        for (QThread *const workerThread: std::as_const(worker._threadList)) {
+            if (workerThread) {
+                if (!workerThread->wait(1000)) {
+                    workerThread->terminate();
+                    workerThread->wait();
+                }
+            }
+        }
     }
 }
 
