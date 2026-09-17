@@ -14,7 +14,7 @@ namespace Infomaniak.kDrive.Monitoring
         private readonly MonitoringEventThrottle _eventThrottle = new();
         private readonly object _lock = new();
         private IDisposable? _handler;
-        private bool _isFlushing = true;
+        private bool _isFlushing = false;
 
         public SentryMonitoringService(UserDefaults userDefaults)
         {
