@@ -177,16 +177,6 @@ void IpcClient::attemptInitialConnection() {
     config.setCaCertificates({_pinnedCert});
     config.setLocalCertificate(_clientCert);
     config.setPrivateKey(_clientKey);
-
-    // OpenSSL 3.2+ enables TLS certificate compression (RFC 8879, brotli/zlib/zstd) by default on
-    // every SSL_CTX, with no application opt-in. That codepath crashed on at least one arm64
-    // environment (NULL function-pointer call in COMP_compress_block, on Apple
-    // Silicon). It only affects the handshake's Certificate message, never bulk data or HTTP
-    // content, so disabling it costs nothing on this loopback channel.
-    QMap<QByteArray, QVariant> backendConfig = config.backendConfiguration();
-    backendConfig[QByteArrayLiteral("Options")] = QByteArrayLiteral("-TxCertificateCompression,-RxCertificateCompression");
-    config.setBackendConfiguration(backendConfig);
-
     _socket->setSslConfiguration(config);
 
     _socket->abort();
