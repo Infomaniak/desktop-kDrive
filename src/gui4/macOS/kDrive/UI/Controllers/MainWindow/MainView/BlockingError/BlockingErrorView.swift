@@ -87,7 +87,7 @@ struct BlockingErrorView: View {
         .genericErrorAlert(isPresented: $isShowingGenericError)
         .onReceive(vfsConversionCache.isConvertingPublisher(synchroDbId: Int32(blockingError.synchro.dbId))
             .receive(on: RunLoop.main)) {
-            isConverting = $0
+                isConverting = $0
         }
     }
 

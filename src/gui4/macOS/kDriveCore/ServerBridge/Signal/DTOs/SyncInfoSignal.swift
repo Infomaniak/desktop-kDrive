@@ -40,11 +40,11 @@ struct SyncInfoSignalMetadata: Codable, Sendable {
 extension SyncInfoSignalMetadata {
     var asSynchro: Synchro {
         Synchro(dbId: dbId,
-                              driveDbId: driveDbId,
-                              localPath: localPath,
-                              targetPath: targetPath,
-                              targetNodeId: targetNodeId,
-                              supportVfs: supportVfs,
-                              virtualFileMode: virtualFileMode)
+                driveDbId: driveDbId,
+                localPath: localPath,
+                targetPath: targetPath,
+                targetNodeId: targetNodeId,
+                supportVfs: supportVfs,
+                virtualFileMode: virtualFileMode)
     }
 }
