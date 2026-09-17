@@ -66,8 +66,9 @@ bool shouldBeStoppedAndRestarted(const SyncPalWorker::ReplicaWorkers &workers) {
 }
 
 bool shouldBeStopped(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError, ExitCode::SystemError, ExitCode::UpdateRequired,
-                                                            ExitCode::InvalidSync, ExitCode::InvalidToken};
+    const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError,        ExitCode::SystemError,
+                                                            ExitCode::UpdateRequired, ExitCode::InvalidSync,
+                                                            ExitCode::InvalidToken,   ExitCode::TooManyDeleteOperations};
 
     const bool hasStoppingExitCode = std::ranges::any_of(workers, [&stoppingExitCodes](const auto &pair) {
         return pair.second.worker && stoppingExitCodes.contains(pair.second.worker->exitCode());
@@ -86,10 +87,16 @@ bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
             ExitCause::NotEnoughDiskSpace, ExitCause::FileAccessError, ExitCause::TmpDirAccessError,
             ExitCause::SyncDirAccessError, ExitCause::SyncDirDiskMissing};
 
-    return std::ranges::any_of(workers, [&exitCausesWithoutConsequences](const auto &pair) {
+    const auto hasExitCauseWithoutConsequences = std::ranges::any_of(workers, [&exitCausesWithoutConsequences](const auto &pair) {
         return pair.second.worker && pair.second.worker->exitCode() == ExitCode::SystemError &&
                exitCausesWithoutConsequences.contains(pair.second.worker->exitCause());
     });
+
+    const auto hasTooManyDeleteOperations = std::ranges::any_of(workers, [](const auto &pair) {
+        return pair.second.worker && pair.second.worker->exitCode() == ExitCode::TooManyDeleteOperations;
+    });
+
+    return hasExitCauseWithoutConsequences || hasTooManyDeleteOperations;
 }
 
 } // namespace
