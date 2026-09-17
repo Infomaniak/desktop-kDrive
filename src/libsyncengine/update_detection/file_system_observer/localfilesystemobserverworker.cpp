@@ -899,7 +899,7 @@ ExitInfo LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     if (ioError != IoError::Success) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
                                                                 << Utility::formatIoError(absoluteParentDirPath, ioError));
-        res = IoHelper::directoryIteratorExitCode(ioError);
+        res = IoHelper::toExitInfo(ioError);
     }
 
     if (!res) {
