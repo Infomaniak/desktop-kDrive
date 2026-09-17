@@ -876,14 +876,14 @@ void TestUtility::testEndsWithInsensitive() {
 }
 
 void TestUtility::testEqualsInsensitive() {
-    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("A/B/C"), SyncPath("a/b/c")));
-    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("a/B/C"), SyncPath("a/B/c")));
-    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("a/b/c"), SyncPath("a/b/c")));
-    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("ax/by/cz"), SyncPath("aX/By/cZ")));
-    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("é/f/g"), SyncPath("é/F/g")));
-    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath("éö/ééA/üBè"), SyncPath("éö/ééa/üBè")));
-    CPPUNIT_ASSERT(!CommonUtility::equalsInsensitive(SyncPath("A/B/C"), SyncPath("A/C/B")));
-    CPPUNIT_ASSERT(!CommonUtility::equalsInsensitive(SyncPath("A/B/C"), SyncPath("A/B/D")));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath(Str("A/B/C")), SyncPath(Str("a/b/c"))));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath(Str("a/B/C")), SyncPath(Str("a/B/c"))));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath(Str("a/b/c")), SyncPath(Str("a/b/c"))));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath(Str("ax/by/cz")), SyncPath(Str("aX/By/cZ"))));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath(Str("é/f/g")), SyncPath(Str("é/F/g"))));
+    CPPUNIT_ASSERT(CommonUtility::equalsInsensitive(SyncPath(Str("éö/ééA/üBè")), SyncPath(Str("éö/ééa/üBè"))));
+    CPPUNIT_ASSERT(!CommonUtility::equalsInsensitive(SyncPath(Str("A/B/C")), SyncPath(Str("A/C/B"))));
+    CPPUNIT_ASSERT(!CommonUtility::equalsInsensitive(SyncPath(Str("A/B/C")), SyncPath(Str("A/B/D"))));
 }
 
 void TestUtility::testContains() {
