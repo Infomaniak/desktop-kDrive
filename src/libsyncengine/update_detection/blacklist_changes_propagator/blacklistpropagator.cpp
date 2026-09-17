@@ -199,6 +199,8 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     const SyncPath absoluteLocalPath = _sync.localPath() / localPath;
 
+    bool removeFromDb = true;
+
     // Remove item from filesystem
     bool exists = false;
     IoError ioError = IoError::Success;
@@ -206,21 +208,19 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;
-    }
-
-    bool removeFromDb = true;
-    if (ioError == IoError::AccessDenied) {
+    } else if (ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Access denied to " << Utility::formatSyncPath(absoluteLocalPath)
                                                                              << L", it will be temporarily blacklisted.");
-
-        removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
-                              // remove it from filesystem (we can have transient errors like file locks)
 
         if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(localPath, false); !exitInfo) {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                               L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatExitInfo(localPath, exitInfo));
-            return IoHelper::toExitInfo(ioError);
+            return exitInfo;
         }
+
+        removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
+                              // remove it from filesystem (we can have transient errors like file locks)
+
     } else if (ioError != IoError::Success) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                           L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
