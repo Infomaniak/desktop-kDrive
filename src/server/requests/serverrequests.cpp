@@ -466,7 +466,7 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
 
 ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
                                       const std::vector<Sync> &syncList, SyncPath &path) {
-    Count attemptCount = 0;
+    Count attemptCount = 1;
     path = homeFolder / initialFolderName;
 
     // Avoid collisions with existing directories by appending a suffix.
