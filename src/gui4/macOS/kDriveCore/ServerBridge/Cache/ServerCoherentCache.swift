@@ -311,6 +311,15 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
         try updateDrive(drive: drive)
     }
 
+    public func addOrUpdateSynchroPreservingVfsMode(
+        synchroDbId: Int32,
+        applyUpdate: @Sendable (Bool) -> Synchro
+    ) throws {
+        let isUpdatingVfsMode = getSynchro(synchroDbId: synchroDbId)?.isUpdatingVfsMode ?? false
+        let synchro = applyUpdate(isUpdatingVfsMode)
+        try addSynchro(synchro)
+    }
+
     // MARK: - SynchroContexts
 
     public func getSynchroContexts() -> [SynchroContext] {

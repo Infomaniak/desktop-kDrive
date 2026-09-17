@@ -18,7 +18,6 @@
 
 import Foundation
 @testable import kDriveCore
-import OrderedCollections
 import Testing
 
 struct CoherentCacheSynchroTests {
@@ -108,5 +107,34 @@ struct CoherentCacheSynchroTests {
         } catch {
             Issue.record("unexpected error: \(error)")
         }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func updateSynchroInCacheDuringConversion() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = ServerCoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        #expect(await cache
+            .getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData
+            .expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+        let convertingSynchro = CacheData.expectedSynchro.updating(isUpdatingVfsMode: true)
+        try await cache.addSynchro(convertingSynchro)
+        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == convertingSynchro)
+
+        // WHEN
+        try await cache.addOrUpdateSynchroPreservingVfsMode(synchroDbId: CacheData.expectedSynchroDbId) { isUpdatingVfsMode in
+            var updatedSynchro = CacheData.updatedSynchro
+            updatedSynchro.isUpdatingVfsMode = isUpdatingVfsMode
+            return updatedSynchro
+        }
+
+        // THEN
+        let cachedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)
+        #expect(cachedSynchro?.isUpdatingVfsMode == true)
     }
 }

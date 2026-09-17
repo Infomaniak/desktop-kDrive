@@ -61,6 +61,10 @@ public protocol CoherentCache: Sendable {
     func removeSynchro(synchroDbId: Int32, driveDbId: Int32) async throws
     func removeSynchro(synchroDbId: Int32) async throws
     func updateSynchro(_ synchro: Synchro) async throws
+    func addOrUpdateSynchroPreservingVfsMode(
+        synchroDbId: Int32,
+        applyUpdate: @Sendable (Bool) -> Synchro
+    ) async throws
 
     // MARK: - SynchroContexts
 

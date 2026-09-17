@@ -16,7 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import kDriveCore
+@testable import kDriveCore
 import Testing
 
 struct SignalMessageTests {
@@ -44,5 +44,24 @@ struct SignalMessageTests {
         // THEN
         #expect(message.num == SignalNum.USER_UPDATED)
         #expect(message.body.name == "Base64")
+    }
+
+    @Test func syncInfoSignalCanPreserveVfsConversionFlag() {
+        // GIVEN
+        let syncInfo = SyncInfoSignalMetadata(
+            dbId: 1,
+            driveDbId: 2,
+            localPath: "/local",
+            targetPath: "/target",
+            targetNodeId: "node-id",
+            supportVfs: true,
+            virtualFileMode: KDC.VirtualFileMode.Mac
+        )
+
+        // WHEN
+        let synchro = syncInfo.asSynchro(isUpdatingVfsMode: true)
+
+        // THEN
+        #expect(synchro.isUpdatingVfsMode)
     }
 }
