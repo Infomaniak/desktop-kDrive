@@ -162,16 +162,9 @@ function build_client_via_cmake_v4() {
     return 1
   fi
 
-  architecture=$(get_host_arch)
-  qt_neon_activation="ON"
-
-  if [[ "$architecture" == "amd64" ]]; then
-    qt_neon_activation="OFF"
-  fi
-
   cmake -DCMAKE_PREFIX_PATH="$QT_BASE_DIR" \
       -DCMAKE_INSTALL_PREFIX=/usr \
-      -DQT_FEATURE_neon="$qt_neon_activation" \
+      -DQT_FEATURE_neon=OFF \
       -DCMAKE_MODULE_PATH="$QT_BASE_DIR/lib/cmake/" \
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
