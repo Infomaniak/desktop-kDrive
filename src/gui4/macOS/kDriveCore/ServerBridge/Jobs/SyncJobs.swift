@@ -61,6 +61,7 @@ public struct NewSyncMetadata: Sendable {
 public struct SyncJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
+    @LazyInjectService private var vfsConversionCache: VFSConversionCaching
 
     public init() {}
 
@@ -184,6 +185,7 @@ public struct SyncJobs: Sendable {
     }
 
     public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
+        let token = await vfsConversionCache.beginConversion(synchroDbId: syncDbId)
         let query = SetSupportsVirtualFilesQuery(syncDbId: syncDbId, value: value)
         let request = await RequestMessage<SetSupportsVirtualFilesQuery>(
             num: RequestNum.SYNC_SETSUPPORTSVIRTUALFILES,
@@ -191,17 +193,12 @@ public struct SyncJobs: Sendable {
         )
 
         do {
-            await updateSynchroVfsMode(syncDbId: syncDbId, isUpdatingVfsMode: true)
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
-            await updateSynchroVfsMode(
-                syncDbId: syncDbId,
-                virtualFileMode: value ? .Mac : .Off,
-                isUpdatingVfsMode: false
-            )
         } catch {
-            await updateSynchroVfsMode(syncDbId: syncDbId, isUpdatingVfsMode: false)
+            await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
             throw error
         }
+        await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
     }
 
     public func acknowledgeManyDeletes(syncDbId: Int32, userChoice: KDC.TooManyDeletesUserChoice) async throws {
@@ -244,22 +241,5 @@ public struct SyncJobs: Sendable {
         synchro.progress = previousProgress
 
         try? await coherentCache.updateSynchro(synchro)
-    }
-
-    private func updateSynchroVfsMode(
-        syncDbId: Int32,
-        virtualFileMode: KDC.VirtualFileMode? = nil,
-        isUpdatingVfsMode: Bool
-    ) async {
-        guard let synchro = await coherentCache.getSynchro(synchroDbId: syncDbId) else {
-            return
-        }
-
-        let updatedSynchro = synchro.updating(
-            virtualFileMode: virtualFileMode,
-            isUpdatingVfsMode: isUpdatingVfsMode
-        )
-
-        try? await coherentCache.updateSynchro(updatedSynchro)
     }
 }
