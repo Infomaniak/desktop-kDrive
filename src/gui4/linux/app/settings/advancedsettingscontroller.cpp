@@ -34,6 +34,8 @@
 
 namespace KDC {
 
+using namespace Qt::StringLiterals;
+
 namespace {
 Q_LOGGING_CATEGORY(lcAdvancedSettings, "gui.v4.settings.advanced", QtInfoMsg)
 }
@@ -90,8 +92,7 @@ QVariantList AdvancedSettingsController::logLevels() {
     static constexpr std::array ids{"logLevelDebug", "logLevelInfo", "logLevelWarning", "logLevelError", "logLevelFatal"};
     QVariantList values;
     for (int32_t value = static_cast<int32_t>(LogLevel::Debug); value < static_cast<int32_t>(LogLevel::EnumEnd); ++value) {
-        values.push_back(QVariantMap{{QStringLiteral("label"), qtTrId(ids[static_cast<std::size_t>(value)])},
-                                     {QStringLiteral("value"), value}});
+        values.push_back(QVariantMap{{u"label"_s, qtTrId(ids[static_cast<std::size_t>(value)])}, {u"value"_s, value}});
     }
     return values;
 }
@@ -102,7 +103,8 @@ bool AdvancedSettingsController::uploadInProgress() const {
 }
 
 QString AdvancedSettingsController::uploadStatusText() const {
-    switch (_uploadState) {
+    // Keep the interrupted phase visible until the server confirms the cancellation.
+    switch (_uploadState == LogUploadState::CancelRequested ? _lastUploadPhase : _uploadState) {
         case LogUploadState::Archiving:
             return qtTrId("logsStatusCompression");
         case LogUploadState::Uploading:
@@ -225,6 +227,7 @@ void AdvancedSettingsController::sendDebugLogs(const bool lastSessionOnly) {
     // Present the first server phase immediately. The request acknowledgement can arrive before the first asynchronous
     // status signal; keeping Archiving here avoids briefly restoring the idle controls between those two messages.
     _uploadState = LogUploadState::Archiving;
+    _lastUploadPhase = LogUploadState::Archiving;
     _uploadPercentage = 0;
     emit changed();
 
@@ -290,6 +293,9 @@ void AdvancedSettingsController::save(const ParametersService::ParametersMutatio
 void AdvancedSettingsController::setUploadStatus(const LogUploadState state, const int32_t percentage) {
     _uploadRequestPending = false;
     _uploadState = state;
+    if (state == LogUploadState::Archiving || state == LogUploadState::Uploading) {
+        _lastUploadPhase = state;
+    }
     _uploadPercentage = std::clamp(percentage, int32_t{0}, int32_t{100});
     emit changed();
 }
