@@ -179,6 +179,12 @@ option(KDRIVE_DEPLOY_QT_RUNTIME
 if(KDRIVE_DEPLOY_QT_RUNTIME AND (NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT BUILD_GUI OR BUILD_LIBRARIES_ONLY))
     message(FATAL_ERROR "KDRIVE_DEPLOY_QT_RUNTIME requires Linux, BUILD_GUI=ON and BUILD_LIBRARIES_ONLY=OFF.")
 endif()
+if(KDRIVE_DEPLOY_QT_RUNTIME)
+    # The GLVND OpenGL interface selected by default introduces a dependency on libOpenGL.so.0, which is not installed
+    # by default on every supported Linux desktop. The legacy interface uses the widely available libGL.so.1 while still
+    # dispatching to the system Mesa or NVIDIA driver.
+    set(OpenGL_GL_PREFERENCE LEGACY)
+endif()
 
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
