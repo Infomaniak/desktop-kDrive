@@ -1299,9 +1299,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool exec = true;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
         LOGW_DEBUG(logger(), L"Failed to set rights for " << Utility::formatIoError(path, ioError));
-        // This is the best effort to re-apply the existing exec rights, therefore we do not return in case of error, except if
-        // the file does not exist.
-        if (ioError == IoError::NoSuchFileOrDirectory) return ioError;
+        // This is the best effort to re-apply the existing exec rights, therefore we do not return in case of error.
     }
 
     // The file must be unlocked before changing its access rights.
