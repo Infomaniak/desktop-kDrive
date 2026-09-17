@@ -245,7 +245,8 @@
   category controllers and is the single source of Settings-window presentation requests.
 - `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors,
   Advanced external actions, debug parameters, and process-long log-upload state. Sentry mutations continue to flow
-  through `SentryService`, including its post-confirmation SDK update; log purge remains server-owned.
+  through `SentryService`, including its post-confirmation SDK update. Client log expiration follows the confirmed
+  `purgeOldLogs` value in `AppClientLinux::updateLoggerSettings`; the server does not purge client logs.
 - `ui/windows/settings/SettingsNavigation*.qml`: reusable Settings-local `StackView` navigation, dynamic page header,
   keyboard back action, and focus restoration. Category roots own their route components; the pane remains generic.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
