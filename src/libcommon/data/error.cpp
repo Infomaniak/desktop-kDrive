@@ -233,4 +233,10 @@ bool Error::isAutoResolved() const {
     return autoResolved;
 }
 
+bool Error::isStale() const {
+    return _level == ErrorLevel::Unknown && (_exitCode == ExitCode::Unknown || _exitCode == ExitCode::Ok) && _exitCause == ExitCause::Unknown &&
+           _nodeType == NodeType::Unknown && _conflictType == ConflictType::None &&
+           _inconsistencyType == InconsistencyType::None && _cancelType == CancelType::None;
+}
+
 } // namespace KDC

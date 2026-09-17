@@ -83,6 +83,7 @@ namespace Infomaniak.kDrive.ServerCommunication.CommStruct
         static public string Default = "default";
 
         static public string Limit = "limit";
+        static public string HasMore = "hasMore";
         static public string IsValid = "isValid";
         static public string Path = "path";
         static public string SyncConfiguration = "syncConfiguration";

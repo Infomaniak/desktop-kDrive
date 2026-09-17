@@ -1412,6 +1412,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!HasRequiredParam(data, JsonKeys.ErrorInfoList))
                 return false;
 
+            if (data.Params[JsonKeys.HasMore] is not JsonValue hasMoreValue || !hasMoreValue.TryGetValue<bool>(out bool hasMore))
+            {
+                Logger.Log(Logger.Level.Error, "Missing or invalid hasMore in error list response.");
+                return false;
+            }
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -1427,7 +1433,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             lock (_errorLock)
             {
-                _hasMoreError = errorInfos.Count == _maxErrorLimit;
+                _hasMoreError = hasMore;
                 _errorCount = errorInfos.Count;
             }
             await _viewModel.ClearAllErrorsAsync().ConfigureAwait(false);
