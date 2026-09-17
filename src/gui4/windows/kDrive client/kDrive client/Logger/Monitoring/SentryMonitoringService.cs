@@ -15,6 +15,7 @@ namespace Infomaniak.kDrive.Monitoring
         private readonly object _lock = new();
         private IDisposable? _handler;
         private bool _isFlushing = false;
+        private bool _startPending = false;
 
         public SentryMonitoringService(UserDefaults userDefaults)
         {
@@ -63,8 +64,12 @@ namespace Infomaniak.kDrive.Monitoring
         {
             lock (_lock)
             {
-                if (_isFlushing || _handler is not null)
+                _startPending = false;
+                if (_handler is not null || _isFlushing)
+                {
+                    _startPending = _isFlushing; // If a flush is in progress, we mark that a start is pending to re-initialize after the flush completes.
                     return;
+                }
 
                 // Sentry's WinUI integration must be initialized outside OnLaunched.
                 if (memberName == "OnLaunched")
@@ -151,6 +156,10 @@ namespace Infomaniak.kDrive.Monitoring
                         _handler = null;
 
                     _isFlushing = false;
+                    if (_startPending)
+                    {
+                        Start();
+                    }
                 }
             }
         }
