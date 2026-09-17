@@ -425,7 +425,7 @@ bool CommonUtility::equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs) 
     const SyncName &leftPath = lhs.native();
     const SyncName &rightPath = rhs.native();
 
-return QString::compare(SyncName2QStr(leftPath), SyncName2QStr(rightPath), Qt::CaseInsensitive) == 0;
+    return QString::compare(SyncName2QStr(leftPath), SyncName2QStr(rightPath), Qt::CaseInsensitive) == 0;
 }
 
 #if defined(KD_WINDOWS)
