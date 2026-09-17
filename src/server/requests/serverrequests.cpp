@@ -2178,10 +2178,10 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
         existingSyncFolderList << sync.localPath();
     }
 
+    const auto cs = getQtPathCheckOption();
     for (std::filesystem::path existingSyncFolder: existingSyncFolderList) {
         const QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
 
-        const auto cs = getQtPathCheckOption();
         const bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
         if (differentPaths && existingSyncFolderDir.startsWith(userDir, cs)) {
             error = QObject::tr(
