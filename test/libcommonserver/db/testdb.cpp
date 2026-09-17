@@ -72,6 +72,29 @@ void TestDb::tearDown() {
     TestBase::stop();
 }
 
+void TestDb::testCreateAndPrepareLocalRequest() {
+    std::string id{"select_sqlite_version"};
+
+    {
+        std::string query{"SELECT sqlite_version();"};
+        auto scopeGuard = _testObj->createAndPrepareLocalRequest(id.c_str(), query.c_str());
+        CPPUNIT_ASSERT(scopeGuard);
+
+        bool found = false;
+        CPPUNIT_ASSERT(_testObj->queryNext(id, found));
+        std::string version;
+        CPPUNIT_ASSERT(_testObj->queryStringValue(id, 0, version));
+        CPPUNIT_ASSERT(!version.empty());
+    }
+
+    {
+        bool found = false;
+        LogIfFailSettings::assertEnabled = false;
+        CPPUNIT_ASSERT(!_testObj->queryNext(id, found));
+        LogIfFailSettings::assertEnabled = true;
+    }
+}
+
 void TestDb::testQueries() {
     CPPUNIT_ASSERT(_testObj->exists());
 
