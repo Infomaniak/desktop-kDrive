@@ -511,9 +511,9 @@ SyncName getInitialFolderName(const SyncName &driveName) {
         normalizedDriveName = driveName;
     }
     return Str2SyncName(Theme::instance()->appName()) + Str(" ") + normalizedDriveName;
-#endif
-
+#else
     return Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
+#endif
 }
 
 } // namespace
