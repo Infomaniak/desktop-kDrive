@@ -56,6 +56,8 @@
 #include <QQmlApplicationEngine>
 #include <QWindow>
 
+#include <optional>
+
 namespace KDC {
 
 Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
@@ -115,7 +117,7 @@ class AppClientLinux : public QApplication {
         void handleBootstrapCompletion();
         void openSettingsWindow();
         void retranslatePresentation();
-        void updateLoggerSettings() const;
+        void updateLoggerSettings();
         void requestQuit();
         void quitOnServerDisconnection();
         void handleManyDeletesPresentationRequested();
@@ -171,6 +173,7 @@ class AppClientLinux : public QApplication {
         bool _preferSetupHomeWhenUnconfigured{false};
         bool _hadConfiguredSync{false};
         bool _quitPending{false};
+        std::optional<bool> _appliedPurgeOldLogs;
 };
 
 } // namespace KDC
