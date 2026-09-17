@@ -427,6 +427,9 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
 }
 
 namespace {
+
+constexpr Count kMaxPathAttempts = 100;
+
 // Avoid collisions with directories of existing syncs by appending a suffix.
 // Note that this is a separate check from the previous one, because the local directory may not exist yet, or may have
 // been deleted, but is still registered as a sync folder in the database.
@@ -447,7 +450,7 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
         if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
             ++newAttemptCount;
             newIncrement = true;
-            if (newAttemptCount >= 100) {
+            if (newAttemptCount >= kMaxPathAttempts) {
                 LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
                 return ExitCode::SystemError;
             }
@@ -458,8 +461,8 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
     return ExitCode::Ok;
 }
 
-ExitInfo findNonOccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
-                                       const std::vector<Sync> &syncList, SyncPath &path) {
+ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
+                                      const std::vector<Sync> &syncList, SyncPath &path) {
     Count attemptCount = 0;
     path = homeFolder / initialFolderName;
 
@@ -477,7 +480,7 @@ ExitInfo findNonOccupiedPathForNewSync(const SyncPath &homeFolder, const SyncNam
         if (alreadyExists) {
             ++attemptCount;
             // Count attempts and give up eventually
-            if (attemptCount >= 100) {
+            if (attemptCount >= kMaxPathAttempts) {
                 LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
                 return ExitCode::SystemError;
             }
@@ -531,17 +534,15 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     SyncDbId syncDbId = 0;
     if (const bool someSyncFolderContainsHome = syncForPath(syncList, Path2QStr(homeFolder), syncDbId);
         someSyncFolderContainsHome) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"The home folder is a sync folder or contained in one : " << Utility::formatSyncPath(homeFolder));
         error = "The home folder is a sync folder or contained in one";
+        LOGW_WARN(Log::instance()->getLogger(), CommonUtility::s2ws(error) << L":" << Utility::formatSyncPath(homeFolder));
 
         return ExitCode::SystemError;
     }
 
     const SyncName initialFolderName = getInitialFolderName(driveName);
     SyncPath nonExistingPath;
-    if (const auto exitInfo = findNonOccupiedPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath);
-        !exitInfo) {
+    if (const auto exitInfo = findUnoccupiedPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath); !exitInfo) {
         error = "Failed to find a non-occupied folder path for new sync";
 
         return exitInfo;
@@ -2209,12 +2210,15 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
 }
 
 bool ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
+    syncDbId = 0;
+
     QString absolutePath = QDir::cleanPath(path) + QLatin1Char('/');
+    const auto cs = getQtPathCheckOption();
 
     for (const BaseSync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
-        if (absolutePath.startsWith(localPath, getQtPathCheckOption())) {
+        if (absolutePath.startsWith(localPath, cs)) {
             syncDbId = sync.dbId();
             return true;
         }
