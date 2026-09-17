@@ -55,7 +55,7 @@ struct LogIfFailSettings {
     KD_COVERAGE_OFF                                                                                                   \
     if (!(cond)) {                                                                                                    \
         LOG_FATAL(_logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
-                                                   << "with message: " << message);                                   \
+                                                   << " with message: " << message);                                  \
         if (LogIfFailSettings::assertEnabled) assert(cond);                                                           \
     }                                                                                                                 \
     KD_COVERAGE_ON
@@ -64,7 +64,7 @@ struct LogIfFailSettings {
     KD_COVERAGE_OFF                                                                                                  \
     if (!(cond)) {                                                                                                   \
         LOG_FATAL(logger, "Condition failure: \"" << #cond << "\" in file " << __FILENAME__ << ", line " << __LINE__ \
-                                                  << "with message: " << message);                                   \
+                                                  << " with message: " << message);                                  \
         if (LogIfFailSettings::assertEnabled) assert(cond);                                                          \
     }                                                                                                                \
     KD_COVERAGE_ON
