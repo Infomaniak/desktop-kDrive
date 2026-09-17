@@ -111,6 +111,10 @@ function v4_prepare_appdir() (
         exit 1
     fi
 
+    # Keep the GLib runtime coherent. linuxdeploy's exclusion rules may leave libglib on the host while deploying GIO,
+    # GObject and GModule from the build system. Mixing those releases corrupts GLib callbacks at runtime.
+    cp -P /usr/lib/"$triplet"/lib{glib-2.0,gio-2.0,gobject-2.0,gmodule-2.0,ffi}.so.* usr/lib/
+
     # AppClientLinux points GIO_MODULE_DIR here while running from an AppImage.
     mkdir -p usr/lib/gio/modules
     if compgen -G "/usr/lib/$triplet/gio/modules/*.so" >/dev/null; then
@@ -127,6 +131,7 @@ function v4_check_appdir() (
     local -a required=(
         usr/bin/{kDrive,kdrive_qml,crashpad_handler,qt.conf,sync-exclude.lst,sync-folder-rules.csv}
         usr/lib/{libQt6Core.so.6,libQt6Quick.so.6,libQt6WaylandClient.so.6,libsentry.so,libssl.so.3,libcrypto.so.3}
+        usr/lib/{libglib-2.0.so.0,libgio-2.0.so.0,libgobject-2.0.so.0,libgmodule-2.0.so.0,libffi.so.8}
         usr/plugins/platforms/{libqxcb.so,libqwayland.so}
         usr/plugins/platforminputcontexts/{libcomposeplatforminputcontextplugin.so,libibusplatforminputcontextplugin.so}
         usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so
@@ -275,6 +280,11 @@ function v4_verify_bundle() (
         if grep -qE '\.conan2/|=> /(usr/)?lib[^ ]*/libQt6' <<<"$report"; then
             echo "Library resolved outside the AppDir: $file" >&2
             grep -E '\.conan2/|=> /(usr/)?lib[^ ]*/libQt6' <<<"$report" >&2
+            failures=1
+        fi
+        if grep -qE '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report"; then
+            echo "GLib runtime resolved outside the AppDir: $file" >&2
+            grep -E '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report" >&2
             failures=1
         fi
 
