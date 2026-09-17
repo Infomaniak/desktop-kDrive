@@ -451,7 +451,7 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
         if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
             ++newAttemptCount;
             newIncrementRequired = true;
-            if (newAttemptCount >= kMaxPathAttempts) {
+            if (newAttemptCount > kMaxPathAttempts) {
                 LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
                 return ExitCode::SystemError;
             }
@@ -483,7 +483,7 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
         if (alreadyExists) {
             ++attemptCount;
             // Count attempts and give up eventually
-            if (attemptCount >= kMaxPathAttempts) {
+            if (attemptCount > kMaxPathAttempts) {
                 LOG_WARN(Log::instance()->getLogger(), "Cannot find a valid path.");
                 return ExitCode::SystemError;
             }
