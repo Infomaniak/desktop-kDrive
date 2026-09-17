@@ -20,6 +20,10 @@ import QtQuick
 import kDrive.UI
 
 Item {
+    id: root
+
+    property string title: "kDrive"
+
     Row {
         anchors.left: parent.left
         anchors.leftMargin: IKSpacing.s8
@@ -37,7 +41,7 @@ Item {
 
         Text {
             anchors.verticalCenter: parent.verticalCenter
-            text: "kDrive"
+            text: root.title
             color: IKColors.textPrimary
             font.pixelSize: IKFonts.headlineSize
             font.weight: IKFonts.emphasized

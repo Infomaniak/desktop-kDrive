@@ -16,20 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-pragma ComponentBehavior: Bound
-import QtQuick
-import kDrive.UI
+#include "settingswindowcontroller.h"
 
-Rectangle {
-    id: root
-    default property alias rows: column.data
-    property real contentInset: IKSettings.groupPadding
-    implicitHeight: column.implicitHeight
-    radius: IKRadius.r12
-    color: IKColors.settingsCardSurface
-    Column {
-        id: column
-        x: root.contentInset
-        width: root.width - 2 * root.contentInset
-    }
+namespace KDC {
+
+SettingsWindowController::SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
+                                                   TranslationService &translationService,
+                                                   UpdateStatusService &updateStatusService, QObject *const parent) :
+    QObject(parent),
+    _general(parametersStore, parametersService, translationService, updateStatusService, this) {}
+
+void SettingsWindowController::refreshUpdates() const {
+    _general.refreshUpdates();
 }
+
+} // namespace KDC
