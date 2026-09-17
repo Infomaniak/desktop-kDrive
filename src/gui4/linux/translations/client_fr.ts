@@ -2869,5 +2869,25 @@ Pour accélérer l’envoi, nous vous recommandons de n’envoyer que la derniè
             <source>The debug folder was successfully sent to Infomaniak Support.</source>
             <translation>Le dossier de débogage a bien été envoyé au support Infomaniak.</translation>
         </message>
+        <message id="buttonSaveAnyway">
+            <source>Save anyway</source>
+            <extracomment>Primary action that bypasses the reachability check.</extracomment>
+            <translation>Enregistrer quand même</translation>
+        </message>
+        <message id="proxyConnectionFailedDescription">
+            <source>The connection to the proxy server could not be established.</source>
+            <extracomment>Dialog description.</extracomment>
+            <translation>La connexion au serveur proxy n’a pas pu être établie.</translation>
+        </message>
+        <message id="proxyConnectionFailedTitle">
+            <source>Unable to connect to the proxy</source>
+            <extracomment>Dialog title.</extracomment>
+            <translation>Connexion au proxy impossible</translation>
+        </message>
+        <message id="proxySaveAnywayQuestion">
+            <source>Do you still want to save these settings?</source>
+            <extracomment>Emphasized confirmation question.</extracomment>
+            <translation>Voulez-vous quand même enregistrer ces paramètres ?</translation>
+        </message>
     </context>
 </TS>
