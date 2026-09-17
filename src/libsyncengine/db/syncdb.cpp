@@ -322,72 +322,81 @@ bool SyncDb::create(bool &retry) {
     std::string error;
 
     // Node
-    if (!createAndPrepareRequest(CREATE_NODE_TABLE_ID, CREATE_NODE_TABLE)) return false;
-    if (!queryExec(CREATE_NODE_TABLE_ID, errId, error)) {
-        // In certain situations the io error can be avoided by switching
-        // to the DELETE journal mode
-        if (_journalMode != "DELETE" && errId == SQLITE_IOERR && extendedErrorCode() == SQLITE_IOERR_SHMMAP) {
-            LOG_WARN(_logger, "IO error SHMMAP on table creation, attempting with DELETE journal mode");
-            _journalMode = "DELETE";
-            queryFree(CREATE_NODE_TABLE_ID);
-            retry = true;
-            return false;
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_ID, CREATE_NODE_TABLE);
+        if (!scopeGuard) return false;
+
+        if (!queryExec(CREATE_NODE_TABLE_ID, errId, error)) {
+            // In certain situations the io error can be avoided by switching
+            // to the DELETE journal mode
+            if (_journalMode != "DELETE" && errId == SQLITE_IOERR && extendedErrorCode() == SQLITE_IOERR_SHMMAP) {
+                LOG_WARN(_logger, "IO error SHMMAP on table creation, attempting with DELETE journal mode");
+                _journalMode = "DELETE";
+                retry = true;
+                return false;
+            }
+
+            return sqlFail(CREATE_NODE_TABLE_ID, error);
         }
-
-        return sqlFail(CREATE_NODE_TABLE_ID, error);
     }
-    queryFree(CREATE_NODE_TABLE_ID);
 
-    if (!createAndPrepareRequest(CREATE_NODE_TABLE_IDX1_ID, CREATE_NODE_TABLE_IDX1)) return false;
-    if (!queryExec(CREATE_NODE_TABLE_IDX1_ID, errId, error)) {
-        queryFree(CREATE_NODE_TABLE_IDX1_ID);
-        return sqlFail(CREATE_NODE_TABLE_IDX1_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX1_ID, CREATE_NODE_TABLE_IDX1);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_NODE_TABLE_IDX1_ID, errId, error)) {
+            return sqlFail(CREATE_NODE_TABLE_IDX1_ID, error);
+        }
     }
-    queryFree(CREATE_NODE_TABLE_IDX1_ID);
 
-    if (!createAndPrepareRequest(CREATE_NODE_TABLE_IDX2_ID, CREATE_NODE_TABLE_IDX2)) return false;
-    if (!queryExec(CREATE_NODE_TABLE_IDX2_ID, errId, error)) {
-        queryFree(CREATE_NODE_TABLE_IDX2_ID);
-        return sqlFail(CREATE_NODE_TABLE_IDX2_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX2_ID, CREATE_NODE_TABLE_IDX2);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_NODE_TABLE_IDX2_ID, errId, error)) {
+            return sqlFail(CREATE_NODE_TABLE_IDX2_ID, error);
+        }
     }
-    queryFree(CREATE_NODE_TABLE_IDX2_ID);
 
-    if (!createAndPrepareRequest(CREATE_NODE_TABLE_IDX3_ID, CREATE_NODE_TABLE_IDX3)) return false;
-    if (!queryExec(CREATE_NODE_TABLE_IDX3_ID, errId, error)) {
-        queryFree(CREATE_NODE_TABLE_IDX3_ID);
-        return sqlFail(CREATE_NODE_TABLE_IDX3_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX3_ID, CREATE_NODE_TABLE_IDX3);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_NODE_TABLE_IDX3_ID, errId, error)) {
+            return sqlFail(CREATE_NODE_TABLE_IDX3_ID, error);
+        }
     }
-    queryFree(CREATE_NODE_TABLE_IDX3_ID);
 
-    if (!createAndPrepareRequest(CREATE_NODE_TABLE_IDX4_ID, CREATE_NODE_TABLE_IDX4)) return false;
-    if (!queryExec(CREATE_NODE_TABLE_IDX4_ID, errId, error)) {
-        queryFree(CREATE_NODE_TABLE_IDX4_ID);
-        return sqlFail(CREATE_NODE_TABLE_IDX4_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX4_ID, CREATE_NODE_TABLE_IDX4);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_NODE_TABLE_IDX4_ID, errId, error)) {
+            return sqlFail(CREATE_NODE_TABLE_IDX4_ID, error);
+        }
     }
-    queryFree(CREATE_NODE_TABLE_IDX4_ID);
 
-    if (!createAndPrepareRequest(CREATE_NODE_TABLE_IDX5_ID, CREATE_NODE_TABLE_IDX5)) return false;
-    if (!queryExec(CREATE_NODE_TABLE_IDX5_ID, errId, error)) {
-        queryFree(CREATE_NODE_TABLE_IDX5_ID);
-        return sqlFail(CREATE_NODE_TABLE_IDX5_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX5_ID, CREATE_NODE_TABLE_IDX5);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_NODE_TABLE_IDX5_ID, errId, error)) {
+            return sqlFail(CREATE_NODE_TABLE_IDX5_ID, error);
+        }
     }
-    queryFree(CREATE_NODE_TABLE_IDX5_ID);
 
     // Sync Node
-    if (!createAndPrepareRequest(CREATE_SYNC_NODE_TABLE_ID, CREATE_SYNC_NODE_TABLE)) return false;
-    if (!queryExec(CREATE_SYNC_NODE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_SYNC_NODE_TABLE_ID);
-        return sqlFail(CREATE_SYNC_NODE_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_NODE_TABLE_ID, CREATE_SYNC_NODE_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_SYNC_NODE_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_SYNC_NODE_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_SYNC_NODE_TABLE_ID);
 
     // Upload session token table
-    if (!createAndPrepareRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE)) return false;
-    if (!queryExec(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, errId, error)) {
-        queryFree(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID);
-        return sqlFail(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID);
 
     return true;
 }
@@ -464,31 +473,32 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         LOG_DEBUG(_logger, "Upgrade 3.4.0.0 Sync DB");
 
         // Upload session token table
-        if (!createAndPrepareRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE)) return false;
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE);
+        if (!scopeGuard) return false;
         if (!queryExec(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, errId, error)) {
-            queryFree(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID);
             return sqlFail(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, error);
         }
-        queryFree(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID);
     }
 
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.4.0")) {
         LOG_DEBUG(_logger, "Upgrade < 3.4.4.0 Sync DB");
 
-        if (!createAndPrepareRequest(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA)) return false;
-        bool hasData = false;
-        if (!queryNext(PRAGMA_WRITABLE_SCHEMA_ID, hasData)) {
-            queryFree(PRAGMA_WRITABLE_SCHEMA_ID);
-            return sqlFail(PRAGMA_WRITABLE_SCHEMA_ID, error);
+        {
+            auto scopeGuard = createAndPrepareLocalRequest(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA);
+            if (!scopeGuard) return false;
+            bool hasData = false;
+            if (!queryNext(PRAGMA_WRITABLE_SCHEMA_ID, hasData)) {
+                return sqlFail(PRAGMA_WRITABLE_SCHEMA_ID, error);
+            }
         }
-        queryFree(PRAGMA_WRITABLE_SCHEMA_ID);
 
-        if (!createAndPrepareRequest(ALTER_NODE_TABLE_FK_ID, ALTER_NODE_TABLE_FK)) return false;
-        if (!queryExec(ALTER_NODE_TABLE_FK_ID, errId, error)) {
-            queryFree(ALTER_NODE_TABLE_FK_ID);
-            return sqlFail(ALTER_NODE_TABLE_FK_ID, error);
+        {
+            auto scopeGuard = createAndPrepareLocalRequest(ALTER_NODE_TABLE_FK_ID, ALTER_NODE_TABLE_FK);
+            if (!scopeGuard) return false;
+            if (!queryExec(ALTER_NODE_TABLE_FK_ID, errId, error)) {
+                return sqlFail(ALTER_NODE_TABLE_FK_ID, error);
+            }
         }
-        queryFree(ALTER_NODE_TABLE_FK_ID);
     }
 
     if (!reinstateEncodingOfLocalNames(dbFromVersionNumber)) return false;
@@ -496,56 +506,39 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.8.2.0")) {
         LOG_DEBUG(_logger, "Upgrade < 3.8.2.0 Sync DB - Removing Undecided list");
 
-        if (!createAndPrepareRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST)) {
-            LOG_ERROR(_logger, "Error preparing select all sync node request");
-            return false;
-        }
+        auto scopeGuard1 = createAndPrepareLocalRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST);
+        if (!scopeGuard1) return false;
 
-        if (!createAndPrepareRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST)) {
-            LOG_ERROR(_logger, "Error preparing insert sync node request");
-            return false;
-        }
-        if (!createAndPrepareRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST)) {
-            LOG_ERROR(_logger, "Error preparing delete all sync node by type request");
-            return false;
-        }
+        auto scopeGuard2 = createAndPrepareLocalRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST);
+        if (!scopeGuard2) return false;
 
-        std::function freeRequests = [this]() {
-            queryFree(SELECT_ALL_SYNC_NODE_REQUEST_ID);
-            queryFree(INSERT_SYNC_NODE_REQUEST_ID);
-            queryFree(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID);
-        };
+        auto scopeGuard3 =
+                createAndPrepareLocalRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST);
+        if (!scopeGuard3) return false;
 
         NodeSet blacklistedNodes;
         NodeSet undecidedNodes;
         if (!selectAllSyncNodes(SyncNodeType::BlackList, blacklistedNodes)) {
             LOG_ERROR(_logger, "Error selecting blacklisted sync nodes");
-            freeRequests();
             return false;
         }
         if (!selectAllSyncNodes(fromInt<SyncNodeType>(3), undecidedNodes)) {
             LOG_ERROR(_logger, "Error selecting undecided sync nodes");
-            freeRequests();
             return false;
         }
         blacklistedNodes.insert(undecidedNodes.begin(), undecidedNodes.end());
         if (!updateAllSyncNodes(SyncNodeType::BlackList, blacklistedNodes)) {
             LOG_ERROR(_logger, "Error updating blacklisted sync nodes");
-            freeRequests();
             return false;
         }
         if (!updateAllSyncNodes(fromInt<SyncNodeType>(3), NodeSet())) { // Clear undecided nodes
             LOG_ERROR(_logger, "Error clearing undecided sync nodes");
-            freeRequests();
             return false;
         }
         if (!updateAllSyncNodes(fromInt<SyncNodeType>(2), NodeSet())) { // Clear WhiteList nodes
             LOG_ERROR(_logger, "Error clearing whitelisted sync nodes");
-            freeRequests();
             return false;
         }
-
-        freeRequests();
     }
 
 #ifdef KD_WINDOWS
@@ -554,25 +547,34 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         dbFromVersionNumber == "3.8.2") {
         LOG_DEBUG(_logger, "Upgrade from a 3.8.2 (build x) Sync DB - Reverting local deletes");
 
-        if (!createAndPrepareRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST)) {
+        auto scopeGuard1 = createAndPrepareLocalRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID,
+                                                        SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST);
+        if (!scopeGuard1) {
             LOG_ERROR(_logger, "Error preparing select node by parentNodeId root request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error preparing select node by parentNodeId root request");
             return false;
         }
-        if (!createAndPrepareRequest(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_REQUEST)) {
+
+        auto scopeGuard2 =
+                createAndPrepareLocalRequest(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_REQUEST);
+        if (!scopeGuard2) {
             LOG_ERROR(_logger, "Error preparing select node by parentNodeId request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error preparing select node by parentNodeId request");
             return false;
         }
-        if (!createAndPrepareRequest(SELECT_NODE_BY_NODEID_FULL_ID, SELECT_NODE_BY_NODEID_FULL)) {
+
+        auto scopeGuard3 = createAndPrepareLocalRequest(SELECT_NODE_BY_NODEID_FULL_ID, SELECT_NODE_BY_NODEID_FULL);
+        if (!scopeGuard3) {
             LOG_ERROR(_logger, "Error preparing select node by nodeId full request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error preparing select node by nodeId full request");
             return false;
         }
-        if (!createAndPrepareRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST)) {
+
+        auto scopeGuard4 = createAndPrepareLocalRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST);
+        if (!scopeGuard4) {
             LOG_ERROR(_logger, "Error preparing delete node request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error preparing delete node request");
@@ -584,11 +586,6 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
                                                  "Error reverting all local deletes");
         }
-
-        queryFree(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID);
-        queryFree(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID);
-        queryFree(SELECT_NODE_BY_NODEID_FULL_ID);
-        queryFree(DELETE_NODE_REQUEST_ID);
     }
 #endif // KD_WINDOWS
 

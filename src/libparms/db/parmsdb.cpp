@@ -813,13 +813,18 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         return true;
     }
 
-    LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
-    const bool successfulSelection = selectUserExclusionTemplates(dbUserExclusionTemplates);
+    {
+        // This upgrade helper runs before prepare(), so SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
+        auto scopeGuard = createAndPrepareLocalRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
+                                                       SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
+        if (!scopeGuard) return false;
 
-    if (!successfulSelection) {
-        LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
-        return false;
+        LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
+        if (!selectUserExclusionTemplates(dbUserExclusionTemplates)) {
+            LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
+            return false;
+        }
     }
 
     std::vector<ExclusionTemplate> dbUserExclusionTemplatesOutput;
@@ -840,10 +845,24 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
         }
     }
 
-    LOG_INFO(_logger, "Normalizations prepared for updates.");
-    const bool result = updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
+    {
+        // This upgrade helper runs before prepare(), so DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
+        auto scopeGuard1 = createAndPrepareLocalRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
+                                                        DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
+        if (!scopeGuard1) return false;
 
-    return result;
+        // This upgrade helper runs before prepare(), so INSERT_EXCLUSION_TEMPLATE_REQUEST_ID does not exist here.
+        auto scopeGuard2 = createAndPrepareLocalRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST);
+        if (!scopeGuard2) return false;
+
+        LOG_INFO(_logger, "Normalizations prepared for updates.");
+        if (!updateUserExclusionTemplates(dbUserExclusionTemplatesOutput)) {
+            LOG_WARN(_logger, "Error in updateUserExclusionTemplates");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 
@@ -1178,6 +1197,7 @@ bool ParmsDb::createSyncFolderRule() {
     int errId = 0;
     std::string error;
     auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE);
+    if (!scopeGuard) return false;
     if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
         return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
     }
@@ -3845,25 +3865,38 @@ bool ParmsDb::enableSentryAndMatomo() {
     LOG_INFO(_logger, "Enabling sentry and matomo by default")
 
     Parameters parameters;
-    bool found = false;
-    if (!selectParameters(parameters, found)) {
-        LOG_WARN(_logger, "Error selecting parameters");
-        return false;
-    }
-    if (!found) {
-        LOG_WARN(_logger, "Parameters not found");
-        return false;
+    {
+        // This upgrade helper runs before prepare(), so SELECT_PARAMETERS_REQUEST_ID does not exist here.
+        auto scopeGuard = createAndPrepareLocalRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST);
+        if (!scopeGuard) return false;
+
+        bool found = false;
+        if (!selectParameters(parameters, found)) {
+            LOG_WARN(_logger, "Error selecting parameters");
+            return false;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Parameters not found");
+            return false;
+        }
     }
     parameters.setSentryEnabled(true);
     parameters.setMatomoEnabled(true);
 
-    if (!updateParameters(parameters, found)) {
-        LOG_WARN(_logger, "Error updating parameters");
-        return false;
-    }
-    if (!found) {
-        LOG_WARN(_logger, "Parameters not found for update");
-        return false;
+    {
+        // This upgrade helper runs before prepare(), so UPDATE_PARAMETERS_REQUEST_ID does not exist here.
+        auto scopeGuard = createAndPrepareLocalRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST);
+        if (!scopeGuard) return false;
+
+        bool found = false;
+        if (!updateParameters(parameters, found)) {
+            LOG_WARN(_logger, "Error updating parameters");
+            return false;
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Parameters not found for update");
+            return false;
+        }
     }
 
     return true;

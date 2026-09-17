@@ -81,6 +81,15 @@ constexpr const char *pragmaJournalSizeLimit = "PRAGMA journal_size_limit=671088
     "SELECT value "            \
     "FROM version;"
 
+// Item existence
+// Check if a table exists
+#define CHECK_TABLE_EXISTENCE_REQUEST_ID "check_table_existence"
+#define CHECK_TABLE_EXISTENCE_REQUEST "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
+
+// Check if a table column exists
+#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
+#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
+
 namespace KDC {
 
 static std::string defaultJournalMode(const std::string &dbPath) {
@@ -324,11 +333,8 @@ bool Db::init(const std::string &version) {
 #define SQLITE_IOERR_SHMMAP (SQLITE_IOERR | (21 << 8))
 #endif
 
-    auto scopeGuard1 = createAndPrepareLocalRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST);
-    if (!scopeGuard1) return false;
-
-    auto scopeGuard2 = createAndPrepareLocalRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST);
-    if (!scopeGuard2) return false;
+    if (!createAndPrepareRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
+    if (!createAndPrepareRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
 
     if (!version.empty()) {
         // Check if DB is already initialized
@@ -662,6 +668,7 @@ bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
 
     if (!queryCreate(requestId)) {
         LOG_FATAL(_logger, "ENFORCE: \"queryCreate(" << requestId << ")\".");
+        return false;
     }
     if (!queryPrepare(requestId, query, false, errId, error)) {
         queryFree(requestId);
@@ -671,8 +678,12 @@ bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
     return true;
 }
 
-[[nodiscard]] const std::unique_ptr<Db::ScopeGuard> Db::createAndPrepareLocalRequest(const char *requestId, const char *query) {
-    return createAndPrepareRequest(requestId, query) ? std::make_unique<Db::ScopeGuard>(_sqliteDb, requestId) : nullptr;
+[[nodiscard]] std::unique_ptr<Db::ScopeGuard> Db::createAndPrepareLocalRequest(const char *requestId, const char *query) {
+    if (!createAndPrepareRequest(requestId, query)) {
+        return nullptr;
+    }
+
+    return std::make_unique<Db::ScopeGuard>(_sqliteDb, requestId);
 }
 
 bool Db::tableExists(const std::string &tableName, bool &exist) {
@@ -685,6 +696,7 @@ bool Db::tableExists(const std::string &tableName, bool &exist) {
         LOG_WARN(_logger, "Error getting query result: " << id);
         return false;
     }
+    LOG_IF_FAIL(queryResetAndClearBindings(CHECK_TABLE_EXISTENCE_REQUEST_ID));
 
     return true;
 }

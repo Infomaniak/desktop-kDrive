@@ -28,14 +28,6 @@
 
 #include <Poco/URI.h>
 
-// Item existence
-// Check if a table exists
-#define CHECK_TABLE_EXISTENCE_REQUEST_ID "check_table_existence"
-#define CHECK_TABLE_EXISTENCE_REQUEST "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
-
-#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
-#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
-
 namespace KDC {
 
 class COMMONSERVER_EXPORT Db {
@@ -45,6 +37,9 @@ class COMMONSERVER_EXPORT Db {
                 ScopeGuard(std::shared_ptr<SqliteDb> sqliteDb, const std::string &id) :
                     _sqliteDb(sqliteDb),
                     _id(id) {}
+
+                ScopeGuard(const ScopeGuard &) = delete;
+                ScopeGuard &operator=(const ScopeGuard &) = delete;
 
                 ~ScopeGuard() { _sqliteDb->queryFree(_id); }
 
@@ -131,7 +126,7 @@ class COMMONSERVER_EXPORT Db {
          * @param query is the request sql definition.
          * @return a unique_ptr to a ScopeGuard object if the request was created and prepared successfully, nullptr otherwise.
          */
-        [[nodiscard]] const std::unique_ptr<ScopeGuard> createAndPrepareLocalRequest(const char *requestId, const char *query);
+        [[nodiscard]] std::unique_ptr<ScopeGuard> createAndPrepareLocalRequest(const char *requestId, const char *query);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;

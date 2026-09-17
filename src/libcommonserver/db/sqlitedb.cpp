@@ -424,7 +424,7 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
 
 void SqliteDb::checkForBlockingStatements() {
     sqlite3_stmt *stmt = NULL;
-    while ((stmt = sqlite3_next_stmt(_sqlite3Db.get(), stmt)) != NULL) {
+    while ((stmt = sqlite3_next_stmt(_sqlite3Db.get(), stmt)) != nullptr) {
         if (sqlite3_stmt_busy(stmt)) {
             LOG_DEBUG(_logger, "Blocking statement: " << sqlite3_sql(stmt));
         }

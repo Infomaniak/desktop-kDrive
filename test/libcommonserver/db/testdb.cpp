@@ -65,15 +65,9 @@ void TestDb::setUp() {
     std::filesystem::path testDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     (void) IoHelper::deleteItem(testDbPath);
     _testObj = new MyTestDb(testDbPath);
-
-    _testObj->createAndPrepareRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST);
-    _testObj->createAndPrepareRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST);
 }
 
 void TestDb::tearDown() {
-    _testObj->queryFree(CHECK_TABLE_EXISTENCE_REQUEST_ID);
-    _testObj->queryFree(CHECK_COLUMN_EXISTENCE_REQUEST_ID);
-
     delete _testObj;
     TestBase::stop();
 }

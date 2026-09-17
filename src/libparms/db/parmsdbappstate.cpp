@@ -51,14 +51,13 @@ namespace KDC {
 
 bool ParmsDb::createAppState() {
     LOG_INFO(_logger, "Creating table app_state");
-    if (!createAndPrepareRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE)) return false;
+    auto scopeGuard = createAndPrepareLocalRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE);
+    if (!scopeGuard) return false;
     int errId = 0;
     std::string error;
     if (!queryExec(CREATE_APP_STATE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_APP_STATE_TABLE_ID);
         return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
     }
-    queryFree(CREATE_APP_STATE_TABLE_ID);
     return true;
 }
 
