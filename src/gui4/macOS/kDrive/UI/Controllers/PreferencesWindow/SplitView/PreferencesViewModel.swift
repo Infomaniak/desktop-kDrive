@@ -24,15 +24,54 @@ import kDriveCore
 import kDriveCoreUI
 import OrderedCollections
 
+struct PreferencesViewState: Equatable {
+    var users = [UIUser]()
+    var availableDrives = OrderedDictionary<UIUser.ID, [UIAvailableDrive]>()
+    var synchronizedDrives = OrderedDictionary<UIUser.ID, [UIDriveContext]>()
+
+    init() {}
+
+    init(indexedUsers: IndexedUsers) {
+        for user in indexedUsers.values {
+            let uiUser = UIUser(user: user)
+            users.append(uiUser)
+
+            var synchronizedDriveIds = Set<Int32>()
+            for account in user.accounts.values {
+                for drive in account.drives.values where !drive.synchros.isEmpty {
+                    synchronizedDrives[uiUser.id, default: []].append(UIDriveContext(drive: drive, account: account))
+                    synchronizedDriveIds.insert(drive.driveId)
+                }
+            }
+            synchronizedDrives[uiUser.id, default: []].sort { $0.drive.name < $1.drive.name }
+
+            for availableDrive in user.availableDrives.values {
+                guard !synchronizedDriveIds.contains(availableDrive.driveId) else { continue }
+                availableDrives[uiUser.id, default: []].append(UIAvailableDrive(availableDrive: availableDrive))
+            }
+            availableDrives[uiUser.id, default: []].sort { $0.name < $1.name }
+        }
+    }
+}
+
 @MainActor
 public class PreferencesViewModel: ObservableObject {
     @LazyInjectService private var cache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
 
-    @Published private(set) var users = [UIUser]()
+    @Published private(set) var state = PreferencesViewState()
 
-    @Published private(set) var availableDrive = OrderedDictionary<UIUser.ID, [UIAvailableDrive]>()
-    @Published private(set) var synchronizedDrive = OrderedDictionary<UIUser.ID, [UIDriveContext]>()
+    var users: [UIUser] {
+        state.users
+    }
+
+    var availableDrive: OrderedDictionary<UIUser.ID, [UIAvailableDrive]> {
+        state.availableDrives
+    }
+
+    var synchronizedDrive: OrderedDictionary<UIUser.ID, [UIDriveContext]> {
+        state.synchronizedDrives
+    }
 
     private var bindStore = Set<AnyCancellable>()
 
@@ -61,32 +100,6 @@ public class PreferencesViewModel: ObservableObject {
     }
 
     private func updateUsers(_ users: IndexedUsers) {
-        var refreshedUsers = [UIUser]()
-        var refreshedAvailableDrives = OrderedDictionary<UIUser.ID, [UIAvailableDrive]>()
-        var refreshedSynchronizedDrives = OrderedDictionary<UIUser.ID, [UIDriveContext]>()
-
-        for user in users.values {
-            let uiUser = UIUser(user: user)
-            refreshedUsers.append(uiUser)
-
-            var synchronizedDrivesID = Set<Int32>()
-            for account in user.accounts.values {
-                for drive in account.drives.values {
-                    refreshedSynchronizedDrives[uiUser.id, default: []].append(UIDriveContext(drive: drive, account: account))
-                    synchronizedDrivesID.insert(drive.driveId)
-                }
-            }
-            refreshedSynchronizedDrives[uiUser.id, default: []].sort { $0.drive.name < $1.drive.name }
-
-            for availableDrive in user.availableDrives.values {
-                guard !synchronizedDrivesID.contains(availableDrive.driveId) else { continue }
-                refreshedAvailableDrives[uiUser.id, default: []].append(UIAvailableDrive(availableDrive: availableDrive))
-            }
-            refreshedAvailableDrives[uiUser.id, default: []].sort { $0.name < $1.name }
-        }
-
-        self.users = refreshedUsers
-        availableDrive = refreshedAvailableDrives
-        synchronizedDrive = refreshedSynchronizedDrives
+        state = PreferencesViewState(indexedUsers: users)
     }
 }

@@ -239,7 +239,7 @@ struct SyncedKDriveView: View {
         }
 
         @InjectService var router: PreferencesViewRouter
-        router.append(.accounts)
+        router.removeLast()
     }
 
     private func enableMainSynchro() {

@@ -109,6 +109,18 @@ public extension User {
         static let updateSignal: UpdateOptions = [.userId, .name, .firstName, .email, .avatar, .isConnected, .isStaff]
 
         @usableFromInline
+        static let refresh: UpdateOptions = [
+            .userId,
+            .name,
+            .firstName,
+            .email,
+            .avatar,
+            .isConnected,
+            .isStaff,
+            .accounts
+        ]
+
+        @usableFromInline
         static let all: UpdateOptions = [
             .userId,
             .name,

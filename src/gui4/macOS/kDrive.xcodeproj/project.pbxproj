@@ -236,6 +236,7 @@
 				SynchroErrors/SynchroErrorKindTests.swift,
 				UI/BetaOptionTests.swift,
 				UI/LogUploadSessionTrackerTests.swift,
+				UI/PreferencesViewStateTests.swift,
 				UI/SynchroErrorManagerTests.swift,
 				UI/UISynchroNodeTests.swift,
 				Utils/FinderSidebarFavoritesTests.swift,

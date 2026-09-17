@@ -31,6 +31,8 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     var users: IndexedUsers = [:]
     var serverErrors: IndexedErrors = [:]
 
+    private var refreshDepth = 0
+
     private nonisolated let usersSubject = PassthroughSubject<IndexedUsers, Never>()
     private nonisolated let serverErrorsSubject = PassthroughSubject<IndexedErrors, Never>()
 
@@ -482,6 +484,7 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     // MARK: - Observation
 
     private func notifyUpdate() {
+        guard refreshDepth == 0 else { return }
         usersSubject.send(users)
     }
 
@@ -492,11 +495,26 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
     // MARK: - Management
 
     public func refresh() async throws {
+        refreshDepth += 1
+        defer {
+            refreshDepth -= 1
+            notifyUpdate()
+        }
+
         try await UserJobs().userInfoList()
         try await AccountJobs().accountInfoList()
         try await DriveJobs().driveInfoList()
         try await SyncJobs().availableSync()
         try await ErrorJobs().errorInfoList()
+
+        let userDbIds = Array(users.keys)
+        for userDbId in userDbIds {
+            do {
+                try await DriveJobs().availableDrives(userDbId: userDbId)
+            } catch {
+                IKLogger.cache.warning("[KD] [Cache] Failed to refresh available drives for user \(userDbId): \(error)")
+            }
+        }
     }
 
     public func clearAndRefresh() async throws {

@@ -268,6 +268,33 @@ struct UserUpdateTests {
         #expect(result?.accounts == original.accounts)
     }
 
+    @Test("Refresh hierarchy preserves available drives")
+    func refreshHierarchyPreservesAvailableDrives() throws {
+        // GIVEN
+        let availableDrive = try AvailableDrive(
+            driveId: 1,
+            accountId: 1,
+            accountName: "Test Account",
+            userDbId: Self.dbId,
+            userId: Self.userId,
+            name: "Test Drive",
+            color: #require(HexColor(hex: "FF0000"))
+        )
+        let original = createUser(availableDrives: [availableDrive.driveId: availableDrive])
+        let refreshedAccounts: IndexedAccounts = [
+            1: Account(dbId: 1, userDbId: Self.dbId, name: "Refreshed Account", drives: [:])
+        ]
+        let refreshed = createUser(name: "Refreshed User", accounts: refreshedAccounts)
+
+        // WHEN
+        let result = original.updated(with: refreshed, updateOptions: .refresh)
+
+        // THEN
+        #expect(result?.name == "Refreshed User")
+        #expect(result?.accounts == refreshedAccounts)
+        #expect(result?.availableDrives == original.availableDrives)
+    }
+
     @Test("Update all fields with .all option")
     func updateAllFields() {
         // GIVEN

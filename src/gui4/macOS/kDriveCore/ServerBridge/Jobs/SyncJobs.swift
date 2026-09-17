@@ -153,13 +153,27 @@ public struct SyncJobs: Sendable {
     }
 
     public func syncDelete(syncDbId: Int32) async throws {
+        let userDbId: Int32?
+        if let synchro = await coherentCache.getSynchro(synchroDbId: syncDbId),
+           let drive = await coherentCache.getDrive(driveDbId: synchro.driveDbId) {
+            userDbId = drive.userDbId
+        } else {
+            userDbId = nil
+        }
+
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.SYNC_DELETE, body: query)
 
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
-        try? await coherentCache.removeSynchro(synchroDbId: syncDbId)
         await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+
+        guard let userDbId else { return }
+        do {
+            try await DriveJobs().availableDrives(userDbId: userDbId)
+        } catch {
+            IKLogger.cache.warning("[KD] [Cache] Failed to refresh available drives after deleting sync \(syncDbId): \(error)")
+        }
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
