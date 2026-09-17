@@ -21,6 +21,7 @@ global using DriveId = System.Int64;
 global using NodeId = System.String;
 global using SyncPath = System.String;
 global using UserId = System.Int64;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -155,11 +156,13 @@ namespace Infomaniak.kDrive.Types
         public DbId SyncDbId { get; }
         public TooManyDeletesNotificationType NotificationType { get; }
         public List<string> FilesPaths { get; }
+        public Int32 NbFiles { get; }
 
-        public ManyDeletesInfo(DbId syncDbId, TooManyDeletesNotificationType notificationType, List<string> filesPaths)
+        public ManyDeletesInfo(DbId syncDbId, TooManyDeletesNotificationType notificationType, Int32 nbFiles, List<string> filesPaths)
         {
             SyncDbId = syncDbId;
             NotificationType = notificationType;
+            NbFiles = nbFiles;
             FilesPaths = filesPaths;
         }
     }

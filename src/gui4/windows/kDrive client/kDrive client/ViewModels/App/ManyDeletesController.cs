@@ -30,7 +30,7 @@ namespace Infomaniak.kDrive.ViewModels
 {
     public class ManyDeletesNotification : UISafeObservableObject
     {
-        private const int SoftLimitMaxFilesPaths = 200;
+        private const int _maxFilesPaths = 500;
 
         private List<string> _filesPaths;
         private int _totalFilesCount;
@@ -73,14 +73,17 @@ namespace Infomaniak.kDrive.ViewModels
             var addedPaths = manyDeletesInfo.FilesPaths.Except(_filesPaths).ToList();
 
             SetPropertyInUIThread(ref _filesPaths, Cap(_filesPaths.Concat(addedPaths)), nameof(FilesPaths));
-            TotalFilesCount += addedPaths.Count;
+            TotalFilesCount += manyDeletesInfo.NbFiles;
             TruncatedFilesCount = Math.Max(0, _totalFilesCount - _filesPaths.Count);
             OnPropertyChangedInUIThread(nameof(IsTruncated));
         }
 
         private List<string> Cap(IEnumerable<string> filesPaths)
         {
-            return IsHardLimit ? filesPaths.ToList() : filesPaths.Take(SoftLimitMaxFilesPaths).ToList();
+            if (filesPaths.Count() <= _maxFilesPaths)
+                return filesPaths.ToList();
+
+            return filesPaths.Take(_maxFilesPaths).ToList();
         }
     }
 
