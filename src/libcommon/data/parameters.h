@@ -38,29 +38,29 @@ class Parameters {
 
         Parameters();
 
-        inline void setLanguage(Language language) { _language = language; }
+        inline void setLanguage(const Language language) { _language = language; }
         inline Language language() const { return _language; }
-        inline void setMonoIcons(bool monoIcons) { _monoIcons = monoIcons; }
+        inline void setMonoIcons(const bool monoIcons) { _monoIcons = monoIcons; }
         inline bool monoIcons() const { return _monoIcons; }
-        inline void setAutoStart(bool autoStart) { _autoStart = autoStart; }
+        inline void setAutoStart(const bool autoStart) { _autoStart = autoStart; }
         inline bool autoStart() const { return _autoStart; }
-        inline void setMoveToTrash(bool moveToTrash) { _moveToTrash = moveToTrash; }
+        inline void setMoveToTrash(const bool moveToTrash) { _moveToTrash = moveToTrash; }
         inline bool moveToTrash() const { return _moveToTrash; }
-        inline void setNotificationsDisabled(NotificationsDisabled notificationsDisabled) {
+        inline void setNotificationsDisabled(const NotificationsDisabled notificationsDisabled) {
             _notificationsDisabled = notificationsDisabled;
         }
         inline NotificationsDisabled notificationsDisabled() const { return _notificationsDisabled; }
-        inline void setUseLog(bool useLog) { _useLog = useLog; }
+        inline void setUseLog(const bool useLog) { _useLog = useLog; }
         inline bool useLog() const { return _useLog; }
-        inline void setLogLevel(LogLevel logLevel) { _logLevel = logLevel; }
+        inline void setLogLevel(const LogLevel logLevel) { _logLevel = logLevel; }
         inline LogLevel logLevel() const { return _logLevel; }
-        inline void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
+        inline void setExtendedLog(const bool extendedLog) { _extendedLog = extendedLog; }
         inline bool extendedLog() const { return _extendedLog; }
-        inline void setPurgeOldLogs(bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
+        inline void setPurgeOldLogs(const bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
         inline bool purgeOldLogs() const { return _purgeOldLogs; }
         inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
         inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
-        inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
+        inline void setDarkTheme(const bool darkTheme) { _darkTheme = darkTheme; }
         inline bool darkTheme() const { return _darkTheme; }
 
         inline void setDialogGeometry(const QString &objectName, const QByteArray &saveGeometry) {
@@ -71,16 +71,16 @@ class Parameters {
         inline const DialogGeometry &dialogGeometry() const { return _dialogGeometry; }
 
         inline int maxAllowedCpu() const { return _maxAllowedCpu; }
-        inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
+        inline void setMaxAllowedCpu(const int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
 
         [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
 
         bool sentryEnabled() const { return _sentryEnabled; }
-        void setSentryEnabled(bool value) { _sentryEnabled = value; }
+        void setSentryEnabled(const bool value) { _sentryEnabled = value; }
 
         bool matomoEnabled() const { return _matomoEnabled; }
-        void setMatomoEnabled(bool value) { _matomoEnabled = value; }
+        void setMatomoEnabled(const bool value) { _matomoEnabled = value; }
 
         [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
         void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
@@ -98,7 +98,7 @@ class Parameters {
         }
 
         inline bool autoUpdateAttempted() const { return _autoUpdateAttempted; }
-        inline void setAutoUpdateAttempted(bool autoUpdateAttempted) { _autoUpdateAttempted = autoUpdateAttempted; }
+        inline void setAutoUpdateAttempted(const bool autoUpdateAttempted) { _autoUpdateAttempted = autoUpdateAttempted; }
 
         inline const std::string &seenVersion() const { return _seenVersion; }
         inline void setSeenVersion(const std::string &seenVersion) { _seenVersion = seenVersion; }
@@ -110,7 +110,40 @@ class Parameters {
 
         static int _uploadSessionParallelJobsDefault;
 
-        friend bool operator==(const Parameters &lhs, const Parameters &rhs) = default;
+        // Do not compare server-internal attributes
+        friend bool operator==(const Parameters &lhs, const Parameters &rhs) {
+            return lhs._language == rhs._language && lhs._monoIcons == rhs._monoIcons && lhs._autoStart == rhs._autoStart &&
+                   lhs._moveToTrash == rhs._moveToTrash && lhs._notificationsDisabled == rhs._notificationsDisabled &&
+                   lhs._useLog == rhs._useLog && lhs._logLevel == rhs._logLevel && lhs._extendedLog == rhs._extendedLog &&
+                   lhs._purgeOldLogs == rhs._purgeOldLogs && lhs._darkTheme == rhs._darkTheme &&
+                   lhs._dialogGeometry == rhs._dialogGeometry && lhs._maxAllowedCpu == rhs._maxAllowedCpu &&
+                   lhs._proxyConfig == rhs._proxyConfig && lhs._distributionChannel == rhs._distributionChannel &&
+                   lhs._sentryEnabled == rhs._sentryEnabled && lhs._matomoEnabled == rhs._matomoEnabled &&
+                   lhs._notifyBeforeDelete == rhs._notifyBeforeDelete;
+        }
+
+        // Do not update server-internal attributes
+        Parameters &operator=(const Parameters &other) {
+            _language = other._language;
+            _monoIcons = other._monoIcons;
+            _autoStart = other._autoStart;
+            _moveToTrash = other._moveToTrash;
+            _notificationsDisabled = other._notificationsDisabled;
+            _useLog = other._useLog;
+            _logLevel = other._logLevel;
+            _extendedLog = other._extendedLog;
+            _purgeOldLogs = other._purgeOldLogs;
+            _darkTheme = other._darkTheme;
+            _dialogGeometry = other._dialogGeometry;
+            _maxAllowedCpu = other._maxAllowedCpu;
+            _proxyConfig = other._proxyConfig;
+            _distributionChannel = other._distributionChannel;
+            _sentryEnabled = other._sentryEnabled;
+            _matomoEnabled = other._matomoEnabled;
+            _notifyBeforeDelete = other._notifyBeforeDelete;
+
+            return *this;
+        }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
