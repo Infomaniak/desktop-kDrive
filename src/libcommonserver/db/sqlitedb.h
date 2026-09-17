@@ -94,6 +94,12 @@ class SqliteDb {
 
         bool openHelper(const std::filesystem::path &dbPath, int sqliteFlags);
         CheckDbResult checkDb();
+
+        /**
+         * @brief Check for blocking statements in the database. This can be useful for debugging and identifying potential issues
+         * with long-running queries or transactions that may be causing locks or delays in the database.
+         */
+        void checkForBlockingStatements();
 };
 
 } // namespace KDC

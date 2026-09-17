@@ -422,6 +422,15 @@ bool SqliteDb::openHelper(const std::filesystem::path &dbPath, int sqliteFlags) 
     return true;
 }
 
+void SqliteDb::checkForBlockingStatements() {
+    sqlite3_stmt *stmt = NULL;
+    while ((stmt = sqlite3_next_stmt(_sqlite3Db.get(), stmt)) != NULL) {
+        if (sqlite3_stmt_busy(stmt)) {
+            LOG_DEBUG(_logger, "Blocking statement: " << sqlite3_sql(stmt));
+        }
+    }
+}
+
 SqliteDb::CheckDbResult SqliteDb::checkDb() {
     // quick_check can fail with a disk IO error when diskspace is low
     auto isDbLocked = [](const int32_t errId) { return errId == SQLITE_BUSY || errId == SQLITE_LOCKED; };
@@ -503,6 +512,9 @@ bool SqliteDb::walCheckpointTruncate() {
     }
     auto nLog = 0;
     auto nCkpt = 0;
+
+    checkForBlockingStatements();
+
     _errId = sqlite3_wal_checkpoint_v2(_sqlite3Db.get(), nullptr, SQLITE_CHECKPOINT_TRUNCATE, &nLog, &nCkpt);
     if (_errId == SQLITE_BUSY) {
         LOG_WARN(_logger,

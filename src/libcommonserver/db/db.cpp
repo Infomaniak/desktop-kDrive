@@ -332,8 +332,11 @@ bool Db::init(const std::string &version) {
 #define SQLITE_IOERR_SHMMAP (SQLITE_IOERR | (21 << 8))
 #endif
 
-    if (!createAndPrepareRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST)) return false;
-    if (!createAndPrepareRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST)) return false;
+    auto scopeGuard1 = createAndPrepareLocalRequest(CHECK_TABLE_EXISTENCE_REQUEST_ID, CHECK_TABLE_EXISTENCE_REQUEST);
+    if (!scopeGuard1) return false;
+
+    auto scopeGuard2 = createAndPrepareLocalRequest(CHECK_COLUMN_EXISTENCE_REQUEST_ID, CHECK_COLUMN_EXISTENCE_REQUEST);
+    if (!scopeGuard2) return false;
 
     if (!version.empty()) {
         // Check if DB is already initialized
@@ -345,7 +348,8 @@ bool Db::init(const std::string &version) {
         if (dbExists) {
             // Check version
             LOG_DEBUG(_logger, "Check DB version");
-            if (!createAndPrepareRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST)) return false;
+            auto scopeGuard3 = createAndPrepareLocalRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST);
+            if (!scopeGuard3) return false;
 
             bool found = false;
             if (!selectVersion(_fromVersion, found)) {
@@ -357,8 +361,6 @@ bool Db::init(const std::string &version) {
                 return false;
             }
 
-            queryFree(SELECT_VERSION_REQUEST_ID);
-
             // Upgrade DB
             if (!upgrade(_fromVersion, version)) {
                 LOG_WARN(_logger, "Error in Db::upgrade");
@@ -366,7 +368,9 @@ bool Db::init(const std::string &version) {
             }
 
             // Update version
-            if (!createAndPrepareRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST)) return false;
+            auto scopeGuard4 = createAndPrepareLocalRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST);
+            if (!scopeGuard4) return false;
+
             if (!updateVersion(version, found)) {
                 LOG_WARN(_logger, "Error in Db::updateVersion");
                 return false;
@@ -375,29 +379,26 @@ bool Db::init(const std::string &version) {
                 LOG_WARN(_logger, "Version not found");
                 return false;
             }
-
-            queryFree(UPDATE_VERSION_REQUEST_ID);
         } else {
             // Create version table
             LOG_DEBUG(_logger, "Create version table");
-            if (!createAndPrepareRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE)) return false;
+            auto scopeGuard3 = createAndPrepareLocalRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE);
+            if (!scopeGuard3) return false;
 
             int errId = -1;
             if (std::string error; !queryExec(CREATE_VERSION_TABLE_ID, errId, error)) {
-                queryFree(CREATE_VERSION_TABLE_ID);
                 return sqlFail(CREATE_VERSION_TABLE_ID, error);
             }
-            queryFree(CREATE_VERSION_TABLE_ID);
 
             // Insert version
             LOG_DEBUG(_logger, "Insert version " << version);
-            if (!createAndPrepareRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST)) return false;
+            auto scopeGuard4 = createAndPrepareLocalRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST);
+            if (!scopeGuard4) return false;
+
             if (!insertVersion(version)) {
                 LOG_WARN(_logger, "Error in Db::insertVersion");
                 return false;
             }
-
-            queryFree(INSERT_VERSION_REQUEST_ID);
 
             // Create DB
             LOG_INFO(_logger, "Create " << dbType() << " DB");
@@ -668,6 +669,10 @@ bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
     }
 
     return true;
+}
+
+[[nodiscard]] const std::unique_ptr<Db::ScopeGuard> Db::createAndPrepareLocalRequest(const char *requestId, const char *query) {
+    return createAndPrepareRequest(requestId, query) ? std::make_unique<Db::ScopeGuard>(_sqliteDb, requestId) : nullptr;
 }
 
 bool Db::tableExists(const std::string &tableName, bool &exist) {
