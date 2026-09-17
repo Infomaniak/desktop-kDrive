@@ -439,7 +439,6 @@ qt_deploy_runtime_dependencies(
     INCLUDE_PLUGINS
         composeplatforminputcontextplugin
         ibusplatforminputcontextplugin
-        qgtk3
         qnetworkmanager
         qopensslbackend
         qsvg
@@ -450,6 +449,7 @@ qt_deploy_runtime_dependencies(
         qxcb-glx-integration
         qxdgdesktopportal
         xdg-shell
+    EXCLUDE_PLUGINS qgtk3
     EXCLUDE_PLUGIN_TYPES qmltooling egldeviceintegrations)
 qt_deploy_translations(CATALOGS qtbase qtdeclarative LOCALES da de en es fi fr it nl pl pt_BR sv)
 ")

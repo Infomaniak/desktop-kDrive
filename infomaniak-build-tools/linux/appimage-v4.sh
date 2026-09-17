@@ -136,7 +136,7 @@ function v4_check_appdir() (
         usr/plugins/imageformats/libqsvg.so
         usr/plugins/iconengines/libqsvgicon.so
         usr/plugins/networkinformation/libqnetworkmanager.so
-        usr/plugins/platformthemes/{libqxdgdesktopportal.so,libqgtk3.so}
+        usr/plugins/platformthemes/libqxdgdesktopportal.so
         usr/qml/QtQuick/{Dialogs,VectorImage}/qmldir
         usr/qml/QtQuick/Controls/{Fusion,Basic}/qmldir
         usr/qml/Qt/labs/lottieqt/VectorImageHelpers/qmldir
@@ -147,6 +147,7 @@ function v4_check_appdir() (
     )
     local -a forbidden=(
         usr/bin/kDriveRecoveryUpdater
+        usr/plugins/platformthemes/libqgtk3.so
         usr/plugins/qmltooling
         usr/plugins/sqldrivers
         kDriveRecoveryUpdater*.AppImage
@@ -188,7 +189,7 @@ function v4_linuxdeploy_deploy() (
     local -a deps_only=()
     local dir
     while IFS= read -r dir; do
-        # Platform themes deliberately use the host portal or GTK stack.
+        # The platform theme deliberately uses the host portal stack.
         [[ "$dir" == "$app_dir/usr/plugins/platformthemes" ]] && continue
         deps_only+=(--deploy-deps-only "$dir")
     done < <(find "$app_dir/usr/plugins" "$app_dir/usr/qml" "$app_dir/usr/lib/gio/modules" \
@@ -245,6 +246,7 @@ function v4_linuxdeploy_recovery_updater() (
 
 function v4_verify_bundle() (
     set -eo pipefail
+    export LC_ALL=C # avoid 'Shared library: ' to be translated
     local app_dir="$1"
     local failures=0
     local glibc_floor=""
@@ -258,10 +260,14 @@ function v4_verify_bundle() (
             echo "Absolute RUNPATH: $file" >&2
             failures=1
         fi
+        if readelf -d "$file" | grep -q 'Shared library: \[libOpenGL\.so\.0\]'; then
+            echo "Unsupported host dependency on libOpenGL.so.0: $file" >&2
+            failures=1
+        fi
 
         local report
         report="$(env -u LD_LIBRARY_PATH ldd "$file" 2>/dev/null || true)"
-        if [[ "$file" != */usr/plugins/platformthemes/libqgtk3.so ]] && grep -q 'not found' <<<"$report"; then
+        if grep -q 'not found' <<<"$report"; then
             echo "Unresolved dependency: $file" >&2
             grep 'not found' <<<"$report" >&2
             failures=1
