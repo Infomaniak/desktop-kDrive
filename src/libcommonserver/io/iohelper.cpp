@@ -1309,7 +1309,7 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
 
     // Set full access rights.
     if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
+        LOGW_DEBUG(logger(), L"Failed to set rights for " << Utility::formatIoError(path, ioError));
         return ioError;
     }
 
