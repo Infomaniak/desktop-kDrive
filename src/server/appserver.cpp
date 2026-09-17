@@ -4945,11 +4945,12 @@ void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooMa
     if (useOldCommServer()) {
         int id = 0;
         const auto params =
-                QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType, nbDeletes));
+                QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType, static_cast<qint64>(nbDeletes)));
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbDeletes, filesPaths));
+        _commManager->sendGuiSignal(
+                std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbDeletes, filesPaths));
     }
 }
 
