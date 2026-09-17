@@ -734,6 +734,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     if (!checkIfPathExists(path, exists, ioError, option)) {
         return false;
     }
+
     if (!exists) {
         if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
         return true;
@@ -742,15 +743,19 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     return _getFileStat(path, filestat, ioError);
 }
 
-void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, PathCheckOption option) {
+void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, const PathCheckOption option) {
     exists = true;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError, option)) {
-        exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
 
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
+#if defined(KD_WINDOWS)
+    exists = ioError != IoError::NoSuchFileOrDirectory;
+#else
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+#endif
 }
 
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
