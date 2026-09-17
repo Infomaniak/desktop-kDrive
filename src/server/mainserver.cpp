@@ -220,27 +220,31 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 
 int main(int argc, char **argv) {
     std::unique_ptr<KDC::AppServer> appPtr = nullptr;
-    if (auto result = init(argc, argv, appPtr); result != 0) return result;
+    std::int32_t result = init(argc, argv, appPtr);
 
-    std::int32_t execResult = 0;
-
-    try {
-        execResult = exec(appPtr);
-    } catch (const std::bad_alloc &badAllocationException) {
-        LOG_WARN(KDC::Log::instance()->getLogger(),
-                 std::string("A bad allocation caused the interruption of the server application: ") +
-                         badAllocationException.what());
-        return -1;
-    } catch (const std::exception &standardException) {
-        LOG_WARN(KDC::Log::instance()->getLogger(),
-                 std::string("A standard exception caused the interruption of the server application: ") +
-                         standardException.what());
-        return -1;
-    } catch (...) {
-        LOG_WARN(KDC::Log::instance()->getLogger(),
-                 std::string("An exception of unknown type caused the interruption of the server application."));
-        return -1;
+    if (result == 0) {
+        try {
+            result = exec(appPtr);
+        } catch (const std::bad_alloc &badAllocationException) {
+            LOG_WARN(KDC::Log::instance()->getLogger(),
+                     std::string("A bad allocation caused the interruption of the server application: ") +
+                             badAllocationException.what());
+            result = -1;
+        } catch (const std::exception &standardException) {
+            LOG_WARN(KDC::Log::instance()->getLogger(),
+                     std::string("A standard exception caused the interruption of the server application: ") +
+                             standardException.what());
+            result = -1;
+        } catch (...) {
+            LOG_WARN(KDC::Log::instance()->getLogger(),
+                     std::string("An exception of unknown type caused the interruption of the server application."));
+            result = -1;
+        }
     }
 
-    return execResult;
+    // Destroy the application and its workers before stopping Sentry. Leaving sentry_close() to Handler's static destruction
+    // can race with its curl transport while OpenSSL is already being torn down.
+    appPtr.reset();
+    KDC::sentry::Handler::shutdown();
+    return result;
 }
