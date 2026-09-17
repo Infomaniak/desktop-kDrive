@@ -131,7 +131,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         void onUseMonoIconsChanged(bool);
         void onCleanup();
         void onSignalReceived(int id, SignalNum SignalNum, const QByteArray &params);
-        void onLogTooBig();
 };
 
 } // namespace KDC
