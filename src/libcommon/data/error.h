@@ -97,6 +97,10 @@ class Error {
 
         bool isAutoResolved() const;
 
+        // Some old kDrive versions might have inserted invalid errors into the DB that are never deleted.
+        // Those are considered stale.
+        bool isStale() const;
+
         /// TODO : to be removed once we moved to the new GUI ///
         friend void operator>>(QDataStream &in, Error &error) {
             qint64 dbId = 0;

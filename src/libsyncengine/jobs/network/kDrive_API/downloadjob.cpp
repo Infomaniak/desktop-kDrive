@@ -90,7 +90,6 @@ DownloadJob::~DownloadJob() {
                       L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
         }
 
-        _vfs->cancelHydrate(_fileDownloadInfo.localpath);
     } else {
         if (const ExitInfo res =
                     _vfs->setPinState(_fileDownloadInfo.localpath,

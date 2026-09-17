@@ -28,6 +28,7 @@ static const auto inParmsLimit = "limit";
 
 // Output parameters keys
 static const auto outParamsError = "errorInfoList";
+static const auto outParamsHasMore = "hasMore";
 
 namespace KDC {
 
@@ -49,11 +50,12 @@ ExitInfo ErrorListJob::deserializeInputParms() {
 
 ExitInfo ErrorListJob::serializeOutputParms() {
     writeParamValues(outParamsError, _errorList, info2DynamicVar<Error>);
+    writeParamValue(outParamsHasMore, _hasMore);
     return ExitCode::Ok;
 }
 
 ExitInfo ErrorListJob::process() {
-    ExitInfo exitInfo = ServerRequests::getErrorList(_limit, _errorList);
+    ExitInfo exitInfo = ServerRequests::getErrorList(_limit, _errorList, _hasMore);
     if (!exitInfo) {
         LOG_WARN(_logger, "Error in ServerRequests::getErrorList: " << exitInfo);
         addError(Error(ERR_ID, exitInfo));
