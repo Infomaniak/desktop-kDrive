@@ -23,7 +23,7 @@ QtObject {
     readonly property real windowHeight: 540
     readonly property real minimumWidth: 760
     readonly property real minimumHeight: 440
-    readonly property real sidebarWidth: 224
+    readonly property real sidebarWidth: IKMainWindow.sidebarWidth
     readonly property real pageMargin: 20
     readonly property real groupSpacing: 10
     readonly property real groupPadding: 10
