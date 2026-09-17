@@ -90,8 +90,9 @@ void TestDb::testCreateAndPrepareLocalRequest() {
     {
         bool found = false;
         LogIfFailSettings::assertEnabled = false;
-        CPPUNIT_ASSERT(!_testObj->queryNext(id, found));
+        const bool queryResult = _testObj->queryNext(id, found);
         LogIfFailSettings::assertEnabled = true;
+        CPPUNIT_ASSERT(!queryResult);
     }
 }
 
