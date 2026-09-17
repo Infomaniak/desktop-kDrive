@@ -46,7 +46,7 @@ struct SignalMessageTests {
         #expect(message.body.name == "Base64")
     }
 
-    @Test func syncInfoSignalCanPreserveVfsConversionFlag() {
+    @Test func syncInfoSignalMapsServerVfsMode() {
         // GIVEN
         let syncInfo = SyncInfoSignalMetadata(
             dbId: 1,
@@ -59,9 +59,11 @@ struct SignalMessageTests {
         )
 
         // WHEN
-        let synchro = syncInfo.asSynchro(isUpdatingVfsMode: true)
+        let synchro = syncInfo.asSynchro
 
         // THEN
-        #expect(synchro.isUpdatingVfsMode)
+        #expect(synchro.virtualFileMode == .Mac)
+        #expect(synchro.dbId == syncInfo.dbId)
+        #expect(synchro.localPath == syncInfo.localPath)
     }
 }

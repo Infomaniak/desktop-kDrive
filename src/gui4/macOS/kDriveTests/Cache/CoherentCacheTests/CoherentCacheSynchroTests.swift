@@ -122,19 +122,17 @@ struct CoherentCacheSynchroTests {
             .expectedAccount)
         try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
         #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
-        let convertingSynchro = CacheData.expectedSynchro.updating(isUpdatingVfsMode: true)
-        try await cache.addSynchro(convertingSynchro)
-        #expect(await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId) == convertingSynchro)
+        let conversions = VFSConversionCache()
+        let token = await conversions.beginConversion(synchroDbId: CacheData.expectedSynchroDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
 
         // WHEN
-        try await cache.addOrUpdateSynchroPreservingVfsMode(synchroDbId: CacheData.expectedSynchroDbId) { isUpdatingVfsMode in
-            var updatedSynchro = CacheData.updatedSynchro
-            updatedSynchro.isUpdatingVfsMode = isUpdatingVfsMode
-            return updatedSynchro
-        }
+        try await cache.updateSynchro(CacheData.updatedSynchro)
 
         // THEN
         let cachedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)
-        #expect(cachedSynchro?.isUpdatingVfsMode == true)
+        #expect(cachedSynchro == CacheData.updatedSynchro)
+        #expect(await conversions.isConverting(synchroDbId: CacheData.expectedSynchroDbId))
+        await conversions.finishConversion(synchroDbId: CacheData.expectedSynchroDbId, token: token)
     }
 }

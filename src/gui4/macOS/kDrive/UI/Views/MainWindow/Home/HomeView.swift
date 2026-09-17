@@ -83,7 +83,7 @@ struct HomeView: View {
                     SynchroStatusView(
                         state: state,
                         synchroDbId: mainViewModel.currentSynchro?.id,
-                        isConverting: mainViewModel.currentSynchro?.isConverting == true
+                        isConverting: mainViewModel.isCurrentSynchroConverting
                     )
                     .frame(maxWidth: (proxy.size.width - HomeView.spacing / 2) * 2 / 3)
 

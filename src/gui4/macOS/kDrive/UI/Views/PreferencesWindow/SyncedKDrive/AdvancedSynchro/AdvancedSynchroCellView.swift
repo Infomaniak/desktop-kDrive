@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -25,11 +26,13 @@ import SwiftUI
 
 struct AdvancedSynchroCellView: View {
     @InjectService private var matomo: MatomoUtils
+    @InjectService private var vfsConversionCache: VFSConversionCacheObservable
 
     @State private var synchroMode: UISynchroMode
     @State private var committedSynchroMode: UISynchroMode
     @State private var blacklistNodes: Set<String>?
     @State private var isShowingGenericError = false
+    @State private var isConverting = false
 
     let synchro: UISynchro
     let userDbId: UIUser.ID?
@@ -112,14 +115,17 @@ struct AdvancedSynchroCellView: View {
             SynchroModePicker(
                 synchroDbId: synchro.dbId,
                 synchroMode: $synchroMode,
-                isConverting: synchro.isConverting,
+                isConverting: isConverting,
                 isCallFromAdvancedSync: true
             )
-            .disabled(!synchro.supportsVirtualFileSystem || synchro.isConverting)
+            .disabled(!synchro.supportsVirtualFileSystem || isConverting)
             .onChange(of: synchroMode) { newValue in
                 guard newValue != committedSynchroMode else { return }
                 switchSynchroMode(newValue)
             }
+        }
+        .onReceive(vfsConversionCache.isConvertingPublisher(synchroDbId: Int32(synchro.dbId)).receive(on: RunLoop.main)) {
+            isConverting = $0
         }
     }
 

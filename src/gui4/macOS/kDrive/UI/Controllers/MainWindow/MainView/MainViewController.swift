@@ -75,6 +75,7 @@ final class MainViewController: IKSplitViewController {
             }
 
         viewModel.$currentSynchroContext
+            .combineLatest(viewModel.$convertingSynchroIds)
             .receiveOnMain(store: &bindStore) { [weak self] _ in
                 guard let self else { return }
                 refreshPauseResumeToolbarItem(synchroStateObserver.synchroState)
@@ -324,7 +325,7 @@ extension MainViewController {
 
     private func updatePauseResumeButton(_ item: NSToolbarItem, state: UISynchroState) {
         let hasBlockingError = viewModel.currentBlockingError != nil
-        let isConverting = viewModel.currentSynchro?.isConverting == true
+        let isConverting = viewModel.isCurrentSynchroConverting
 
         guard !hasBlockingError else {
             setPauseResumeAppearance(item, showPause: true, enabled: false)

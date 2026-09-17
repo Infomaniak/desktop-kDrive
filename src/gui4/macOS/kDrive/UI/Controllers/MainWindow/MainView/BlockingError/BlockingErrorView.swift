@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
@@ -23,8 +24,10 @@ import SwiftUI
 
 struct BlockingErrorView: View {
     @InjectService private var matomo: MatomoUtils
+    @InjectService private var vfsConversionCache: VFSConversionCacheObservable
 
     @State private var isShowingGenericError = false
+    @State private var isConverting = false
 
     let blockingError: UIBlockingError
 
@@ -32,12 +35,12 @@ struct BlockingErrorView: View {
         switch blockingError.error {
         case .notRenew:
             if !blockingError.drive.isAdmin {
-                return !blockingError.synchro.isConverting
+                return !isConverting
             } else {
                 return true
             }
         case .wakingUp, .maintenance, .accessDenied:
-            return !blockingError.synchro.isConverting
+            return !isConverting
         default:
             return true
         }
@@ -82,6 +85,10 @@ struct BlockingErrorView: View {
         .background(ColorToken.Surface.primary.asColor, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding24)
         .genericErrorAlert(isPresented: $isShowingGenericError)
+        .onReceive(vfsConversionCache.isConvertingPublisher(synchroDbId: Int32(blockingError.synchro.dbId))
+            .receive(on: RunLoop.main)) {
+            isConverting = $0
+        }
     }
 
     private func handleAction() {

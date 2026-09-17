@@ -29,6 +29,7 @@ struct SyncedKDriveView: View {
     @Environment(\.openURL) private var openURL
     @InjectService private var matomo: MatomoUtils
     @InjectService private var cacheObservable: CoherentCacheObservable
+    @InjectService private var vfsConversionCache: VFSConversionCacheObservable
 
     let drive: UIDrive
     let userDbId: Int
@@ -36,6 +37,7 @@ struct SyncedKDriveView: View {
     @State private var mainSynchro: UISynchro?
     @State private var mainSynchroMode = UISynchroMode.storeOnline
     @State private var committedMainSynchroMode = UISynchroMode.storeOnline
+    @State private var convertingSynchroIds: Set<Int32> = []
 
     @State private var synchroToDelete: UISynchro?
     @State private var isShowingGenericError = false
@@ -53,7 +55,8 @@ struct SyncedKDriveView: View {
     }
 
     private var isUpdatingMainSynchroMode: Bool {
-        mainSynchro?.isConverting == true
+        guard let mainSynchro else { return false }
+        return convertingSynchroIds.contains(Int32(mainSynchro.dbId))
     }
 
     var body: some View {
@@ -180,7 +183,13 @@ struct SyncedKDriveView: View {
         .task(id: mainSynchro?.dbId) {
             await fetchBlacklistedNodes()
         }
-        .onReceive(drivePublisher.receive(on: RunLoop.main), perform: updateMainSynchro)
+        .onReceive(drivePublisher.receive(on: RunLoop.main)) { cachedDrive in
+            let synchro = cachedDrive?.synchros.values.first { $0.targetNodeId.isEmpty }
+            updateMainSynchro(synchro.map { UISynchro(synchro: $0) })
+        }
+        .onReceive(vfsConversionCache.convertingSynchroIdsPublisher.receive(on: RunLoop.main)) {
+            convertingSynchroIds = $0
+        }
         .sheet(item: $synchroToDelete) { synchro in
             RemoveSynchroConfirmationView(synchroDbId: synchro.dbId, completion: handleSynchroIsDeleted)
         }
@@ -188,35 +197,31 @@ struct SyncedKDriveView: View {
     }
 
     private func fetchSynchros() async {
+        @InjectService var vfsConversionCache: VFSConversionCaching
         @InjectService var coherentCache: CoherentCache
         guard let cachedDrive = await coherentCache.getDrive(driveDbId: Int32(drive.dbId)) else {
             return
         }
 
-        updateMainSynchro(from: cachedDrive)
+        let synchro = cachedDrive.synchros.values.first { $0.targetNodeId.isEmpty }
+        if let synchro, await vfsConversionCache.isConverting(synchroDbId: synchro.dbId) {
+            convertingSynchroIds.insert(synchro.dbId)
+        }
+        updateMainSynchro(synchro.map { UISynchro(synchro: $0) })
     }
 
-    private func updateMainSynchro(from cachedDrive: Drive?) {
-        let freshMainSynchro = cachedDrive?.synchros.values
-            .map { UISynchro(synchro: $0) }
-            .first { $0.targetNodeId == nil }
-
+    private func updateMainSynchro(_ freshMainSynchro: UISynchro?) {
         let fetchedMode: UISynchroMode = freshMainSynchro?.useVirtualFileSystem == true ? .storeOnline : .availableOffline
         withAnimation {
             mainSynchro = freshMainSynchro
 
-            guard freshMainSynchro?.isConverting != true else {
+            guard !isUpdatingMainSynchroMode else {
                 return
             }
 
+            committedMainSynchroMode = fetchedMode
             mainSynchroMode = fetchedMode
         }
-
-        guard freshMainSynchro?.isConverting != true else {
-            return
-        }
-
-        committedMainSynchroMode = fetchedMode
     }
 
     private func fetchBlacklistedNodes() async {
