@@ -2163,7 +2163,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         public async Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args)
         {
             var signalData = args.SignalData;
-            if(signalData is null || !signalData.ContainsKey(JsonKeys.SyncDbId) || !signalData.ContainsKey(JsonKeys.NotificationType) || !signalData.ContainsKey(JsonKeys.FilesPaths))
+            if (signalData is null || !signalData.ContainsKey(JsonKeys.SyncDbId) || !signalData.ContainsKey(JsonKeys.NotificationType) || !signalData.ContainsKey(JsonKeys.FilesPaths))
             {
                 Logger.Log(Logger.Level.Error, $"One or more required parameters are missing in signal data: {JsonKeys.SyncDbId}, {JsonKeys.NotificationType}, {JsonKeys.FilesPaths}. Signal data: {signalData}");
                 return;
