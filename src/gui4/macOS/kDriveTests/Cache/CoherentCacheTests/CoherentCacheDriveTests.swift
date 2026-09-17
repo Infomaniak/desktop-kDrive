@@ -21,7 +21,11 @@ import Foundation
 import OrderedCollections
 import Testing
 
-struct CoherentCacheDriveTests {
+extension SharedDITests {
+    struct CoherentCacheDriveTests {}
+}
+
+extension SharedDITests.CoherentCacheDriveTests {
     @Test(.timeLimit(.minutes(1)))
     func getDriveInCache() async throws {
         // GIVEN

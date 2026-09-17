@@ -83,7 +83,14 @@ Services are registered at app startup. Check `AppDelegate` or the DI setup file
 - In tests, override the shared DI registrations directly rather than adding injection-only production initializers.
   Restore both the original factories and cached instances afterward;
   registering a new factory alone does not replace an already resolved service. Keep these tests isolated
-  from parallel consumers (the VFS job tests use serial XCTest cases, separate from Swift Testing suites).
+  from parallel consumers. `@Suite(.serialized)` serializes only that suite's tests, not unrelated suites;
+  tests accessing the same overridden services must share a serialized suite or run separately.
+  `SharedDITests` groups the VFS job, coherent-cache sync/drive, and login tests for this reason.
+
+### Tests
+- Use native Swift Testing (`import Testing`) for macOS unit tests, rather than XCTest.
+- Declare suites and cases with `@Suite` and `@Test`; use `#expect`, `#require`, and `Issue.record` for assertions.
+- Prefer parameterized `@Test(arguments:)` cases for multiple inputs and `.timeLimit` for async tests.
 
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`

@@ -142,6 +142,7 @@
 				Cache/Observation/helpers/ObservedUpdater.swift,
 				Cache/Observation/helpers/ObservedUser.swift,
 				Cache/SettingsCacheTests.swift,
+				Cache/VFSConversionCacheTests.swift,
 				Jobs/LoginJobTests.swift,
 				Logging/GzipCompressorTests.swift,
 				Logging/LogServiceTests.swift,

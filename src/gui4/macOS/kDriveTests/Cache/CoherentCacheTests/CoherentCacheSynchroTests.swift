@@ -20,7 +20,11 @@ import Foundation
 @testable import kDriveCore
 import Testing
 
-struct CoherentCacheSynchroTests {
+extension SharedDITests {
+    struct CoherentCacheSynchroTests {}
+}
+
+extension SharedDITests.CoherentCacheSynchroTests {
     @Test(.timeLimit(.minutes(1)))
     func getSynchroInCache() async throws {
         // GIVEN

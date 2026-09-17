@@ -73,6 +73,7 @@ clang-format -i <file>
 - Register VFS conversion cache DI services through separate `VFSConversionCaching` and `VFSConversionCacheObservable` protocols, following the other caches.
 - In macOS tests, override and restore shared DI registrations directly instead of adding resolver-taking initializers to production types for testing.
 - On macOS, prefer InfomaniakDI's `@LazyInjectService` and `@InjectService` property wrappers over constructor injection of services or resolvers.
+- For macOS unit tests, use native Swift Testing (`import Testing`, `@Suite`, `@Test`, `#expect`, and `#require`) instead of XCTest.
 
 ## JIT Index
 
