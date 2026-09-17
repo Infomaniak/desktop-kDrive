@@ -278,19 +278,19 @@ ExitCode ServerRequests::getSyncList(std::vector<Sync> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getParameters(Parameters &parametersInfo) {
-    parametersInfo = ParametersCache::instance()->parameters();
+ExitCode ServerRequests::getParameters(Parameters &parameters) {
+    parameters = ParametersCache::instance()->parameters();
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateParameters(const Parameters &parametersInfo) {
-    ParametersCache::instance()->parameters() = parametersInfo;
+ExitCode ServerRequests::updateParameters(const Parameters &parameters) {
+    ParametersCache::instance()->parameters() = parameters;
     auto exitCode = ExitCode::Ok;
     ParametersCache::instance()->save(&exitCode);
     return exitCode;
 }
 
-ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid) {
+ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, const SyncConfiguration syncConfig, bool &valid) {
     valid = false;
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"isPathValidForNewSync: checking path=" << Utility::formatSyncPath(path)

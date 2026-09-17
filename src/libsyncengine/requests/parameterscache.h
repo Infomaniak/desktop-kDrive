@@ -48,7 +48,7 @@ class SYNCENGINE_EXPORT ParametersCache {
         Parameters _parameters;
         static bool _forceExtendedLog;
 
-        ParametersCache(bool isTest = false);
+        explicit ParametersCache(bool isTest = false);
 };
 
 } // namespace KDC
