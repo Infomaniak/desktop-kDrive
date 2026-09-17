@@ -515,7 +515,7 @@ void TestIo::testCheckSetAndGetRights() {
         CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::setRights(path, true, true, true, ioError));
         CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 
-        CPPUNIT_ASSERT_EQUAL(IoError::Unknown, IoHelper::setFullAccess(path));
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, IoHelper::setFullAccess(path));
 #if defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the wndows API
         IoHelper::_getAndSetRightsMethod = 1; // Set the method to use the std::filesystem method (fallback)
