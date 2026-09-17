@@ -438,7 +438,7 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
                                          bool &newIncrementRequired) {
     newIncrementRequired = false;
     auto newAttemptCount = attemptCount;
-    bool collisionFound = false;
+    bool collisionFound = true;
     while (collisionFound) {
         attemptCount = newAttemptCount;
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
