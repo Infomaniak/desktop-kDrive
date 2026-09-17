@@ -20,7 +20,7 @@ pragma Singleton
 import QtQuick
 QtObject {
     readonly property real windowWidth: 800
-    readonly property real windowHeight: 540
+    readonly property real windowHeight: minimumHeight
     readonly property real minimumWidth: 760
     readonly property real minimumHeight: 440
     readonly property real sidebarWidth: IKMainWindow.sidebarWidth
