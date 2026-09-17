@@ -582,10 +582,6 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
-// Check column existance
-#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
-#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info('?1') WHERE name='?2';"
-
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -818,13 +814,9 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     }
 
     LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
-
-    if (!createAndPrepareRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
-        return false;
-
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     const bool successfulSelection = selectUserExclusionTemplates(dbUserExclusionTemplates);
-    queryFree(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
+
     if (!successfulSelection) {
         LOG_WARN(_logger, "Error in selectAllExclusionTemplates");
         return false;
@@ -849,16 +841,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     }
 
     LOG_INFO(_logger, "Normalizations prepared for updates.");
-
-    if (!createAndPrepareRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID, DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST))
-        return false;
-
-    if (!createAndPrepareRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST)) return false;
-
     const bool result = updateUserExclusionTemplates(dbUserExclusionTemplatesOutput);
-
-    queryFree(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID);
-    queryFree(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID);
 
     return result;
 }
@@ -1084,80 +1067,87 @@ bool ParmsDb::create(bool &retry) {
     std::string error;
 
     // Parameters
-    if (!createAndPrepareRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE)) return false;
-    if (!queryExec(CREATE_PARAMETERS_TABLE_ID, errId, error)) {
-        // In certain situations the io error can be avoided by switching
-        // to the DELETE journal mode
-        if (_journalMode != "DELETE" && errId == SQLITE_IOERR && extendedErrorCode() == SQLITE_IOERR_SHMMAP) {
-            LOG_WARN(_logger, "IO error SHMMAP on table creation, attempting with DELETE journal mode");
-            _journalMode = "DELETE";
-            queryFree(CREATE_PARAMETERS_TABLE_ID);
-            retry = true;
-            return false;
-        }
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_PARAMETERS_TABLE_ID, errId, error)) {
+            // In certain situations the io error can be avoided by switching
+            // to the DELETE journal mode
+            if (_journalMode != "DELETE" && errId == SQLITE_IOERR && extendedErrorCode() == SQLITE_IOERR_SHMMAP) {
+                LOG_WARN(_logger, "IO error SHMMAP on table creation, attempting with DELETE journal mode");
+                _journalMode = "DELETE";
+                retry = true;
+                return false;
+            }
 
-        return sqlFail(CREATE_PARAMETERS_TABLE_ID, error);
+            return sqlFail(CREATE_PARAMETERS_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_PARAMETERS_TABLE_ID);
 
     // User
-    if (!createAndPrepareRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE)) return false;
-    if (!queryExec(CREATE_USER_TABLE_ID, errId, error)) {
-        queryFree(CREATE_USER_TABLE_ID);
-        return sqlFail(CREATE_USER_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_USER_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_USER_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_USER_TABLE_ID);
 
     // Account
-    if (!createAndPrepareRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE)) return false;
-    if (!queryExec(CREATE_ACCOUNT_TABLE_ID, errId, error)) {
-        queryFree(CREATE_ACCOUNT_TABLE_ID);
-        return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_ACCOUNT_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_ACCOUNT_TABLE_ID);
 
     // Drive
-    if (!createAndPrepareRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE)) return false;
-    if (!queryExec(CREATE_DRIVE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_DRIVE_TABLE_ID);
-        return sqlFail(CREATE_DRIVE_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_DRIVE_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_DRIVE_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_DRIVE_TABLE_ID);
 
     // Sync
-    if (!createAndPrepareRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE)) return false;
-    if (!queryExec(CREATE_SYNC_TABLE_ID, errId, error)) {
-        queryFree(CREATE_SYNC_TABLE_ID);
-        return sqlFail(CREATE_SYNC_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_SYNC_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_SYNC_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_SYNC_TABLE_ID);
 
     // Exclusion Template
-    if (!createAndPrepareRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE)) return false;
-    if (!queryExec(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
-        return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_EXCLUSION_TEMPLATE_TABLE_ID);
-
 
 #if defined(KD_MACOS)
     // Exclusion App
-    if (!createAndPrepareRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE)) return false;
-    if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
-        queryFree(CREATE_EXCLUSION_APP_TABLE_ID);
-        return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_EXCLUSION_APP_TABLE_ID);
 #endif
 
     // Error
-    if (!createAndPrepareRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE)) return false;
-    if (!queryExec(CREATE_ERROR_TABLE_ID, errId, error)) {
-        queryFree(CREATE_ERROR_TABLE_ID);
-        return sqlFail(CREATE_ERROR_TABLE_ID, error);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_ERROR_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_ERROR_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_ERROR_TABLE_ID);
 
     // app state
     if (!createAppState()) {
@@ -1170,13 +1160,16 @@ bool ParmsDb::create(bool &retry) {
         LOG_WARN(_logger, "Error in createSyncFolderRule");
         return false;
     }
+
     // Migration old selectivesync table
-    if (!createAndPrepareRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE)) return false;
-    if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
-        queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
-        return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
+    {
+        auto scopeGuard =
+                createAndPrepareLocalRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE);
+        if (!scopeGuard) return false;
+        if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
+            return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
+        }
     }
-    queryFree(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID);
 
     return true;
 }
@@ -1184,12 +1177,10 @@ bool ParmsDb::create(bool &retry) {
 bool ParmsDb::createSyncFolderRule() {
     int errId = 0;
     std::string error;
-    if (!createAndPrepareRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE)) return false;
+    auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE);
     if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
         return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
     }
-    queryFree(CREATE_SYNC_FOLDER_RULE_TABLE_ID);
     return true;
 }
 
@@ -1316,19 +1307,17 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (updateParameters) {
-        if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
+        auto scopeGuard = createAndPrepareLocalRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST);
+        if (!scopeGuard) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, 0));
         if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
-            queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
             return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
         }
         if (numRowsAffected() != 1) {
-            queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
             return false;
         }
-        queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
     for (const auto &name: {"distributionChannel", "sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
@@ -3817,12 +3806,16 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 bool ParmsDb::replaceShortDbPathsWithLongPaths() {
     LOG_INFO(_logger, "Replacing short DB path names with long ones in sync table.")
 
-    if (!createAndPrepareRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST)) return false;
     std::vector<Sync> syncList;
-    selectAllSyncs(syncList);
-    queryFree(SELECT_ALL_SYNCS_REQUEST_ID);
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST);
+        if (!scopeGuard) return false;
+        selectAllSyncs(syncList);
+    }
 
-    if (!createAndPrepareRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST)) return false;
+    auto scopeGuard = createAndPrepareLocalRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST);
+    if (!scopeGuard) return false;
+
     for (auto &sync: syncList) {
         SyncPath longPathName;
         auto ioError = IoError::Success;
@@ -3843,7 +3836,6 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
         bool found = false;
         if (!updateSync(sync, found)) return false;
     }
-    queryFree(UPDATE_SYNC_REQUEST_ID);
 
     return true;
 }
@@ -3852,10 +3844,6 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
 bool ParmsDb::enableSentryAndMatomo() {
     LOG_INFO(_logger, "Enabling sentry and matomo by default")
 
-    if (!createAndPrepareRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST)) {
-        LOG_WARN(_logger, "Error creating and preparing query: " << SELECT_PARAMETERS_REQUEST_ID);
-        return false;
-    }
     Parameters parameters;
     bool found = false;
     if (!selectParameters(parameters, found)) {
@@ -3866,14 +3854,9 @@ bool ParmsDb::enableSentryAndMatomo() {
         LOG_WARN(_logger, "Parameters not found");
         return false;
     }
-    queryFree(SELECT_PARAMETERS_REQUEST_ID);
     parameters.setSentryEnabled(true);
     parameters.setMatomoEnabled(true);
 
-    if (!createAndPrepareRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST)) {
-        LOG_WARN(_logger, "Error creating and preparing query: " << UPDATE_PARAMETERS_REQUEST_ID);
-        return false;
-    }
     if (!updateParameters(parameters, found)) {
         LOG_WARN(_logger, "Error updating parameters");
         return false;
@@ -3882,8 +3865,6 @@ bool ParmsDb::enableSentryAndMatomo() {
         LOG_WARN(_logger, "Parameters not found for update");
         return false;
     }
-
-    queryFree(UPDATE_PARAMETERS_REQUEST_ID);
 
     return true;
 }

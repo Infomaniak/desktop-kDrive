@@ -28,6 +28,14 @@
 
 #include <Poco/URI.h>
 
+// Item existence
+// Check if a table exists
+#define CHECK_TABLE_EXISTENCE_REQUEST_ID "check_table_existence"
+#define CHECK_TABLE_EXISTENCE_REQUEST "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
+
+#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
+#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
+
 namespace KDC {
 
 class COMMONSERVER_EXPORT Db {

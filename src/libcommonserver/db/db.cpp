@@ -81,14 +81,6 @@ constexpr const char *pragmaJournalSizeLimit = "PRAGMA journal_size_limit=671088
     "SELECT value "            \
     "FROM version;"
 
-// Item existence
-// Check if a table exists
-#define CHECK_TABLE_EXISTENCE_REQUEST_ID "check_table_existence"
-#define CHECK_TABLE_EXISTENCE_REQUEST "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1;"
-
-#define CHECK_COLUMN_EXISTENCE_REQUEST_ID "check_column_existence"
-#define CHECK_COLUMN_EXISTENCE_REQUEST "SELECT COUNT(*) AS CNTREC FROM pragma_table_info(?1) WHERE name=?2;"
-
 namespace KDC {
 
 static std::string defaultJournalMode(const std::string &dbPath) {
@@ -515,110 +507,119 @@ bool Db::checkConnect() {
     }
 
     // SELECT_SQLITE_VERSION
-    if (!createAndPrepareRequest(selectSqliteVersionId, selectSqliteVersion)) return false;
-    bool hasData;
-    if (!queryNext(selectSqliteVersionId, hasData) || !hasData) {
-        LOG_WARN(_logger, "Error getting query result: " << selectSqliteVersionId);
-        queryFree(selectSqliteVersionId);
-        return false;
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(selectSqliteVersionId, selectSqliteVersion);
+        if (!scopeGuard) return false;
+        if (bool hasData = false; !queryNext(selectSqliteVersionId, hasData) || !hasData) {
+            LOG_WARN(_logger, "Error getting query result: " << selectSqliteVersionId);
+            return false;
+        }
+        std::string result;
+        LOG_IF_FAIL(queryStringValue(selectSqliteVersionId, 0, result));
+        LOG_DEBUG(_logger, "sqlite3 version=" << result);
     }
-    std::string result;
-    LOG_IF_FAIL(queryStringValue(selectSqliteVersionId, 0, result));
-    queryFree(selectSqliteVersionId);
-    LOG_DEBUG(_logger, "sqlite3 version=" << result);
 
     // PRAGMA_LOCKING_MODE
-    std::string lockingMode = "EXCLUSIVE";
-    if (CommonUtility::envVarValue("KDRIVE_NORMAL_LOCKING_MODE") == "1") {
-        lockingMode = "NORMAL";
-    }
+    {
+        std::string lockingMode = "EXCLUSIVE";
+        if (CommonUtility::envVarValue("KDRIVE_NORMAL_LOCKING_MODE") == "1") {
+            lockingMode = "NORMAL";
+        }
 #if !defined(NDEBUG)
-    lockingMode = "NORMAL";
+        lockingMode = "NORMAL";
 #endif
-    std::string sqlStr(pragmaLockingMode + lockingMode + ";");
-    if (!createAndPrepareRequest(pragmaLockingModeId, sqlStr.c_str())) return false;
-    if (!queryNext(pragmaLockingModeId, hasData) || !hasData) {
-        LOG_WARN(_logger, "Error getting query result: " << pragmaLockingModeId);
-        queryFree(pragmaLockingModeId);
-        return false;
+        std::string sqlStr(pragmaLockingMode + lockingMode + ";");
+        auto scopeGuard = createAndPrepareLocalRequest(pragmaLockingModeId, sqlStr.c_str());
+        if (!scopeGuard) return false;
+        if (bool hasData = false; !queryNext(pragmaLockingModeId, hasData) || !hasData) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaLockingModeId);
+            return false;
+        }
+        std::string result;
+        LOG_IF_FAIL(queryStringValue(pragmaLockingModeId, 0, result));
+        LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result);
     }
-    LOG_IF_FAIL(queryStringValue(pragmaLockingModeId, 0, result));
-    queryFree(pragmaLockingModeId);
-    LOG_DEBUG(_logger, "sqlite3 locking_mode=" << result);
 
     // PRAGMA_JOURNAL_MODE
-    sqlStr = pragmaJournalMode + _journalMode + ";";
-    if (!createAndPrepareRequest(pragmaJournalModeId, sqlStr.c_str())) return false;
-    if (!queryNext(pragmaJournalModeId, hasData) || !hasData) {
-        LOG_WARN(_logger, "Error getting query result: " << pragmaJournalModeId);
-        queryFree(pragmaJournalModeId);
-        return false;
+    {
+        std::string sqlStr = pragmaJournalMode + _journalMode + ";";
+        auto scopeGuard = createAndPrepareLocalRequest(pragmaJournalModeId, sqlStr.c_str());
+        if (!scopeGuard) return false;
+        if (bool hasData = false; !queryNext(pragmaJournalModeId, hasData) || !hasData) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaJournalModeId);
+            return false;
+        }
+        std::string result;
+        LOG_IF_FAIL(queryStringValue(pragmaJournalModeId, 0, result));
+        // Normalize to uppercase to match the internal convention ("WAL", "DELETE", …).
+        const std::string effectiveJournalMode = CommonUtility::toUpper(result);
+        if (effectiveJournalMode != _journalMode) {
+            LOG_WARN(_logger, "Requested journal mode '" << _journalMode << "' but SQLite applied '" << effectiveJournalMode
+                                                         << "'; using effective mode");
+            _journalMode = effectiveJournalMode;
+        }
+        LOG_DEBUG(_logger, "sqlite3 journal_mode=" << _journalMode);
     }
-    LOG_IF_FAIL(queryStringValue(pragmaJournalModeId, 0, result));
-    queryFree(pragmaJournalModeId);
-    // Normalize to uppercase to match the internal convention ("WAL", "DELETE", …).
-    const std::string effectiveJournalMode = CommonUtility::toUpper(result);
-    if (effectiveJournalMode != _journalMode) {
-        LOG_WARN(_logger, "Requested journal mode '" << _journalMode << "' but SQLite applied '" << effectiveJournalMode
-                                                     << "'; using effective mode");
-        _journalMode = effectiveJournalMode;
-    }
-    LOG_DEBUG(_logger, "sqlite3 journal_mode=" << _journalMode);
 
     // PRAGMA_SYNCHRONOUS
     // With WAL journal the NORMAL sync mode is safe from corruption, otherwise use the standard FULL mode.
-    std::string synchronousMode = "FULL";
-    if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
-    sqlStr = pragmaSynchronous + synchronousMode + ";";
-    if (!createAndPrepareRequest(pragmaSynchronousId, sqlStr.c_str())) return false;
-    if (!queryNext(pragmaSynchronousId, hasData)) {
-        LOG_WARN(_logger, "Error getting query result: " << pragmaSynchronousId);
-        queryFree(pragmaSynchronousId);
-        return false;
+    {
+        std::string synchronousMode = "FULL";
+        if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
+        std::string sqlStr = pragmaSynchronous + synchronousMode + ";";
+        auto scopeGuard = createAndPrepareLocalRequest(pragmaSynchronousId, sqlStr.c_str());
+        if (!scopeGuard) return false;
+        if (bool hasData = false; !queryNext(pragmaSynchronousId, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaSynchronousId);
+            return false;
+        }
+        LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode);
     }
-    queryFree(pragmaSynchronousId);
-    LOG_DEBUG(_logger, "sqlite3 synchronous=" << synchronousMode);
 
     // PRAGMA_CASE_SENSITIVE_LIKE
-    if (!createAndPrepareRequest(pragmaCaseSensitiveLikeId, pragmaCaseSensitiveLike)) return false;
-    if (!queryNext(pragmaCaseSensitiveLikeId, hasData)) {
-        LOG_WARN(_logger, "Error getting query result: " << pragmaCaseSensitiveLikeId);
-        queryFree(pragmaCaseSensitiveLikeId);
-        return false;
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(pragmaCaseSensitiveLikeId, pragmaCaseSensitiveLike);
+        if (!scopeGuard) return false;
+        if (bool hasData = false; !queryNext(pragmaCaseSensitiveLikeId, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaCaseSensitiveLikeId);
+            return false;
+        }
+        LOG_DEBUG(_logger, "sqlite3 case_sensitivity=ON");
     }
-    queryFree(pragmaCaseSensitiveLikeId);
-    LOG_DEBUG(_logger, "sqlite3 case_sensitivity=ON");
 
     // PRAGMA_FOREIGN_KEYS
-    if (!createAndPrepareRequest(pragmaForeignKeysId, pragmaForeignKeys)) return false;
-    if (!queryNext(pragmaForeignKeysId, hasData)) {
-        LOG_WARN(_logger, "Error getting query result: " << pragmaForeignKeysId);
-        queryFree(pragmaForeignKeysId);
-        return false;
+    {
+        auto scopeGuard = createAndPrepareLocalRequest(pragmaForeignKeysId, pragmaForeignKeys);
+        if (!scopeGuard) return false;
+        if (bool hasData = false; !queryNext(pragmaForeignKeysId, hasData)) {
+            LOG_WARN(_logger, "Error getting query result: " << pragmaForeignKeysId);
+            return false;
+        }
+        LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
     }
-    queryFree(pragmaForeignKeysId);
-    LOG_DEBUG(_logger, "sqlite3 foreign_keys=ON");
 
     if (_journalMode == "WAL") {
         // PRAGMA_WAL_AUTOCHECKPOINT: lower threshold to prevent unbounded WAL growth
-        if (!createAndPrepareRequest(pragmaWalAutocheckpointId, pragmaWalAutocheckpoint)) return false;
-        if (!queryNext(pragmaWalAutocheckpointId, hasData)) {
-            LOG_WARN(_logger, "Error getting query result: " << pragmaWalAutocheckpointId);
-            queryFree(pragmaWalAutocheckpointId);
-            return false;
+        {
+            auto scopeGuard = createAndPrepareLocalRequest(pragmaWalAutocheckpointId, pragmaWalAutocheckpoint);
+            if (!scopeGuard) return false;
+            if (bool hasData = false; !queryNext(pragmaWalAutocheckpointId, hasData) || !hasData) {
+                LOG_WARN(_logger, "Error getting query result: " << pragmaWalAutocheckpointId);
+                return false;
+            }
+            LOG_DEBUG(_logger, "sqlite3 wal_autocheckpoint=100");
         }
-        queryFree(pragmaWalAutocheckpointId);
-        LOG_DEBUG(_logger, "sqlite3 wal_autocheckpoint=100");
 
         // PRAGMA_JOURNAL_SIZE_LIMIT: cap WAL file size after each successful checkpoint
-        if (!createAndPrepareRequest(pragmaJournalSizeLimitId, pragmaJournalSizeLimit)) return false;
-        if (!queryNext(pragmaJournalSizeLimitId, hasData)) {
-            LOG_WARN(_logger, "Error getting query result: " << pragmaJournalSizeLimitId);
-            queryFree(pragmaJournalSizeLimitId);
-            return false;
+        {
+            auto scopeGuard = createAndPrepareLocalRequest(pragmaJournalSizeLimitId, pragmaJournalSizeLimit);
+            if (!scopeGuard) return false;
+            if (bool hasData = false; !queryNext(pragmaJournalSizeLimitId, hasData) || !hasData) {
+                LOG_WARN(_logger, "Error getting query result: " << pragmaJournalSizeLimitId);
+                return false;
+            }
+            LOG_DEBUG(_logger, "sqlite3 journal_size_limit=67108864");
         }
-        queryFree(pragmaJournalSizeLimitId);
-        LOG_DEBUG(_logger, "sqlite3 journal_size_limit=67108864");
     }
 
     return true;
@@ -642,14 +643,13 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
     if (!columnExists(tableName, columnName, exist)) return false;
     if (!exist) {
         LOG_INFO(_logger, "Adding column " << columnName << " into table " << tableName);
-        if (!createAndPrepareRequest(requestId.c_str(), request.c_str())) return false;
+        auto scopeGuard = createAndPrepareLocalRequest(requestId.c_str(), request.c_str());
+        if (!scopeGuard) return false;
         int errId = 0;
         std::string error;
         if (!queryExec(requestId, errId, error)) {
-            queryFree(requestId);
             return sqlFail(requestId, error);
         }
-        queryFree(requestId);
 
         if (columnAdded) *columnAdded = true;
     }

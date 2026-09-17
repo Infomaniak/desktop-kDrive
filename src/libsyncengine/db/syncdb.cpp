@@ -2666,7 +2666,8 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
     static const char *requestId = "select_node_with_names_and_ids";
     static const char *query = "SELECT nodeId, nameLocal, nameDrive, nodeIdLocal FROM node;";
 
-    if (!createAndPrepareRequest(requestId, query)) return false;
+    auto scopeGuard = createAndPrepareLocalRequest(requestId, query);
+    if (!scopeGuard) return false;
 
     const std::scoped_lock lock(_mutex);
 
@@ -2712,15 +2713,12 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         namedNodeMap.try_emplace(intNodeId, NamedNode{dbNodeId, nameLocal});
     }
 
-    queryFree(requestId);
-
     return true;
 }
 
 bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
-    static const char *requestId = UPDATE_NODE_NAME_LOCAL_REQUEST_ID;
-
-    if (!createAndPrepareRequest(requestId, UPDATE_NODE_NAME_LOCAL_REQUEST)) return false;
+    auto scopeGuard = createAndPrepareLocalRequest(UPDATE_NODE_NAME_LOCAL_REQUEST_ID, UPDATE_NODE_NAME_LOCAL_REQUEST);
+    if (!scopeGuard) return false;
 
     for (const auto &[dbNodeId, fileName]: localNames) {
         bool found = false;
@@ -2728,13 +2726,9 @@ bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
         if (!found) {
             LOGW_WARN(_logger,
                       L"Node with DB id='" << dbNodeId << L"' and " << Utility::formatSyncName(fileName) << L" not found.");
-            queryFree(requestId);
-
             return false;
         }
     }
-
-    queryFree(requestId);
 
     return true;
 }
@@ -2751,16 +2745,15 @@ bool SyncDb::normalizeRemoteNames() {
         return false;
     }
 
-    if (!createAndPrepareRequest(requestId, query)) return false;
+    auto scopeGuard = createAndPrepareLocalRequest(requestId, query);
+    if (!scopeGuard) return false;
 
     int errId = 0;
     std::string error;
 
     if (!queryExec(requestId, errId, error)) {
-        queryFree(requestId);
         return sqlFail(requestId, error);
     }
-    queryFree(requestId);
 
     return true;
 }
