@@ -135,6 +135,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/advancedsettingscontroller.h
         app/settings/exclusionrulemodel.cpp
         app/settings/exclusionrulemodel.h
+        app/settings/fileexclusioncontroller.cpp
+        app/settings/fileexclusioncontroller.h
         app/settings/settingswindowcontroller.cpp
         app/settings/settingswindowcontroller.h
         app/systraycontroller.cpp
