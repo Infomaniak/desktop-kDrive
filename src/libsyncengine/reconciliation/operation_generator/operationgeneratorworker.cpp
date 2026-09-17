@@ -26,6 +26,7 @@ namespace KDC {
 
 constexpr uint64_t maxNbOfDeleteOperationSoftLimit = 2;
 constexpr uint64_t maxNbOfDeleteOperationHardLimit = 100;
+constexpr uint64_t maxNbOfDeleteOperationPathPresented = 500;
 
 OperationGeneratorWorker::OperationGeneratorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName) :
@@ -39,7 +40,8 @@ void OperationGeneratorWorker::execute() {
     _syncPal->_syncOps->startUpdate();
     _syncPal->_syncOps->clear();
     _bytesToDownload = 0;
-    _localDeleteOperationsPaths.clear();
+    _nbLocalDeleteOperations = 0;
+    _localDeleteOperationsDisplayedPaths.clear();
 
     // Mark all nodes "Unprocessed"
     _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
@@ -149,13 +151,15 @@ void OperationGeneratorWorker::execute() {
     }
 
     if (_syncPal->manyDeleteOpsUserChoice() == TooManyDeletesUserChoice::None) {
-        if (_localDeleteOperationsPaths.size() >= maxNbOfDeleteOperationHardLimit) {
+        if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationHardLimit) {
             LOGW_SYNCPAL_WARN(_logger, L"Local delete operations detected: hard limit triggered!");
             exitCode = ExitCode::TooManyDeleteOperations;
-            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit, _localDeleteOperationsPaths);
-        } else if (_localDeleteOperationsPaths.size() >= maxNbOfDeleteOperationSoftLimit && std::get<bool>(notifyBeforeDelete)) {
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::HardLimit, _nbLocalDeleteOperations,
+                                                  _localDeleteOperationsDisplayedPaths);
+        } else if (_nbLocalDeleteOperations >= maxNbOfDeleteOperationSoftLimit && std::get<bool>(notifyBeforeDelete)) {
             LOGW_SYNCPAL_INFO(_logger, L"Local delete operations detected: soft limit triggered!");
-            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit, _localDeleteOperationsPaths);
+            _syncPal->sendManyDeletesNotification(TooManyDeletesNotificationType::SoftLimit, _nbLocalDeleteOperations,
+                                                  _localDeleteOperationsDisplayedPaths);
         }
     }
 
@@ -375,7 +379,14 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                        << Utility::formatSyncPath(currentNode->getPath()) << L" ("
                                        << CommonUtility::s2ws(currentNode->id() ? currentNode->id().value() : "-1") << L")");
         }
-        if (op->targetSide() == ReplicaSide::Remote) (void) _localDeleteOperationsPaths.emplace_back(currentNode->getPath());
+
+
+        if (op->targetSide() == ReplicaSide::Remote) {
+            _nbLocalDeleteOperations++;
+            if (_localDeleteOperationsDisplayedPaths.size() < maxNbOfDeleteOperationPathPresented) {
+                (void) _localDeleteOperationsDisplayedPaths.emplace_back(currentNode->getPath());
+            }
+        }
     }
 
     _deletedNodes.insert(*currentNode->id());

@@ -43,7 +43,8 @@ class OperationGeneratorWorker : public OperationProcessor {
         void findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode);
         std::queue<std::shared_ptr<Node>> _queuedToExplore;
         NodeSet _deletedNodes;
-        std::vector<SyncPath> _localDeleteOperationsPaths;
+        uint64_t _nbLocalDeleteOperations = 0;
+        std::vector<SyncPath> _localDeleteOperationsDisplayedPaths;
 
 
         int64_t _bytesToDownload = 0;
