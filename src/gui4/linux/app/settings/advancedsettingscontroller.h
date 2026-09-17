@@ -141,6 +141,7 @@ class AdvancedSettingsController final : public QObject {
         bool _saving{false};
         std::array<ErrorState, static_cast<std::size_t>(ErrorContext::Count)> _errors;
         LogUploadState _uploadState{LogUploadState::None};
+        LogUploadState _lastUploadPhase{LogUploadState::None};
         int32_t _uploadPercentage{0};
         bool _uploadRequestPending{false};
 };
