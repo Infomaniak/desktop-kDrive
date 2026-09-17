@@ -727,7 +727,7 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept {
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *const filestat, IoError &ioError, PathCheckOption option) noexcept {
     ioError = IoError::Success;
 
     bool exists = false;
@@ -743,7 +743,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     return _getFileStat(path, filestat, ioError);
 }
 
-void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, const PathCheckOption option) {
+void IoHelper::getFileStat(const SyncPath &path, FileStat *const buf, bool &exists, const PathCheckOption option) {
     exists = true;
     auto ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError, option)) {
@@ -751,11 +751,8 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, co
 
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
-#if defined(KD_WINDOWS)
-    exists = ioError != IoError::NoSuchFileOrDirectory;
-#else
+
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
-#endif
 }
 
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
