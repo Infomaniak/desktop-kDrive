@@ -2869,5 +2869,25 @@ För att påskynda uppladdningen rekommenderar vi att du bara skickar den senast
             <source>The debug folder was successfully sent to Infomaniak Support.</source>
             <translation>Felsökningsmappen har skickats till Infomaniaks support.</translation>
         </message>
+        <message id="buttonSaveAnyway">
+            <source>Save anyway</source>
+            <extracomment>Primary action that bypasses the reachability check.</extracomment>
+            <translation>Spara ändå</translation>
+        </message>
+        <message id="proxyConnectionFailedDescription">
+            <source>The connection to the proxy server could not be established.</source>
+            <extracomment>Dialog description.</extracomment>
+            <translation>Det gick inte att upprätta anslutningen till proxyservern.</translation>
+        </message>
+        <message id="proxyConnectionFailedTitle">
+            <source>Unable to connect to the proxy</source>
+            <extracomment>Dialog title.</extracomment>
+            <translation>Det går inte att ansluta till proxyn</translation>
+        </message>
+        <message id="proxySaveAnywayQuestion">
+            <source>Do you still want to save these settings?</source>
+            <extracomment>Emphasized confirmation question.</extracomment>
+            <translation>Vill du spara de här inställningarna ändå?</translation>
+        </message>
     </context>
 </TS>
