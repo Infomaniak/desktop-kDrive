@@ -32,6 +32,7 @@
 #include <QDesktopServices>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QTimer>
 
 namespace KDC {
 
