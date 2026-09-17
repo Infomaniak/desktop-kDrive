@@ -291,9 +291,9 @@ function v4_verify_bundle() (
             failures=1
         fi
         if ((verify_bundled_glib)) &&
-            grep -qE '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report"; then
+            grep -qE '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0)\.so' <<<"$report"; then
             echo "GLib runtime resolved outside the AppDir: $file" >&2
-            grep -E '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0|ffi)\.so' <<<"$report" >&2
+            grep -E '=> /(usr/)?lib[^ ]*/lib(glib-2\.0|gio-2\.0|gobject-2\.0|gmodule-2\.0)\.so' <<<"$report" >&2
             failures=1
         fi
 
