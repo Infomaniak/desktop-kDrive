@@ -30,6 +30,10 @@ IKModal {
     property Item triggerItem: null
     readonly property bool canSubmit: patternField.text.length > 0 && controller.ready
 
+    function toggleNotification() {
+        notifyCheckBox.checkState = notifyCheckBox.checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked;
+    }
+
     function showFrom(trigger) {
         triggerItem = trigger;
         patternField.clear();
@@ -108,7 +112,7 @@ IKModal {
                 Layout.preferredHeight: implicitHeight
                 enabled: !root.controller.saving
                 Accessible.name: qsTrId("notifyOnFileExcluded")
-                onClicked: checkState = checkState === Qt.Checked ? Qt.Unchecked : Qt.Checked
+                onClicked: root.toggleNotification()
             }
 
             Text {
@@ -117,6 +121,13 @@ IKModal {
                 color: IKColors.textPrimary
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
+
+                MouseArea {
+                    anchors.fill: parent
+                    enabled: notifyCheckBox.enabled
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.toggleNotification()
+                }
             }
         },
         Text {
