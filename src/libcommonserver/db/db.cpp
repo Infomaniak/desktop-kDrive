@@ -344,19 +344,21 @@ bool Db::init(const std::string &version) {
         }
 
         if (dbExists) {
-            // Check version
-            LOG_DEBUG(_logger, "Check DB version");
-            auto scopeGuard3 = createAndPrepareLocalRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST);
-            if (!scopeGuard3) return false;
+            {
+                // Check version
+                LOG_DEBUG(_logger, "Check DB version");
+                auto scopeGuard = createAndPrepareLocalRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST);
+                if (!scopeGuard) return false;
 
-            bool found = false;
-            if (!selectVersion(_fromVersion, found)) {
-                LOG_WARN(_logger, "Error in Db::selectVersion");
-                return false;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Version not found");
-                return false;
+                bool found = false;
+                if (!selectVersion(_fromVersion, found)) {
+                    LOG_WARN(_logger, "Error in Db::selectVersion");
+                    return false;
+                }
+                if (!found) {
+                    LOG_WARN(_logger, "Version not found");
+                    return false;
+                }
             }
 
             // Upgrade DB
@@ -365,37 +367,44 @@ bool Db::init(const std::string &version) {
                 return false;
             }
 
-            // Update version
-            auto scopeGuard4 = createAndPrepareLocalRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST);
-            if (!scopeGuard4) return false;
+            {
+                // Update version
+                auto scopeGuard = createAndPrepareLocalRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST);
+                if (!scopeGuard) return false;
 
-            if (!updateVersion(version, found)) {
-                LOG_WARN(_logger, "Error in Db::updateVersion");
-                return false;
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Version not found");
-                return false;
+                bool found = false;
+                if (!updateVersion(version, found)) {
+                    LOG_WARN(_logger, "Error in Db::updateVersion");
+                    return false;
+                }
+                if (!found) {
+                    LOG_WARN(_logger, "Version not found");
+                    return false;
+                }
             }
         } else {
-            // Create version table
-            LOG_DEBUG(_logger, "Create version table");
-            auto scopeGuard3 = createAndPrepareLocalRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE);
-            if (!scopeGuard3) return false;
+            {
+                // Create version table
+                LOG_DEBUG(_logger, "Create version table");
+                auto scopeGuard = createAndPrepareLocalRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE);
+                if (!scopeGuard) return false;
 
-            int errId = -1;
-            if (std::string error; !queryExec(CREATE_VERSION_TABLE_ID, errId, error)) {
-                return sqlFail(CREATE_VERSION_TABLE_ID, error);
+                int errId = -1;
+                if (std::string error; !queryExec(CREATE_VERSION_TABLE_ID, errId, error)) {
+                    return sqlFail(CREATE_VERSION_TABLE_ID, error);
+                }
             }
 
-            // Insert version
-            LOG_DEBUG(_logger, "Insert version " << version);
-            auto scopeGuard4 = createAndPrepareLocalRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST);
-            if (!scopeGuard4) return false;
+            {
+                // Insert version
+                LOG_DEBUG(_logger, "Insert version " << version);
+                auto scopeGuard = createAndPrepareLocalRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST);
+                if (!scopeGuard) return false;
 
-            if (!insertVersion(version)) {
-                LOG_WARN(_logger, "Error in Db::insertVersion");
-                return false;
+                if (!insertVersion(version)) {
+                    LOG_WARN(_logger, "Error in Db::insertVersion");
+                    return false;
+                }
             }
 
             // Create DB
