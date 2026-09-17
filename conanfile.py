@@ -195,7 +195,14 @@ class KDriveDesktop(ConanFile):
             self.requires("openssl-macos/3.2.4", options={
                 "shared": True})  # on macOS => Using the local recipe, using the openssl universal build script.
         else:
-            self.requires("openssl/3.2.4", options={"shared": True})  # Otherwise, using the conan center recipe.
+            openssl_options = {"shared": True}
+            if self.settings.os == "Linux" and str(self.settings.arch) == "armv8":
+                # OpenSSL 3.2 Tls certificate compression dispatch crashes with a NULL function-pointer call on at least
+                # one arm64 environment (observed under Apple Virtualization Framework guest). no_comp disables all
+                # TLS/SSL compression: it only affects the handshake's Certificate message.
+                # Scoped to arm64 since amd64 does not have this issue.
+                openssl_options["no_comp"] = True
+            self.requires("openssl/3.2.4", options=openssl_options)  # Otherwise, using the conan center recipe.
 
         self.requires("sentry/0.7.10", options={"shared": True, "qt_version": qt_version})
         self.requires("poco/1.13.3", options={"shared": True})
