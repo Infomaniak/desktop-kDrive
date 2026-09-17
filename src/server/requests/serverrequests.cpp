@@ -1224,7 +1224,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
         case TooManyDeleteOperations:
             return false;
         case Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength;
+            return error.inconsistencyType() != InconsistencyType::PathLength && !error.isStale();
         }
         default:
             return true;
@@ -1600,7 +1600,7 @@ bool deleteIfStale(const Error &error) {
 ExitInfo ServerRequests::getErrorList(const int32_t limit, std::vector<Error> &list, bool &hasMore) {
     constexpr int32_t maxStaleCount = 10;
 
-    int32_t staleCount;
+    int32_t staleCount = 0;
     do {
         std::vector<Error> errorList;
         if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
