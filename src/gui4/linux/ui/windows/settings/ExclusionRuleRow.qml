@@ -54,11 +54,13 @@ Item {
             onClicked: root.controller.setSelected(root.row, !root.selected)
         }
 
-        IKTintedIcon {
+        Image {
             Layout.preferredWidth: IKSettings.exclusionFileIconSize
             Layout.preferredHeight: IKSettings.exclusionFileIconSize
-            source: "qrc:/assets/main/activities/file.svg"
-            color: IKColors.textTertiary
+            source: ThemeMode.isDark ? "qrc:/assets/main/activities/file-dark.svg" : "qrc:/assets/main/activities/file.svg"
+            sourceSize.width: IKSettings.exclusionFileIconSize
+            sourceSize.height: IKSettings.exclusionFileIconSize
+            fillMode: Image.PreserveAspectFit
             Accessible.ignored: true
         }
 
