@@ -42,7 +42,7 @@ public extension VFSConversionCacheObservable {
 
 /// Transient GUI operations, independent of server-backed synchronization data.
 public actor VFSConversionCache: VFSConversionCaching, VFSConversionCacheObservable {
-    private var activeConversions: [Int32: UUID] = [:]
+    private var activeConversions: [Int32: Set<UUID>] = [:]
     private nonisolated let conversionsSubject = CurrentValueSubject<Set<Int32>, Never>([])
 
     public nonisolated var convertingSynchroIdsPublisher: AnyPublisher<Set<Int32>, Never> {
@@ -53,14 +53,16 @@ public actor VFSConversionCache: VFSConversionCaching, VFSConversionCacheObserva
 
     public func beginConversion(synchroDbId: Int32) -> UUID {
         let token = UUID()
-        activeConversions[synchroDbId] = token
+        activeConversions[synchroDbId, default: []].insert(token)
         publishConversions()
         return token
     }
 
     public func finishConversion(synchroDbId: Int32, token: UUID) {
-        guard activeConversions[synchroDbId] == token else { return }
-        removeConversion(synchroDbId: synchroDbId)
+        guard activeConversions[synchroDbId]?.remove(token) != nil else { return }
+        if activeConversions[synchroDbId]?.isEmpty == true {
+            removeConversion(synchroDbId: synchroDbId)
+        }
     }
 
     public func isConverting(synchroDbId: Int32) -> Bool {

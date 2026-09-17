@@ -65,8 +65,10 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 - `CoherentCacheObservable` provides `usersPublisher` — use extension methods (`.synchroPublisher(...)`, `.allSynchrosPublisher()`, etc.)
 - DO: Use `ObservedXxx` wrappers or `usersPublisher` chains for reactive UI updates
 - DON'T: Poll the cache — subscribe reactively
-- `VFSConversionCache` owns transient VFS conversions keyed by sync ID, with a UUID per request. Jobs must await
-  `finishConversion(synchroDbId:token:)` on both success and failure; an older completion cannot finish a newer request.
+- `VFSConversionCache` owns transient VFS conversions keyed by sync ID, retaining a set of outstanding request UUIDs.
+  Jobs must await `finishConversion(synchroDbId:token:)` on both success and failure; each completion removes only its
+  own token, and the sync remains converting until all requests finish, regardless of completion order.
+  Deletion/reset cleanup removes all tokens for the affected syncs, making late completions harmless.
   Views observe its replaying Combine publishers independently of `Synchro`/`UISynchro`. `ServerCoherentCache` resolves
   the shared instance lazily through DI for deletion/reset cleanup; XPC GUI disconnection also clears it.
   DI exposes `VFSConversionCaching` for lifecycle operations and `VFSConversionCacheObservable` for publishers,
