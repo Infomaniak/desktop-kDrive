@@ -65,14 +65,6 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 - `CoherentCacheObservable` provides `usersPublisher` — use extension methods (`.synchroPublisher(...)`, `.allSynchrosPublisher()`, etc.)
 - DO: Use `ObservedXxx` wrappers or `usersPublisher` chains for reactive UI updates
 - DON'T: Poll the cache — subscribe reactively
-- `VFSConversionCache` owns transient VFS conversions keyed by sync ID, retaining a set of outstanding request UUIDs.
-  Jobs must await `finishConversion(synchroDbId:token:)` on both success and failure; each completion removes only its
-  own token, and the sync remains converting until all requests finish, regardless of completion order.
-  Deletion/reset cleanup removes all tokens for the affected syncs, making late completions harmless.
-  Views observe its replaying Combine publishers independently of `Synchro`/`UISynchro`. `ServerCoherentCache` resolves
-  the shared instance lazily through DI for deletion/reset cleanup; XPC GUI disconnection also clears it.
-  DI exposes `VFSConversionCaching` for lifecycle operations and `VFSConversionCacheObservable` for publishers,
-  both backed by the same actor instance.
 
 ### Dependency Injection (InfomaniakDI)
 ```swift
@@ -80,19 +72,13 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 @InjectService var service: MyService                          // immediate, used in functions
 ```
 Services are registered at app startup. Check `AppDelegate` or the DI setup file for registration.
-- Prefer `@LazyInjectService` for lazy service resolution and `@InjectService` for immediate resolution.
-  Use these property wrappers rather than passing DI-managed services or resolvers through `init` methods.
-- In tests, override the shared DI registrations directly rather than adding injection-only production initializers.
-  Restore both the original factories and cached instances afterward;
-  registering a new factory alone does not replace an already resolved service. Keep these tests isolated
-  from parallel consumers. `@Suite(.serialized)` serializes only that suite's tests, not unrelated suites;
-  tests accessing the same overridden services must share a serialized suite or run separately.
-  `SharedDITests` groups the VFS job, coherent-cache sync/drive, and login tests for this reason.
+- Prefer `@LazyInjectService` and `@InjectService` over constructor injection, including for coherent-cache cleanup.
+- Register caches through separate lifecycle and observation protocols.
 
 ### Tests
-- Use native Swift Testing (`import Testing`) for macOS unit tests, rather than XCTest.
-- Declare suites and cases with `@Suite` and `@Test`; use `#expect`, `#require`, and `Issue.record` for assertions.
-- Prefer parameterized `@Test(arguments:)` cases for multiple inputs and `.timeLimit` for async tests.
+- Use native Swift Testing (`import Testing`, `@Test`, `#expect`) instead of XCTest.
+- Override and restore shared DI factories and cached instances directly; avoid test-only production initializers.
+- Isolate shared-DI tests: `.serialized` does not serialize unrelated suites.
 
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`

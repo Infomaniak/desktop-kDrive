@@ -57,7 +57,7 @@ clang-format -i <file>
 - Sentry DSN and signing secrets are injected by CI only.
 
 ## AGENTS.md Maintenance
-> **Important:** When making significant changes to a directory that contains an AGENTS.md file (new patterns, new architecture, new commands), update that AGENTS.md to reflect the changes. Keep documentation in sync with code.
+Update the nearest `AGENTS.md` when conventions or workflows change; keep guidance scoped to its component.
 
 ## User Preferences & Auto-Correction
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
@@ -69,11 +69,7 @@ clang-format -i <file>
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 <!-- Add project-specific user corrections here -->
-- In the macOS GUI, resolve `VFSConversionCache` lazily through DI for coherent-cache cleanup rather than passing it explicitly through the coherent-cache constructor and factory.
-- Register VFS conversion cache DI services through separate `VFSConversionCaching` and `VFSConversionCacheObservable` protocols, following the other caches.
-- In macOS tests, override and restore shared DI registrations directly instead of adding resolver-taking initializers to production types for testing.
-- On macOS, prefer InfomaniakDI's `@LazyInjectService` and `@InjectService` property wrappers over constructor injection of services or resolvers.
-- For macOS unit tests, use native Swift Testing (`import Testing`, `@Suite`, `@Test`, `#expect`, and `#require`) instead of XCTest.
+- Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 
 ## JIT Index
 
