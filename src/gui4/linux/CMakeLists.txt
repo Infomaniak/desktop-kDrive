@@ -193,6 +193,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/ExclusionRuleRow.qml
         ui/windows/settings/FileExclusionsView.qml
         ui/windows/settings/GeneralSettingsView.qml
+        ui/windows/settings/NetworkSettingsView.qml
+        ui/windows/settings/ProxyConnectionFailureDialog.qml
         ui/windows/settings/SettingsGroup.qml
         ui/windows/settings/SettingsInfoButton.qml
         ui/windows/settings/SettingsInformationDialog.qml
