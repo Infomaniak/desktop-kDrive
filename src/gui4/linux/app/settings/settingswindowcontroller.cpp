@@ -22,7 +22,7 @@ namespace KDC {
 
 SettingsWindowController::SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
                                                    TranslationService &translationService,
-                                                   UpdateStatusService &updateStatusService, QObject *parent) :
+                                                   UpdateStatusService &updateStatusService, QObject *const parent) :
     QObject(parent),
     _general(parametersStore, parametersService, translationService, updateStatusService, this) {}
 
