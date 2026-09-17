@@ -644,7 +644,8 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     const SyncDbId syncDbId = 1;
     const TooManyDeletesNotificationType notificationType = TooManyDeletesNotificationType::HardLimit;
     const std::vector<SyncPath> filesPaths = {"file1", "file2", "file3"};
-    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, filesPaths);
+    const int32_t nbFiles = static_cast<int32_t>(10);
+    SignalSyncNotifyManyDeletesJob job(syncDbId, notificationType, nbFiles, filesPaths);
 
     checkSignalCommonMethods(job, SignalNum::SYNC_NOTIFY_MANY_DELETES);
 
@@ -662,6 +663,9 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
     (void) JsonParserUtility::extractValue(paramsObj, "notificationType", notificationTypeOut);
     CPPUNIT_ASSERT_EQUAL(TooManyDeletesNotificationType::HardLimit,
                          static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
+    auto nbFilesOut = 0;
+    (void) JsonParserUtility::extractValue(paramsObj, "nbFiles", nbFilesOut);
+    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);  
     std::vector<CommString> filesPathsOut;
     const auto filesPathsArray = JsonParserUtility::extractArrayObject(paramsObj, "filesPaths");
     CPPUNIT_ASSERT(filesPathsArray);
