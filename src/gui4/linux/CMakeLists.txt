@@ -110,6 +110,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/cachepopulator.h
         app/services/driveservice.cpp
         app/services/driveservice.h
+        app/services/exclusiontemplateservice.cpp
+        app/services/exclusiontemplateservice.h
         app/services/settingsservicebindings.cpp
         app/services/parametersservice.cpp
         app/services/parametersservice.h
