@@ -57,7 +57,7 @@ clang-format -i <file>
 - Sentry DSN and signing secrets are injected by CI only.
 
 ## AGENTS.md Maintenance
-> **Important:** When making significant changes to a directory that contains an AGENTS.md file (new patterns, new architecture, new commands), update that AGENTS.md to reflect the changes. Keep documentation in sync with code.
+Update the nearest `AGENTS.md` when conventions or workflows change; keep guidance scoped to its component.
 
 ## User Preferences & Auto-Correction
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
@@ -69,6 +69,7 @@ clang-format -i <file>
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 <!-- Add project-specific user corrections here -->
+- Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 
 ## JIT Index
 

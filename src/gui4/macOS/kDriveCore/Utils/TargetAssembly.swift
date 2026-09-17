@@ -33,6 +33,15 @@ open class TargetAssembly {
 
     open class func getCommonServices(testing: Bool) -> [Factory] {
         return [
+            Factory(type: VFSConversionCaching.self) { _, _ in
+                VFSConversionCache()
+            },
+            Factory(type: VFSConversionCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: VFSConversionCaching.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: CoherentCache.self) { _, _ in
                 ServerCoherentCache()
             },
@@ -74,15 +83,6 @@ open class TargetAssembly {
             },
             Factory(type: SettingsCacheObservable.self) { _, resolver in
                 try resolver.resolve(type: SettingsCaching.self,
-                                     forCustomTypeIdentifier: nil,
-                                     factoryParameters: nil,
-                                     resolver: resolver)
-            },
-            Factory(type: VFSConversionStoring.self) { _, _ in
-                VFSConversionStore()
-            },
-            Factory(type: VFSConversionStoreObservable.self) { _, resolver in
-                try resolver.resolve(type: VFSConversionStoring.self,
                                      forCustomTypeIdentifier: nil,
                                      factoryParameters: nil,
                                      resolver: resolver)

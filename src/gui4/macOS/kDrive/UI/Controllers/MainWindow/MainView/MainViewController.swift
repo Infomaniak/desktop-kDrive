@@ -39,8 +39,6 @@ private extension UInt16 {
 final class MainViewController: IKSplitViewController {
     @LazyInjectService private var router: MainViewRouter
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
-    @LazyInjectService private var vfsConversionStore: VFSConversionStoring
-    @LazyInjectService private var vfsConversionStoreObservable: VFSConversionStoreObservable
     @LazyInjectService private var matomo: MatomoUtils
 
     private let viewModel = MainViewModel()
@@ -77,6 +75,7 @@ final class MainViewController: IKSplitViewController {
             }
 
         viewModel.$currentSynchroContext
+            .combineLatest(viewModel.$convertingSynchroIds)
             .receiveOnMain(store: &bindStore) { [weak self] _ in
                 guard let self else { return }
                 refreshPauseResumeToolbarItem(synchroStateObserver.synchroState)
@@ -85,12 +84,6 @@ final class MainViewController: IKSplitViewController {
         synchroStateObserver.synchroStatePublisher
             .receiveOnMain(store: &bindStore) { [weak self] synchroState in
                 self?.refreshPauseResumeToolbarItem(synchroState)
-            }
-
-        vfsConversionStoreObservable.convertingSynchrosPublisher
-            .receiveOnMain(store: &bindStore) { [weak self] _ in
-                guard let self else { return }
-                refreshPauseResumeToolbarItem(synchroStateObserver.synchroState)
             }
     }
 
@@ -332,30 +325,24 @@ extension MainViewController {
 
     private func updatePauseResumeButton(_ item: NSToolbarItem, state: UISynchroState) {
         let hasBlockingError = viewModel.currentBlockingError != nil
+        let isConverting = viewModel.isCurrentSynchroConverting
 
         guard !hasBlockingError else {
             setPauseResumeAppearance(item, showPause: true, enabled: false)
             return
         }
 
-        Task { @MainActor in
-            var isConverting = false
-            if let currentSynchroDbId = viewModel.currentSynchro?.dbId {
-                isConverting = await vfsConversionStore.isConverting(synchroDbId: Int32(currentSynchroDbId))
-            }
-
-            switch state.status {
-            case .starting:
-                setPauseResumeAppearance(item, showPause: true, enabled: false)
-            case .running, .idle:
-                setPauseResumeAppearance(item, showPause: true, enabled: !isConverting)
-            case .stopAsked:
-                setPauseResumeAppearance(item, showPause: false, enabled: false)
-            case .pauseAsked, .paused, .stopped:
-                setPauseResumeAppearance(item, showPause: false, enabled: !isConverting)
-            case .error:
-                setPauseResumeAppearance(item, showPause: true, enabled: false)
-            }
+        switch state.status {
+        case .starting:
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
+        case .running, .idle:
+            setPauseResumeAppearance(item, showPause: true, enabled: !isConverting)
+        case .stopAsked:
+            setPauseResumeAppearance(item, showPause: false, enabled: false)
+        case .pauseAsked, .paused, .stopped:
+            setPauseResumeAppearance(item, showPause: false, enabled: !isConverting)
+        case .error:
+            setPauseResumeAppearance(item, showPause: true, enabled: false)
         }
     }
 

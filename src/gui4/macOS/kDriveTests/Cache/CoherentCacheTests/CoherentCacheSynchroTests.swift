@@ -18,10 +18,13 @@
 
 import Foundation
 @testable import kDriveCore
-import OrderedCollections
 import Testing
 
-struct CoherentCacheSynchroTests {
+extension SharedDITests {
+    struct CoherentCacheSynchroTests {}
+}
+
+extension SharedDITests.CoherentCacheSynchroTests {
     @Test(.timeLimit(.minutes(1)))
     func getSynchroInCache() async throws {
         // GIVEN
@@ -108,5 +111,32 @@ struct CoherentCacheSynchroTests {
         } catch {
             Issue.record("unexpected error: \(error)")
         }
+    }
+
+    @Test(.timeLimit(.minutes(1)))
+    func updateSynchroInCacheDuringConversion() async throws {
+        // GIVEN
+        let user = CacheData.expectedUser
+        let cache = ServerCoherentCache()
+        await cache.addUser(user)
+        #expect(await cache.getUser(dbId: CacheData.expectedUserDbId) == user)
+        try await cache.addOrUpdateAccount(CacheData.expectedAccount)
+        #expect(await cache
+            .getAccount(accountDbId: CacheData.expectedAccountDbId) == CacheData
+            .expectedAccount)
+        try await cache.addDrive(CacheData.expectedDrive, accountDbId: CacheData.expectedAccountDbId)
+        #expect(await cache.getDrive(driveDbId: CacheData.expectedDriveDbId) == CacheData.expectedDrive)
+        let conversions = VFSConversionCache()
+        let token = await conversions.beginConversion(synchroDbId: CacheData.expectedSynchroDbId)
+        try await cache.addSynchro(CacheData.expectedSynchro)
+
+        // WHEN
+        try await cache.updateSynchro(CacheData.updatedSynchro)
+
+        // THEN
+        let cachedSynchro = await cache.getSynchro(synchroDbId: CacheData.expectedSynchroDbId)
+        #expect(cachedSynchro == CacheData.updatedSynchro)
+        #expect(await conversions.isConverting(synchroDbId: CacheData.expectedSynchroDbId))
+        await conversions.finishConversion(synchroDbId: CacheData.expectedSynchroDbId, token: token)
     }
 }

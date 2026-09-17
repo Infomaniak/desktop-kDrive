@@ -60,8 +60,8 @@ public struct NewSyncMetadata: Sendable {
 
 public struct SyncJobs: Sendable {
     @LazyInjectService private var coherentCache: CoherentCache
-    @LazyInjectService private var vfsConversionStore: VFSConversionStoring
     @LazyInjectService private var queryFetcher: XPCQueryFetcherProtocol
+    @LazyInjectService private var vfsConversionCache: VFSConversionCaching
 
     public init() {}
 
@@ -159,7 +159,6 @@ public struct SyncJobs: Sendable {
         try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
 
         try? await coherentCache.removeSynchro(synchroDbId: syncDbId)
-        await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
     }
 
     public func getPublicLinkUrl(driveDbId: Int32, nodeId: String) async throws -> URL {
@@ -186,6 +185,7 @@ public struct SyncJobs: Sendable {
     }
 
     public func setSupportsVirtualFiles(syncDbId: Int32, value: Bool) async throws {
+        let token = await vfsConversionCache.beginConversion(synchroDbId: syncDbId)
         let query = SetSupportsVirtualFilesQuery(syncDbId: syncDbId, value: value)
         let request = await RequestMessage<SetSupportsVirtualFilesQuery>(
             num: RequestNum.SYNC_SETSUPPORTSVIRTUALFILES,
@@ -193,12 +193,12 @@ public struct SyncJobs: Sendable {
         )
 
         do {
-            await vfsConversionStore.conversionStarted(synchroDbId: syncDbId)
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
         } catch {
-            await vfsConversionStore.conversionCompleted(synchroDbId: syncDbId)
+            await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
             throw error
         }
+        await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
     }
 
     public func acknowledgeManyDeletes(syncDbId: Int32, userChoice: KDC.TooManyDeletesUserChoice) async throws {

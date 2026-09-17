@@ -72,6 +72,13 @@ let synchro = await coherentCache.getSynchro(synchroDbId: id)
 @InjectService var service: MyService                          // immediate, used in functions
 ```
 Services are registered at app startup. Check `AppDelegate` or the DI setup file for registration.
+- Prefer `@LazyInjectService` and `@InjectService` over constructor injection, including for coherent-cache cleanup.
+- Register caches through separate lifecycle and observation protocols.
+
+### Tests
+- Use native Swift Testing (`import Testing`, `@Test`, `#expect`) instead of XCTest.
+- Override and restore shared DI factories and cached instances directly; avoid test-only production initializers.
+- Isolate shared-DI tests: `.serialized` does not serialize unrelated suites.
 
 ### ViewModels & Views
 - ViewModels are `@MainActor final class` conforming to `ObservableObject`
