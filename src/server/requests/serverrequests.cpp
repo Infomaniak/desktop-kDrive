@@ -435,10 +435,11 @@ constexpr Count kMaxPathAttempts = 100;
 // been deleted, but is still registered as a sync folder in the database.
 ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncName &initialFolderName,
                                          const std::vector<Sync> &syncList, SyncPath &path, Count &attemptCount,
-                                         bool &newIncrement) {
-    newIncrement = false;
+                                         bool &newIncrementRequired) {
+    newIncrementRequired = false;
     auto newAttemptCount = attemptCount;
-    do {
+    bool collisionFound = false;
+    while (collisionFound) {
         attemptCount = newAttemptCount;
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
         const auto pathComparator = [&path](const Sync &sync) {
@@ -449,14 +450,16 @@ ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncN
 #endif
         if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
             ++newAttemptCount;
-            newIncrement = true;
+            newIncrementRequired = true;
             if (newAttemptCount >= kMaxPathAttempts) {
                 LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
                 return ExitCode::SystemError;
             }
             path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(newAttemptCount)));
         }
-    } while (newAttemptCount != attemptCount);
+
+        collisionFound = newAttemptCount != attemptCount;
+    }
 
     return ExitCode::Ok;
 }
@@ -481,7 +484,7 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
             ++attemptCount;
             // Count attempts and give up eventually
             if (attemptCount >= kMaxPathAttempts) {
-                LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
+                LOG_WARN(Log::instance()->getLogger(), "Cannot find a valid path.");
                 return ExitCode::SystemError;
             }
             path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
@@ -489,14 +492,14 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
             continue;
         }
 
-        bool newIncrement = false;
-        if (const auto exitInfo =
-                    avoidCollisionWithExistingSyncs(homeFolder, initialFolderName, syncList, path, attemptCount, newIncrement);
+        bool newIncrementRequired = false;
+        if (const auto exitInfo = avoidCollisionWithExistingSyncs(homeFolder, initialFolderName, syncList, path, attemptCount,
+                                                                  newIncrementRequired);
             !exitInfo) {
             return exitInfo;
         }
 
-        if (!newIncrement) break;
+        if (!newIncrementRequired) break;
     }
 
     return ExitCode::Ok;
