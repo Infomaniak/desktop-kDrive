@@ -260,7 +260,7 @@ void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
     }
 
     if (!exists) {
-        LOGW_INFO(_logger, L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
+        LOGW_DEBUG(_logger, L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
         return;
     }
 
