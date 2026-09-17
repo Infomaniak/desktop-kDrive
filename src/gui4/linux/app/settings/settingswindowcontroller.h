@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/settings/advancedsettingscontroller.h"
+#include "app/settings/fileexclusioncontroller.h"
 #include "app/settings/generalsettingscontroller.h"
 
 #include <QObject>
@@ -35,14 +36,17 @@ class SettingsWindowController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(GeneralSettingsController *general READ general CONSTANT)
         Q_PROPERTY(AdvancedSettingsController *advanced READ advanced CONSTANT)
+        Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusions CONSTANT)
 
     public:
         SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
                                  TranslationService &translationService, UpdateStatusService &updateStatusService,
-                                 SentryService &sentryService, const CommService &commService, QObject *parent = nullptr);
+                                 ExclusionTemplateService &exclusionTemplateService, SentryService &sentryService,
+                                 const CommService &commService, QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *general() { return &_general; }
         [[nodiscard]] AdvancedSettingsController *advanced() { return &_advanced; }
+        [[nodiscard]] FileExclusionController *fileExclusions() { return &_fileExclusions; }
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
 
@@ -54,6 +58,7 @@ class SettingsWindowController final : public QObject {
     private:
         GeneralSettingsController _general;
         AdvancedSettingsController _advanced;
+        FileExclusionController _fileExclusions;
 };
 
 } // namespace KDC
