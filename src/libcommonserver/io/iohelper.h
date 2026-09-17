@@ -98,9 +98,10 @@ struct IoHelper {
             return PathCheckOption::Sensitive;
 #else
             static_assert(false, "Unknown platform");
+            return PathCheckOption::Insensitive;
 #endif
         }
-        
+
         IoHelper() = default;
 
         inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
@@ -159,7 +160,7 @@ struct IoHelper {
          \param path is a file system path to a directory entry (we also call it an item).
          \param previousSize is a file size in bytes to be checked against.
          \param previousMtime is the previous modification date to be checked against.
-         \param previousBirthtime is the previous creation date to be checked against.
+         \param previousCreationTime is the previous creation date to be checked against.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
          modification time. False otherwise.
@@ -206,8 +207,8 @@ struct IoHelper {
         /*!
          \param path is the file system path indicating the item to check.
          \param nodeId is node identifier that is checked against the identifier indicated by path.
-         \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
-         false otherwise.
+         \param existsWithSameId is a boolean set with true if an item indicated by the path exists with the specified node
+         identifier, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
          PathCheckOption::Insensitive otherwise.
