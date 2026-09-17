@@ -182,6 +182,10 @@ IKShadowedWindow {
                 trigger.forceActiveFocus();
                 advancedPane.push(debugComponent);
             }
+            onNetworkRequested: trigger => {
+                trigger.forceActiveFocus();
+                advancedPane.push(networkComponent);
+            }
         }
     }
 
@@ -239,6 +243,15 @@ IKShadowedWindow {
     }
 
     Component {
+        id: networkComponent
+
+        NetworkSettingsView {
+            controller: root.controller.network
+            onConnectionFailureRequested: trigger => proxyConnectionFailureDialog.showFrom(trigger)
+        }
+    }
+
+    Component {
         id: debugComponent
 
         DebugSettingsView {
@@ -280,9 +293,20 @@ IKShadowedWindow {
         scrimRadius: root.surfaceRadius
     }
 
+    ProxyConnectionFailureDialog {
+        id: proxyConnectionFailureDialog
+
+        controller: root.controller.network
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+    }
+
     onClosing: {
+        root.controller.network.cancelConnectionCheck();
+        root.controller.network.dismissConnectionFailure();
         addExclusionRuleDialog.close();
         sendDebugLogsDialog.close();
+        proxyConnectionFailureDialog.close();
         releaseDialog.close();
         aboutDialog.close();
     }
