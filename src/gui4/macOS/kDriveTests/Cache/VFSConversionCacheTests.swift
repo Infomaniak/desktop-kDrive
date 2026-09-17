@@ -48,30 +48,59 @@ struct VFSConversionCacheTests {
         await cache.finishConversion(synchroDbId: 2, token: otherToken)
     }
 
-    @Test func olderTokenCannotFinishNewerConversion() async {
+    @Test(arguments: [false, true])
+    func staysActiveUntilAllTokensFinish(newerFinishesFirst: Bool) async {
         let cache = VFSConversionCache()
+        let (emissions, continuation) = AsyncStream<Bool>.makeStream()
+        let subscription = cache.isConvertingPublisher(synchroDbId: 1).sink { continuation.yield($0) }
+        defer { subscription.cancel() }
+        var iterator = emissions.makeAsyncIterator()
+        #expect(await iterator.next() == false)
+
         let older = await cache.beginConversion(synchroDbId: 1)
         let newer = await cache.beginConversion(synchroDbId: 1)
         #expect(older != newer)
+        #expect(await iterator.next() == true)
 
-        await cache.finishConversion(synchroDbId: 1, token: older)
+        let first = newerFinishesFirst ? newer : older
+        let last = newerFinishesFirst ? older : newer
+        await cache.finishConversion(synchroDbId: 1, token: first)
+        // Duplicate or unknown completions must not remove another request's token.
+        await cache.finishConversion(synchroDbId: 1, token: first)
+        await cache.finishConversion(synchroDbId: 1, token: UUID())
         #expect(await cache.isConverting(synchroDbId: 1))
-        await cache.finishConversion(synchroDbId: 1, token: newer)
+
+        let (replay, replayContinuation) = AsyncStream<Bool>.makeStream()
+        let lateSubscription = cache.isConvertingPublisher(synchroDbId: 1).sink { replayContinuation.yield($0) }
+        defer { lateSubscription.cancel() }
+        #expect(await replay.first { _ in true } == true)
+
+        await cache.finishConversion(synchroDbId: 1, token: last)
         #expect(await !cache.isConverting(synchroDbId: 1))
+        #expect(await iterator.next() == false)
     }
 
-    @Test func clearInvalidatesOutstandingTokens() async {
+    @Test(arguments: [false, true])
+    func cleanupInvalidatesAllOutstandingTokens(removeOnlyOneSync: Bool) async {
         let cache = VFSConversionCache()
         let older = await cache.beginConversion(synchroDbId: 1)
-        _ = await cache.beginConversion(synchroDbId: 2)
-        await cache.clear()
+        let overlapping = await cache.beginConversion(synchroDbId: 1)
+        let other = await cache.beginConversion(synchroDbId: 2)
+        if removeOnlyOneSync {
+            await cache.removeConversion(synchroDbId: 1)
+        } else {
+            await cache.clear()
+        }
         #expect(await !cache.isConverting(synchroDbId: 1))
-        #expect(await !cache.isConverting(synchroDbId: 2))
+        #expect(await cache.isConverting(synchroDbId: 2) == removeOnlyOneSync)
 
         let newer = await cache.beginConversion(synchroDbId: 1)
         await cache.finishConversion(synchroDbId: 1, token: older)
+        await cache.finishConversion(synchroDbId: 1, token: overlapping)
         #expect(await cache.isConverting(synchroDbId: 1))
         await cache.finishConversion(synchroDbId: 1, token: newer)
+        #expect(await !cache.isConverting(synchroDbId: 1))
+        await cache.finishConversion(synchroDbId: 2, token: other)
     }
 }
 
@@ -255,8 +284,8 @@ extension SharedDITests.VFSConversionJobsTests {
         #expect(await fixture.cache.getSynchro(synchroDbId: fixture.syncDbId)?.virtualFileMode == .Off)
     }
 
-    @Test(arguments: [false, true])
-    func olderResponseCannotFinishOverlappingRequest(olderFails: Bool) async throws {
+    @Test(arguments: [false, true], ["success", "transportFailure", "serverRejection"])
+    func completionCannotFinishOverlappingRequest(newerFinishesFirst: Bool, firstOutcome: String) async throws {
         let fixture = try await Fixture()
         var started = fixture.started.makeAsyncIterator()
         let older = fixture.startConversion()
@@ -264,13 +293,32 @@ extension SharedDITests.VFSConversionJobsTests {
         let newer = fixture.startConversion()
         #expect(await started.next() == 1)
 
-        await fixture.gate.complete(0, result: olderFails
-            ? .failure(FailingXPCConnectionProvider.TransportError.connectionLost)
-            : .success(try ConversionConnectionProvider.response()))
-        _ = await older.result
+        let firstResponse: Result<Data, Error>
+        switch firstOutcome {
+        case "transportFailure":
+            firstResponse = .failure(FailingXPCConnectionProvider.TransportError.connectionLost)
+        case "serverRejection":
+            firstResponse = .success(try ConversionConnectionProvider.response(code: .OperationCanceled))
+        default:
+            firstResponse = .success(try ConversionConnectionProvider.response())
+        }
+        let first = newerFinishesFirst ? newer : older
+        let last = newerFinishesFirst ? older : newer
+        await fixture.gate.complete(newerFinishesFirst ? 1 : 0, result: firstResponse)
+        do {
+            try await first.value
+            #expect(firstOutcome == "success")
+        } catch {
+            if firstOutcome == "serverRejection" {
+                #expect(error as? CallbackError == .serverError(code: .OperationCanceled, cause: .Unknown))
+            } else {
+                #expect(firstOutcome == "transportFailure")
+                #expect(error is FailingXPCConnectionProvider.TransportError)
+            }
+        }
         #expect(await fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
-        await fixture.gate.complete(1, result: .success(try ConversionConnectionProvider.response()))
-        try await newer.value
+        await fixture.gate.complete(newerFinishesFirst ? 0 : 1, result: .success(try ConversionConnectionProvider.response()))
+        try await last.value
         #expect(await !fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
     }
 
