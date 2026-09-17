@@ -2151,6 +2151,16 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
+namespace {
+Qt::CaseSensitivity getQtPathCheckOption() {
+    if (CommonUtility::isWindows() || CommonUtility::isMac()) {
+        return Qt::CaseInsensitive;
+    }
+
+    return Qt::CaseSensitive;
+}
+} // namespace
+
 ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     error.clear();
     ExitCode exitCode = checkPathValidityRecursive(path, error);
@@ -2158,8 +2168,6 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
         return exitCode;
     }
-
-    auto cs = Qt::CaseSensitive;
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
@@ -2172,6 +2180,7 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
     for (std::filesystem::path existingSyncFolder: existingSyncFolderList) {
         const QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
 
+        const auto cs = getQtPathCheckOption();
         const bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
         if (differentPaths && existingSyncFolderDir.startsWith(userDir, cs)) {
             error = QObject::tr(
@@ -2205,8 +2214,7 @@ bool ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QStrin
     for (const BaseSync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
-        if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive
-                                                                                                      : Qt::CaseSensitive)) {
+        if (absolutePath.startsWith(localPath, getQtPathCheckOption())) {
             syncDbId = sync.dbId();
             return true;
         }
