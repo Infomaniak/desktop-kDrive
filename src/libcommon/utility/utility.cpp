@@ -422,10 +422,30 @@ bool CommonUtility::containsInsensitive(const std::string &str, const std::strin
 }
 
 bool CommonUtility::equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs) {
-    const SyncName &leftPath = lhs.native();
-    const SyncName &rightPath = rhs.native();
+    auto normalizePathForComparison = [](const SyncPath &path) {
+        QString normalizedPath = SyncName2QStr(path.native());
+        if (normalizedPath.isEmpty()) {
+            return normalizedPath;
+        }
 
-    return QString::compare(SyncName2QStr(leftPath), SyncName2QStr(rightPath), Qt::CaseInsensitive) == 0;
+        normalizedPath = QDir::fromNativeSeparators(normalizedPath);
+        normalizedPath = QDir::cleanPath(normalizedPath);
+
+        if (normalizedPath.length() > 1 && normalizedPath.endsWith(QLatin1Char('/'))) {
+            normalizedPath.chop(1);
+        }
+
+#if defined(KD_MACOS)
+        normalizedPath = normalizedPath.normalized(QString::NormalizationForm_C);
+#endif
+
+        return normalizedPath;
+    };
+
+    const QString leftPath = normalizePathForComparison(lhs);
+    const QString rightPath = normalizePathForComparison(rhs);
+
+    return QString::compare(leftPath, rightPath, Qt::CaseInsensitive) == 0;
 }
 
 #if defined(KD_WINDOWS)
