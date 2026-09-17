@@ -21,6 +21,7 @@
 #include "app/settings/advancedsettingscontroller.h"
 #include "app/settings/fileexclusioncontroller.h"
 #include "app/settings/generalsettingscontroller.h"
+#include "app/settings/networksettingscontroller.h"
 
 #include <QObject>
 
@@ -37,6 +38,7 @@ class SettingsWindowController final : public QObject {
         Q_PROPERTY(GeneralSettingsController *general READ general CONSTANT)
         Q_PROPERTY(AdvancedSettingsController *advanced READ advanced CONSTANT)
         Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusions CONSTANT)
+        Q_PROPERTY(NetworkSettingsController *network READ network CONSTANT)
 
     public:
         SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
@@ -47,6 +49,7 @@ class SettingsWindowController final : public QObject {
         [[nodiscard]] GeneralSettingsController *general() { return &_general; }
         [[nodiscard]] AdvancedSettingsController *advanced() { return &_advanced; }
         [[nodiscard]] FileExclusionController *fileExclusions() { return &_fileExclusions; }
+        [[nodiscard]] NetworkSettingsController *network() { return &_network; }
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
 
@@ -59,6 +62,7 @@ class SettingsWindowController final : public QObject {
         GeneralSettingsController _general;
         AdvancedSettingsController _advanced;
         FileExclusionController _fileExclusions;
+        NetworkSettingsController _network;
 };
 
 } // namespace KDC
