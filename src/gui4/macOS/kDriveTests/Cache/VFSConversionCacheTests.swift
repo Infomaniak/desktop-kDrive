@@ -241,7 +241,7 @@ extension SharedDITests.VFSConversionJobsTests {
         #expect(await fixture.started.first { _ in true } == 0)
         #expect(await fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
 
-        await fixture.gate.complete(0, result: .success(try ConversionConnectionProvider.response()))
+        try await fixture.gate.complete(0, result: .success(ConversionConnectionProvider.response()))
         try await task.value
         #expect(await !fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
     }
@@ -251,8 +251,8 @@ extension SharedDITests.VFSConversionJobsTests {
         let fixture = try await Fixture()
         let task = fixture.startConversion()
         #expect(await fixture.started.first { _ in true } == 0)
-        let result: Result<Data, Error> = serverFailure
-            ? .success(try ConversionConnectionProvider.response(code: .BackError))
+        let result: Result<Data, Error> = try serverFailure
+            ? .success(ConversionConnectionProvider.response(code: .BackError))
             : .failure(FailingXPCConnectionProvider.TransportError.connectionLost)
         await fixture.gate.complete(0, result: result)
         do {
@@ -278,7 +278,7 @@ extension SharedDITests.VFSConversionJobsTests {
         #expect(await fixture.cache.getSynchro(synchroDbId: fixture.syncDbId)?.localPath == CacheData.updatedSynchroLocalPath)
         #expect(await fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
 
-        await fixture.gate.complete(0, result: .success(try ConversionConnectionProvider.response()))
+        try await fixture.gate.complete(0, result: .success(ConversionConnectionProvider.response()))
         try await task.value
         #expect(await !fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
         #expect(await fixture.cache.getSynchro(synchroDbId: fixture.syncDbId)?.virtualFileMode == .Off)
@@ -298,9 +298,9 @@ extension SharedDITests.VFSConversionJobsTests {
         case "transportFailure":
             firstResponse = .failure(FailingXPCConnectionProvider.TransportError.connectionLost)
         case "serverRejection":
-            firstResponse = .success(try ConversionConnectionProvider.response(code: .OperationCanceled))
+            firstResponse = try .success(ConversionConnectionProvider.response(code: .OperationCanceled))
         default:
-            firstResponse = .success(try ConversionConnectionProvider.response())
+            firstResponse = try .success(ConversionConnectionProvider.response())
         }
         let first = newerFinishesFirst ? newer : older
         let last = newerFinishesFirst ? older : newer
@@ -317,7 +317,7 @@ extension SharedDITests.VFSConversionJobsTests {
             }
         }
         #expect(await fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
-        await fixture.gate.complete(newerFinishesFirst ? 0 : 1, result: .success(try ConversionConnectionProvider.response()))
+        try await fixture.gate.complete(newerFinishesFirst ? 0 : 1, result: .success(ConversionConnectionProvider.response()))
         try await last.value
         #expect(await !fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
     }
@@ -346,7 +346,7 @@ extension SharedDITests.VFSConversionJobsTests {
         #expect(await fixture.cache.getSynchro(synchroDbId: fixture.syncDbId) == nil)
 
         let newer = await fixture.conversions.beginConversion(synchroDbId: fixture.syncDbId)
-        await fixture.gate.complete(0, result: .success(try ConversionConnectionProvider.response()))
+        try await fixture.gate.complete(0, result: .success(ConversionConnectionProvider.response()))
         try await task.value
         #expect(await fixture.conversions.isConverting(synchroDbId: fixture.syncDbId))
         #expect(await fixture.cache.getSynchro(synchroDbId: fixture.syncDbId) == nil)
