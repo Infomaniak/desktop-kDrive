@@ -248,6 +248,10 @@
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
   category controllers and is the single source of Settings-window presentation requests.
+- `app/services/exclusiontemplateservice.*`: owns confirmed default/user exclusion snapshots, parallel refresh, and a
+  serialized queue of full-list user replacements. A successful write is always followed by a readback before publish.
+- `app/settings/fileexclusioncontroller.*`: QML-facing exclusion validation, selection, rollback, and immediate-save
+  actions; `exclusionrulemodel.*` exposes only confirmed rules while keeping user selection local.
 - `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors,
   Advanced external actions, debug parameters, and process-long log-upload state. Sentry mutations continue to flow
   through `SentryService`, including its post-confirmation SDK update. Client log expiration follows the confirmed
