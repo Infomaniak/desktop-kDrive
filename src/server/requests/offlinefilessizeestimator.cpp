@@ -76,7 +76,7 @@ ExitInfo OfflineFilesSizeEstimator::runSynchronously() {
         if (ioError != IoError::Success) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in DirectoryIterator for " << Utility::formatIoError(basePath, ioError));
-            return IoHelper::directoryIteratorExitCode(ioError);
+            return IoHelper::toExitInfo(ioError);
         }
     }
     return ExitCode::Ok;

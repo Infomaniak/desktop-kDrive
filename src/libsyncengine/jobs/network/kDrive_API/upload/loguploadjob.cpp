@@ -369,7 +369,7 @@ ExitInfo LogUploadJob::copyLogsTo(const SyncPath &outputPath, const bool include
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error iterating directory with IoHelper::DirectoryIterator: " << Utility::formatIoError(logDirPath, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     return ExitCode::Ok;
@@ -507,7 +507,7 @@ ExitInfo LogUploadJob::generateArchive(const SyncPath &directoryToCompress, cons
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
                                                         << Utility::formatIoError(directoryToCompress, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     if (const ExitInfo exitInfo = notifyLogUploadProgress(LogUploadState::Archiving, 90); !exitInfo) {
