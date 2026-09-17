@@ -96,6 +96,8 @@ struct IoHelper {
             return PathCheckOption::Insensitive;
 #elif defined(KD_LINUX)
             return PathCheckOption::Sensitive;
+#else
+            static_assert(false, "Unknown platform");
 #endif
         }
         
