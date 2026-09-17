@@ -36,7 +36,6 @@ public struct Synchro: Identifiable, Hashable, Sendable {
     public let targetNodeId: String
     public let supportVfs: Bool
     public let virtualFileMode: KDC.VirtualFileMode
-    public var isUpdatingVfsMode = false
     public var progress: SynchroProgressInfo?
     public var synchNodes: OrderedDictionary<Int32, SynchroNode> = [:]
     public var errors: IndexedErrors = [:]
@@ -73,29 +72,6 @@ public struct Synchro: Identifiable, Hashable, Sendable {
 
     public func getSynchNode(by operationId: Int32) -> SynchroNode? {
         return synchNodes[operationId]
-    }
-}
-
-public extension Synchro {
-    func updating(
-        virtualFileMode: KDC.VirtualFileMode? = nil,
-        isUpdatingVfsMode: Bool? = nil
-    ) -> Synchro {
-        var updatedSynchro = Synchro(
-            dbId: dbId,
-            driveDbId: driveDbId,
-            localPath: localPath,
-            targetPath: targetPath,
-            targetNodeId: targetNodeId,
-            supportVfs: supportVfs,
-            virtualFileMode: virtualFileMode ?? self.virtualFileMode
-        )
-        updatedSynchro.isUpdatingVfsMode = isUpdatingVfsMode ?? self.isUpdatingVfsMode
-        updatedSynchro.progress = progress
-        updatedSynchro.synchNodes = synchNodes
-        updatedSynchro.errors = errors
-        updatedSynchro.latestError = latestError
-        return updatedSynchro
     }
 }
 

@@ -38,15 +38,13 @@ struct SyncInfoSignalMetadata: Codable, Sendable {
 }
 
 extension SyncInfoSignalMetadata {
-    func asSynchro(isUpdatingVfsMode: Bool = false) -> Synchro {
-        var synchro = Synchro(dbId: dbId,
+    var asSynchro: Synchro {
+        Synchro(dbId: dbId,
                               driveDbId: driveDbId,
                               localPath: localPath,
                               targetPath: targetPath,
                               targetNodeId: targetNodeId,
                               supportVfs: supportVfs,
                               virtualFileMode: virtualFileMode)
-        synchro.isUpdatingVfsMode = isUpdatingVfsMode
-        return synchro
     }
 }

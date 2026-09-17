@@ -34,7 +34,6 @@ public struct UISynchro: Sendable, Equatable, Hashable, Identifiable {
 
     public let supportsVirtualFileSystem: Bool
     public let useVirtualFileSystem: Bool
-    public let isConverting: Bool
 
     public init(
         dbId: Int,
@@ -42,8 +41,7 @@ public struct UISynchro: Sendable, Equatable, Hashable, Identifiable {
         localPath: URL,
         targetNodeId: String?,
         supportsVirtualFileSystem: Bool,
-        useVirtualFileSystem: Bool,
-        isConverting: Bool = false
+        useVirtualFileSystem: Bool
     ) {
         self.dbId = dbId
         self.driveDbId = driveDbId
@@ -53,7 +51,6 @@ public struct UISynchro: Sendable, Equatable, Hashable, Identifiable {
 
         self.supportsVirtualFileSystem = supportsVirtualFileSystem
         self.useVirtualFileSystem = useVirtualFileSystem
-        self.isConverting = isConverting
     }
 }
 
