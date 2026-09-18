@@ -18,6 +18,8 @@
 
 #include "fileexclusioncontroller.h"
 
+#include "app/services/translationservice.h"
+
 #include <QByteArray>
 #include <QPointer>
 
@@ -42,13 +44,15 @@ QString normalizedKey(const QString &pattern) {
 }
 } // namespace
 
-FileExclusionController::FileExclusionController(ExclusionTemplateService &service, QObject *const parent) :
+FileExclusionController::FileExclusionController(ExclusionTemplateService &service, const TranslationService &translationService,
+                                                 QObject *const parent) :
     QObject(parent),
     _service(service),
     _defaultRules(false, this),
     _userRules(true, this) {
     (void) connect(&_service, &ExclusionTemplateService::snapshotsChanged, this, &FileExclusionController::syncModels);
     (void) connect(&_userRules, &ExclusionRuleModel::selectionChanged, this, &FileExclusionController::changed);
+    (void) connect(&translationService, &TranslationService::languageChanged, this, &FileExclusionController::changed);
     (void) connect(&_userRules, &ExclusionRuleModel::countChanged, this, &FileExclusionController::changed);
 }
 
