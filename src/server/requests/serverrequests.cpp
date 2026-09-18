@@ -526,6 +526,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     QString errorMessage;
     if (const auto exitInfo = checkSyncNesting(syncList, Path2QStr(nonExistingPath), errorMessage); !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), QStr2WStr(errorMessage));
+        error = QStr2Str(errorMessage);
 
         return exitInfo;
     }
