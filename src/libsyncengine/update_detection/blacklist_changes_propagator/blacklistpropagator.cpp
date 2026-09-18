@@ -128,7 +128,7 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
     if (!IoHelper::getRecursiveDirectoryIterator(absoluteLocalPath, ioError, dirIt)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(absoluteLocalPath, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     while (dirIt.next(entry, endOfDir, ioError) && !endOfDir) {
@@ -173,7 +173,7 @@ ExitInfo BlacklistPropagator::cancelHydration(const SyncPath &absoluteLocalPath)
     if (ioError != IoError::Success) {
         LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error iterating directory with IoHelper::DirectoryIterator: "
                                                                 << Utility::formatIoError(absoluteLocalPath, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancelling hydration of " << Utility::formatSyncPath(absoluteLocalPath));
@@ -198,13 +198,8 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     const SyncPath absoluteLocalPath = _sync.localPath() / localPath;
-    const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
 
-    if (liteSyncActivated) {
-        if (const auto cancellationExitInfo = cancelHydration(absoluteLocalPath); !cancellationExitInfo) {
-            return cancellationExitInfo;
-        }
-    }
+    bool removeFromDb = true;
 
     // Remove item from filesystem
     bool exists = false;
@@ -213,15 +208,40 @@ ExitInfo BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
         return ExitCode::SystemError;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Access denied to " << Utility::formatSyncPath(absoluteLocalPath)
+                                                                             << L", it will be temporarily blacklisted.");
+
+        if (ExitInfo exitInfo = _syncPal->handleAccessDeniedItem(localPath, false); !exitInfo) {
+            LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                              L"Error in SyncPal::handleAccessDeniedItem: " << Utility::formatExitInfo(localPath, exitInfo));
+            return exitInfo;
+        }
+
+        removeFromDb = false; // Do not remove from DB so that the item will be processed next sync and we will retry to
+                              // remove it from filesystem (we can have transient errors like file locks)
+
+    } else if (ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                          L"Error in IoHelper::checkIfPathExists for " << Utility::formatIoError(absoluteLocalPath, ioError));
+        return IoHelper::toExitInfo(ioError);
     }
 
-    bool removeFromDb = true;
     if (exists) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
                                                                      << Utility::formatSyncPath(localPath) << L" ("
                                                                      << CommonUtility::s2ws(localNodeId)
                                                                      << L") on local replica because it is blacklisted.");
+        }
+
+        const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
+        if (liteSyncActivated) {
+            if (const auto cancellationExitInfo = cancelHydration(absoluteLocalPath); !cancellationExitInfo) {
+                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Failed to cancel hydration of: " << Utility::formatExitInfo(
+                                                                         absoluteLocalPath, cancellationExitInfo));
+                // Try to delete anyway
+            }
         }
 
         SyncLocalDeleteJob job(_syncPal, localPath, liteSyncActivated, remoteNodeId);

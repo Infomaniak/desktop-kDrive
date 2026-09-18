@@ -99,7 +99,8 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, $"No initial state found for sync with DriveId {sync.Drive?.DriveId}. Cannot revert changes for this sync.");
+                    Logger.LogWarning($"No initial state found for sync with DriveId {sync.Drive?.DriveId}. Cannot revert changes for this sync.",
+                        "DriveSetupContentDialogVM::RevertAllChanges failed");
                 }
             }
         }
@@ -118,7 +119,8 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"CurrentSync or PreviousCurrentSyncState is null. Cannot revert changes for the current sync - CurrentSync: {CurrentSync}, PreviousCurrentSyncState: {PreviousCurrentSyncState}");
+                Logger.LogWarning($"CurrentSync or PreviousCurrentSyncState is null. Cannot revert changes for the current sync - CurrentSync: {CurrentSync}, PreviousCurrentSyncState: {PreviousCurrentSyncState}",
+                    "DriveSetupContentDialogVM::RevertCurrentSyncChanges failed");
             }
         }
     }

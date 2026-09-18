@@ -43,10 +43,10 @@ namespace Infomaniak.kDrive.Pages.Settings
 
         public DriveManagementPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveManagementPage - Initializing DriveManagementPage components");
+            Logger.LogInfo("Navigated to DriveManagementPage - Initializing DriveManagementPage components");
             InitializeComponent();
             SetupNavBar("");
-            Logger.Log(Logger.Level.Debug, "DriveManagementPage components initialized");
+            Logger.LogDebug("DriveManagementPage components initialized");
         }
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -54,7 +54,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (BaseDrive is null)
             {
                 var errorMessage = "Drive parameter missing when navigating to DriveManagementPage";
-                Logger.Log(Logger.Level.Error, errorMessage);
+                Logger.LogError(errorMessage, "DriveManagementPage: Missing drive parameter");
                 AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
                 return;
             }
@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             else if (ViewModel.AllDrives.Any(d => d.DriveId == BaseDrive.DriveId && d.AccountId == BaseDrive.AccountId && d.UserDbId == BaseDrive.UserDbId))
             {
                 // Can happen if a user uses the back button after setting up a new drive.
-                Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
+                Logger.LogInfo("The Available drive have an equivalent configured drive that should be used");
                 AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
                 return;
             }
@@ -95,7 +95,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             if (args.Index == 0)
             {
                 _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.SettingsBreadcrumbs);
-                Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
+                Logger.LogDebug("Navigating to SettingsPage");
                 Frame.Navigate(typeof(SettingsPage));
             }
         }
@@ -105,7 +105,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             string? path = ManagedDrive?.MainSync?.LocalPath ?? null;
             if (path is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot open local folder: MainSync or LocalPath is null");
+                Logger.LogError("Cannot open local folder: MainSync or LocalPath is null");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.OpenSyncDir);
@@ -117,7 +117,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             var radioButton = sender as RadioButton;
             if (radioButton is null)
             {
-                Logger.Log(Logger.Level.Error, "Sender of SyncTypeRadioButton_Click is not a RadioButton");
+                Logger.LogError("Sender of SyncTypeRadioButton_Click is not a RadioButton");
                 return;
             }
 
@@ -127,7 +127,7 @@ namespace Infomaniak.kDrive.Pages.Settings
             Sync? sync = ManagedDrive?.MainSync;
             if (sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Could not get sync from ManagedDrive?.MainSync when clicking on sync mode radio button");
+                Logger.LogError("Could not get sync from ManagedDrive?.MainSync when clicking on sync mode radio button");
                 return;
             }
 
@@ -136,19 +136,19 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (!targetOffline && !targetOnline)
             {
-                Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+                Logger.LogError("Unknown radio button name for sync mode change");
                 return;
             }
 
             if (targetOffline && sync.SyncType == Types.SyncType.Offline)
             {
-                Logger.Log(Logger.Level.Info, "User clicked on Offline sync mode radio button while already in Offline mode");
+                Logger.LogInfo("User clicked on Offline sync mode radio button while already in Offline mode");
                 return;
             }
 
             if (targetOnline && sync.SyncType == Types.SyncType.Online)
             {
-                Logger.Log(Logger.Level.Info, "User clicked on Online sync mode radio button while already in Online mode");
+                Logger.LogInfo("User clicked on Online sync mode radio button while already in Online mode");
                 return;
             }
 
@@ -169,13 +169,13 @@ namespace Infomaniak.kDrive.Pages.Settings
                 // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
                 if (targetOnline)
                 {
-                    Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
+                    Logger.LogInfo("User canceled the change to online Sync mode");
                     sync.SyncType = Types.SyncType.Online;
                     sync.SyncType = Types.SyncType.Offline; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Info, "User canceled the change to offline Sync mode");
+                    Logger.LogInfo("User canceled the change to offline Sync mode");
                     sync.SyncType = Types.SyncType.Offline;
                     sync.SyncType = Types.SyncType.Online; // Force all the bindings to update, especially the one on the radio buttons.IsChecked
                 }
@@ -218,14 +218,14 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (ManagedDrive is null || ManagedDrive.MainSync is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or MainSync is null");
+                Logger.LogError("Cannot remove sync: ManagedDrive or MainSync is null");
                 return;
             }
 
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot remove sync: sender is not a Control");
+                Logger.LogError("Cannot remove sync: sender is not a Control");
                 return;
             }
 
@@ -245,21 +245,21 @@ namespace Infomaniak.kDrive.Pages.Settings
             var dialogResult = await dialog.ShowAsync();
             if (dialogResult != ContentDialogResult.Primary)
             {
-                Logger.Log(Logger.Level.Info, "User canceled sync removal");
+                Logger.LogInfo("User canceled sync removal");
                 control.IsEnabled = true;
                 return;
             }
 
-            Logger.Log(Logger.Level.Info, "User confirmed sync removal");
+            Logger.LogInfo("User confirmed sync removal");
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.Delete);
             if (!await ManagedDrive.RemoveSync(ManagedDrive.MainSync, CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Error, "Failed to remove sync");
+                Logger.LogError("Failed to remove sync");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 control.IsEnabled = true;
                 return;
             }
-            Logger.Log(Logger.Level.Info, "Sync removed successfully");
+            Logger.LogInfo("Sync removed successfully");
             if (goBackOnceDone)
             {
                 Frame.Navigate(typeof(SettingsPage));
@@ -272,7 +272,7 @@ namespace Infomaniak.kDrive.Pages.Settings
         {
             if (BaseDrive is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot setup main sync: BaseDrive is null");
+                Logger.LogError("Cannot setup main sync: BaseDrive is null");
                 return;
             }
 
@@ -284,7 +284,8 @@ namespace Infomaniak.kDrive.Pages.Settings
             string? result = await commServices.GetGoodPathForNewSync(BaseDrive, CancellationToken.None);
             if (result is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{BaseDrive.Name}'");
+                Logger.LogError($"Failed to get a valid sync path for drive '{BaseDrive.Name}'",
+                    "DriveManagementPage: Failed to get valid sync path");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 if (control is not null)
                     control.IsEnabled = true;
@@ -300,7 +301,7 @@ namespace Infomaniak.kDrive.Pages.Settings
 
             if (dialog.Result == CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled)
             {
-                Logger.Log(Logger.Level.Info, $"User canceled main sync setup for drive '{BaseDrive.Name}'");
+                Logger.LogInfo($"User canceled main sync setup for drive '{BaseDrive.Name}'");
                 if (control is not null)
                     control.IsEnabled = true;
                 return;
@@ -309,10 +310,11 @@ namespace Infomaniak.kDrive.Pages.Settings
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
 
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveManagementPage, Analytics.Keys.EventName.Create);
-            Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
+            Logger.LogDebug($"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
             if (!await commService.AddSync(newSync, CancellationToken.None))
             {
-                Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive '{BaseDrive.Name}'");
+                Logger.LogError($"Failed to add new sync for drive '{BaseDrive.Name}'",
+                    "DriveManagementPage: Failed to add sync");
                 if (control is not null)
                     control.IsEnabled = true;
                 Utility.ShowUnexpectedErrorTeachingTip();
@@ -338,7 +340,8 @@ namespace Infomaniak.kDrive.Pages.Settings
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, $"Drive '{BaseDrive.Name}' was not found in AllDrives after sync setup");
+                    Logger.LogError($"Drive '{BaseDrive.Name}' was not found in AllDrives after sync setup",
+                        "DriveManagementPage: Drive not found after sync setup");
                 }
             }
 

@@ -201,7 +201,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: Sync is null.");
+                Logger.LogError("Cannot save sync exclusion changes: Sync is null.");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.ExclusionSelector, Analytics.Keys.EventName.Confirm);
@@ -210,7 +210,7 @@ namespace Infomaniak.kDrive.CustomControls
                 IsLoading = true;
                 if (!await dbSync.SetExcludedNodeIds(GetExcludedNodeIds()))
                 {
-                    Logger.Log(Logger.Level.Warning, "Failed to save BlacklistedNodeIdList");
+                    Logger.LogWarning("Failed to save BlacklistedNodeIdList");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
@@ -224,7 +224,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Cannot save sync exclusion changes: Unsupported Sync type.");
+                Logger.LogError("Cannot save sync exclusion changes: Unsupported Sync type.");
             }
         }
 
@@ -269,7 +269,8 @@ namespace Infomaniak.kDrive.CustomControls
                     excluded.AddRange(GetExcludedDescendantNodeIds(child));
                 }
                 if (excluded.Count == 0)
-                    Logger.Log(Logger.Level.Error, $"Logic error: parent node {parent.Node.NodeId} - {parent.Node.Name} is indeterminate but all children are selected.");
+                    Logger.LogError($"Logic error: parent node {parent.Node.NodeId} - {parent.Node.Name} is indeterminate but all children are selected.",
+                        "SyncExclusionSelector: Inconsistent parent node selection state");
                 return excluded;
             }
             else
@@ -277,7 +278,8 @@ namespace Infomaniak.kDrive.CustomControls
                 // Indeterminate but children not loaded: look up exclusion map for any descendant path starting with this path
                 List<NodeId> excluded = [.. _excludedNodePathsMap.Where(pair => pair.Value.StartsWith(parent.Node.Path)).Select(pair => pair.Key)];
                 if (excluded.Count == 0)
-                    Logger.Log(Logger.Level.Error, $"Logic error: parent node {parent.Node.NodeId} - {parent.Node.Name} is indeterminate but all children are selected.");
+                    Logger.LogError($"Logic error: parent node {parent.Node.NodeId} - {parent.Node.Name} is indeterminate but all children are selected.",
+                        "SyncExclusionSelector: Inconsistent parent node selection state");
                 return excluded;
             }
         }
@@ -338,14 +340,14 @@ namespace Infomaniak.kDrive.CustomControls
             _excludedNodeIds.Clear();
             if (Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot refresh excluded nodes: Sync is null.");
+                Logger.LogError("Cannot refresh excluded nodes: Sync is null.");
                 return false;
             }
 
             var res = await Sync.GetExcludedNodeIds();
             if (res is null)
             {
-                Logger.Log(Logger.Level.Warning, "Failed to load blaklisted node ids");
+                Logger.LogWarning("Failed to load blaklisted node ids");
                 _excludedNodeIds.Clear();
                 return false;
             }
@@ -368,12 +370,13 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (getNodeInfoResult.Cause == ExitCause.NotFound)
                 {
-                    Logger.Log(Logger.Level.Info, $"Excluded node with id {nodeId} not found on server. It might have been deleted since it was blacklisted.");
+                    Logger.LogInfo($"Excluded node with id {nodeId} not found on server. It might have been deleted since it was blacklisted.");
                     return true;
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, "Failed to load node info for nodeId: " + nodeId);
+                    Logger.LogWarning("Failed to load node info for nodeId: " + nodeId,
+                        "SyncExclusionSelector: Failed to load node info");
                     return false;
                 }
             }
@@ -396,7 +399,7 @@ namespace Infomaniak.kDrive.CustomControls
             bool results = loadTasks.All(t => t.Result);
             if (!results)
             {
-                Logger.Log(Logger.Level.Warning, "Some excluded node paths failed to load.");
+                Logger.LogWarning("Some excluded node paths failed to load.");
                 _excludedNodePathsMap.Clear();
             }
 
@@ -408,7 +411,7 @@ namespace Infomaniak.kDrive.CustomControls
 
         private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Debug, "CheckBox_Click event triggered.");
+            Logger.LogDebug("CheckBox_Click event triggered.");
             if (e.OriginalSource is CheckBox checkBox)
             {
                 if (checkBox.IsChecked == true)
@@ -513,7 +516,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (RootTreeItem is null)
             {
-                Logger.Log(Logger.Level.Error, "Cannot update HasPendingChanges: RootTreeItem is null.");
+                Logger.LogError("Cannot update HasPendingChanges: RootTreeItem is null.");
                 HasPendingChanges = false;
                 return;
             }

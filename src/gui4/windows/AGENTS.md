@@ -183,13 +183,16 @@ Missing keys render as `!key!` at runtime — always check both compile and run.
 - DON'T: Hardcode any user-visible string in C# or XAML
 
 ### Logging
-Use `Logger.Log(Logger.Level.X, "message")` everywhere. Never use `Console.Write*` or `Debug.Write*`.
+Use `Logger.LogExtended|LogDebug|LogInfo("message")` everywhere. Never use `Console.Write*` or `Debug.Write*`.
+For warnings, errors and fatals, use `Logger.LogWarning|LogError|LogFatal(message, title)`. When the message contains runtime values (interpolation, concatenation, or other dynamic content), pass a constant second argument in the format `"ClassName: Constant error description"`. Keep runtime details in the message, not the title. Constant messages do not need a separate title.
 Log levels: `Extended` (verbose),  `Debug`, `Info`, `Warning`, `Error`, `Fatal`.
 Output: rotating Serilog file at `%LOCALAPPDATA%\temp\kDrive-logdir\` + Sentry breadcrumbs/events.
 
+Monitoring goes through the DI singleton `IMonitoringService` in `Logger/Monitoring/`, with provider-independent breadcrumb and event levels. `SentryMonitoringService` owns consent checks, SDK lifecycle, unhandled exceptions, and event throttling (three message events per minute per source location). Keep Sentry SDK calls inside this implementation; the logger, application lifecycle, and settings use the interface. `Stop()` flushes pending events before shutdown.
+
 ```csharp
-Logger.Log(Logger.Level.Info, "My operation succeeded.");
-Logger.Log(Logger.Level.Error, $"Failed to do X: {ex.Message}");
+Logger.LogInfo("My operation succeeded.");
+Logger.LogError($"Failed to do X: {ex.Message}", "Failed to do X");
 ```
 
 ### Converters

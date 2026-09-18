@@ -618,6 +618,13 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
     if (std::holds_alternative<std::string>(appStateValueTo)) {
         appStateValueTo = stringFrom;
         appStateValueType = "std::string";
+    } else if (std::holds_alternative<bool>(appStateValueTo)) {
+        appStateValueType = "bool";
+        try {
+            appStateValueTo = static_cast<bool>(std::stoi(stringFrom));
+        } catch (const std::invalid_argument &) {
+            res = false;
+        }
     } else if (std::holds_alternative<int>(appStateValueTo)) {
         appStateValueType = "int";
         try {
@@ -654,6 +661,8 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
     if (std::holds_alternative<std::string>(appStateValueFrom)) {
         stringTo = std::get<std::string>(appStateValueFrom);
+    } else if (std::holds_alternative<bool>(appStateValueFrom)) {
+        stringTo = std::to_string(static_cast<int>(std::get<bool>(appStateValueFrom)));
     } else if (std::holds_alternative<int>(appStateValueFrom)) {
         stringTo = std::to_string(std::get<int>(appStateValueFrom));
     } else if (std::holds_alternative<LogUploadState>(appStateValueFrom)) {
@@ -665,33 +674,6 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     }
 
     return true;
-}
-
-std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
-    switch (appStateValue) {
-        case AppStateKey::LastServerSelfRestartDate:
-            return "LastServerSelfRestartDate";
-        case AppStateKey::LastClientSelfRestartDate:
-            return "LastClientSelfRestartDate";
-        case AppStateKey::LastSuccessfulLogUploadDate:
-            return "LastSuccessfulLogUploadDate";
-        case AppStateKey::LastLogUploadArchivePath:
-            return "LastLogUploadArchivePath";
-        case AppStateKey::LogUploadState:
-            return "LogUploadState";
-        case AppStateKey::LogUploadPercent:
-            return "LogUploadPercent";
-        case AppStateKey::LogUploadToken:
-            return "LogUploadToken";
-        case AppStateKey::AppUid:
-            return "AppUid";
-        case AppStateKey::NoUpdate:
-            return "NoUpdate";
-        case AppStateKey::Unknown:
-            return "Unknown";
-        default:
-            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
-    }
 }
 
 bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName,

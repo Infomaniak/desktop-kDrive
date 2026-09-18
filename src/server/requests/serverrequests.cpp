@@ -419,7 +419,7 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error iterating directory with IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     return ExitCode::Ok;
@@ -2175,7 +2175,6 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
     parametersInfo.setSentryEnabled(parameters.sentryEnabled());
     parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
-    parametersInfo.setNotifyBeforeDelete(parameters.notifyBeforeDelete());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2206,7 +2205,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
     parameters.setSentryEnabled(parametersInfo.sentryEnabled());
     parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
-    parameters.setNotifyBeforeDelete(parametersInfo.notifyBeforeDelete());
 }
 
 } // namespace KDC

@@ -90,7 +90,7 @@ public partial class SystemErrorSyncDirAccessErrorDialog : Page
         var frame = Utility.GetFrame(this);
         if (frame is null)
         {
-            Logger.Log(Logger.Level.Error, "Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
+            Logger.LogError("Failed to navigate to the sync setup page after a sync directory change error because the main frame could not be found.");
             return;
         }
 

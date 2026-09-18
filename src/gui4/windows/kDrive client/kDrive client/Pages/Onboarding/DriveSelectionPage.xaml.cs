@@ -43,9 +43,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         public ViewModels.Onboarding? ObViewModel { get => _onBoardingViewModel; }
         public DriveSelectionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveSelectionPage - Initializing DriveSelectionPage components");
+            Logger.LogInfo("Navigated to DriveSelectionPage - Initializing DriveSelectionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveSelectionPage components initialized");
+            Logger.LogDebug("DriveSelectionPage components initialized");
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 _onBoardingViewModel = obvm;
                 if (obvm.SelectedUser is null)
                 {
-                    Logger.Log(Logger.Level.Error, "SelectedUser is null in OnBoardingViewModel when navigating to DriveSelectionPage");
+                    Logger.LogError("SelectedUser is null in OnBoardingViewModel when navigating to DriveSelectionPage");
                     obvm.Reset();
                     Frame.Navigate(typeof(Onboarding.WelcomePage), obvm);
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 }
                 if (!await obvm.SelectedUser.RefreshAvailableDrives(CancellationToken.None))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to refresh available drives for user in DriveSelectionPage");
+                    Logger.LogError("Failed to refresh available drives for user in DriveSelectionPage");
                     obvm.Reset();
                     Frame.Navigate(typeof(Onboarding.WelcomePage), obvm);
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -74,7 +74,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
                 if (!obvm.SelectedUser.AllDrives.Any())
                 {
-                    Logger.Log(Logger.Level.Info, "No drives found for user in DriveSelectionPage - Navigating to NoDrivePage");
+                    Logger.LogInfo("No drives found for user in DriveSelectionPage - Navigating to NoDrivePage");
                     Frame.Navigate(typeof(NoDrivesPage), ObViewModel);
                     return;
                 }
@@ -83,7 +83,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "OnBoardingViewModel parameter missing when navigating to DriveSelectionPage");
+                Logger.LogFatal("OnBoardingViewModel parameter missing when navigating to DriveSelectionPage");
                 throw new Exception("OnBoardingViewModel parameter missing when navigating to DriveSelectionPage");
             }
         }
@@ -98,7 +98,8 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 string? result = await commServices.GetGoodPathForNewSync(drive, CancellationToken.None);
                 if (result is null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to get a valid sync path for drive '{drive.Name}'");
+                    Logger.LogError($"Failed to get a valid sync path for drive '{drive.Name}'",
+                        "DriveSelectionPage: Failed to get valid sync path");
                     cb.IsChecked = false;
                     cb.IsEnabled = true;
                     Utility.ShowUnexpectedErrorTeachingTip();
@@ -126,7 +127,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, "Drive to remove not found in NewSyncs list");
+                    Logger.LogWarning("Drive to remove not found in NewSyncs list");
                 }
                 cb.IsEnabled = true;
             }
@@ -167,7 +168,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             User? user = App.ServiceProvider.GetRequiredService<AppModel>().Users.FirstOrDefault(u => u.DbId == drive.UserDbId);
             if (user is null)
             {
-                Logger.Log(Logger.Level.Warning, "DriveTemplateSelector: User not found for drive");
+                Logger.LogWarning("DriveTemplateSelector: User not found for drive");
                 return drive.IsConfigured ? SingleAccountDriveDisabledTemplate : SingleAccountDriveTemplate; // Fallback to single account template
             }
 

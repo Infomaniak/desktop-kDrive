@@ -98,7 +98,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (Drive is null)
             {
-                Logger.Log(Logger.Level.Error, "Drive is null in BuildRootLevelItemsAsync.");
+                Logger.LogError("Drive is null in BuildRootLevelItemsAsync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -148,14 +148,14 @@ namespace Infomaniak.kDrive.CustomControls
             Control? control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "CreateFolderButton_Click: sender is not a Control.");
+                Logger.LogError("CreateFolderButton_Click: sender is not a Control.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
 
             if (control.DataContext is not RemoteLocationSelectorTreeItem treeItem)
             {
-                Logger.Log(Logger.Level.Error, "CreateFolderButton_Click: DataContext is not a RemoteLocationSelectorTreeItem.");
+                Logger.LogError("CreateFolderButton_Click: DataContext is not a RemoteLocationSelectorTreeItem.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -226,7 +226,7 @@ namespace Infomaniak.kDrive.CustomControls
             TextBox? textBox = sender as TextBox;
             if (textBox is null)
             {
-                Logger.Log(Logger.Level.Error, "NewItemTextBox_KeyDown: sender is not a TextBox.");
+                Logger.LogError("NewItemTextBox_KeyDown: sender is not a TextBox.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -243,7 +243,7 @@ namespace Infomaniak.kDrive.CustomControls
                 var parentTreeItem = treeItem?.ParentItem;
                 if (treeItem is null || parentTreeItem is null)
                 {
-                    Logger.Log(Logger.Level.Error, "treeItem or parentTreeItem is null");
+                    Logger.LogError("treeItem or parentTreeItem is null");
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
                 }
@@ -276,7 +276,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (parentItem.Node is null)
             {
-                Logger.Log(Logger.Level.Error, "Parent node is null.");
+                Logger.LogError("Parent node is null.");
                 return null;
             }
             var parentNodeId = parentItem.Node.NodeId ?? "";
@@ -290,7 +290,7 @@ namespace Infomaniak.kDrive.CustomControls
             NodeId? newNodeId = await commService.CreateMissingDirectories(Drive!, parentNodeId, folderName, CancellationTokenSource.Token);
             if (newNodeId is null)
             {
-                Logger.Log(Logger.Level.Error, "Failed to create folder.");
+                Logger.LogError("Failed to create folder.");
                 return null;
             }
 
