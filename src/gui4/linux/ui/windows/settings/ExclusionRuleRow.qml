@@ -32,6 +32,12 @@ Item {
     required property bool selected
     property bool editable: false
 
+    signal notificationSaveStartedFromKeyboard(int row)
+
+    function focusNotificationSwitch() {
+        notificationSwitch.forceActiveFocus(Qt.TabFocusReason);
+    }
+
     implicitHeight: IKSettings.exclusionRowHeight
 
     Rectangle {
@@ -73,13 +79,22 @@ Item {
         }
 
         IKSwitch {
+            id: notificationSwitch
+
             Layout.preferredWidth: visible ? implicitWidth : 0
             Layout.preferredHeight: visible ? implicitHeight : 0
             visible: root.editable
             enabled: root.controller.ready && !root.controller.saving
             text: qsTrId("labelNotifyIfFileExcluded")
             value: root.notificationEnabled
-            onToggleRequested: value => root.controller.setRuleNotification(root.row, value)
+            onToggleRequested: value => {
+                // Only a keyboard focus is worth restoring: a mouse click must not leave a focus ring after the save.
+                const keyboardFocus = notificationSwitch.visualFocus;
+                root.controller.setRuleNotification(root.row, value);
+                if (keyboardFocus && root.controller.saving) {
+                    root.notificationSaveStartedFromKeyboard(root.row);
+                }
+            }
         }
     }
 }
