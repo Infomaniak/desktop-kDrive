@@ -322,9 +322,22 @@ Any other major version is rejected. The Linux 4.x path configures CMake with
 actual QML imports and runtime dependencies, then installs the required libraries, plugins, QML
 modules, translations, and `qt.conf`. `linuxdeploy` subsequently deploys the system dependencies of
 the installed plugins, verifies the bundle, fixes RPATHs, and creates the AppImage. The main
-AppImage contains `kDrive` and `kdrive_qml`; `kDriveRecoveryUpdater` remains a separate AppImage.
-The native AMD64 build stages the main application in `build-linux/AppDir` and writes both final
-AppImages to `build-linux/install`; release artifacts are never copied back into the main AppDir.
+AppImage contains `kDrive` and the selected client; `kDriveRecoveryUpdater` remains a separate
+AppImage.
+
+Both release flavors keep staging and artifacts separate. The native AMD64 build stages files in
+`build-linux/AppDir` and writes final AppImages to `build-linux/install`. The container AMD64/ARM64
+build uses `/app` as its AppDir and `/install` for final AppImages. For both flavors and entry
+points, the recovery updater AppImage is built first from a copy of its executable. After that
+succeeds, `kDriveRecoveryUpdater` is removed from the main AppDir and a blocking check ensures that
+neither its executable nor its AppImage can be included in the main kDrive bundle. If the updater
+was not built, the scripts report that fact and continue packaging the main application.
+
+The v4 recovery updater AppDir reuses the generated `qt.conf` with `Prefix = ..` and contains only
+the required Qt platform runtime: `libqxcb.so`, `libqwayland.so`, `libxdg-shell.so`, and
+`libqt-plugin-wayland-egl.so`. The shared staging helper resolves the updater and every plugin's
+runtime dependencies, asks `linuxdeploy` to process each plugin directory, and rejects the bundle
+when `qt.conf`, a required plugin, or a dependency is missing.
 
 The Linux 4.x packaging path requires a `linuxdeploy` version that supports
 `--deploy-deps-only`, plus the `linuxdeploy-plugin-appimage` plugin. File and folder dialogs use the

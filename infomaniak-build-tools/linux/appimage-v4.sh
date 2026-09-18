@@ -74,6 +74,124 @@ function v4_copy_runtime_dependencies() (
     fi
 )
 
+function v4_prepare_recovery_updater_appdir() (
+    set -eo pipefail
+    local main_app_dir="$1"
+    local updater_app_dir="$2"
+    local updater_icon="$3"
+    local updater_bin="$main_app_dir/usr/bin/kDriveRecoveryUpdater"
+
+    if [[ -z "$updater_app_dir" || "$updater_app_dir" == "/" ]]; then
+        echo "Unsafe recovery updater AppDir: '$updater_app_dir'" >&2
+        exit 1
+    fi
+
+    rm -rf "$updater_app_dir"
+    mkdir -p \
+        "$updater_app_dir/usr/bin" \
+        "$updater_app_dir/usr/lib" \
+        "$updater_app_dir/usr/plugins/platforms" \
+        "$updater_app_dir/usr/plugins/wayland-graphics-integration-client" \
+        "$updater_app_dir/usr/plugins/wayland-shell-integration"
+
+    cp "$updater_bin" "$updater_app_dir/usr/bin/kDriveRecoveryUpdater"
+    cp "$main_app_dir/usr/bin/qt.conf" "$updater_app_dir/usr/bin/qt.conf"
+
+    local plugin
+    local -a plugins=(
+        usr/plugins/platforms/libqxcb.so
+        usr/plugins/platforms/libqwayland.so
+        usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so
+        usr/plugins/wayland-shell-integration/libxdg-shell.so
+    )
+    for plugin in "${plugins[@]}"; do
+        cp -P "$main_app_dir/$plugin" "$updater_app_dir/${plugin%/*}/"
+    done
+
+    cp "$updater_icon" "$updater_app_dir/kDriveRecoveryUpdater.png"
+    cat > "$updater_app_dir/kDriveRecoveryUpdater.desktop" <<'EOF'
+[Desktop Entry]
+Type=Application
+Name=kDriveRecoveryUpdater
+Exec=kDriveRecoveryUpdater
+Icon=kDriveRecoveryUpdater
+Categories=Utility;
+EOF
+
+    local -a runtime_files=("$updater_app_dir/usr/bin/kDriveRecoveryUpdater")
+    for plugin in "${plugins[@]}"; do
+        runtime_files+=("$updater_app_dir/$plugin")
+    done
+    v4_copy_runtime_dependencies "$main_app_dir/usr/lib" "$updater_app_dir" "${runtime_files[@]}"
+)
+
+function v4_check_recovery_updater_appdir() (
+    set -eo pipefail
+    local app_dir="$1"
+    local -a required=(
+        usr/bin/kDriveRecoveryUpdater
+        usr/bin/qt.conf
+        usr/plugins/platforms/libqxcb.so
+        usr/plugins/platforms/libqwayland.so
+        usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so
+        usr/plugins/wayland-shell-integration/libxdg-shell.so
+        kDriveRecoveryUpdater.desktop
+        kDriveRecoveryUpdater.png
+    )
+    local failures=0
+    local path
+
+    for path in "${required[@]}"; do
+        [[ -e "$app_dir/$path" ]] || {
+            echo "Missing from recovery updater AppDir: $path" >&2
+            failures=1
+        }
+    done
+
+    if [[ -f "$app_dir/usr/bin/qt.conf" ]] && ! grep -qx 'Prefix = ..' "$app_dir/usr/bin/qt.conf"; then
+        echo "Unexpected recovery updater qt.conf content" >&2
+        failures=1
+    fi
+
+    local -a runtime_files=()
+    [[ -f "$app_dir/usr/bin/kDriveRecoveryUpdater" ]] && \
+        runtime_files+=("$app_dir/usr/bin/kDriveRecoveryUpdater")
+    while IFS= read -r -d '' path; do
+        runtime_files+=("$path")
+    done < <(find "$app_dir/usr/plugins" -type f -name '*.so*' -print0 2>/dev/null)
+
+    if ((${#runtime_files[@]} > 0)); then
+        local report
+        report="$(LD_LIBRARY_PATH="$app_dir/usr/lib" ldd "${runtime_files[@]}" 2>/dev/null || true)"
+        if grep -qE 'not found|/\.conan2/|=> /usr/local/lib|=> /(usr/)?lib[^ ]*/libQt6' <<<"$report"; then
+            echo "Recovery updater runtime is incomplete:" >&2
+            grep -E 'not found|/\.conan2/|=> /usr/local/lib|=> /(usr/)?lib[^ ]*/libQt6' <<<"$report" >&2
+            failures=1
+        fi
+    fi
+
+    exit "$failures"
+)
+
+function check_main_appdir_updater_separation() (
+    set -eo pipefail
+    local app_dir="$1"
+    local failures=0
+
+    if [[ -e "$app_dir/usr/bin/kDriveRecoveryUpdater" ]]; then
+        echo "Recovery updater binary must not be present in the main AppDir" >&2
+        failures=1
+    fi
+
+    local updater_appimage
+    while IFS= read -r -d '' updater_appimage; do
+        echo "Recovery updater AppImage must not be present in the main AppDir: $updater_appimage" >&2
+        failures=1
+    done < <(find "$app_dir" -type f -name 'kDriveRecoveryUpdater*.AppImage' -print0)
+
+    exit "$failures"
+)
+
 function v4_create_linuxdeploy_resolver() (
     set -eo pipefail
     local app_dir="$1"
@@ -229,10 +347,20 @@ function v4_linuxdeploy_recovery_updater() (
     resolver_dir="$(v4_create_linuxdeploy_resolver "$app_dir")"
     trap 'rm -rf "$resolver_dir"' EXIT
 
+    local -a runtime_files=("$app_dir/usr/bin/kDriveRecoveryUpdater")
+    local -a deps_only=()
+    local dir
+    while IFS= read -r dir; do
+        deps_only+=(--deploy-deps-only "$dir")
+    done < <(find "$app_dir/usr/plugins" -type f -name '*.so*' -printf '%h\n' | sort -u)
+
+    local file
+    while IFS= read -r -d '' file; do
+        runtime_files+=("$file")
+    done < <(find "$app_dir/usr/plugins" -type f -name '*.so*' -print0)
+
     local report
-    report="$(LD_LIBRARY_PATH="$resolver_dir" ldd \
-        "$app_dir/usr/bin/kDriveRecoveryUpdater" \
-        "$app_dir/usr/plugins/platforms/"*.so*)"
+    report="$(LD_LIBRARY_PATH="$resolver_dir" ldd "${runtime_files[@]}")"
     if grep -q 'not found' <<<"$report"; then
         echo "linuxdeploy cannot resolve the prepared recovery updater runtime:" >&2
         grep 'not found' <<<"$report" >&2
@@ -240,13 +368,12 @@ function v4_linuxdeploy_recovery_updater() (
     fi
 
     # The Qt plugin deploys every available plugin, including optional SQL drivers.
-    # Deploy only the recovery updater and its platform plugins to avoid pulling in
-    # unused drivers whose runtime dependencies might not be installed.
+    # Deploy only the recovery updater and the explicitly staged plugin directories.
     LD_LIBRARY_PATH="$resolver_dir" NO_STRIP=1 linuxdeploy --appdir "$app_dir" \
         -e "$app_dir/usr/bin/kDriveRecoveryUpdater" \
         -d "$app_dir/kDriveRecoveryUpdater.desktop" \
         -i "$app_dir/kDriveRecoveryUpdater.png" \
-        --deploy-deps-only "$app_dir/usr/plugins/platforms" -v1
+        "${deps_only[@]}" -v1
 )
 
 function v4_verify_bundle() (

@@ -172,6 +172,9 @@ option(BUILD_GUI "BUILD_GUI" ON)
 
 # this option adds src/gui to the subdirectories when building the src folder 
 option(BUILD_GUI_LEGACY "BUILD_GUI_LEGACY" OFF)
+if(BUILD_GUI AND BUILD_GUI_LEGACY)
+    message(FATAL_ERROR "Both BUILD_GUI and BUILD_GUI_LEGACY are enabled. Please choose only one.")
+endif()
 
 option(KDRIVE_DEPLOY_QT_RUNTIME
        "Linux AppImage: deploy Qt libraries, plugins, QML modules, qt.conf, Qt translations and Conan libraries at install time"
