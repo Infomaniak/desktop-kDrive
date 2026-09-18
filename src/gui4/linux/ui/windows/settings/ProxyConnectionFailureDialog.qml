@@ -19,10 +19,9 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Layouts
 import kDrive.UI
 
-IKModal {
+IKConfirmationDialog {
     id: root
 
     required property var controller
@@ -35,16 +34,17 @@ IKModal {
         open();
     }
 
-    function dismiss() {
-        if (controller.saving) return;
-        controller.dismissConnectionFailure();
-        close();
-    }
-
+    busy: controller.saving
+    cancelText: qsTrId("buttonCancel")
+    confirmText: qsTrId("buttonSaveAnyway")
+    description: qsTrId("proxyConnectionFailedDescription") + "\n\n" + qsTrId("proxySaveAnywayQuestion")
     title: qsTrId("proxyConnectionFailedTitle")
-    escapeDismissible: !controller.saving
-    initialFocusItem: cancelButton
-    onDismissRequested: dismiss()
+
+    onConfirmed: {
+        awaitingSave = true;
+        controller.saveManualWithoutCheck();
+    }
+    onDismissed: controller.dismissConnectionFailure()
     onClosed: {
         awaitingSave = false;
         if (triggerItem && triggerItem.enabled && triggerItem.visible) {
@@ -62,44 +62,4 @@ IKModal {
             }
         }
     }
-
-    bodyData: [
-        Text {
-            width: parent.width
-            text: qsTrId("proxyConnectionFailedDescription")
-            color: IKColors.textSecondary
-            font.pixelSize: IKFonts.bodySize
-            wrapMode: Text.WordWrap
-        },
-        Text {
-            width: parent.width
-            text: qsTrId("proxySaveAnywayQuestion")
-            color: IKColors.textPrimary
-            font.pixelSize: IKFonts.bodySize
-            font.weight: IKFonts.emphasized
-            wrapMode: Text.WordWrap
-        }
-    ]
-
-    footerData: [
-        IKModalButton {
-            id: cancelButton
-
-            Layout.fillWidth: root.actionsStacked
-            text: qsTrId("buttonCancel")
-            role: IKModalButton.Secondary
-            actionEnabled: !root.controller.saving
-            onClicked: root.dismiss()
-        },
-        IKModalButton {
-            Layout.fillWidth: root.actionsStacked
-            text: qsTrId("buttonSaveAnyway")
-            actionEnabled: !root.controller.saving
-            busy: root.controller.saving
-            onClicked: {
-                root.awaitingSave = true;
-                root.controller.saveManualWithoutCheck();
-            }
-        }
-    ]
 }
