@@ -50,9 +50,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         public OAuthLoadingPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to OAuthLoadingPage - Initializing components");
+            Logger.LogInfo("Navigated to OAuthLoadingPage - Initializing components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "OAuthLoadingPage components initialized");
+            Logger.LogDebug("OAuthLoadingPage components initialized");
         }
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
             else
             {
-                Logger.Log(Logger.Level.Error,
+                Logger.LogError(
                     "OnBoardingViewModel parameter missing when navigating to OAuthLoadingPage");
             }
         }
@@ -85,7 +85,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             OnBoardingWindow? onBoardingWindow = (App.Current as App)?.CurrentWindow as OnBoardingWindow;
             if (onBoardingWindow is null)
             {
-                Logger.Log(Logger.Level.Error, "Current window is not OnBoardingWindow - cannot reset Lottie position");
+                Logger.LogError("Current window is not OnBoardingWindow - cannot reset Lottie position");
             }
             else
             {
@@ -114,7 +114,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
             if (onBoardingWindow is null)
             {
-                Logger.Log(Logger.Level.Error, "Current window is not OnBoardingWindow - cannot update UI for OAuth2State change");
+                Logger.LogError("Current window is not OnBoardingWindow - cannot update UI for OAuth2State change");
                 return;
             }
 
@@ -122,7 +122,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 case OAuth2State.None:
                     // Should not happen
-                    Logger.Log(Logger.Level.Warning, "OAuth2State is None - this should not happen");
+                    Logger.LogWarning("OAuth2State is None - this should not happen");
                     break;
 
                 case OAuth2State.WaitingForUserAction:
@@ -154,7 +154,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Error, "SelectedUser is not set after a successful oAuth");
+                        Logger.LogError("SelectedUser is not set after a successful oAuth");
                         _onboardingViewModel!.CurrentOAuth2State = OAuth2State.Error;
                     }
                     break;

@@ -6,7 +6,7 @@
   Locale: nl, Dutch; Flemish
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Vraag toegang aan bij de eigenaar of beheerder.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Niet-ondersteund bestandstype</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Deze link is uitgesloten van de synchronisatie, omdat het bestemmingspad ongeldig is.
+Het pad moet relatief zijn en mag geen verwijzing naar een bovenliggende map bevatten, zoals „..“.</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Ongeldig bestemmingspad</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Deze map is niet meer toegankelijk op de oorspronkelijke locatie.</value> 
   </data> 
@@ -960,8 +967,8 @@ De synchronisatie wordt automatisch hervat zodra de verbinding is hersteld.</val
     <value>Verbinding met kDrive onderbroken</value> 
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
-    <value>Dit item is niet beschikbaar op dit apparaat.
-Het wordt geopend in uw browser.</value> 
+    <value>Deze functie is op dit apparaat niet beschikbaar.
+Het wordt online in kDrive geopend.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/en/ksuite</value> 
@@ -1294,6 +1301,9 @@ Controleer en hernoem de bestanden met ongebruikelijke tekens en probeer het opn
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ versieconflicten gedetecteerd</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ verwijderde elementen</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>De synchronisatie is onderbroken om onbedoeld verwijderen te voorkomen.
 Wat wilt u doen?</value> 
@@ -1303,6 +1313,12 @@ Wat wilt u doen?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Ook online verwijderen</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>en nog iets</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>en %@ andere elementen</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Deze bestanden blijven beschikbaar in de prullenbak van kDrive.</value> 

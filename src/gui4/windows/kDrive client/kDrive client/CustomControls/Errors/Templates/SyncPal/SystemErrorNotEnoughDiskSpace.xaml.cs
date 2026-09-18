@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
             if (!result)
             {
-                Logger.Log(Logger.Level.Warning, "Failed to launch settings for NotEnoughDiskSpaceError");
+                Logger.LogWarning("Failed to launch settings for NotEnoughDiskSpaceError");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }

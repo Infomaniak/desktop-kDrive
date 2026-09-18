@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
             var frame = ((Application.Current as App)?.CurrentWindow as MainWindow)?.AppNavView.Frame;
             if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "Unable to fetch main frame");
+                Logger.LogWarning("Unable to fetch main frame");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }

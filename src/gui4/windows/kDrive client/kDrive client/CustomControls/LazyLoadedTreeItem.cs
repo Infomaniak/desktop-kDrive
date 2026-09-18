@@ -134,7 +134,7 @@ namespace Infomaniak.kDrive.CustomControls
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to load child folders.");
+                    Logger.LogError("Failed to load child folders.");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 ChildrenLoaded = true;

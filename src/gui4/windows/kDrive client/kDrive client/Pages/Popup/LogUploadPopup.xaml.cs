@@ -30,9 +30,9 @@ namespace Infomaniak.kDrive.Pages.Popup
         public CheckBox LastSessionCheckBox => CheckBox;
         public LogUploadPopup()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to LogUploadPopup - Initializing LogUploadPopup components");
+            Logger.LogInfo("Navigated to LogUploadPopup - Initializing LogUploadPopup components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "LogUploadPopup components initialized");
+            Logger.LogDebug("LogUploadPopup components initialized");
         }
     }
 }

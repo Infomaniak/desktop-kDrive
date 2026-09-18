@@ -121,11 +121,11 @@ namespace Infomaniak.kDrive.CustomControls
             CancellationTokenSource.Cancel();
             if (CancellationTokenSource.TryReset())
             {
-                Logger.Log(Logger.Level.Debug, "CancellationTokenSource reset successfully on ReloadAsync.");
+                Logger.LogDebug("CancellationTokenSource reset successfully on ReloadAsync.");
             }
             else
             {
-                Logger.Log(Logger.Level.Debug, "Failed to reset CancellationTokenSource on reload. A new instance will be created.");
+                Logger.LogDebug("Failed to reset CancellationTokenSource on reload. A new instance will be created.");
                 CancellationTokenSource = new CancellationTokenSource();
             }
         }
@@ -259,7 +259,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (CancellationTokenSource.IsCancellationRequested)
             {
-                Logger.Log(Logger.Level.Debug, "TreeViewItem_EffectiveViewportChanged: Cancellation requested, skipping size load.");
+                Logger.LogDebug("TreeViewItem_EffectiveViewportChanged: Cancellation requested, skipping size load.");
                 return;
             }
 

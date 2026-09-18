@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
             if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Logger.LogError("Error.Sync is null");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -56,7 +56,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 Utility.ShowUnexpectedErrorTeachingTip();
             else if (string.IsNullOrEmpty(Error.RemoteNodeId) && string.IsNullOrEmpty(Error.Path))
             {
-                Logger.Log(Logger.Level.Warning, $"Error {Error.DbId} has no RemoteNodeId or Path, cannot open in web or file explorer.");
+                Logger.LogWarning($"Error {Error.DbId} has no RemoteNodeId or Path, cannot open in web or file explorer.",
+                    "NameLengthError: Missing remote node ID or path");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 

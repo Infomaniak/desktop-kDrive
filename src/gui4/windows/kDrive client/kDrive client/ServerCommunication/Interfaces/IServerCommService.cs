@@ -150,6 +150,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
         Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
+        // Acknowledges the "too many deletes" notification for a sync, telling the server whether to continue or revert.
+        Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken);
+
         // Event handlers for user-related signals
         Task HandleUserUpdatedOrAddedAsync(object? sender, SignalEventArgs args);
         Task HandleUserRemovedAsync(object? sender, SignalEventArgs args);
@@ -183,5 +186,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Event handlers for app-related signals
         Task HandleUtilityShowNotification(object? sender, SignalEventArgs args);
+
+        // Event handlers for node-related signals
+        Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args);
     }
 }

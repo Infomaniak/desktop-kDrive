@@ -42,13 +42,13 @@ namespace Infomaniak.kDrive.Converters
             {
                 return "";
             }
-            Logger.Log(Logger.Level.Fatal, "StringPathToFileNameConverter: value is not a string.");
+            Logger.LogFatal("StringPathToFileNameConverter: value is not a string.");
             throw new ArgumentException("Invalid item type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "StringPathToFileNameConverter: ConvertBack is not implemented.");
+            Logger.LogFatal("StringPathToFileNameConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

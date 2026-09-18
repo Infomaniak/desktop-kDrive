@@ -106,7 +106,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (ViewModel.SelectedSync is null)
             {
-                Logger.Log(Logger.Level.Warning, "SearchItem called but no sync is selected.");
+                Logger.LogWarning("SearchItem called but no sync is selected.");
                 sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
                 return;
             }
@@ -121,7 +121,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (result is null)
                 {
-                    Logger.Log(Logger.Level.Warning, "SearchItem returned null result.");
+                    Logger.LogWarning("SearchItem returned null result.");
                     sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
                     Utility.ShowUnexpectedErrorTeachingTip();
                     return;
@@ -129,7 +129,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (!result.Any())
                 {
-                    Logger.Log(Logger.Level.Extended, "SearchItem returned empty result.");
+                    Logger.LogExtended("SearchItem returned empty result.");
                     sender.ItemsSource = new List<ISearchBoxResultItem> { new SearchBoxNotFoundItem() };
                     return;
                 }
@@ -187,13 +187,13 @@ namespace Infomaniak.kDrive.CustomControls
             sender.Text = "";
             if (resultItem is null || resultItem.SearchItem is null || !resultItem.IsSelectable)
             {
-                Logger.Log(Logger.Level.Info, "QuerySubmitted but no result match the query.");
+                Logger.LogInfo("QuerySubmitted but no result match the query.");
                 return;
             }
 
             if (ViewModel.SelectedSync is null)
             {
-                Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
+                Logger.LogWarning("SearchItem SuggestionChosen called but no sync is selected.");
                 sender.IsSuggestionListOpen = false;
                 return;
             }
@@ -261,7 +261,7 @@ namespace Infomaniak.kDrive.CustomControls
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Warning, "sender is expected to ba a control.");
+                Logger.LogWarning("sender is expected to ba a control.");
                 return;
             }
 
@@ -272,7 +272,7 @@ namespace Infomaniak.kDrive.CustomControls
 
             if (ViewModel.SelectedSync is null)
             {
-                Logger.Log(Logger.Level.Warning, "SearchItem SuggestionChosen called but no sync is selected.");
+                Logger.LogWarning("SearchItem SuggestionChosen called but no sync is selected.");
                 return;
             }
 
@@ -311,7 +311,7 @@ namespace Infomaniak.kDrive.CustomControls
             FrameworkElement? frameworkElement = sender as FrameworkElement;
             if (frameworkElement is null)
             {
-                Logger.Log(Logger.Level.Warning, "sender is expected to be a FrameworkElement.");
+                Logger.LogWarning("sender is expected to be a FrameworkElement.");
                 return;
             }
 

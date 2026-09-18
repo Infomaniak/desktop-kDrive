@@ -177,6 +177,11 @@ void TestUtility::testStringToAppStateValue() {
     CPPUNIT_ASSERT(std::holds_alternative<int>(value));
     CPPUNIT_ASSERT_EQUAL(50, std ::get<int>(value));
 
+    value = bool(false);
+    CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("1", value));
+    CPPUNIT_ASSERT(std::holds_alternative<bool>(value));
+    CPPUNIT_ASSERT_EQUAL(true, std ::get<bool>(value));
+
     value = LogUploadState::None;
     CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("1", value));
     CPPUNIT_ASSERT(std::holds_alternative<LogUploadState>(value));

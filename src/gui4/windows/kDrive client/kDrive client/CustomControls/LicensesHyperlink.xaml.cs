@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (d is not LicensesHyperlink control)
             {
-                Logger.Log(Logger.Level.Warning, "DependencyObject is not of type LicensesHyperlink, this is unexpected.");
+                Logger.LogWarning("DependencyObject is not of type LicensesHyperlink, this is unexpected.");
                 return;
             }
             control.Refresh();
@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (DisplayedVersion is null)
             {
-                Logger.Log(Logger.Level.Warning, "DisplayedVersion is null, this is unexpected.");
+                Logger.LogWarning("DisplayedVersion is null, this is unexpected.");
                 return;
             }
             ExpandedTextBox.Text = Localizer.Instance.GetString("aboutAppVersionCopyright", DisplayedVersion.Tag, DisplayedVersion.BuildVersion, DateTime.Now.Year);

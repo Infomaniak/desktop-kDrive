@@ -84,7 +84,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (ViewModel.Settings is null)
             {
-                Logger.Log(Logger.Level.Warning, "Settings is null, this is unexpected.");
+                Logger.LogWarning("Settings is null, this is unexpected.");
                 return;
             }
 
@@ -112,7 +112,7 @@ namespace Infomaniak.kDrive.CustomControls
                 {
                     if (selectedChannel == ViewModel.Settings.UpdateManager.CurrentChannel)
                     {
-                        Logger.Log(Logger.Level.Info, $"Selected update channel {selectedChannel} is the same as the current channel, no change needed.");
+                        Logger.LogInfo($"Selected update channel {selectedChannel} is the same as the current channel, no change needed.");
                         comboBox.IsEnabled = true;
                         return;
                     }
@@ -121,16 +121,18 @@ namespace Infomaniak.kDrive.CustomControls
 
                     if (!await ViewModel.Settings.UpdateManager.ChangeChannel(selectedChannel))
                     {
-                        Logger.Log(Logger.Level.Error, $"Failed to change update channel to {selectedChannel}");
+                        Logger.LogError($"Failed to change update channel to {selectedChannel}",
+                            "UpdateExpander: Failed to change update channel");
                         Utility.ShowUnexpectedErrorTeachingTip();
                         comboBox.IsEnabled = true;
                         return;
                     }
-                    Logger.Log(Logger.Level.Info, $"Update channel changed to {selectedChannel}");
+                    Logger.LogInfo($"Update channel changed to {selectedChannel}");
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, $"Invalid update channel selected: {channelString}");
+                    Logger.LogError($"Invalid update channel selected: {channelString}",
+                        "UpdateExpander: Invalid update channel selected");
                 }
                 comboBox.IsEnabled = true;
             }
@@ -140,7 +142,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (ViewModel.Settings is null)
             {
-                Logger.Log(Logger.Level.Error, "Settings is null, cannot start update process.");
+                Logger.LogError("Settings is null, cannot start update process.");
                 return;
             }
 
@@ -148,13 +150,13 @@ namespace Infomaniak.kDrive.CustomControls
             if (btn is not null)
             {
                 btn.IsEnabled = false;
-                Logger.Log(Logger.Level.Info, "User clicked on Update button, starting update process.");
+                Logger.LogInfo("User clicked on Update button, starting update process.");
                 _analyticsService.TrackClick(Analytics.Keys.Category.GeneralSettingsPage, Analytics.Keys.EventName.StartUpdate);
             }
 
             if (!await UpdateManager.StartUpdate())
             {
-                Logger.Log(Logger.Level.Error, "Update process failed to start.");
+                Logger.LogError("Update process failed to start.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
 
@@ -173,14 +175,14 @@ namespace Infomaniak.kDrive.CustomControls
                 toggleSwitch.IsEnabled = false;
                 if (ViewModel.Settings is null || ViewModel.Settings.UpdateManager is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Settings or UpdateManager is null, cannot change auto-update setting.");
+                    Logger.LogError("Settings or UpdateManager is null, cannot change auto-update setting.");
                     toggleSwitch.IsEnabled = true;
                     return;
                 }
 
                 if (toggleSwitch.IsOn == ViewModel.Settings.UpdateManager.AutoUpdateEnabled)
                 {
-                    Logger.Log(Logger.Level.Info, "Auto-update toggle switch state is the same as the current setting, no change needed.");
+                    Logger.LogInfo("Auto-update toggle switch state is the same as the current setting, no change needed.");
                     toggleSwitch.IsEnabled = true;
                     return;
                 }
@@ -189,7 +191,7 @@ namespace Infomaniak.kDrive.CustomControls
 
                 if (!await ViewModel.Settings.UpdateManager.ChangeAutoUpdate(toggleSwitch.IsOn))
                 {
-                    Logger.Log(Logger.Level.Error, "Failed to change auto-update setting.");
+                    Logger.LogError("Failed to change auto-update setting.");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 toggleSwitch.IsEnabled = true;

@@ -40,9 +40,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         public ViewModels.Onboarding? OnboardingViewModel => _onboardingViewModel;
         public NoDrivesPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to NoDrivesPage - Initializing components");
+            Logger.LogInfo("Navigated to NoDrivesPage - Initializing components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "NoDrivesPage components initialized");
+            Logger.LogDebug("NoDrivesPage components initialized");
         }
 
         protected async override void OnNavigatedTo(NavigationEventArgs e)
@@ -58,7 +58,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "OnboardingViewModel parameter missing when navigating to NoDrivesPage");
+                Logger.LogFatal("OnboardingViewModel parameter missing when navigating to NoDrivesPage");
                 throw new Exception("OnboardingViewModel parameter missing when navigating to NoDrivesPage");
             }
         }
@@ -83,7 +83,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
             {
                 if (_onboardingViewModel is not null)
                 {
-                    Logger.Log(Logger.Level.Info, "Drives found for user - Navigating to DriveSelectionPage");
+                    Logger.LogInfo("Drives found for user - Navigating to DriveSelectionPage");
                     Frame.Navigate(typeof(DriveSelectionPage), _onboardingViewModel);
                 }
             });

@@ -55,7 +55,7 @@ namespace Infomaniak.kDrive.Utilities
                     format = "{0}";
                     break;
                 default:
-                    Logger.Log(Logger.Level.Warning, "Unknown DateTimeToStringMode.");
+                    Logger.LogWarning("Unknown DateTimeToStringMode.");
                     format = "{0}";
                     break;
             }

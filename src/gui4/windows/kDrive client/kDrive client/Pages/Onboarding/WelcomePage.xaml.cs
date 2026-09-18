@@ -36,9 +36,9 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         public AppModel ViewModel { get { return _viewModel; } }
         public WelcomePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to WelcomePage - Initializing WelcomePage components");
+            Logger.LogInfo("Navigated to WelcomePage - Initializing WelcomePage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "WelcomePage components initialized");
+            Logger.LogDebug("WelcomePage components initialized");
         }
         protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -53,14 +53,14 @@ namespace Infomaniak.kDrive.Pages.Onboarding
 
         private async void SignupButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Create account button clicked, opening sign up URL");
+            Logger.LogInfo("Create account button clicked, opening sign up URL");
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingWelcomePage, Analytics.Keys.EventName.OpenSignUpWeb);
             if (sender is Control control)
             {
                 control.IsEnabled = false;
 
                 await Localizer.Instance.TryLaunchUriAsync("kSuiteOfferUrl");
-                Logger.Log(Logger.Level.Debug, "Create account URL opened");
+                Logger.LogDebug("Create account URL opened");
 
                 await Task.Delay(2000);
                 control.IsEnabled = true;
@@ -68,7 +68,7 @@ namespace Infomaniak.kDrive.Pages.Onboarding
         }
         private void SigninButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Sign in button clicked, starting authentication process");
+            Logger.LogInfo("Sign in button clicked, starting authentication process");
             _analyticsService.TrackClick(Analytics.Keys.Category.OnboardingWelcomePage, Analytics.Keys.EventName.OpenSignInWeb);
             if (sender is Control control)
             {
