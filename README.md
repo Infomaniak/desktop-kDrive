@@ -26,14 +26,14 @@ platform-specific [direct download URLs](https://www.infomaniak.com/drive/latest
 
 ## License & Contributions
 
-This project is under GPLv3 license.  
+This project is under GPLv3 license.
 If you see a bug or an enhanceable point, feel free to create an issue, so we can discuss it. Once approved, we or you
 (depending on the criticality of the bug or improvement) can take care of it and open a pull request.
 Please do not open a pull request before creating an issue.
 
 ## Tech things
 
-**kDrive Desktop** started as an [Owncloud](https://owncloud.com/) fork in 2019, up until 2023 after all the core
+**kDrive Desktop** started as an [ownCloud](https://owncloud.com/) fork in 2019, up until 2023 after all the core
 functionalities were rewritten.
 **LiteSync** is an extension for **Windows** and **macOS** providing on-demand file downloading to save space on your
 device.
@@ -42,16 +42,16 @@ The **kDrive Desktop** application follows the [Syncpal Algorithm by Marius Shek
 
 ### Languages
 
-The project is developed in **C++** using **Qt**.  
+The project is developed in **C++** using **Qt**.
 The **macOS** extension is made in **Objective-C/C++**.
 
 ### Minimum Requirements
 
-| System  | With LiteSync    | Without LiteSync                            | ARM
-|---------|------------------|---------------------------------------------|--------------------|
-| Linux   | :x:              | Ubuntu 22.04 (amd64) / Ubuntu 24.04 (arm64) | :heavy_check_mark: |
-| macOS   | macOS 10.15      | macOS 10.15                                 | :heavy_check_mark: |
-| Windows | Windows 10 1709  | Windows 10                                  | :x:                |
+| System  | With LiteSync   | Without LiteSync                            | ARM                |
+|---------|-----------------|---------------------------------------------|--------------------|
+| Linux   | :x:             | Ubuntu 22.04 (amd64) / Ubuntu 24.04 (arm64) | :heavy_check_mark: |
+| macOS   | macOS 10.15     | macOS 10.15                                 | :heavy_check_mark: |
+| Windows | Windows 10 1709 | Windows 10                                  | :x:                |
 
 ### Libraries
 
