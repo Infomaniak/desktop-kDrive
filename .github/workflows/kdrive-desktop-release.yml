@@ -195,7 +195,7 @@ jobs:
   build-Windows:
     if: ${{ inputs.build_windows != 'Do not build' }}
     needs: [ check-release-notes, check-translations ]
-    runs-on: [ self-hosted, Windows, vs2026 ]
+    runs-on: [ self-hosted, Windows, test_img ]
     outputs:
       kDrive_version: ${{ steps.build-windows-step.outputs.kDrive_version }}
     steps:
