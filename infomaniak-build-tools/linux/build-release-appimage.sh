@@ -118,6 +118,8 @@ function build_client_via_cmake() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
+      -DBUILD_GUI=OFF \
+      -DBUILD_GUI_LEGACY=ON \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
       "${CMAKE_PARAMS[@]}" \
@@ -169,6 +171,8 @@ function build_client_via_cmake_v4() {
       -DCMAKE_BUILD_TYPE=$build_type \
       -DKDRIVE_THEME_DIR="/src/infomaniak" \
       -DBUILD_UNIT_TESTS=0 \
+      -DBUILD_GUI=ON \
+      -DBUILD_GUI_LEGACY=OFF \
       -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
       -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
@@ -445,42 +449,9 @@ function build_recovery_updater_image_v4() {
   echo "Building recovery updater AppImage for ${architecture}..."
 
   updater_appdir="/tmp/updater-app"
-  rm -rf "$updater_appdir"
-  mkdir -p "$updater_appdir/usr/bin"
-  mkdir -p "$updater_appdir/usr/lib"
-  mkdir -p "$updater_appdir/usr/plugins/platforms"
-
-  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
-
-  # Copy Conan dependencies (Poco, xxhash, log4cplus, openssl, sentry, etc.)
-  cp -P "$conan_dependencies_folder"/* "$updater_appdir/usr/lib" 2>/dev/null || true
-
-  # Only deploy the platform plugins supported by the v4 AppImage. In particular,
-  # qeglfs depends on Qt libraries that are intentionally not part of the bundle.
-  local platform_plugin
-  for platform_plugin in libqxcb.so libqwayland.so; do
-    cp -P "$QT_BASE_DIR/plugins/platforms/$platform_plugin" "$updater_appdir/usr/plugins/platforms/" || return 1
-  done
-
-  v4_copy_runtime_dependencies /app/usr/lib "$updater_appdir" \
-    "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
-    "$updater_appdir/usr/plugins/platforms/"*.so* || return 1
-
-  # Create a minimal .desktop file (required by linuxdeploy/appimagetool)
-  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
-[Desktop Entry]
-Type=Application
-Name=kDriveRecoveryUpdater
-Exec=kDriveRecoveryUpdater
-Icon=kDriveRecoveryUpdater
-Categories=Utility;
-EOF
-
-  # Use the recovery updater icon
   updater_icon="/src/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
-  if [ -f "$updater_icon" ]; then
-    cp "$updater_icon" "$updater_appdir/kDriveRecoveryUpdater.png"
-  fi
+  v4_prepare_recovery_updater_appdir /app "$updater_appdir" "$updater_icon" || return 1
+  v4_check_recovery_updater_appdir "$updater_appdir" || return 1
 
   cd /build || return 1
   v4_linuxdeploy_recovery_updater "$updater_appdir" || return 1
@@ -594,6 +565,12 @@ if [[ "$release_flavor" == "v4" ]]; then
         exit 1
     }
 
+    rm -f /app/usr/bin/kDriveRecoveryUpdater
+    check_main_appdir_updater_separation /app || {
+        printf "\nRecovery updater separation check failed." >&2
+        exit 1
+    }
+
     echo
     echo "Building AppImage ..."
     build_app_image_v4 || {
@@ -624,20 +601,26 @@ else
     clean_app_directory "$architecture"
 
     echo
-    echo "Building AppImage ..."
-    build_app_image "$architecture"
-
-    if [ ! "$?" -eq "0" ]; then
-        printf "\nBuild of the AppImage failed." >&2
-        exit 1
-    fi
-
-    echo
     echo "Building recovery updater AppImage ..."
     build_recovery_updater_image "$architecture"
 
     if [ ! "$?" -eq "0" ]; then
         printf "\nBuild of the recovery updater AppImage failed." >&2
+        exit 1
+    fi
+
+    rm -f /app/usr/bin/kDriveRecoveryUpdater
+    check_main_appdir_updater_separation /app || {
+        printf "\nRecovery updater separation check failed." >&2
+        exit 1
+    }
+
+    echo
+    echo "Building AppImage ..."
+    build_app_image "$architecture"
+
+    if [ ! "$?" -eq "0" ]; then
+        printf "\nBuild of the AppImage failed." >&2
         exit 1
     fi
 fi

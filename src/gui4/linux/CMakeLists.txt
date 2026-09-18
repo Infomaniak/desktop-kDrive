@@ -419,6 +419,10 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_EXECUTABLE}.desktop" "${kd
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_EXECUTABLE}.desktop" DESTINATION ${DATADIR}/applications)
 
 if(KDRIVE_DEPLOY_QT_RUNTIME)
+    set_target_properties(${APPLICATION_CLIENTV4_EXECUTABLE} PROPERTIES
+            INSTALL_RPATH "$ORIGIN/../lib"
+    )
+
     # Qt has no catalogs for el, nb, and pt.
     qt_generate_deploy_script(
             TARGET ${APPLICATION_CLIENTV4_EXECUTABLE}
@@ -450,7 +454,7 @@ qt_deploy_runtime_dependencies(
         qxdgdesktopportal
         xdg-shell
     EXCLUDE_PLUGINS qgtk3
-    EXCLUDE_PLUGIN_TYPES qmltooling egldeviceintegrations)
+    EXCLUDE_PLUGIN_TYPES qmltooling egldeviceintegrations sqldrivers)
 qt_deploy_translations(CATALOGS qtbase qtdeclarative LOCALES da de en es fi fr it nl pl pt_BR sv)
 ")
     install(SCRIPT "${kdrive_deploy_script}")
