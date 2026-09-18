@@ -28,6 +28,9 @@ ScrollView {
 
     required property var controller
     readonly property string navigationTitle: qsTrId("filesToExclude")
+    readonly property bool saving: controller.saving
+    // Row whose notification switch had keyboard focus when its save started; the save rebuilds the rows.
+    property int keyboardFocusRow: -1
 
     signal addRuleRequested(var trigger)
 
@@ -37,6 +40,29 @@ ScrollView {
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
     ScrollBar.vertical.policy: ScrollBar.AsNeeded
     ScrollBar.vertical.interactive: true
+
+    function restoreKeyboardFocus() {
+        const row = keyboardFocusRow;
+        keyboardFocusRow = -1;
+
+        // Keep a keyboard focus the user moved elsewhere during the save.
+        const focusedControl = root.Window.window ? root.Window.window.activeFocusItem as Control : null;
+        if (focusedControl && focusedControl.visualFocus) {
+            return;
+        }
+
+        const rowItem = userRulesRepeater.itemAt(row) as ExclusionRuleRow;
+        if (rowItem) {
+            rowItem.focusNotificationSwitch();
+        }
+    }
+
+    onSavingChanged: {
+        if (!saving && keyboardFocusRow >= 0) {
+            // Wait for the rebuilt rows to re-enable their controls before moving the focus.
+            Qt.callLater(root.restoreKeyboardFocus);
+        }
+    }
 
     Component.onCompleted: controller.refresh()
 
@@ -159,6 +185,8 @@ ScrollView {
                     }
 
                     Repeater {
+                        id: userRulesRepeater
+
                         model: root.controller.userRules
 
                         delegate: ExclusionRuleRow {
@@ -168,6 +196,7 @@ ScrollView {
                             controller: root.controller
                             row: index
                             editable: true
+                            onNotificationSaveStartedFromKeyboard: row => root.keyboardFocusRow = row
                         }
                     }
                 }
