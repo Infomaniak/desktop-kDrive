@@ -10,7 +10,7 @@ $Labels     = "__TAGS__"
 $RunnerName = "__REG_NAME__"
 
 # Local Administrator account (consistent with the AutoLogon set in the unattend file).
-$AdminAccount = "Administrateur"
+$AdminAccount = "Administrator"
 
 # --- Register the runner (no service, no logon-account flags) ---
 if (-not (Test-Path $MarkerFile)) {
