@@ -29,11 +29,9 @@ void TestIo::testCheckIfPathTraversesLink() {
     {
         bool traversesLink = true;
         SyncPath linkPath = SyncPath("dummy");
-        IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathTraversesLink(SyncPath("item.txt"), traversesLink, linkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::checkIfPathTraversesLink(SyncPath("item.txt"), traversesLink, linkPath));
         CPPUNIT_ASSERT(!traversesLink);
         CPPUNIT_ASSERT(linkPath.empty());
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
     // No ancestor of the path is a followed link.
@@ -45,11 +43,9 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         bool traversesLink = true;
         SyncPath linkPath = SyncPath("dummy");
-        IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathTraversesLink(dirPath / "item.txt", traversesLink, linkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::checkIfPathTraversesLink(dirPath / "item.txt", traversesLink, linkPath));
         CPPUNIT_ASSERT(!traversesLink);
         CPPUNIT_ASSERT(linkPath.empty());
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
     // The direct parent of the path is a symbolic link.
@@ -65,10 +61,10 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         bool traversesLink = false;
         SyncPath traversedLinkPath;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+                             IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT(symlinkPath == traversedLinkPath);
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
     // A deeper ancestor of the path is a symbolic link.
@@ -87,10 +83,10 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         bool traversesLink = false;
         SyncPath traversedLinkPath;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+                             IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT(symlinkPath == traversedLinkPath);
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
     // The final component of the path is a symbolic link: only the ancestors are inspected.
@@ -104,10 +100,9 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         bool traversesLink = true;
         SyncPath traversedLinkPath = SyncPath("dummy");
-        CPPUNIT_ASSERT(IoHelper::checkIfPathTraversesLink(symlinkPath, traversesLink, traversedLinkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::checkIfPathTraversesLink(symlinkPath, traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(!traversesLink);
         CPPUNIT_ASSERT(traversedLinkPath.empty());
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
     // One of the ancestors of the path does not exist.
@@ -115,11 +110,11 @@ void TestIo::testCheckIfPathTraversesLink() {
         const LocalTemporaryDirectory temporaryDirectory;
         bool traversesLink = true;
         SyncPath traversedLinkPath = SyncPath("dummy");
-        IoError ioError = IoError::Success;
-        CPPUNIT_ASSERT(!IoHelper::checkIfPathTraversesLink(temporaryDirectory.path() / "non_existing_dir" / "item.txt",
-                                                           traversesLink, traversedLinkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory,
+                             IoHelper::checkIfPathTraversesLink(temporaryDirectory.path() / "non_existing_dir" / "item.txt",
+                                                                traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(!traversesLink);
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
+        CPPUNIT_ASSERT(traversedLinkPath.empty());
     }
 
 #if defined(KD_WINDOWS)
@@ -137,10 +132,10 @@ void TestIo::testCheckIfPathTraversesLink() {
 
         bool traversesLink = false;
         SyncPath traversedLinkPath;
-        CPPUNIT_ASSERT(IoHelper::checkIfPathTraversesLink(junctionPath / "item.txt", traversesLink, traversedLinkPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+                             IoHelper::checkIfPathTraversesLink(junctionPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT(junctionPath == traversedLinkPath);
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 #endif
 }

@@ -86,11 +86,10 @@ ExitInfo LocalMoveJob::runJob() {
 
     // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
     // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
-    IoError ioError = IoError::Success;
     for (const SyncPath &path: {_source, _dest}) {
         bool traversesLink = false;
         SyncPath linkPath;
-        if (!IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath, ioError)) {
+        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
