@@ -272,8 +272,14 @@
     "notificationsDisabled INTEGER,"                                                         \
     "hasFullyCompleted INTEGER,"                                                             \
     "navigationPaneClsid TEXT,"                                                              \
-    "listingCursor TEXT,"                                                                    \
-    "listingCursorTimestamp INTEGER,"                                                        \
+    "userPrivateFolderCursor TEXT,"                                                          \
+    "userPrivateFolderCursorTimestamp INTEGER,"                                              \
+    "commonDocumentsFolderCursor TEXT,"                                                      \
+    "commonDocumentsFolderCursorTimestamp INTEGER,"                                          \
+    "sharedFolderCursor TEXT,"                                                               \
+    "sharedFolderCursorTimestamp INTEGER,"                                                   \
+    "customTargetFolderCursor TEXT,"                                                         \
+    "customTargetFolderCursorTimestamp INTEGER,"                                             \
     "toDelete INTEGER,"                                                                      \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
     "WITHOUT ROWID;"
@@ -282,16 +288,23 @@
 #define INSERT_SYNC_REQUEST                                                                                             \
     "INSERT INTO sync (dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, " \
     "virtualFileMode, "                                                                                                 \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete) "  \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);"
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                   \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                       \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                               \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                 \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete) "                                           \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
-#define UPDATE_SYNC_REQUEST                                                                                                \
-    "UPDATE sync SET driveDbId=?1, localPath=?2, localNodeId = ?3, targetPath=?4, targetNodeId=?5, dbPath=?6, paused=?7, " \
-    "supportVfs=?8, "                                                                                                      \
-    "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, listingCursor=?13, "   \
-    "listingCursorTimestamp=?14, toDelete=?15 "                                                                            \
-    "WHERE dbId=?16;"
+#define UPDATE_SYNC_REQUEST                                                                                              \
+    "UPDATE sync SET driveDbId=?1, localPath=?2, localNodeId=?3, targetPath=?4, targetNodeId=?5, dbPath=?6, paused=?7, " \
+    "supportVfs=?8, "                                                                                                    \
+    "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, "                    \
+    "userPrivateFolderCursor=?13, userPrivateFolderCursorTimestamp=?14, "                                                \
+    "commonDocumentsFolderCursor=?15, commonDocumentsFolderCursorTimestamp=?16, "                                        \
+    "sharedFolderCursor=?17, sharedFolderCursorTimestamp=?18, "                                                          \
+    "customTargetFolderCursor=?19, customTargetFolderCursorTimestamp=?20, toDelete=?21 "                                 \
+    "WHERE dbId=?22;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -314,32 +327,50 @@
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
-#define SELECT_SYNC_REQUEST                                                                                                     \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_SYNC_REQUEST                                                                                                   \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                                  \
+    "FROM sync "                                                                                                              \
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
-#define SELECT_SYNC_BY_PATH_REQUEST                                                                                             \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                           \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, "                                                         \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                                  \
+    "FROM sync "                                                                                                              \
     "WHERE dbPath=?1;"
 
-
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
-#define SELECT_ALL_SYNCS_REQUEST                                                                                                \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_ALL_SYNCS_REQUEST                                                                                              \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid,  "                                                        \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                             \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                                     \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                                       \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete  "                                                 \
+    "FROM sync "                                                                                                              \
     "ORDER BY dbId;"
 
 #define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID "select_syncs_by_drive"
 #define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                          \
     "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
     "notificationsDisabled, "                                                                                      \
-    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync "           \
+    "hasFullyCompleted, navigationPaneClsid, "                                                                     \
+    "userPrivateFolderCursor, userPrivateFolderCursorTimestamp, "                                                  \
+    "commonDocumentsFolderCursor, commonDocumentsFolderCursorTimestamp, "                                          \
+    "sharedFolderCursor, sharedFolderCursorTimestamp, "                                                            \
+    "customTargetFolderCursor, customTargetFolderCursorTimestamp, toDelete "                                       \
+    "FROM sync "                                                                                                   \
     "WHERE driveDbId=?1 "                                                                                          \
     "ORDER BY dbId;"
-
 //
 // exclusion_template
 //
@@ -1293,12 +1324,9 @@ bool ParmsDb::prepare() {
     return true;
 }
 
-bool ParmsDb::upgradeTables() {
-    int errId = 0;
-    std::string error;
+bool ParmsDb::upgradeParametersTables() {
+    const std::string tableName = "parameters";
 
-    // Parameters table
-    std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
     if (!addIntegerColumnIfMissing(tableName, columnName)) {
         return false;
@@ -1316,6 +1344,9 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (updateParameters) {
+        int32_t errId = -1;
+        std::string error;
+
         if (!createAndPrepareRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST)) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
@@ -1337,15 +1368,19 @@ bool ParmsDb::upgradeTables() {
         }
     }
 
+    return true;
+}
+
+bool ParmsDb::upgradeTables() {
+    if (!upgradeParametersTables()) return false;
+
     // AppState table
-    tableName = "app_state";
+    std::string tableName = "app_state";
     bool exist = false;
     if (!tableExists(tableName, exist)) return false;
-    if (!exist) {
-        if (!createAppState()) {
-            LOG_WARN(_logger, "Error in createAppState");
-            return false;
-        }
+    if (!exist && !createAppState()) {
+        LOG_WARN(_logger, "Error in createAppState");
+        return false;
     }
 
     // Sync folder rule table
@@ -1361,24 +1396,23 @@ bool ParmsDb::upgradeTables() {
 
     // Sync table
     tableName = "sync";
-    if (!addTextColumnIfMissing(tableName, "localNodeId")) {
-        return false;
-    }
-    if (!addIntegerColumnIfMissing(tableName, "toDelete")) {
-        return false;
-    }
+    if (!addTextColumnIfMissing(tableName, "localNodeId")) return false;
+    if (!addTextColumnIfMissing(tableName, "userPrivateFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "userPrivateFolderCursorTimestamp")) return false;
+    if (!addTextColumnIfMissing(tableName, "commonDocumentsFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderCursorTimestamp")) return false;
+    if (!addTextColumnIfMissing(tableName, "sharedFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "sharedFolderCursorTimestamp")) return false;
+    if (!addTextColumnIfMissing(tableName, "customTargetFolderCursor")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "customTargetFolderCursorTimestamp")) return false;
 
     // Account table
     tableName = "account";
-    if (!addTextColumnIfMissing(tableName, "name")) {
-        return false;
-    }
+    if (!addTextColumnIfMissing(tableName, "name")) return false;
 
     // User table
     tableName = "user";
-    if (!addTextColumnIfMissing(tableName, "firstName")) {
-        return false;
-    }
+    if (!addTextColumnIfMissing(tableName, "firstName")) return false;
 
     LOG_INFO(_logger, "Columns upgrade in " << dbType() << " successfully completed.");
 
@@ -2440,89 +2474,91 @@ bool ParmsDb::getNewDriveDbId(DriveDbId &dbId) {
     return true;
 }
 
-bool ParmsDb::insertSync(const Sync &sync) {
-    const char *requestId = INSERT_SYNC_REQUEST_ID;
-
+bool ParmsDb::bindQueryToSyncValues(const Sync &sync, const char *requestId, const FieldFilter filter) {
     const std::scoped_lock lock(_mutex);
 
-    std::string listingCursor;
-    int64_t listingCursorTimestamp{0};
-    sync.listingCursor(listingCursor, listingCursorTimestamp);
-
-    // Insert sync record
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
-    LOG_IF_FAIL(queryBindValue(requestId, 1, sync.dbId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 2, sync.driveDbId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 3, sync.localPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 4, sync.localNodeId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 5, sync.targetPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 6, sync.targetNodeId()));
-    LOG_IF_FAIL(queryBindValue(requestId, 7, sync.dbPath().native()));
-    LOG_IF_FAIL(queryBindValue(requestId, 8, static_cast<int>(sync.paused())));
-    LOG_IF_FAIL(queryBindValue(requestId, 9, static_cast<int>(sync.supportVfs())));
-    LOG_IF_FAIL(queryBindValue(requestId, 10, static_cast<int>(sync.virtualFileMode())));
-    LOG_IF_FAIL(queryBindValue(requestId, 11, static_cast<int>(sync.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(requestId, 12, static_cast<int>(sync.hasFullyCompleted())));
-    LOG_IF_FAIL(queryBindValue(requestId, 13, sync.navigationPaneClsid()));
-    LOG_IF_FAIL(queryBindValue(requestId, 14, listingCursor));
-    LOG_IF_FAIL(queryBindValue(requestId, 15, listingCursorTimestamp));
-    LOG_IF_FAIL(queryBindValue(requestId, 16, static_cast<int>(sync.toDelete())));
+
+    uint16_t fieldIndex = 1;
+
+    if (filter != FieldFilter::WhereSyncDbId) {
+        LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
+    }
+
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.driveDbId()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.localPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.localNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.targetPath().native()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.targetNodeId()));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbPath().native()));
+
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.paused())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.supportVfs())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.virtualFileMode())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.notificationsDisabled())));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.hasFullyCompleted())));
+
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.navigationPaneClsid()));
+
+    const auto &cursorStore = sync.getCursorStore();
+
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Private).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Private).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CommonDocuments).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CommonDocuments).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Shared).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::Shared).timestamp));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CustomTarget).cursor));
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, cursorStore.at(SpecialRemoteFolder::CustomTarget).timestamp));
+
+    LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, static_cast<int>(sync.toDelete())));
+
+    if (filter == FieldFilter::WhereSyncDbId) {
+        LOG_IF_FAIL(queryBindValue(requestId, fieldIndex++, sync.dbId()));
+    }
 
     int errId = -1;
-    std::string error;
-    if (!queryExec(requestId, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << requestId);
+    if (std::string error; !queryExec(requestId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId << ". Error: " << error);
         return false;
     }
 
     return true;
 }
 
-bool ParmsDb::updateSync(const Sync &sync, bool &found) {
+bool ParmsDb::bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found) {
+    found = false;
     const std::scoped_lock lock(_mutex);
 
-    std::string listingCursor;
-    int64_t listingCursorTimestamp;
-    sync.listingCursor(listingCursor, listingCursorTimestamp);
+    if (const bool result = bindQueryToSyncValues(sync, requestId, FieldFilter::WhereSyncDbId); !result) return false;
 
-    int errId = 0;
-    std::string error;
-
-    LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 1, sync.driveDbId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 2, sync.localPath().native()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 3, sync.localNodeId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 4, sync.targetPath().native()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 5, sync.targetNodeId()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 6, sync.dbPath().native()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 7, static_cast<int>(sync.paused())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 8, static_cast<int>(sync.supportVfs())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 9, static_cast<int>(sync.virtualFileMode())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 10, static_cast<int>(sync.notificationsDisabled())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 11, static_cast<int>(sync.hasFullyCompleted())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 12, sync.navigationPaneClsid()));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursor));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 15, static_cast<int>(sync.toDelete())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 16, sync.dbId()));
-    if (!queryExec(UPDATE_SYNC_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_REQUEST_ID);
-        return false;
-    }
     if (numRowsAffected() == 1) {
         found = true;
     } else {
-        LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_REQUEST_ID << " - num rows affected != 1");
+        LOG_WARN(_logger, "Error running query: " << requestId << " - num rows affected != 1");
         found = false;
     }
 
     return true;
 }
 
-bool ParmsDb::setSyncPaused(const SyncDbId dbId, bool value, bool &found) {
+
+bool ParmsDb::insertSync(const Sync &sync) {
+    const char *const requestId = INSERT_SYNC_REQUEST_ID;
+
+    return bindQueryToSyncValues(sync, requestId);
+}
+
+bool ParmsDb::updateSync(const Sync &sync, bool &found) {
+    const char *const requestId = UPDATE_SYNC_REQUEST_ID;
+
+    return bindMutatingQueryToSyncValues(sync, requestId, found);
+}
+
+bool ParmsDb::setSyncPaused(const SyncDbId dbId, const bool value, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = -1;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_SYNC_PAUSED_REQUEST_ID));
@@ -2613,67 +2649,91 @@ bool ParmsDb::deleteSync(const SyncDbId dbId, bool &found) {
     return true;
 }
 
-void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
+void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const std::optional<DriveDbId> &driveDbId) {
     assert(std::string(requestId) == std::string(SELECT_SYNC_BY_PATH_REQUEST_ID) ||
-           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID));
+           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_ALL_SYNCS_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+
+    uint16_t fieldIndex = 0;
 
     SyncDbId syncDbIdResult = -1;
-    LOG_IF_FAIL(queryInt64Value(requestId, 0, syncDbIdResult));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, syncDbIdResult));
     sync.setDbId(syncDbIdResult);
 
-    DriveDbId driveDbIdResult = -1;
-    LOG_IF_FAIL(queryInt64Value(requestId, 1, driveDbIdResult));
-    sync.setDriveDbId(driveDbIdResult);
+    if (driveDbId.has_value()) {
+        assert(std::string(requestId) == std::string(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+        sync.setDriveDbId(*driveDbId);
+    } else {
+        DriveDbId driveDbIdResult = -1;
+        LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, driveDbIdResult));
+        sync.setDriveDbId(driveDbIdResult);
+    }
 
     SyncName syncNameResult;
-    LOG_IF_FAIL(querySyncNameValue(requestId, 2, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
     sync.setLocalPath(SyncPath(syncNameResult));
 
     std::string strResult;
-    LOG_IF_FAIL(queryStringValue(requestId, 3, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setLocalNodeId(strResult);
 
-    LOG_IF_FAIL(querySyncNameValue(requestId, 4, syncNameResult));
-    sync.setTargetPath(SyncPath(syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
+    sync.setTargetPath(syncNameResult);
 
-    LOG_IF_FAIL(queryStringValue(requestId, 5, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setTargetNodeId(strResult);
 
-    LOG_IF_FAIL(querySyncNameValue(requestId, 6, syncNameResult));
+    LOG_IF_FAIL(querySyncNameValue(requestId, fieldIndex++, syncNameResult));
     sync.setDbPath(SyncPath(syncNameResult));
 
     int intResult{0};
-    LOG_IF_FAIL(queryIntValue(requestId, 7, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setPaused(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 8, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setSupportVfs(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 9, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 10, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setNotificationsDisabled(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryIntValue(requestId, 11, intResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, intResult));
     sync.setHasFullyCompleted(static_cast<bool>(intResult));
 
-    LOG_IF_FAIL(queryStringValue(requestId, 12, strResult));
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, strResult));
     sync.setNavigationPaneClsid(strResult);
 
-    LOG_IF_FAIL(queryStringValue(requestId, 13, strResult));
+    // Cursors
+    CursorStore cursorStore;
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Private].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Private].timestamp));
 
-    int64_t int64Result{0};
-    LOG_IF_FAIL(queryInt64Value(requestId, 14, int64Result));
-    sync.setListingCursor(strResult, int64Result);
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CommonDocuments].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CommonDocuments].timestamp));
 
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Shared].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::Shared].timestamp));
+
+    LOG_IF_FAIL(queryStringValue(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CustomTarget].cursor));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, cursorStore[SpecialRemoteFolder::CustomTarget].timestamp));
+
+    sync.setCursorStore(cursorStore);
+
+    // To-delete flag
     int32_t toDeleteResult{0};
-    LOG_IF_FAIL(queryIntValue(requestId, 15, toDeleteResult));
+    LOG_IF_FAIL(queryIntValue(requestId, fieldIndex++, toDeleteResult));
+
     sync.setToDelete(static_cast<bool>(toDeleteResult));
 }
 
 bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
     static const char *requestId = SELECT_SYNC_BY_PATH_REQUEST_ID;
+
+    sync = {};
+    found = false;
 
     const std::scoped_lock lock(_mutex);
 
@@ -2686,7 +2746,6 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
 
     if (!found) return true;
 
-
     fillSyncWithQueryResult(sync, requestId);
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
@@ -2696,6 +2755,9 @@ bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
 
 bool ParmsDb::selectSync(const SyncDbId dbId, Sync &sync, bool &found) {
     static const char *requestId = SELECT_SYNC_REQUEST_ID;
+
+    sync = {};
+    found = false;
 
     const std::scoped_lock lock(_mutex);
 
@@ -2708,7 +2770,6 @@ bool ParmsDb::selectSync(const SyncDbId dbId, Sync &sync, bool &found) {
 
     if (!found) return true;
 
-
     fillSyncWithQueryResult(sync, requestId);
 
     LOG_IF_FAIL(queryResetAndClearBindings(requestId));
@@ -2717,120 +2778,55 @@ bool ParmsDb::selectSync(const SyncDbId dbId, Sync &sync, bool &found) {
 }
 
 bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
+    const char *const requestId = SELECT_ALL_SYNCS_REQUEST_ID;
+
     const std::scoped_lock lock(_mutex);
 
     syncList.clear();
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
-    bool found;
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    bool found = false;
     for (;;) {
-        if (!queryNext(SELECT_ALL_SYNCS_REQUEST_ID, found)) {
-            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNCS_REQUEST_ID);
+        if (!queryNext(requestId, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
             return false;
         }
-        if (!found) {
-            break;
-        }
 
-        SyncDbId id = 0;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 0, id));
-        DriveDbId driveDbId = 0;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 1, driveDbId));
-        SyncName localPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 2, localPath));
-        std::string localNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 3, localNodeId));
-        SyncName targetPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 4, targetPath));
-        std::string targetNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 5, targetNodeId));
-        SyncName dbPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_REQUEST_ID, 6, dbPath));
-        int paused = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 7, paused));
-        int supportVfs = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 8, supportVfs));
-        int virtualFileMode = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 9, virtualFileMode));
-        int notificationsDisabled = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 10, notificationsDisabled));
-        int hasFullyCompleted = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 11, hasFullyCompleted));
-        std::string navigationPaneClsid;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 12, navigationPaneClsid));
-        std::string listingCursor;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_REQUEST_ID, 13, listingCursor));
-        int64_t listingCursorTimestamp;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 14, listingCursorTimestamp));
-        int32_t toDelete = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 15, toDelete));
+        if (!found) break;
 
-        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
-                                static_cast<bool>(paused), static_cast<bool>(supportVfs),
-                                static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
-                                SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp, static_cast<bool>(toDelete)));
+        Sync sync;
+        fillSyncWithQueryResult(sync, requestId);
+        syncList.push_back(sync);
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
+
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }
 
 bool ParmsDb::selectAllSyncs(const DriveDbId driveDbId, std::vector<Sync> &syncList) {
+    const char *requestId = SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID;
     const std::scoped_lock lock(_mutex);
 
     syncList.clear();
 
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
-    LOG_IF_FAIL(queryBindValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, driveDbId));
-    bool found;
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
+    LOG_IF_FAIL(queryBindValue(requestId, 1, driveDbId));
+    bool found = false;
     for (;;) {
-        if (!queryNext(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, found)) {
-            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID);
+        if (!queryNext(requestId, found)) {
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
             return false;
         }
-        if (!found) {
-            break;
-        }
 
-        SyncDbId id = 0;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 0, id));
-        SyncName localPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 1, localPath));
-        std::string localNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 2, localNodeId));
-        SyncName targetPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 3, targetPath));
-        std::string targetNodeId;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 4, targetNodeId));
-        SyncName dbPath;
-        LOG_IF_FAIL(querySyncNameValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 5, dbPath));
-        int paused = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 6, paused));
-        int supportVfs = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 7, supportVfs));
-        int virtualFileMode = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 8, virtualFileMode));
-        int notificationsDisabled = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 9, notificationsDisabled));
-        int hasFullyCompleted = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 10, hasFullyCompleted));
-        std::string navigationPaneClsid;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 11, navigationPaneClsid));
-        std::string listingCursor;
-        LOG_IF_FAIL(queryStringValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 12, listingCursor));
-        int64_t listingCursorTimestamp;
-        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
-        int32_t toDelete = 0;
-        LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 14, toDelete));
+        if (!found) break;
 
-        syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
-                                static_cast<bool>(paused), static_cast<bool>(supportVfs),
-                                static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
-                                SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp, static_cast<bool>(toDelete)));
+        Sync sync;
+        fillSyncWithQueryResult(sync, requestId, driveDbId);
+
+        syncList.push_back(sync);
     }
-    LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
+    LOG_IF_FAIL(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -3766,7 +3762,7 @@ bool ParmsDb::deleteError(const ErrorDbId dbId, bool &found) {
 bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync) {
     const std::scoped_lock lock(_mutex);
 
-    int errId = -1;
+    auto errId = -1;
     std::string error;
 
     LOG_IF_FAIL(queryResetAndClearBindings(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));

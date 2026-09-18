@@ -27,6 +27,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "utility/timerutility.h"
+#include "info/nodeinfo.h"
 
 #include <source_location>
 
@@ -150,23 +151,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
                                  std::chrono::milliseconds minWaitTime = std::chrono::milliseconds(3000)) const;
         void logStep(const std::string &str);
 
-        struct RemoteFileInfo {
-                NodeId id;
-                NodeId parentId;
-                SyncTime modificationTime{0};
-                SyncTime creationTime{0};
-                int64_t size{0};
-                NodeType type = NodeType::Unknown;
 
-                bool isValid() const { return !id.empty(); }
-        };
-        RemoteFileInfo getRemoteFileInfoByName(DriveDbId driveDbId, const NodeId &parentId, const SyncName &name) const;
-        // Resolves a possibly multi-segment relative path (e.g. "A/AA/BBB") by walking down the remote tree one
-        // path component at a time, starting from rootParentId. Returns an invalid RemoteFileInfo as soon as any
-        // segment along the way cannot be found (in particular if the leaf itself doesn't exist).
-        RemoteFileInfo getRemoteFileInfoByPath(DriveDbId driveDbId, const NodeId &rootParentId,
-                                               const SyncPath &relativePath) const;
-        int64_t countItemsInRemoteDir(DriveDbId driveDbId, const NodeId &parentId) const;
+        [[nodiscard]] NodeInfo getRemoteFileInfoByName(DriveDbId driveDbId, const NodeId &parentId, const SyncName &name) const;
+        static Count countItemsInRemoteDir(DriveDbId driveDbId, const RemoteNodeId &parentId);
 
         log4cplus::Logger _logger;
         std::shared_ptr<MockSyncPal> _syncPal = nullptr;
@@ -176,7 +163,7 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         LocalTemporaryDirectory _localSyncDir;
         RemoteTemporaryDirectory _remoteSyncDir{"testIntegration"};
         LocalTemporaryDirectory _localTempDir{"testIntegration"};
-        NodeId _testFileRemoteId;
+        RemoteNodeId _testFileRemoteId;
         TimerUtility _timer;
 };
 

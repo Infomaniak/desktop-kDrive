@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2026 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,17 @@
 
 #pragma once
 
-#include "libsyncengine/jobs/syncjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/filelistjob.h"
+#include "jobs/network/kDrive_API/listingconf.h"
 
 #include "info/nodeinfo.h"
 
 namespace KDC {
 
-class GetAllFilesInDirectoryJob : public FileListJob {
+class GetFilesInRootDirJob : public FileListJob {
     public:
-        GetAllFilesInDirectoryJob(UserDbId userDbId, DriveDbId driveId, RemoteNodeId remoteDirId,
-                                  TranslationMode translationMode = TranslationMode::None);
-        explicit GetAllFilesInDirectoryJob(DriveDbId driveDbId, RemoteNodeId remoteDirId,
-                                           TranslationMode translationMode = TranslationMode::None);
+        GetFilesInRootDirJob(UserDbId userDbId, DriveId driveId);
+        explicit GetFilesInRootDirJob(DriveDbId driveDbId);
 
         void abort() override;
 
@@ -38,11 +36,18 @@ class GetAllFilesInDirectoryJob : public FileListJob {
         ExitInfo runJob() override;
 
         [[nodiscard]] std::string getConstructorFailureCoreMsg() const override {
-            return "Error in GetFilesInDirectoryJob::GetFilesInDirectoryJob for ";
+            return "Error in GetFilesInRootDirJob::GetFilesInRootDirJob for ";
         };
         [[nodiscard]] std::string getRunSynchronouslyFailureCoreMsg() const override {
-            return "Error in GetFilesInDirectoryJob::runSynchronously for ";
+            return "Error in GetFilesInRootDirJob::runSynchronously for ";
         }
 };
+
+std::string getFileListConstructorErrorMsg(FileListJob *job, UserDbId userDbId, DriveId driveId, const JobException &e);
+std::string getFileListConstructorErrorMsg(FileListJob *job, DriveDbId driveDbId, const RemoteNodeId &nodeId,
+                                           const JobException &e);
+std::string getFileListExecErrorMsg(FileListJob *job, UserDbId userDbId, DriveId driveId, const ExitInfo &exitInfo);
+std::string getFileListExecErrorMsg(FileListJob *job, DriveDbId driveDbId, const RemoteNodeId &nodeId, const ExitInfo &exitInfo);
+
 
 } // namespace KDC

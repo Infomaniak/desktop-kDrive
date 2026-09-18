@@ -20,17 +20,18 @@
 
 #include "testincludes.h"
 
-#include "io/cachedirectory.h"
-#include "keychainmanager/apitoken.h"
+#include "libsyncengine/testbasewithparmsdb.h"
 #include "test_utility/localtemporarydirectory.h"
 
+#include "keychainmanager/apitoken.h"
 #include "utility/types.h"
+#include "io/cachedirectory.h"
 #include "libcommonserver/io/iohelper.h"
 
 using namespace CppUnit;
 
 namespace KDC {
-class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
+class TestNetworkJobs : public CppUnit::TestFixture, public TestBaseWithParmsDb {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
         CPPUNIT_TEST(testCreateDir);
@@ -42,9 +43,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testDownloadChecksumHandling);
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
-        CPPUNIT_TEST(testGetFileList);
         CPPUNIT_TEST(testCheckHashMatch);
-        CPPUNIT_TEST(testGetFileListWithCursor);
+        CPPUNIT_TEST(testGetFilesInDirectory);
         CPPUNIT_TEST(testFullFileListWithCursorCsv);
         CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
         CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
@@ -93,9 +93,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testGetAvatar();
         void testGetDriveList();
         void testGetFileInfo();
-        void testGetFileList();
         void testCheckHashMatch();
-        void testGetFileListWithCursor();
+        void testGetFilesInDirectory();
         void testFullFileListWithCursorCsv();
         void testFullFileListWithCursorCsvZip();
         void testFullFileListWithCursorCsvBlacklist();
@@ -131,16 +130,14 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
     private:
         bool createTestFiles();
+        bool existsInRemoteDirectory(const SyncName &fileName, const RemoteNodeId &remoteDirId,
+                                     NodeType nodeType = NodeType::File);
 
         void testUpload(SyncTime creationTimeIn, SyncTime modificationTimeIn, SyncTime &creationTimeOut,
                         SyncTime &modificationTimeOut);
-
         void clearAccessTokenCache();
 
-        DriveDbId _driveDbId = 0;
-        UserDbId _userDbId = 0;
-        NodeId _remoteDirId;
-        ApiToken _apiToken;
+        RemoteNodeId _remoteDirId;
 
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
@@ -149,7 +146,6 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
 
         static uint64_t _nbParallelThreads;
 
-        LocalTemporaryDirectory _localTempDir{"testNetworkJobs"};
         std::shared_ptr<CacheDirectory> _cacheDirectory;
 };
 } // namespace KDC

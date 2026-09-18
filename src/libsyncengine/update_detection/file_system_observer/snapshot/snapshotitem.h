@@ -38,9 +38,7 @@ class SnapshotItem {
         SnapshotItem(const SnapshotItem &other);
 
         [[nodiscard]] const NodeId &id() const { return _id; }
-        void setId(const NodeId &id);
         [[nodiscard]] const NodeId &parentId() const { return _parentId; }
-        void setParentId(const NodeId &newParentId);
         [[nodiscard]] const std::unordered_set<std::shared_ptr<SnapshotItem>> &children() const { return _children; }
         [[nodiscard]] const SyncName &name() const { return _name; }
         [[nodiscard]] const SyncName &normalizedName() const { return _normalizedName; }
@@ -87,10 +85,13 @@ class SnapshotItem {
         void removeChild(const std::shared_ptr<SnapshotItem> child);
         void removeAllChildren();
 
-    private:
+    protected:
         NodeId _id;
         NodeId _parentId;
+        SnapshotRevision _lastChangeRevision = 0; // The revision of the snapshot corresponding to the last change of this item.
+        std::shared_ptr<SnapshotRevisionHandler> _snapshotRevisionHandler;
 
+    private:
         SyncName _name;
         SyncName _normalizedName;
         SyncTime _createdAt = 0;
@@ -102,15 +103,26 @@ class SnapshotItem {
         bool _canWrite = true;
         bool _canShare = true;
         std::unordered_set<std::shared_ptr<SnapshotItem>> _children;
-        SnapshotRevision _lastChangeRevision = 0; // The revision of the snapshot corresponding to the last change of this item.
-        std::shared_ptr<SnapshotRevisionHandler> _snapshotRevisionHandler;
         mutable SyncPath _path; // The item relative path. Cached value. To use only on a snapshot copy, not a real time one.
 
         [[nodiscard]] SyncPath path() const { return _path; }
         void setPath(const SyncPath &path) const { _path = path; }
 
         friend class Snapshot;
-        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
+};
+
+class RemoteSnapshotItem : public SnapshotItem {
+    public:
+        RemoteSnapshotItem() = default;
+        explicit RemoteSnapshotItem(const RemoteNodeId &id);
+        RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeId &parentId, const SyncName &name, SyncTime createdAt,
+                           SyncTime lastModified, NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
+        RemoteSnapshotItem(const RemoteSnapshotItem &other) = default;
+
+        [[nodiscard]] ExitInfo setV2Id(UserDbId userDbId, DriveId driveId, const RemoteNodeId &v3Id);
+
+        void setParentId(const RemoteNodeId &id) { _parentId = id; }
+        [[nodiscard]] ExitInfo setV2ParentId(UserDbId userDbId, DriveId driveId, const RemoteNodeId &v3NewParentId);
 };
 
 } // namespace KDC
