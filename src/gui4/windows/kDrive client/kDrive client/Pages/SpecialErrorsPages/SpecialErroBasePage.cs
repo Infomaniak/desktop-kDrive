@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.Pages
         private void SpecialErroBasePage_Loaded(object sender, RoutedEventArgs e)
         {
             // Remove all the previous pages in the back stack that are of a type derived from SpecialErroBasePage and the page -1 in the back stack to prevent navigation to error state by back navigation
-            Logger.Log(Logger.Level.Info, "Removing previous page from back stack to prevent navigation to error state");
+            Logger.LogInfo("Removing previous page from back stack to prevent navigation to error state");
             for (int i = Frame.BackStackDepth - 1; i >= 0; i--)
                 if (Frame.BackStack[i].SourcePageType == typeof(SpecialErroBasePage) || Frame.BackStack[i].SourcePageType.IsSubclassOf(typeof(SpecialErroBasePage)))
                     Frame.BackStack.RemoveAt(i);
@@ -143,7 +143,7 @@ namespace Infomaniak.kDrive.Pages
         {
             if (ViewModel.SelectedSync is null)
             {
-                Logger.Log(Logger.Level.Warning, "No selected sync found - Navigating to HomePage");
+                Logger.LogWarning("No selected sync found - Navigating to HomePage");
                 DetachHandlers();
                 Frame.Navigate(typeof(HomePage));
                 return;
@@ -151,7 +151,7 @@ namespace Infomaniak.kDrive.Pages
 
             if (!await ViewModel.SelectedSync.Start())
             {
-                Logger.Log(Logger.Level.Error, "Failed to start sync.");
+                Logger.LogError("Failed to start sync.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }

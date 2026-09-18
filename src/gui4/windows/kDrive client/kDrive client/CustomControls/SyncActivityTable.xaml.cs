@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"DependencyObject is not of type {nameof(SyncActivityTable)}");
+                Logger.LogWarning($"DependencyObject is not of type {nameof(SyncActivityTable)}");
             }
         }
 
@@ -148,12 +148,13 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Warning, $"Directory does not exist: {activity.RelevantParentFolderPath}");
+                    Logger.LogWarning($"Directory does not exist: {activity.RelevantParentFolderPath}",
+                        "SyncActivityTable: Directory does not exist");
                 }
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, $"Unexpected call, sender is not a HyperlinkButton or DataContext is not a SyncActivity");
+                Logger.LogWarning($"Unexpected call, sender is not a HyperlinkButton or DataContext is not a SyncActivity");
             }
         }
 
@@ -162,13 +163,13 @@ namespace Infomaniak.kDrive.CustomControls
             Frame? frame = Utility.GetFrame(this);
             if (frame is not null)
             {
-                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                Logger.LogInfo("Navigating to ErrorPage.");
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemErrorFromIcon);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error page");
+                Logger.LogError("Could not find Frame in visual tree to navigate to error page");
             }
 
         }
@@ -178,7 +179,7 @@ namespace Infomaniak.kDrive.CustomControls
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
-                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                Logger.LogError("sender is not a FrameworkElement");
                 return;
             }
 
@@ -186,7 +187,7 @@ namespace Infomaniak.kDrive.CustomControls
             var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                Logger.LogError("DataContext is not a SyncFileItem");
                 return;
             }
             await Utility.OpenFolderSecurely(activity.LocalPath);
@@ -198,7 +199,7 @@ namespace Infomaniak.kDrive.CustomControls
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
-                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                Logger.LogError("sender is not a FrameworkElement");
                 return;
             }
 
@@ -206,7 +207,7 @@ namespace Infomaniak.kDrive.CustomControls
             var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                Logger.LogError("DataContext is not a SyncFileItem");
                 return;
             }
 
@@ -220,7 +221,7 @@ namespace Infomaniak.kDrive.CustomControls
             FrameworkElement? element = sender as FrameworkElement;
             if (element is null)
             {
-                Logger.Log(Logger.Level.Error, "sender is not a FrameworkElement");
+                Logger.LogError("sender is not a FrameworkElement");
                 DisplayTeachingTip(Localizer.Instance.GetString("creatingShareLink"), false);
                 return;
             }
@@ -231,7 +232,7 @@ namespace Infomaniak.kDrive.CustomControls
             var activity = parentElement?.DataContext as SyncFileItem;
             if (activity is null)
             {
-                Logger.Log(Logger.Level.Error, "DataContext is not a SyncFileItem");
+                Logger.LogError("DataContext is not a SyncFileItem");
                 DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
                 return;
             }
@@ -251,7 +252,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Could not retrieve public link");
+                Logger.LogError("Could not retrieve public link");
                 DisplayTeachingTip(Localizer.Instance.GetString("failedToCreateShareLinkError"), false);
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.CopyItemWebLink);
@@ -262,13 +263,13 @@ namespace Infomaniak.kDrive.CustomControls
             Frame? frame = Utility.GetFrame(this);
             if (frame is not null)
             {
-                Logger.Log(Logger.Level.Info, "Navigating to ErrorPage.");
+                Logger.LogInfo("Navigating to ErrorPage.");
                 _analyticsService.TrackClick(Analytics.Keys.Category.ActivityPage, Analytics.Keys.EventName.OpenItemError);
                 frame.Navigate(typeof(Pages.Errors.ErrorPage));
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Could not find Frame in visual tree to navigate to error page");
+                Logger.LogError("Could not find Frame in visual tree to navigate to error page");
             }
         }
 
@@ -323,7 +324,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                Logger.LogError("Unexpected type in SelectTemplateCore");
                 return null;
             }
 
@@ -357,7 +358,7 @@ namespace Infomaniak.kDrive.CustomControls
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Unexpected type in SelectTemplateCore");
+                Logger.LogError("Unexpected type in SelectTemplateCore");
                 return base.SelectTemplate(item, container);
             }
 

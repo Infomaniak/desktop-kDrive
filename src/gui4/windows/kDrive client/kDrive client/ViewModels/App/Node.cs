@@ -102,7 +102,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (UserDbId == -1 || DriveId == -1 || string.IsNullOrEmpty(NodeId))
             {
-                Logger.Log(Logger.Level.Error, "Cannot load node size: UserDbId, DriveId or NodeId is not set.");
+                Logger.LogError("Cannot load node size: UserDbId, DriveId or NodeId is not set.");
                 return;
             }
             if (IsLoadingSize || AccessDenied)
@@ -113,7 +113,8 @@ namespace Infomaniak.kDrive.ViewModels
             var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
             var res = await commService.GetFolderSize(_userDbId, _driveId, _nodeId, cancellationToken);
             if (res is null)
-                Logger.Log(Logger.Level.Warning, $"Failed to fetch size for NodeId: {NodeId} ");
+                Logger.LogWarning($"Failed to fetch size for NodeId: {NodeId} ",
+                    "Node: Failed to fetch node size");
 
             Size = res ?? -1;
             IsLoadingSize = false;

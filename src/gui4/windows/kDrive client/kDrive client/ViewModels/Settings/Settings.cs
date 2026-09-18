@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Monitoring;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Microsoft.Extensions.DependencyInjection;
@@ -115,12 +116,11 @@ namespace Infomaniak.kDrive.ViewModels
                 App.ServiceProvider.GetRequiredService<UserDefaults>().SetValue(nameof(SentryEnabled), value);
                 if (SetPropertyInUIThread(ref _sentryEnabled, value))
                     if (value)
-                        Logger.StartSentry();
+                        App.ServiceProvider.GetRequiredService<IMonitoringService>().Start();
                     else
-                        Logger.StopSentry();
+                        App.ServiceProvider.GetRequiredService<IMonitoringService>().Stop();
             }
         }
-
         public AppNotificationAvailability AppNotificationAvailability => App.ServiceProvider.GetRequiredService<NotificationManager>().Availability;
 
         public bool ShowNotificationsSettings => AppNotificationAvailability != AppNotificationAvailability.NotSupportedByOS;
@@ -279,7 +279,7 @@ namespace Infomaniak.kDrive.ViewModels
             RestartRequiredForLanguageChange = true;
             return true;
         }
-    
+
         public void RefreshAppNotificationAvailability()
         {
             OnPropertyChanged(nameof(ShowNotificationsSettings));

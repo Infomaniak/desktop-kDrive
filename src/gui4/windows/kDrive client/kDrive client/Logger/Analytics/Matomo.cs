@@ -81,7 +81,8 @@ namespace Infomaniak.kDrive.Analytics
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log(Logger.Level.Warning, $"Unhandled exception while executing background matomo tracking action: {ex}");
+                        Logger.LogWarning($"Unhandled exception while executing background matomo tracking action: {ex}",
+                            "MatomoService: Background tracking action failed");
                     }
                 }).ConfigureAwait(false);
             }
@@ -96,7 +97,7 @@ namespace Infomaniak.kDrive.Analytics
             var matomoEnabledNode = _userDefaults.GetValue(nameof(AppModel.Settings.MatomoEnabled));
             if (matomoEnabledNode is null)
             {
-                Logger.Log(Logger.Level.Info, "Matomo enabled setting not found in user defaults, skipping initialization.");
+                Logger.LogInfo("Matomo enabled setting not found in user defaults, skipping initialization.");
                 return false;
             }
 
@@ -106,7 +107,7 @@ namespace Infomaniak.kDrive.Analytics
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Failed to parse Matomo enabled setting from user defaults.");
+                Logger.LogWarning("Failed to parse Matomo enabled setting from user defaults.");
                 return false;
             }
         }

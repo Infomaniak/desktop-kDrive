@@ -230,10 +230,10 @@ DLL_EXP int __cdecl vfsUpdateFetchStatus(const wchar_t *driveId, const wchar_t *
     return S_OK;
 }
 
-DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath) {
+DLL_EXP int __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath, NTSTATUS status) {
     CloudProvider *cloudProvider = s_cloudProviders[PROVIDERID(driveId, folderId)];
     if (cloudProvider) {
-        if (!CloudProvider::cancelTransfer(cloudProvider->getProviderInfo(), filePath, true)) {
+        if (!CloudProvider::cancelTransfer(cloudProvider->getProviderInfo(), filePath, true, status)) {
             TRACE_ERROR(L"Error in CloudProvider::cancelTransfer!");
             return E_ABORT;
         }

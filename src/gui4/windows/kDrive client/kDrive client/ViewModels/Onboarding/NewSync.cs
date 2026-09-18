@@ -116,7 +116,8 @@ namespace Infomaniak.kDrive.ViewModels
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool? canSupportOnlineMode = await commServices.CanPathSupportLiteSync(LocalPath, CancellationToken.None);
             if (canSupportOnlineMode is null)
-                Logger.Log(Logger.Level.Error, $"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.");
+                Logger.LogError($"Could not determine if the path '{LocalPath}' supports online mode. Defaulting to offline sync.",
+                    "NewSync: Failed to determine online mode support");
 
             SupportsLiteSync = canSupportOnlineMode ?? false;
             SyncType = SupportsLiteSync ? SyncType.Online : SyncType.Offline;

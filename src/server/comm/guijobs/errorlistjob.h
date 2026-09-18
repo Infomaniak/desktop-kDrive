@@ -34,6 +34,7 @@ class ErrorListJob : public AbstractGuiJob {
 
         // Output parameters
         std::vector<Error> _errorList;
+        bool _hasMore = false;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

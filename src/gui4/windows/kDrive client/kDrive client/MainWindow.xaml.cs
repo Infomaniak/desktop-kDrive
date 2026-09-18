@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 using H.NotifyIcon;
 using Infomaniak.kDrive.CustomControls;
 using Infomaniak.kDrive.ViewModels;
@@ -52,6 +53,7 @@ namespace Infomaniak.kDrive
             Closed += MainWindow_Closed;
             Activated += MainWindow_Activated;
             this.Content.PointerPressed += OnPointerPressed;
+            UpdateControlsVisibility();
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -95,7 +97,7 @@ namespace Infomaniak.kDrive
             Activated -= MainWindow_Activated;
             this.Content.PointerPressed -= OnPointerPressed;
         }
-
+         
         private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(AppModel.IsInitialized) || e.PropertyName == nameof(AppModel.UpdateRequired))
@@ -126,19 +128,6 @@ namespace Infomaniak.kDrive
                 SplashScreen.Visibility = Visibility.Collapsed;
                 UpdateRequiredControl.Visibility = Visibility.Collapsed;
             }
-        }
-
-
-        private void AppTitleBar_BackRequested(TitleBar sender, object args)
-        {
-            if (AppNavView?.Frame?.CanGoBack is null)
-            {
-                Logger.Log(Logger.Level.Warning, "BackRequested event triggered but AppNavView or its Frame is null. Cannot navigate back.");
-                return;
-            }
-
-            if (AppNavView.Frame.CanGoBack)
-                AppNavView.Frame.GoBack();
         }
     }
 }

@@ -46,7 +46,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
         {
             if (Error.Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "Error.Sync is null");
+                Logger.LogError("Error.Sync is null");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -57,7 +57,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings:storagesense"));
                 if (!result)
                 {
-                    Logger.Log(Logger.Level.Warning, "Failed to launch settings for NotEnoughDiskSpaceError");
+                    Logger.LogWarning("Failed to launch settings for NotEnoughDiskSpaceError");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
             }
@@ -67,7 +67,8 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 var path = System.IO.Path.GetPathRoot(Error.Sync.LocalPath);
                 if (path is null || !await Utility.OpenFolderSecurely(path))
                 {
-                    Logger.Log(Logger.Level.Warning, $"Failed to open sync root path {Error.Sync.LocalPath}");
+                    Logger.LogWarning($"Failed to open sync root path {Error.Sync.LocalPath}",
+                        "NotEnoughDiskSpaceError: Failed to open sync root path");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
             }

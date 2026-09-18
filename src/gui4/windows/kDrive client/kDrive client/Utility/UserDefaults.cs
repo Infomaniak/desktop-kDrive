@@ -76,7 +76,7 @@ namespace Infomaniak.kDrive
             }
             catch (Exception)
             {
-                Logger.Log(Logger.Level.Warning, "Failed to save user defaults.");
+                Logger.LogWarning("Failed to save user defaults.");
             }
         }
     }

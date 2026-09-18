@@ -37,9 +37,9 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
         public DriveSelectionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveSetupContentDialog.DriveSelectionPage - Initializing DriveSetupContentDialog.DriveSelectionPage components");
+            Logger.LogInfo("Navigated to DriveSetupContentDialog.DriveSelectionPage - Initializing DriveSetupContentDialog.DriveSelectionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.DriveSelectionPage components initialized");
+            Logger.LogDebug("DriveSetupContentDialog.DriveSelectionPage components initialized");
         }
 
         // Navigation method
@@ -51,7 +51,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
                 DriveSetupContentDialogVM.CurrentSync = null;
                 if (!DriveSetupContentDialogVM.NewSyncs.Any())
                 {
-                    Logger.Log(Logger.Level.Fatal, "No NewSyncs found in DriveSetupContentDialogVM when navigating to DriveSelectionPage");
+                    Logger.LogFatal("No NewSyncs found in DriveSetupContentDialogVM when navigating to DriveSelectionPage");
                     DriveSetupContentDialogVM.FinishSetup(CustomControls.DriveSetupContentDialog.DriveSetupResult.Cancelled);
                     return;
                 }
@@ -67,14 +67,14 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "DriveSetupContentDialogVM parameter missing when navigating to DriveSelectionPage");
+                Logger.LogFatal("DriveSetupContentDialogVM parameter missing when navigating to DriveSelectionPage");
                 throw new Exception("DriveSetupContentDialogVM parameter missing when navigating to DriveSelectionPage");
             }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            DetachEventHandlers(); 
+            DetachEventHandlers();
         }
 
         private void DetachEventHandlers()
@@ -106,7 +106,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "Unable to retrieve NewSync from DataContext");
+                Logger.LogError("Unable to retrieve NewSync from DataContext");
             }
         }
 
@@ -114,7 +114,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         {
             if (DriveSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                Logger.LogError("DriveSetupContentDialogVM is null");
                 return;
             }
 

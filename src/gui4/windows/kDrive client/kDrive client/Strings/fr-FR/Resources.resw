@@ -6,7 +6,7 @@
   Locale: fr, French
   Tagged: windows
   Exported by: Herve Eruam
-  Exported at: Mon, 31 Aug 2026 15:02:49 +0200 
+  Exported at: Mon, 14 Sep 2026 11:48:09 +0200 
   --> 
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -768,6 +768,13 @@ Demandez l’accès au propriétaire ou à l’administrateur.</value>
   <data name="errHardlinkTitle" xml:space="preserve"> 
     <value>Type de fichier non pris en charge</value> 
   </data> 
+  <data name="errInvalidLinkTargetDescription" xml:space="preserve"> 
+    <value>Ce lien a été exclu de la synchronisation, car son chemin de destination n’est pas valide.
+Le chemin doit être relatif et ne peut pas contenir de référence à un dossier parent, comme « .. ».</value> 
+  </data> 
+  <data name="errInvalidLinkTargetTitle" xml:space="preserve"> 
+    <value>Chemin de destination non valide</value> 
+  </data> 
   <data name="errInvalidSyncSyncDirAccessDescription" xml:space="preserve"> 
     <value>Ce dossier n’est plus accessible à son emplacement d’origine.</value> 
   </data> 
@@ -961,7 +968,7 @@ La synchronisation reprendra automatiquement dès que la connexion sera rétabli
   </data> 
   <data name="itemUnavailableBrowserFallback" xml:space="preserve"> 
     <value>Cet élément n’est pas disponible sur cet appareil.
-Il s’ouvrira dans votre navigateur.</value> 
+Il s’ouvrira dans kDrive en ligne.</value> 
   </data> 
   <data name="kSuiteOfferUrl" xml:space="preserve"> 
     <value>https://www.infomaniak.com/fr/ksuite</value> 
@@ -1294,6 +1301,9 @@ Veuillez vérifier et renommer les fichiers contenant des caractères inhabituel
   <data name="manyConflictErrorTitle" xml:space="preserve"> 
     <value>%@ conflits de versions détectés</value> 
   </data> 
+  <data name="manyDeleteDialogFilesHeader" xml:space="preserve"> 
+    <value>%@ éléments supprimés</value> 
+  </data> 
   <data name="manyDeleteDialogHardLimitContent" xml:space="preserve"> 
     <value>La synchronisation est en pause pour éviter une suppression involontaire.
 Que voulez-vous faire ?</value> 
@@ -1303,6 +1313,12 @@ Que voulez-vous faire ?</value>
   </data> 
   <data name="manyDeleteDialogHardLimitSecondary" xml:space="preserve"> 
     <value>Supprimer aussi en ligne</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder" xml:space="preserve"> 
+    <value>et un autre élément</value> 
+  </data> 
+  <data name="manyDeleteDialogOtherPlaceholder-plural" xml:space="preserve"> 
+    <value>et %@ autres éléments</value> 
   </data> 
   <data name="manyDeleteDialogSoftLimitContent" xml:space="preserve"> 
     <value>Ces fichiers restent récupérables dans la corbeille de kDrive.</value> 
