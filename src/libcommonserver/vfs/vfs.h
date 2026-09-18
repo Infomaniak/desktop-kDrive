@@ -56,6 +56,11 @@ struct VfsSetupParams {
         ExecuteCommand executeCommand;
         log4cplus::Logger logger;
         std::shared_ptr<sentry::Handler> sentryHandler;
+        
+        // Drive status UI information
+        std::string driveColor;
+        uint64_t quotaTotal{0};
+        uint64_t quotaUsed{0};
 };
 
 struct VfsStatus {

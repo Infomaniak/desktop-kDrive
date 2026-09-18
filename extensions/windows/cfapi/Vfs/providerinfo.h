@@ -56,6 +56,16 @@ class ProviderInfo {
         inline LPCWSTR folderName() const { return _folderName.data(); }
         inline LPCWSTR folderPath() const { return _folderPath.data(); }
 
+        // Status UI properties
+        inline void setDriveColor(const std::wstring &color) { _driveColor = color; }
+        inline const std::wstring &driveColor() const { return _driveColor; }
+
+        inline void setQuotaTotal(uint64_t quota) { _quotaTotal = quota; }
+        inline uint64_t quotaTotal() const { return _quotaTotal; }
+
+        inline void setQuotaUsed(uint64_t used) { _quotaUsed = used; }
+        inline uint64_t quotaUsed() const { return _quotaUsed; }
+
     private:
         std::wstring _id;
         std::wstring _driveId;
@@ -63,4 +73,9 @@ class ProviderInfo {
         std::wstring _userId;
         std::wstring _folderName;
         std::wstring _folderPath;
+        
+        // Status UI data
+        std::wstring _driveColor;
+        uint64_t _quotaTotal = 0;
+        uint64_t _quotaUsed = 0;
 };

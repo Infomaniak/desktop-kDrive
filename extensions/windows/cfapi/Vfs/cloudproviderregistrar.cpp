@@ -17,6 +17,7 @@
  */
 
 #include "cloudproviderregistrar.h"
+#include "storageproviderstatusui.h"
 #include "..\Common\utilities.h"
 
 #include <winrt/Windows.Foundation.h>
@@ -79,7 +80,100 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         if (found) {
             HKEY hKey;
             std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
-            TRACE_DEBUG(L"Provider already registered, opening key %s", subKey.c_str());
+            TRACE_DEBUG(L"Provider already registered, checking for migration to StatusUISource");
+            
+            // For migration: unregister and re-register to ensure StatusUISource is set
+            TRACE_DEBUG(L"Unregistering existing sync root for migration: %s", syncRootID.c_str());
+            try {
+                winrt::StorageProviderSyncRootManager::Unregister(syncRootID);
+                TRACE_DEBUG(L"Unregistered sync root successfully, will re-register with StatusUISource");
+                Sleep(500);  // Wait a bit before re-registering
+            } catch (winrt::hresult_error const &ex) {
+                TRACE_WARNING(L"Error unregistering sync root for migration: hr %08x", static_cast<HRESULT>(winrt::to_hresult()));
+                // Continue with just updating registry entries
+            }
+            
+            // Check if we can re-register (if unregister succeeded)
+            auto infoVector = winrt::StorageProviderSyncRootManager::GetCurrentSyncRoots();
+            bool stillExists = false;
+            for (uint32_t i = 0; i < infoVector.Size(); i++) {
+                if (syncRootID.compare(infoVector.GetAt(i).Id().c_str()) == 0) {
+                    stillExists = true;
+                    break;
+                }
+            }
+            
+            if (!stillExists && providerInfo->folderPath()) {
+                // Successfully unregistered, now re-register with StatusUISource
+                TRACE_DEBUG(L"Re-registering with StatusUISource");
+                try {
+                    winrt::StorageProviderSyncRootInfo info;
+                    info.Id(syncRootID);
+                    
+#ifndef NDEBUG
+                    int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+#endif
+                    TRACE_DEBUG(L"Getting StorageFolder from path");
+                    auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
+#ifndef NDEBUG
+                    _CrtSetReportMode(_CRT_ASSERT, reportMode);
+#endif
+
+                    info.Path(folder);
+                    info.DisplayNameResource(providerInfo->folderName());
+
+                    WCHAR exePath[MAX_FULL_PATH];
+                    TRACE_DEBUG(L"Getting module file name for icon resource");
+                    if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
+                        TRACE_ERROR(L"Error in GetModuleFileNameW");
+                        return std::wstring();
+                    }
+                    info.IconResource(exePath);
+
+                    info.HydrationPolicy(winrt::StorageProviderHydrationPolicy::Full);
+                    info.HydrationPolicyModifier(winrt::StorageProviderHydrationPolicyModifier::AutoDehydrationAllowed);
+                    info.PopulationPolicy(winrt::StorageProviderPopulationPolicy::AlwaysFull);
+                    info.InSyncPolicy(winrt::StorageProviderInSyncPolicy::FileCreationTime |
+                                      winrt::StorageProviderInSyncPolicy::DirectoryCreationTime);
+                    info.Version(Utilities::s_version);
+                    info.ShowSiblingsAsGroup(false);
+                    info.HardlinkPolicy(winrt::StorageProviderHardlinkPolicy::None);
+
+                    wchar_t uriStr[MAX_URI];
+                    std::swprintf(uriStr, MAX_URI, Utilities::s_trashURI.c_str(), providerInfo->driveId());
+                    info.RecycleBinUri(winrt::Uri(uriStr));
+
+                    std::wstring syncRootIdentity(providerInfo->id());
+                    TRACE_DEBUG(L"Converting sync root identity to binary");
+                    winrt::IBuffer contextBuffer =
+                            winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
+                    info.Context(contextBuffer);
+
+                    // Setup Status UI Source during migration
+                    TRACE_DEBUG(L"Setting up StorageProviderStatusUISource for migrated sync root");
+                    auto statusUISource = winrt::make<StorageProviderStatusUISource>();
+                    
+                    if (providerInfo->quotaTotal() > 0) {
+                        statusUISource.QuotaUI_Total(winrt::box_value(providerInfo->quotaTotal()));
+                        statusUISource.QuotaUI_Used(winrt::box_value(providerInfo->quotaUsed()));
+                        TRACE_DEBUG(L"Quota set during migration: Total=%llu, Used=%llu", providerInfo->quotaTotal(), providerInfo->quotaUsed());
+                    }
+                    
+                    statusUISource.ProviderState(winrt::StorageProviderState::InSync);
+                    info.StorageProviderStatusUISource(statusUISource);
+                    TRACE_DEBUG(L"StorageProviderStatusUISource configured for migrated sync root");
+
+                    TRACE_DEBUG(L"Calling StorageProviderSyncRootManager::Register for migrated sync root");
+                    winrt::StorageProviderSyncRootManager::Register(info);
+                    TRACE_DEBUG(L"Re-registered sync root with StatusUISource");
+                    Sleep(1000);
+                } catch (winrt::hresult_error const &ex) {
+                    TRACE_WARNING(L"Error re-registering sync root during migration: hr %08x - %s", 
+                              static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+                    // Continue with just updating registry entries
+                }
+            }
+            
             if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
                 TRACE_DEBUG(L"Opened key %s", subKey.c_str());
                 if (namespaceCLSID) {
@@ -215,6 +309,24 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             winrt::IBuffer contextBuffer =
                     winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
             info.Context(contextBuffer);
+
+            // Setup Status UI Source
+            TRACE_DEBUG(L"Setting up StorageProviderStatusUISource");
+            auto statusUISource = winrt::make<StorageProviderStatusUISource>();
+            
+            // Set quota information if available
+            if (providerInfo->quotaTotal() > 0) {
+                statusUISource.QuotaUI_Total(winrt::box_value(providerInfo->quotaTotal()));
+                statusUISource.QuotaUI_Used(winrt::box_value(providerInfo->quotaUsed()));
+                TRACE_DEBUG(L"Quota set: Total=%llu, Used=%llu", providerInfo->quotaTotal(), providerInfo->quotaUsed());
+            }
+            
+            // Set provider state to InSync by default
+            statusUISource.ProviderState(winrt::StorageProviderState::InSync);
+            
+            // Set the status UI source on the info
+            info.StorageProviderStatusUISource(statusUISource);
+            TRACE_DEBUG(L"StorageProviderStatusUISource configured");
 
             if (!info.Path() || info.DisplayNameResource().empty() || info.Id().empty()) {
                 TRACE_ERROR(L"Invalid StorageProviderSyncRootInfo");
