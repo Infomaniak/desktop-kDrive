@@ -86,7 +86,8 @@ namespace Infomaniak.kDrive.CustomControls
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to show the many deletes ContentDialog: {ex}");
+                Logger.LogWarning($"Failed to show the many deletes ContentDialog: {ex}",
+                    "Failed to show the many deletes ContentDialog");
                 return null;
             }
 

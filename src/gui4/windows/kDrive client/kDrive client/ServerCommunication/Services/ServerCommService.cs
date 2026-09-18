@@ -1414,7 +1414,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (data.Params[JsonKeys.HasMore] is not JsonValue hasMoreValue || !hasMoreValue.TryGetValue<bool>(out bool hasMore))
             {
-                Logger.Log(Logger.Level.Error, "Missing or invalid hasMore in error list response.");
+                Logger.LogError("Missing or invalid hasMore in error list response.");
                 return false;
             }
 
@@ -2165,7 +2165,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var signalData = args.SignalData;
             if (signalData is null || !signalData.ContainsKey(JsonKeys.SyncDbId) || !signalData.ContainsKey(JsonKeys.NotificationType) || !signalData.ContainsKey(JsonKeys.NbFiles) || !signalData.ContainsKey(JsonKeys.FilesPaths))
             {
-                Logger.Log(Logger.Level.Error, $"One or more required parameters are missing in signal data: {JsonKeys.SyncDbId}, {JsonKeys.NotificationType}, {JsonKeys.NbFiles}, {JsonKeys.FilesPaths}. Signal data: {signalData}");
+                Logger.LogError($"One or more required parameters are missing in signal data: {JsonKeys.SyncDbId}, {JsonKeys.NotificationType}, {JsonKeys.NbFiles}, {JsonKeys.FilesPaths}. Signal data: {signalData}",
+                    "ServerCommService: Missing parameters for SYNC_NOTIFY_MANY_DELETES signal");
                 return;
             }
 
@@ -2187,7 +2188,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             if (syncDbID is null || notificationType is null || nbFiles is null || filesPaths is null)
             {
-                Logger.Log(Logger.Level.Error, $"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, nbFiles={nbFiles}, filesPaths.Count={filesPaths?.Count}");
+                Logger.LogError($"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, nbFiles={nbFiles}, filesPaths.Count={filesPaths?.Count}",
+                    "ServerCommService: Null parameter for SYNC_NOTIFY_MANY_DELETES signal");
                 return;
             }
 

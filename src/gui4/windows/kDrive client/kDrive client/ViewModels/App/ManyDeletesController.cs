@@ -40,7 +40,7 @@ namespace Infomaniak.kDrive.ViewModels
         {
             AssociatedSync = App.ServiceProvider.GetRequiredService<AppModel>().AllSyncs.FirstOrDefault(sync => sync.DbId == manyDeletesInfo.SyncDbId);
             if (AssociatedSync is null)
-                Logger.Log(Logger.Level.Warning, $"ManyDeletesNotification created for a non-existing sync. SyncDbId: {manyDeletesInfo.SyncDbId}");
+                Logger.LogWarning($"ManyDeletesNotification created for a non-existing sync. SyncDbId: {manyDeletesInfo.SyncDbId}", "ManyDeletesNotification created for a non-existing sync");
 
             NotificationType = manyDeletesInfo.NotificationType;
             _filesPaths = Cap(manyDeletesInfo.FilesPaths.Distinct());
@@ -264,7 +264,7 @@ namespace Infomaniak.kDrive.ViewModels
             var notification = _queue.FirstOrDefault();
             if (IsAcknowledging || notification is null || notification.AssociatedSync is null || notification.AssociatedSync.DbId != acknowledgedNotification.AssociatedSync?.DbId)
             {
-                Logger.Log(Logger.Level.Debug, $"Cannot acknowledge this many delete notification now. SyncDbId: {acknowledgedNotification.AssociatedSync?.DbId}");
+                Logger.LogDebug($"Cannot acknowledge this many delete notification now. SyncDbId: {acknowledgedNotification.AssociatedSync?.DbId}");
                 return false;
             }
 
@@ -277,7 +277,7 @@ namespace Infomaniak.kDrive.ViewModels
 
                     if (!await appStateService.SetNotifyAfterDelete(false))
                     {
-                        Logger.Log(Logger.Level.Warning, "Failed to apply NotifyAfterDelete preferences");
+                        Logger.LogWarning("Failed to apply NotifyAfterDelete preferences");
                     }
 
                     _queue.RemoveAll(queued => !queued.IsHardLimit);
@@ -288,7 +288,8 @@ namespace Infomaniak.kDrive.ViewModels
                 {
                     if (userAction is not (ManyDeletesUserAction.Continue or ManyDeletesUserAction.Revert))
                     {
-                        Logger.Log(Logger.Level.Warning, $"Invalid user action for a hard limit notification. SyncDbId: {notification.AssociatedSync?.DbId}, UserAction: {userAction}");
+                        Logger.LogWarning($"Invalid user action for a hard limit notification. SyncDbId: {notification.AssociatedSync?.DbId}, UserAction: {userAction}",
+                            "ManyDeletesController.AcknowledgeManyDeletes");
                         return false;
                     }
 
@@ -296,7 +297,8 @@ namespace Infomaniak.kDrive.ViewModels
                     var serverCommService = App.ServiceProvider.GetRequiredService<IServerCommService>();
                     if (!await serverCommService.AcknowledgeManyDeletes(notification.AssociatedSync.DbId, userChoice, CancellationToken.None))
                     {
-                        Logger.Log(Logger.Level.Warning, $"Failed to acknowledge many deletes on the server. SyncDbId: {notification.AssociatedSync?.DbId}");
+                        Logger.LogWarning($"Failed to acknowledge many deletes on the server. SyncDbId: {notification.AssociatedSync?.DbId}",
+                            "ManyDeletesController.AcknowledgeManyDeletes");
                         return false;
                     }
                 }
@@ -322,11 +324,12 @@ namespace Infomaniak.kDrive.ViewModels
             Uri? trashUrl = ViewModel.AllSyncs.FirstOrDefault(sync => sync.DbId == syncDbId)?.Drive.GetWebTrashUri();
             if (trashUrl is null)
             {
-                Logger.Log(Logger.Level.Error, $"Unable to get the trash URL for the sync with DbId {syncDbId}.");
+                Logger.LogError($"Unable to get the trash URL for the sync with DbId {syncDbId}.",
+                    "ManyDeletesController.OpenTrash");
                 return;
             }
 
-            Logger.Log(Logger.Level.Debug, $"Launching the trash URL: {trashUrl}");
+            Logger.LogDebug($"Launching the trash URL: {trashUrl}");
             await Windows.System.Launcher.LaunchUriAsync(trashUrl);
         }
     }
