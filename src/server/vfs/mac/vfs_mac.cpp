@@ -47,7 +47,7 @@ VfsMac::VfsMac(const VfsSetupParams &vfsSetupParams, QObject *parent) :
         throw std::runtime_error("Unable to initialize LiteSyncExtConnector.");
     }
 
-    starVfsWorkers();
+    startVfsWorkers();
 }
 
 VirtualFileMode VfsMac::mode() const {

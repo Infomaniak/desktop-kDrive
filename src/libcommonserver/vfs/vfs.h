@@ -96,7 +96,7 @@ class Vfs : public QObject {
 
         explicit Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent = nullptr);
 
-        ~Vfs() override;
+        ~Vfs();
 
         void setSyncFileStatusCallback(const std::function<void(SyncDbId, const SyncPath &, SyncFileStatus &)> &syncFileStatus) {
             _syncFileStatus = syncFileStatus;
@@ -329,7 +329,8 @@ class Vfs : public QObject {
 
     protected:
         VfsSetupParams _vfsSetupParams;
-        void starVfsWorkers();
+        void startVfsWorkers();
+        void stopVfsWorkers();
         const std::array<size_t, nbWorkers> s_nb_threads = {5, 5};
 
         // Callbacks

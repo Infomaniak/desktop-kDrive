@@ -51,7 +51,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
         return;
     }
 
-    starVfsWorkers();
+    startVfsWorkers();
 }
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
