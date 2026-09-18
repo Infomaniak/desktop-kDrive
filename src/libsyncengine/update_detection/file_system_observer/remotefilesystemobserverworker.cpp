@@ -364,7 +364,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                    << SyncName2WStr(_liveSnapshot.name(item.parentId())) << L"\"");
 
             SyncPath path;
-            _liveSnapshot.path(item.parentId(), path, ignore);
+            (void) _liveSnapshot.path(item.parentId(), path, ignore);
             path /= item.name();
 
             _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None,
@@ -393,7 +393,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return {ExitCode::NetworkError, ExitCause::FullListParsingError};
     }
 
-    // Delete orphans
+    // Check integrity
     NodeSet nodeIds;
     _liveSnapshot.ids(nodeIds);
     auto nodeIdIt = nodeIds.begin();
@@ -409,6 +409,28 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                 return ExitCode::DataError;
             }
         }
+
+        if (const auto parentId = _liveSnapshot.parentId(*nodeIdIt);
+            !parentId.empty() && _liveSnapshot.type(parentId) != NodeType::Directory) {
+            const auto itemName = _liveSnapshot.name(*nodeIdIt);
+            const auto errorMsg = L"Node '" + SyncName2WStr(itemName) + L"' (" + CommonUtility::s2ws(*nodeIdIt) +
+                                  L") has a parent that is not a directory. Removing it from remote snapshot.";
+            LOGW_SYNCPAL_ERROR(_logger, errorMsg);
+            sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory", CommonUtility::ws2s(errorMsg));
+
+
+            SyncPath path;
+            (void) _liveSnapshot.path(*nodeIdIt, path, ignore);
+            _syncPal->addError(
+                    Error(_syncPal->syncDbId(), "", *nodeIdIt, _liveSnapshot.type(*nodeIdIt), path, ConflictType::None));
+            if (!_liveSnapshot.removeItem(*nodeIdIt)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(itemName) << L" ("
+                                                                    << CommonUtility::s2ws(*nodeIdIt) << L")");
+                invalidateSnapshot();
+                return ExitCode::DataError;
+            }
+        }
+
         ++nodeIdIt;
     }
 
