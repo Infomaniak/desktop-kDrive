@@ -26,7 +26,6 @@ build_type="Debug"
 output_dir=""
 clean_conan_cache=false
 use_release_profile=false
-enable_update=false
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
 
@@ -47,21 +46,13 @@ while [[ $# -gt 0 ]]; do
       clean_conan_cache=true
       shift
       ;;
-    --update)
-      enable_update=true
-      shift
-      ;;
     -h|--help)
       cat << EOF >&2
-Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--clean-cache] [--update] [--help]
+Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-release] [--clean-cache] [--help]
   --help               Display this help message.
   --output-dir=<dir>   Set the output directory for the Conan packages.
   --make-release       Use the 'infomaniak_release' Conan profile.
   --clean-cache        Clean the Conan cache (packages sources, build folders, ...) after installation to save disk space.
-  --update             Ask Conan to check remotes for newer versions/revisions.
-                       Disabled by default to keep CI deterministic and avoid
-                       local-recipes revision/timestamp conflicts.
-
 There are three ways to set the output directory (in descending order of priority):
     1. By passing the --output-dir=<dir> parameter.
     2. By setting the KDRIVE_OUTPUT_DIR environment variable.
@@ -215,6 +206,7 @@ log "Using '$conan_profile' profile for Conan."
 
 conan_remote_base_folder="$PWD/infomaniak-build-tools/conan"
 local_recipe_remote_name="localrecipes"
+local_recipe_patterns=("openssl-macos/*" "poco/*" "qt/*" "sentry/*" "xxhash/*")
 
 conan_remote_list_json="$(conan remote list --format=json)"
 
@@ -241,6 +233,12 @@ else
   conan remote add "$local_recipe_remote_name" "$conan_remote_base_folder"
 fi
 
+conan_remote_update_cmd=(conan remote update "$local_recipe_remote_name")
+for recipe_pattern in "${local_recipe_patterns[@]}"; do
+  conan_remote_update_cmd+=(-ap "$recipe_pattern")
+done
+"${conan_remote_update_cmd[@]}"
+
 # Build conan recipe for the platforms x86_64 & arm64
 platform=$(get_platform)
 
@@ -263,10 +261,12 @@ log "- Platform: '$platform'"
 log "- Architecture option: '$architecture'"
 log "- Build type: '$build_type'"
 log "- Output directory: '$output_dir'"
-log "- Conan update enabled: '$enable_update'"
+log "- CI mode: '${CI:-false}'"
 echo
 
 log "Installing dependencies..."
+
+conan remove 'sentry/*' -c
 
 conan_install_cmd=(
   conan install .
@@ -280,7 +280,14 @@ conan_install_cmd=(
   -vv
 )
 
-if [[ "$enable_update" == true ]]; then
+if [[ "${CI:-false}" == true ]]; then
+  # Conan has no update-exclusion syntax. Keep this list aligned with the dependency graph so CI refreshes every
+  # recipe except Qt, whose installer-backed recipe must stay pinned to the cached revision during CI builds.
+  ci_update_packages=(cmake ninja bzip2 zlib xxhash sqlite3 log4cplus openssl-macos openssl sentry poco pcre2 expat)
+  for package_name in "${ci_update_packages[@]}"; do
+    conan_install_cmd+=(--update="$package_name")
+  done
+else
   conan_install_cmd+=(--update)
 fi
 
