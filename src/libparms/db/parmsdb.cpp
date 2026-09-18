@@ -816,7 +816,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     std::vector<ExclusionTemplate> dbUserExclusionTemplates;
     {
         // This upgrade helper runs before prepare(), so SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
-        auto scopeGuard = createAndPrepareLocalRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
+        auto scopeGuard = createAndPrepareScopedRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
                                                        SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
         if (!scopeGuard) return false;
 
@@ -847,12 +847,12 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
 
     {
         // This upgrade helper runs before prepare(), so DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
-        auto scopeGuard1 = createAndPrepareLocalRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
+        auto scopeGuard1 = createAndPrepareScopedRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
                                                         DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
         if (!scopeGuard1) return false;
 
         // This upgrade helper runs before prepare(), so INSERT_EXCLUSION_TEMPLATE_REQUEST_ID does not exist here.
-        auto scopeGuard2 = createAndPrepareLocalRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST);
+        auto scopeGuard2 = createAndPrepareScopedRequest(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, INSERT_EXCLUSION_TEMPLATE_REQUEST);
         if (!scopeGuard2) return false;
 
         LOG_INFO(_logger, "Normalizations prepared for updates.");
@@ -1087,7 +1087,7 @@ bool ParmsDb::create(bool &retry) {
 
     // Parameters
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_PARAMETERS_TABLE_ID, CREATE_PARAMETERS_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_PARAMETERS_TABLE_ID, errId, error)) {
             // In certain situations the io error can be avoided by switching
@@ -1105,7 +1105,7 @@ bool ParmsDb::create(bool &retry) {
 
     // User
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_USER_TABLE_ID, CREATE_USER_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_USER_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_USER_TABLE_ID, error);
@@ -1114,7 +1114,7 @@ bool ParmsDb::create(bool &retry) {
 
     // Account
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_ACCOUNT_TABLE_ID, CREATE_ACCOUNT_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_ACCOUNT_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_ACCOUNT_TABLE_ID, error);
@@ -1123,7 +1123,7 @@ bool ParmsDb::create(bool &retry) {
 
     // Drive
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_DRIVE_TABLE_ID, CREATE_DRIVE_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_DRIVE_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_DRIVE_TABLE_ID, error);
@@ -1132,7 +1132,7 @@ bool ParmsDb::create(bool &retry) {
 
     // Sync
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_SYNC_TABLE_ID, CREATE_SYNC_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_SYNC_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_SYNC_TABLE_ID, error);
@@ -1141,7 +1141,7 @@ bool ParmsDb::create(bool &retry) {
 
     // Exclusion Template
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, CREATE_EXCLUSION_TEMPLATE_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_EXCLUSION_TEMPLATE_TABLE_ID, error);
@@ -1151,7 +1151,7 @@ bool ParmsDb::create(bool &retry) {
 #if defined(KD_MACOS)
     // Exclusion App
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_EXCLUSION_APP_TABLE_ID, CREATE_EXCLUSION_APP_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_EXCLUSION_APP_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_EXCLUSION_APP_TABLE_ID, error);
@@ -1161,7 +1161,7 @@ bool ParmsDb::create(bool &retry) {
 
     // Error
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_ERROR_TABLE_ID, CREATE_ERROR_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_ERROR_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_ERROR_TABLE_ID, error);
@@ -1183,7 +1183,7 @@ bool ParmsDb::create(bool &retry) {
     // Migration old selectivesync table
     {
         auto scopeGuard =
-                createAndPrepareLocalRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE);
+                createAndPrepareScopedRequest(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, error);
@@ -1196,7 +1196,7 @@ bool ParmsDb::create(bool &retry) {
 bool ParmsDb::createSyncFolderRule() {
     int errId = 0;
     std::string error;
-    auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE);
+    auto scopeGuard = createAndPrepareScopedRequest(CREATE_SYNC_FOLDER_RULE_TABLE_ID, CREATE_SYNC_FOLDER_RULE_TABLE);
     if (!scopeGuard) return false;
     if (!queryExec(CREATE_SYNC_FOLDER_RULE_TABLE_ID, errId, error)) {
         return sqlFail(CREATE_SYNC_FOLDER_RULE_TABLE_ID, error);
@@ -1327,7 +1327,7 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (updateParameters) {
-        auto scopeGuard = createAndPrepareLocalRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST);
+        auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST);
         if (!scopeGuard) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
@@ -3828,12 +3828,12 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
 
     std::vector<Sync> syncList;
     {
-        auto scopeGuard = createAndPrepareLocalRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST);
+        auto scopeGuard = createAndPrepareScopedRequest(SELECT_ALL_SYNCS_REQUEST_ID, SELECT_ALL_SYNCS_REQUEST);
         if (!scopeGuard) return false;
         selectAllSyncs(syncList);
     }
 
-    auto scopeGuard = createAndPrepareLocalRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST);
+    auto scopeGuard = createAndPrepareScopedRequest(UPDATE_SYNC_REQUEST_ID, UPDATE_SYNC_REQUEST);
     if (!scopeGuard) return false;
 
     for (auto &sync: syncList) {
@@ -3867,7 +3867,7 @@ bool ParmsDb::enableSentryAndMatomo() {
     Parameters parameters;
     {
         // This upgrade helper runs before prepare(), so SELECT_PARAMETERS_REQUEST_ID does not exist here.
-        auto scopeGuard = createAndPrepareLocalRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST);
+        auto scopeGuard = createAndPrepareScopedRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST);
         if (!scopeGuard) return false;
 
         bool found = false;
@@ -3885,7 +3885,7 @@ bool ParmsDb::enableSentryAndMatomo() {
 
     {
         // This upgrade helper runs before prepare(), so UPDATE_PARAMETERS_REQUEST_ID does not exist here.
-        auto scopeGuard = createAndPrepareLocalRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST);
+        auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST);
         if (!scopeGuard) return false;
 
         bool found = false;

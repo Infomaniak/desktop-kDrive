@@ -323,7 +323,7 @@ bool SyncDb::create(bool &retry) {
 
     // Node
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_ID, CREATE_NODE_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_NODE_TABLE_ID, CREATE_NODE_TABLE);
         if (!scopeGuard) return false;
 
         if (!queryExec(CREATE_NODE_TABLE_ID, errId, error)) {
@@ -341,7 +341,7 @@ bool SyncDb::create(bool &retry) {
     }
 
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX1_ID, CREATE_NODE_TABLE_IDX1);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_NODE_TABLE_IDX1_ID, CREATE_NODE_TABLE_IDX1);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_NODE_TABLE_IDX1_ID, errId, error)) {
             return sqlFail(CREATE_NODE_TABLE_IDX1_ID, error);
@@ -349,7 +349,7 @@ bool SyncDb::create(bool &retry) {
     }
 
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX2_ID, CREATE_NODE_TABLE_IDX2);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_NODE_TABLE_IDX2_ID, CREATE_NODE_TABLE_IDX2);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_NODE_TABLE_IDX2_ID, errId, error)) {
             return sqlFail(CREATE_NODE_TABLE_IDX2_ID, error);
@@ -357,7 +357,7 @@ bool SyncDb::create(bool &retry) {
     }
 
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX3_ID, CREATE_NODE_TABLE_IDX3);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_NODE_TABLE_IDX3_ID, CREATE_NODE_TABLE_IDX3);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_NODE_TABLE_IDX3_ID, errId, error)) {
             return sqlFail(CREATE_NODE_TABLE_IDX3_ID, error);
@@ -365,7 +365,7 @@ bool SyncDb::create(bool &retry) {
     }
 
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX4_ID, CREATE_NODE_TABLE_IDX4);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_NODE_TABLE_IDX4_ID, CREATE_NODE_TABLE_IDX4);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_NODE_TABLE_IDX4_ID, errId, error)) {
             return sqlFail(CREATE_NODE_TABLE_IDX4_ID, error);
@@ -373,7 +373,7 @@ bool SyncDb::create(bool &retry) {
     }
 
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_NODE_TABLE_IDX5_ID, CREATE_NODE_TABLE_IDX5);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_NODE_TABLE_IDX5_ID, CREATE_NODE_TABLE_IDX5);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_NODE_TABLE_IDX5_ID, errId, error)) {
             return sqlFail(CREATE_NODE_TABLE_IDX5_ID, error);
@@ -382,7 +382,7 @@ bool SyncDb::create(bool &retry) {
 
     // Sync Node
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_SYNC_NODE_TABLE_ID, CREATE_SYNC_NODE_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_SYNC_NODE_TABLE_ID, CREATE_SYNC_NODE_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_SYNC_NODE_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_SYNC_NODE_TABLE_ID, error);
@@ -391,7 +391,7 @@ bool SyncDb::create(bool &retry) {
 
     // Upload session token table
     {
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, error);
@@ -473,7 +473,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         LOG_DEBUG(_logger, "Upgrade 3.4.0.0 Sync DB");
 
         // Upload session token table
-        auto scopeGuard = createAndPrepareLocalRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE);
+        auto scopeGuard = createAndPrepareScopedRequest(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, CREATE_UPLOAD_SESSION_TOKEN_TABLE);
         if (!scopeGuard) return false;
         if (!queryExec(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, errId, error)) {
             return sqlFail(CREATE_UPLOAD_SESSION_TOKEN_TABLE_ID, error);
@@ -484,7 +484,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         LOG_DEBUG(_logger, "Upgrade < 3.4.4.0 Sync DB");
 
         {
-            auto scopeGuard = createAndPrepareLocalRequest(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA);
+            auto scopeGuard = createAndPrepareScopedRequest(PRAGMA_WRITABLE_SCHEMA_ID, PRAGMA_WRITABLE_SCHEMA);
             if (!scopeGuard) return false;
             bool hasData = false;
             if (!queryNext(PRAGMA_WRITABLE_SCHEMA_ID, hasData)) {
@@ -493,7 +493,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         }
 
         {
-            auto scopeGuard = createAndPrepareLocalRequest(ALTER_NODE_TABLE_FK_ID, ALTER_NODE_TABLE_FK);
+            auto scopeGuard = createAndPrepareScopedRequest(ALTER_NODE_TABLE_FK_ID, ALTER_NODE_TABLE_FK);
             if (!scopeGuard) return false;
             if (!queryExec(ALTER_NODE_TABLE_FK_ID, errId, error)) {
                 return sqlFail(ALTER_NODE_TABLE_FK_ID, error);
@@ -506,14 +506,14 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.8.2.0")) {
         LOG_DEBUG(_logger, "Upgrade < 3.8.2.0 Sync DB - Removing Undecided list");
 
-        auto scopeGuard1 = createAndPrepareLocalRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST);
+        auto scopeGuard1 = createAndPrepareScopedRequest(SELECT_ALL_SYNC_NODE_REQUEST_ID, SELECT_ALL_SYNC_NODE_REQUEST);
         if (!scopeGuard1) return false;
 
-        auto scopeGuard2 = createAndPrepareLocalRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST);
+        auto scopeGuard2 = createAndPrepareScopedRequest(INSERT_SYNC_NODE_REQUEST_ID, INSERT_SYNC_NODE_REQUEST);
         if (!scopeGuard2) return false;
 
         auto scopeGuard3 =
-                createAndPrepareLocalRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST);
+                createAndPrepareScopedRequest(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST);
         if (!scopeGuard3) return false;
 
         NodeSet blacklistedNodes;
@@ -547,7 +547,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         dbFromVersionNumber == "3.8.2") {
         LOG_DEBUG(_logger, "Upgrade from a 3.8.2 (build x) Sync DB - Reverting local deletes");
 
-        auto scopeGuard1 = createAndPrepareLocalRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID,
+        auto scopeGuard1 = createAndPrepareScopedRequest(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID,
                                                         SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST);
         if (!scopeGuard1) {
             LOG_ERROR(_logger, "Error preparing select node by parentNodeId root request");
@@ -557,7 +557,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
         }
 
         auto scopeGuard2 =
-                createAndPrepareLocalRequest(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_REQUEST);
+                createAndPrepareScopedRequest(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, SELECT_NODE_BY_PARENTNODEID_REQUEST);
         if (!scopeGuard2) {
             LOG_ERROR(_logger, "Error preparing select node by parentNodeId request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
@@ -565,7 +565,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             return false;
         }
 
-        auto scopeGuard3 = createAndPrepareLocalRequest(SELECT_NODE_BY_NODEID_FULL_ID, SELECT_NODE_BY_NODEID_FULL);
+        auto scopeGuard3 = createAndPrepareScopedRequest(SELECT_NODE_BY_NODEID_FULL_ID, SELECT_NODE_BY_NODEID_FULL);
         if (!scopeGuard3) {
             LOG_ERROR(_logger, "Error preparing select node by nodeId full request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
@@ -573,7 +573,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string &toVersio
             return false;
         }
 
-        auto scopeGuard4 = createAndPrepareLocalRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST);
+        auto scopeGuard4 = createAndPrepareScopedRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST);
         if (!scopeGuard4) {
             LOG_ERROR(_logger, "Error preparing delete node request");
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::upgrade::revertAllLocalDeletes",
@@ -2663,7 +2663,7 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
     static const char *requestId = "select_node_with_names_and_ids";
     static const char *query = "SELECT nodeId, nameLocal, nameDrive, nodeIdLocal FROM node;";
 
-    auto scopeGuard = createAndPrepareLocalRequest(requestId, query);
+    auto scopeGuard = createAndPrepareScopedRequest(requestId, query);
     if (!scopeGuard) return false;
 
     const std::scoped_lock lock(_mutex);
@@ -2714,7 +2714,7 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
 }
 
 bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
-    auto scopeGuard = createAndPrepareLocalRequest(UPDATE_NODE_NAME_LOCAL_REQUEST_ID, UPDATE_NODE_NAME_LOCAL_REQUEST);
+    auto scopeGuard = createAndPrepareScopedRequest(UPDATE_NODE_NAME_LOCAL_REQUEST_ID, UPDATE_NODE_NAME_LOCAL_REQUEST);
     if (!scopeGuard) return false;
 
     for (const auto &[dbNodeId, fileName]: localNames) {
@@ -2742,7 +2742,7 @@ bool SyncDb::normalizeRemoteNames() {
         return false;
     }
 
-    auto scopeGuard = createAndPrepareLocalRequest(requestId, query);
+    auto scopeGuard = createAndPrepareScopedRequest(requestId, query);
     if (!scopeGuard) return false;
 
     int errId = 0;

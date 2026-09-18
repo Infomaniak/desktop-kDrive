@@ -347,7 +347,7 @@ bool Db::init(const std::string &version) {
             {
                 // Check version
                 LOG_DEBUG(_logger, "Check DB version");
-                auto scopeGuard = createAndPrepareLocalRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST);
+                auto scopeGuard = createAndPrepareScopedRequest(SELECT_VERSION_REQUEST_ID, SELECT_VERSION_REQUEST);
                 if (!scopeGuard) return false;
 
                 bool found = false;
@@ -369,7 +369,7 @@ bool Db::init(const std::string &version) {
 
             {
                 // Update version
-                auto scopeGuard = createAndPrepareLocalRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST);
+                auto scopeGuard = createAndPrepareScopedRequest(UPDATE_VERSION_REQUEST_ID, UPDATE_VERSION_REQUEST);
                 if (!scopeGuard) return false;
 
                 bool found = false;
@@ -386,7 +386,7 @@ bool Db::init(const std::string &version) {
             {
                 // Create version table
                 LOG_DEBUG(_logger, "Create version table");
-                auto scopeGuard = createAndPrepareLocalRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE);
+                auto scopeGuard = createAndPrepareScopedRequest(CREATE_VERSION_TABLE_ID, CREATE_VERSION_TABLE);
                 if (!scopeGuard) return false;
 
                 int errId = -1;
@@ -398,7 +398,7 @@ bool Db::init(const std::string &version) {
             {
                 // Insert version
                 LOG_DEBUG(_logger, "Insert version " << version);
-                auto scopeGuard = createAndPrepareLocalRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST);
+                auto scopeGuard = createAndPrepareScopedRequest(INSERT_VERSION_REQUEST_ID, INSERT_VERSION_REQUEST);
                 if (!scopeGuard) return false;
 
                 if (!insertVersion(version)) {
@@ -523,7 +523,7 @@ bool Db::checkConnect() {
 
     // SELECT_SQLITE_VERSION
     {
-        auto scopeGuard = createAndPrepareLocalRequest(selectSqliteVersionId, selectSqliteVersion);
+        auto scopeGuard = createAndPrepareScopedRequest(selectSqliteVersionId, selectSqliteVersion);
         if (!scopeGuard) return false;
         if (bool hasData = false; !queryNext(selectSqliteVersionId, hasData) || !hasData) {
             LOG_WARN(_logger, "Error getting query result: " << selectSqliteVersionId);
@@ -544,7 +544,7 @@ bool Db::checkConnect() {
         lockingMode = "NORMAL";
 #endif
         std::string sqlStr(pragmaLockingMode + lockingMode + ";");
-        auto scopeGuard = createAndPrepareLocalRequest(pragmaLockingModeId, sqlStr.c_str());
+        auto scopeGuard = createAndPrepareScopedRequest(pragmaLockingModeId, sqlStr.c_str());
         if (!scopeGuard) return false;
         if (bool hasData = false; !queryNext(pragmaLockingModeId, hasData) || !hasData) {
             LOG_WARN(_logger, "Error getting query result: " << pragmaLockingModeId);
@@ -558,7 +558,7 @@ bool Db::checkConnect() {
     // PRAGMA_JOURNAL_MODE
     {
         std::string sqlStr = pragmaJournalMode + _journalMode + ";";
-        auto scopeGuard = createAndPrepareLocalRequest(pragmaJournalModeId, sqlStr.c_str());
+        auto scopeGuard = createAndPrepareScopedRequest(pragmaJournalModeId, sqlStr.c_str());
         if (!scopeGuard) return false;
         if (bool hasData = false; !queryNext(pragmaJournalModeId, hasData) || !hasData) {
             LOG_WARN(_logger, "Error getting query result: " << pragmaJournalModeId);
@@ -582,7 +582,7 @@ bool Db::checkConnect() {
         std::string synchronousMode = "FULL";
         if (_journalMode.compare("WAL") == 0) synchronousMode = "NORMAL";
         std::string sqlStr = pragmaSynchronous + synchronousMode + ";";
-        auto scopeGuard = createAndPrepareLocalRequest(pragmaSynchronousId, sqlStr.c_str());
+        auto scopeGuard = createAndPrepareScopedRequest(pragmaSynchronousId, sqlStr.c_str());
         if (!scopeGuard) return false;
         if (bool hasData = false; !queryNext(pragmaSynchronousId, hasData)) {
             LOG_WARN(_logger, "Error getting query result: " << pragmaSynchronousId);
@@ -593,7 +593,7 @@ bool Db::checkConnect() {
 
     // PRAGMA_CASE_SENSITIVE_LIKE
     {
-        auto scopeGuard = createAndPrepareLocalRequest(pragmaCaseSensitiveLikeId, pragmaCaseSensitiveLike);
+        auto scopeGuard = createAndPrepareScopedRequest(pragmaCaseSensitiveLikeId, pragmaCaseSensitiveLike);
         if (!scopeGuard) return false;
         if (bool hasData = false; !queryNext(pragmaCaseSensitiveLikeId, hasData)) {
             LOG_WARN(_logger, "Error getting query result: " << pragmaCaseSensitiveLikeId);
@@ -604,7 +604,7 @@ bool Db::checkConnect() {
 
     // PRAGMA_FOREIGN_KEYS
     {
-        auto scopeGuard = createAndPrepareLocalRequest(pragmaForeignKeysId, pragmaForeignKeys);
+        auto scopeGuard = createAndPrepareScopedRequest(pragmaForeignKeysId, pragmaForeignKeys);
         if (!scopeGuard) return false;
         if (bool hasData = false; !queryNext(pragmaForeignKeysId, hasData)) {
             LOG_WARN(_logger, "Error getting query result: " << pragmaForeignKeysId);
@@ -616,7 +616,7 @@ bool Db::checkConnect() {
     if (_journalMode == "WAL") {
         // PRAGMA_WAL_AUTOCHECKPOINT: lower threshold to prevent unbounded WAL growth
         {
-            auto scopeGuard = createAndPrepareLocalRequest(pragmaWalAutocheckpointId, pragmaWalAutocheckpoint);
+            auto scopeGuard = createAndPrepareScopedRequest(pragmaWalAutocheckpointId, pragmaWalAutocheckpoint);
             if (!scopeGuard) return false;
             if (bool hasData = false; !queryNext(pragmaWalAutocheckpointId, hasData) || !hasData) {
                 LOG_WARN(_logger, "Error getting query result: " << pragmaWalAutocheckpointId);
@@ -627,7 +627,7 @@ bool Db::checkConnect() {
 
         // PRAGMA_JOURNAL_SIZE_LIMIT: cap WAL file size after each successful checkpoint
         {
-            auto scopeGuard = createAndPrepareLocalRequest(pragmaJournalSizeLimitId, pragmaJournalSizeLimit);
+            auto scopeGuard = createAndPrepareScopedRequest(pragmaJournalSizeLimitId, pragmaJournalSizeLimit);
             if (!scopeGuard) return false;
             if (bool hasData = false; !queryNext(pragmaJournalSizeLimitId, hasData) || !hasData) {
                 LOG_WARN(_logger, "Error getting query result: " << pragmaJournalSizeLimitId);
@@ -658,7 +658,7 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
     if (!columnExists(tableName, columnName, exist)) return false;
     if (!exist) {
         LOG_INFO(_logger, "Adding column " << columnName << " into table " << tableName);
-        auto scopeGuard = createAndPrepareLocalRequest(requestId.c_str(), request.c_str());
+        auto scopeGuard = createAndPrepareScopedRequest(requestId.c_str(), request.c_str());
         if (!scopeGuard) return false;
         int errId = 0;
         std::string error;
@@ -687,7 +687,7 @@ bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
     return true;
 }
 
-[[nodiscard]] std::unique_ptr<Db::ScopeGuard> Db::createAndPrepareLocalRequest(const char *requestId, const char *query) {
+[[nodiscard]] std::unique_ptr<Db::ScopeGuard> Db::createAndPrepareScopedRequest(const char *requestId, const char *query) {
     if (!createAndPrepareRequest(requestId, query)) {
         return nullptr;
     }

@@ -51,7 +51,7 @@ namespace KDC {
 
 bool ParmsDb::createAppState() {
     LOG_INFO(_logger, "Creating table app_state");
-    auto scopeGuard = createAndPrepareLocalRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE);
+    auto scopeGuard = createAndPrepareScopedRequest(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE);
     if (!scopeGuard) return false;
     int errId = 0;
     std::string error;

@@ -77,7 +77,7 @@ void TestDb::testCreateAndPrepareLocalRequest() {
 
     {
         std::string query{"SELECT sqlite_version();"};
-        auto scopeGuard = _testObj->createAndPrepareLocalRequest(id.c_str(), query.c_str());
+        auto scopeGuard = _testObj->createAndPrepareScopedRequest(id.c_str(), query.c_str());
         CPPUNIT_ASSERT(scopeGuard);
 
         bool found = false;

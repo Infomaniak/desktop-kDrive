@@ -126,7 +126,7 @@ class COMMONSERVER_EXPORT Db {
          * @param query is the request sql definition.
          * @return a unique_ptr to a ScopeGuard object if the request was created and prepared successfully, nullptr otherwise.
          */
-        [[nodiscard]] std::unique_ptr<ScopeGuard> createAndPrepareLocalRequest(const char *requestId, const char *query);
+        [[nodiscard]] std::unique_ptr<ScopeGuard> createAndPrepareScopedRequest(const char *requestId, const char *query);
 
         log4cplus::Logger _logger;
         std::shared_ptr<SqliteDb> _sqliteDb;
