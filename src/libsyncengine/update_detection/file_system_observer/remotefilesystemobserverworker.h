@@ -45,6 +45,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
         ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
+        //! Check the integrity of the snapshot items and remove the inconsistent ones (orphan items, items whose parent is
+        //! not a directory).
+        ExitInfo checkSnapshotIntegrity();
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::ActionCodeUnknown};
