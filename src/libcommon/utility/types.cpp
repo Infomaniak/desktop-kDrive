@@ -249,6 +249,8 @@ std::string toString(const ExitCause e) {
             return "SyncDeletionFailed";
         case ExitCause::InvalidLinkTarget:
             return "InvalidLinkTarget";
+        case ExitCause::MoveThroughSymlink:
+            return "MoveThroughSymlink";
         default:
             return noConversionStr;
     }
