@@ -28,6 +28,8 @@
 
 namespace KDC {
 
+class TranslationService;
+
 /** Presentation, validation, selection, and immediate-save actions for file-exclusion rules. */
 class FileExclusionController final : public QObject {
         Q_OBJECT
@@ -42,7 +44,8 @@ class FileExclusionController final : public QObject {
         Q_PROPERTY(QString errorText READ errorText NOTIFY changed)
 
     public:
-        explicit FileExclusionController(ExclusionTemplateService &service, QObject *parent = nullptr);
+        FileExclusionController(ExclusionTemplateService &service, const TranslationService &translationService,
+                                QObject *parent = nullptr);
 
         [[nodiscard]] ExclusionRuleModel *defaultRules() { return &_defaultRules; }
         [[nodiscard]] ExclusionRuleModel *userRules() { return &_userRules; }
