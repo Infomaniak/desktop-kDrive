@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
 
     // The bundled Qt cannot load host desktop-theme plugins. Route file dialogs through the desktop portal while
     // preserving an explicit user override and Qt's own fallback behavior when no FileChooser portal is available.
-    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORMTHEME")) {
-        qputenv("QT_QPA_PLATFORMTHEME", "xdgdesktopportal");
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORMTHEME") && !qputenv("QT_QPA_PLATFORMTHEME", "xdgdesktopportal")) {
+        qWarning("Unable to set QT_QPA_PLATFORMTHEME to xdgdesktopportal.");
     }
 
     KDC::AppClientLinux app(argc, argv);
