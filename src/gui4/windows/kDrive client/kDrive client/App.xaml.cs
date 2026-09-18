@@ -200,7 +200,7 @@ namespace Infomaniak.kDrive
             // Prevent reentrant "new MainWindow()" calls (CurrentWindow is only set once the constructor returns).
             if (_isCreatingWindow)
             {
-                Logger.Log(Logger.Level.Info, "CreateWindow called while a window creation is already in progress, skipping to avoid reentrancy.");
+                Logger.LogInfo("CreateWindow called while a window creation is already in progress, skipping to avoid reentrancy.");
                 return;
             }
 

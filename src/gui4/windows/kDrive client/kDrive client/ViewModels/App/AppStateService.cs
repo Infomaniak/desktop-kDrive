@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.ViewModels
                 _showV4OnboardingCachedValue = null;
                 return true;
             }
-            Logger.Log(Logger.Level.Warning, "Failed to clear ShowV4Onboarding state on the server.");
+            Logger.LogWarning("Failed to clear ShowV4Onboarding state on the server.");
             return false;
         }
     }
