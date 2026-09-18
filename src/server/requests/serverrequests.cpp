@@ -514,16 +514,6 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
         return exitCode;
     }
 
-    // If `homeFolder` is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
-    SyncDbId syncDbId = 0;
-    if (const bool someSyncFolderContainsHome = syncForPath(syncList, Path2QStr(homeFolder), syncDbId);
-        someSyncFolderContainsHome) {
-        error = "The home folder is a sync folder or contained in one";
-        LOGW_WARN(Log::instance()->getLogger(), CommonUtility::s2ws(error) << L":" << Utility::formatSyncPath(homeFolder));
-
-        return ExitCode::SystemError;
-    }
-
     const SyncName initialFolderName = getInitialFolderName(driveName);
     SyncPath nonExistingPath;
     if (const auto exitInfo = findUnoccupiedPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath); !exitInfo) {
