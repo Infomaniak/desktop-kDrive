@@ -694,7 +694,7 @@ bool VfsMac::fileStatusChanged(const SyncPath &absoluteFilepath, SyncFileStatus 
 
                     // Add file path to hydration queue
                     {
-                        QMutexLocker locker(&_workerInfo[workerDehydration]._mutex);
+                        QMutexLocker locker(&_workerInfo[workerHydration]._mutex);
                         _workerInfo[workerHydration]._queue.push_front(absoluteFilepath);
                     }
                     _workerInfo[workerHydration]._queueWC.wakeOne();

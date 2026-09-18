@@ -18,13 +18,11 @@
 
 #include "testworkers.h"
 #include "propagation/executor/executorworker.h"
-
 #include "libcommonserver/keychainmanager/keychainmanager.h"
-#include "mocks/mockkeychainstorage.h"
-
 #include "libcommonserver/io/iohelper.h"
-
+#include "mocks/mockkeychainstorage.h"
 #include "mocks/libcommonserver/db/mockdb.h"
+#include "mocks/libsyncengine/vfs/mockvfs.h"
 
 #include "test_utility/testhelpers.h"
 
@@ -110,7 +108,8 @@ void TestWorkers::setUp() {
     vfsSetupParams.executeCommand = [](const CommString &, bool) {};
 
 #if defined(KD_MACOS)
-    _vfs = std::shared_ptr<VfsMac>(new VfsMac(vfsSetupParams));
+    _vfs = std::make_shared<MockVfs<VfsMac>>(vfsSetupParams);
+    _vfs->resetLiteSyncConnector();
 #elif defined(KD_WINDOWS)
     _vfs = std::shared_ptr<VfsWin>(new VfsWin(vfsSetupParams));
 #else
@@ -153,10 +152,10 @@ void TestWorkers::setUp() {
     if (connectorsAreAlreadyInstalled) {
         _vfsInstallationDone = true;
         _vfsActivationDone = true;
-        startVfs();
+        CPPUNIT_ASSERT(startVfs());
     }
 #else
-    startVfs();
+    CPPUNIT_ASSERT(startVfs());
 #endif
 }
 
@@ -171,6 +170,7 @@ void TestWorkers::tearDown() {
         // Stop Vfs
         _vfs->stopImpl(true);
         _vfs = nullptr;
+        _vfsConnectionDone = false;
     }
     TestBase::stop();
 }

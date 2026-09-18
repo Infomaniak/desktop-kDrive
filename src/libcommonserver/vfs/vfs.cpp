@@ -67,6 +67,8 @@ void Vfs::stopVfsWorkers() {
             worker._stop = true;
             worker._mutex.unlock();
             worker._queueWC.wakeAll();
+        } else {
+            worker._mutex.unlock();
         }
     }
 

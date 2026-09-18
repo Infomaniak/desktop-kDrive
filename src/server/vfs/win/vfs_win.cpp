@@ -654,7 +654,7 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
                 // Add file path to dehydration queue
                 {
                     QMutexLocker locker(&_workerInfo[workerDehydration]._mutex);
-                    _workerInfo[workerDehydration]._queue.push_front(absoluteFilepath);
+                    _workerInfo[workerDehydration]._queue.push_front(fullPath);
                 }
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
@@ -663,8 +663,8 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
 
                 // Add file path to hydration queue
                 {
-                    QMutexLocker locker(&_workerInfo[workerDehydration]._mutex);
-                    _workerInfo[workerHydration]._queue.push_front(absoluteFilepath);
+                    QMutexLocker locker(&_workerInfo[workerHydration]._mutex);
+                    _workerInfo[workerHydration]._queue.push_front(fullPath);
                 }
                 _workerInfo[workerHydration]._queueWC.wakeOne();
             }
