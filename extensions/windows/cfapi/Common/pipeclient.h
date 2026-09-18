@@ -37,6 +37,8 @@ class PipeClient {
         bool sendMessageWithoutAnswer(const std::wstring &verb, const std::wstring &params);
         bool sendMessageWithAnswer(const std::wstring &verb, const std::wstring &params, LONGLONG &msgId);
         bool readMessage(LONGLONG msgId, std::wstring &response);
+        // Same as above but gives up after `timeoutMs` milliseconds.
+        bool readMessage(LONGLONG msgId, std::wstring &response, DWORD timeoutMs);
 
     private:
         static LONGLONG _msgId;

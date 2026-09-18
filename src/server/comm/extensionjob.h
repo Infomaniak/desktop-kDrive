@@ -124,6 +124,16 @@ class ExtensionJob : public AbstractJob {
         void commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
         // From FileExplorerExtension (Thumbnail provider)
         void commandGetThumbnail(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
+        /** From FileExplorerExtension (Status UI source)
+         * @brief commandGetStatusUI
+         * @param argument is a list of values separated by messageArgSeparator
+         *  - value 1: msg id
+         *  - value 2: sync root path
+         * @param channel
+         * Reply with [msgId]:[state], [stateLabel], [quotaTotal], [quotaUsed], [quotaLabel], [color], [driveName], [driveUrl],
+         * [primaryCommandLabel] and [primaryCommandDescription], values separated by messageArgSeparator.
+         */
+        void commandGetStatusUI(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel);
 #endif
 #if defined(KD_MACOS)
         // From FinderSyncExt

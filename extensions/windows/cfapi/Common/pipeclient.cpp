@@ -18,9 +18,12 @@
 
 #include "pipeclient.h"
 
+#include <chrono>
+
 LONGLONG PipeClient::_msgId = 0;
 
-PipeClient::PipeClient() : _endListener(false) {
+PipeClient::PipeClient() :
+    _endListener(false) {
     if (!Utilities::connectToPipeServer()) {
         TRACE_ERROR(L"Error in connectToPipeServer!");
     }
@@ -84,6 +87,35 @@ bool PipeClient::readMessage(LONGLONG msgId, std::wstring &response) {
     }
 
     return true;
+}
+
+bool PipeClient::readMessage(LONGLONG msgId, std::wstring &response, DWORD timeoutMs) {
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+
+    std::unique_lock<std::mutex> lck(_responseMapMutex);
+    if (!_responseMap.contains(msgId)) {
+        return false;
+    }
+
+    while (true) {
+        response = _responseMap[msgId];
+        if (!response.empty()) {
+            _responseMap.erase(msgId);
+            return true;
+        }
+
+        if (_responseMapCV.wait_until(lck, deadline) == std::cv_status::timeout) {
+            response = _responseMap[msgId];
+            if (!response.empty()) {
+                _responseMap.erase(msgId);
+                return true;
+            }
+
+            _responseMap.erase(msgId);
+            TRACE_WARNING(L"Timeout while waiting for answer to message %lld", msgId);
+            return false;
+        }
+    }
 }
 
 void PipeClient::pipeListener(PipeClient *pipeClient) {

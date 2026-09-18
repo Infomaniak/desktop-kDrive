@@ -3081,6 +3081,12 @@ ExitInfo AppServer::updateDrive(const User &user, const Account &account, Drive 
     if (quotaUpdated) {
         sendDriveQuotaUpdated(drive.dbId(), drive.size(), drive.usedSize());
     }
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+    {
+        const std::scoped_lock lock(_driveQuotaMapMutex);
+        _driveQuotaMap[drive.dbId()] = {drive.size(), drive.usedSize()};
+    }
+#endif
 
     if (const auto exitInfo = manageDriveMovedToAnotherAccount(user, account, newAccountId, drive, driveUpdated); !exitInfo)
         return exitInfo;

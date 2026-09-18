@@ -109,6 +109,7 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
 #if defined(KD_WINDOWS)
                  {"GET_ALL_MENU_ITEMS", std::bind_front(&ExtensionJob::commandGetAllMenuItems, this)},
                  {"GET_THUMBNAIL", std::bind_front(&ExtensionJob::commandGetThumbnail, this)},
+                 {"GET_STATUS_UI", std::bind_front(&ExtensionJob::commandGetStatusUI, this)},
 #endif
 #if defined(KD_MACOS)
                  {"RETRIEVE_FOLDER_STATUS", std::bind_front(&ExtensionJob::commandRetrieveFolderStatus, this)},
@@ -465,6 +466,53 @@ void ExtensionJob::commandRetrieveFileStatus(const CommString &argument, std::sh
 }
 
 #if defined(KD_WINDOWS)
+namespace {
+
+// Values of the Windows.Storage.Provider.StorageProviderState enumeration.
+enum class StorageProviderState {
+    InSync = 0,
+    Syncing = 1,
+    Paused = 2,
+    Error = 3,
+    Warning = 4,
+    Offline = 5
+};
+
+std::pair<StorageProviderState, QString> statusUiState(const SyncStatus status) {
+    switch (status) {
+        case SyncStatus::Starting:
+        case SyncStatus::Running:
+            return {StorageProviderState::Syncing, QObject::tr("Synchronizing")};
+        case SyncStatus::Idle:
+            return {StorageProviderState::InSync, QObject::tr("Up to date")};
+        case SyncStatus::PauseAsked:
+        case SyncStatus::Paused:
+            return {StorageProviderState::Paused, QObject::tr("Synchronization paused")};
+        case SyncStatus::Error:
+            return {StorageProviderState::Error, QObject::tr("Synchronization error")};
+        case SyncStatus::StopAsked:
+        case SyncStatus::Stopped:
+        case SyncStatus::Undefined:
+        default:
+            return {StorageProviderState::Offline, QObject::tr("Synchronization stopped")};
+    }
+}
+
+QString sizeToString(const int64_t size) {
+    static const char *units[] = {QT_TR_NOOP("B"), QT_TR_NOOP("KB"), QT_TR_NOOP("MB"), QT_TR_NOOP("GB"), QT_TR_NOOP("TB")};
+
+    auto value = static_cast<double>(size);
+    size_t unitIndex = 0;
+    while (value >= 1000.0 && unitIndex < std::size(units) - 1) {
+        value /= 1000.0;
+        unitIndex++;
+    }
+
+    return QString("%1 %2").arg(QString::number(value, 'f', unitIndex == 0 ? 0 : 1), QString(units[unitIndex]));
+}
+
+} // namespace
+
 void ExtensionJob::commandGetAllMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
     const auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
 
@@ -618,6 +666,90 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     CommString response(msgId);
     response.append(responseToFinderArgSeparator);
     response.append(CommonUtility::qStr2CommString(QString(pixmapBuffer.data().toBase64())));
+    channel->sendMessage(response);
+}
+
+void ExtensionJob::commandGetStatusUI(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
+    const auto argumentList = CommonUtility::splitCommString(argument, messageArgSeparator);
+    if (argumentList.size() != 2 || !channel) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
+        return;
+    }
+
+    const CommString msgId(argumentList[0]);
+    const SyncPath syncRootPath(argumentList[1]);
+
+    // Default values, they are used as well when the drive/sync cannot be found so that the File Explorer always gets an answer.
+    auto state = StorageProviderState::Offline;
+    QString stateLabel = QObject::tr("Not connected");
+    int64_t quotaTotal = 0;
+    int64_t quotaUsed = 0;
+    QString quotaLabel;
+    QString color;
+    QString driveName;
+    QString driveUrl;
+
+    Sync sync;
+    if (syncForPath(syncRootPath, sync)) {
+        {
+            const std::scoped_lock lock(_commManager->appServer().syncPalMapMutex);
+            if (const auto syncPalMapIt = _commManager->appServer().syncPalMap.find(sync.dbId());
+                syncPalMapIt != _commManager->appServer().syncPalMap.end() && syncPalMapIt->second) {
+                std::tie(state, stateLabel) = statusUiState(syncPalMapIt->second->status());
+            }
+        }
+
+        Drive drive;
+        bool found = false;
+        if (!ParmsDb::instance()->selectDrive(sync.driveDbId(), drive, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
+        } else if (found) {
+            color = QString::fromStdString(drive.color());
+            driveName = QString::fromStdString(drive.name());
+            driveUrl = QString("https://kdrive.infomaniak.com/app/drive/%1").arg(drive.driveId());
+
+            quotaTotal = drive.size();
+            quotaUsed = drive.usedSize();
+            int64_t cachedTotal = 0;
+            int64_t cachedUsed = 0;
+            if (_commManager->appServer().driveQuota(drive.dbId(), cachedTotal, cachedUsed)) {
+                quotaTotal = cachedTotal;
+                quotaUsed = cachedUsed;
+            }
+
+            if (quotaTotal > 0) {
+                // The quota section is not displayed by the File Explorer if this label is empty.
+                quotaLabel =
+                        QObject::tr("%1 of %2 used").arg(sizeToString(quotaUsed < 0 ? 0 : quotaUsed), sizeToString(quotaTotal));
+            }
+        }
+    } else {
+        LOGW_WARN(Log::instance()->getLogger(), L"Sync not found for sync root - " << Utility::formatSyncPath(syncRootPath));
+    }
+
+    CommString response(msgId);
+    response.append(responseToFinderArgSeparator);
+    response.append(CommonUtility::qStr2CommString(QString::number(static_cast<int>(state))));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(stateLabel));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(QString::number(quotaTotal < 0 ? 0 : quotaTotal)));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(QString::number(quotaUsed < 0 ? 0 : quotaUsed)));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(quotaLabel));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(color));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(driveName));
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(driveUrl));
+    response.append(messageArgSeparator);
+    response.append(openInBrowserText());
+    response.append(messageArgSeparator);
+    response.append(CommonUtility::qStr2CommString(driveName.isEmpty() ? QString()
+                                                                       : QObject::tr("Open %1 in your browser").arg(driveName)));
+
     channel->sendMessage(response);
 }
 #endif

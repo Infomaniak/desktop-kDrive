@@ -21,6 +21,7 @@
 #include "thumbnailprovider.h"
 #include "customstateprovider.h"
 #include "contextmenus.h"
+#include "statusuisource.h"
 
 #include <ppltasks.h>
 
@@ -50,6 +51,11 @@ bool ShellServices::initAndStartServiceTask() {
             winrt::check_hresult(CoRegisterClassObject(CLSID_CustomStateProvider, customStateProvider.get(), CLSCTX_LOCAL_SERVER,
                                                        REGCLS_MULTIPLEUSE, &cookie));
             TRACE_DEBUG(L"CustomStateProvider cookie = %ld", cookie);
+
+            auto statusUISourceFactory = winrt::make<ClassFactory<StatusUISourceFactory>>();
+            winrt::check_hresult(CoRegisterClassObject(CLSID_StatusUISourceFactory, statusUISourceFactory.get(),
+                                                       CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE, &cookie));
+            TRACE_DEBUG(L"StatusUISourceFactory cookie = %ld", cookie);
 
             winrt::handle dummyEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr));
             if (!dummyEvent) {

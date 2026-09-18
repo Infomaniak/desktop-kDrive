@@ -43,6 +43,10 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_NAMESPACECLSID L"NamespaceCLSID"
 #define REGKEY_AUMID L"AUMID"
 #define REGKEY_ICONRESOURCE L"IconResource"
+// CLSID of the status UI source factory hosted by fileexplorerextension.exe, it must match the value declared in
+// FileExplorerExtension\statusuisource.h and in FileExplorerExtensionPackage\Package.appxmanifest.
+#define REGKEY_STATUSUISOURCEFACTORY L"StorageProviderStatusUISourceFactory"
+#define STATUSUISOURCEFACTORY_CLSID L"{0BA42370-2A5A-4F30-AA40-620F870E44DF}"
 #define REGKEY_DEFAULTICON L"DefaultIcon"
 
 void updateRegistryEntry(const HKEY &hKey, const std::wstring &name, const std::wstring &value) {
@@ -113,6 +117,9 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                 if (!value.empty()) {
                     updateRegistryEntry(hKey, name, value);
                 }
+
+                // Update/create the status UI source factory CLSID (migration of the already registered sync roots)
+                updateRegistryEntry(hKey, REGKEY_STATUSUISOURCEFACTORY, STATUSUISOURCEFACTORY_CLSID);
 
                 TRACE_DEBUG(L"Closing key %s", subKey.c_str());
                 if (RegCloseKey(hKey) != ERROR_SUCCESS) {
@@ -258,6 +265,9 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
                                   (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
                     TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
                 }
+
+                // Set the status UI source factory CLSID
+                updateRegistryEntry(hKey, REGKEY_STATUSUISOURCEFACTORY, STATUSUISOURCEFACTORY_CLSID);
 
                 TRACE_DEBUG(L"Closing key %s", subKey.c_str());
                 if (RegCloseKey(hKey) != ERROR_SUCCESS) {

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop3="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3" xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" IgnorableNamespaces="uap mp rescap desktop3 desktop4">
-	<Identity Name="Infomaniak.kDrive.Extension" Publisher="CN=Windows11CI-1" Version="3.8.6.1" />
-		<Properties>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop3="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3" xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4" xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" xmlns:cloudfiles2="http://schemas.microsoft.com/appx/manifest/cloudfiles/windows10/2" IgnorableNamespaces="uap mp rescap desktop3 desktop4 cloudfiles2">
+  <Identity Name="Infomaniak.kDrive.Extension" Publisher="CN=Windows11CI-1" Version="4.0.0.9" />
+  <Properties>
     <DisplayName>kDrive Windows Explorer Extension Package</DisplayName>
     <PublisherDisplayName>Infomaniak Network SA</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
@@ -29,6 +29,7 @@
             <desktop3:CloudFilesContextMenus>
               <desktop3:Verb Id="Command1" Clsid="A18E9226-E817-4958-BD21-D6967DBD1921" />
             </desktop3:CloudFilesContextMenus>
+            <cloudfiles2:StorageProviderStatusUISourceFactory Clsid="0BA42370-2A5A-4F30-AA40-620F870E44DF" />
           </desktop3:CloudFiles>
         </desktop3:Extension>
         <com:Extension Category="windows.comServer">
@@ -41,6 +42,9 @@
             </com:ExeServer>
             <com:ExeServer DisplayName="Cloud File Provider Custom State Handler" Executable="FileExplorerExtension\fileexplorerextension.exe">
               <com:Class Id="D19AA847-DAAE-45C0-9F53-702179617F42" />
+            </com:ExeServer>
+            <com:ExeServer DisplayName="Cloud File Provider Status UI Source Factory" Executable="FileExplorerExtension\fileexplorerextension.exe">
+              <com:Class Id="0BA42370-2A5A-4F30-AA40-620F870E44DF" />
             </com:ExeServer>
           </com:ComServer>
         </com:Extension>

@@ -221,6 +221,18 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode getPublicLinkUrl(const DriveDbId driveDbId, const NodeId &nodeId, std::string &linkUrl) {
             return ServerRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
         }
+
+        /** Retrieve the last known quota of a drive.
+         * @return false if the quota of this drive has not been fetched yet.
+         */
+        bool driveQuota(const DriveDbId driveDbId, int64_t &total, int64_t &used) const {
+            const std::scoped_lock lock(_driveQuotaMapMutex);
+            const auto it = _driveQuotaMap.find(driveDbId);
+            if (it == _driveQuotaMap.cend()) return false;
+            total = it->second.first;
+            used = it->second.second;
+            return true;
+        }
 #endif
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
@@ -290,6 +302,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _sendFilesNotificationsTimer;
         QTimer _restartSyncsTimer;
         std::unordered_map<SyncDbId, SyncCache> _syncCacheMap;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        // Last known quota (total, used) of each drive, indexed by drive DB id.
+        std::unordered_map<DriveDbId, std::pair<int64_t, int64_t>> _driveQuotaMap;
+        mutable std::mutex _driveQuotaMapMutex;
+#endif
         std::unordered_map<int, NodeSet> _undecidedListCacheMap;
         QProcess *_clientProcess = nullptr;
 

@@ -178,6 +178,7 @@
     <ClCompile Include="contextmenus.cpp" />
     <ClCompile Include="customstateprovider.cpp" />
     <ClCompile Include="shellservices.cpp" />
+    <ClCompile Include="statusuisource.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="thumbnailprovider.cpp" />
   </ItemGroup>
@@ -192,6 +193,7 @@
     <ClInclude Include="customstateprovider.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shellservices.h" />
+    <ClInclude Include="statusuisource.h" />
     <ClInclude Include="thumbnailprovider.h" />
   </ItemGroup>
   <ItemGroup>
