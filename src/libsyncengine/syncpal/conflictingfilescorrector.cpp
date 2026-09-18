@@ -94,7 +94,8 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
-    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, so we check them here.
+    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, absolute or
+    // indicate items located outside the sync directory.
     if (error.path().filename().empty() || error.destinationPath().filename().empty() || error.destinationPath().is_absolute()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error paths in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.path()) << L" / destination "
@@ -102,12 +103,25 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
         return false;
     }
 
-    SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
-    originalAbsolutePath = originalAbsolutePath.lexically_normal();
+    const SyncPath originalAbsolutePath = std::filesystem::weakly_canonical(
+            _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename());
 
-    if (!CommonUtility::isSubDir(_syncPal->localPath(), originalAbsolutePath) || originalAbsolutePath == _syncPal->localPath()) {
+    if (const SyncPath destinationParentPath =
+                std::filesystem::weakly_canonical(_syncPal->localPath() / error.destinationPath().parent_path());
+        !CommonUtility::isSubDir(_syncPal->localPath(), originalAbsolutePath) || originalAbsolutePath == _syncPal->localPath() ||
+        !CommonUtility::isSubDir(destinationParentPath, originalAbsolutePath)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.destinationPath()));
+        return false;
+    }
+
+    // Early validation of the source path of the rename operation to avoid unwanted deletion of files if this source path is
+    // invalid.
+    const SyncPath sourceAbsoluteLocalPath = std::filesystem::weakly_canonical(_syncPal->localPath() / error.destinationPath());
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), sourceAbsoluteLocalPath) ||
+        sourceAbsoluteLocalPath == _syncPal->localPath()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error destination path in ConflictingFilesCorrector::keepLocalVersion: "
+                                                        << Utility::formatSyncPath(error.path()));
         return false;
     }
 
@@ -119,13 +133,6 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     }
 
     // Rename the local version
-    const SyncPath sourceAbsoluteLocalPath = (_syncPal->localPath() / error.destinationPath()).lexically_normal();
-    if (!CommonUtility::isSubDir(_syncPal->localPath(), sourceAbsoluteLocalPath) ||
-        sourceAbsoluteLocalPath == _syncPal->localPath()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Invalid error path in ConflictingFilesCorrector::keepLocalVersion: "
-                                                        << Utility::formatSyncPath(error.path()));
-        return false;
-    }
     LocalMoveJob renameJob(sourceAbsoluteLocalPath, originalAbsolutePath);
     renameJob.runSynchronously();
     if (renameJob.exitInfo().code() != ExitCode::Ok) {
@@ -140,10 +147,10 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 }
 
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
-    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, so we check it
-    // here.
+    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, absolute or
+    // indicates an item located outside the sync directory.
     bool invalidDestinationPath = error.destinationPath().filename().empty() || error.destinationPath().is_absolute();
-    const SyncPath absoluteDestinationPath = (_syncPal->localPath() / error.destinationPath()).lexically_normal();
+    const SyncPath absoluteDestinationPath = std::filesystem::weakly_canonical(_syncPal->localPath() / error.destinationPath());
     invalidDestinationPath = invalidDestinationPath || !CommonUtility::isSubDir(_syncPal->localPath(), absoluteDestinationPath) ||
                              absoluteDestinationPath == _syncPal->localPath();
 
