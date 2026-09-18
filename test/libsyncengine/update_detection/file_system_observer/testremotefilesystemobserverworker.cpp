@@ -104,7 +104,6 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     _syncPal->_remoteFSObserverWorker =
             std::make_shared<RemoteFileSystemObserverWorker>(_syncPal, "Remote File System Observer", "RFSO");
-    _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
 }
 
 void TestRemoteFileSystemObserverWorker::tearDown() {
@@ -128,6 +127,10 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 }
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
+    // Generating the initial snapshot requires access to the remote drive: it is only done by the tests that need it.
+    const ExitInfo exitInfo = _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
+    CPPUNIT_ASSERT_MESSAGE("Failed to generate the initial remote snapshot", exitInfo);
+
     NodeSet ids;
     _syncPal->liveSnapshot(ReplicaSide::Remote).ids(ids);
 
@@ -141,6 +144,9 @@ void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
 }
 
 void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
+    const ExitInfo exitInfo = _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
+    CPPUNIT_ASSERT_MESSAGE("Failed to generate the initial remote snapshot", exitInfo);
+
     // Create test file locally
     const LocalTemporaryDirectory temporaryDirectory("testRFSO");
     const SyncName testFileName = Str("test_file_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
@@ -277,6 +283,47 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
 
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
     }
+}
+
+void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+
+    int nbErrors = 0;
+    _syncPal->setAddErrorCallback([&nbErrors](const Error &) { ++nbErrors; });
+
+    // Insert a consistent directory with a file inside.
+    const SnapshotItem dirItem("dir", rootId, Str("dir"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                               testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(dirItem));
+
+    const SnapshotItem fileItem("file", "dir", Str("file.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(fileItem));
+
+    // Insert an item whose parent is a file. The integrity check must remove it from the snapshot and report an error.
+    const SnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                       NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(childOfFileItem));
+    CPPUNIT_ASSERT(liveSnapshot.exists("child"));
+
+    const ExitInfo exitInfo = remoteFSObserverWorker->checkSnapshotIntegrity();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+
+    CPPUNIT_ASSERT(!liveSnapshot.exists("child"));
+
+    // Consistent items are left untouched.
+    CPPUNIT_ASSERT(liveSnapshot.exists("dir"));
+    CPPUNIT_ASSERT(liveSnapshot.exists("file"));
+
+    // Exactly one error, corresponding to the removed item, has been reported.
+    CPPUNIT_ASSERT_EQUAL(1, nbErrors);
 }
 
 } // namespace KDC
