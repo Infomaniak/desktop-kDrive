@@ -307,11 +307,21 @@ void Logger::setLogExpire(const std::chrono::days expire) {
 }
 
 void Logger::purgeExpiredLogFiles() const {
-    if (_logDirectoryPath.isEmpty() || _logExpire.count() <= 0) {
+    if (_logExpire.count() <= 0) {
         return;
     }
 
-    QDir dir(_logDirectoryPath);
+    // File logging may be disabled, which clears the log directory: fall back to the default one so the cleanup still applies.
+    QString logDirectoryPath = _logDirectoryPath;
+    if (logDirectoryPath.isEmpty()) {
+        SyncPath defaultLogDirectoryPath;
+        if (!CommonUtility::logDirectoryPath(defaultLogDirectoryPath)) {
+            return;
+        }
+        logDirectoryPath = Path2QStr(defaultLogDirectoryPath);
+    }
+
+    QDir dir(logDirectoryPath);
     const QDateTime now = QDateTime::currentDateTime();
     for (const QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(logAppName())), QDir::Files, QDir::Name);
          const QString &fileName: files) {
