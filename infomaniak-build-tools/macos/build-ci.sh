@@ -53,7 +53,7 @@ if [ -d "$install_dir/$app_name-old.app" ]; then
 fi
 
 if [ -d "$install_dir/$app_name.app" ]; then
-	cp -a "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
+	mv "$install_dir/$app_name.app" "$install_dir/$app_name-old.app"
 fi
 
 # Prepare additional cmake arguments
@@ -88,6 +88,8 @@ cmake \
 	-DCMAKE_BUILD_TYPE="$build_type" \
 	-DKDRIVE_THEME_DIR="$kdrive_dir" \
 	-DBUILD_UNIT_TESTS=1 \
+	-DBUILD_GUI=ON \
+	-DBUILD_GUI_LEGACY=OFF \
 	-DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
 	"${CMAKE_PARAMS[@]}" \
 	"$src_dir"
