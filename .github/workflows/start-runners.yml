@@ -109,6 +109,7 @@ jobs:
               --network "$NETWORK_NAME" \
               --user-data "$USERDATA" \
               --property "purpose=ci-runner" \
+              --key-name desktop_team
               --wait \
               -c id -c name -c status \
               "$NAME" &
