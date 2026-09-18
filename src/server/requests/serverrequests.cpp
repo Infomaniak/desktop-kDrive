@@ -495,9 +495,9 @@ SyncName getInitialFolderName(const SyncName &driveName) {
     if (!Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD)) {
         normalizedDriveName = driveName;
     }
-    return Str2SyncName(prefix + normalizedDriveName);
+    return prefix + normalizedDriveName;
 #else
-    return Str2SyncName(prefix + driveName);
+    return prefix + driveName;
 #endif
 }
 
