@@ -599,7 +599,7 @@
 "errForbiddenActionTitle" = "Pääsy kielletty";
 
 /* loco:698c50d3ad9b9055a00cca42 */
-"errForbiddenCharDescription" = "Tämän %@ nimi sisältää yhden tai useamman merkin, joita kDriven Windows-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelusta.";
+"errForbiddenCharDescription" = "Tämän %@:n nimessä on yksi tai useampi merkki, joita kDrive-sovellus ei tue. Nimeä %@ uudelleen kDrive-verkkopalvelussa.";
 
 /* loco:699c5dff17e678a1990c53c4 */
 "errForbiddenCharOnlySpacesDescription" = "Tämä nimi sisältää vain välilyöntejä eikä sitä voi käyttää. Nimeä %@ uudelleen kDrive-verkkopalvelusta.";
@@ -1141,6 +1141,9 @@
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ versioristiriitaa havaittu";
 
+/* loco:6a9ea3f9ee85c0002403efc5 */
+"manyDeleteDialogFilesHeader" = "%@ poistettua kohdetta";
+
 /* loco:6a6c9bf050ca28e030064893 */
 "manyDeleteDialogHardLimitContent" = "Synkronointi on keskeytetty, jotta vältetään tahaton poisto.\nMitä haluat tehdä?";
 
@@ -1355,7 +1358,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+"searchResultOpenInBrowserTooltip" = "Tätä kohdetta ei ole saatavilla tällä laitteella. Se avautuu kDrive-verkkopalvelussa.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */

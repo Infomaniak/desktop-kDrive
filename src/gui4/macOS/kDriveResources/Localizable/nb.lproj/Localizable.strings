@@ -599,7 +599,7 @@
 "errForbiddenActionTitle" = "Tilgang forbudt";
 
 /* loco:698c50d3ad9b9055a00cca42 */
-"errForbiddenCharDescription" = "Navnet på dette %@ inneholder ett eller flere tegn som ikke støttes av kDrive Windows-programmet. Gi nytt navn til %@ fra kDrive på nett.";
+"errForbiddenCharDescription" = "Navnet på denne %@ inneholder ett eller flere tegn som ikke støttes av kDrive-appen. Gi %@ et nytt navn via kDrive online.";
 
 /* loco:699c5dff17e678a1990c53c4 */
 "errForbiddenCharOnlySpacesDescription" = "Dette navnet inneholder bare mellomrom og kan ikke brukes. Gi nytt navn til %@ fra kDrive på nett.";
@@ -1141,6 +1141,9 @@
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ versjonskonflikt(er) oppdaget";
 
+/* loco:6a9ea3f9ee85c0002403efc5 */
+"manyDeleteDialogFilesHeader" = "%@ elementer slettet";
+
 /* loco:6a6c9bf050ca28e030064893 */
 "manyDeleteDialogHardLimitContent" = "Synkroniseringen er satt på pause for å unngå utilsiktet sletting.\nHva vil du gjøre?";
 
@@ -1355,7 +1358,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+"searchResultOpenInBrowserTooltip" = "Dette elementet er ikke tilgjengelig på denne enheten.  Det åpnes i kDrive online.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */

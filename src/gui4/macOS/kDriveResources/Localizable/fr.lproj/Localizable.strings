@@ -1141,6 +1141,9 @@
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ conflits de versions détectés";
 
+/* loco:6a9ea3f9ee85c0002403efc5 */
+"manyDeleteDialogFilesHeader" = "%@ éléments supprimés";
+
 /* loco:6a6c9bf050ca28e030064893 */
 "manyDeleteDialogHardLimitContent" = "La synchronisation est en pause pour éviter une suppression involontaire.\nQue voulez-vous faire ?";
 
@@ -1355,7 +1358,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "Ce fichier n’est pas disponible localement et sera ouvert dans votre navigateur";
+"searchResultOpenInBrowserTooltip" = "Cet élément n’est pas disponible sur cet appareil.  Il s’ouvrira dans kDrive en ligne.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
