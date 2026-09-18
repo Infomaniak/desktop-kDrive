@@ -437,7 +437,8 @@ bool CommonUtility::equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs) 
     const SyncName leftPath = normalizePathForComparison(lhs);
     const SyncName rightPath = normalizePathForComparison(rhs);
 
-    return leftPath.size() == rightPath.size() && containsInsensitive(leftPath, rightPath);
+    return leftPath == rightPath ||
+           (leftPath.size() == rightPath.size() && containsInsensitive(leftPath, rightPath));
 }
 
 #if defined(KD_WINDOWS)
