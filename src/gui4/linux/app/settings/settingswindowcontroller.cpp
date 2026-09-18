@@ -22,11 +22,14 @@ namespace KDC {
 
 SettingsWindowController::SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
                                                    TranslationService &translationService,
-                                                   UpdateStatusService &updateStatusService, SentryService &sentryService,
-                                                   const CommService &commService, QObject *const parent) :
+                                                   UpdateStatusService &updateStatusService,
+                                                   ExclusionTemplateService &exclusionTemplateService,
+                                                   SentryService &sentryService, const CommService &commService,
+                                                   QObject *const parent) :
     QObject(parent),
     _general(parametersStore, parametersService, translationService, updateStatusService, this),
-    _advanced(parametersStore, parametersService, sentryService, commService, translationService, this) {}
+    _advanced(parametersStore, parametersService, sentryService, commService, translationService, this),
+    _fileExclusions(exclusionTemplateService, translationService, this) {}
 
 void SettingsWindowController::refreshUpdates() const {
     _general.refreshUpdates();

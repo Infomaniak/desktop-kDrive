@@ -170,6 +170,10 @@ IKShadowedWindow {
         id: advancedRootComponent
 
         AdvancedSettingsView {
+            onFileExclusionsRequested: trigger => {
+                trigger.forceActiveFocus();
+                advancedPane.push(fileExclusionsComponent);
+            }
             onDataManagementRequested: trigger => {
                 trigger.forceActiveFocus();
                 advancedPane.push(dataManagementComponent);
@@ -178,6 +182,15 @@ IKShadowedWindow {
                 trigger.forceActiveFocus();
                 advancedPane.push(debugComponent);
             }
+        }
+    }
+
+    Component {
+        id: fileExclusionsComponent
+
+        FileExclusionsView {
+            controller: root.controller.fileExclusions
+            onAddRuleRequested: trigger => addExclusionRuleDialog.showFrom(trigger)
         }
     }
 
@@ -251,6 +264,14 @@ IKShadowedWindow {
         scrimRadius: root.surfaceRadius
     }
 
+    AddExclusionRuleDialog {
+        id: addExclusionRuleDialog
+
+        controller: root.controller.fileExclusions
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+    }
+
     SendDebugLogsDialog {
         id: sendDebugLogsDialog
 
@@ -260,6 +281,7 @@ IKShadowedWindow {
     }
 
     onClosing: {
+        addExclusionRuleDialog.close();
         sendDebugLogsDialog.close();
         releaseDialog.close();
         aboutDialog.close();

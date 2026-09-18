@@ -35,6 +35,7 @@
 #include "app/services/commservice.h"
 #include "app/services/activityservice.h"
 #include "app/services/driveservice.h"
+#include "app/services/exclusiontemplateservice.h"
 #include "app/services/parametersservice.h"
 #include "app/services/sentryservice.h"
 #include "app/services/serviceactiontracker.h"
@@ -140,6 +141,7 @@ class AppClientLinux : public QApplication {
         AppRouter _appRouter{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};
+        ExclusionTemplateService _exclusionTemplateService{_serverCommService, _serviceEventBus, this};
         ActivityService _activityService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         SentryService _sentryService{_parametersService, _appCache, _parametersStore, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
@@ -158,13 +160,9 @@ class AppClientLinux : public QApplication {
         StorageController _storageController{_mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        SettingsWindowController _settingsWindowController{_parametersStore,
-                                                           _parametersService,
-                                                           _translationService,
-                                                           _updateStatusService,
-                                                           _sentryService,
-                                                           _serverCommService,
-                                                           this};
+        SettingsWindowController _settingsWindowController{
+                _parametersStore,          _parametersService, _translationService, _updateStatusService,
+                _exclusionTemplateService, _sentryService,     _serverCommService,  this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
