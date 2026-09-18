@@ -599,7 +599,7 @@
 "errForbiddenActionTitle" = "Απαγορευμένη πρόσβαση";
 
 /* loco:698c50d3ad9b9055a00cca42 */
-"errForbiddenCharDescription" = "Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive Windows. Μετονομάστε το %@ από το kDrive online.";
+"errForbiddenCharDescription" = "Το όνομα αυτού του %@ περιέχει έναν ή περισσότερους χαρακτήρες που δεν υποστηρίζονται από την εφαρμογή kDrive. Μετονομάστε το %@ μέσω του kDrive online.";
 
 /* loco:699c5dff17e678a1990c53c4 */
 "errForbiddenCharOnlySpacesDescription" = "Αυτό το όνομα περιέχει μόνο κενά και δεν μπορεί να χρησιμοποιηθεί. Μετονομάστε το %@ από το kDrive online.";
@@ -1141,6 +1141,9 @@
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ συγκρούσεις εκδόσεων εντοπίστηκαν";
 
+/* loco:6a9ea3f9ee85c0002403efc5 */
+"manyDeleteDialogFilesHeader" = "%@ στοιχεία που διαγράφηκαν";
+
 /* loco:6a6c9bf050ca28e030064893 */
 "manyDeleteDialogHardLimitContent" = "Ο συγχρονισμός έχει τεθεί σε παύση για να αποφευχθεί η ακούσια διαγραφή.\nΤι θέλετε να κάνετε;";
 
@@ -1355,7 +1358,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+"searchResultOpenInBrowserTooltip" = "Αυτό το στοιχείο δεν είναι διαθέσιμο σε αυτή τη συσκευή. Θα ανοίξει στο kDrive online.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */

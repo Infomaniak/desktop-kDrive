@@ -599,7 +599,7 @@
 "errForbiddenActionTitle" = "Access forbidden";
 
 /* loco:698c50d3ad9b9055a00cca42 */
-"errForbiddenCharDescription" = "The name of this %@ contains one or more characters not supported by the kDrive Windows application. Rename the %@ from kDrive online.";
+"errForbiddenCharDescription" = "The name of this %@ contains one or more characters that are not supported by the kDrive app. Rename %@ using kDrive online.";
 
 /* loco:699c5dff17e678a1990c53c4 */
 "errForbiddenCharOnlySpacesDescription" = "This name contains only spaces and cannot be used. Rename the %@ from kDrive online.";
@@ -1141,6 +1141,9 @@
 /* loco:69aaac472fbbf3de57090942 */
 "manyConflictErrorTitle" = "%@ version conflicts detected";
 
+/* loco:6a9ea3f9ee85c0002403efc5 */
+"manyDeleteDialogFilesHeader" = "%@ items deleted";
+
 /* loco:6a6c9bf050ca28e030064893 */
 "manyDeleteDialogHardLimitContent" = "Synchronization is paused to prevent accidental deletion.\nWhat would you like to do?";
 
@@ -1355,7 +1358,7 @@
 
 /* loco:69eb8290d3fa21c4fb096d82
  * Tooltip shown on search results when file is not available locally and will open in browser. */
-"searchResultOpenInBrowserTooltip" = "This file is not available locally and will be opened in your browser";
+"searchResultOpenInBrowserTooltip" = "This item is not available on this device. It will open in kDrive online.";
 
 /* loco:69eb8061e9130678990a5972
  * Empty search state title in SearchSheetView before any query is entered. */
