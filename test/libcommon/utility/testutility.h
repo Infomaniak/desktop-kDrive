@@ -54,7 +54,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStartsWithInsensitive);
         CPPUNIT_TEST(testEndsWith);
         CPPUNIT_TEST(testEndsWithInsensitive);
-        CPPUNIT_TEST(testEqualsInsensitive);
         CPPUNIT_TEST(testContains);
         CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testToLower);
@@ -111,7 +110,6 @@ class TestUtility : public CppUnit::TestFixture, public TestBase {
         void testStartsWithInsensitive();
         void testEndsWith();
         void testEndsWithInsensitive();
-        void testEqualsInsensitive();
         void testContains();
         void testToUpper();
         void testToLower();

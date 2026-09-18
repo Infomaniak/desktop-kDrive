@@ -421,26 +421,6 @@ bool CommonUtility::containsInsensitive(const std::string &str, const std::strin
     return it != str.end();
 }
 
-bool CommonUtility::equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs) {
-    auto normalizePathForComparison = [](const SyncPath &path) {
-        SyncName lexicallyNormalizedPath = path.lexically_normal().native();
-        if (lexicallyNormalizedPath.empty()) return lexicallyNormalizedPath;
-
-        SyncName normalizedPath;
-        if (!normalizedSyncName(lexicallyNormalizedPath, normalizedPath))
-            return lexicallyNormalizedPath; // fallback to lexically normalized path if normalization fails.
-
-
-        return normalizedPath;
-    };
-
-    const SyncName leftPath = normalizePathForComparison(lhs);
-    const SyncName rightPath = normalizePathForComparison(rhs);
-
-    return leftPath == rightPath ||
-           (leftPath.size() == rightPath.size() && containsInsensitive(leftPath, rightPath));
-}
-
 #if defined(KD_WINDOWS)
 bool CommonUtility::startsWithInsensitive(const SyncName &str, const SyncName &prefix) {
     if (prefix.empty()) return false;
