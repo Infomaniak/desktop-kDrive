@@ -72,16 +72,18 @@ void Vfs::stopVfsWorkers() {
         }
     }
 
-    Utility::msleep(100);
-
     for (auto &worker: _workerInfo) {
-        // Force threads to stop if needed
         for (QThread *const workerThread: std::as_const(worker._threadList)) {
-            if (workerThread && workerThread->isRunning()) {
+            if (!workerThread) {
+                continue;
+            }
+            workerThread->quit();
+            if (!workerThread->wait(1000)) {
                 workerThread->terminate();
                 workerThread->wait();
             }
         }
+        worker._threadList.clear();
     }
 
     LOG_DEBUG(logger(), "Stop VFS workers for syncdbid=" << _vfsSetupParams.syncDbId << " done");

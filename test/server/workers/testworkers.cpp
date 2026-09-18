@@ -168,6 +168,7 @@ void TestWorkers::tearDown() {
     }
     if (_vfs) {
         // Stop Vfs
+        _vfs->stopVfsWorkers();
         _vfs->stopImpl(true);
         _vfs = nullptr;
         _vfsConnectionDone = false;
