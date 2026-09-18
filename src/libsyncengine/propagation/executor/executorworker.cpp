@@ -404,8 +404,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
-                                                          << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger,
+                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -2273,7 +2273,8 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)): {
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
             return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {

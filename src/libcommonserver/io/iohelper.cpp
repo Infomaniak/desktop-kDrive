@@ -881,6 +881,48 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
     return checkIfIsHiddenFile(path, true, isHidden, ioError);
 }
 
+IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept {
+    traversesLink = false;
+    linkPath.clear();
+
+    // Check each ancestor directory of `path`, from the closest to the farthest. The final component of the path is ignored.
+    SyncPath tmpPath = path.parent_path();
+    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
+        std::error_code ec;
+        const bool isLink = _isSymlink(tmpPath, ec);
+        if (ec) {
+            const auto ioError = stdError2ioError(ec);
+            LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(tmpPath, ec));
+            return ioError;
+        }
+
+#if defined(KD_WINDOWS)
+        if (!isLink) {
+            // On Windows, junctions are also followed during path resolution although `std::filesystem::is_symlink`
+            // returns false for them.
+            IoError junctionError = IoError::Success;
+            bool isJunction = false;
+            if (!checkIfIsJunction(tmpPath, isJunction, junctionError) || junctionError != IoError::Success) {
+                LOGW_WARN(logger(),
+                          L"Failed to check if the item is a junction: " << Utility::formatIoError(tmpPath, junctionError));
+                return junctionError;
+            }
+            isLink = isJunction;
+        }
+#endif
+
+        if (isLink) {
+            traversesLink = true;
+            linkPath = tmpPath;
+            return IoError::Success;
+        }
+
+        tmpPath = tmpPath.parent_path();
+    }
+
+    return IoError::Success;
+}
+
 bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept {
     isDirectory = false;
 

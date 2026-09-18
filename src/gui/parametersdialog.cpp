@@ -830,6 +830,10 @@ QString ParametersDialog::getErrorLevelNodeText(const Error &error) const {
             } else if (error.exitCause() == ExitCause::FileSystemNotSupported) {
                 return tr(R"(Impossible to create file "%1" because it is not supported on your filesystem.<br>It has been excluded from synchronization.)")
                         .arg(Path2QStr(error.path()));
+            } else if (error.exitCause() == ExitCause::MoveThroughSymlink) {
+                return tr(
+                        "The item could not be moved because its path contains a symbolic link or junction.<br>"
+                        "It has been temporarily excluded from synchronization.");
             }
             return tr("System error.");
         }
