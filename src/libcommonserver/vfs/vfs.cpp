@@ -80,7 +80,7 @@ void Vfs::stopVfsWorkers() {
             workerThread->quit();
             if (!workerThread->wait(1000)) {
                 workerThread->terminate();
-                workerThread->wait();
+                (void) workerThread->wait();
             }
         }
         worker._threadList.clear();
