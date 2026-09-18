@@ -484,8 +484,8 @@ SyncName getInitialFolderName(const SyncName &driveName) {
     // We prefix the sync folder name with the app name if it is not already present in the drive name, to avoid collisions with
     // other sync folders.
     SyncName prefix;
-    if (!CommonUtility::containsInsensitive(driveName, Str2SyncName(Theme::instance()->appName()))) {
-        return prefix = Theme::instance()->appName() + Str(" ");
+if (!CommonUtility::containsInsensitive(driveName, Str2SyncName(Theme::instance()->appName()))) {
+        prefix = Str2SyncName(Theme::instance()->appName()) + Str(" ");
     }
 #if defined(KD_MACOS)
     // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
