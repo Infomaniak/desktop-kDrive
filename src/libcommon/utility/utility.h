@@ -246,7 +246,6 @@ struct COMMON_EXPORT CommonUtility {
         static bool endsWithInsensitive(const std::string &str, const std::string &suffix);
         static bool contains(const std::string &str, const std::string &substr);
         static bool containsInsensitive(const std::string &str, const std::string &substr);
-        static bool equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs);
 #if defined(KD_WINDOWS)
         static bool startsWithInsensitive(const SyncName &str, const SyncName &prefix);
         static bool startsWith(const SyncName &str, const SyncName &prefix);

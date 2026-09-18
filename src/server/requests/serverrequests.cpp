@@ -427,24 +427,31 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
 }
 
 namespace {
-// Detect collisions with directories of existing syncs by appending a suffix.
-// Note that this is a separate check from the previous one, because the local directory may not exist yet, or may have
-// been deleted, but is still registered as a sync folder in the database.
-bool hasCollisionWithExistingSyncs(const SyncPath &path, const std::vector<Sync> &syncList) {
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-    const auto pathComparator = [&path](const Sync &sync) { return CommonUtility::equalsInsensitive(sync.localPath(), path); };
-#elif defined(KD_LINUX)
-    const auto pathComparator = [&path](const Sync &sync) { return sync.localPath() == path; };
-#endif
-    if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
-        return true;
+SyncName getInitialFolderName(const SyncName &driveName) {
+    // We prefix the sync folder name with the app name only if it is not already present in the drive name to avoid redundancy.
+    SyncName prefix;
+    if (const auto appName = Str2SyncName(Theme::instance()->appName());
+        !CommonUtility::startsWithInsensitive(driveName, appName) &&
+        !CommonUtility::startsWithInsensitive(driveName, Str("drive"))) {
+        prefix = appName + Str(" ");
     }
-
-    return false;
+#if defined(KD_MACOS)
+    // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
+    // normalize the drive name to NFD as it is done in addSync.
+    SyncName normalizedDriveName;
+    if (!Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD)) {
+        normalizedDriveName = driveName;
+    }
+    return prefix + normalizedDriveName;
+#else
+    return prefix + driveName;
+#endif
 }
 
-ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
-                                      const std::vector<Sync> &syncList, SyncPath &path) {
+} // namespace
+
+ExitInfo ServerRequests::findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
+                                                      const std::vector<Sync> &syncList, SyncPath &path, QString &errorMessage) {
     constexpr Count kMaxPathAttempts = 100;
 
     Count attemptCount = 0;
@@ -474,34 +481,14 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
         if (alreadyExists) continue;
 
         // Check if the local directory is referred to by an existing sync.
-        if (bool newIncrementRequired = hasCollisionWithExistingSyncs(path, syncList); !newIncrementRequired) break;
+        if (const auto exitInfo = checkSyncNesting(syncList, Path2QStr(path), errorMessage); exitInfo)
+            break;
+        else if (exitInfo != ExitInfo{ExitCode::InvalidSync, ExitCause::SyncDirNestingError})
+            return exitInfo;
     }
 
     return ExitCode::Ok;
 }
-
-SyncName getInitialFolderName(const SyncName &driveName) {
-    // We prefix the sync folder name with the app name only if it is not already present in the drive name to avoid redundancy.
-    SyncName prefix;
-    if (const auto appName = Str2SyncName(Theme::instance()->appName());
-        !CommonUtility::startsWithInsensitive(driveName, appName) &&
-        !CommonUtility::startsWithInsensitive(driveName, Str("drive"))) {
-        prefix = appName + Str(" ");
-    }
-#if defined(KD_MACOS)
-    // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
-    // normalize the drive name to NFD as it is done in addSync.
-    SyncName normalizedDriveName;
-    if (!Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD)) {
-        normalizedDriveName = driveName;
-    }
-    return prefix + normalizedDriveName;
-#else
-    return prefix + driveName;
-#endif
-}
-
-} // namespace
 
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error) {
     std::vector<Sync> syncList;
@@ -511,27 +498,31 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     }
 
     SyncPath homeFolder;
-    if (const auto exitCode = CommonUtility::homeDirectoryPath(homeFolder); !exitCode) {
-        return exitCode;
-    }
+    if (const auto exitInfo = CommonUtility::homeDirectoryPath(homeFolder); !exitInfo) return exitInfo;
 
-    const SyncName initialFolderName = getInitialFolderName(driveName);
-    SyncPath nonExistingPath;
-    if (const auto exitInfo = findUnoccupiedPathForNewSync(homeFolder, initialFolderName, syncList, nonExistingPath); !exitInfo) {
-        error = "Failed to find a non-occupied folder path for new sync";
+    // If `homeFolder` is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
+    // The user will be prompted to choose a custom folder in this case.
+    SyncDbId syncDbId = 0;
+    if (const bool someSyncFolderContainsHome = syncForPath(syncList, Path2QStr(homeFolder), syncDbId);
+        someSyncFolderContainsHome) {
+        error = "The home folder is a sync folder or is contained in one.";
+        LOGW_WARN(Log::instance()->getLogger(), CommonUtility::s2ws(error) << L":" << Utility::formatSyncPath(homeFolder));
 
-        return exitInfo;
+        return ExitCode::SystemError;
     }
 
     QString errorMessage;
-    if (const auto exitInfo = checkSyncNesting(syncList, Path2QStr(nonExistingPath), errorMessage); !exitInfo) {
+    const SyncName initialFolderName = getInitialFolderName(driveName);
+    SyncPath unoccupiedPath;
+    if (const auto exitInfo = findUnoccupiedPathForNewSync(homeFolder, initialFolderName, syncList, unoccupiedPath, errorMessage);
+        !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), QStr2WStr(errorMessage));
         error = QStr2Str(errorMessage);
 
         return exitInfo;
     }
 
-    path = nonExistingPath;
+    path = unoccupiedPath;
     error = "";
 
     return ExitCode::Ok;
@@ -2140,8 +2131,7 @@ Qt::CaseSensitivity getQtPathCheckOption() {
 
 ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     error.clear();
-    ExitCode exitCode = checkPathValidityRecursive(path, error);
-    if (exitCode != ExitCode::Ok) {
+    if (const ExitCode exitCode = checkPathValidityRecursive(path, error); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
         return exitCode;
     }
@@ -2155,7 +2145,7 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
     }
 
     const auto cs = getQtPathCheckOption();
-    for (std::filesystem::path existingSyncFolder: existingSyncFolderList) {
+    for (const auto &existingSyncFolder: existingSyncFolderList) {
         const QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
 
         const bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
