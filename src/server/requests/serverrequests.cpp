@@ -481,6 +481,12 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
 }
 
 SyncName getInitialFolderName(const SyncName &driveName) {
+    // We prefix the sync folder name with the app name if it is not already present in the drive name, to avoid collisions with
+    // other sync folders.
+    SyncName prefix;
+    if (!CommonUtility::containsInsensitive(driveName, Str2SyncName(Theme::instance()->appName()))) {
+        return prefix = Theme::instance()->appName() + Str(" ");
+    }
 #if defined(KD_MACOS)
     // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
     // normalize the drive name to NFD as it is done in addSync.
@@ -488,9 +494,9 @@ SyncName getInitialFolderName(const SyncName &driveName) {
     if (!Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD)) {
         normalizedDriveName = driveName;
     }
-    return Str2SyncName(Theme::instance()->appName()) + Str(" ") + normalizedDriveName;
+    return Str2SyncName(prefix + normalizedDriveName);
 #else
-    return Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
+    return Str2SyncName(prefix + driveName;
 #endif
 }
 
