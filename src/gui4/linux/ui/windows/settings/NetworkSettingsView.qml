@@ -64,6 +64,8 @@ ScrollView {
     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
     Component.onCompleted: controller.beginEditing()
+    // Leaving the page abandons the check, like closing the window: its failure would have no receiver.
+    Component.onDestruction: controller.cancelConnectionCheck()
 
     Connections {
         target: root.controller
