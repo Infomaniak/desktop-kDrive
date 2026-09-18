@@ -39,6 +39,14 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
 
     private:
         ExitInfo resolveConflicts(const std::vector<Error> &errorList, ConflictResolutionStrategy strategy);
+        struct CanonicalPaths {
+                SyncPath sourcePath;
+                SyncPath destinationPath;
+                bool valid = false;
+        };
+
+        CanonicalPaths getCanonicalSourceAndDestinationPaths(const SyncPath &sourcePath, const SyncPath &destinationPath);
+
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);
         void deleteError(ErrorDbId errorDbId);
