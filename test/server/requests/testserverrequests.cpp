@@ -129,7 +129,7 @@ void TestServerRequests::testFindGoodPathForNewSync() {
     // In this case, `ServerRequests::findGoodPathForNewSync` should also successfully return a path that is different from the
     // default path.
     auto sync = Sync(1, _driveDbId, defaultPath, "", SyncPath{"remote_path"});
-    const auto syncDbPath = MockDb::makeDbName(_userId, _accountId, _driveDbId, sync.dbId());
+const auto syncDbPath = MockDb::makeDbName(_userId, _accountId, _driveId, sync.dbId());
     sync.setDbPath(syncDbPath);
     // Case 1: The default path exists and is the folder path of an existing sync.
     (void) ParmsDb::instance()->insertSync(sync);
