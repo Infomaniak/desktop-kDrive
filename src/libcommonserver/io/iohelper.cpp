@@ -727,13 +727,14 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept {
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *const filestat, IoError &ioError, PathCheckOption option) noexcept {
     ioError = IoError::Success;
 
     bool exists = false;
     if (!checkIfPathExists(path, exists, ioError, option)) {
         return false;
     }
+
     if (!exists) {
         if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
         return true;
@@ -742,15 +743,16 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     return _getFileStat(path, filestat, ioError);
 }
 
-void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, PathCheckOption option) {
+void IoHelper::getFileStat(const SyncPath &path, FileStat *const buf, bool &exists, const PathCheckOption option) {
     exists = true;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError, option)) {
-        exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
 
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
+
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
 }
 
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
@@ -1298,8 +1300,8 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = true;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        // This is the best effort to re-apply the existing exec rights, therefor we do not return in case of error.
+        LOGW_DEBUG(logger(), L"Failed to get rights for " << Utility::formatIoError(path, ioError));
+        // This is the best effort to re-apply the existing exec rights, therefore we do not return in case of error.
     }
 
     // The file must be unlocked before changing its access rights.
@@ -1309,9 +1311,10 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
 
     // Set full access rights.
     if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        return IoError::Unknown;
+        LOGW_DEBUG(logger(), L"Failed to set rights for " << Utility::formatIoError(path, ioError));
+        return ioError;
     }
+
     return IoError::Success;
 }
 
