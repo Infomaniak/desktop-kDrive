@@ -459,8 +459,8 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
             return ExitCode::SystemError;
         }
 
-        const auto suffix = attemptCount == 1 ? Str("") : Str2SyncName(std::to_string(attemptCount));
-        path = homeFolder / (initialFolderName + Str(" ") + suffix);
+        auto suffix = attemptCount == 1 ? Str("") : Str(" ") + Str2SyncName(std::to_string(attemptCount));
+        path = homeFolder / (initialFolderName + suffix);
 
         // Check if the local directory already exists
         auto ioError = IoError::Success;
@@ -484,7 +484,7 @@ SyncName getInitialFolderName(const SyncName &driveName) {
     // We prefix the sync folder name with the app name if it is not already present in the drive name, to avoid collisions with
     // other sync folders.
     SyncName prefix;
-if (!CommonUtility::containsInsensitive(driveName, Str2SyncName(Theme::instance()->appName()))) {
+    if (!CommonUtility::containsInsensitive(driveName, Str2SyncName(Theme::instance()->appName()))) {
         prefix = Str2SyncName(Theme::instance()->appName()) + Str(" ");
     }
 #if defined(KD_MACOS)
