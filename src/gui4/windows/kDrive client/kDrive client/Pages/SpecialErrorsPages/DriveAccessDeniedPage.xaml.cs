@@ -29,9 +29,9 @@ namespace Infomaniak.kDrive.Pages
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public DriveAccessDeniedPage() : base([SyncErrorStates.AccessDenied])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveAccessDeniedPage - Initializing DriveAccessDeniedPage components");
+            Logger.LogInfo("Navigated to DriveAccessDeniedPage - Initializing DriveAccessDeniedPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveAccessDeniedPage components initialized");
+            Logger.LogDebug("DriveAccessDeniedPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -42,7 +42,7 @@ namespace Infomaniak.kDrive.Pages
 
         private async void RetryButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Retry button clicked - Restarting sync");
+            Logger.LogInfo("Retry button clicked - Restarting sync");
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveAccessDeniedPage, Analytics.Keys.EventName.StartSync);
             await RestartSync();
         }

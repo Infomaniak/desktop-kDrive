@@ -41,9 +41,9 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         private DriveSetupContentDialogVM? DriveSetupContentDialogVM { get; set; }
         public SyncSetupPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveSetupContentDialog.SyncSetupPage - Initializing DriveSetupContentDialog.SyncSetupPage components");
+            Logger.LogInfo("Navigated to DriveSetupContentDialog.SyncSetupPage - Initializing DriveSetupContentDialog.SyncSetupPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.SyncSetupPage components initialized");
+            Logger.LogDebug("DriveSetupContentDialog.SyncSetupPage components initialized");
         }
 
         // Navigation method
@@ -57,7 +57,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "Invalid parameter type when navigating to SyncSetupPage");
+                Logger.LogFatal("Invalid parameter type when navigating to SyncSetupPage");
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
@@ -80,7 +80,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         {
             if (DriveSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                Logger.LogError("DriveSetupContentDialogVM is null");
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         {
             if (DriveSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                Logger.LogError("DriveSetupContentDialogVM is null");
                 return;
             }
             await DriveSetupContentDialogVM.RevertCurrentSyncChanges();
@@ -116,11 +116,11 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         private async void ChangeFolder_Click(object sender, RoutedEventArgs e)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveSetupDialog, Analytics.Keys.EventName.ChangeSyncLocalLocation);
-            Logger.Log(Logger.Level.Info, "Change sync path button clicked, opening folder picker");
+            Logger.LogInfo("Change sync path button clicked, opening folder picker");
 
             if (DriveSetupContentDialogVM?.CurrentSync is null)
             {
-                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM?.CurrentSync is null");
+                Logger.LogError("DriveSetupContentDialogVM?.CurrentSync is null");
                 return;
             }
             var newSync = DriveSetupContentDialogVM.CurrentSync;
@@ -129,7 +129,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "Sender is not a Control");
+                Logger.LogError("Sender is not a Control");
                 return;
             }
 
@@ -145,16 +145,16 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             if (folder is null)
             {
-                Logger.Log(Logger.Level.Info, "No folder was picked");
+                Logger.LogInfo("No folder was picked");
                 control.IsEnabled = true;
                 return;
             }
 
-            Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
+            Logger.LogInfo("Folder picked: " + folder.Path);
 
             if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && s.LocalPath.Equals(folder.Path, StringComparison.OrdinalIgnoreCase)))
             {
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already used by another sync.");
+                Logger.LogInfo($"Selected folder path '{folder.Path}' is already used by another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
 
                 control.IsEnabled = true;
@@ -163,7 +163,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(s.LocalPath, folder.Path)))
             {
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is already the parent of another sync.");
+                Logger.LogInfo($"Selected folder path '{folder.Path}' is already the parent of another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
 
                 control.IsEnabled = true;
@@ -172,7 +172,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
 
             if (DriveSetupContentDialogVM.NewSyncs.Any(s => s != newSync && IsSubPathOf(folder.Path, s.LocalPath)))
             {
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is inside another sync.");
+                Logger.LogInfo($"Selected folder path '{folder.Path}' is inside another sync.");
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
 
                 control.IsEnabled = true;
@@ -184,21 +184,22 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             if (result is null)
             {
                 Utility.ShowUnexpectedErrorTeachingTip();
-                Logger.Log(Logger.Level.Error, $"Unable to validate selected folder path '{folder.Path}' for syncing due to an unexpected error");
+                Logger.LogError($"Unable to validate selected folder path '{folder.Path}' for syncing due to an unexpected error",
+                    "SyncSetupPage: Failed to validate selected folder path");
                 control.IsEnabled = true;
                 return;
             }
             if (!result.Value)
             {
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderContent"), TimeSpan.FromSeconds(20));
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is not valid for syncing");
+                Logger.LogInfo($"Selected folder path '{folder.Path}' is not valid for syncing");
                 control.IsEnabled = true;
                 return;
             }
 
             newSync.LocalPath = folder.Path;
             await newSync.SelectBestVfsMode();
-            Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
+            Logger.LogInfo($"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
             control.IsEnabled = true;
         }
 

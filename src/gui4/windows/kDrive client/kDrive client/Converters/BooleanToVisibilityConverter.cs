@@ -45,7 +45,7 @@ namespace Infomaniak.kDrive.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "BooleanToVisibilityConverter: ConvertBack is not implemented.");
+            Logger.LogFatal("BooleanToVisibilityConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

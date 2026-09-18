@@ -30,13 +30,13 @@ namespace Infomaniak.kDrive.Converters
             {
                 return list.Any();
             }
-            Logger.Log(Logger.Level.Fatal, "ListEmptyToInvertedBooleanConverter: value is not a list.");
+            Logger.LogFatal("ListEmptyToInvertedBooleanConverter: value is not a list.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "ListEmptyToInvertedBooleanConverter: ConvertBack is not supported.");
+            Logger.LogFatal("ListEmptyToInvertedBooleanConverter: ConvertBack is not supported.");
             throw new NotSupportedException("ConvertBack is not supported.");
         }
     }

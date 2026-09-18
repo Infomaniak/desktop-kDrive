@@ -38,9 +38,9 @@ namespace Infomaniak.kDrive.Pages
         public AppModel ViewModel => _viewModel;
         public HomePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to HomePage - Initializing HomePage components");
+            Logger.LogInfo("Navigated to HomePage - Initializing HomePage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "HomePage components initialized");
+            Logger.LogDebug("HomePage components initialized");
         }
 
         private void OnSelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
@@ -94,7 +94,8 @@ namespace Infomaniak.kDrive.Pages
                     AppModel.UIThreadDispatcher.TryEnqueue(() => Frame?.Navigate(typeof(AsleepErrorPage)));
                     break;
                 default:
-                    Logger.Log(Logger.Level.Warning, $"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.");
+                    Logger.LogWarning($"Unexpected SyncErrorState: {ViewModel.SelectedSync?.SyncErrorState}. Staying on HomePage.",
+                        "HomePage: Unexpected sync error state");
                     return false;
             }
             return true;
@@ -168,7 +169,7 @@ namespace Infomaniak.kDrive.Pages
         {
             if (ViewModel.SelectedSync is null)
             {
-                Logger.Log(Logger.Level.Warning, "No sync is selected, cannot resume sync.");
+                Logger.LogWarning("No sync is selected, cannot resume sync.");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.HomePage, Analytics.Keys.EventName.StartSync);

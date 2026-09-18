@@ -64,7 +64,7 @@ namespace Infomaniak.kDrive.CustomControls
                     return AdvancedSyncTemplate;
                 }
             }
-            Logger.Log(Logger.Level.Warning, "SyncTemplateSelector: item is not of type Sync");
+            Logger.LogWarning("SyncTemplateSelector: item is not of type Sync");
             return MainSyncTemplate;
         }
     }

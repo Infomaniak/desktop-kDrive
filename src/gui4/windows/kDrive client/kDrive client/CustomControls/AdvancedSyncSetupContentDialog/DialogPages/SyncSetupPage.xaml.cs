@@ -38,9 +38,9 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         private AdvancedSyncSetupContentDialogVM? AdvancedSyncSetupContentDialogVM { get; set; }
         public SyncSetupPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to AdvancedSyncSetupContentDialog.SyncSetupPage - Initializing AdvancedSyncSetupContentDialog.SyncSetupPage components");
+            Logger.LogInfo("Navigated to AdvancedSyncSetupContentDialog.SyncSetupPage - Initializing AdvancedSyncSetupContentDialog.SyncSetupPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "AdvancedSyncSetupContentDialog.SyncSetupPage components initialized");
+            Logger.LogDebug("AdvancedSyncSetupContentDialog.SyncSetupPage components initialized");
         }
 
         // Navigation method
@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             }
             else
             {
-                Logger.Log(Logger.Level.Fatal, "Invalid parameter type when navigating to SyncSetupPage");
+                Logger.LogFatal("Invalid parameter type when navigating to SyncSetupPage");
                 throw new Exception("Invalid parameter type when navigating to SyncSetupPage");
             }
         }
@@ -70,7 +70,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");
+                Logger.LogError("AdvancedSyncSetupContentDialogVM is null");
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM?.NewSync is null");
+                Logger.LogError("AdvancedSyncSetupContentDialogVM?.NewSync is null");
                 return;
             }
 
@@ -103,7 +103,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");
+                Logger.LogError("AdvancedSyncSetupContentDialogVM is null");
                 return;
             }
 
@@ -114,7 +114,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
         {
             if (AdvancedSyncSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM is null");
+                Logger.LogError("AdvancedSyncSetupContentDialogVM is null");
                 return;
             }
 
@@ -123,11 +123,11 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
         private async void SelectLocalFolder_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Change sync path button clicked, opening folder picker");
+            Logger.LogInfo("Change sync path button clicked, opening folder picker");
 
             if (AdvancedSyncSetupContentDialogVM?.NewSync is null)
             {
-                Logger.Log(Logger.Level.Error, "AdvancedSyncSetupContentDialogVM?.NewSync is null");
+                Logger.LogError("AdvancedSyncSetupContentDialogVM?.NewSync is null");
                 return;
             }
             var newSync = AdvancedSyncSetupContentDialogVM.NewSync;
@@ -136,7 +136,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             var control = sender as Control;
             if (control is null)
             {
-                Logger.Log(Logger.Level.Error, "Sender is not a Control");
+                Logger.LogError("Sender is not a Control");
                 return;
             }
 
@@ -152,33 +152,34 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
 
             if (folder is null)
             {
-                Logger.Log(Logger.Level.Info, "No folder was picked");
+                Logger.LogInfo("No folder was picked");
                 control.IsEnabled = true;
                 return;
             }
 
-            Logger.Log(Logger.Level.Info, "Folder picked: " + folder.Path);
+            Logger.LogInfo("Folder picked: " + folder.Path);
 
             var commServices = App.ServiceProvider.GetRequiredService<IServerCommService>();
             bool? result = await commServices.IsPathValidForNewSync(folder.Path, SyncConfiguration.Advanced, CancellationToken.None);
             if (result is null)
             {
                 Utility.ShowUnexpectedErrorTeachingTip();
-                Logger.Log(Logger.Level.Error, $"Unable to validate selected folder path '{folder.Path}' for syncing due to an unexpected error");
+                Logger.LogError($"Unable to validate selected folder path '{folder.Path}' for syncing due to an unexpected error",
+                    "SyncSetupPage: Failed to validate selected folder path");
                 control.IsEnabled = true;
                 return;
             }
             if (!result.Value)
             {
                 Utility.ShowTeachingTip(Localizer.Instance.GetString("teachingTipInvalidFolderTitle"), Localizer.Instance.GetString("teachingTipInvalidFolderAdvancedContent"), TimeSpan.FromSeconds(20));
-                Logger.Log(Logger.Level.Info, $"Selected folder path '{folder.Path}' is not valid for syncing");
+                Logger.LogInfo($"Selected folder path '{folder.Path}' is not valid for syncing");
                 control.IsEnabled = true;
                 return;
             }
 
             newSync.LocalPath = folder.Path;
             await newSync.SelectBestVfsMode();
-            Logger.Log(Logger.Level.Info, $"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
+            Logger.LogInfo($"Sync path for drive '{newSync.Drive?.Name ?? "unknown"}' updated to '{newSync.LocalPath}' with sync type '{newSync.SyncType}'");
             control.IsEnabled = true;
         }
 
