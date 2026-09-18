@@ -423,29 +423,21 @@ bool CommonUtility::containsInsensitive(const std::string &str, const std::strin
 
 bool CommonUtility::equalsInsensitive(const SyncPath &lhs, const SyncPath &rhs) {
     auto normalizePathForComparison = [](const SyncPath &path) {
-        QString normalizedPath = SyncName2QStr(path.native());
-        if (normalizedPath.isEmpty()) {
-            return normalizedPath;
-        }
+        SyncName lexicallyNormalizedPath = path.lexically_normal().native();
+        if (lexicallyNormalizedPath.empty()) return lexicallyNormalizedPath;
 
-        normalizedPath = QDir::fromNativeSeparators(normalizedPath);
-        normalizedPath = QDir::cleanPath(normalizedPath);
+        SyncName normalizedPath;
+        if (!normalizedSyncName(lexicallyNormalizedPath, normalizedPath))
+            return lexicallyNormalizedPath; // fallback to lexically normalized path if normalization fails.
 
-        if (normalizedPath.length() > 1 && normalizedPath.endsWith(QLatin1Char('/'))) {
-            normalizedPath.chop(1);
-        }
-
-#if defined(KD_MACOS)
-        normalizedPath = normalizedPath.normalized(QString::NormalizationForm_C);
-#endif
 
         return normalizedPath;
     };
 
-    const QString leftPath = normalizePathForComparison(lhs);
-    const QString rightPath = normalizePathForComparison(rhs);
+    const SyncName leftPath = normalizePathForComparison(lhs);
+    const SyncName rightPath = normalizePathForComparison(rhs);
 
-    return QString::compare(leftPath, rightPath, Qt::CaseInsensitive) == 0;
+    return leftPath.size() == rightPath.size() && containsInsensitive(leftPath, rightPath);
 }
 
 #if defined(KD_WINDOWS)
