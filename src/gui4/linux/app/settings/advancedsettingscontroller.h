@@ -18,10 +18,12 @@
 
 #pragma once
 
+#include "app/services/commservice.h"
 #include "app/services/parametersservice.h"
 
 #include <QObject>
 #include <QUrl>
+#include <QVariantList>
 
 #include <array>
 #include <cstddef>
@@ -40,26 +42,67 @@ class AdvancedSettingsController final : public QObject {
         Q_PROPERTY(bool saving READ saving NOTIFY changed)
         Q_PROPERTY(bool matomoEnabled READ matomoEnabled NOTIFY changed)
         Q_PROPERTY(bool sentryEnabled READ sentryEnabled NOTIFY changed)
+        Q_PROPERTY(bool useLog READ useLog NOTIFY changed)
+        Q_PROPERTY(bool purgeOldLogs READ purgeOldLogs NOTIFY changed)
+        Q_PROPERTY(bool extendedLog READ extendedLog NOTIFY changed)
+        Q_PROPERTY(bool debugLevelEnabled READ debugLevelEnabled NOTIFY changed)
+        Q_PROPERTY(int32_t logLevel READ logLevel NOTIFY changed)
+        Q_PROPERTY(QVariantList logLevels READ logLevels NOTIFY changed)
+        Q_PROPERTY(int32_t uploadState READ uploadState NOTIFY changed)
+        Q_PROPERTY(int32_t uploadPercentage READ uploadPercentage NOTIFY changed)
+        Q_PROPERTY(bool uploadInProgress READ uploadInProgress NOTIFY changed)
+        Q_PROPERTY(bool uploadCancellationPending READ uploadCancellationPending NOTIFY changed)
+        Q_PROPERTY(bool uploadHasResult READ uploadHasResult NOTIFY changed)
+        Q_PROPERTY(bool uploadSucceeded READ uploadSucceeded NOTIFY changed)
+        Q_PROPERTY(bool lastUploadFailed READ lastUploadFailed NOTIFY changed)
+        Q_PROPERTY(QString uploadStatusText READ uploadStatusText NOTIFY changed)
         Q_PROPERTY(QString dataManagementErrorText READ dataManagementErrorText NOTIFY changed)
         Q_PROPERTY(QString matomoErrorText READ matomoErrorText NOTIFY changed)
         Q_PROPERTY(QString sentryErrorText READ sentryErrorText NOTIFY changed)
+        Q_PROPERTY(QString debugErrorText READ debugErrorText NOTIFY changed)
 
     public:
         AdvancedSettingsController(ParametersStore &parametersStore, ParametersService &parametersService,
-                                   SentryService &sentryService, const TranslationService &translationService,
-                                   QObject *parent = nullptr);
+                                   SentryService &sentryService, const CommService &commService,
+                                   const TranslationService &translationService, QObject *parent = nullptr);
 
         [[nodiscard]] bool ready() const;
         [[nodiscard]] bool saving() const { return _saving; }
         [[nodiscard]] bool matomoEnabled() const;
         [[nodiscard]] bool sentryEnabled() const;
+        [[nodiscard]] bool useLog() const;
+        [[nodiscard]] bool purgeOldLogs() const;
+        [[nodiscard]] bool extendedLog() const;
+        [[nodiscard]] bool debugLevelEnabled() const { return ready() && !extendedLog(); }
+        [[nodiscard]] int32_t logLevel() const;
+        [[nodiscard]] static QVariantList logLevels();
+        [[nodiscard]] int32_t uploadState() const { return static_cast<int32_t>(_uploadState); }
+        [[nodiscard]] int32_t uploadPercentage() const { return _uploadPercentage; }
+        [[nodiscard]] bool uploadInProgress() const;
+        [[nodiscard]] bool uploadCancellationPending() const { return _uploadState == LogUploadState::CancelRequested; }
+        [[nodiscard]] bool uploadHasResult() const {
+            return _uploadState == LogUploadState::Success || _uploadState == LogUploadState::Failed ||
+                   _uploadState == LogUploadState::Canceled;
+        }
+        [[nodiscard]] bool uploadSucceeded() const { return _uploadState == LogUploadState::Success; }
+        [[nodiscard]] bool lastUploadFailed() const { return _uploadState == LogUploadState::Failed; }
+        [[nodiscard]] QString uploadStatusText() const;
         [[nodiscard]] QString dataManagementErrorText() const;
         [[nodiscard]] QString matomoErrorText() const;
         [[nodiscard]] QString sentryErrorText() const;
+        [[nodiscard]] QString debugErrorText() const;
 
         Q_INVOKABLE void setMatomoEnabled(bool enabled);
         Q_INVOKABLE void setSentryEnabled(bool enabled);
+        Q_INVOKABLE void setUseLog(bool enabled);
+        Q_INVOKABLE void setPurgeOldLogs(bool enabled);
+        Q_INVOKABLE void setExtendedLog(bool enabled);
+        Q_INVOKABLE void setLogLevel(int32_t level);
         Q_INVOKABLE void openSources();
+        Q_INVOKABLE void openDebugFolder();
+        Q_INVOKABLE void sendDebugLogs(bool lastSessionOnly);
+        Q_INVOKABLE void cancelDebugLogs();
+        Q_INVOKABLE void resetDebugLogsUploadPresentation();
 
     signals:
         void changed();
@@ -75,6 +118,7 @@ class AdvancedSettingsController final : public QObject {
             DataManagement,
             Matomo,
             Sentry,
+            Debug,
             Count,
         };
 
@@ -87,12 +131,19 @@ class AdvancedSettingsController final : public QObject {
         void setError(ErrorContext context, Error error, const QUrl &failedUrl = {});
         void beginSave(ErrorContext context);
         void finishSave(const ExitInfo &result, ErrorContext context);
+        void save(const ParametersService::ParametersMutation &mutation, ErrorContext context);
+        void setUploadStatus(LogUploadState state, int32_t percentage);
 
         ParametersStore &_parametersStore;
         ParametersService &_parametersService;
         SentryService &_sentryService;
+        const CommService &_commService;
         bool _saving{false};
         std::array<ErrorState, static_cast<std::size_t>(ErrorContext::Count)> _errors;
+        LogUploadState _uploadState{LogUploadState::None};
+        LogUploadState _lastUploadPhase{LogUploadState::None};
+        int32_t _uploadPercentage{0};
+        bool _uploadRequestPending{false};
 };
 
 } // namespace KDC

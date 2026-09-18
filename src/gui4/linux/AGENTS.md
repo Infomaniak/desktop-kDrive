@@ -17,6 +17,10 @@
   conditional bodies with braces. Do not compact multiple operations onto one line or conflate readability cleanup with
   architectural simplification.
 - Search existing Loco IDs and reuse equivalent translated labels before introducing Linux-specific wording or new keys.
+- Never modify an existing Loco translation unless the user explicitly requests that exact wording change. Creating a
+  new key or auditing generated catalogs does not authorize harmonizing other locale values.
+- Never run `import_loco -k`. Always run a complete Loco import, then audit the generated catalog diff and remove keys
+  that do not belong to the current change while preserving unrelated work.
 - Display language choices as capitalized native language names without regional qualifiers; keep the system-default
   choice translated in the system language independently of the app language, with English as fallback.
 
@@ -51,6 +55,9 @@
 - Let `ParametersService` serialize full-snapshot mutations and publish only server-confirmed results. Skip IPC requests
   when a mutation leaves the confirmed snapshot unchanged. Consumers must also compare their relevant values before
   reapplying side effects or logging; an unrelated parameter change must not reconfigure Sentry.
+- Present debug-log upload activity with the shared indeterminate loader, not a percentage progress bar. Keep the modal
+  open on terminal success, failure, or confirmed cancellation so the result remains readable until the user closes it
+  explicitly. Present confirmed cancellation with neutral text rather than success or warning colors.
 - Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
   independent updater states.
 - Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
@@ -236,9 +243,10 @@
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
   category controllers and is the single source of Settings-window presentation requests.
-- `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors, and
-  Advanced external actions. Sentry mutations continue to flow through `SentryService`, including its
-  post-confirmation SDK update.
+- `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors,
+  Advanced external actions, debug parameters, and process-long log-upload state. Sentry mutations continue to flow
+  through `SentryService`, including its post-confirmation SDK update. Client log expiration follows the confirmed
+  `purgeOldLogs` value in `AppClientLinux::updateLoggerSettings`; the server does not purge client logs.
 - `ui/windows/settings/SettingsNavigation*.qml`: reusable Settings-local `StackView` navigation, dynamic page header,
   keyboard back action, and focus restoration. Category roots own their route components; the pane remains generic.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the

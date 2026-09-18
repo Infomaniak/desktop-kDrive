@@ -23,6 +23,7 @@ import kDrive.UI
 
 Item {
     id: root
+    property alias leadingAccessories: leading.data
     default property alias accessories: trailing.data
     required property string title
     property string description: ""
@@ -35,6 +36,11 @@ Item {
         anchors.topMargin: IKSettings.rowPadding
         anchors.bottomMargin: IKSettings.rowPadding
         spacing: IKSettings.rowSpacing
+        RowLayout {
+            id: leading
+            visible: children.length > 0
+            spacing: IKSpacing.s8
+        }
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
