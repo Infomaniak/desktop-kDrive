@@ -261,7 +261,8 @@
   through `SentryService`, including its post-confirmation SDK update. Client log expiration follows the confirmed
   `purgeOldLogs` value in `AppClientLinux::updateLoggerSettings`; the server does not purge client logs.
 - `app/settings/networksettingscontroller.*`: Network Settings proxy draft, asynchronous TCP reachability check, and
-  confirmed full-snapshot persistence. Manual credentials remain local to the controller and are never logged.
+  confirmed full-snapshot persistence. Unsaved edits, credentials included, stay in the controller until saved; a
+  successful save publishes the full proxy configuration to `ParametersStore`. Credentials are never logged.
 - `ui/windows/settings/SettingsNavigation*.qml`: reusable Settings-local `StackView` navigation, dynamic page header,
   keyboard back action, and focus restoration. Category roots own their route components; the pane remains generic.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
