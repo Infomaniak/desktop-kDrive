@@ -328,7 +328,12 @@ ExitInfo UploadJob::readLink() {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        assert(ioError == IoError::Success); // For every other error type, false should have been returned.
+        if (ioError == IoError::CorruptedFile) {
+            LOGW_DEBUG(_logger, L"Corrupted file - path=" << Path2WStr(_absoluteFilePath));
+            return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+        }
+
+        assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);

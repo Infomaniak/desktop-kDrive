@@ -866,7 +866,6 @@ ExitInfo ComputeFSOperationWorker::checkIfOkToDelete(const ReplicaSide side, con
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
             setExitCause(ExitCause::InvalidName);
             return {ExitCode::SystemError, ExitCause::InvalidName};
-
         } else if (ioError == IoError::AccessDenied) {
             setExitCause(ExitCause::FileAccessError);
             return {ExitCode::SystemError, ExitCause::FileAccessError};
