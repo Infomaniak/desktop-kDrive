@@ -95,11 +95,7 @@ if [ -d "$build_dir" ]; then
 fi
 
 artifact_dir="$build_dir/install"
-if [[ "$release_flavor" == "v4" ]]; then
-  app_dir="$build_dir/AppDir"
-else
-  app_dir="$artifact_dir"
-fi
+app_dir="$build_dir/AppDir"
 build_type="RelWithDebInfo"
 
 export PATH="$HOME/.local/bin:$PATH" # the conan executable is located in ~/.local/bin on the ci runner
@@ -158,6 +154,8 @@ build_release() {
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
+      -DBUILD_GUI=OFF \
+      -DBUILD_GUI_LEGACY=ON \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DCONAN_DEP_DIR="$conan_dependencies_folder" \
       -DCMAKE_TOOLCHAIN_FILE="$conan_toolchain_file" \
@@ -208,6 +206,8 @@ build_release_v4() {
       -DCMAKE_INSTALL_PREFIX=/usr \
       -DBIN_INSTALL_DIR="$build_dir/build/bin" \
       -DBUILD_UNIT_TESTS="$build_unit_tests" \
+      -DBUILD_GUI=ON \
+      -DBUILD_GUI_LEGACY=OFF \
       -DKDRIVE_THEME_DIR="$src_dir/infomaniak" \
       -DKDRIVE_DEPLOY_QT_RUNTIME=ON \
       -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON \
@@ -259,7 +259,8 @@ package_release() {
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   app_name="kDrive-${full_version}-amd64.AppImage"
-  mv kDrive*.AppImage "$app_dir/$app_name"
+  mkdir -p "$artifact_dir"
+  mv kDrive*.AppImage "$artifact_dir/$app_name"
 }
 
 package_release_v4() {
@@ -334,9 +335,10 @@ EOF
 
   full_version="$(grep "KDRIVE_VERSION_FULL" "$build_dir/build/version.h" | awk '{print $3}')"
   updater_appimage="kDriveRecoveryUpdater-${full_version}-amd64.AppImage"
-  mv kDriveRecoveryUpdater*.AppImage "$app_dir/$updater_appimage"
+  mkdir -p "$artifact_dir"
+  mv kDriveRecoveryUpdater*.AppImage "$artifact_dir/$updater_appimage"
 
-  echo "Recovery updater AppImage created: $app_dir/$updater_appimage"
+  echo "Recovery updater AppImage created: $artifact_dir/$updater_appimage"
 }
 
 package_recovery_updater_v4() {
@@ -350,38 +352,11 @@ package_recovery_updater_v4() {
     return 0
   fi
 
-  QTDIR="$(find_qt_conan_path "$build_dir")"
-  export QTDIR
-
-  rm -rf "$updater_appdir"
-  mkdir -p "$updater_appdir/usr/bin"
-  mkdir -p "$updater_appdir/usr/lib"
-  mkdir -p "$updater_appdir/usr/plugins/platforms"
-
-  cp "$updater_bin" "$updater_appdir/usr/bin/kDriveRecoveryUpdater"
-  cp -P "$conan_dependencies_folder/"* "$updater_appdir/usr/lib" 2>/dev/null || true
-  # Only deploy the platform plugins supported by the v4 AppImage. In particular,
-  # qeglfs depends on Qt libraries that are intentionally not part of the bundle.
-  local platform_plugin
-  for platform_plugin in libqxcb.so libqwayland.so; do
-    cp -P "$QTDIR/plugins/platforms/$platform_plugin" "$updater_appdir/usr/plugins/platforms/" || return 1
-  done
-
-  v4_copy_runtime_dependencies "$app_dir/usr/lib" "$updater_appdir" \
-    "$updater_appdir/usr/bin/kDriveRecoveryUpdater" \
-    "$updater_appdir/usr/plugins/platforms/"*.so* || return 1
-
-  cat > "$updater_appdir/kDriveRecoveryUpdater.desktop" <<'EOF'
-[Desktop Entry]
-Type=Application
-Name=kDriveRecoveryUpdater
-Exec=kDriveRecoveryUpdater
-Icon=kDriveRecoveryUpdater
-Categories=Utility;
-EOF
-
-  cp "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png" \
-    "$updater_appdir/kDriveRecoveryUpdater.png"
+  v4_prepare_recovery_updater_appdir \
+    "$app_dir" \
+    "$updater_appdir" \
+    "$src_dir/infomaniak/theme/colored/512-kdrive-recovery-updater-icon.png"
+  v4_check_recovery_updater_appdir "$updater_appdir"
 
   cd "$build_dir"
   v4_linuxdeploy_recovery_updater "$updater_appdir"
@@ -405,6 +380,9 @@ if [[ "$release_flavor" == "v4" ]]; then
   echo "Packaging recovery updater ..."
   package_recovery_updater_v4
 
+  rm -f "$app_dir/usr/bin/kDriveRecoveryUpdater"
+  check_main_appdir_updater_separation "$app_dir"
+
   echo
   echo "Packaging ..."
   package_release_v4
@@ -413,12 +391,15 @@ else
   build_release
 
   echo
-  echo "Packaging ..."
-  package_release
-
-  echo
   echo "Packaging recovery updater ..."
   package_recovery_updater
+
+  rm -f "$app_dir/usr/bin/kDriveRecoveryUpdater"
+  check_main_appdir_updater_separation "$app_dir"
+
+  echo
+  echo "Packaging ..."
+  package_release
 fi
 
 echo
