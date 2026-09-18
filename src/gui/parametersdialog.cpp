@@ -830,6 +830,8 @@ QString ParametersDialog::getErrorLevelNodeText(const Error &error) const {
             } else if (error.exitCause() == ExitCause::FileSystemNotSupported) {
                 return tr(R"(Impossible to create file "%1" because it is not supported on your filesystem.<br>It has been excluded from synchronization.)")
                         .arg(Path2QStr(error.path()));
+            } else if (error.exitCause() == ExitCause::MoveThroughSymlink) {
+                return tr("Synchronization error.");
             }
             return tr("System error.");
         }

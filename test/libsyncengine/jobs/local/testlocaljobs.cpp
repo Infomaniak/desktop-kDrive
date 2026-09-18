@@ -45,7 +45,7 @@ namespace KDC {
 class LocalDeleteJobMockingTrash : public SyncLocalDeleteJob {
     public:
         explicit LocalDeleteJobMockingTrash(const std::shared_ptr<SyncPal> syncPal, const SyncPath &absolutePath) :
-            SyncLocalDeleteJob(syncPal, absolutePath){};
+            SyncLocalDeleteJob(syncPal, absolutePath) {};
         void setMoveToTrashFailed(const bool failed) { _moveToTrashFailed = failed; };
         void setLiteSyncEnabled(const bool enabled) { _liteSyncIsEnabled = enabled; };
         void setMockMoveToTrash(const bool mocked) { _moveToTrashIsMocked = mocked; }
@@ -202,6 +202,52 @@ void KDC::TestLocalJobs::testLocalJobs() {
 #endif
 }
 
+void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs_testLocalMoveJobThroughSymlink");
+
+    // Create a regular directory with a file inside, and a symbolic link to it.
+    const SyncPath realDirPath = temporaryDirectory.path() / "real_dir";
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::create_directories(realDirPath, ec) && ec.value() == 0);
+    const SyncPath filePath = realDirPath / "tmp_file.txt";
+    { std::ofstream ofs(filePath); }
+
+    const SyncPath linkPath = temporaryDirectory.path() / "dir_link";
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(realDirPath, linkPath, true, ioError));
+
+    // A move whose source path traverses the symbolic link is forbidden.
+    {
+        const SyncPath destPath = temporaryDirectory.path() / "moved_file.txt";
+        LocalMoveJob moveJob(linkPath / "tmp_file.txt", destPath);
+        moveJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
+        CPPUNIT_ASSERT(!std::filesystem::exists(destPath));
+    }
+
+    // A move whose destination path traverses the symbolic link is forbidden.
+    {
+        LocalMoveJob moveJob(filePath, linkPath / "moved_file.txt");
+        moveJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
+        CPPUNIT_ASSERT(!std::filesystem::exists(realDirPath / "moved_file.txt"));
+    }
+
+    // The interdiction is not bypassable with bypassCheck().
+    {
+        LocalMoveJob moveJob(linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
+        moveJob.setBypassCheck(true);
+        moveJob.runSynchronously();
+
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
+        CPPUNIT_ASSERT(std::filesystem::exists(filePath));
+    }
+}
+
 void KDC::TestLocalJobs::testDeleteFilesWithDuplicateNames() {
     ParametersCache::instance()->parameters().setMoveToTrash(false);
 
@@ -273,7 +319,7 @@ void KDC::TestLocalJobs::testLocalDeleteJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {
 
                 };
             void setRemoteItemRelativePath(const SyncPath &remoteItemPath) { _remoteItemRelativePath = remoteItemPath; }
@@ -352,7 +398,7 @@ void KDC::TestLocalJobs::testDeleteExcludedDehydratedPlaceholderJob() {
         public:
             LocalDeleteJobMock(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativePath, const bool isLiteSyncEnabled,
                                RemoteNodeId remoteNodeId, ForceToTrash forceToTrash = ForceToTrash::No) :
-                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash){};
+                SyncLocalDeleteJob(syncPal, relativePath, isLiteSyncEnabled, std::move(remoteNodeId), forceToTrash) {};
 
         protected:
             bool findRemoteItemRelativePath(SyncPath &remoteItemRelativePath) const override {
