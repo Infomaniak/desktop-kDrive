@@ -500,6 +500,7 @@ SectionEnd
 		SetOutPath "$INSTDIR\shellext\AppX"
 
 		File /a /r "${VFS_APPX_DIRECTORY}\"
+        File /a "${BUILD_PATH}\repair-shell-extension.ps1"
 
 		!insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
 		${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
