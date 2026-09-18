@@ -427,50 +427,41 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
 }
 
 namespace {
-
-constexpr Count kMaxPathAttempts = 100;
-
-// Avoid collisions with directories of existing syncs by appending a suffix.
+// Detect collisions with directories of existing syncs by appending a suffix.
 // Note that this is a separate check from the previous one, because the local directory may not exist yet, or may have
 // been deleted, but is still registered as a sync folder in the database.
-ExitInfo avoidCollisionWithExistingSyncs(const SyncPath &homeFolder, const SyncName &initialFolderName,
-                                         const std::vector<Sync> &syncList, SyncPath &path, Count &attemptCount,
-                                         bool &newIncrementRequired) {
-    newIncrementRequired = false;
-    auto newAttemptCount = attemptCount;
-    bool collisionFound = true;
-    while (collisionFound) {
-        attemptCount = newAttemptCount;
+bool hasCollisionWithExistingSyncs(const SyncPath &path, const std::vector<Sync> &syncList) {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
-        const auto pathComparator = [&path](const Sync &sync) {
-            return CommonUtility::equalsInsensitive(sync.localPath(), path);
-        };
+    const auto pathComparator = [&path](const Sync &sync) { return CommonUtility::equalsInsensitive(sync.localPath(), path); };
 #elif defined(KD_LINUX)
-        const auto pathComparator = [&path](const Sync &sync) { return sync.localPath() == path; };
+    const auto pathComparator = [&path](const Sync &sync) { return sync.localPath() == path; };
 #endif
-        if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
-            ++newAttemptCount;
-            newIncrementRequired = true;
-            if (newAttemptCount > kMaxPathAttempts) {
-                LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path.");
-                return ExitCode::SystemError;
-            }
-            path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(newAttemptCount)));
-        }
-
-        collisionFound = newAttemptCount != attemptCount;
+    if (const auto it = std::ranges::find_if(syncList.cbegin(), syncList.cend(), pathComparator); it != syncList.cend()) {
+        return true;
     }
 
-    return ExitCode::Ok;
+    return false;
 }
 
 ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
                                       const std::vector<Sync> &syncList, SyncPath &path) {
-    Count attemptCount = 1;
+    constexpr Count kMaxPathAttempts = 100;
+
+    Count attemptCount = 0;
     path = homeFolder / initialFolderName;
 
-    // Avoid collisions with existing directories by appending a suffix.
+    // Avoid collisions by appending a suffix.
     forever {
+        ++attemptCount;
+        // Count attempts and give up eventually.
+        if (attemptCount > kMaxPathAttempts) {
+            LOG_WARN(Log::instance()->getLogger(), "Cannot find a valid path.");
+            return ExitCode::SystemError;
+        }
+
+        const auto suffix = attemptCount == 1 ? Str("") : Str2SyncName(std::to_string(attemptCount));
+        path = homeFolder / (initialFolderName + suffix);
+
         // Check if the local directory already exists
         auto ioError = IoError::Success;
         bool alreadyExists = false;
@@ -480,26 +471,10 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
             return ExitCode::SystemError;
         }
 
-        if (alreadyExists) {
-            ++attemptCount;
-            // Count attempts and give up eventually
-            if (attemptCount > kMaxPathAttempts) {
-                LOG_WARN(Log::instance()->getLogger(), "Cannot find a valid path.");
-                return ExitCode::SystemError;
-            }
-            path = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attemptCount)));
+        if (alreadyExists) continue;
 
-            continue;
-        }
-
-        bool newIncrementRequired = false;
-        if (const auto exitInfo = avoidCollisionWithExistingSyncs(homeFolder, initialFolderName, syncList, path, attemptCount,
-                                                                  newIncrementRequired);
-            !exitInfo) {
-            return exitInfo;
-        }
-
-        if (!newIncrementRequired) break;
+        // Check if the local directory is referred to by an existing sync.
+        if (bool newIncrementRequired = hasCollisionWithExistingSyncs(path, syncList); !newIncrementRequired) break;
     }
 
     return ExitCode::Ok;
