@@ -460,7 +460,7 @@ ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName
         }
 
         const auto suffix = attemptCount == 1 ? Str("") : Str2SyncName(std::to_string(attemptCount));
-        path = homeFolder / (initialFolderName + suffix);
+        path = homeFolder / (initialFolderName + Str(" ") + suffix);
 
         // Check if the local directory already exists
         auto ioError = IoError::Success;
