@@ -40,13 +40,14 @@ class OperationGeneratorWorker : public OperationProcessor {
         void generateEditOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
         void generateMoveOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
         void generateDeleteOperation(std::shared_ptr<Node> currentNode, std::shared_ptr<Node> correspondingNode);
-
         void findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode);
         std::queue<std::shared_ptr<Node>> _queuedToExplore;
         NodeSet _deletedNodes;
+        uint64_t _nbLocalDeleteOperations = 0;
+        std::vector<SyncPath> _localDeleteOperationsDisplayedPaths;
+
 
         int64_t _bytesToDownload = 0;
-        uint64_t _nbLocalDeleteOperations = 0;
 
         friend class TestOperationGeneratorWorker;
 };

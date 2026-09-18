@@ -1515,6 +1515,17 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return CheckJobResultAndLogIfError(data, parms);
         }
 
+        public async Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken)
+        {
+            var parms = new JsonObject
+            {
+                [JsonKeys.SyncDbId] = syncDbId,
+                [JsonKeys.UserChoice] = (int)userChoice
+            };
+            CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ACKNOWLEDGE_MANY_DELETES, parms, cancellationToken).ConfigureAwait(false);
+            return CheckJobResultAndLogIfError(data, parms);
+        }
+
         // Signals
         public async void OnSignalReceived(object? sender, SignalEventArgs args)
         {
@@ -1547,6 +1558,9 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     break;
                 case SignalNum.SYNC_REMOVED:
                     await HandleSyncRemovedAsync(sender, args);
+                    break;
+                case SignalNum.SYNC_NOTIFY_MANY_DELETES:
+                    await HandleSyncNotifyManyDeletesAsync(sender, args);
                     break;
                 case SignalNum.UPDATER_SHOW_DIALOG:
                     await HandleUpdaterShowDialog(sender, args);
@@ -2144,6 +2158,48 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             App.ServiceProvider.GetRequiredService<NotificationManager>().ShowNotification(title, message);
             return Task.CompletedTask;
+        }
+
+        public async Task HandleSyncNotifyManyDeletesAsync(object? sender, SignalEventArgs args)
+        {
+            var signalData = args.SignalData;
+            if (signalData is null || !signalData.ContainsKey(JsonKeys.SyncDbId) || !signalData.ContainsKey(JsonKeys.NotificationType) || !signalData.ContainsKey(JsonKeys.NbFiles) || !signalData.ContainsKey(JsonKeys.FilesPaths))
+            {
+                Logger.Log(Logger.Level.Error, $"One or more required parameters are missing in signal data: {JsonKeys.SyncDbId}, {JsonKeys.NotificationType}, {JsonKeys.NbFiles}, {JsonKeys.FilesPaths}. Signal data: {signalData}");
+                return;
+            }
+
+            DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
+            TooManyDeletesNotificationType? notificationType = signalData[JsonKeys.NotificationType]?.Deserialize<TooManyDeletesNotificationType>();
+            Int32? nbFiles = signalData[JsonKeys.NbFiles]?.AsValue().GetValue<Int32>();
+            List<string>? filesPaths = null;
+            if (signalData[JsonKeys.FilesPaths]?.AsArray() is { } filesPathsArray)
+            {
+                filesPaths = new List<string>(filesPathsArray.Count);
+                foreach (var node in filesPathsArray)
+                {
+                    var decoded = Utility.FromBase64String(node!.GetValue<string>());
+                    if (!string.IsNullOrEmpty(decoded))
+                    {
+                        filesPaths.Add(decoded);
+                    }
+                }
+            }
+            if (syncDbID is null || notificationType is null || nbFiles is null || filesPaths is null)
+            {
+                Logger.Log(Logger.Level.Error, $"required parameter is null: syncDbID={syncDbID}, notificationType={notificationType}, nbFiles={nbFiles}, filesPaths.Count={filesPaths?.Count}");
+                return;
+            }
+
+            await Utility.RunOnUIThread(() =>
+            {
+                _viewModel.ManyDeletesController.AddOrMergeManyDeletes(new ManyDeletesInfo(
+                    syncDbID.Value,
+                    notificationType.Value,
+                    nbFiles.Value,
+                    filesPaths
+                ));
+            });
         }
 
         public async Task HandleUpdaterShowDialog(object? sender, SignalEventArgs args)
