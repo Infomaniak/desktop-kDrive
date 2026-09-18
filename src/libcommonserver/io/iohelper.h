@@ -209,11 +209,11 @@ struct IoHelper {
           \param path is the file system path whose ancestors are inspected. The final component of the path is ignored.
           \param traversesLink is a boolean set with true if at least one ancestor of path is a followed link, false otherwise.
           \param linkPath is set with the path of the first ancestor found to be a followed link, and with an empty path
-          otherwise. \param ioError holds the error returned when an underlying OS API call fails. \return true if no unexpected
-          error occurred, false otherwise.
+          otherwise.
+          \return An ioError representing the success or failure of the underlying OS API call. IoError::Success is returned
+          whether a followed link is found; use traversesLink to know whether one was found.
          */
-        static bool checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath,
-                                             IoError &ioError) noexcept;
+        static IoError checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
