@@ -19,7 +19,7 @@
 #pragma once
 
 #include "syncenginelib.h"
-#include "libparms/db/parameters.h"
+#include "libcommon/data/parameters.h"
 #include "libcommon/utility/types.h"
 
 #include <memory>
@@ -48,7 +48,7 @@ class SYNCENGINE_EXPORT ParametersCache {
         Parameters _parameters;
         static bool _forceExtendedLog;
 
-        ParametersCache(bool isTest = false);
+        explicit ParametersCache(bool isTest = false);
 };
 
 } // namespace KDC

@@ -19,7 +19,7 @@
 #pragma once
 
 #include "parmslib.h"
-#include "parameters.h"
+#include "libcommon/data/parameters.h"
 #include "libcommon/data/user.h"
 #include "libcommon/data/account.h"
 #include "libcommon/data/sync.h"

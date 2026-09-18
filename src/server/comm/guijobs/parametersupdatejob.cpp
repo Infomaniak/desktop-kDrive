@@ -35,7 +35,7 @@ ParametersUpdateJob::ParametersUpdateJob(std::shared_ptr<CommManager> commManage
 ExitInfo ParametersUpdateJob::deserializeInputParms() {
     constexpr auto logMessage = "Exception in ParametersUpdateJob::readParamValue: error=";
     try {
-        readParamValue(inParamsParametersInfo, _parametersInfo, dynamicVar2Struct<ParametersInfo>);
+        readParamValue(inParamsParametersInfo, _parametersInfo, dynamicVar2Struct<Parameters>);
     } catch (const Poco::Exception &pocoException) {
         LOG_WARN(_logger, logMessage << pocoException.message());
 
