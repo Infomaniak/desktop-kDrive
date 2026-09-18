@@ -203,6 +203,18 @@ struct IoHelper {
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
+        //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
+        //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
+        /*!
+          \param path is the file system path whose ancestors are inspected. The final component of the path is ignored.
+          \param traversesLink is a boolean set with true if at least one ancestor of path is a followed link, false otherwise.
+          \param linkPath is set with the path of the first ancestor found to be a followed link, and with an empty path
+          otherwise. \param ioError holds the error returned when an underlying OS API call fails. \return true if no unexpected
+          error occurred, false otherwise.
+         */
+        static bool checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath,
+                                             IoError &ioError) noexcept;
+
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
           \param path is the file system path of a file.
