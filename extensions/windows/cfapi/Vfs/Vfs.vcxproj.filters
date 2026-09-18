@@ -27,9 +27,6 @@
     <ClInclude Include="providerinfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="storageproviderstatusui.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vfs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -63,9 +60,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="providerinfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="storageproviderstatusui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\utilities.cpp">

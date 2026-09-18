@@ -4248,21 +4248,6 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         };
         vfsSetupParams.logger = _logger;
         vfsSetupParams.sentryHandler = sentry::Handler::instance();
-
-#if defined(KD_WINDOWS)
-        // Setup status UI information for Windows
-        if (!drive.color().empty()) {
-            vfsSetupParams.driveColor = drive.color();
-        }
-        
-        // Get quota information from drive pack info
-        const PackInfo &packInfo = drive.packInfo();
-        if (packInfo.size() > 0) {
-            vfsSetupParams.quotaTotal = static_cast<uint64_t>(packInfo.size());
-            vfsSetupParams.quotaUsed = static_cast<uint64_t>(drive.usedSize());
-        }
-#endif
-
         QString error;
         std::shared_ptr vfs = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
         if (!vfs) {

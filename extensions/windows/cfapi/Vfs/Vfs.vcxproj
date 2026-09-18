@@ -215,7 +215,6 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(KDC_BUILD_PROJECT_DIR)\build\Debug\bi
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="placeholders.cpp" />
     <ClCompile Include="providerinfo.cpp" />
-    <ClCompile Include="storageproviderstatusui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\debug.h" />
@@ -227,7 +226,6 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "$(KDC_BUILD_PROJECT_DIR)\build\Debug\bi
     <ClInclude Include="cloudproviderregistrar.h" />
     <ClInclude Include="placeholders.h" />
     <ClInclude Include="providerinfo.h" />
-    <ClInclude Include="storageproviderstatusui.h" />
     <ClInclude Include="vfs.h" />
   </ItemGroup>
   <ItemGroup>

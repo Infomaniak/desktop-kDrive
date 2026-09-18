@@ -266,32 +266,3 @@ DLL_EXP int __cdecl vfsSetPinState(const wchar_t *path, VfsPinState state) {
 
     return S_OK;
 }
-
-DLL_EXP int __cdecl vfsUpdateStatusUI(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *driveColor,
-                                       uint64_t quotaTotal, uint64_t quotaUsed) {
-    CloudProvider *cloudProvider = s_cloudProviders[PROVIDERID(driveId, folderId)];
-    if (cloudProvider) {
-        ProviderInfo *providerInfo = cloudProvider->getProviderInfo();
-        if (providerInfo) {
-            // Update drive color and quota information
-            if (driveColor) {
-                providerInfo->setDriveColor(driveColor);
-                TRACE_DEBUG(L"Updated drive color: %ls", driveColor);
-            }
-            
-            if (quotaTotal > 0) {
-                providerInfo->setQuotaTotal(quotaTotal);
-                providerInfo->setQuotaUsed(quotaUsed);
-                TRACE_DEBUG(L"Updated quota: Total=%llu, Used=%llu", quotaTotal, quotaUsed);
-            }
-            
-            return S_OK;
-        } else {
-            TRACE_ERROR(L"ProviderInfo not found for: %ls", PROVIDERID_CSTR(driveId, folderId));
-            return E_ABORT;
-        }
-    } else {
-        TRACE_ERROR(L"Provider not found: %ls", PROVIDERID_CSTR(driveId, folderId));
-        return E_ABORT;
-    }
-}

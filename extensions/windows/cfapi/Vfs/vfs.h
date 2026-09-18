@@ -77,7 +77,4 @@ DLL_EXP int32_t __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *fo
 DLL_EXP int32_t __cdecl vfsGetPinState(const wchar_t *path, VfsPinState *state);
 
 DLL_EXP int32_t __cdecl vfsSetPinState(const wchar_t *path, VfsPinState state);
-
-DLL_EXP int32_t __cdecl vfsUpdateStatusUI(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *driveColor,
-                                           uint64_t quotaTotal, uint64_t quotaUsed);
 }

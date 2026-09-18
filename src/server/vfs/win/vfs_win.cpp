@@ -89,16 +89,6 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
 
     _vfsSetupParams.namespaceCLSID = CommonUtility::ws2s(std::wstring(clsid));
 
-    // Update status UI with drive information
-    if (vfsUpdateStatusUI(std::to_wstring(_vfsSetupParams.driveId).c_str(), 
-                          std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
-                          CommonUtility::s2ws(_vfsSetupParams.driveColor).c_str(),
-                          _vfsSetupParams.quotaTotal,
-                          _vfsSetupParams.quotaUsed) != S_OK) {
-        LOG_DEBUG(logger(), "Warning: Could not update status UI for syncDbId=" << _vfsSetupParams.syncDbId);
-        // Continue - this is not fatal
-    }
-
     return ExitCode::Ok;
 }
 
