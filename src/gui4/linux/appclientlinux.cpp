@@ -109,7 +109,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
     });
     _qmlEngine.setInitialProperties({
             {QStringLiteral("appRouter"), QVariant::fromValue<QObject *>(&_appRouter)},
-            {QStringLiteral("settingsController"), QVariant::fromValue<QObject *>(&_generalSettingsController)},
+            {QStringLiteral("settingsController"), QVariant::fromValue<QObject *>(&_settingsWindowController)},
             {QStringLiteral("mainSidebarController"), QVariant::fromValue<QObject *>(&_mainSidebarController)},
             {QStringLiteral("homeController"), QVariant::fromValue<QObject *>(&_homeController)},
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
@@ -143,7 +143,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
 }
 
 void AppClientLinux::setupSignalConnections() {
-    (void) connect(&_generalSettingsController, &GeneralSettingsController::openRequested, this,
+    (void) connect(&_settingsWindowController, &SettingsWindowController::openRequested, this,
                    &AppClientLinux::openSettingsWindow);
     (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
                    &AppClientLinux::openSettingsWindow);
@@ -313,7 +313,7 @@ void AppClientLinux::openSettingsWindow() {
         QQmlComponent component(&_qmlEngine);
         component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
         auto *object = component.createWithInitialProperties(
-                {{"controller", QVariant::fromValue<QObject *>(&_generalSettingsController)}});
+                {{"controller", QVariant::fromValue<QObject *>(&_settingsWindowController)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
@@ -338,7 +338,7 @@ void AppClientLinux::openSettingsWindow() {
     _settingsWindow->requestActivate();
 
     if (_bootstrapCompleted) {
-        _generalSettingsController.refreshUpdates();
+        _settingsWindowController.refreshUpdates();
     }
 }
 

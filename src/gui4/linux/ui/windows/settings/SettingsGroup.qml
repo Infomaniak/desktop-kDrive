@@ -23,12 +23,13 @@ import kDrive.UI
 Rectangle {
     id: root
     default property alias rows: column.data
+    property real contentInset: IKSettings.groupPadding
     implicitHeight: column.implicitHeight
     radius: IKRadius.r12
     color: IKColors.settingsCardSurface
     Column {
         id: column
-        x: IKSettings.groupPadding
-        width: root.width - 2 * IKSettings.groupPadding
+        x: root.contentInset
+        width: root.width - 2 * root.contentInset
     }
 }
