@@ -957,12 +957,19 @@ bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationP
     return renameItem(sourcePath, destinationPath, ioError);
 }
 
+IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
+    return renameItem(sourcePath, destinationPath);
+}
+
 bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    ioError = renameItem(sourcePath, destinationPath);
+    return ioError == IoError::Success;
+}
+
+IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
     std::error_code ec;
     _rename(sourcePath, destinationPath, ec);
-    ioError = stdError2ioError(ec);
-
-    return ioError == IoError::Success;
+    return stdError2ioError(ec);
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {

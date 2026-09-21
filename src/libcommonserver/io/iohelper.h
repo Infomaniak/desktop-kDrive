@@ -291,14 +291,15 @@ struct IoHelper {
          */
         static bool createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept;
 
-        /** Move an item located under the specified path.
+        /** Move an item located under the specified path (actually calls renameItem).
          *
          * @param sourcePath is the source file system path of the item to move.
          * @param destinationPath is the destination file system path of the item to move.
-         * @param ioError
-         * @return
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if no unexpected error occurred, false otherwise.
          */
         static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+        static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
 
         /** Rename an item located under the specified path.
          *
@@ -308,6 +309,7 @@ struct IoHelper {
          * @return true if no unexpected error occurred, false otherwise.
          */
         static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+        static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
 
         //! Remove an item located under the specified path.
         /*!
