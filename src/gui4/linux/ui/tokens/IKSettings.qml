@@ -18,6 +18,7 @@
 
 pragma Singleton
 import QtQuick
+
 QtObject {
     readonly property real windowWidth: 800
     readonly property real windowHeight: minimumHeight
@@ -51,4 +52,19 @@ QtObject {
     readonly property real informationDialogWidth: 454
     readonly property real dialogChromeHeight: 180
     readonly property real logoSize: 64
+    readonly property real userCardPadding: 10
+    readonly property real userHeaderHeight: 52
+    readonly property real userAvatarSize: 36
+    readonly property real userDriveRowHeight: 52
+    readonly property real userDriveLeadingIndent: 43
+    readonly property real userDriveIconSize: 20
+    readonly property real userDriveIconGlyphInset: 4
+    readonly property real userStatusRowHeight: 36
+    readonly property real userStatusIconSize: 20
+    readonly property real userFooterHeight: rowHeight
+    readonly property real emptyUserCardHeight: rowHeight
+    readonly property real emptyUserAvatarSize: 26
+    readonly property real emptyUserAvatarIconSize: 16.431
+    readonly property real connectUserCardHeight: rowHeight
+    readonly property real connectAccountButtonHeight: 24
 }
