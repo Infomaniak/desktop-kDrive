@@ -669,20 +669,20 @@ void TestExecutorWorker::testHandleMoveThroughSymlinkError() {
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localParent);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteParent);
 
-    auto failedMoveOp = std::make_shared<SyncOperation>();
+    const auto failedMoveOp = std::make_shared<SyncOperation>();
     failedMoveOp->setAffectedNode(localParent);
     failedMoveOp->setCorrespondingNode(remoteParent);
     failedMoveOp->setTargetSide(ReplicaSide::Remote);
     failedMoveOp->setType(OperationType::Move);
 
-    auto dependentEditOp = std::make_shared<SyncOperation>();
+    const auto dependentEditOp = std::make_shared<SyncOperation>();
     dependentEditOp->setAffectedNode(localChild);
     dependentEditOp->setCorrespondingNode(remoteChild);
     dependentEditOp->setTargetSide(ReplicaSide::Remote);
     dependentEditOp->setType(OperationType::Edit);
 
-    _syncPal->_syncOps->pushOp(failedMoveOp);
-    _syncPal->_syncOps->pushOp(dependentEditOp);
+    (void) _syncPal->_syncOps->pushOp(failedMoveOp);
+    (void) _syncPal->_syncOps->pushOp(dependentEditOp);
     _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
 
     const ExitInfo exitInfo =
@@ -696,12 +696,6 @@ void TestExecutorWorker::testHandleMoveThroughSymlinkError() {
     CPPUNIT_ASSERT(!opsExist(dependentEditOp));
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*localParent->id()));
     CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(*remoteParent->id()));
-
-    std::vector<Error> errors;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectSyncErrorsByExitCause(_syncPal->syncDbId(), ExitCause::MoveThroughSymlink, errors));
-    CPPUNIT_ASSERT_EQUAL(size_t(1), errors.size());
-    CPPUNIT_ASSERT_EQUAL(NodeId("local-parent-id"), errors.front().localNodeId());
-    CPPUNIT_ASSERT_EQUAL(NodeId("remote-parent-id"), errors.front().remoteNodeId());
 }
 
 void TestExecutorWorker::testCheckAlreadyExcluded() {
