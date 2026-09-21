@@ -24,14 +24,14 @@ namespace KDC {
 
 class PostFileLinkJob : public AbstractTokenNetworkJob {
     public:
-        PostFileLinkJob(DriveDbId driveDbId, const NodeId &nodeId);
+        PostFileLinkJob(DriveDbId driveDbId, RemoteNodeId nodeId);
 
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &uri) override;
         inline virtual ExitInfo setData() override { return ExitCode::Ok; }
 
-        NodeId _nodeId;
+        RemoteNodeId _nodeId;
 };
 
 } // namespace KDC

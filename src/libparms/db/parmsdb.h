@@ -169,6 +169,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         ParmsDb(const std::filesystem::path &dbPath, bool autoDelete, bool test);
 
         bool upgradeTables();
+        bool upgradeParametersTables();
         bool insertDefaultParameters();
         bool insertDefaultAppState();
         bool insertAppState(AppStateKey key, const std::string &value, bool updateOnlyIfEmpty = false);
@@ -178,7 +179,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool prepareAppState();
         bool createSyncFolderRule();
 
-        void fillSyncWithQueryResult(Sync &sync, const char *requestId);
+        void fillSyncWithQueryResult(Sync &sync, const char *requestId, const std::optional<DriveDbId> &driveDbId = {});
 
         bool selectAllExclusionTemplates(bool defaultTemplate, std::vector<ExclusionTemplate> &exclusionTemplateList);
 
@@ -196,6 +197,13 @@ class PARMS_EXPORT ParmsDb : public Db {
                                         std::vector<SyncFolderRule> &fileSyncFolderRules) const;
         bool updateSyncFolderRules();
 
+        enum class FieldFilter {
+            AllFields = 0,
+            WhereSyncDbId = 1
+        };
+
+        bool bindQueryToSyncValues(const Sync &sync, const char *requestId, FieldFilter filter = FieldFilter::AllFields);
+        bool bindMutatingQueryToSyncValues(const Sync &sync, const char *requestId, bool &found);
 
 #if defined(KD_MACOS)
         bool updateExclusionApps();

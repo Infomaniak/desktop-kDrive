@@ -1763,13 +1763,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             const auto driveDbId = static_cast<DriveDbId>(tmpDriveDbId);
             std::string linkUrl;
-            const auto exitCode = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
-            if (exitCode != ExitCode::Ok) {
+            const auto exitInfo = ServerRequests::getPublicLinkUrl(driveDbId, nodeId.toStdString(), linkUrl);
+            if (!exitInfo) {
                 LOG_WARN(_logger, "Error in Requests::getLinkUrl");
-                addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                addError(Error(ERR_ID, exitInfo));
             }
 
-            resultStream << toInt(exitCode);
+            resultStream << toInt(exitInfo.code());
             resultStream << QString::fromStdString(linkUrl);
 
             sendShowNotification(tr("Share link copied to clipboard"), QString::fromStdString(linkUrl));
