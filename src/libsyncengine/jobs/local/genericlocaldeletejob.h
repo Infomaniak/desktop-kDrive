@@ -32,7 +32,7 @@ class GenericLocalDeleteJob : public SyncJob {
             No
         };
         explicit GenericLocalDeleteJob(SyncPath absolutePath, const std::shared_ptr<CacheDirectory> cacheDirectory,
-                                       ForceHardDelete forceHardDelete = ForceHardDelete::No);
+                                       ForceHardDelete forceHardDelete = ForceHardDelete::No, SyncPath trustedRootPath = {});
 
         [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
 
@@ -45,6 +45,7 @@ class GenericLocalDeleteJob : public SyncJob {
         SyncPath _absoluteLocalPath;
         std::shared_ptr<CacheDirectory> _cacheDirectory{nullptr};
         bool _forceHardDelete{false};
+        SyncPath _trustedRootPath;
 };
 
 } // namespace KDC

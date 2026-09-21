@@ -23,10 +23,12 @@
 namespace KDC {
 
 GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath, const std::shared_ptr<CacheDirectory> cacheDirectory,
-                                             ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/) :
+                                             ForceHardDelete forceHardDelete /*= ForceHardDelete::No*/,
+                                             SyncPath trustedRootPath /*= {}*/) :
     _absoluteLocalPath(std::move(absoluteLocalPath)),
     _cacheDirectory(cacheDirectory),
-    _forceHardDelete(forceHardDelete == ForceHardDelete::Yes) {}
+    _forceHardDelete(forceHardDelete == ForceHardDelete::Yes),
+    _trustedRootPath(std::move(trustedRootPath)) {}
 
 ExitInfo GenericLocalDeleteJob::runJob() {
     if (!_forceHardDelete && ParametersCache::instance()->parameters().moveToTrash())
@@ -50,7 +52,7 @@ ExitInfo GenericLocalDeleteJob::moveToTrashOrHardDeleteIfNeeded(const SyncPath &
 ExitInfo GenericLocalDeleteJob::hardDelete(const SyncPath &path) {
     LOGW_DEBUG(_logger, L"Try to hard delete item with " << Utility::formatSyncPath(path));
 
-    if (const auto exitInfo = IoHelper::deleteItemAtomically(path, _cacheDirectory); !exitInfo) {
+    if (const auto exitInfo = IoHelper::deleteItemAtomically(path, _cacheDirectory, _trustedRootPath); !exitInfo) {
         LOGW_WARN(_logger, L"Failed to delete item with " << Utility::formatExitInfo(path, exitInfo));
 
         return exitInfo;

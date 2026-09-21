@@ -27,9 +27,10 @@
 
 namespace KDC {
 
-LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest) :
+LocalMoveJob::LocalMoveJob(const SyncPath &source, const SyncPath &dest, const SyncPath &trustedRootPath) :
     _source(source),
-    _dest(dest) {}
+    _dest(dest),
+    _trustedRootPath(trustedRootPath) {}
 
 ExitInfo LocalMoveJob::canRun() {
     if (bypassCheck()) {
@@ -84,7 +85,7 @@ ExitInfo LocalMoveJob::runJob() {
         return exitInfo;
     }
 
-    if (const auto ioError = IoHelper::moveItem(_source, _dest); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::moveItem(_source, _dest, _trustedRootPath); ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(_source, ioError));
         if (ioError == IoError::MoveThroughSymlink) {
             return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};

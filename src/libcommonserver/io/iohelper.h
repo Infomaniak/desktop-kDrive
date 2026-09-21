@@ -214,6 +214,8 @@ struct IoHelper {
           whether a followed link is found; use traversesLink to know whether one was found.
          */
         static IoError checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept;
+        static IoError checkIfPathTraversesLink(const SyncPath &path, const SyncPath &trustedRootPath, bool &traversesLink,
+                                                SyncPath &linkPath) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
@@ -300,6 +302,10 @@ struct IoHelper {
          */
         static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
         static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
+        static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
+                             IoError &ioError) noexcept;
+        static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                                const SyncPath &trustedRootPath) noexcept;
 
         /** Rename an item located under the specified path.
          *
@@ -310,6 +316,10 @@ struct IoHelper {
          */
         static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
         static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
+        static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
+                               IoError &ioError) noexcept;
+        static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                                  const SyncPath &trustedRootPath) noexcept;
 
         //! Remove an item located under the specified path.
         /*!
@@ -335,6 +345,8 @@ struct IoHelper {
          \return ExitInfo.
          */
         static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory,
+                                             const SyncPath &trustedRootPath) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.

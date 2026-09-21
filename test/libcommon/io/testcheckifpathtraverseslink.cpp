@@ -62,7 +62,8 @@ void TestIo::testCheckIfPathTraversesLink() {
         auto traversesLink = false;
         SyncPath traversedLinkPath;
         CPPUNIT_ASSERT_EQUAL(IoError::Success,
-                             IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath));
+                             IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", temporaryDirectory.path(),
+                                                                traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT_EQUAL(symlinkPath, traversedLinkPath);
     }
@@ -87,6 +88,26 @@ void TestIo::testCheckIfPathTraversesLink() {
                              IoHelper::checkIfPathTraversesLink(symlinkPath / "item.txt", traversesLink, traversedLinkPath));
         CPPUNIT_ASSERT(traversesLink);
         CPPUNIT_ASSERT_EQUAL(symlinkPath, traversedLinkPath);
+    }
+
+    // A trusted root represented by a symbolic link is allowed.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto targetRootPath = temporaryDirectory.path() / "target_root";
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directories(targetRootPath / "nested_dir", ec) && ec.value() == 0);
+
+        const auto trustedRootPath = temporaryDirectory.path() / "trusted_root_link";
+        auto ioError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createSymlink(targetRootPath, trustedRootPath, true, ioError));
+
+        auto traversesLink = true;
+        auto traversedLinkPath = SyncPath("dummy");
+        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+                             IoHelper::checkIfPathTraversesLink(trustedRootPath / "nested_dir" / "item.txt", trustedRootPath,
+                                                                traversesLink, traversedLinkPath));
+        CPPUNIT_ASSERT(!traversesLink);
+        CPPUNIT_ASSERT(traversedLinkPath.empty());
     }
 
     // The final component of the path is a symbolic link: only the ancestors are inspected.

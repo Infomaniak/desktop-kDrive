@@ -579,7 +579,7 @@ ExitInfo DownloadJob::moveTmpFile() {
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
             // Move file
-            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
+            (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, _cacheDirectory->syncDirectoryPath(), ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
                 LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "

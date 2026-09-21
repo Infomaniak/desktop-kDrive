@@ -24,7 +24,7 @@ namespace KDC {
 
 class LocalMoveJob : public SyncJob {
     public:
-        LocalMoveJob(const SyncPath &source, const SyncPath &dest);
+        LocalMoveJob(const SyncPath &source, const SyncPath &dest, const SyncPath &trustedRootPath = {});
 
     protected:
         ExitInfo canRun() override;
@@ -34,6 +34,7 @@ class LocalMoveJob : public SyncJob {
 
         SyncPath _source;
         SyncPath _dest;
+        SyncPath _trustedRootPath;
 };
 
 } // namespace KDC

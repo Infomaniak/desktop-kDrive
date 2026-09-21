@@ -1208,7 +1208,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
     for (const auto &localFileInfo: localFileMap) {
         SyncPath destPath;
         if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &destPath);
+                    localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, localPath(), &destPath);
             exitCode != ExitCode::Ok) {
             LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Utility::formatSyncPath(localFileInfo.second) << L" into "
                                                           << Utility::formatSyncPath(destPath));

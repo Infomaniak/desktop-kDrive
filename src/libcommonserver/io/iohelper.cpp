@@ -884,12 +884,17 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
 }
 
 IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept {
+    return checkIfPathTraversesLink(path, {}, traversesLink, linkPath);
+}
+
+IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath &trustedRootPath, bool &traversesLink,
+                                           SyncPath &linkPath) noexcept {
     traversesLink = false;
     linkPath.clear();
 
     // Check each ancestor directory of `path`, from the closest to the farthest. The final component of the path is ignored.
     SyncPath tmpPath = path.parent_path();
-    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
+    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path() && tmpPath != trustedRootPath) {
         ItemType itemType;
         if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
@@ -948,18 +953,40 @@ IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinati
     return renameItem(sourcePath, destinationPath);
 }
 
+bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
+                        IoError &ioError) noexcept {
+    return renameItem(sourcePath, destinationPath, trustedRootPath, ioError);
+}
+
+IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                           const SyncPath &trustedRootPath) noexcept {
+    return renameItem(sourcePath, destinationPath, trustedRootPath);
+}
+
 bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
     ioError = renameItem(sourcePath, destinationPath);
     return ioError == IoError::Success;
 }
 
 IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
+    return renameItem(sourcePath, destinationPath, {});
+}
+
+bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
+                          IoError &ioError) noexcept {
+    ioError = renameItem(sourcePath, destinationPath, trustedRootPath);
+    return ioError == IoError::Success;
+}
+
+IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
+                             const SyncPath &trustedRootPath) noexcept {
     // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
     // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
     for (const SyncPath &path: {sourcePath, destinationPath}) {
         auto traversesLink = false;
         SyncPath linkPath;
-        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
+        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, trustedRootPath, traversesLink, linkPath);
+            ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
             return ioError;
         }
@@ -992,6 +1019,11 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
 }
 
 ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory) noexcept {
+    return deleteItemAtomically(path, cacheDirectory, {});
+}
+
+ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory,
+                                        const SyncPath &trustedRootPath) noexcept {
     SyncPath cacheDirectoryPath;
     if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
 
@@ -1012,7 +1044,7 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
 
     const SyncPath destPath = cacheDirectoryPath / CacheDirectory::createTmpFileName();
     auto ioError = IoError::Success;
-    (void) IoHelper::renameItem(path, destPath, ioError);
+    (void) IoHelper::renameItem(path, destPath, trustedRootPath, ioError);
 
     if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(logger(), L"Error in IoHelper::renameItem: source " << Utility::formatSyncPath(path) << L", destination "

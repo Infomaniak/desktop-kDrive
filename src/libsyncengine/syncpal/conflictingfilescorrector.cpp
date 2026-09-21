@@ -111,7 +111,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     }
 
     // Rename the local version
-    LocalMoveJob renameJob(_syncPal->localPath() / error.destinationPath(), originalAbsolutePath);
+    LocalMoveJob renameJob(_syncPal->localPath() / error.destinationPath(), originalAbsolutePath, _syncPal->localPath());
     renameJob.runSynchronously();
     if (renameJob.exitInfo().code() != ExitCode::Ok) {
         return false;

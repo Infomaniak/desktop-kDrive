@@ -1548,7 +1548,8 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
             // Rename the file so as not to lose any information
             SyncPath newSyncPath;
             if (const auto exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                        absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &newSyncPath);
+                        absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, _syncPal->localPath(),
+                        &newSyncPath);
                 !exitInfo) {
                 return exitInfo;
             }
@@ -2462,7 +2463,7 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
 ExitInfo ExecutorWorker::excludeFileFromSync(const SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath) {
     // Blacklist placeholder
     if (const auto exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                absoluteLocalFilepath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+                absoluteLocalFilepath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted, _syncPal->localPath());
         !exitInfo) {
         return exitInfo;
     }
