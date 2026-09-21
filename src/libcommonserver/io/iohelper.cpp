@@ -889,7 +889,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
     SyncPath tmpPath = path.parent_path();
     while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
         std::error_code ec;
-        const bool isLink = _isSymlink(tmpPath, ec);
+        bool isLink = _isSymlink(tmpPath, ec);
         if (ec) {
             const auto ioError = stdError2ioError(ec);
             LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(tmpPath, ec));
@@ -901,13 +901,11 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
             // On Windows, junctions are also followed during path resolution although `std::filesystem::is_symlink`
             // returns false for them.
             IoError junctionError = IoError::Success;
-            bool isJunction = false;
-            if (!checkIfIsJunction(tmpPath, isJunction, junctionError) || junctionError != IoError::Success) {
+            if (!checkIfIsJunction(tmpPath, isLink, junctionError) || junctionError != IoError::Success) {
                 LOGW_WARN(logger(),
                           L"Failed to check if the item is a junction: " << Utility::formatIoError(tmpPath, junctionError));
                 return junctionError;
             }
-            isLink = isJunction;
         }
 #endif
 
