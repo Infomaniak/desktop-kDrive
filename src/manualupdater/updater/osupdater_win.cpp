@@ -2,6 +2,7 @@
 
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommonserver/utility/digitalsignaturechecker_win.h"
 #include "libcommon/utility/utility.h"
 #include "manualupdater/httpdownloader.h"
 
@@ -56,6 +57,11 @@ bool OSUpdater::install(const VersionInfo &versionInfo, const std::function<void
 
     progressCallback(InstallStep::Verifying, QObject::tr("Verifying file integrity..."));
     if (!verifyChecksum(filepath, versionInfo.downloadUrl, outMessage)) {
+        return false;
+    }
+
+    if (!DigitalSignatureChecker_win(filepath).isSignatureValid()) {
+        outMessage = QObject::tr("Installer verification failed. The file may be corrupted.");
         return false;
     }
 
