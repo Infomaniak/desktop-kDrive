@@ -183,6 +183,8 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "File or directory corrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "Too many symbolic link levels";
+        case IoError::MoveThroughSymlink:
+            return "Move through symlink";
         case IoError::Unknown:
         default:
             return "Unknown";
