@@ -967,6 +967,24 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
 }
 
 IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
+    // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
+    // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
+    for (const SyncPath &path: {sourcePath, destinationPath}) {
+        bool traversesLink = false;
+        SyncPath linkPath;
+        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+            return ioError;
+        }
+
+        if (traversesLink) {
+            LOGW_WARN(_logger,
+                      L"Move from " << Utility::formatSyncPath(sourcePath) << L" to " << Utility::formatSyncPath(destinationPath)
+                                    << L" is forbidden: the path traverses the link " << Utility::formatSyncPath(linkPath));
+            return IoError::MoveThroughSymlink;
+        }
+    }
+
     std::error_code ec;
     _rename(sourcePath, destinationPath, ec);
     return stdError2ioError(ec);

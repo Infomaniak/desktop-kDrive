@@ -280,6 +280,7 @@ enum class IoError {
     CrossDeviceLink,
     FileOrDirectoryCorrupted,
     TooManySymbolicLinkLevels,
+    MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
     Unknown,
     EnumEnd
 };
