@@ -84,30 +84,12 @@ ExitInfo LocalMoveJob::runJob() {
         return exitInfo;
     }
 
-    // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
-    // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
-    for (const SyncPath &path: {_source, _dest}) {
-        bool traversesLink = false;
-        SyncPath linkPath;
-        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
-        }
-
-        if (traversesLink) {
-            LOGW_WARN(_logger, L"Move from " << Utility::formatSyncPath(_source) << L" to " << Utility::formatSyncPath(_dest)
-                                             << L" is forbidden: the path traverses the link "
-                                             << Utility::formatSyncPath(linkPath));
+    if (const auto ioError = IoHelper::moveItem(_source, _dest); ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(_source, ioError));
+        if (ioError == IoError::MoveThroughSymlink) {
             return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
         }
-    }
-
-    std::error_code ec;
-    std::filesystem::rename(_source, _dest, ec);
-
-    if (ec.value() != 0) { // We consider this as a permission denied error
-        LOGW_WARN(_logger, L"Failed to rename " << Utility::formatSyncPath(_source) << L" to " << Utility::formatSyncPath(_dest)
-                                                << L": " << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+        // We consider this as a permission denied error
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
