@@ -1063,6 +1063,8 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
             return ExitCode::Ok;
         case IoError::AccessDenied:
             return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
+        case IoError::MoveThroughSymlink:
+            return ExitInfo{ExitCode::SystemError, ExitCause::MoveThroughSymlink};
         default:
             return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
     }
