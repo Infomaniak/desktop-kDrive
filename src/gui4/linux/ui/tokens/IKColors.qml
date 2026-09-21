@@ -57,6 +57,7 @@ QtObject {
         // Gray
         readonly property color gray50: "#F7F7F7"
         readonly property color gray100: "#F5F5F5"
+        readonly property color gray200: "#E0E0E0"
         readonly property color gray400: "#6A768B"
         readonly property color gray500: "#484E5B"
         readonly property color gray600: "#9F9F9F"
@@ -230,6 +231,8 @@ QtObject {
     readonly property color settingsCardSurface: surfaceSecondary
     readonly property color settingsAlternateRowSurface: surfacePrimary
     readonly property color settingsDivider: surfaceTertiary
+    readonly property color settingsEmptyUserAvatarSurface: darkMode ? _p.neutralBlue700 : _p.gray100
+    readonly property color settingsEmptyUserAvatarBorder: darkMode ? _p.neutralBlue600 : _p.gray200
     readonly property color settingsNavigationIcon: _p.grayNavigation
     readonly property color settingsSupportIconSurface: _p.kDrive600
     readonly property color settingsSupportIconGlyph: _p.white
