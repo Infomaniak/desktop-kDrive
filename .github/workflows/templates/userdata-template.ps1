@@ -8,8 +8,7 @@ $RepoUrl    = "__REPO_URL__"
 $Token      = "__REG_TOKEN__"
 $Labels     = "__TAGS__"
 $RunnerName = "__REG_NAME__"
-$AdminPass  = "__ADMIN_PASS__"
-
+$AdminPass = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("__ADMIN_PASS_B64__"))
 # Local Administrator account (consistent with the AutoLogon set in the unattend file).
 $AdminAccount = "Administrator"
 

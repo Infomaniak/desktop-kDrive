@@ -76,8 +76,6 @@ jobs:
           echo "flavor=$FLAVOR" >> "$GITHUB_OUTPUT"
 
       - name: Launch instances
-        env:
-          ADMIN_PASS: ${{ secrets.REG_ADMIN_PASS }}
         run: |
           echo "::add-mask::$ADMIN_PASS"
 
@@ -92,6 +90,10 @@ jobs:
             NAME="ci-runner-win-${RUN_ID}-${i}"
             USERDATA="userdata-${NAME}.ps1"
             LABELS="${{ steps.params.outputs.labels }}"
+            ADMIN_PASS="$(openssl rand -base64 15 | tr -d '/+=' | cut -c1-18)Aa1!"
+            echo "::add-mask::$ADMIN_PASS"
+            ADMIN_PASS_B64=$(printf '%s' "$ADMIN_PASS" | base64 -w0)
+            echo "::add-mask::$ADMIN_PASS_B64"
             if [[ "$LABELS" == *"|"* ]]; then
               echo "::error::Labels must not contain a '|' character (found in: $LABELS)"
               exit 1
@@ -102,7 +104,7 @@ jobs:
               -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
               -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
               -e "s|__REG_NAME__|$NAME|" \
-              -e "s|__ADMIN_PASS__|${ADMIN_PASS}|" \
+              -e "s|__ADMIN_PASS_B64__|${ADMIN_PASS_B64}|" \
               .github/workflows/templates/userdata-template.ps1 > "$USERDATA"
 
             echo "Launching $NAME ..."
