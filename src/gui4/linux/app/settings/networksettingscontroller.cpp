@@ -23,6 +23,7 @@
 
 #include <QAbstractSocket>
 #include <QLoggingCategory>
+#include <QNetworkProxy>
 #include <QPointer>
 
 #include <limits>
@@ -36,6 +37,8 @@ constexpr uint16_t defaultProxyPort = 8080;
 constexpr uint16_t minimumProxyPort = 1;
 constexpr uint32_t connectionTimeoutMs = 5000;
 constexpr qsizetype maximumHostLength = 200;
+constexpr uint16_t connectionCheckPort = 443;
+const auto connectionCheckHost = u"api.infomaniak.com"_s;
 
 Q_LOGGING_CATEGORY(lcNetworkSettings, "gui.v4.settings.network", QtInfoMsg)
 } // namespace
@@ -185,8 +188,17 @@ void NetworkSettingsController::saveManual() {
     _saveFailed = false;
     _checking = true;
     emit changed();
+
+    const auto &config = *_pendingManualConfig;
+    QNetworkProxy proxy{QNetworkProxy::HttpProxy, config.hostName(), static_cast<quint16>(config.port())};
+    if (config.needsAuth()) {
+        proxy.setUser(config.user());
+        proxy.setPassword(config.pwd());
+    }
+    _socket.setProxy(proxy);
+
     _timeout.start();
-    _socket.connectToHost(_pendingManualConfig->hostName(), static_cast<quint16>(_pendingManualConfig->port()));
+    _socket.connectToHost(connectionCheckHost, connectionCheckPort);
 }
 
 void NetworkSettingsController::saveManualWithoutCheck() {
