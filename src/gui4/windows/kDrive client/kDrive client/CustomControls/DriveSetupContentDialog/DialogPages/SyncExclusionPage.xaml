@@ -37,6 +37,9 @@
             <!-- Title -->
             <RowDefinition Height="Auto" />
 
+            <!-- Description -->
+            <RowDefinition Height="Auto" />
+            
             <!-- Remote folder exclusion -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
