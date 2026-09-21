@@ -22,6 +22,7 @@
 #include "app/settings/fileexclusioncontroller.h"
 #include "app/settings/generalsettingscontroller.h"
 #include "app/settings/networksettingscontroller.h"
+#include "app/services/settingsuserservice.h"
 
 #include <QObject>
 
@@ -36,17 +37,19 @@ class UpdateStatusService;
 class SettingsWindowController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(GeneralSettingsController *general READ general CONSTANT)
+        Q_PROPERTY(SettingsUserService *users READ users CONSTANT)
         Q_PROPERTY(AdvancedSettingsController *advanced READ advanced CONSTANT)
         Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusions CONSTANT)
         Q_PROPERTY(NetworkSettingsController *network READ network CONSTANT)
 
     public:
-        SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
-                                 TranslationService &translationService, UpdateStatusService &updateStatusService,
-                                 ExclusionTemplateService &exclusionTemplateService, SentryService &sentryService,
-                                 const CommService &commService, QObject *parent = nullptr);
+        SettingsWindowController(SettingsUserService &settingsUserService, ParametersStore &parametersStore,
+                                 ParametersService &parametersService, TranslationService &translationService,
+                                 UpdateStatusService &updateStatusService, ExclusionTemplateService &exclusionTemplateService,
+                                 SentryService &sentryService, const CommService &commService, QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *general() { return &_general; }
+        [[nodiscard]] SettingsUserService *users() { return &_users; }
         [[nodiscard]] AdvancedSettingsController *advanced() { return &_advanced; }
         [[nodiscard]] FileExclusionController *fileExclusions() { return &_fileExclusions; }
         [[nodiscard]] NetworkSettingsController *network() { return &_network; }
@@ -60,6 +63,7 @@ class SettingsWindowController final : public QObject {
 
     private:
         GeneralSettingsController _general;
+        SettingsUserService &_users;
         AdvancedSettingsController _advanced;
         FileExclusionController _fileExclusions;
         NetworkSettingsController _network;
