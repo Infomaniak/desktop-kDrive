@@ -890,28 +890,13 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
     // Check each ancestor directory of `path`, from the closest to the farthest. The final component of the path is ignored.
     SyncPath tmpPath = path.parent_path();
     while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
-        std::error_code ec;
-        bool isLink = _isSymlink(tmpPath, ec);
-        if (ec) {
-            const auto ioError = stdError2ioError(ec);
-            LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(tmpPath, ec));
-            return ioError;
+        ItemType itemType;
+        if (!IoHelper::getItemType(tmpPath, itemType)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
+            return itemType.ioError;
         }
 
-#if defined(KD_WINDOWS)
-        if (!isLink) {
-            // On Windows, junctions are also followed during path resolution although `std::filesystem::is_symlink`
-            // returns false for them.
-            IoError junctionError = IoError::Success;
-            if (!checkIfIsJunction(tmpPath, isLink, junctionError) || junctionError != IoError::Success) {
-                LOGW_WARN(logger(),
-                          L"Failed to check if the item is a junction: " << Utility::formatIoError(tmpPath, junctionError));
-                return junctionError;
-            }
-        }
-#endif
-
-        if (isLink) {
+        if (itemType.linkType != LinkType::None) {
             traversesLink = true;
             linkPath = tmpPath;
             return IoError::Success;
@@ -972,7 +957,7 @@ IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destina
     // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
     // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
     for (const SyncPath &path: {sourcePath, destinationPath}) {
-        bool traversesLink = false;
+        auto traversesLink = false;
         SyncPath linkPath;
         if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
