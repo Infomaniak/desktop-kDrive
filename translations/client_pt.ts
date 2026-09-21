@@ -3177,8 +3177,8 @@ Por favor, utilize o seguinte link para enviar os registos para o apoio técnico
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>A verificação da soma de verificação falhou. O ficheiro pode estar corrompido.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>A verificação do programa de instalação falhou. O ficheiro pode estar corrompido.</translation>
     </message>
 </context>
 <context>

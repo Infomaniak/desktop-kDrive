@@ -3175,8 +3175,8 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>Η επαλήθευση του αθροίσματος ελέγχου απέτυχε. Το αρχείο ενδέχεται να είναι κατεστραμμένο.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>Η επαλήθευση του προγράμματος εγκατάστασης απέτυχε. Το αρχείο ενδέχεται να είναι κατεστραμμένο.</translation>
     </message>
 </context>
 <context>
