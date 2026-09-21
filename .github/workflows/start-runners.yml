@@ -91,9 +91,6 @@ jobs:
             USERDATA="userdata-${NAME}.ps1"
             LABELS="${{ steps.params.outputs.labels }}"
 
-            which openssl && openssl version
-            echo "test: [$(openssl rand -base64 15)]"
-
             RAW="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
             ADMIN_PASS="${RAW:0:15}Aa1!"
 
