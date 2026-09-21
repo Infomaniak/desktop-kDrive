@@ -76,7 +76,11 @@ jobs:
           echo "flavor=$FLAVOR" >> "$GITHUB_OUTPUT"
 
       - name: Launch instances
+        env:
+          ADMIN_PASS: ${{ secrets.REG_ADMIN_PASS }}
         run: |
+          echo "::add-mask::$ADMIN_PASS"
+
           RUN_ID="${{ github.run_id }}"
           COUNT="${{ steps.params.outputs.count }}"
           FLAVOR="${{ steps.params.outputs.flavor }}"
@@ -98,6 +102,7 @@ jobs:
               -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
               -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
               -e "s|__REG_NAME__|$NAME|" \
+              -e "s|__ADMIN_PASS__|${ADMIN_PASS}|" \
               .github/workflows/templates/userdata-template.ps1 > "$USERDATA"
 
             echo "Launching $NAME ..."
@@ -109,7 +114,7 @@ jobs:
               --network "$NETWORK_NAME" \
               --user-data "$USERDATA" \
               --property "purpose=ci-runner" \
-              --key-name desktop_team \
+              --property "admin_pass=${ADMIN_PASS}" \
               --wait \
               -c id -c name -c status \
               "$NAME" &
