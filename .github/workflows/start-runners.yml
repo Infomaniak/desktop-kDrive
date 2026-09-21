@@ -90,6 +90,10 @@ jobs:
             NAME="ci-runner-win-${RUN_ID}-${i}"
             USERDATA="userdata-${NAME}.ps1"
             LABELS="${{ steps.params.outputs.labels }}"
+
+            which openssl && openssl version
+            echo "test: [$(openssl rand -base64 15)]"
+
             ADMIN_PASS="$(openssl rand -base64 15 | tr -d '/+=' | cut -c1-18)Aa1!"
             echo "::add-mask::$ADMIN_PASS"
             ADMIN_PASS_B64=$(printf '%s' "$ADMIN_PASS" | base64 -w0)
