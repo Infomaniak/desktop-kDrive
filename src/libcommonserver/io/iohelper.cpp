@@ -975,12 +975,12 @@ IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destina
         bool traversesLink = false;
         SyncPath linkPath;
         if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
             return ioError;
         }
 
         if (traversesLink) {
-            LOGW_WARN(_logger,
+            LOGW_WARN(logger(),
                       L"Move from " << Utility::formatSyncPath(sourcePath) << L" to " << Utility::formatSyncPath(destinationPath)
                                     << L" is forbidden: the path traverses the link " << Utility::formatSyncPath(linkPath));
             return IoError::MoveThroughSymlink;
