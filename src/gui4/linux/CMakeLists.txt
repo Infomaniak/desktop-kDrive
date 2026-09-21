@@ -193,6 +193,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AddExclusionRuleDialog.qml
+        ui/windows/settings/UserCard.qml
+        ui/windows/settings/UserDriveRow.qml
+        ui/windows/settings/UsersSettingsView.qml
         ui/windows/settings/AdvancedSettingsView.qml
         ui/windows/settings/DataManagementView.qml
         ui/windows/settings/DebugSettingsView.qml
