@@ -133,6 +133,8 @@ ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonica
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid canonicalSourcePath: " << Utility::formatSyncPath(result.sourcePath));
     }
 
+    result.valid = true;
+
     return result;
 }
 
@@ -160,7 +162,9 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // Rename the local version
     LocalMoveJob renameJob(canonicalPaths.sourcePath, canonicalPaths.destinationPath);
     renameJob.runSynchronously();
-    if (const auto exitInfo = renameJob.runSynchronously(); !exitInfo) return false;
+    if (const auto exitInfo = renameJob.runSynchronously(); !exitInfo) {
+        return false;
+    }
 
     // Set the local modification time to now
     const Poco::Timestamp lastModifiedTimestamp;
