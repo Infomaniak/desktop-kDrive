@@ -1,0 +1,188 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2026 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "userdrivesmodel.h"
+
+#include "app/appconstants.h"
+
+#include <QLoggingCategory>
+
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <ranges>
+
+namespace KDC {
+
+namespace {
+Q_LOGGING_CATEGORY(lcUserDrivesModel, "gui.v4.userdrivesmodel", QtInfoMsg)
+
+[[nodiscard]] QColor driveColor(const std::string &value) {
+    const QColor color{QString::fromStdString(value)};
+    return color.isValid() ? color : AppConstants::Drive::defaultColor();
+}
+
+[[nodiscard]] QString availableDriveAccountName(const AvailableDriveContext &context) {
+    if (!context.availableDrive.accountName().empty()) {
+        return QString::fromStdString(context.availableDrive.accountName());
+    }
+
+    return context.accountInfo.has_value() ? QString::fromStdString(context.accountInfo->name()) : QString();
+}
+
+} // namespace
+
+UserDrivesModel::UserDrivesModel(const AppCache &cache, const UserDbId userDbId, QObject *const parent) :
+    QAbstractListModel(parent),
+    _cache(cache),
+    _userDbId(userDbId) {
+    (void) connect(&_cache, &AppCache::accountsChanged, this, &UserDrivesModel::rebuild);
+    (void) connect(&_cache, &AppCache::drivesChanged, this, &UserDrivesModel::rebuild);
+    (void) connect(&_cache, &AppCache::syncsChanged, this, &UserDrivesModel::rebuild);
+    (void) connect(&_cache, &AppCache::availableDrivesChanged, this, [this](const UserDbId changedUserDbId) {
+        if (changedUserDbId == _userDbId) {
+            rebuild();
+        }
+    });
+    (void) connect(&_cache, &AppCache::allAvailableDrivesChanged, this, &UserDrivesModel::rebuild);
+
+    rebuild();
+}
+
+int UserDrivesModel::rowCount(const QModelIndex &parent) const {
+    return parent.isValid() ? 0 : static_cast<int>(_entries.size());
+}
+
+QVariant UserDrivesModel::data(const QModelIndex &index, const int role) const {
+    if (!index.isValid() || index.row() < 0 || index.row() >= rowCount()) {
+        return {};
+    }
+
+    const auto &entry = _entries[static_cast<std::size_t>(index.row())];
+    switch (role) {
+        case NameRole:
+        case Qt::DisplayRole:
+            return entry.name;
+        case AccountNameRole:
+            return entry.accountName;
+        case ColorRole:
+            return entry.color;
+        case SynchronizedRole:
+            return entry.synchronized;
+        default:
+            return {};
+    }
+}
+
+QHash<int, QByteArray> UserDrivesModel::roleNames() const {
+    return {
+            {NameRole, "name"},
+            {AccountNameRole, "accountName"},
+            {ColorRole, "color"},
+            {SynchronizedRole, "isSynchronized"},
+    };
+}
+
+void UserDrivesModel::rebuild() {
+    const auto entryLessThan = [](const Entry &lhs, const Entry &rhs) {
+        return QString::compare(lhs.name, rhs.name, Qt::CaseInsensitive) < 0;
+    };
+
+    using DriveKey = std::pair<AccountId, DriveId>;
+    std::map<DriveKey, Entry> synchronizedByKey;
+    std::map<DriveKey, Entry> availableByKey;
+    std::map<DriveKey, DriveDbId> configuredDriveDbIds;
+
+    for (const auto &context: _cache.driveContexts()) {
+        if (context.userDisplayInfo.dbId() != _userDbId) {
+            continue;
+        }
+
+        std::vector<BaseSync> classicSyncs;
+        (void) std::ranges::copy_if(context.syncInfos, std::back_inserter(classicSyncs),
+                                    [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); });
+        if (classicSyncs.empty()) {
+            continue;
+        }
+
+        (void) std::ranges::sort(classicSyncs, {}, &BaseSync::dbId);
+        if (classicSyncs.size() > 1) {
+            qCWarning(lcUserDrivesModel) << "Multiple classic synchronizations found for drive | driveDbId:"
+                                         << context.drive.dbId() << "/ selectedSyncDbId:" << classicSyncs.front().dbId();
+        }
+
+        const DriveKey key{context.accountInfo.accountId(), context.drive.driveId()};
+        const Entry entry{
+                .name = QString::fromStdString(context.drive.name()),
+                .accountName = QString::fromStdString(context.accountInfo.name()),
+                .color = driveColor(context.drive.color()),
+                .synchronized = true,
+        };
+        if (const auto [existing, inserted] = synchronizedByKey.emplace(key, entry); !inserted) {
+            qCWarning(lcUserDrivesModel) << "Duplicate configured drive found for user card | userDbId:" << _userDbId
+                                         << "/ accountId:" << key.first << "/ driveId:" << key.second
+                                         << "/ keptDriveDbId:" << configuredDriveDbIds.at(key);
+        } else {
+            configuredDriveDbIds.emplace(key, context.drive.dbId());
+        }
+    }
+
+    for (const auto &context: _cache.availableDriveContexts(_userDbId)) {
+        if (context.alreadyConfigured) {
+            continue;
+        }
+
+        const DriveKey key{context.availableDrive.accountId(), context.availableDrive.driveId()};
+        if (synchronizedByKey.contains(key)) {
+            continue;
+        }
+
+        (void) availableByKey.emplace(key, Entry{
+                                                   .name = QString::fromStdString(context.availableDrive.name()),
+                                                   .accountName = availableDriveAccountName(context),
+                                                   .color = driveColor(context.availableDrive.color()),
+                                           });
+    }
+
+    std::vector<Entry> synchronizedEntries;
+    synchronizedEntries.reserve(synchronizedByKey.size());
+    for (auto &entry: synchronizedByKey | std::views::values) {
+        synchronizedEntries.push_back(std::move(entry));
+    }
+
+    std::vector<Entry> availableEntries;
+    availableEntries.reserve(availableByKey.size());
+    for (auto &entry: availableByKey | std::views::values) {
+        availableEntries.push_back(std::move(entry));
+    }
+
+    // Maps provide deterministic AccountId/DriveId ordering for equal case-insensitive names.
+    std::ranges::stable_sort(synchronizedEntries, entryLessThan);
+    std::ranges::stable_sort(availableEntries, entryLessThan);
+    synchronizedEntries.insert(synchronizedEntries.end(), availableEntries.begin(), availableEntries.end());
+
+    if (synchronizedEntries == _entries) {
+        return;
+    }
+
+    beginResetModel();
+    _entries = std::move(synchronizedEntries);
+    endResetModel();
+}
+
+} // namespace KDC
