@@ -43,7 +43,7 @@
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
-#include "app/settings/generalsettingscontroller.h"
+#include "app/settings/settingswindowcontroller.h"
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
@@ -156,8 +156,8 @@ class AppClientLinux : public QApplication {
         StorageController _storageController{_mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        GeneralSettingsController _generalSettingsController{_parametersStore, _parametersService, _translationService,
-                                                             _updateStatusService, this};
+        SettingsWindowController _settingsWindowController{_parametersStore, _parametersService, _translationService,
+                                                           _updateStatusService, this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};

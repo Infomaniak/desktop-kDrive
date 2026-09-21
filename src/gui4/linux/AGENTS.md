@@ -234,6 +234,10 @@
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
+- `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
+  category controllers and is the single source of Settings-window presentation requests.
+- `ui/windows/settings/SettingsNavigation*.qml`: reusable Settings-local `StackView` navigation, dynamic page header,
+  keyboard back action, and focus restoration. Category roots own their route components; the pane remains generic.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
