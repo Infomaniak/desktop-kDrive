@@ -94,7 +94,14 @@ jobs:
             which openssl && openssl version
             echo "test: [$(openssl rand -base64 15)]"
 
-            ADMIN_PASS="$(openssl rand -base64 15 | tr -d '/+=' | cut -c1-18)Aa1!"
+            RAW="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+            ADMIN_PASS="${RAW:0:15}Aa1!"
+
+            if [[ -z "$ADMIN_PASS" || "$ADMIN_PASS" == "Aa1!" ]]; then
+              echo "::error::Password generation failed (empty result)"
+              exit 1
+            fi
+
             echo "::add-mask::$ADMIN_PASS"
             ADMIN_PASS_B64=$(printf '%s' "$ADMIN_PASS" | base64 -w0)
             echo "::add-mask::$ADMIN_PASS_B64"
