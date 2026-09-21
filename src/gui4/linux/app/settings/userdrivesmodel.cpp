@@ -133,12 +133,13 @@ void UserDrivesModel::rebuild() {
                 .color = driveColor(context.drive.color()),
                 .synchronized = true,
         };
-        if (const auto [existing, inserted] = synchronizedByKey.emplace(key, entry); !inserted) {
+        if (const auto [pair, insterted] = synchronizedByKey.try_emplace(key, entry); !insterted) {
             qCWarning(lcUserDrivesModel) << "Duplicate configured drive found for user card | userDbId:" << _userDbId
                                          << "/ accountId:" << key.first << "/ driveId:" << key.second
                                          << "/ keptDriveDbId:" << configuredDriveDbIds.at(key);
-        } else {
-            configuredDriveDbIds.emplace(key, context.drive.dbId());
+        } else if (!configuredDriveDbIds.try_emplace(key, context.drive.dbId()).second) {
+            qCWarning(lcUserDrivesModel) << "Configured drive identity index is inconsistent | userDbId:" << _userDbId
+                                         << "/ accountId:" << key.first << "/ driveId:" << key.second;
         }
     }
 
@@ -152,11 +153,11 @@ void UserDrivesModel::rebuild() {
             continue;
         }
 
-        (void) availableByKey.emplace(key, Entry{
-                                                   .name = QString::fromStdString(context.availableDrive.name()),
-                                                   .accountName = availableDriveAccountName(context),
-                                                   .color = driveColor(context.availableDrive.color()),
-                                           });
+        (void) availableByKey.try_emplace(key, Entry{
+                                                       .name = QString::fromStdString(context.availableDrive.name()),
+                                                       .accountName = availableDriveAccountName(context),
+                                                       .color = driveColor(context.availableDrive.color()),
+                                               });
     }
 
     std::vector<Entry> synchronizedEntries;
@@ -172,9 +173,9 @@ void UserDrivesModel::rebuild() {
     }
 
     // Maps provide deterministic AccountId/DriveId ordering for equal case-insensitive names.
-    std::ranges::stable_sort(synchronizedEntries, entryLessThan);
-    std::ranges::stable_sort(availableEntries, entryLessThan);
-    synchronizedEntries.insert(synchronizedEntries.end(), availableEntries.begin(), availableEntries.end());
+    (void) std::ranges::stable_sort(synchronizedEntries, entryLessThan);
+    (void) std::ranges::stable_sort(availableEntries, entryLessThan);
+    (void) synchronizedEntries.insert(synchronizedEntries.end(), availableEntries.begin(), availableEntries.end());
 
     if (synchronizedEntries == _entries) {
         return;
