@@ -129,6 +129,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/settings/generalsettingscontroller.cpp
         app/settings/generalsettingscontroller.h
+        app/settings/settingswindowcontroller.cpp
+        app/settings/settingswindowcontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
         ui/chrome/windowdecorationcontroller.cpp
@@ -174,10 +176,14 @@ set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
+        ui/windows/settings/AdvancedSettingsView.qml
         ui/windows/settings/GeneralSettingsView.qml
         ui/windows/settings/SettingsGroup.qml
         ui/windows/settings/SettingsInfoButton.qml
         ui/windows/settings/SettingsInformationDialog.qml
+        ui/windows/settings/SettingsNavigationHeader.qml
+        ui/windows/settings/SettingsNavigationPane.qml
+        ui/windows/settings/SettingsNavigationRow.qml
         ui/windows/settings/SettingsRow.qml
         ui/windows/settings/SettingsWindow.qml
         ui/chrome/IKShadowedWindow.qml
@@ -265,6 +271,8 @@ set(GUI_QML_RESOURCE_FILES # Resources for the QML files (e.g. qmldir, js files,
 set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/accounts.svg
         ui/assets/settings/advanced.svg
+        ui/assets/settings/chevron-left.svg
+        ui/assets/settings/chevron-right.svg
         ui/assets/settings/general.svg
         ui/assets/settings/information.svg
         ui/assets/main/activities.svg
