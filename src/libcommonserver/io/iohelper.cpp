@@ -892,9 +892,35 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
     traversesLink = false;
     linkPath.clear();
 
+    const SyncPath normalizedTrustedRootPath = trustedRootPath.lexically_normal();
+    std::error_code trustedRootErrorCode;
+    const SyncPath canonicalTrustedRootPath =
+            normalizedTrustedRootPath.empty()
+                    ? SyncPath{}
+                    : std::filesystem::weakly_canonical(normalizedTrustedRootPath, trustedRootErrorCode);
+
+    const auto isTrustedRootPath = [&canonicalTrustedRootPath, &normalizedTrustedRootPath,
+                                    &trustedRootErrorCode](const SyncPath &candidatePath) {
+        if (normalizedTrustedRootPath.empty()) {
+            return false;
+        }
+
+        if (candidatePath.lexically_normal() == normalizedTrustedRootPath) {
+            return true;
+        }
+
+        if (trustedRootErrorCode.value() != 0) {
+            return false;
+        }
+
+        std::error_code candidateErrorCode;
+        const SyncPath canonicalCandidatePath = std::filesystem::weakly_canonical(candidatePath, candidateErrorCode);
+        return candidateErrorCode.value() == 0 && canonicalCandidatePath == canonicalTrustedRootPath;
+    };
+
     // Check each ancestor directory of `path`, from the closest to the farthest. The final component of the path is ignored.
     SyncPath tmpPath = path.parent_path();
-    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path() && tmpPath != trustedRootPath) {
+    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path() && !isTrustedRootPath(tmpPath)) {
         ItemType itemType;
         if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
