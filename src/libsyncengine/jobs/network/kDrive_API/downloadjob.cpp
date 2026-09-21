@@ -578,7 +578,7 @@ ExitInfo DownloadJob::moveTmpFile() {
         bool crossDeviceLinkError = false;
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
-            // Move fil
+            // Move file
             (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
