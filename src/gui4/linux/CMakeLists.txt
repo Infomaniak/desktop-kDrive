@@ -131,6 +131,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/settings/generalsettingscontroller.cpp
         app/settings/generalsettingscontroller.h
+        app/settings/settingsusersmodel.cpp
+        app/settings/settingsusersmodel.h
+        app/settings/userdrivesmodel.cpp
+        app/settings/userdrivesmodel.h
         app/settings/advancedsettingscontroller.cpp
         app/settings/advancedsettingscontroller.h
         app/settings/exclusionrulemodel.cpp
