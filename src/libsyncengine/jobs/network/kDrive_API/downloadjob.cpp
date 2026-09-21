@@ -573,37 +573,33 @@ ExitInfo DownloadJob::moveTmpFile() {
         retry = false;
 #endif
 
-        bool error = false;
+        auto ioError = IoError::Unknown;
         bool accessDeniedError = false;
         bool crossDeviceLinkError = false;
         static const bool forceCopy = CommonUtility::envVarValue("KDRIVE_PRESERVE_PERMISSIONS_ON_CREATE") == "1";
         if (_fileDownloadInfo.isCreate && !forceCopy) {
-            // Move file
-            IoError ioError = IoError::Success;
+            // Move fil
             (void) IoHelper::moveItem(_tmpPath, _fileDownloadInfo.localpath, ioError);
             crossDeviceLinkError = ioError == IoError::CrossDeviceLink; // Unable to move between 2 distinct file systems
             if (ioError != IoError::Success && !crossDeviceLinkError) {
                 LOGW_WARN(_logger, L"Failed to move downloaded file " << Utility::formatSyncPath(_tmpPath) << L" to "
                                                                       << Utility::formatSyncPath(_fileDownloadInfo.localpath)
                                                                       << L", err='" << Utility::formatIoError(ioError) << L"'");
-                error = true;
                 accessDeniedError = ioError == IoError::AccessDenied;
             }
         }
 
         if (!_fileDownloadInfo.isCreate || crossDeviceLinkError || forceCopy) {
             // Copy file content (i.e. when the target exists, do not change its node id).
-            IoError ioError = IoError::Success;
             if (!IoHelper::copyFileOrDirectory(_tmpPath, _fileDownloadInfo.localpath, ioError)) {
                 LOGW_WARN(_logger, L"Failed to copy downloaded file " << Path2WStr(_tmpPath) << L" to "
                                                                       << Path2WStr(_fileDownloadInfo.localpath) << L", error="
                                                                       << Utility::formatIoError(ioError));
-                error = true;
                 accessDeniedError = ioError == IoError::AccessDenied;
             }
         }
 
-        if (error) {
+        if (ioError != IoError::Success) {
             if (accessDeniedError) {
 #if defined(KD_WINDOWS)
                 // NB: On Windows, ec.value() == ERROR_SHARING_VIOLATION is translated into IoError::AccessDenied
@@ -621,9 +617,10 @@ ExitInfo DownloadJob::moveTmpFile() {
 #else
             return {ExitCode::SystemError, ExitCause::FileAccessError};
 #endif
+            } else if (ioError == IoError::MoveThroughSymlink) {
+                return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
             } else {
                 bool exists = false;
-                IoError ioError = IoError::Success;
                 if (!IoHelper::checkIfPathExists(_fileDownloadInfo.localpath.parent_path(), exists, ioError,
                                                  IoHelper::PathCheckOption::Insensitive)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
