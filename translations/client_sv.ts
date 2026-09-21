@@ -3177,8 +3177,8 @@ Använd följande länk för att skicka loggfilerna till supporten: &lt;a style=
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>Kontrollen av kontrollsumman misslyckades. Filen kan vara skadad.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>Kontrollen av installationsprogrammet misslyckades. Filen kan vara skadad.</translation>
     </message>
 </context>
 <context>
