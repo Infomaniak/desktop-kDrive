@@ -891,7 +891,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
     SyncPath tmpPath = path.parent_path();
     while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
         ItemType itemType;
-        if (!IoHelper::getItemType(tmpPath, itemType)) {
+        if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
             return itemType.ioError;
         }
