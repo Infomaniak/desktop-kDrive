@@ -743,6 +743,8 @@ std::string toString(const IoError e) {
             return "FileOrDirectoryCorrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "TooManySymbolicLinkLevels";
+        case IoError::MoveThroughSymlink:
+            return "MoveThroughSymlink";
         case IoError::Unknown:
             return "Unknown";
         default:
