@@ -69,6 +69,25 @@
   independent updater states.
 - Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
   `AppClientLinux::openSettingsWindow`. Keep General preferences in `GeneralSettingsController`.
+- Keep Settings user cards anchored on `UserDbId`: `SettingsUserService` owns only per-user request state, while
+  `SettingsUsersModel` and `UserDrivesModel` project users, configured classic synchronizations, and available drives
+  directly from `AppCache`. Loading or retrying available drives must preserve the last cache-backed rows.
+- Expose a process-long Settings feature service directly to QML when an intermediate controller would only forward its
+  properties and calls one-for-one; add a controller only when it owns view-specific state or orchestration.
+- Name presentation classes after the cache entity they project: `Account*` classes operate on backend `Account` nodes,
+  `User*` classes operate on users, and so on. Expose only model roles that current QML actually consumes; add future
+  identities, capabilities, or pending roles only with the QML feature that uses them.
+- Keep Settings user-drive rows aligned with the Accounts Figma: use the 43 px nested leading indent and a crisp 20 px
+  colored drive badge, place the synchronization status beside its action, and show the account name below the drive
+  name only when both differ. Show the complete drive name in an `IKToolTip` only when its label is truncated. Separate
+  the user header, each drive row, and the disconnection footer with a 1 px `settingsDivider` line across the card
+  content width. The avatar corner mask must follow the user-header hover surface. Render account disconnection as one
+  left-aligned destructive-secondary button, not as a label plus a trailing action. Render the additional-account entry
+  as one compact, left-aligned 24 px button in a 42 px row with a bottom divider; do not duplicate its label beside it.
+  The no-user state uses the single-user outline asset from the Manager Design System, recolored to `#666666`, inside a
+  26 px avatar. Render available-drive failures as a 42 px nested row with its two-line message at the 43 px indent and
+  Retry on the right. During an available-drive refresh, keep cached available drives visible without a loader; show the
+  loader centered in its row only when no available drive is cached yet.
 - Keep Settings information dialogs inside the Settings window and restore focus to their trigger. Closing Settings must
   not quit kDrive. Show the download action only while an update is available.
 - Let `TranslationService` own the English fallback and selected locale. Language changes retranslate QML and notify C++
@@ -84,6 +103,8 @@
   indexes unless profiling demonstrates that matching is a bottleneck.
 - In range-for loops over associative containers, prefer `std::views::keys` / `std::views::values` over structured
   bindings with an unused `_` element when only keys or only values are needed.
+- Declare file-local `Q_LOGGING_CATEGORY` entries in anonymous namespaces within the files touched by the current feature;
+  do not broaden that cleanup into a repository-wide refactor unless explicitly requested.
 - For Linux v4 model/UI checks, build only the `kdrive_qml` target unless a broader backend/server validation is
   explicitly needed.
 - After resolving a rebase conflict that removes or renames a shared model/header, grep Linux v4 for stale includes and
@@ -97,7 +118,9 @@
 - Set `external: true` on every `IKLinkButton` and `IKModalButton` whose action opens the web browser, so the trailing
   `IKExternalLinkIcon` announces the context switch. The marker must be exhaustive across labelled controls: once some
   carry it, its absence reads as a promise that the action stays in the app. Icon-only controls are the exception, as a
-  second glyph is unreadable at that size; state the external destination in their tooltip instead.
+  second glyph is unreadable at that size; state the external destination in their tooltip instead. Include the label's
+  independent text metrics plus the external glyph allowance in a link button's implicit width so the glyph cannot
+  cause otherwise unconstrained labels to elide.
 - Size Home Quick Access from the widest translated shortcut label or the drive name capped to the Windows-aligned
   display width. Keep shortcut labels fully visible, while the drive name wraps to two lines before eliding. Let the
   Home status panel consume the remaining horizontal space.
