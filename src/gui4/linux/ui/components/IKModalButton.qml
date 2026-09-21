@@ -125,8 +125,10 @@ Button {
             return IKColors.actionPrimary
         }
         opacity: root.down ? IKModalTokens.pressedOpacity : root.hovered ? IKModalTokens.hoverOpacity : 1
+        // Tonal keeps the toolbar control outline: its fill alone is too close to the page surface.
         border.width: root.visualFocus ? IKModalTokens.focusBorderWidth
-                                             : root.role === IKModalButton.Secondary ? IKModalTokens.borderWidth : 0
+                                       : root.role === IKModalButton.Secondary || root.role === IKModalButton.Tonal
+                                         ? IKModalTokens.borderWidth : 0
         border.color: root.visualFocus ? root.focusBorderColor : IKColors.modalBorder
     }
 }
