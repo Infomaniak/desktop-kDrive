@@ -20,10 +20,10 @@ pragma Singleton
 import QtQuick
 QtObject {
     readonly property real windowWidth: 800
-    readonly property real windowHeight: 540
+    readonly property real windowHeight: minimumHeight
     readonly property real minimumWidth: 760
     readonly property real minimumHeight: 440
-    readonly property real sidebarWidth: 224
+    readonly property real sidebarWidth: IKMainWindow.sidebarWidth
     readonly property real pageMargin: 20
     readonly property real groupSpacing: 10
     readonly property real groupPadding: 10
@@ -32,6 +32,7 @@ QtObject {
     readonly property real rowSpacing: 16
     readonly property real buttonHeight: 28
     readonly property real iconButtonSize: 28
+    readonly property real navigationIconSize: 16
     readonly property real informationIconSize: 14
     readonly property real switchWidth: 36
     readonly property real switchHeight: 20

@@ -60,6 +60,7 @@ QtObject {
         readonly property color gray400: "#6A768B"
         readonly property color gray500: "#484E5B"
         readonly property color gray600: "#9F9F9F"
+        readonly property color grayNavigation: "#7C7C7C"
         readonly property color gray950: "#0A0C0F"
 
         // Purple
@@ -228,4 +229,5 @@ QtObject {
     readonly property color syncConfigurationDisclosureIcon: textSecondary
     readonly property color settingsCardSurface: surfaceSecondary
     readonly property color settingsDivider: surfaceTertiary
+    readonly property color settingsNavigationIcon: _p.grayNavigation
 }
