@@ -22,10 +22,8 @@
 
 #include <QObject>
 
-#include <deque>
 #include <functional>
 #include <memory>
-#include <optional>
 #include <vector>
 
 namespace KDC {
@@ -33,10 +31,9 @@ namespace KDC {
 class ServiceEventBus;
 
 /**
- * Fresh server-confirmed exclusion-template snapshots and serialized full-list user mutations.
+ * Fresh server-confirmed exclusion-template snapshots and full-list user mutations.
  *
- * This QObject is thread-affine: callers and CommService callbacks execute on its Qt event-loop thread, so mutation
- * queue state is serialized without locking.
+ * Each successful mutation publishes only the list read back from the server.
  */
 class ExclusionTemplateService final : public QObject {
         Q_OBJECT
@@ -55,6 +52,13 @@ class ExclusionTemplateService final : public QObject {
         [[nodiscard]] const std::vector<ExclusionTemplate> &userTemplates() const { return _userTemplates; }
 
         void refresh(const CompletionCallback &callback = {});
+
+        /**
+         * Applies a mutation by replacing the complete server-side user-template list.
+         *
+         * @warning DATA LOSS RISK: DO NOT CALL THIS METHOD OUTSIDE FileExclusionController. Concurrent calls can
+         * silently overwrite confirmed user rules because the server replaces the complete list.
+         */
         void mutateUserTemplates(const UserMutation &mutation, const CompletionCallback &callback = {});
 
     signals:
@@ -62,26 +66,17 @@ class ExclusionTemplateService final : public QObject {
 
     private:
         struct RefreshState;
-        struct PendingMutation {
-                UserMutation mutation;
-                CompletionCallback callback;
-        };
 
         void finishRefresh(const std::shared_ptr<RefreshState> &state);
-        void startNextMutation();
-        void finishCurrentMutation(const ExitInfo &result,
-                                   const std::optional<std::vector<ExclusionTemplate>> &confirmedTemplates = std::nullopt);
 
         const CommService &_commService;
         ServiceEventBus &_eventBus;
         std::vector<ExclusionTemplate> _defaultTemplates;
         std::vector<ExclusionTemplate> _userTemplates;
         std::vector<CompletionCallback> _refreshCallbacks;
-        std::deque<PendingMutation> _mutations;
         bool _defaultTemplatesLoaded{false};
         bool _userTemplatesLoaded{false};
         bool _refreshing{false};
-        bool _mutating{false};
 };
 
 } // namespace KDC
