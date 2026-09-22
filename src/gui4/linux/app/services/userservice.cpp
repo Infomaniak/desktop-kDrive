@@ -22,16 +22,15 @@
 
 #include <QLoggingCategory>
 
+namespace KDC {
+
 namespace {
 constexpr char serviceKeyUser[] = "user";
 constexpr char actionLoadAvailableDrives[] = "loadAvailableDrives";
 constexpr char actionDeleteUser[] = "deleteUser";
 constexpr char actionRequestLoginToken[] = "requestLoginToken";
-} // namespace
-
-namespace KDC {
-
 Q_LOGGING_CATEGORY(lcUserService, "gui.v4.userservice", QtInfoMsg)
+} // namespace
 
 UserService::UserService(CommService &commService, AppCache &appCache, ServiceActionTracker &serviceActionTracker,
                          ServiceEventBus &serviceEventBus, QObject *const parent) :
@@ -94,7 +93,10 @@ void UserService::deleteUser(const qint64 userDbId) {
         endAction(actionDeleteUser, userDbId);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::USER_DELETE);
+            emit userDeleteFailed(userDbId);
+            return;
         }
+        emit userDeleteSucceeded(static_cast<UserDbId>(userDbId));
     });
 }
 
