@@ -236,7 +236,9 @@ void AdvancedSettingsController::sendDebugLogs(const bool lastSessionOnly) {
         if (!self) return;
 
         self->_uploadRequestPending = false;
-        if (!result) self->_uploadState = LogUploadState::Failed;
+        if (!result) {
+            self->_uploadState = LogUploadState::Failed;
+        }
         emit self->changed();
     });
 }
