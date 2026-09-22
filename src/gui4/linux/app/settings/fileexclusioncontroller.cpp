@@ -170,7 +170,7 @@ void FileExclusionController::removeSelected() {
 
     const auto selectedKeys = _userRules.selectedPatternKeys();
     mutate([selectedKeys](std::vector<ExclusionTemplate> &templates) {
-        std::erase_if(templates, [&selectedKeys](const ExclusionTemplate &exclusionTemplate) {
+        (void) std::erase_if(templates, [&selectedKeys](const ExclusionTemplate &exclusionTemplate) {
             return selectedKeys.contains(normalizedKey(templatePattern(exclusionTemplate)));
         });
         return ExitInfo{ExitCode::Ok};
