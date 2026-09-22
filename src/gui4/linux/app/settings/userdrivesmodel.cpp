@@ -84,6 +84,10 @@ QVariant UserDrivesModel::data(const QModelIndex &index, const int role) const {
             return entry.color;
         case SynchronizedRole:
             return entry.synchronized;
+        case AccountIdRole:
+            return QVariant::fromValue<qint64>(entry.accountId);
+        case DriveIdRole:
+            return QVariant::fromValue<qint64>(entry.driveId);
         default:
             return {};
     }
@@ -91,10 +95,9 @@ QVariant UserDrivesModel::data(const QModelIndex &index, const int role) const {
 
 QHash<int, QByteArray> UserDrivesModel::roleNames() const {
     return {
-            {NameRole, "name"},
-            {AccountNameRole, "accountName"},
-            {ColorRole, "color"},
-            {SynchronizedRole, "isSynchronized"},
+            {NameRole, "name"},           {AccountNameRole, "accountName"},
+            {ColorRole, "color"},         {SynchronizedRole, "isSynchronized"},
+            {AccountIdRole, "accountId"}, {DriveIdRole, "driveId"},
     };
 }
 
@@ -133,6 +136,8 @@ void UserDrivesModel::rebuild() {
                 .accountName = QString::fromStdString(context.accountInfo.name()),
                 .color = driveColor(context.drive.color()),
                 .synchronized = true,
+                .accountId = context.accountInfo.accountId(),
+                .driveId = context.drive.driveId(),
         };
         if (const auto [pair, inserted] = synchronizedByKey.try_emplace(key, entry); !inserted) {
             qCWarning(lcUserDrivesModel) << "Duplicate configured drive found for user card | userDbId:" << _userDbId
@@ -158,6 +163,8 @@ void UserDrivesModel::rebuild() {
                                                        .name = QString::fromStdString(context.availableDrive.name()),
                                                        .accountName = availableDriveAccountName(context),
                                                        .color = driveColor(context.availableDrive.color()),
+                                                       .accountId = context.availableDrive.accountId(),
+                                                       .driveId = context.availableDrive.driveId(),
                                                });
     }
 
