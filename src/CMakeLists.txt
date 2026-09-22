@@ -37,6 +37,11 @@ if(NOT BUILD_LIBRARIES_ONLY)
     add_subdirectory(manualupdater)  #This is the updater that is used when kDrive crash on startup
     add_subdirectory(server)
 
+    # At most one GUI type can be built, fail if both are enabled
+    if(BUILD_GUI AND BUILD_GUI_LEGACY)
+        message(FATAL_ERROR "Both BUILD_GUI and BUILD_GUI_LEGACY are enabled. Please choose only one.")
+    endif()
+
     set(CLIENT_DEST "${BIN_OUTPUT_DIRECTORY}/client")
     if(WIN32)
         if(BUILD_GUI)
