@@ -68,6 +68,9 @@ class ExclusionTemplateService final : public QObject {
         struct RefreshState;
 
         void finishRefresh(const std::shared_ptr<RefreshState> &state);
+        void handleSetUserTemplatesResult(const ExitInfo &result, const CompletionCallback &callback);
+        void handleGetUserTemplatesResult(const ExitInfo &result, const std::vector<ExclusionTemplate> &confirmedTemplates,
+                                          const CompletionCallback &callback);
 
         const CommService &_commService;
         ServiceEventBus &_eventBus;
