@@ -273,8 +273,9 @@
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
-- `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
-  category controllers and is the single source of Settings-window presentation requests.
+- `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It references
+  category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
+  presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
   missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a
