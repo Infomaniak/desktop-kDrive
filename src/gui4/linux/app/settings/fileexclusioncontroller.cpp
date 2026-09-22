@@ -56,7 +56,7 @@ FileExclusionController::FileExclusionController(ExclusionTemplateService &servi
     (void) connect(&_userRules, &ExclusionRuleModel::countChanged, this, &FileExclusionController::changed);
 }
 
-int FileExclusionController::selectionCheckState() const {
+Qt::CheckState FileExclusionController::selectionCheckState() const {
     if (selectedCount() == 0) {
         return Qt::Unchecked;
     }
