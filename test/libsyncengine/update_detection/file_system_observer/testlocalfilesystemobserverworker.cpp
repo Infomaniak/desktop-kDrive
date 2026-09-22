@@ -387,7 +387,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         /// Move dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test move dir from outside sync dir *****");
         SyncPath destinationPath = _rootFolderPath / dirName;
-        (void) IoHelper::moveItem(sourcePath, destinationPath, _rootFolderPath, ioError);
+        (void) IoHelper::moveItem(sourcePath, destinationPath, _tempDir.path(), ioError);
 
         Utility::msleep(1000); // Wait 1sec
 
