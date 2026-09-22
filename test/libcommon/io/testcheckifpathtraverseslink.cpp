@@ -105,6 +105,28 @@ void TestIo::testCheckIfPathTraversesLink() {
         CPPUNIT_ASSERT(traversedLinkPath.empty());
     }
 
+#if defined(KD_MACOS)
+    // A Finder alias as an ancestor is not considered as traversing a link.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const auto targetDirPath = temporaryDirectory.path() / "target_dir";
+        std::error_code ec;
+        CPPUNIT_ASSERT(std::filesystem::create_directories(targetDirPath, ec) && ec.value() == 0);
+
+        const auto aliasPath = temporaryDirectory.path() / "dir_alias";
+        auto ioError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::createAliasFromPath(targetDirPath, aliasPath, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+        auto traversesLink = true;
+        auto traversedLinkPath = SyncPath("dummy");
+        CPPUNIT_ASSERT_EQUAL(IoError::Success,
+                             IoHelper::checkIfPathTraversesLink(aliasPath / "item.txt", traversesLink, traversedLinkPath));
+        CPPUNIT_ASSERT(!traversesLink);
+        CPPUNIT_ASSERT(traversedLinkPath.empty());
+    }
+#endif
+
     // One of the ancestors of the path does not exist.
     {
         const LocalTemporaryDirectory temporaryDirectory;
