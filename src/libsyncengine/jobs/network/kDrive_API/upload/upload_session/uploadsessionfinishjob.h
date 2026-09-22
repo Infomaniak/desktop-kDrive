@@ -25,7 +25,7 @@ namespace KDC {
 
 class UploadSessionFinishJob : public AbstractUploadSessionJob {
     public:
-        UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, UploadSessionType uploadType, DriveDbId driveDbId,
+        UploadSessionFinishJob(UploadSessionType uploadType, DriveDbId driveDbId,
                                const SyncPath &absoluteFilePath, const std::string &sessionToken,
                                const std::string &totalChunkHash, uint64_t totalChunks, SyncTime creationTime,
                                SyncTime modificationTime);
@@ -55,7 +55,6 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
         SyncTime _creationTimeOut = 0;
         SyncTime _modificationTimeOut = 0;
         int64_t _sizeOut = 0;
-        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC

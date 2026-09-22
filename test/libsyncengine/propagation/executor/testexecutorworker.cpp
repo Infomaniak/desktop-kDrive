@@ -655,7 +655,7 @@ void TestExecutorWorker::testCheckAlreadyExcluded() {
     std::ofstream(localFilePath2).close();
 
     // Upload file 1
-    UploadJob uploadJob1(nullptr, _driveDbId, localFilePath1, localFilePath1.filename(), remoteTmpDir.id(), 0, 0);
+    UploadJob uploadJob1(_driveDbId, localFilePath1, localFilePath1.filename(), remoteTmpDir.id(), 0, 0);
     uploadJob1.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob1.exitInfo().code());
 
@@ -666,7 +666,7 @@ void TestExecutorWorker::testCheckAlreadyExcluded() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
 
     // Upload file 2
-    UploadJob uploadJob2(nullptr, _driveDbId, localFilePath2, localFilePath2.filename(), remoteTmpDir.id(), 0, 0);
+    UploadJob uploadJob2(_driveDbId, localFilePath2, localFilePath2.filename(), remoteTmpDir.id(), 0, 0);
     uploadJob2.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, uploadJob2.exitInfo().code());
 

@@ -268,7 +268,7 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
     try {
         const NodeId parentRemoteId = remoteParentId(parentId);
         if (desc.type == NodeType::Directory) {
-            CreateDirJob job(nullptr, _syncPal->driveDbId(), parentRemoteId, desc.name);
+            CreateDirJob job(_syncPal->driveDbId(), parentRemoteId, desc.name);
             const ExitInfo exitInfo = job.runSynchronously();
             if (!exitInfo) {
                 throw SituationGeneratorException("Failed to create remote directory '" + SyncName2Str(desc.name) +
@@ -279,7 +279,7 @@ void InitialSituationSetter::insertRemoteItem(const ItemDesc &desc, const SyncNa
             const SyncPath localFilePath = localFilePathForUpload(desc);
             // Use the same fixed timestamp as the local side (see _now) so both copies of the same logical
             // item, as well as sibling items, share consistent creation/modification times.
-            UploadJob job(nullptr, _syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, _now, _now);
+            UploadJob job(_syncPal->driveDbId(), localFilePath, desc.name, parentRemoteId, _now, _now);
             const ExitInfo exitInfo = job.runSynchronously();
             if (!exitInfo) {
                 throw SituationGeneratorException("Failed to upload remote file '" + SyncName2Str(desc.name) +

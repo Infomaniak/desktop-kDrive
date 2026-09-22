@@ -50,7 +50,6 @@
 #include "libsyncengine/jobs/network/kDrive_API/copytodirectoryjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/createdirjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/deletejob.h"
-#include "libsyncengine/jobs/network/kDrive_API/duplicatejob.h"
 #include "libsyncengine/jobs/network/kDrive_API/getfileinfojob.h"
 #include "libsyncengine/jobs/network/kDrive_API/getfilelistjob.h"
 #include "libsyncengine/jobs/network/kDrive_API/movejob.h"
@@ -109,7 +108,7 @@ void TestIntegration::setUp() {
         const auto tmpFilePath = temporaryDir.path() / ("tmpFile_" + CommonUtility::generateRandomStringAlphaNum(10));
         testhelpers::generateOrEditTestFile(tmpFilePath);
         // Upload the temporary file to create on remote replica the file that will be used in tests.
-        UploadJob job(nullptr, _driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
+        UploadJob job(_driveDbId, tmpFilePath, tmpFilePath.filename(), _remoteSyncDir.id(), testhelpers::defaultTime,
                       testhelpers::defaultTime);
         (void) job.runSynchronously();
         _testFileRemoteId = job.nodeId();
@@ -191,8 +190,8 @@ void TestIntegration::inconsistencyTests() {
 
     // Rename files on remote side.
     _syncPal->pause();
-    (void) RenameJob(nullptr, _driveDbId, testForbiddenCharsRemoteId, "test:*ForbiddenChar").runSynchronously();
-    (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
+    (void) RenameJob(_driveDbId, testForbiddenCharsRemoteId, "test:*ForbiddenChar").runSynchronously();
+    (void) RenameJob(_driveDbId, testNameClashRemoteId2, "testnameclash").runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     _syncPal->unpause();
     waitForSyncToBeIdle(std::source_location::current());
@@ -226,7 +225,7 @@ void TestIntegration::inconsistencyTests() {
     CPPUNIT_ASSERT_LESS(filestat.size, remoteFileInfo.size); // The local edit is not propagated.
 
     // Rename again the remote file to avoid the name clash.
-    (void) RenameJob(nullptr, _driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
+    (void) RenameJob(_driveDbId, testNameClashRemoteId2, "testnameclash2").runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     // Needed because when an item has remote move and local edit operations at the same time, the move operation is processed
@@ -254,12 +253,12 @@ void TestIntegration::testBreakCycle() {
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        CreateDirJob jobAAA(_driveDbId, nodeIdAA, Str("AAA"));
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
     }
@@ -271,9 +270,9 @@ void TestIntegration::testBreakCycle() {
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
     const auto pathAA = _syncPal->localPath() / tmpRemoteDir.name() / "A" / "AA";
     // Rename A/AA/AAA to A/AA/AAA2 on remote replica.
-    (void) RenameJob(nullptr, _driveDbId, nodeIdAAA, Str("AAA2")).runSynchronously();
+    (void) RenameJob(_driveDbId, nodeIdAAA, Str("AAA2")).runSynchronously();
     // Create A/AA/AAA on remote replica.
-    CreateDirJob dirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+    CreateDirJob dirJob(_driveDbId, nodeIdAA, Str("AAA"));
     (void) dirJob.runSynchronously();
     // Move A/AA/AAA2 to A/AA/AAA/AAA2 on remote replica.
     testhelpers::moveRemoteItem(_driveDbId, nodeIdAAA, dirJob.nodeId());
@@ -427,7 +426,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(fileRemoteId));
 
     // Rename the remote file so the exclusion template does not apply anymore.
-    (void) RenameJob(nullptr, _driveDbId, fileRemoteId, filename).runSynchronously();
+    (void) RenameJob(_driveDbId, fileRemoteId, filename).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     // The remote file is synchronized again...
@@ -440,7 +439,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
     // Rename remote directory so the exclusion template applies.
-    (void) RenameJob(nullptr, _driveDbId, exclusionTemplatesTestDir.id(), testName).runSynchronously();
+    (void) RenameJob(_driveDbId, exclusionTemplatesTestDir.id(), testName).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
@@ -469,7 +468,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
 
     // Rename remote directory so the exclusion template does not apply anymore.
-    (void) RenameJob(nullptr, _driveDbId, exclusionTemplatesTestDir.id(), exclusionTemplatesTestDir.name()).runSynchronously();
+    (void) RenameJob(_driveDbId, exclusionTemplatesTestDir.id(), exclusionTemplatesTestDir.name()).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(_syncPal->liveSnapshot(ReplicaSide::Remote).exists(exclusionTemplatesTestDir.id()));
@@ -477,7 +476,7 @@ void TestIntegration::testExclusionTemplates() {
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(dirLocalId));
 
     // Rename the remote file so the exclusion template applies.
-    (void) RenameJob(nullptr, _driveDbId, fileRemoteId, testName).runSynchronously();
+    (void) RenameJob(_driveDbId, fileRemoteId, testName).runSynchronously();
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
     CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Local).exists(fileLocalId));
@@ -544,13 +543,13 @@ void TestIntegration::testParentRename() {
     NodeId nodeIdAA;
     NodeId nodeIdAAA;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
         nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        CreateDirJob jobAAA(_driveDbId, nodeIdAA, Str("AAA"));
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
     }
@@ -560,13 +559,13 @@ void TestIntegration::testParentRename() {
 
     _syncPal->pause();
     // Rename A to A2
-    (void) RenameJob(nullptr, _driveDbId, nodeIdA, "A2").runSynchronously();
+    (void) RenameJob( _driveDbId, nodeIdA, "A2").runSynchronously();
     // Delete A/AA/AAA
     DeleteJob deleteJob(_driveDbId, nodeIdAAA);
     deleteJob.setBypassCheck(true);
     (void) deleteJob.runSynchronously();
     // Create A/AA/AAA2
-    (void) CreateDirJob(nullptr, _driveDbId, nodeIdAA, Str("AAA2")).runSynchronously();
+    (void) CreateDirJob(_driveDbId, nodeIdAA, Str("AAA2")).runSynchronously();
     _syncPal->unpause();
     waitForSyncToBeIdle(std::source_location::current());
 
@@ -670,13 +669,13 @@ void TestIntegration::testDeleteAndRecreateBranch() {
     NodeId nodeIdAAA;
     NodeId nodeIdAAAA;
     {
-        CreateDirJob jobA(nullptr, _driveDbId, tmpRemoteDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, tmpRemoteDir.id(), Str("A"));
         (void) jobA.runSynchronously();
         nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA(nullptr, _driveDbId, nodeIdAA, Str("AAA"));
+        CreateDirJob jobAAA(_driveDbId, nodeIdAA, Str("AAA"));
         (void) jobAAA.runSynchronously();
         nodeIdAAA = jobAAA.nodeId();
 
@@ -697,10 +696,10 @@ void TestIntegration::testDeleteAndRecreateBranch() {
         testhelpers::deleteRemoteItem(_driveDbId, nodeIdAA);
 
         // Create A/AA/AAA1
-        CreateDirJob jobAA(nullptr, _driveDbId, nodeIdA, Str("AA"));
+        CreateDirJob jobAA(_driveDbId, nodeIdA, Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobAAA1(nullptr, _driveDbId, nodeIdAA, Str("AAA1"));
+        CreateDirJob jobAAA1(_driveDbId, nodeIdAA, Str("AAA1"));
         (void) jobAAA1.runSynchronously();
 
         // Move back test file into AAA1
@@ -764,7 +763,7 @@ void TestIntegration::testDeleteAndMoveCase() {
     // Delete aa
     testhelpers::deleteRemoteItem(_driveDbId, nodeIdAA);
     // Rename a
-    (void) RenameJob(nullptr, _driveDbId, nodeIdA, Str("A2")).runSynchronously();
+    (void) RenameJob(_driveDbId, nodeIdA, Str("A2")).runSynchronously();
     // Move bb
     testhelpers::moveRemoteItem(_driveDbId, nodeIdBB, nodeIdA);
     // Delete b
@@ -795,13 +794,13 @@ void TestIntegration::initTestMoveDeleteRename(const RemoteTemporaryDirectory &r
     _syncPal->pause(); // We need to pause the sync because the back might take some time to notify all the events.
 
     {
-        CreateDirJob jobA(nullptr, _driveDbId, remoteTempDir.id(), Str("A"));
+        CreateDirJob jobA(_driveDbId, remoteTempDir.id(), Str("A"));
         (void) jobA.runSynchronously();
         nodeIdA = jobA.nodeId();
-        CreateDirJob jobAA(nullptr, _driveDbId, jobA.nodeId(), Str("AA"));
+        CreateDirJob jobAA(_driveDbId, jobA.nodeId(), Str("AA"));
         (void) jobAA.runSynchronously();
         nodeIdAA = jobAA.nodeId();
-        CreateDirJob jobB(nullptr, _driveDbId, remoteTempDir.id(), Str("B"));
+        CreateDirJob jobB(_driveDbId, remoteTempDir.id(), Str("B"));
         (void) jobB.runSynchronously();
         nodeIdB = jobB.nodeId();
 
@@ -908,7 +907,7 @@ void TestIntegration::testCreateMoveDeleteRename() {
 
     // Create bb
     NodeId nodeIdBB;
-    CreateDirJob jobBB(nullptr, _driveDbId, nodeIdB, Str("AA"));
+    CreateDirJob jobBB(_driveDbId, nodeIdB, Str("AA"));
     (void) jobBB.runSynchronously();
     nodeIdBB = jobBB.nodeId();
     // Move aaa

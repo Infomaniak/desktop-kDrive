@@ -632,9 +632,8 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                 try {
                     const int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
                     job = std::make_shared<DriveUploadSession>(
-                            _syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
-                            syncOp->affectedNode()->name(), newCorrespondingParentNode->id().value_or(""),
-                            syncOp->affectedNode()->createdAt().value_or(0),
+                            _syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath, syncOp->affectedNode()->name(),
+                            newCorrespondingParentNode->id().value_or(""), syncOp->affectedNode()->createdAt().value_or(0),
                             syncOp->affectedNode()->modificationTime().value_or(0), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger,
@@ -644,7 +643,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             } else {
                 try {
                     job = std::make_shared<UploadJob>(
-                            _syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath, syncOp->affectedNode()->name(),
+                            _syncPal->driveDbId(), absoluteLocalFilePath, syncOp->affectedNode()->name(),
                             newCorrespondingParentNode->id().value_or(""), syncOp->affectedNode()->createdAt().value_or(0),
                             syncOp->affectedNode()->modificationTime().value_or(0));
                 } catch (std::exception const &e) {
@@ -850,8 +849,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
         if (filesize > bigFileThreshold) {
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
-                job = std::make_shared<DriveUploadSession>(_syncPal->vfs(), _syncPal->driveDbId(), _syncPal->syncDb(),
-                                                           absoluteLocalFilePath, syncOp->correspondingNode()->id().value_or(""),
+                job = std::make_shared<DriveUploadSession>(_syncPal->driveDbId(), _syncPal->syncDb(), absoluteLocalFilePath,
+                                                           syncOp->correspondingNode()->id().value_or(""),
                                                            syncOp->affectedNode()->modificationTime().value_or(0),
                                                            uploadSessionParallelJobs, syncOp->correspondingNode()->size());
             } catch (std::exception const &e) {
@@ -860,10 +859,9 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
             };
         } else {
             try {
-                job = std::make_shared<UploadJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath,
-                                                  syncOp->correspondingNode()->id().value_or(""),
-                                                  syncOp->affectedNode()->modificationTime().value_or(0),
-                                                  syncOp->correspondingNode()->size());
+                job = std::make_shared<UploadJob>(
+                        _syncPal->driveDbId(), absoluteLocalFilePath, syncOp->correspondingNode()->id().value_or(""),
+                        syncOp->affectedNode()->modificationTime().value_or(0), syncOp->correspondingNode()->size());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->driveDbId() << L" : "
                                                                                            << CommonUtility::s2ws(e.what()));
@@ -1068,7 +1066,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         if (syncOp->isBreakingCycleOp() || absoluteOriginLocalFilePath.parent_path() == absoluteDestLocalFilePath.parent_path()) {
             // This is just a rename
             try {
-                job = std::make_shared<RenameJob>(_syncPal->vfs(), _syncPal->driveDbId(), correspondingNode->id().value_or(""),
+                job = std::make_shared<RenameJob>(_syncPal->driveDbId(), correspondingNode->id().value_or(""),
                                                   absoluteDestLocalFilePath);
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in RenameJob::RenameJob for driveDbId=" << _syncPal->driveDbId() << L" : "
@@ -1093,8 +1091,8 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
             const NodeId fileId = correspondingNode->id().value_or("");
             const NodeId destDirId = remoteParentNode->id().value_or("");
             try {
-                job = std::make_shared<MoveJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteDestLocalFilePath, fileId,
-                                                destDirId, syncOp->newName());
+                job = std::make_shared<MoveJob>(_syncPal->driveDbId(), absoluteDestLocalFilePath, fileId, destDirId,
+                                                syncOp->newName());
             } catch (const std::exception &e) {
                 LOG_SYNCPAL_WARN(_logger, "Error in GetTokenFromAppPasswordJob::GetTokenFromAppPasswordJob: error=" << e.what());
                 return ExitCode::DataError;
