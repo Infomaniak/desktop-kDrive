@@ -133,7 +133,7 @@ void UserDrivesModel::rebuild() {
                 .color = driveColor(context.drive.color()),
                 .synchronized = true,
         };
-        if (const auto [pair, insterted] = synchronizedByKey.try_emplace(key, entry); !insterted) {
+        if (const auto [pair, inserted] = synchronizedByKey.try_emplace(key, entry); !inserted) {
             qCWarning(lcUserDrivesModel) << "Duplicate configured drive found for user card | userDbId:" << _userDbId
                                          << "/ accountId:" << key.first << "/ driveId:" << key.second
                                          << "/ keptDriveDbId:" << configuredDriveDbIds.at(key);
