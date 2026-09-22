@@ -28,16 +28,20 @@ Rectangle {
     required property var userDbId
     required property string name
     required property string email
+    required property string disconnectLabel
     required property string avatarSource
     required property var drivesModel
     required property bool availableDrivesLoading
     required property bool availableDrivesFailed
+    required property var activationController
     property bool expanded: true
     readonly property color headerSurfaceColor: headerButton.down || headerButton.hovered
                                                 ? IKColors.surfaceTertiary
                                                 : IKColors.settingsCardSurface
 
     signal retryRequested
+    signal disconnectRequested(Item trigger, var userDbId, string userName)
+    signal activateRequested(Item trigger, var userDbId, var accountId, var driveId)
 
     implicitHeight: contentColumn.implicitHeight + 2 * IKSettings.userCardPadding
     radius: IKRadius.r12
@@ -137,6 +141,10 @@ Rectangle {
 
                 delegate: UserDriveRow {
                     width: contentColumn.width
+                    actionBusy: !isSynchronized && root.activationController.targets(userDbId, accountId, driveId)
+                                && (root.activationController.preparing || root.activationController.busy)
+                    onActivateRequested: (trigger, requestedAccountId, requestedDriveId) =>
+                                         root.activateRequested(trigger, root.userDbId, requestedAccountId, requestedDriveId)
                 }
             }
 
@@ -219,12 +227,14 @@ Rectangle {
                 }
 
                 IKModalButton {
+                    id: disconnectButton
+
                     anchors.left: parent.left
                     anchors.verticalCenter: parent.verticalCenter
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.DestructiveSecondary
                     text: qsTrId("buttonDisconnectAccount")
-                    actionEnabled: false
+                    onClicked: root.disconnectRequested(disconnectButton, root.userDbId, root.disconnectLabel)
                 }
             }
         }
