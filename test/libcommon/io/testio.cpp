@@ -68,11 +68,11 @@ void TestIo::testGetCanonicalPath() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     SyncPath canonicalPath;
-    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getCanonicalPath(symlinkPath / "." / ".." / "target", canonicalPath));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getWeakCanonicalPath(symlinkPath / "." / ".." / "target", canonicalPath));
     CPPUNIT_ASSERT_EQUAL(std::filesystem::canonical(targetPath), canonicalPath);
 
     CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory,
-                         IoHelper::getCanonicalPath(temporaryDirectory.path() / "does-not-exist", canonicalPath));
+                         IoHelper::getWeakCanonicalPath(temporaryDirectory.path() / "does-not-exist", canonicalPath));
 }
 
 void TestIo::testAccessDeniedOnLockedFiles() {

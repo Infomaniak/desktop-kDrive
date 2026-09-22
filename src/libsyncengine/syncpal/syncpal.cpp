@@ -105,7 +105,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     }
     _syncInfo.syncDbId = syncDbId_;
     _syncInfo.driveDbId = sync.driveDbId();
-    if (const auto ioError = IoHelper::getCanonicalPath(sync.localPath(), _syncInfo.localPath); ioError != IoError::Success) {
+    if (const auto ioError = IoHelper::getWeakCanonicalPath(sync.localPath(), _syncInfo.localPath); ioError != IoError::Success) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }

@@ -566,7 +566,7 @@ struct IoHelper {
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 
-        static IoError getCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept;
+        static IoError getWeakCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept;
 
     protected:
         friend class DirectoryIterator;
