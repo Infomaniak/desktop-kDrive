@@ -41,6 +41,15 @@ IKModal {
         open();
     }
 
+    function submit() {
+        if (!canSubmit || controller.saving) {
+            return false;
+        }
+
+        controller.addRule(patternField.text, notifyCheckBox.checkState === Qt.Checked);
+        return true;
+    }
+
     title: qsTrId("dialogNewExclusionRuleTitle")
     escapeDismissible: !controller.saving
     initialFocusItem: patternField
@@ -87,12 +96,8 @@ IKModal {
             leftPadding: IKSpacing.s12
             rightPadding: IKSpacing.s12
             Accessible.name: qsTrId("filesToExclude")
-            Keys.onReturnPressed: event => {
-                if (root.canSubmit && !root.controller.saving) {
-                    root.controller.addRule(text, notifyCheckBox.checkState === Qt.Checked);
-                    event.accepted = true;
-                }
-            }
+            Keys.onReturnPressed: event => event.accepted = root.submit()
+            Keys.onEnterPressed: event => event.accepted = root.submit()
 
             background: Rectangle {
                 radius: IKRadius.r6
@@ -154,7 +159,7 @@ IKModal {
             text: qsTrId("buttonAddFileExclusionRule")
             actionEnabled: root.canSubmit
             busy: root.controller.saving
-            onClicked: root.controller.addRule(patternField.text, notifyCheckBox.checkState === Qt.Checked)
+            onClicked: root.submit()
         }
     ]
 }

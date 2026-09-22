@@ -22,6 +22,7 @@
 
 #include <QPointer>
 
+#include <optional>
 #include <utility>
 
 namespace KDC {
@@ -149,43 +150,50 @@ void ExclusionTemplateService::mutateUserTemplates(const UserMutation &mutation,
 
     // The server replaces the whole list; reading it back publishes the normalized form it actually stored.
     _commService.requestExclTemplSetList(templates, [self = QPointer(this), callback](const ExitInfo &setResult) {
-        if (!self) {
-            return;
+        if (self) {
+            self->handleSetUserTemplatesResult(setResult, callback);
         }
-
-        if (!setResult) {
-            self->_eventBus.notifyGenericError(setResult, RequestNum::EXCLTEMPL_SETUSERLIST);
-            if (callback) {
-                callback(setResult);
-            }
-            return;
-        }
-
-        self->_commService.requestExclTemplGetList(
-                false, [self, callback](const ExitInfo &readResult, const std::vector<ExclusionTemplate> &confirmedTemplates) {
-                    if (!self) {
-                        return;
-                    }
-
-                    if (!readResult) {
-                        self->_userTemplatesLoaded = false;
-                        self->_eventBus.notifyGenericError(readResult, RequestNum::EXCLTEMPL_GETLIST);
-                        emit self->snapshotsChanged();
-                        if (callback) {
-                            callback(readResult);
-                        }
-                        return;
-                    }
-
-                    self->_userTemplates = confirmedTemplates;
-                    self->_userTemplatesLoaded = true;
-                    emit self->snapshotsChanged();
-
-                    if (callback) {
-                        callback(readResult);
-                    }
-                });
     });
+}
+
+void ExclusionTemplateService::handleSetUserTemplatesResult(const ExitInfo &result, const CompletionCallback &callback) {
+    if (!result) {
+        _eventBus.notifyGenericError(result, RequestNum::EXCLTEMPL_SETUSERLIST);
+        if (callback) {
+            callback(result);
+        }
+        return;
+    }
+
+    _commService.requestExclTemplGetList(
+            false, [self = QPointer(this), callback](const ExitInfo &readResult,
+                                                     const std::vector<ExclusionTemplate> &confirmedTemplates) {
+                if (self) {
+                    self->handleGetUserTemplatesResult(readResult, confirmedTemplates, callback);
+                }
+            });
+}
+
+void ExclusionTemplateService::handleGetUserTemplatesResult(const ExitInfo &result,
+                                                            const std::vector<ExclusionTemplate> &confirmedTemplates,
+                                                            const CompletionCallback &callback) {
+    if (!result) {
+        _userTemplatesLoaded = false;
+        _eventBus.notifyGenericError(result, RequestNum::EXCLTEMPL_GETLIST);
+        emit snapshotsChanged();
+        if (callback) {
+            callback(result);
+        }
+        return;
+    }
+
+    _userTemplates = confirmedTemplates;
+    _userTemplatesLoaded = true;
+    emit snapshotsChanged();
+
+    if (callback) {
+        callback(result);
+    }
 }
 
 } // namespace KDC
