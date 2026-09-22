@@ -909,6 +909,12 @@ void SyncPalWorker::resetVfsFilesStatus() {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(entry.path())
                                                                                       << L": " << exitInfo);
                 }
+
+                vfsStatus.isSyncing = false;
+                if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(entry.path(), vfsStatus); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(entry.path())
+                                                                                      << L": " << exitInfo);
+                }
             }
             continue;
 #else

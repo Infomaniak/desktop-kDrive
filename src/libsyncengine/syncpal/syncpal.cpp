@@ -675,7 +675,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
 
     const auto downloadJob = directDownloadJobsMapIt->second;
     const auto localPath = downloadJob->localPath();
-    bool downloadFailed = false;
+    bool downloadSucceeded = true;
     if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         Error error;
         error.setLevel(ErrorLevel::Node);
@@ -687,14 +687,15 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         addError(error);
 
         vfs()->cancelHydrate(localPath, {ExitCode::BackError, ExitCause::NotFound});
-        downloadFailed = true;
-    } else if (!downloadJob->exitInfo() || downloadJob->isAborted()) {
+        downloadSucceeded = false;
+    } else if (!downloadJob->exitInfo() || downloadJob->isAborted() ||
+               downloadJob->exitInfo().cause() != ExitCause::OperationCanceled) {
         vfs()->cancelHydrate(localPath, downloadJob->exitInfo());
-        downloadFailed = true;
+        downloadSucceeded = false;
     }
 
-    PinState newPinState = downloadFailed ? PinState::OnlineOnly : PinState::AlwaysLocal;
-    VfsStatus newVfsStatus({.isHydrated = !downloadFailed, .isSyncing = !isLocalItemInSyncWithDb(localPath)});
+    PinState newPinState = downloadSucceeded ? PinState::AlwaysLocal : PinState::OnlineOnly;
+    VfsStatus newVfsStatus({.isHydrated = downloadSucceeded, .isSyncing = !isLocalItemInSyncWithDb(localPath)});
 
     if (const ExitInfo exitInfo = _vfs->setPinState(localPath, newPinState); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(localPath) << L": " << exitInfo);

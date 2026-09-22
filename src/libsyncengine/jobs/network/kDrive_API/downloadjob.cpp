@@ -260,10 +260,9 @@ ExitInfo DownloadJob::handleResponse(std::istream &is) {
         }
 
         if (_responseHandlingCanceled) {
-            // NB: VFS reset is done in the destructor
             if (isAborted() || fetchCanceled) {
                 // Download aborted or canceled by the user
-                return ExitCode::Ok;
+                return {ExitCode::Ok, ExitCause::OperationCanceled};
             } else if (readError) {
                 // Download issue
                 return {ExitCode::BackError, ExitCause::InvalidSize};

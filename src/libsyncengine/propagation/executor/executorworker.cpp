@@ -1481,11 +1481,20 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
         // update vfs status
         VfsStatus vfsStatus;
         SyncPath absoluteDestLocalFilePath = _syncPal->localPath() / relativeLocalPath;
-        _syncPal->vfs()->status(absoluteDestLocalFilePath, vfsStatus);
+        if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteDestLocalFilePath, vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(
+                    _logger, L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteDestLocalFilePath) << L": " << exitInfo);
+            return ExitCode::Ok; // Do not return error, as the job has finished successfully
+        }
         if (_syncPal->vfsMode() != VirtualFileMode::Off && vfsStatus.isPlaceholder) {
-            vfsStatus.isSyncing = !_syncPal->isLocalItemInSyncWithDb(absoluteDestLocalFilePath);
-            vfsStatus.progress = _syncPal->isLocalItemInSyncWithDb(absoluteDestLocalFilePath) ? 100 : vfsStatus.progress;
-            _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus);
+            bool isSyncing = !_syncPal->isLocalItemInSyncWithDb(absoluteDestLocalFilePath);
+            vfsStatus.isSyncing = isSyncing;
+            vfsStatus.progress = isSyncing ? vfsStatus.progress : 100;
+            if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus); !exitInfo) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteDestLocalFilePath)
+                                                                         << L": " << exitInfo);
+                return ExitCode::Ok; // Do not return error, as the job has finished successfully
+            }
         }
     }
 

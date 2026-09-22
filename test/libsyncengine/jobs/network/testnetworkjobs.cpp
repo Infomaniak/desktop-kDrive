@@ -838,7 +838,7 @@ void TestNetworkJobs::testSearch() {
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
     const SyncPath localDestFilePath = temporaryDirectory.path() / "test_download";
-    std::shared_ptr<DownloadJob> job = std::make_shared<DownloadJob>(
+    auto job = std::make_shared<DownloadJob>(
             nullptr, _cacheDirectory,
             DownloadJob::FileDownloadInfo{_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false},
             DownloadJob::DateTimePolicy::ApplyDateTime);
