@@ -892,27 +892,34 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, const SyncPath 
     traversesLink = false;
     linkPath.clear();
 
+    // Normalized path: cheap, purely lexical (no filesystem access), used as a fast-path comparison for the common case
+    // where the candidate path is already written the same way as `trustedRootPath`.
     const SyncPath normalizedTrustedRootPath = trustedRootPath.lexically_normal();
     std::error_code trustedRootErrorCode;
+    // Canonical path: resolves symlinks and requires filesystem access, used as a fallback so that two lexically different
+    // paths that actually refer to the same directory on disk (e.g. because an ancestor is a symlink) are still recognized
+    // as being the trusted root.
     const SyncPath canonicalTrustedRootPath =
             normalizedTrustedRootPath.empty()
                     ? SyncPath{}
                     : std::filesystem::weakly_canonical(normalizedTrustedRootPath, trustedRootErrorCode);
 
-    const auto isTrustedRootPath = [&canonicalTrustedRootPath, &normalizedTrustedRootPath,
-                                    &trustedRootErrorCode](const SyncPath &candidatePath) {
+    if (trustedRootErrorCode.value() != 0) {
+        return IoHelper::posixError2ioError(trustedRootErrorCode.value());
+    }
+
+    const auto isTrustedRootPath = [&canonicalTrustedRootPath, &normalizedTrustedRootPath](const SyncPath &candidatePath) {
         if (normalizedTrustedRootPath.empty()) {
             return false;
         }
 
+        // Fast-path: lexical comparison only, no filesystem access.
         if (candidatePath.lexically_normal() == normalizedTrustedRootPath) {
             return true;
         }
 
-        if (trustedRootErrorCode.value() != 0) {
-            return false;
-        }
-
+        // Fallback: canonicalize (resolving symlinks) before comparing, in case `candidatePath` and `trustedRootPath`
+        // are written differently but point to the same directory on disk.
         std::error_code candidateErrorCode;
         const SyncPath canonicalCandidatePath = std::filesystem::weakly_canonical(candidatePath, candidateErrorCode);
         return candidateErrorCode.value() == 0 && canonicalCandidatePath == canonicalTrustedRootPath;
@@ -1025,10 +1032,6 @@ bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     }
 
     return ioError == IoError::Success;
-}
-
-ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory) noexcept {
-    return deleteItemAtomically(path, cacheDirectory, {});
 }
 
 ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory,
