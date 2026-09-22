@@ -184,9 +184,9 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
 }
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
-    if (!versionInfo().isValid()) return false;
-
     const auto url = versionInfo().downloadUrl;
+    if (!versionInfo().isValid() || url.empty()) return false;
+
     const auto pos = url.find_last_of('/');
     const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;
