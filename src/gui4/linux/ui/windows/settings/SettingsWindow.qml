@@ -432,7 +432,7 @@ IKShadowedWindow {
         proxyConnectionFailureDialog.close();
         disconnectAccountDialog.close();
         localFolderDialog.close();
-        root.controller.syncActivation.cancelCurrentPage();
+        root.controller.syncActivation.dismissFromHostWindow();
         releaseDialog.close();
         aboutDialog.close();
     }
