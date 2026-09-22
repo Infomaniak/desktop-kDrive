@@ -72,40 +72,6 @@ DownloadJob::~DownloadJob() {
     if (!removeTmpFile() && !_fileDownloadInfo.isCreate) {
         LOGW_WARN(_logger, L"Failed to remove tmp file: " << Utility::formatSyncPath(_tmpPath));
     }
-
-    if (!_vfs) return;
-
-    // If the download job intent is to create a new local file, then there is no downloaded file after cancellation.
-    if (_responseHandlingCanceled && _fileDownloadInfo.isCreate) return;
-    if (!_shouldDownload) return;
-
-    if (_responseHandlingCanceled) {
-        if (const ExitInfo exitInfo = _vfs->setPinState(_fileDownloadInfo.localpath, PinState::OnlineOnly); !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Error in vfsSetPinState: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
-        }
-
-        if (const ExitInfo exitInfo = _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus()); !exitInfo) {
-            LOGW_WARN(_logger,
-                      L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << exitInfo);
-        }
-
-    } else {
-        if (const ExitInfo res =
-                    _vfs->setPinState(_fileDownloadInfo.localpath,
-                                      exitInfo().code() == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly);
-            !res) {
-            LOGW_WARN(_logger,
-                      L"Error in vfsSetPinState: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << res);
-        }
-
-        if (const ExitInfo res =
-                    _vfs->forceStatus(_fileDownloadInfo.localpath, VfsStatus({.isHydrated = exitInfo().code() == ExitCode::Ok}));
-            !res) {
-            LOGW_WARN(_logger,
-                      L"Error in vfsForceStatus: " << Utility::formatSyncPath(_fileDownloadInfo.localpath) << L": " << res);
-        }
-    }
 }
 
 std::string DownloadJob::getSpecificUrl() {

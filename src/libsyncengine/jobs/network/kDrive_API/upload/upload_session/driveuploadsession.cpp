@@ -57,14 +57,6 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
     _creationTimeIn = fileStat.creationTime;
 }
 
-DriveUploadSession::~DriveUploadSession() {
-    if (!_vfs || isAborted()) return;
-    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
-    if (const auto exitInfo = _vfs->forceStatus(getFilePath(), vfsStatus); !exitInfo) {
-        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()) << L": " << exitInfo);
-    }
-}
-
 ExitInfo DriveUploadSession::runJob() noexcept {
     if (!_fileId.empty()) {
         const auto result = KDC::resolveUploadNeed(getLogger(), _driveDbId, getFilePath(), _fileId, _remoteSize, _creationTimeIn,
