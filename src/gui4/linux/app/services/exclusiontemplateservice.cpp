@@ -134,7 +134,7 @@ void ExclusionTemplateService::startNextMutation() {
     }
 
     if (!ready()) {
-        finishCurrentMutation({ExitCode::DataError, ExitCause::NotFound});
+        finishCurrentMutation({ExitCode::InvalidOperation});
         return;
     }
 
