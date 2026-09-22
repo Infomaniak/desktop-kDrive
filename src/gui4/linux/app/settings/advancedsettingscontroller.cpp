@@ -91,7 +91,7 @@ int32_t AdvancedSettingsController::logLevel() const {
 QVariantList AdvancedSettingsController::logLevels() {
     static constexpr std::array ids{"logLevelDebug", "logLevelInfo", "logLevelWarning", "logLevelError", "logLevelFatal"};
     QVariantList values;
-    for (int32_t value = static_cast<int32_t>(LogLevel::Debug); value < static_cast<int32_t>(LogLevel::EnumEnd); ++value) {
+    for (auto value = static_cast<int32_t>(LogLevel::Debug); value < static_cast<int32_t>(LogLevel::EnumEnd); ++value) {
         values.push_back(QVariantMap{{u"label"_s, qtTrId(ids[static_cast<std::size_t>(value)])}, {u"value"_s, value}});
     }
     return values;
