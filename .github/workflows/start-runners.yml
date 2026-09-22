@@ -77,6 +77,8 @@ jobs:
 
       - name: Launch instances
         run: |
+          echo "::add-mask::$ADMIN_PASS"
+
           RUN_ID="${{ github.run_id }}"
           COUNT="${{ steps.params.outputs.count }}"
           FLAVOR="${{ steps.params.outputs.flavor }}"
@@ -88,6 +90,18 @@ jobs:
             NAME="ci-runner-win-${RUN_ID}-${i}"
             USERDATA="userdata-${NAME}.ps1"
             LABELS="${{ steps.params.outputs.labels }}"
+
+            RAW="$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9')"
+            ADMIN_PASS="${RAW:0:15}Aa1!"
+
+            if [[ -z "$ADMIN_PASS" || "$ADMIN_PASS" == "Aa1!" ]]; then
+              echo "::error::Password generation failed (empty result)"
+              exit 1
+            fi
+
+            echo "::add-mask::$ADMIN_PASS"
+            ADMIN_PASS_B64=$(printf '%s' "$ADMIN_PASS" | base64 -w0)
+            echo "::add-mask::$ADMIN_PASS_B64"
             if [[ "$LABELS" == *"|"* ]]; then
               echo "::error::Labels must not contain a '|' character (found in: $LABELS)"
               exit 1
@@ -98,6 +112,7 @@ jobs:
               -e "s|__REG_TOKEN__|${{ steps.reg.outputs.token }}|" \
               -e "s|__TAGS__|${{ steps.params.outputs.labels }}|" \
               -e "s|__REG_NAME__|$NAME|" \
+              -e "s|__ADMIN_PASS_B64__|${ADMIN_PASS_B64}|" \
               .github/workflows/templates/userdata-template.ps1 > "$USERDATA"
 
             echo "Launching $NAME ..."
@@ -109,6 +124,7 @@ jobs:
               --network "$NETWORK_NAME" \
               --user-data "$USERDATA" \
               --property "purpose=ci-runner" \
+              --property "admin_pass=${ADMIN_PASS}" \
               --wait \
               -c id -c name -c status \
               "$NAME" &
