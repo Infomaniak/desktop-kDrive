@@ -971,14 +971,6 @@ bool IoHelper::createDirectory(const SyncPath &path, const bool recursive, IoErr
     return creationSuccess;
 }
 
-bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
-    return renameItem(sourcePath, destinationPath, ioError);
-}
-
-IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
-    return renameItem(sourcePath, destinationPath);
-}
-
 bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
                         IoError &ioError) noexcept {
     return renameItem(sourcePath, destinationPath, trustedRootPath, ioError);
@@ -987,15 +979,6 @@ bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationP
 IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
                            const SyncPath &trustedRootPath) noexcept {
     return renameItem(sourcePath, destinationPath, trustedRootPath);
-}
-
-bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
-    ioError = renameItem(sourcePath, destinationPath);
-    return ioError == IoError::Success;
-}
-
-IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
-    return renameItem(sourcePath, destinationPath, {});
 }
 
 bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,

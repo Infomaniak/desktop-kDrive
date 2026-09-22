@@ -293,31 +293,62 @@ struct IoHelper {
          */
         static bool createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept;
 
-        /** Move an item located under the specified path (actually calls renameItem).
+        /**
+         * Move an item from `sourcePath` to `destinationPath`.
+         *
+         * This operation is implemented by `renameItem`. Intermediate path components are checked to prevent the
+         * operating system from traversing a symbolic link. The move is refused if either path traverses a symbolic
+         * link below `trustedRootPath`.
          *
          * @param sourcePath is the source file system path of the item to move.
          * @param destinationPath is the destination file system path of the item to move.
-         * @param ioError holds the error returned when an underlying OS API call fails.
-         * @return true if no unexpected error occurred, false otherwise.
+         * @param trustedRootPath is the root path below which symbolic link traversal is checked.
+         * @param ioError receives the error returned when the operation fails.
+         * @return true if the item was moved successfully, false otherwise.
          */
-        static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-        static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
         static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
                              IoError &ioError) noexcept;
+
+        /**
+         * Move an item from `sourcePath` to `destinationPath`.
+         *
+         * This overload has the same behaviour as the overload taking an `IoError` reference and returns the resulting
+         * error directly.
+         *
+         * @param sourcePath is the source file system path of the item to move.
+         * @param destinationPath is the destination file system path of the item to move.
+         * @param trustedRootPath is the root path below which symbolic link traversal is checked.
+         * @return `IoError::Success` if the item was moved successfully, or the corresponding error otherwise.
+         */
         static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
                                 const SyncPath &trustedRootPath) noexcept;
 
-        /** Rename an item located under the specified path.
+        /**
+         * Rename an item from `sourcePath` to `destinationPath`.
+         *
+         * Intermediate path components are checked to prevent the operating system from traversing a symbolic link.
+         * The rename is refused if either path traverses a symbolic link below `trustedRootPath`.
          *
          * @param sourcePath is the source file system path of the item to rename.
          * @param destinationPath is the destination file system path of the item to rename.
-         * @param ioError holds the error returned when an underlying OS API call fails.
-         * @return true if no unexpected error occurred, false otherwise.
+         * @param trustedRootPath is the root path below which symbolic link traversal is checked.
+         * @param ioError receives the error returned when the operation fails.
+         * @return true if the item was renamed successfully, false otherwise.
          */
-        static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
-        static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
         static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, const SyncPath &trustedRootPath,
                                IoError &ioError) noexcept;
+
+        /**
+         * Rename an item from `sourcePath` to `destinationPath`.
+         *
+         * This overload has the same behaviour as the overload taking an `IoError` reference and returns the resulting
+         * error directly.
+         *
+         * @param sourcePath is the source file system path of the item to rename.
+         * @param destinationPath is the destination file system path of the item to rename.
+         * @param trustedRootPath is the root path below which symbolic link traversal is checked.
+         * @return `IoError::Success` if the item was renamed successfully, or the corresponding error otherwise.
+         */
         static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath,
                                   const SyncPath &trustedRootPath) noexcept;
 
@@ -335,16 +366,19 @@ struct IoHelper {
          */
         static bool deleteItem(const SyncPath &path) noexcept;
 
-        //! Remove an item located under the specified path.
-        //! If the function fails, the item is left unmodified and an error ExitInfo is returned.
-        //! If it succeeds, the item is removed from its original path and ExitCode::Ok is returned.
-        /*!
-         \param path is the file system path of the item to remove.
-         \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
-         being deleted.
-         \return ExitInfo.
+        /**
+         * Remove an item atomically from `path`.
+         *
+         * The item is first renamed to a temporary path in `cacheDirectory`, then deleted from there. If moving the
+         * item fails, it is left at its original path. If deletion from the cache fails after a successful move, the
+         * item remains in the cache and is removed later by the cache cleanup process. A non-existent item is
+         * considered successfully deleted.
+         *
+         * @param path is the file system path of the item to remove.
+         * @param cacheDirectory is the cache directory used as an intermediate location before deletion.
+         * @param trustedRootPath is the root path below which symbolic link traversal is checked while moving the item.
+         * @return `ExitCode::Ok` on success, or an error describing why the item could not be removed.
          */
-        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
         static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory,
                                              const SyncPath &trustedRootPath) noexcept;
 
