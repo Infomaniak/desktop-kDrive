@@ -136,8 +136,11 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
-    if (!testhelpers::isExtendedTest()) return;
-
+    if (!testhelpers::isExtendedTest()) {
+        _remoteSyncDir.setDeleted();
+        TestBase::stop();
+        return;
+    }
     if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     _remoteSyncDir.deleteDirectory();
 
