@@ -87,6 +87,8 @@ Item {
             enabled: root.controller.ready && !root.controller.saving
             text: qsTrId("labelNotifyIfFileExcluded")
             value: root.notificationEnabled
+            Accessible.name: root.pattern
+            Accessible.description: text
             onToggleRequested: value => {
                 // Only a keyboard focus is worth restoring: a mouse click must not leave a focus ring after the save.
                 const keyboardFocus = notificationSwitch.visualFocus;
