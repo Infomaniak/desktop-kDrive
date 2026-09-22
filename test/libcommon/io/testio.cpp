@@ -71,7 +71,7 @@ void TestIo::testGetCanonicalPath() {
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getWeakCanonicalPath(symlinkPath / "." / ".." / "target", canonicalPath));
     CPPUNIT_ASSERT_EQUAL(std::filesystem::canonical(targetPath), canonicalPath);
 
-const SyncPath missingPath = temporaryDirectory.path() / "does-not-exist";
+    const SyncPath missingPath = temporaryDirectory.path() / "does-not-exist";
     CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getWeakCanonicalPath(missingPath, canonicalPath));
     CPPUNIT_ASSERT_EQUAL(std::filesystem::weakly_canonical(missingPath), canonicalPath);
 }
