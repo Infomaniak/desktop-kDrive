@@ -26,14 +26,13 @@
 
 namespace KDC {
 
-MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
+MoveJob::MoveJob(const DriveDbId driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
                  const NodeId &destDirId, const SyncName &name /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
     _destFilepath(destFilepath),
     _fileId(fileId),
     _destDirId(destDirId),
-    _name(name),
-    _vfs(vfs) {
+    _name(name){
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 

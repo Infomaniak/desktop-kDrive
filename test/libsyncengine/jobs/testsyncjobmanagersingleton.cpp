@@ -128,7 +128,7 @@ void TestSyncJobManagerSingleton::testWithoutCallback() {
             continue;
         }
 
-        const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
+        const auto job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
                                                      remoteTmpDir.id(), 0, 0);
         SyncJobManagerSingleton::instance()->queueAsyncJob(job);
         jobIds.push(job->jobId());
@@ -171,8 +171,8 @@ void TestSyncJobManagerSingleton::testWithCallback() {
             continue;
         }
 
-        auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
-                                               remoteTmpDir.id(), 0, 0);
+        auto job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
+                                               0, 0);
         job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         counter++;
@@ -228,8 +228,8 @@ void TestSyncJobManagerSingleton::testCancelJobs() {
 
     // Upload all files in testDir
     for (auto &dirEntry: std::filesystem::directory_iterator(localTmpDir.path())) {
-        auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
-                                               remoteTmpDir.id(), 0, 0);
+        auto job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
+                                               0, 0);
         job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
         SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
         const std::scoped_lock lock(_mutex);
@@ -286,16 +286,11 @@ void TestSyncJobManagerSingleton::testJobPriority() {
                                                 "TestSyncJobManagerSingleton testJobPriority");
 
     // Upload all files in testDir
-    const auto job1 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job2 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job3 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job4 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job5 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job1 = std::make_shared<UploadJob>(driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job2 = std::make_shared<UploadJob>(driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job3 = std::make_shared<UploadJob>(driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job4 = std::make_shared<UploadJob>(driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job5 = std::make_shared<UploadJob>(driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_LOWEST);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job2, Poco::Thread::PRIO_LOW);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job3, Poco::Thread::PRIO_NORMAL);
@@ -321,16 +316,11 @@ void TestSyncJobManagerSingleton::testJobPriority2() {
                                                 "TestSyncJobManagerSingleton testJobPriority2");
     // Upload all files in testDir
 
-    const auto job1 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job2 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job3 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job4 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
-    const auto job5 =
-            std::make_shared<UploadJob>(nullptr, driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job1 = std::make_shared<UploadJob>(driveDbId, pict1Path, pict1Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job2 = std::make_shared<UploadJob>(driveDbId, pict2Path, pict2Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job3 = std::make_shared<UploadJob>(driveDbId, pict3Path, pict3Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job4 = std::make_shared<UploadJob>(driveDbId, pict4Path, pict4Path.filename().native(), remoteTmpDir.id(), 0, 0);
+    const auto job5 = std::make_shared<UploadJob>(driveDbId, pict5Path, pict5Path.filename().native(), remoteTmpDir.id(), 0, 0);
 
     SyncJobManagerSingleton::instance()->queueAsyncJob(job1, Poco::Thread::PRIO_NORMAL);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job2, Poco::Thread::PRIO_NORMAL);
@@ -358,8 +348,8 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 1); // Generate 1 file of 1 MB
         std::vector<UniqueId> jobIds;
         for (auto i = 0; i < 20; i++) {
-            const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, filepath, filepath.filename().native(),
-                                                         remoteTmpDir.id(), testhelpers::defaultTime, testhelpers::defaultTime);
+            const auto job = std::make_shared<UploadJob>(driveDbId, filepath, filepath.filename().native(), remoteTmpDir.id(),
+                                                         testhelpers::defaultTime, testhelpers::defaultTime);
             CPPUNIT_ASSERT_EQUAL(true, SyncJobManagerSingleton::instance()->canRunJob(job));
             SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
             jobIds.push_back(job->jobId());
@@ -384,8 +374,8 @@ void TestSyncJobManagerSingleton::testCanRunjob() {
         const auto filepath = testhelpers::generateBigFile(localTmpDir.path(), 50); // Generate 1 file of 50 MB
         const auto createUploadSessionJob = [](const DriveDbId driveDbId_, const SyncPath &path,
                                                const RemoteNodeId &remoteDirNodeId) {
-            return std::make_shared<DriveUploadSession>(nullptr, driveDbId_, nullptr, path, path.filename().native(),
-                                                        remoteDirNodeId, testhelpers::defaultTime, testhelpers::defaultTime, 3);
+            return std::make_shared<DriveUploadSession>(driveDbId_, nullptr, path, path.filename().native(), remoteDirNodeId,
+                                                        testhelpers::defaultTime, testhelpers::defaultTime, 3);
         };
 
         const auto job1 = createUploadSessionJob(driveDbId, filepath, remoteTmpDir.id());
@@ -516,7 +506,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
             }
 
             if (size <= useUploadSessionThreshold) {
-                auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
+                auto job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
                                                        remoteTmpDir.id(), 0, 0);
                 job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));
                 SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL);
@@ -524,7 +514,7 @@ void TestSyncJobManagerSingleton::testWithCallbackBigFiles(const SyncPath &dirPa
                 (void) _ongoingJobs.try_emplace(job->jobId(), job);
             } else {
                 auto job = std::make_shared<DriveUploadSession>(
-                        nullptr, driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
+                        driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), remoteTmpDir.id(),
                         testhelpers::defaultTime, testhelpers::defaultTime,
                         ParametersCache::instance()->parameters().uploadSessionParallelJobs());
                 job->setAdditionalCallback(std::bind_front(&TestSyncJobManagerSingleton::callback, this));

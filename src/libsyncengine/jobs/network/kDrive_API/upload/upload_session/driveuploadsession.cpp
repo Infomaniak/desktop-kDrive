@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
+DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
                                        const NodeId &remoteParentDirId, const SyncTime creationTime,
                                        const SyncTime modificationTime, const uint64_t nbParallelThread) :
@@ -33,16 +33,15 @@ DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const Dri
     _syncDb(syncDb),
     _creationTimeIn(creationTime),
     _modificationTimeIn(modificationTime),
-    _remoteParentDirId(remoteParentDirId),
-    _vfs(vfs) {
+    _remoteParentDirId(remoteParentDirId) {
     _uploadSessionType = UploadSessionType::Drive;
 }
 
-DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
+DriveUploadSession::DriveUploadSession(const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const NodeId &fileId,
                                        const SyncTime modificationTime, const uint64_t nbParallelThread,
                                        const int64_t remoteSize /*= -1*/) :
-    DriveUploadSession(vfs, driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
+    DriveUploadSession(driveDbId, syncDb, filepath, SyncName(), fileId, 0, modificationTime, nbParallelThread) {
     _fileId = fileId;
     _remoteSize = remoteSize;
 
@@ -94,7 +93,7 @@ std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const 
 }
 
 std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
-    return std::make_shared<UploadSessionFinishJob>(_vfs, UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
+    return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Drive, _driveDbId, getFilePath(), getSessionToken(),
                                                     getTotalChunkHash(), getTotalChunks(), _creationTimeIn, _modificationTimeIn);
 }
 

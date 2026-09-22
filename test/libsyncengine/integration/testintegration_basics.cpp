@@ -134,7 +134,7 @@ void TestIntegration::testRemoteChanges() {
     SyncPath filePath = _syncPal->localPath() / "testFileRemote";
     NodeId fileId;
     {
-        CreateDirJob createDirJob(nullptr, _driveDbId, subDirPath, _remoteSyncDir.id(), subDirPath.filename());
+        CreateDirJob createDirJob(_driveDbId, subDirPath, _remoteSyncDir.id(), subDirPath.filename());
         (void) createDirJob.runSynchronously();
         subDirId = createDirJob.nodeId();
 
@@ -209,7 +209,7 @@ void TestIntegration::testSimultaneousChanges() {
 
     // Rename a file on remote replica.
     const SyncPath remoteFilePath = _syncPal->localPath() / "testSimultaneousChanges_remote";
-    (void) RenameJob(nullptr, _driveDbId, _testFileRemoteId, remoteFilePath).runSynchronously();
+    (void) RenameJob(_driveDbId, _testFileRemoteId, remoteFilePath).runSynchronously();
 
     // Create a file on local replica.
     const SyncPath localFilePath = _syncPal->localPath() / "testSimultaneousChanges_local";
