@@ -4177,8 +4177,8 @@ ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCal
 ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::checkIfPathExists(sync.localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
         return ExitCode::SystemError;
     }
@@ -4242,6 +4242,11 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         vfsSetupParams.driveId = drive.driveId();
         vfsSetupParams.userId = user.userId();
 #endif
+        if (const auto ioError = IoHelper::getWeakCanonicalPath(sync.localPath(), vfsSetupParams.localPath);
+            ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
+            return ExitCode::SystemError;
+        }
         vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
         vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
