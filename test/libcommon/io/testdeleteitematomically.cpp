@@ -37,7 +37,8 @@ void TestDeleteItemAtomically::testDeleteRegularFile() {
     const SyncPath filePath = temporaryDirectory.path() / "test_file.txt";
     { std::ofstream ofs(filePath); }
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(filePath, cacheDirectory));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         IoHelper::deleteItemAtomically(filePath, cacheDirectory, temporaryDirectory.path()));
     CPPUNIT_ASSERT(!std::filesystem::exists(filePath));
     CPPUNIT_ASSERT(std::filesystem::exists(cacheDirectoryPath)); // The cache directory is left in place.
     CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
@@ -54,7 +55,8 @@ void TestDeleteItemAtomically::testDeleteDirectory() {
     CPPUNIT_ASSERT(std::filesystem::create_directory(dirPath));
     { std::ofstream ofs(dirPath / "test_file.txt"); }
 
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(dirPath, cacheDirectory));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         IoHelper::deleteItemAtomically(dirPath, cacheDirectory, temporaryDirectory.path()));
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
     CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
 }
@@ -67,7 +69,8 @@ void TestDeleteItemAtomically::testDeleteNonExistingItem() {
 
     // Non-existing items do not raise any deletion error.
     const SyncPath nonExistingPath = temporaryDirectory.path() / "non-existing-item.txt";
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(nonExistingPath, cacheDirectory));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         IoHelper::deleteItemAtomically(nonExistingPath, cacheDirectory, temporaryDirectory.path()));
 
     // The cache directory has not been modified.
     CPPUNIT_ASSERT(std::filesystem::is_empty(cacheDirectoryPath));
@@ -84,16 +87,17 @@ void TestDeleteItemAtomically::testDeleteItemWithoutRights() {
     const SyncPath permissionLessSubdir = temporaryDirectory.path() / "permission_less_subdirectory";
     CPPUNIT_ASSERT(std::filesystem::create_directory(permissionLessSubdir));
     const SyncPath filePathInSubdir = permissionLessSubdir / "test_file.txt";
-    { std::ofstream ofs(filePathInSubdir); }
+    { const std::ofstream ofs(filePathInSubdir); }
     const testhelpers::RightsSet rightSet(true, true, false);
     auto rightsError = IoError::Unknown;
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, rightSet.read, rightSet.write, rightSet.execute, rightsError));
 
 #if defined(KD_MACOS) || defined(KD_LINUX)
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError),
-                         IoHelper::deleteItemAtomically(filePathInSubdir, cacheDirectory));
+                         IoHelper::deleteItemAtomically(filePathInSubdir, cacheDirectory, temporaryDirectory.path()));
 #elif defined(KD_WINDOWS)
-    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), IoHelper::deleteItemAtomically(filePathInSubdir, cacheDirectory));
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok),
+                         IoHelper::deleteItemAtomically(filePathInSubdir, cacheDirectory, temporaryDirectory.path()));
 #endif
     // Restore the rights so that the temporary directory can be inspected and then deleted.
     CPPUNIT_ASSERT(IoHelper::setRights(permissionLessSubdir, true, true, true, rightsError));

@@ -177,7 +177,7 @@ void TestIntegration::testNodeIdReuseFile2File() {
     }
     mockIoHelper.setPathWithFakeInode(absoluteLocalWorkingDir / "testNodeIdReuseFile3", 2);
     (void) IoHelper::moveItem(absoluteLocalWorkingDir / "testNodeIdReuseFile2", absoluteLocalWorkingDir / "testNodeIdReuseFile3",
-                              ioError);
+                              _syncPal->localPath(), ioError);
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     _syncPal->unpause();
@@ -237,11 +237,11 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
 
         // Move B/BA to A/BA on local side
         const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
-        (void) IoHelper::moveItem(absoluteLocalPathB / "BA", absoluteLocalPathA / "BA", ioError);
+        (void) IoHelper::moveItem(absoluteLocalPathB / "BA", absoluteLocalPathA / "BA", _syncPal->localPath(), ioError);
 
         // Rename A
         const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, _syncPal->localPath(), ioError);
 
         _syncPal->unpause();
         waitForSyncToBeIdle(std::source_location::current());
@@ -268,11 +268,11 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
 
         // Move A/AA to B/AA on local side
         const SyncPath absoluteLocalPathB = localTmpDir.path() / "B";
-        (void) IoHelper::moveItem(absoluteLocalPathA / "AA", absoluteLocalPathB / "AA", ioError);
+        (void) IoHelper::moveItem(absoluteLocalPathA / "AA", absoluteLocalPathB / "AA", _syncPal->localPath(), ioError);
 
         // Rename A
         const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, _syncPal->localPath(), ioError);
 
         _syncPal->unpause();
         waitForSyncToBeIdle(std::source_location::current());
@@ -304,7 +304,7 @@ void TestIntegration::testNodeIdReuseFalsePositive() {
 
         // Rename A
         const SyncPath newAbsoluteLocalPathA = localTmpDir.path() / "A2";
-        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, ioError);
+        (void) IoHelper::renameItem(absoluteLocalPathA, newAbsoluteLocalPathA, _syncPal->localPath(), ioError);
 
         _syncPal->unpause();
         waitForSyncToBeIdle(std::source_location::current());

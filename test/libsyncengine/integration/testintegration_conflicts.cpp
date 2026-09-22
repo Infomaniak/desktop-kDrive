@@ -181,7 +181,8 @@ void TestIntegration::testMoveCreateConflict() {
         // Rename a file on local replica.
         const SyncPath newLocalFilePath = _syncPal->localPath() / newFilename;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(IoHelper::renameItem(localFilePath, newLocalFilePath, ioError) && ioError == IoError::Success);
+        CPPUNIT_ASSERT(IoHelper::renameItem(localFilePath, newLocalFilePath, _syncPal->localPath(), ioError) &&
+                       ioError == IoError::Success);
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(std::source_location::current());
@@ -341,7 +342,7 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
         const SyncPath localPathB = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::renameItem(localPathA, localPathB, ioError);
+        (void) IoHelper::renameItem(localPathA, localPathB, _syncPal->localPath(), ioError);
 
         // Delete A/AB on local replica
         const SyncPath localPathAB = localPathB / "AB";
@@ -370,7 +371,7 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
         const SyncPath localPathB = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::renameItem(localPathA, localPathB, ioError);
+        (void) IoHelper::renameItem(localPathA, localPathB, _syncPal->localPath(), ioError);
 
         // Edit A/AA/AAA on local replica
         const SyncPath localPathAAA = localPathB / "AA" / "AAA";
@@ -405,12 +406,12 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
         const SyncPath localPathB = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::renameItem(localPathA, localPathB, ioError);
+        (void) IoHelper::renameItem(localPathA, localPathB, _syncPal->localPath(), ioError);
 
         // Move A/AB to AB on local replica
         const SyncPath originLocalPathAB = localPathB / "AB";
         const SyncPath destLocalPathAB = _syncPal->localPath() / tmpRemoteDir.name() / "AB";
-        (void) IoHelper::moveItem(originLocalPathAB, destLocalPathAB, ioError);
+        (void) IoHelper::moveItem(originLocalPathAB, destLocalPathAB, _syncPal->localPath(), ioError);
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(std::source_location::current());
@@ -435,7 +436,7 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathA = _syncPal->localPath() / tmpRemoteDir.name() / "A";
         const SyncPath localPathB = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::renameItem(localPathA, localPathB, ioError);
+        (void) IoHelper::renameItem(localPathA, localPathB, _syncPal->localPath(), ioError);
 
         // Move A/AB to AB on remote replica
         testhelpers::moveRemoteItem(_driveDbId, info.remoteNodeIdAB, tmpRemoteDir.id());
@@ -464,7 +465,7 @@ void TestIntegration::testMoveDeleteConflict() {
         const SyncPath localPathAB = _syncPal->localPath() / tmpRemoteDir.name() / "AB";
         const SyncPath localPathAB2 = _syncPal->localPath() / tmpRemoteDir.name() / "AB2";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::renameItem(localPathAB, localPathAB2, ioError);
+        (void) IoHelper::renameItem(localPathAB, localPathAB2, _syncPal->localPath(), ioError);
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(std::source_location::current());
@@ -497,7 +498,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         const SyncPath originPathAAA = localPathA / "AA" / "AAA";
         const SyncPath destinationPathAAA = localPathA / "AB" / "AAA";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::moveItem(originPathAAA, destinationPathAAA, ioError);
+        (void) IoHelper::moveItem(originPathAAA, destinationPathAAA, _syncPal->localPath(), ioError);
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(std::source_location::current());
@@ -527,7 +528,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         const SyncPath originPathAA = localPathA / "AA";
         const SyncPath destinationPathAA = localPathA / "AB" / "AA";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::moveItem(originPathAA, destinationPathAA, ioError);
+        (void) IoHelper::moveItem(originPathAA, destinationPathAA, _syncPal->localPath(), ioError);
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(std::source_location::current());
@@ -573,7 +574,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         // Move A/AA/AAA to A/AB/AAA on local replica
         const SyncPath localDestinationPathAAA = localPathA / "AB" / "AAA";
         IoError ioError = IoError::Unknown;
-        (void) IoHelper::moveItem(localPathAAA, localDestinationPathAAA, ioError);
+        (void) IoHelper::moveItem(localPathAAA, localDestinationPathAAA, _syncPal->localPath(), ioError);
 
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         waitForSyncToBeIdle(std::source_location::current());
@@ -626,7 +627,7 @@ void TestIntegration::testMoveMoveSourcePseudoConflict() {
     // Move test file in subdirectory on local replica
     const SyncPath destinationLocalPath = _syncPal->localPath() / tmpRemoteDir.name() / originLocalPath.filename();
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::moveItem(originLocalPath, destinationLocalPath, ioError);
+    (void) IoHelper::moveItem(originLocalPath, destinationLocalPath, _syncPal->localPath(), ioError);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
@@ -650,7 +651,7 @@ void TestIntegration::testMoveMoveSourceConflict() {
     // Move test file in subdirectory1 on local replica
     const SyncPath destinationLocalPath = _syncPal->localPath() / tmpRemoteDir1.name() / originLocalPath.filename();
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::moveItem(originLocalPath, destinationLocalPath, ioError);
+    (void) IoHelper::moveItem(originLocalPath, destinationLocalPath, _syncPal->localPath(), ioError);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
@@ -675,7 +676,7 @@ void TestIntegration::testMoveMoveDestConflict() {
     const SyncPath originLocalPath = _syncPal->localPath() / "testMoveMoveDestConflict1";
     const SyncPath destinationLocalPath = _syncPal->localPath() / "testMoveMoveDestConflict";
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::renameItem(originLocalPath, destinationLocalPath, ioError);
+    (void) IoHelper::renameItem(originLocalPath, destinationLocalPath, _syncPal->localPath(), ioError);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());
@@ -699,7 +700,7 @@ void TestIntegration::testMoveMoveCycleConflict() {
     const SyncPath originLocalPathA = _syncPal->localPath() / tmpRemoteDirA.name();
     const SyncPath destinationLocalPathA = _syncPal->localPath() / tmpRemoteDirB.name() / tmpRemoteDirA.name();
     IoError ioError = IoError::Unknown;
-    (void) IoHelper::moveItem(originLocalPathA, destinationLocalPathA, ioError);
+    (void) IoHelper::moveItem(originLocalPathA, destinationLocalPathA, _syncPal->localPath(), ioError);
 
     _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
     waitForSyncToBeIdle(std::source_location::current());

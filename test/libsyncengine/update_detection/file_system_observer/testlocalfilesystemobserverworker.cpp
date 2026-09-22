@@ -211,7 +211,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         SyncPath destinationPath = _subDirPath / filename;
 
         auto ioError = IoError::Unknown;
-        IoHelper::moveItem(sourcePath, destinationPath, ioError);
+        (void) IoHelper::moveItem(sourcePath, destinationPath, _rootFolderPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
         _syncPal->copySnapshots();
@@ -227,7 +227,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
         SyncPath destinationPath = _subDirPath / Str("test_file_renamed.txt");
 
         auto ioError = IoError::Unknown;
-        IoHelper::renameItem(source, destinationPath, ioError);
+        (void) IoHelper::renameItem(source, destinationPath, _rootFolderPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
         _syncPal->copySnapshots();
@@ -352,7 +352,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         SyncPath sourcePath = testAbsolutePath;
         SyncPath destinationPath = _subDirPath / dirname;
         auto ioError = IoError::Unknown;
-        IoHelper::moveItem(sourcePath, destinationPath, ioError);
+        IoHelper::moveItem(sourcePath, destinationPath, _rootFolderPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
 
@@ -369,7 +369,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         SyncPath sourcePath = testAbsolutePath;
         SyncPath destinationPath = _subDirPath / (dirname + Str("_renamed"));
         auto ioError = IoError::Unknown;
-        IoHelper::renameItem(sourcePath, destinationPath, ioError);
+        (void) IoHelper::renameItem(sourcePath, destinationPath, _rootFolderPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
 
@@ -387,7 +387,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
         /// Move dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test move dir from outside sync dir *****");
         SyncPath destinationPath = _rootFolderPath / dirName;
-        IoHelper::moveItem(sourcePath, destinationPath, ioError);
+        (void) IoHelper::moveItem(sourcePath, destinationPath, _rootFolderPath, ioError);
 
         Utility::msleep(1000); // Wait 1sec
 
@@ -441,7 +441,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases1() {
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
     //// move
     SyncPath destinationPath = _rootFolderPath / testFilename;
-    IoHelper::moveItem(sourcePath, destinationPath, ioError);
+    IoHelper::moveItem(sourcePath, destinationPath, _rootFolderPath, ioError);
 
     Utility::msleep(1000); // Wait 1sec
 
@@ -463,7 +463,7 @@ void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     NodeId initItemId = std::to_string(fileStat.inode);
 
     auto ioError = IoError::Unknown;
-    IoHelper::moveItem(sourcePath, destinationPath, ioError);
+    (void) IoHelper::moveItem(sourcePath, destinationPath, _rootFolderPath, ioError);
     //// create
     KDC::testhelpers::generateOrEditTestFile(sourcePath);
     IoHelper::getFileStat(sourcePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
@@ -525,8 +525,8 @@ void TestLocalFileSystemObserverWorker::testLFSODirReplacement() {
 
     // Execute operations
     auto ioError = IoError::Unknown;
-    CPPUNIT_ASSERT(IoHelper::moveItem(testDirPath1, testDirPath2 / Str("AA"), ioError));
-    CPPUNIT_ASSERT(IoHelper::renameItem(testDirPath2, testDirPath1, ioError));
+    CPPUNIT_ASSERT(IoHelper::moveItem(testDirPath1, testDirPath2 / Str("AA"), _rootFolderPath, ioError));
+    CPPUNIT_ASSERT(IoHelper::renameItem(testDirPath2, testDirPath1, _rootFolderPath, ioError));
     CPPUNIT_ASSERT(testhelpers::generateTestFolder(testDirPath2));
 
     // Update SyncDb to reflect the operations
@@ -576,8 +576,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     SnapshotRevision previousRevision = _syncPal->liveSnapshot(ReplicaSide::Local).revision();
     auto ioError = IoError::Unknown;
     const SyncPath destinationPath = _testFiles[0].second.parent_path() / (_testFiles[0].second.filename().string() + "2");
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
-                           IoHelper::renameItem(_testFiles[0].second, destinationPath, ioError)); // test0.txt -> test0.txt2
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(_testFiles[0].second, destinationPath, _rootFolderPath,
+                                                                   ioError)); // test0.txt -> test0.txt2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_MESSAGE(
             toString(ioError),
@@ -585,7 +585,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMove() { // MS Off
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_MESSAGE(
             toString(ioError),
-            IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second,
+            IoHelper::renameItem(_testFiles[1].second, _testFiles[0].second, _rootFolderPath,
                                  ioError)); // test1.txt -> test0.txt (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
@@ -649,7 +649,8 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
 
     auto ioError = IoError::Unknown;
     SyncPath destinationPath = tmpDirPath / (nfcFilePath.filename().string() + "2");
-    CPPUNIT_ASSERT_MESSAGE(toString(ioError), IoHelper::renameItem(nfcFilePath, destinationPath, ioError)); // nfcFile -> nfcFile2
+    CPPUNIT_ASSERT_MESSAGE(toString(ioError),
+                           IoHelper::renameItem(nfcFilePath, destinationPath, tmpDirPath, ioError)); // nfcFile -> nfcFile2
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_MESSAGE(
             toString(ioError),
@@ -657,7 +658,7 @@ void TestLocalFileSystemObserverWorker::testLFSOFastMoveDeleteMoveWithEncodingCh
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_MESSAGE(
             toString(ioError),
-            IoHelper::renameItem(_testFiles[1].second, nfdFilePath,
+            IoHelper::renameItem(_testFiles[1].second, nfdFilePath, tmpDirPath,
                                  ioError)); // test1.txt -> nfdFile (before the previous rename and delete is processed)
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
