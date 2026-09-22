@@ -896,7 +896,7 @@ IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traverses
             return itemType.ioError;
         }
 
-        if (itemType.linkType != LinkType::None && itemType.linkType != LinkType::FinderAlias) {
+        if (isLinkFollowedByDefault(itemType.linkType)) {
             traversesLink = true;
             linkPath = tmpPath;
             return IoError::Success;
