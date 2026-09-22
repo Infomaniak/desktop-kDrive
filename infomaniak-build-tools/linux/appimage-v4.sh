@@ -213,6 +213,10 @@ function v4_create_linuxdeploy_resolver() (
 
 function v4_prepare_appdir() (
     set -eo pipefail
+    if [[ -z "$1" || "$1" == "/" ]]; then
+        echo "Unsafe AppDir: '$1'" >&2
+        exit 1
+    fi
     cd "$1"
 
     # The recovery updater is packaged separately from the main AppImage.
