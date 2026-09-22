@@ -64,7 +64,7 @@ SettingsSyncActivationController::SettingsSyncActivationController(AppCache &app
 }
 
 bool SettingsSyncActivationController::canValidate() const {
-    if (_busy || _preparing || !_visible) {
+    if (_busy || _preparing || !_visible || _reconciliationBlockedKeys.contains(_key)) {
         return false;
     }
     if (_page == Page::FolderSelection) {
@@ -86,8 +86,14 @@ QString SettingsSyncActivationController::currentLocalPath() const {
 }
 
 void SettingsSyncActivationController::activate(const qint64 userDbId, const qint64 accountId, const qint64 driveId) {
+    if (_syncCreationPending) {
+        return;
+    }
+
+    const bool targetChangeNeedsNotification = _preparing;
     ++_requestGeneration;
     _reconciliationPending = false;
+    _reconciliationForActivation = false;
     _key = {
             .userDbId = static_cast<UserDbId>(userDbId),
             .accountId = static_cast<AccountId>(accountId),
@@ -114,6 +120,16 @@ void SettingsSyncActivationController::activate(const qint64 userDbId, const qin
     _driveColor = driveColor.isValid() ? driveColor : AppConstants::Drive::defaultColor();
     setPage(Page::DriveConfiguration);
     setPreparing(true);
+    // The target may change while preparation is already active, in which case setPreparing() emits nothing.
+    if (targetChangeNeedsNotification) {
+        emit presentationChanged();
+    }
+    if (_reconciliationBlockedKeys.contains(_key)) {
+        _reconciliationPending = true;
+        _reconciliationForActivation = true;
+        _cachePopulator.reconcile();
+        return;
+    }
     requestDefaultFolder();
 }
 
@@ -133,6 +149,18 @@ void SettingsSyncActivationController::cancelCurrentPage() {
         emit presentationChanged();
         return;
     }
+    close();
+}
+
+void SettingsSyncActivationController::dismissFromHostWindow() {
+    if (_syncCreationPending) {
+        if (_visible) {
+            _visible = false;
+            emit visibleChanged();
+        }
+        return;
+    }
+
     close();
 }
 
@@ -313,6 +341,7 @@ void SettingsSyncActivationController::createSynchronization() {
 
     setBusy(true);
     setOperationErrorId({});
+    _syncCreationPending = true;
     const uint64_t generation = ++_requestGeneration;
     const QPointer self(this);
     _commService.requestSyncAdd(request, [self, generation](const ExitInfo &exitInfo, const BaseSync &) {
@@ -331,15 +360,52 @@ void SettingsSyncActivationController::createSynchronization() {
 }
 
 void SettingsSyncActivationController::handleReconciliationFinished(const bool succeeded) {
+    if (succeeded) {
+        _reconciliationBlockedKeys.clear();
+    }
     if (!_reconciliationPending) {
         return;
     }
+
     _reconciliationPending = false;
-    if (succeeded && _appCache.isAvailableDriveConfigured(_key)) {
+    if (_reconciliationForActivation) {
+        _reconciliationForActivation = false;
+        if (!succeeded) {
+            emit _serviceEventBus.genericErrorOccurred();
+            setPreparing(false);
+            resetTarget();
+            emit presentationChanged();
+            return;
+        }
+        if (!targetStillAvailable()) {
+            close();
+            return;
+        }
+
+        requestDefaultFolder();
+        return;
+    }
+
+    _syncCreationPending = false;
+    if (!succeeded) {
+        (void) _reconciliationBlockedKeys.insert(_key);
+        if (!_visible) {
+            close();
+            return;
+        }
+        setBusy(false);
+        setOperationErrorId(u"unexpectedErrorTeachingTipContent"_s);
+        return;
+    }
+    if (_appCache.isAvailableDriveConfigured(_key)) {
         close();
         return;
     }
     if (!targetStillAvailable()) {
+        close();
+        return;
+    }
+    if (!_visible) {
         close();
         return;
     }
@@ -353,6 +419,9 @@ void SettingsSyncActivationController::handleTargetStateChanged() {
     }
 
     if (_visible) {
+        if (_appCache.isAvailableDriveConfigured(_key)) {
+            (void) _reconciliationBlockedKeys.erase(_key);
+        }
         close();
         return;
     }
@@ -406,6 +475,8 @@ void SettingsSyncActivationController::setOperationErrorId(const QString &transl
 void SettingsSyncActivationController::close() {
     ++_requestGeneration;
     _reconciliationPending = false;
+    _reconciliationForActivation = false;
+    _syncCreationPending = false;
     _preparing = false;
     _busy = false;
     _localFolderErrorId.clear();
