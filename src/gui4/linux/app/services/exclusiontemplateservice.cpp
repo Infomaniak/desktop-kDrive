@@ -117,6 +117,7 @@ void ExclusionTemplateService::finishRefresh(const std::shared_ptr<RefreshState>
 }
 
 void ExclusionTemplateService::mutateUserTemplates(const UserMutation &mutation, const CompletionCallback &callback) {
+    // @warning DATA LOSS RISK: DO NOT CALL THIS METHOD OUTSIDE FileExclusionController. See exclusiontemplateservice.h
     if (!mutation) {
         if (callback) {
             callback({ExitCode::LogicError, ExitCause::InvalidArgument});
@@ -124,46 +125,44 @@ void ExclusionTemplateService::mutateUserTemplates(const UserMutation &mutation,
         return;
     }
 
-    _mutations.push_back({.mutation = mutation, .callback = callback});
-    startNextMutation();
-}
-
-void ExclusionTemplateService::startNextMutation() {
-    if (_mutating || _mutations.empty()) {
-        return;
-    }
-
     if (!ready()) {
-        finishCurrentMutation({ExitCode::InvalidOperation});
+        if (callback) {
+            callback({ExitCode::InvalidOperation});
+        }
         return;
     }
 
-    _mutating = true;
     auto templates = _userTemplates;
-    if (const auto mutationResult = _mutations.front().mutation(templates); !mutationResult) {
-        finishCurrentMutation(mutationResult);
+    if (const auto mutationResult = mutation(templates); !mutationResult) {
+        if (callback) {
+            callback(mutationResult);
+        }
         return;
     }
 
     if (templates == _userTemplates) {
-        finishCurrentMutation({ExitCode::Ok});
+        if (callback) {
+            callback({ExitCode::Ok});
+        }
         return;
     }
 
     // The server replaces the whole list; reading it back publishes the normalized form it actually stored.
-    _commService.requestExclTemplSetList(templates, [self = QPointer(this)](const ExitInfo &setResult) {
+    _commService.requestExclTemplSetList(templates, [self = QPointer(this), callback](const ExitInfo &setResult) {
         if (!self) {
             return;
         }
 
         if (!setResult) {
             self->_eventBus.notifyGenericError(setResult, RequestNum::EXCLTEMPL_SETUSERLIST);
-            self->finishCurrentMutation(setResult);
+            if (callback) {
+                callback(setResult);
+            }
             return;
         }
 
         self->_commService.requestExclTemplGetList(
-                false, [self](const ExitInfo &readResult, const std::vector<ExclusionTemplate> &confirmedTemplates) {
+                false, [self, callback](const ExitInfo &readResult, const std::vector<ExclusionTemplate> &confirmedTemplates) {
                     if (!self) {
                         return;
                     }
@@ -172,37 +171,21 @@ void ExclusionTemplateService::startNextMutation() {
                         self->_userTemplatesLoaded = false;
                         self->_eventBus.notifyGenericError(readResult, RequestNum::EXCLTEMPL_GETLIST);
                         emit self->snapshotsChanged();
-                        self->finishCurrentMutation(readResult);
+                        if (callback) {
+                            callback(readResult);
+                        }
                         return;
                     }
 
-                    self->finishCurrentMutation(readResult, confirmedTemplates);
+                    self->_userTemplates = confirmedTemplates;
+                    self->_userTemplatesLoaded = true;
+                    emit self->snapshotsChanged();
+
+                    if (callback) {
+                        callback(readResult);
+                    }
                 });
     });
-}
-
-void ExclusionTemplateService::finishCurrentMutation(const ExitInfo &result,
-                                                     const std::optional<std::vector<ExclusionTemplate>> &confirmedTemplates) {
-    if (_mutations.empty()) {
-        _mutating = false;
-        return;
-    }
-
-    const auto callback = _mutations.front().callback;
-    _mutations.pop_front();
-
-    if (result && confirmedTemplates) {
-        _userTemplates = *confirmedTemplates;
-        _userTemplatesLoaded = true;
-        emit snapshotsChanged();
-    }
-
-    if (callback) {
-        callback(result);
-    }
-
-    _mutating = false;
-    startNextMutation();
 }
 
 } // namespace KDC
