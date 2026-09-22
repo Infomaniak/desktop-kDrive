@@ -18,9 +18,8 @@
 
 #include "fileexclusioncontroller.h"
 
-#include "app/services/translationservice.h"
-
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QPointer>
 
 #include <algorithm>
@@ -29,6 +28,9 @@
 namespace KDC {
 
 namespace {
+constexpr auto loadErrorTextId = QT_TRID_NOOP("defaultErrorTitle");
+constexpr auto saveErrorTextId = QT_TRID_NOOP("linuxSettingsSaveError");
+
 QString templatePattern(const ExclusionTemplate &exclusionTemplate) {
     const auto &pattern = exclusionTemplate.templ();
     return QString::fromUtf8(pattern.data(), static_cast<qsizetype>(pattern.size()));
@@ -44,15 +46,13 @@ QString normalizedKey(const QString &pattern) {
 }
 } // namespace
 
-FileExclusionController::FileExclusionController(ExclusionTemplateService &service, const TranslationService &translationService,
-                                                 QObject *const parent) :
+FileExclusionController::FileExclusionController(ExclusionTemplateService &service, QObject *const parent) :
     QObject(parent),
     _service(service),
     _defaultRules(false, this),
     _userRules(true, this) {
     (void) connect(&_service, &ExclusionTemplateService::snapshotsChanged, this, &FileExclusionController::syncModels);
     (void) connect(&_userRules, &ExclusionRuleModel::selectionChanged, this, &FileExclusionController::changed);
-    (void) connect(&translationService, &TranslationService::languageChanged, this, &FileExclusionController::changed);
     (void) connect(&_userRules, &ExclusionRuleModel::countChanged, this, &FileExclusionController::changed);
 }
 
@@ -63,12 +63,12 @@ int FileExclusionController::selectionCheckState() const {
     return selectedCount() == userRuleCount() ? Qt::Checked : Qt::PartiallyChecked;
 }
 
-QString FileExclusionController::errorText() const {
+QString FileExclusionController::errorTextId() const {
     switch (_error) {
         case Error::Load:
-            return qtTrId("defaultErrorTitle");
+            return QString::fromLatin1(loadErrorTextId);
         case Error::Save:
-            return qtTrId("linuxSettingsSaveError");
+            return QString::fromLatin1(saveErrorTextId);
         case Error::None:
             return {};
     }
