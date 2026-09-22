@@ -111,7 +111,7 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     }
     (void) _syncInfo.localPath.make_preferred();
     _syncInfo.localNodeId = sync.localNodeId();
-    _syncInfo.targetPath = sync.targetPath();
+    _syncInfo.targetPath = sync.targetPath(); // targetPath is a server folder path. It does not need to be canonicalized.
     (void) _syncInfo.targetPath.make_preferred();
 
     _cacheDirectory = std::make_shared<CacheDirectory>(_syncInfo.localPath);
