@@ -623,6 +623,20 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             }
 #endif
 
+            // update vfs status
+            VfsStatus vfsStatus;
+            if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+                LOGW_SYNCPAL_WARN(
+                        _logger, L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
+            } else {
+                vfsStatus.isSyncing = true;
+                vfsStatus.progress = 0;
+                if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath)
+                                                                             << L": " << exitInfo);
+                }
+            }
+
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in ExecutorWorker::getFileSize for "
@@ -809,9 +823,11 @@ ExitInfo ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<SyncJob>
 
 ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> &job) {
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
+    SyncPath relativeLocalFilePath;
+    SyncPath absoluteLocalFilePath;
     if (syncOp->targetSide() == ReplicaSide::Local) {
-        SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
+        relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
+        absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
 
         try {
             job = std::make_shared<DownloadJob>(
@@ -829,8 +845,8 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
 
         job->setAffectedFilePath(relativeLocalFilePath);
     } else {
-        SyncPath relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
-        SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
+        relativeLocalFilePath = syncOp->nodePath(ReplicaSide::Local);
+        absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
 
         uint64_t filesize;
         if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
@@ -872,6 +888,20 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
         }
 
         job->setAffectedFilePath(relativeLocalFilePath);
+    }
+
+     // update vfs status
+    VfsStatus vfsStatus;
+    if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
+    } else {
+        vfsStatus.isSyncing = true;
+        vfsStatus.progress = 0;
+        if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": "
+                                                                     << exitInfo);
+        }
     }
     return ExitCode::Ok;
 }
@@ -1486,15 +1516,14 @@ ExitInfo ExecutorWorker::handleFinishedJob(std::shared_ptr<SyncJob> job, SyncOpP
                     _logger, L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteDestLocalFilePath) << L": " << exitInfo);
             return ExitCode::Ok; // Do not return error, as the job has finished successfully
         }
-        if (_syncPal->vfsMode() != VirtualFileMode::Off && vfsStatus.isPlaceholder) {
-            bool isSyncing = !_syncPal->isLocalItemInSyncWithDb(absoluteDestLocalFilePath);
-            vfsStatus.isSyncing = isSyncing;
-            vfsStatus.progress = isSyncing ? vfsStatus.progress : 100;
-            if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus); !exitInfo) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteDestLocalFilePath)
-                                                                         << L": " << exitInfo);
-                return ExitCode::Ok; // Do not return error, as the job has finished successfully
-            }
+
+        bool isSyncing = !_syncPal->isLocalItemInSyncWithDb(absoluteDestLocalFilePath);
+        vfsStatus.isSyncing = isSyncing;
+        vfsStatus.progress = isSyncing ? vfsStatus.progress : 100;
+        if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteDestLocalFilePath, vfsStatus); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteDestLocalFilePath)
+                                                                     << L": " << exitInfo);
+            return ExitCode::Ok; // Do not return error, as the job has finished successfully
         }
     }
 
