@@ -23,7 +23,7 @@
 namespace KDC {
 
 CacheDirectory::CacheDirectory(const SyncPath &localSyncPath) :
-    _syncDirectoryPath(localSyncPath) {}
+    _syncRootDirectoryPath(localSyncPath) {}
 
 CacheDirectory::~CacheDirectory() {
     cleanUp();
@@ -56,8 +56,8 @@ ExitInfo CacheDirectory::path(SyncPath &cacheDirectory) noexcept {
     return ExitCode::Ok;
 }
 
-const SyncPath &CacheDirectory::syncDirectoryPath() const noexcept {
-    return _syncDirectoryPath;
+const SyncPath &CacheDirectory::syncRootDirectoryPath() const noexcept {
+    return _syncRootDirectoryPath;
 }
 
 std::string_view CacheDirectory::name() noexcept {
@@ -66,11 +66,11 @@ std::string_view CacheDirectory::name() noexcept {
 }
 
 ExitInfo CacheDirectory::initDirectory() noexcept {
-    if (_syncDirectoryPath.empty()) {
+    if (_syncRootDirectoryPath.empty()) {
         return {ExitCode::LogicError, ExitCause::InvalidArgument};
     }
 
-    _cacheDirectoryPath = _syncDirectoryPath / name();
+    _cacheDirectoryPath = _syncRootDirectoryPath / name();
 
     if (auto ioError = IoError::Success;
         !IoHelper::createDirectory(_cacheDirectoryPath, false, ioError) && ioError != IoError::DirectoryExists) {

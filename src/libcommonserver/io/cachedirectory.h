@@ -30,9 +30,23 @@ class CacheDirectory {
         explicit CacheDirectory(const SyncPath &localSyncPath);
         ~CacheDirectory();
 
+        /**
+         * @brief Returns the path to the cache directory. If the cache directory does not exist, it will be created.
+         * @param cacheDirectory the path to the cache directory
+         * @return an ExitInfo indicating the success or failure of the operation
+         */
         ExitInfo path(SyncPath &cacheDirectory) noexcept;
-        [[nodiscard]] const SyncPath &syncDirectoryPath() const noexcept;
+        /**
+         * @brief Returns the standard name of the cache directory.
+         * @return the name of the cache directory
+         */
         static std::string_view name() noexcept;
+
+        /**
+         * @brief Returns the path to the root directory of the sync. This is the directory that contains the cache directory.
+         * @return the path to the root directory of the sync
+         */
+        [[nodiscard]] const SyncPath &syncRootDirectoryPath() const noexcept;
 
         // Shared naming contract used by creators and cleanup logic.
         static std::string createTmpFileName();
@@ -45,7 +59,7 @@ class CacheDirectory {
         ExitInfo initDirectory() noexcept;
         void cleanUp() const;
 
-        const SyncPath _syncDirectoryPath;
+        const SyncPath _syncRootDirectoryPath;
 
         mutable std::mutex _mutex;
         SyncPath _cacheDirectoryPath;
