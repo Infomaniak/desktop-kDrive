@@ -29,7 +29,7 @@ SettingsWindowController::SettingsWindowController(ParametersStore &parametersSt
     QObject(parent),
     _general(parametersStore, parametersService, translationService, updateStatusService, this),
     _advanced(parametersStore, parametersService, sentryService, commService, translationService, this),
-    _fileExclusions(exclusionTemplateService, translationService, this) {}
+    _fileExclusions(exclusionTemplateService, this) {}
 
 void SettingsWindowController::refreshUpdates() const {
     _general.refreshUpdates();
