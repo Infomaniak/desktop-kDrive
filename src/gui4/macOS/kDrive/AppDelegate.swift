@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
     private var onboardingWindow: OnboardingWindowController?
+    private var isHandingOffToServer = false
 
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
@@ -53,6 +54,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DriveTargetAssembly.setupDI(testing: testing)
 
         guard !testing else {
+            return
+        }
+
+        guard !startServerIfNeeded() else {
             return
         }
 
@@ -168,6 +173,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        // The server will relaunch the client; do not send it the normal quit request.
+        guard !isHandingOffToServer else {
+            return .terminateNow
+        }
+
         Task {
             #if !DEBUG
             try? await UtilityJobs().quit()
@@ -175,6 +185,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
+    }
+
+    private func startServerIfNeeded() -> Bool {
+        let serverBundleID = "com.infomaniak.drive.desktopclient"
+        guard NSRunningApplication.runningApplications(withBundleIdentifier: serverBundleID).isEmpty else {
+            return false
+        }
+
+        guard let serverURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: serverBundleID),
+              let executableURL = Bundle(url: serverURL)?.executableURL else {
+            IKLogger.general.error("Could not locate the kDrive server application")
+            return false
+        }
+
+        let server = Process()
+        server.executableURL = executableURL
+        do {
+            try server.run()
+        } catch {
+            IKLogger.general.error("Failed to start the kDrive server: \(error)")
+            return false
+        }
+
+        IKLogger.general.info("Started the kDrive server; exiting so it can relaunch the client")
+        isHandingOffToServer = true
+        NSApp.terminate(nil)
+        return true
     }
 
     private func observeAppPresentation() {
