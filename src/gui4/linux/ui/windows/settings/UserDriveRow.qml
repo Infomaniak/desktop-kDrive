@@ -28,7 +28,12 @@ Item {
     required property string accountName
     required property color color
     required property bool isSynchronized
+    required property var accountId
+    required property var driveId
+    property bool actionBusy: false
     readonly property bool hasDistinctAccountName: accountName.length > 0 && accountName !== name
+
+    signal activateRequested(Item trigger, var accountId, var driveId)
 
     implicitHeight: IKSettings.userDriveRowHeight
 
@@ -116,7 +121,9 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         role: IKModalButton.Tonal
         text: root.isSynchronized ? qsTrId("buttonManage") : qsTrId("buttonEnable")
-        actionEnabled: false
+        actionEnabled: !root.isSynchronized && !root.actionBusy
+        busy: root.actionBusy
         Accessible.name: text + " " + root.name
+        onClicked: root.activateRequested(actionButton, root.accountId, root.driveId)
     }
 }
