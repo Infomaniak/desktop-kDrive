@@ -132,8 +132,8 @@ IKModal {
         },
         Text {
             width: parent.width
-            visible: root.controller.errorText.length > 0
-            text: root.controller.errorText
+            visible: root.controller.errorTextId.length > 0
+            text: root.controller.errorTextId.length > 0 ? qsTrId(root.controller.errorTextId) : ""
             color: IKColors.statusStrongWarning
             font.pixelSize: IKFonts.bodySize
             wrapMode: Text.WordWrap
