@@ -40,22 +40,16 @@
             <!-- Remote folder exclusion -->
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        
         <!-- Title -->
         <TextBlock Grid.Row="0"
                    Text="{x:Bind kDrive:Localizer.Instance.GetString('onboardingAdvancedSettingsExclusionTitle')}"
                    TextWrapping="WrapWholeWords"
                    Style="{StaticResource SubtitleTextBlockStyle}" />
 
-        <!-- Message -->
-        <TextBlock Grid.Row="1"
-                   Text="{x:Bind kDrive:Localizer.Instance.GetString('selectFoldersToSyncDescription')}"
-                   TextWrapping="WrapWholeWords"
-                   Style="{StaticResource BodyTextBlockStyle}"
-                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-
         <!-- Remote folder exclusion -->
         <controls:SyncExclusionSelector x:Name="ExclusionSelector"
-                                        Grid.Row="2"
+                                        Grid.Row="1"
                                         Sync="{x:Bind Sync}"
                                         CanShowSaveMenu="False" />
     </Grid>
