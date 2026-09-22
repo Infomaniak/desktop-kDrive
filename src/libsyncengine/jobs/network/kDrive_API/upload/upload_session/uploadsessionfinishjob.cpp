@@ -47,13 +47,6 @@ UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadTyp
     UploadSessionFinishJob(nullptr, uploadType, 0, absoluteFilePath, sessionToken, totalChunkHash, totalChunks, creationTime,
                            modificationTime) {}
 
-UploadSessionFinishJob::~UploadSessionFinishJob() {
-    if (!_vfs) return;
-    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
-    if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
-    }
-}
 
 ExitInfo UploadSessionFinishJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {

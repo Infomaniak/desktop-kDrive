@@ -27,7 +27,6 @@ class DuplicateJob : public AbstractTokenNetworkJob {
     public:
         DuplicateJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &remoteFileId,
                      const SyncPath &absoluteFinalPath);
-        ~DuplicateJob() override;
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline SyncTime modtime() const { return _modtime; }

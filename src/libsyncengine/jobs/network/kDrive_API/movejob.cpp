@@ -37,22 +37,6 @@ MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, cons
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-MoveJob::~MoveJob() {
-    if (!_vfs) return;
-
-    VfsStatus vfsStatus;
-    if (const ExitInfo exitInfo = _vfs->status(_destFilepath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
-    }
-
-    vfsStatus.isSyncing = false;
-    vfsStatus.progress = 100;
-    if (const ExitInfo exitInfo = _vfs->forceStatus(_destFilepath, vfsStatus);
-        !exitInfo) { // TODO : to be refactored, some parameters are used on macOS only
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_destFilepath) << L": " << exitInfo);
-    }
-}
-
 ExitInfo MoveJob::canRun() {
     if (bypassCheck()) {
         return ExitCode::Ok;

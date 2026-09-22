@@ -796,75 +796,6 @@ bool SyncPalWorker::tryToFixDbNodeIdsAfterSyncDirChange() {
     return true;
 }
 
-bool SyncPalWorker::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId) {
-    // Ideally, this logic should be shared with ComputeFSOperationWorker::inferChangeFromDbNode,
-    // but for now it would require some refactoring to make it reusable, so we duplicate it here.
-    outLocalNodeId.reset();
-    FileStat fileStat;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::getFileStat(localAbsolutePath, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(localAbsolutePath, ioError));
-        return false;
-    }
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(localAbsolutePath));
-        return false;
-    } else if (ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(localAbsolutePath));
-        return false;
-    } else if (ioError != IoError::Success) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error accessing item: " << Utility::formatSyncPath(localAbsolutePath) << L": "
-                                                             << Utility::formatIoError(ioError));
-        return false;
-    }
-
-    outLocalNodeId = std::to_string(fileStat.inode);
-
-    DbNode dbNode;
-    bool found = false;
-    if (!_syncPal->syncDb()->node(ReplicaSide::Local, std::to_string(fileStat.inode), dbNode, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::node for " << Utility::formatSyncPath(localAbsolutePath));
-        return false;
-    }
-
-    if (!found) {
-        return false;
-    }
-
-    if (dbNode.type() != fileStat.nodeType) {
-        return false;
-    }
-
-    SyncPath localDbRelativePath;
-    SyncPath remoteDbRelativePath;
-    if (!_syncPal->syncDb()->path(dbNode.nodeId(), localDbRelativePath, remoteDbRelativePath, found)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in SyncDb::path for DbNodeID " << dbNode.nodeId());
-        return false;
-    }
-
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "dbNodeId " << dbNode.nodeId() << " not found in SyncDb");
-        return false;
-    }
-
-    const SyncPath localRelativePath = CommonUtility::relativePath(_syncPal->localPath(), localAbsolutePath);
-
-    if (localDbRelativePath.lexically_normal() != localRelativePath.lexically_normal()) {
-        return false;
-    }
-
-    if (fileStat.nodeType == NodeType::Directory) {
-        return true;
-    }
-
-    if (dbNode.size() == fileStat.size && dbNode.lastModifiedLocal() == fileStat.modificationTime &&
-        (!dbNode.created().has_value() || dbNode.created().value() == fileStat.creationTime)) {
-        return true;
-    }
-
-    return false;
-}
-
 void SyncPalWorker::resetVfsFilesStatus() {
     if (_syncPal->vfsMode() == VirtualFileMode::Off) return;
     sentry::pTraces::scoped::ResetStatus perfMonitor1(syncDbId());
@@ -914,7 +845,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
         if (isDirectory) {
 #ifdef KD_WINDOWS
-            if (std::optional<NodeId> localNodeId; isLocalItemInSyncWithDb(entry.path(), localNodeId)) {
+            if (std::optional<NodeId> localNodeId; _syncPal->isLocalItemInSyncWithDb(entry.path(), localNodeId)) {
                 // Fix directories sync status if needed to avoid having directories in incorrect Syncing status.
                 VfsStatus status;
                 status.isSyncing = false;
@@ -972,7 +903,7 @@ void SyncPalWorker::resetVfsFilesStatus() {
 
             SyncFileItem syncItem;
             if (std::optional<NodeId> localNodeId;
-                !isSymlink && isLocalItemInSyncWithDb(entry.path(), localNodeId) && localNodeId.has_value()) {
+                !isSymlink && _syncPal->isLocalItemInSyncWithDb(entry.path(), localNodeId) && localNodeId.has_value()) {
                 syncItem.setLocalNodeId(localNodeId.value());
                 if (ExitInfo exitInfo = _syncPal->vfs()->convertToPlaceholder(entry.path(), syncItem); !exitInfo) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsConvertToPlaceholder : " << Utility::formatSyncPath(entry.path())

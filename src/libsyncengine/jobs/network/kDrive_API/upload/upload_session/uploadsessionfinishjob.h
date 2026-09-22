@@ -34,8 +34,6 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
                                const std::string &totalChunkHash, uint64_t totalChunks, SyncTime creationTime,
                                SyncTime modificationTime);
 
-        ~UploadSessionFinishJob() override;
-
         const NodeId &nodeId() const { return _nodeId; }
         SyncTime creationTime() const { return _creationTimeOut; }
         SyncTime modificationTime() const { return _modificationTimeOut; }

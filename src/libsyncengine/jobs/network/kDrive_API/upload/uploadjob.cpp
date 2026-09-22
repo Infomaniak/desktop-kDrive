@@ -64,18 +64,6 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
     _creationTimeIn = fileStat.creationTime;
 }
 
-UploadJob::~UploadJob() {
-    if (!_vfs || isAborted()) return;
-    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
-    if (const auto exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
-    }
-
-    if (const auto exitInfo = _vfs->setPinState(_absoluteFilePath, PinState::AlwaysLocal); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsSetPinState - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
-    }
-}
-
 ExitInfo UploadJob::canRun() {
     if (bypassCheck()) {
         return ExitCode::Ok;

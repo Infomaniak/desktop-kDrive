@@ -377,6 +377,13 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _manyDeleteOpsUserChoice = manyDeleteOpsUserChoice;
         }
 
+        /* Returns true if the local item is in sync with its state in the SyncDb.
+         * Returns false if the item is not in sync, or if an error occurred while trying to determine it
+         * (e.g., file not found, I/O error, etc.).
+         */
+        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::optional<NodeId> &outLocalNodeId);
+        [[nodiscard]] bool isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath);
+
     protected:
         virtual void createWorkers(const std::chrono::seconds &startDelay = std::chrono::seconds(0));
 
