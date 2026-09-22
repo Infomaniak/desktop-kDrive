@@ -310,7 +310,7 @@ void OperationsExecutor::applyLocalDelete(const OperationDesc &desc) const {
 void OperationsExecutor::applyLocalMove(const OperationDesc &desc) const {
     const SyncPath fullFromPath = _syncPal->localPath() / desc.fromPath;
     const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
-    LocalMoveJob job(fullFromPath, fullToPath);
+    LocalMoveJob job(fullFromPath, fullToPath, _syncPal->localPath());
     checkExitInfo(job.runSynchronously(), "Move operation");
 }
 

@@ -1054,7 +1054,7 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         }
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
 
-        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
+        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath, _syncPal->localPath());
     } else {
         // Target side is remote, so affected node is on local side.
         std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();

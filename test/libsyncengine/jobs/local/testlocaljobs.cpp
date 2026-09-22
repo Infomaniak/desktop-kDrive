@@ -142,7 +142,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / "tmp_picture.jpg"));
 
     // Move
-    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName);
+    LocalMoveJob moveJob(testDirPath, copyDirPath / testDirName, _localTempDir.path());
     moveJob.runSynchronously();
 
     CPPUNIT_ASSERT(std::filesystem::exists(copyDirPath / testDirName));
@@ -219,8 +219,8 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
     // A move whose source path traverses the symbolic link is forbidden.
     {
         const SyncPath destPath = temporaryDirectory.path() / "moved_file.txt";
-        LocalMoveJob moveJob(linkPath / "tmp_file.txt", destPath);
-        moveJob.runSynchronously();
+        LocalMoveJob moveJob(linkPath / "tmp_file.txt", destPath, temporaryDirectory.path());
+        (void) moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
@@ -229,8 +229,8 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 
     // A move whose destination path traverses the symbolic link is forbidden.
     {
-        LocalMoveJob moveJob(filePath, linkPath / "moved_file.txt");
-        moveJob.runSynchronously();
+        LocalMoveJob moveJob(filePath, linkPath / "moved_file.txt", temporaryDirectory.path());
+        (void) moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
@@ -239,9 +239,9 @@ void KDC::TestLocalJobs::testLocalMoveJobThroughSymlink() {
 
     // The interdiction is not bypassable with bypassCheck().
     {
-        LocalMoveJob moveJob(linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt");
+        LocalMoveJob moveJob(linkPath / "tmp_file.txt", temporaryDirectory.path() / "moved_file.txt", temporaryDirectory.path());
         moveJob.setBypassCheck(true);
-        moveJob.runSynchronously();
+        (void) moveJob.runSynchronously();
 
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink), moveJob.exitInfo());
         CPPUNIT_ASSERT(std::filesystem::exists(filePath));
