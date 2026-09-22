@@ -105,11 +105,11 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     }
     _syncInfo.syncDbId = syncDbId_;
     _syncInfo.driveDbId = sync.driveDbId();
-    _syncInfo.localPath = sync.localPath();
-    _syncInfo.localPath.make_preferred();
+    _syncInfo.localPath = std::filesystem::weakly_canonical(sync.localPath());
+    (void) _syncInfo.localPath.make_preferred();
     _syncInfo.localNodeId = sync.localNodeId();
     _syncInfo.targetPath = sync.targetPath();
-    _syncInfo.targetPath.make_preferred();
+    (void) _syncInfo.targetPath.make_preferred();
 
     _cacheDirectory = std::make_shared<CacheDirectory>(_syncInfo.localPath);
 
