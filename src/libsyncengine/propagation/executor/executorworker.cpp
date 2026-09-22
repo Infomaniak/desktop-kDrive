@@ -603,7 +603,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             }
 
             try {
-                job = std::make_shared<CreateDirJob>(_syncPal->vfs(), _syncPal->driveDbId(), absoluteLocalFilePath,
+                job = std::make_shared<CreateDirJob>(_syncPal->driveDbId(), absoluteLocalFilePath,
                                                      newCorrespondingParentNode->id().value_or(""), syncOp->newName());
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in CreateDirJob::CreateDirJob for driveDbId="

@@ -1278,7 +1278,7 @@ namespace {
 ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const DriveDbId driveDbId, const NodeId &parentNodeId,
                               const CommString &dirName) {
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, dirName, parentNodeId, dirName);
+        job = std::make_shared<CreateDirJob>(driveDbId, dirName, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
@@ -1290,7 +1290,7 @@ ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const DriveDbI
 ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const UserDbId userDbId, const DriveId driveId,
                               const NodeId &parentNodeId, const SyncName &dirName) {
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, userDbId, driveId, parentNodeId, dirName);
+        job = std::make_shared<CreateDirJob>(userDbId, driveId, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
