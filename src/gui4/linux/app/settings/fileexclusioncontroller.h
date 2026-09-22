@@ -38,7 +38,7 @@ class FileExclusionController final : public QObject {
         Q_PROPERTY(bool saving READ saving NOTIFY changed)
         Q_PROPERTY(qint32 selectedCount READ selectedCount NOTIFY changed)
         Q_PROPERTY(qint32 userRuleCount READ userRuleCount NOTIFY changed)
-        Q_PROPERTY(int selectionCheckState READ selectionCheckState NOTIFY changed)
+        Q_PROPERTY(Qt::CheckState selectionCheckState READ selectionCheckState NOTIFY changed)
         Q_PROPERTY(QString errorTextId READ errorTextId NOTIFY changed)
 
     public:
@@ -51,7 +51,7 @@ class FileExclusionController final : public QObject {
         [[nodiscard]] bool saving() const { return _saving; }
         [[nodiscard]] qint32 selectedCount() const { return _userRules.selectedCount(); }
         [[nodiscard]] qint32 userRuleCount() const { return _userRules.count(); }
-        [[nodiscard]] int selectionCheckState() const;
+        [[nodiscard]] Qt::CheckState selectionCheckState() const;
         [[nodiscard]] QString errorTextId() const;
 
         Q_INVOKABLE void refresh();
