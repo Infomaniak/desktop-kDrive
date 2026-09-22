@@ -3176,8 +3176,8 @@ Accedi alla versione web per verificare lo stato del tuo kDrive oppure contatta 
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>La verifica del checksum non è andata a buon fine. Il file potrebbe essere danneggiato.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>La verifica del programma di installazione non è andata a buon fine. Il file potrebbe essere danneggiato.</translation>
     </message>
 </context>
 <context>

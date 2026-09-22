@@ -33,7 +33,7 @@ bool AbstractOsUpdater::verifyChecksum(const SyncPath &filepath, const std::stri
         return checksum;
     };
     if (const std::string error; !ChecksumVerifier::verifyFileChecksum(filepath, downloadUrl, fetcher)) {
-        outMessage = QObject::tr("Checksum verification failed. The file may be corrupted.");
+        outMessage = QObject::tr("Installer verification failed. The file may be corrupted.");
         return false;
     }
     return true;

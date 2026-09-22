@@ -3175,8 +3175,8 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>Tarkistussumman tarkistus epäonnistui. Tiedosto saattaa olla vioittunut.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>Asennusohjelman tarkistus epäonnistui. Tiedosto saattaa olla vioittunut.</translation>
     </message>
 </context>
 <context>
