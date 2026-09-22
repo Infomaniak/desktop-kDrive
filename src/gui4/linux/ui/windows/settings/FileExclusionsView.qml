@@ -83,12 +83,12 @@ ScrollView {
 
         Column {
             width: parent.width - 2 * IKSettings.pageMargin
-            visible: root.controller.errorText.length > 0
+            visible: root.controller.errorTextId.length > 0
             spacing: IKSpacing.s8
 
             Text {
                 width: parent.width
-                text: root.controller.errorText
+                text: root.controller.errorTextId.length > 0 ? qsTrId(root.controller.errorTextId) : ""
                 color: IKColors.statusStrongWarning
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
