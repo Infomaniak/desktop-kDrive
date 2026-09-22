@@ -69,6 +69,8 @@ const SyncPath remoteTestCiDirPath = "Common documents/Test kDrive/test_ci";
 
 void TestIntegration::setUp() {
     TestBase::start();
+    if (!testhelpers::isExtendedTest()) return;
+
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
@@ -134,6 +136,8 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
+    if (!testhelpers::isExtendedTest()) return;
+
     if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     _remoteSyncDir.deleteDirectory();
 
