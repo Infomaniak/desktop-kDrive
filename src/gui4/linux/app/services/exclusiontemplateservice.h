@@ -32,7 +32,12 @@ namespace KDC {
 
 class ServiceEventBus;
 
-/** Fresh server-confirmed exclusion-template snapshots and serialized full-list user mutations. */
+/**
+ * Fresh server-confirmed exclusion-template snapshots and serialized full-list user mutations.
+ *
+ * This QObject is thread-affine: callers and CommService callbacks execute on its Qt event-loop thread, so mutation
+ * queue state is serialized without locking.
+ */
 class ExclusionTemplateService final : public QObject {
         Q_OBJECT
 
