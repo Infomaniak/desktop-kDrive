@@ -405,7 +405,9 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
             return exitInfo;
         }
         bool bypassProgressComplete = false;
-        return handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
+        ExitInfo exitInfo = handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
+        job.reset();
+        return exitInfo;
     }
     return ExitCode::Ok;
 }

@@ -694,7 +694,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
     }
 
     PinState newPinState = downloadFailed ? PinState::OnlineOnly : PinState::AlwaysLocal;
-    VfsStatus newVfsStatus({.isHydrated = !downloadFailed, .isSyncing = isLocalItemInSyncWithDb(localPath)});
+    VfsStatus newVfsStatus({.isHydrated = !downloadFailed, .isSyncing = !isLocalItemInSyncWithDb(localPath)});
 
     if (const ExitInfo exitInfo = _vfs->setPinState(localPath, newPinState); !exitInfo) {
         LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(localPath) << L": " << exitInfo);
