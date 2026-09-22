@@ -28,6 +28,7 @@
 #include <QUrl>
 
 #include <cstdint>
+#include <unordered_set>
 
 namespace KDC {
 
@@ -77,6 +78,8 @@ class SettingsSyncActivationController final : public QObject {
         Q_INVOKABLE void activate(qint64 userDbId, qint64 accountId, qint64 driveId);
         Q_INVOKABLE [[nodiscard]] bool targets(qint64 userDbId, qint64 accountId, qint64 driveId) const;
         Q_INVOKABLE void cancelCurrentPage();
+        /// Dismisses the editor when its host window closes without abandoning an already submitted synchronization.
+        Q_INVOKABLE void dismissFromHostWindow();
         Q_INVOKABLE void validateCurrentPage();
         Q_INVOKABLE void requestCustomFolder();
         Q_INVOKABLE void notifyCustomFolderDialogClosed();
@@ -126,10 +129,13 @@ class SettingsSyncActivationController final : public QObject {
         QString _operationErrorId;
         Page _page{Page::DriveConfiguration};
         uint64_t _requestGeneration{0};
+        std::unordered_set<AvailableDriveKey> _reconciliationBlockedKeys;
         bool _visible{false};
         bool _preparing{false};
         bool _busy{false};
         bool _reconciliationPending{false};
+        bool _reconciliationForActivation{false};
+        bool _syncCreationPending{false};
 };
 
 } // namespace KDC
