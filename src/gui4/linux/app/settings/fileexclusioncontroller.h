@@ -28,8 +28,6 @@
 
 namespace KDC {
 
-class TranslationService;
-
 /** Presentation, validation, selection, and immediate-save actions for file-exclusion rules. */
 class FileExclusionController final : public QObject {
         Q_OBJECT
@@ -41,11 +39,10 @@ class FileExclusionController final : public QObject {
         Q_PROPERTY(qint32 selectedCount READ selectedCount NOTIFY changed)
         Q_PROPERTY(qint32 userRuleCount READ userRuleCount NOTIFY changed)
         Q_PROPERTY(int selectionCheckState READ selectionCheckState NOTIFY changed)
-        Q_PROPERTY(QString errorText READ errorText NOTIFY changed)
+        Q_PROPERTY(QString errorTextId READ errorTextId NOTIFY changed)
 
     public:
-        FileExclusionController(ExclusionTemplateService &service, const TranslationService &translationService,
-                                QObject *parent = nullptr);
+        explicit FileExclusionController(ExclusionTemplateService &service, QObject *parent = nullptr);
 
         [[nodiscard]] ExclusionRuleModel *defaultRules() { return &_defaultRules; }
         [[nodiscard]] ExclusionRuleModel *userRules() { return &_userRules; }
@@ -55,7 +52,7 @@ class FileExclusionController final : public QObject {
         [[nodiscard]] qint32 selectedCount() const { return _userRules.selectedCount(); }
         [[nodiscard]] qint32 userRuleCount() const { return _userRules.count(); }
         [[nodiscard]] int selectionCheckState() const;
-        [[nodiscard]] QString errorText() const;
+        [[nodiscard]] QString errorTextId() const;
 
         Q_INVOKABLE void refresh();
         Q_INVOKABLE void addRule(const QString &pattern, bool notificationEnabled);
