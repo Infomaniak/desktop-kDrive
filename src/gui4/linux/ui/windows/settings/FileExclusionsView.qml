@@ -64,7 +64,7 @@ ScrollView {
         }
     }
 
-    Component.onCompleted: controller.refresh()
+    Component.onCompleted: controller.ensureLoaded()
 
     Column {
         id: contentColumn
@@ -99,7 +99,7 @@ ScrollView {
                 visible: !root.controller.ready && !root.controller.loading
                 text: qsTrId("buttonRetry")
                 role: IKModalButton.Tonal
-                onClicked: root.controller.refresh()
+                onClicked: root.controller.ensureLoaded()
             }
         }
 
@@ -247,25 +247,29 @@ ScrollView {
 
             Rectangle {
                 width: parent.width
-                height: defaultRulesColumn.implicitHeight + 2 * IKSettings.groupPadding
+                height: defaultRulesColumn.implicitHeight
                 radius: IKRadius.r12
                 color: IKColors.settingsCardSurface
 
                 Column {
                     id: defaultRulesColumn
 
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.leftMargin: IKSettings.groupPadding
-                    anchors.rightMargin: IKSettings.groupPadding
+                    anchors.fill: parent
 
-                    Text {
+                    Item {
                         width: parent.width
+                        height: visible ? IKSettings.exclusionRowHeight : 0
                         visible: root.controller.defaultRules.count === 0
-                        text: qsTrId("noResultsFound")
-                        color: IKColors.textSecondary
-                        font.pixelSize: IKFonts.bodySize
+
+                        Text {
+                            anchors.fill: parent
+                            anchors.leftMargin: IKSettings.groupPadding
+                            anchors.rightMargin: IKSettings.groupPadding
+                            text: qsTrId("noResultsFound")
+                            color: IKColors.textSecondary
+                            font.pixelSize: IKFonts.bodySize
+                            verticalAlignment: Text.AlignVCenter
+                        }
                     }
 
                     Repeater {
@@ -277,6 +281,8 @@ ScrollView {
                             width: defaultRulesColumn.width
                             controller: root.controller
                             row: index
+                            lastRow: index === root.controller.defaultRules.count - 1
+                            contentInset: IKSettings.groupPadding
                         }
                     }
                 }
