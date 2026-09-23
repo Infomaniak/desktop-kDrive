@@ -35,7 +35,6 @@ IKShadowedWindow {
     property int selectedCategory: SettingsWindow.Category.General
 
     function selectGeneral() {
-        controller.users.deactivate();
         accountsPane.reset(accountsRootComponent);
         advancedPane.reset(advancedRootComponent);
         selectedCategory = SettingsWindow.Category.General;
@@ -48,7 +47,6 @@ IKShadowedWindow {
     }
 
     function selectAdvanced() {
-        controller.users.deactivate();
         accountsPane.reset(accountsRootComponent);
         advancedPane.reset(advancedRootComponent);
         selectedCategory = SettingsWindow.Category.Advanced;
@@ -67,8 +65,6 @@ IKShadowedWindow {
     onVisibleChanged: {
         if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
             controller.users.refresh();
-        } else if (!visible) {
-            controller.users.deactivate();
         }
     }
 

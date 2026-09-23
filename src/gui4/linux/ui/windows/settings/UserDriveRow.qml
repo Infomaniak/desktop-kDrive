@@ -55,7 +55,7 @@ Item {
             anchors.fill: parent
             anchors.margins: IKSettings.userDriveIconGlyphInset
             source: "qrc:/assets/onboarding/drive-icon-glyph.svg"
-            color: "white"
+            color: IKColors.settingsDriveGlyph
         }
     }
 
