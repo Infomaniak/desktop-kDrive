@@ -99,13 +99,13 @@ QHash<int, QByteArray> UserDrivesModel::roleNames() const {
 }
 
 void UserDrivesModel::rebuild() {
-    const auto entryLessThan = [](const Entry &lhs, const Entry &rhs) {
+    const auto entryLessThan = [](const DriveEntry &lhs, const DriveEntry &rhs) {
         return QString::compare(lhs.name, rhs.name, Qt::CaseInsensitive) < 0;
     };
 
     using DriveKey = std::pair<AccountId, DriveId>;
-    std::map<DriveKey, Entry> synchronizedByKey;
-    std::map<DriveKey, Entry> availableByKey;
+    std::map<DriveKey, DriveEntry> synchronizedByKey;
+    std::map<DriveKey, DriveEntry> availableByKey;
     std::map<DriveKey, DriveDbId> configuredDriveDbIds;
 
     for (const auto &context: _cache.driveContexts()) {
@@ -127,7 +127,7 @@ void UserDrivesModel::rebuild() {
         }
 
         const DriveKey key{context.accountInfo.accountId(), context.drive.driveId()};
-        const Entry entry{
+        const DriveEntry entry{
                 .name = QString::fromStdString(context.drive.name()),
                 .accountName = QString::fromStdString(context.accountInfo.name()),
                 .color = driveColor(context.drive.color()),
@@ -153,20 +153,20 @@ void UserDrivesModel::rebuild() {
             continue;
         }
 
-        (void) availableByKey.try_emplace(key, Entry{
+        (void) availableByKey.try_emplace(key, DriveEntry{
                                                        .name = QString::fromStdString(context.availableDrive.name()),
                                                        .accountName = availableDriveAccountName(context),
                                                        .color = driveColor(context.availableDrive.color()),
                                                });
     }
 
-    std::vector<Entry> synchronizedEntries;
+    std::vector<DriveEntry> synchronizedEntries;
     synchronizedEntries.reserve(synchronizedByKey.size());
     for (auto &entry: synchronizedByKey | std::views::values) {
         synchronizedEntries.push_back(std::move(entry));
     }
 
-    std::vector<Entry> availableEntries;
+    std::vector<DriveEntry> availableEntries;
     availableEntries.reserve(availableByKey.size());
     for (auto &entry: availableByKey | std::views::values) {
         availableEntries.push_back(std::move(entry));
