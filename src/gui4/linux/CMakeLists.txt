@@ -129,6 +129,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/settings/generalsettingscontroller.cpp
         app/settings/generalsettingscontroller.h
+        app/settings/advancedsettingscontroller.cpp
+        app/settings/advancedsettingscontroller.h
         app/settings/settingswindowcontroller.cpp
         app/settings/settingswindowcontroller.h
         app/systraycontroller.cpp
@@ -177,6 +179,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AdvancedSettingsView.qml
+        ui/windows/settings/DataManagementView.qml
         ui/windows/settings/GeneralSettingsView.qml
         ui/windows/settings/SettingsGroup.qml
         ui/windows/settings/SettingsInfoButton.qml
@@ -186,6 +189,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/SettingsNavigationRow.qml
         ui/windows/settings/SettingsRow.qml
         ui/windows/settings/SettingsWindow.qml
+        ui/windows/settings/TrackingConsentView.qml
         ui/chrome/IKShadowedWindow.qml
         ui/chrome/IKWindowControlButton.qml
         ui/chrome/IKWindowHeader.qml
@@ -275,6 +279,10 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/chevron-right.svg
         ui/assets/settings/general.svg
         ui/assets/settings/information.svg
+        ui/assets/settings/matomo-logo.svg
+        ui/assets/settings/matomo-logo-dark.svg
+        ui/assets/settings/sentry-logo.svg
+        ui/assets/settings/sentry-logo-dark.svg
         ui/assets/main/activities.svg
         ui/assets/main/activities/empty.svg
         ui/assets/main/activities/empty-dark.svg
