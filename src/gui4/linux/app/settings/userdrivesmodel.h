@@ -48,20 +48,20 @@ class UserDrivesModel final : public QAbstractListModel {
         [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
     private:
-        struct Entry {
+        struct DriveEntry {
                 QString name;
                 QString accountName;
                 QColor color;
                 bool synchronized{false};
 
-                friend bool operator==(const Entry &lhs, const Entry &rhs) = default;
+                friend bool operator==(const DriveEntry &lhs, const DriveEntry &rhs) = default;
         };
 
         void rebuild();
 
         const AppCache &_cache;
         UserDbId _userDbId{0};
-        std::vector<Entry> _entries;
+        std::vector<DriveEntry> _entries;
 };
 
 } // namespace KDC

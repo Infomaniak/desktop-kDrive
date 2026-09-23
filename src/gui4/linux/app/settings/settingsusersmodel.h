@@ -59,7 +59,7 @@ class SettingsUsersModel final : public QAbstractListModel {
         void countChanged();
 
     private:
-        struct Entry {
+        struct UserEntry {
                 UserDbId userDbId{0};
                 QString name;
                 QString email;
@@ -72,7 +72,7 @@ class SettingsUsersModel final : public QAbstractListModel {
 
         const AppCache &_cache;
         SettingsUserService &_settingsUserService;
-        std::vector<Entry> _entries;
+        std::vector<UserEntry> _entries;
 };
 
 } // namespace KDC
