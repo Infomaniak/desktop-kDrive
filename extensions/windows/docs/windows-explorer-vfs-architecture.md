@@ -278,6 +278,7 @@ deployed on the user machine and is not meant to be started manually.
 | --- | --- | --- |
 | `Install` | First installation and update | Removes the extension packages signed with another certificate, then provisions the bundle. |
 | `Uninstall` | Full uninstallation only | Removes every kDrive extension package, whatever the certificate it was signed with. |
+| `RestartExplorer` | Right after `Install` or `Uninstall` | Stops the Explorer process of the current session so that it unloads the packages that were just removed or replaced. |
 
 The two modes treat the sync roots differently, because placeholders must survive an update but
 have to disappear on an uninstallation:
@@ -291,6 +292,13 @@ have to disappear on an uninstallation:
 
 A silent uninstallation is the update path (the installer runs the previous `Uninstall.exe /S`),
 and it does not run the script at all: only an interactive uninstallation removes the extension.
+
+Explorer keeps the DLLs of the packages it loaded: the `RestartExplorer` mode stops the Explorer
+process of the current session right after the extension has been deployed or removed, so that it
+unloads them. Windows restarts the shell right away and the script relaunches it if that automatic
+restart is disabled; other sessions pick the change up when their user logs on. A stale Explorer
+being only cosmetic, every failure of this mode is logged as a warning and never fails the
+installation or the uninstallation.
 
 The bundle is **provisioned** (`Add-AppxProvisionedPackage -Online -SkipLicense`) rather than
 installed, so that every user of the computer gets the extension. A provisioned package is only

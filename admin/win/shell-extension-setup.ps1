@@ -44,6 +44,11 @@
     The sync roots are left attached to their package here, so that Windows tears them down along
     with the extension and removes the placeholders.
 
+    RestartExplorer mode, run right after the install or the uninstall mode:
+      - stops the Explorer process of the current session, so that it stops loading the extension
+        packages that were just removed or replaced. Windows restarts the shell right away; the
+        script relaunches it if that automatic restart is disabled.
+
 .NOTES
     The registry is always accessed through the 64 bit view, so that the script behaves the same
     whether it is started by a 32 bit or a 64 bit host process.
@@ -52,8 +57,9 @@
 [CmdletBinding()]
 param (
     # Install: deploy the extension shipped with the installer. Uninstall: remove every kDrive extension.
+    # RestartExplorer: stop the Explorer process so that it reloads the shell extension.
     [Parameter(Mandatory = $true)]
-    [ValidateSet("Install", "Uninstall")]
+    [ValidateSet("Install", "Uninstall", "RestartExplorer")]
     [string] $Mode,
 
     # Path of the .msixbundle to provision. Install mode only.
@@ -361,6 +367,52 @@ function Uninstall-Extension {
 }
 
 # -----------------------------------------------------------------------------
+# Explorer
+# -----------------------------------------------------------------------------
+
+# Stops the Explorer process of the current session, so that it stops loading the extension
+# packages that were just removed or replaced. Only the current session is touched: the other
+# users pick the change up when they log on. The shell is normally restarted by Windows right
+# away; it is relaunched here when that automatic restart is disabled. Every failure is logged
+# as a warning only: a stale Explorer is a cosmetic issue, it must not fail the installation.
+function Restart-ExplorerProcess {
+    param ([double] $RestartWaitSeconds = 10)
+
+    $sessionId = (Get-Process -Id $PID).SessionId
+    $explorerProcesses = @(Get-Process -Name explorer -ErrorAction SilentlyContinue |
+        Where-Object { $_.SessionId -eq $sessionId })
+
+    if ($explorerProcesses.Count -eq 0) {
+        Write-Log "Explorer is not running in the current session."
+        return
+    }
+
+    foreach ($explorerProcess in $explorerProcesses) {
+        try {
+            Stop-Process -Id $explorerProcess.Id -Force -ErrorAction Stop
+            Write-Log "Explorer process $($explorerProcess.Id) stopped."
+        }
+        catch {
+            Write-WarningLog "Unable to stop the Explorer process $($explorerProcess.Id): $($_.Exception.Message)"
+        }
+    }
+
+    # Windows restarts the shell automatically (AutoRestartShell), give it some time before
+    # relaunching it here.
+    $deadline = (Get-Date).AddSeconds($RestartWaitSeconds)
+    do {
+        Start-Sleep -Milliseconds 500
+        if (Get-Process -Name explorer -ErrorAction SilentlyContinue | Where-Object { $_.SessionId -eq $sessionId }) {
+            Write-Log "Explorer restarted."
+            return
+        }
+    } while ((Get-Date) -lt $deadline)
+
+    Write-WarningLog "Explorer was not restarted automatically, launching it again."
+    Start-Process -FilePath (Join-Path $env:WINDIR "explorer.exe")
+}
+
+# -----------------------------------------------------------------------------
 # Entry point
 # -----------------------------------------------------------------------------
 
@@ -369,8 +421,11 @@ Write-Log "Mode: $Mode. Package: $PackageName."
 if ($Mode -eq "Install") {
     Install-Extension
 }
-else {
+elseif ($Mode -eq "Uninstall") {
     Uninstall-Extension
+}
+else {
+    Restart-ExplorerProcess
 }
 
 if ($script:hasError) {

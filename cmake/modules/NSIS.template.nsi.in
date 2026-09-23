@@ -548,6 +548,10 @@ SectionEnd
 		; PowerShell have to be escaped.
 		!insertmacro UAC_AsUser_ExecShell "" "powershell.exe" `-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command "Add-AppxPackage -Path $\'$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}$\' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"` "" SW_HIDE
 
+		; Explorer keeps the DLLs of the packages removed above loaded: restart it so that it
+		; unloads them and loads the freshly deployed extension.
+		${PowerShellExecFileLogArgs} "$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME}" '-Mode RestartExplorer'
+
 		SetOutPath "$INSTDIR"
 	${MementoSectionEnd}
 !endif
@@ -811,6 +815,9 @@ Function un.UninstallFct
 		InitPluginsDir
 		File /oname=$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME} "${SHELLEXT_SETUP_SCRIPT}"
 		${PowerShellExecFileLogArgs} "$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME}" '-Mode Uninstall -PackageName "${VFS_PACKAGE_NAME}" -ProviderName "${APPLICATION_NAME}"'
+
+		; Explorer may keep the removed packages loaded: restart it so that they are unloaded.
+		${PowerShellExecFileLogArgs} "$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME}" '-Mode RestartExplorer'
 	${EndIf}
 	
 	;Remove all the Program Files.
