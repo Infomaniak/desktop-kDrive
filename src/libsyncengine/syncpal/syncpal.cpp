@@ -689,7 +689,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         vfs()->cancelHydrate(localPath, {ExitCode::BackError, ExitCause::NotFound});
         downloadSucceeded = false;
     } else if (!downloadJob->exitInfo() || downloadJob->isAborted() ||
-               downloadJob->exitInfo().cause() != ExitCause::OperationCanceled) {
+               downloadJob->exitInfo().cause() == ExitCause::OperationCanceled) {
         vfs()->cancelHydrate(localPath, downloadJob->exitInfo());
         downloadSucceeded = false;
     }
