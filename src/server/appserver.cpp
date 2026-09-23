@@ -17,6 +17,8 @@
  */
 
 #include "appserver.h"
+
+#include "utility/kdexception.h"
 #if defined(KD_LINUX)
 #include "qtlocalpeer.h"
 #include "runningprocessinfo_linux.h"
@@ -4085,6 +4087,9 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         // Create SyncPal
         try {
             syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfs, sync.dbId(), _theme->version());
+        } catch (const SyncPalInitException &e) {
+            LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId() << " : " << e.what());
+            return kdExceptionToExitInfo(e);
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return {ExitCode::DbError, ExitCause::Unknown};

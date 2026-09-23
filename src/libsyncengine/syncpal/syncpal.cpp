@@ -26,6 +26,7 @@
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "utility/kdexception.h"
 #if defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
@@ -108,7 +109,8 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     if (const auto ioError = IoHelper::getWeakCanonicalPath(sync.localPath(), _syncInfo.localPath); ioError != IoError::Success) {
         LOGW_SYNCPAL_WARN(_logger,
                           L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
-        throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
+        throw SyncPalInitException("Failed to get weak canonical path for localPath: " +
+                                   CommonUtility::ws2s(Utility::formatIoError(sync.localPath(), ioError)));
     }
     (void) _syncInfo.localPath.make_preferred();
     _syncInfo.localNodeId = sync.localNodeId();
