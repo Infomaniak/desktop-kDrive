@@ -23,7 +23,6 @@
 #include <QObject>
 
 #include <functional>
-#include <memory>
 #include <vector>
 
 namespace KDC {
@@ -31,9 +30,10 @@ namespace KDC {
 class ServiceEventBus;
 
 /**
- * Fresh server-confirmed exclusion-template snapshots and full-list user mutations.
+ * Server-confirmed exclusion-template snapshots and full-list user mutations.
  *
- * Each successful mutation publishes only the list read back from the server.
+ * Both snapshots are cached for the application lifetime after their first successful load. Each successful user
+ * mutation publishes only the list read back from the server.
  */
 class ExclusionTemplateService final : public QObject {
         Q_OBJECT
@@ -44,14 +44,14 @@ class ExclusionTemplateService final : public QObject {
 
         ExclusionTemplateService(const CommService &commService, ServiceEventBus &eventBus, QObject *parent = nullptr);
 
-        /** Returns true only while both snapshots belong to the latest successful refresh. */
+        /** Returns true while both server-confirmed snapshots are available. */
         [[nodiscard]] bool ready() const { return _defaultTemplatesLoaded && _userTemplatesLoaded; }
         [[nodiscard]] bool defaultTemplatesLoaded() const { return _defaultTemplatesLoaded; }
         [[nodiscard]] bool userTemplatesLoaded() const { return _userTemplatesLoaded; }
         [[nodiscard]] const std::vector<ExclusionTemplate> &defaultTemplates() const { return _defaultTemplates; }
         [[nodiscard]] const std::vector<ExclusionTemplate> &userTemplates() const { return _userTemplates; }
 
-        void refresh(const CompletionCallback &callback = {});
+        void ensureLoaded(const CompletionCallback &callback = {});
 
         /**
          * Applies a mutation by replacing the complete server-side user-template list.
@@ -65,21 +65,22 @@ class ExclusionTemplateService final : public QObject {
         void snapshotsChanged();
 
     private:
-        struct RefreshState;
-
-        void finishRefresh(const std::shared_ptr<RefreshState> &state);
+        void requestUserTemplates();
+        void handleGetDefaultTemplatesResult(const ExitInfo &result, const std::vector<ExclusionTemplate> &defaultTemplates);
+        void handleUserTemplatesLoadResult(const ExitInfo &result, const std::vector<ExclusionTemplate> &userTemplates);
+        void finishLoading(const ExitInfo &result);
         void handleSetUserTemplatesResult(const ExitInfo &result, const CompletionCallback &callback);
-        void handleGetUserTemplatesResult(const ExitInfo &result, const std::vector<ExclusionTemplate> &confirmedTemplates,
-                                          const CompletionCallback &callback);
+        void handleUserTemplatesReadbackResult(const ExitInfo &result, const std::vector<ExclusionTemplate> &confirmedTemplates,
+                                               const CompletionCallback &callback);
 
         const CommService &_commService;
         ServiceEventBus &_eventBus;
         std::vector<ExclusionTemplate> _defaultTemplates;
         std::vector<ExclusionTemplate> _userTemplates;
-        std::vector<CompletionCallback> _refreshCallbacks;
+        std::vector<CompletionCallback> _loadCallbacks;
         bool _defaultTemplatesLoaded{false};
         bool _userTemplatesLoaded{false};
-        bool _refreshing{false};
+        bool _loading{false};
 };
 
 } // namespace KDC
