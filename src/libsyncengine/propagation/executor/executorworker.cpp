@@ -1148,9 +1148,10 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
         // Conflict fixing job finished successfully
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
-        if (ExitInfo exitInfo = propagateChangeToDbAndTree(syncOp, job, newNode); !exitInfo) {
-            LOGW_WARN(_logger, L"Failed to propagate changes in DB or update tree for: "
-                                       << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
+        if (ExitInfo exitInfo = handleFinishedJob(job, syncOp, relativeDestLocalFilePath, ignored, bypassProgressComplete);
+            !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to handle finished job for: "
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
 
