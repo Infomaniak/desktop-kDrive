@@ -38,7 +38,6 @@ static const auto parametersMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersVersionChannel = "distributionChannel";
 static const auto parametersSentryEnabled = "sentryEnabled";
 static const auto parametersMatomoEnabled = "matomoEnabled";
-static const auto parametersAskBeforeDelete = "askBeforeDelete";
 
 void Parameters::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersLanguage, _language);
@@ -72,7 +71,6 @@ void Parameters::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersVersionChannel, _distributionChannel);
     CommonUtility::writeValueToStruct(dstruct, parametersSentryEnabled, _sentryEnabled);
     CommonUtility::writeValueToStruct(dstruct, parametersMatomoEnabled, _matomoEnabled);
-    CommonUtility::writeValueToStruct(dstruct, parametersAskBeforeDelete, _notifyBeforeDelete);
 };
 
 void Parameters::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
@@ -119,10 +117,6 @@ void Parameters::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
     CommonUtility::readValueFromStruct(dstruct, parametersVersionChannel, _distributionChannel);
     CommonUtility::readValueFromStruct(dstruct, parametersSentryEnabled, _sentryEnabled);
     CommonUtility::readValueFromStruct(dstruct, parametersMatomoEnabled, _matomoEnabled);
-
-    if (dstruct.contains(parametersAskBeforeDelete)) { // Not implemented in new clients yet
-        CommonUtility::readValueFromStruct(dstruct, parametersAskBeforeDelete, _notifyBeforeDelete);
-    }
 };
 
 } // namespace KDC

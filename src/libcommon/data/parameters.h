@@ -83,9 +83,6 @@ class Parameters {
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(const bool value) { _matomoEnabled = value; }
 
-        [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
-        void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
-
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
 
@@ -95,7 +92,7 @@ class Parameters {
                     parameters._notificationsDisabled >> parameters._useLog >> parameters._logLevel >> parameters._extendedLog >>
                     parameters._purgeOldLogs >> parameters._darkTheme >> parameters._dialogGeometry >>
                     parameters._maxAllowedCpu >> parameters._proxyConfig >> parameters._distributionChannel >>
-                    parameters._sentryEnabled >> parameters._matomoEnabled >> parameters._notifyBeforeDelete;
+                    parameters._sentryEnabled >> parameters._matomoEnabled;
             return in;
         }
 
@@ -104,7 +101,7 @@ class Parameters {
                 << parameters._notificationsDisabled << parameters._useLog << parameters._logLevel << parameters._extendedLog
                 << parameters._purgeOldLogs << parameters._darkTheme << parameters._dialogGeometry << parameters._maxAllowedCpu
                 << parameters._proxyConfig << parameters._distributionChannel << parameters._sentryEnabled
-                << parameters._matomoEnabled << parameters._notifyBeforeDelete;
+                << parameters._matomoEnabled;
             return out;
         }
         /////////////////////////////////////////////////////////
@@ -126,7 +123,6 @@ class Parameters {
         DistributionChannel _distributionChannel{DistributionChannel::Prod};
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
-        bool _notifyBeforeDelete{true};
 };
 
 } // namespace KDC

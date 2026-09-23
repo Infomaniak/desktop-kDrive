@@ -57,7 +57,6 @@ class ServerParameters : public Parameters {
                    darkTheme() == parameters.darkTheme() && dialogGeometry() == parameters.dialogGeometry() &&
                    maxAllowedCpu() == parameters.maxAllowedCpu() && distributionChannel() == parameters.distributionChannel() &&
                    sentryEnabled() == parameters.sentryEnabled() && matomoEnabled() == parameters.matomoEnabled() &&
-                   notifyBeforeDelete() == parameters.notifyBeforeDelete() &&
                    _updateFileAvailable == parameters._updateFileAvailable &&
                    _updateTargetVersion == parameters._updateTargetVersion &&
                    _updateTargetVersionString == parameters._updateTargetVersionString &&
