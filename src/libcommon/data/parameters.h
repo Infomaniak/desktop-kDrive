@@ -34,6 +34,9 @@ namespace KDC {
 
 class Parameters {
     public:
+        Parameters() = default;
+        virtual ~Parameters() = default;
+
         using DialogGeometry = QMap<QString, QByteArray>;
 
         inline void setLanguage(const Language language) { _language = language; }
@@ -65,7 +68,7 @@ class Parameters {
             _dialogGeometry[objectName] = saveGeometry;
         }
         inline void setDialogGeometry(const DialogGeometry &dialogGeometry) { _dialogGeometry = dialogGeometry; }
-        inline const QByteArray dialogGeometry(const QString &objectName) const { return _dialogGeometry[objectName]; }
+        inline QByteArray dialogGeometry(const QString &objectName) const { return _dialogGeometry[objectName]; }
         inline const DialogGeometry &dialogGeometry() const { return _dialogGeometry; }
 
         inline int maxAllowedCpu() const { return _maxAllowedCpu; }
@@ -82,41 +85,6 @@ class Parameters {
 
         [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
         void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
-
-        // // Do not compare server-internal attributes
-        // friend bool operator==(const Parameters &lhs, const Parameters &rhs) {
-        //     return lhs._language == rhs._language && lhs._monoIcons == rhs._monoIcons && lhs._autoStart == rhs._autoStart &&
-        //            lhs._moveToTrash == rhs._moveToTrash && lhs._notificationsDisabled == rhs._notificationsDisabled &&
-        //            lhs._useLog == rhs._useLog && lhs._logLevel == rhs._logLevel && lhs._extendedLog == rhs._extendedLog &&
-        //            lhs._purgeOldLogs == rhs._purgeOldLogs && lhs._darkTheme == rhs._darkTheme &&
-        //            lhs._dialogGeometry == rhs._dialogGeometry && lhs._maxAllowedCpu == rhs._maxAllowedCpu &&
-        //            lhs._proxyConfig == rhs._proxyConfig && lhs._distributionChannel == rhs._distributionChannel &&
-        //            lhs._sentryEnabled == rhs._sentryEnabled && lhs._matomoEnabled == rhs._matomoEnabled &&
-        //            lhs._notifyBeforeDelete == rhs._notifyBeforeDelete;
-        // }
-        //
-        // // Do not update server-internal attributes
-        // Parameters &operator=(const Parameters &other) {
-        //     _language = other._language;
-        //     _monoIcons = other._monoIcons;
-        //     _autoStart = other._autoStart;
-        //     _moveToTrash = other._moveToTrash;
-        //     _notificationsDisabled = other._notificationsDisabled;
-        //     _useLog = other._useLog;
-        //     _logLevel = other._logLevel;
-        //     _extendedLog = other._extendedLog;
-        //     _purgeOldLogs = other._purgeOldLogs;
-        //     _darkTheme = other._darkTheme;
-        //     _dialogGeometry = other._dialogGeometry;
-        //     _maxAllowedCpu = other._maxAllowedCpu;
-        //     _proxyConfig = other._proxyConfig;
-        //     _distributionChannel = other._distributionChannel;
-        //     _sentryEnabled = other._sentryEnabled;
-        //     _matomoEnabled = other._matomoEnabled;
-        //     _notifyBeforeDelete = other._notifyBeforeDelete;
-        //
-        //     return *this;
-        // }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);

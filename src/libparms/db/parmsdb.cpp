@@ -60,7 +60,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     for (const QByteArray &line: lines) {
         const QList<QByteArray> elts = line.split(';');
         if (elts.size() == 2) {
-            dialogGeometry.insert(QString(elts[0]), elts[1]);
+            (void) dialogGeometry.insert(QString(elts[0]), elts[1]);
         }
     }
     return dialogGeometry;
