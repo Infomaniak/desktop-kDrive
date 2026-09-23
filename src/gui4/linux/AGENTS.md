@@ -236,6 +236,9 @@
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
   category controllers and is the single source of Settings-window presentation requests.
+- `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors, and
+  Advanced external actions. Sentry mutations continue to flow through `SentryService`, including its
+  post-confirmation SDK update.
 - `ui/windows/settings/SettingsNavigation*.qml`: reusable Settings-local `StackView` navigation, dynamic page header,
   keyboard back action, and focus restoration. Category roots own their route components; the pane remains generic.
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
