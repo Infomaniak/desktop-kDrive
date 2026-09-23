@@ -22,17 +22,9 @@
 
 #include <QPointer>
 
-#include <optional>
 #include <utility>
 
 namespace KDC {
-
-struct ExclusionTemplateService::RefreshState {
-        std::optional<ExitInfo> defaultResult;
-        std::optional<ExitInfo> userResult;
-        std::vector<ExclusionTemplate> defaultTemplates;
-        std::vector<ExclusionTemplate> userTemplates;
-};
 
 ExclusionTemplateService::ExclusionTemplateService(const CommService &commService, ServiceEventBus &eventBus,
                                                    QObject *const parent) :
@@ -40,78 +32,80 @@ ExclusionTemplateService::ExclusionTemplateService(const CommService &commServic
     _commService(commService),
     _eventBus(eventBus) {}
 
-void ExclusionTemplateService::refresh(const CompletionCallback &callback) {
-    if (callback) {
-        _refreshCallbacks.push_back(callback);
-    }
-    if (_refreshing) {
+void ExclusionTemplateService::ensureLoaded(const CompletionCallback &callback) {
+    if (ready()) {
+        if (callback) {
+            callback({ExitCode::Ok});
+        }
         return;
     }
 
-    _refreshing = true;
-    _defaultTemplatesLoaded = false;
-    _userTemplatesLoaded = false;
-    emit snapshotsChanged();
+    if (callback) {
+        _loadCallbacks.push_back(callback);
+    }
+    if (_loading) {
+        return;
+    }
 
-    // Both lists are requested in parallel; the refresh completes once both answers have arrived.
-    const auto state = std::make_shared<RefreshState>();
-    const auto receiveList = [self = QPointer(this), state](const bool defaultTemplates, const ExitInfo &result,
-                                                            const std::vector<ExclusionTemplate> &templates) {
-        if (!self) {
-            return;
-        }
+    _loading = true;
 
-        if (defaultTemplates) {
-            state->defaultResult = result;
-            state->defaultTemplates = templates;
-        } else {
-            state->userResult = result;
-            state->userTemplates = templates;
-        }
-
-        if (state->defaultResult && state->userResult) {
-            self->finishRefresh(state);
-        }
-    };
+    if (_defaultTemplatesLoaded) {
+        requestUserTemplates();
+        return;
+    }
 
     constexpr bool defaultExclusionTemplates = true;
-    constexpr bool userExclusionTemplates = false;
-
-    _commService.requestExclTemplGetList(defaultExclusionTemplates,
-                                         [receiveList](const ExitInfo &result, const std::vector<ExclusionTemplate> &templates) {
-                                             receiveList(defaultExclusionTemplates, result, templates);
-                                         });
-    _commService.requestExclTemplGetList(userExclusionTemplates,
-                                         [receiveList](const ExitInfo &result, const std::vector<ExclusionTemplate> &templates) {
-                                             receiveList(userExclusionTemplates, result, templates);
-                                         });
+    _commService.requestExclTemplGetList(
+            defaultExclusionTemplates,
+            [self = QPointer(this)](const ExitInfo &result, const std::vector<ExclusionTemplate> &templates) {
+                if (self) {
+                    self->handleGetDefaultTemplatesResult(result, templates);
+                }
+            });
 }
 
-void ExclusionTemplateService::finishRefresh(const std::shared_ptr<RefreshState> &state) {
-    const ExitInfo &defaultResult = *state->defaultResult;
-    const ExitInfo &userResult = *state->userResult;
+void ExclusionTemplateService::requestUserTemplates() {
+    constexpr bool userExclusionTemplates = false; // true is for defaultExclusionTemplate
+    _commService.requestExclTemplGetList(
+            userExclusionTemplates,
+            [self = QPointer(this)](const ExitInfo &result, const std::vector<ExclusionTemplate> &templates) {
+                if (self) {
+                    self->handleUserTemplatesLoadResult(result, templates);
+                }
+            });
+}
 
-    if (defaultResult) {
-        _defaultTemplates = state->defaultTemplates;
-        _defaultTemplatesLoaded = true;
-    } else {
-        _eventBus.notifyGenericError(defaultResult, RequestNum::EXCLTEMPL_GETLIST);
+void ExclusionTemplateService::handleGetDefaultTemplatesResult(const ExitInfo &result,
+                                                               const std::vector<ExclusionTemplate> &defaultTemplates) {
+    if (!result) {
+        _eventBus.notifyGenericError(result, RequestNum::EXCLTEMPL_GETLIST);
+        finishLoading(result);
+        return;
     }
 
-    if (userResult) {
-        _userTemplates = state->userTemplates;
+    _defaultTemplates = defaultTemplates;
+    _defaultTemplatesLoaded = true;
+    requestUserTemplates();
+}
+
+void ExclusionTemplateService::handleUserTemplatesLoadResult(const ExitInfo &result,
+                                                             const std::vector<ExclusionTemplate> &userTemplates) {
+    if (result) {
+        _userTemplates = userTemplates;
         _userTemplatesLoaded = true;
     } else {
-        _eventBus.notifyGenericError(userResult, RequestNum::EXCLTEMPL_GETLIST);
+        _eventBus.notifyGenericError(result, RequestNum::EXCLTEMPL_GETLIST);
     }
 
-    // Detach the pending callbacks first: a snapshotsChanged handler may start a new refresh with its own callback.
-    const auto callbacks = std::exchange(_refreshCallbacks, {});
-    _refreshing = false;
+    finishLoading(result);
+}
+
+void ExclusionTemplateService::finishLoading(const ExitInfo &result) {
+    // Detach the pending callbacks first: a snapshotsChanged handler may start a new load with its own callback.
+    const auto callbacks = std::exchange(_loadCallbacks, {});
+    _loading = false;
     emit snapshotsChanged();
 
-    // Report the default-list failure first, otherwise the user-list result.
-    const ExitInfo result = defaultResult ? userResult : defaultResult;
     for (const auto &pendingCallback: callbacks) {
         pendingCallback(result);
     }
@@ -169,14 +163,14 @@ void ExclusionTemplateService::handleSetUserTemplatesResult(const ExitInfo &resu
             false, [self = QPointer(this), callback](const ExitInfo &readResult,
                                                      const std::vector<ExclusionTemplate> &confirmedTemplates) {
                 if (self) {
-                    self->handleGetUserTemplatesResult(readResult, confirmedTemplates, callback);
+                    self->handleUserTemplatesReadbackResult(readResult, confirmedTemplates, callback);
                 }
             });
 }
 
-void ExclusionTemplateService::handleGetUserTemplatesResult(const ExitInfo &result,
-                                                            const std::vector<ExclusionTemplate> &confirmedTemplates,
-                                                            const CompletionCallback &callback) {
+void ExclusionTemplateService::handleUserTemplatesReadbackResult(const ExitInfo &result,
+                                                                 const std::vector<ExclusionTemplate> &confirmedTemplates,
+                                                                 const CompletionCallback &callback) {
     if (!result) {
         _userTemplatesLoaded = false;
         _eventBus.notifyGenericError(result, RequestNum::EXCLTEMPL_GETLIST);
