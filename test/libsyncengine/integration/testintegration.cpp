@@ -69,7 +69,7 @@ const SyncPath remoteTestCiDirPath = "Common documents/Test kDrive/test_ci";
 
 void TestIntegration::setUp() {
     TestBase::start();
-    if (!testhelpers::isExtendedTest()) return;
+    if (!testhelpers::isExtendedTest(false)) return;
 
     _logger = Log::instance()->getLogger();
 
