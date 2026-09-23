@@ -197,23 +197,25 @@ void SentryService::reportFatalAndExit(const QString &title, const QString &mess
     reportFatalAndExit(title.toStdString(), message.toStdString());
 }
 
-void SentryService::setConsent(const bool enabled) const {
+void SentryService::setConsent(const bool enabled, const ConsentCallback &completionCallback) const {
     qCInfo(lcSentryService) << "Sentry consent update requested | enabled:" << enabled;
 
     const ParametersService::ParametersMutation mutation = [enabled](ParametersInfo &parametersInfo) {
         parametersInfo.setSentryEnabled(enabled);
     };
 
-    const ParametersService::UpdateCallback callback = [enabled](const ExitInfo &exitInfo) {
+    const ParametersService::UpdateCallback callback = [enabled, completionCallback](const ExitInfo &exitInfo) {
         if (!exitInfo) {
             qCWarning(lcSentryService) << "Sentry consent update failed; keeping confirmed store value | ExitInfo:"
                                        << QString::fromStdString(toString(exitInfo));
-            return;
+        } else {
+            qCInfo(lcSentryService) << "Sentry consent update confirmed by server | enabled:" << enabled;
         }
 
-        qCInfo(lcSentryService) << "Sentry consent update confirmed by server | enabled:" << enabled;
+        if (completionCallback) {
+            completionCallback(exitInfo);
+        }
     };
-
 
     _parametersService.updateParameters(mutation, callback);
 }
