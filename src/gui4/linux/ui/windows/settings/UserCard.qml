@@ -33,7 +33,9 @@ Rectangle {
     required property bool availableDrivesLoading
     required property bool availableDrivesFailed
     property bool expanded: true
-    readonly property color headerSurfaceColor: headerButton.down || headerButton.hovered ? IKColors.surfaceTertiary : IKColors.settingsCardSurface
+    readonly property color headerSurfaceColor: headerButton.down || headerButton.hovered
+                                                ? IKColors.surfaceTertiary
+                                                : IKColors.settingsCardSurface
 
     signal retryRequested
 
@@ -151,7 +153,7 @@ Rectangle {
 
             Item {
                 width: parent.width
-                height: visible ? IKSettings.userDriveRowHeight : 0
+                height: visible ? IKSettings.availableDriveFailureRowHeight : 0
                 visible: root.availableDrivesFailed && !root.availableDrivesLoading
 
                 Rectangle {
