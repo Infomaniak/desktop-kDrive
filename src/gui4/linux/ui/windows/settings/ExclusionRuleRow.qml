@@ -31,6 +31,8 @@ Item {
     required property bool notificationEnabled
     required property bool selected
     property bool editable: false
+    property bool lastRow: false
+    property real contentInset: 0
 
     signal notificationSaveStartedFromKeyboard(int row)
 
@@ -42,12 +44,24 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: IKRadius.r6
-        color: root.editable && root.selected ? IKColors.surfaceTertiary : "transparent"
+        radius: root.editable ? IKRadius.r6 : 0
+        bottomLeftRadius: root.editable ? IKRadius.r6 : (root.lastRow ? IKRadius.r12 : 0)
+        bottomRightRadius: bottomLeftRadius
+        color: {
+            if (root.editable && root.selected) {
+                return IKColors.surfaceTertiary
+            }
+            if (!root.editable && root.row % 2 !== 0) {
+                return IKColors.settingsAlternateRowSurface
+            }
+            return "transparent"
+        }
     }
 
     RowLayout {
         anchors.fill: parent
+        anchors.leftMargin: root.contentInset
+        anchors.rightMargin: root.contentInset
         spacing: IKSpacing.s8
 
         IKCheckBox {
@@ -58,16 +72,6 @@ Item {
             checkState: root.selected ? Qt.Checked : Qt.Unchecked
             Accessible.name: root.pattern
             onClicked: root.controller.setSelected(root.row, !root.selected)
-        }
-
-        Image {
-            Layout.preferredWidth: IKSettings.exclusionFileIconSize
-            Layout.preferredHeight: IKSettings.exclusionFileIconSize
-            source: ThemeMode.isDark ? "qrc:/assets/main/activities/file-dark.svg" : "qrc:/assets/main/activities/file.svg"
-            sourceSize.width: IKSettings.exclusionFileIconSize
-            sourceSize.height: IKSettings.exclusionFileIconSize
-            fillMode: Image.PreserveAspectFit
-            Accessible.ignored: true
         }
 
         Text {
