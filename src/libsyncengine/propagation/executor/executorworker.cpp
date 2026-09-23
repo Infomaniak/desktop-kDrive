@@ -637,9 +637,10 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
             } else {
                 vfsStatus.isSyncing = true;
                 vfsStatus.progress = 0;
-                if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+                if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus);
+                    !exitInfoForceStatus) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath)
-                                                                             << L": " << exitInfo);
+                                                                             << L": " << exitInfoForceStatus);
                 }
             }
 
@@ -904,9 +905,9 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
     } else {
         vfsStatus.isSyncing = true;
         vfsStatus.progress = 0;
-        if (ExitInfo exitInfo = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfo) {
+        if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfoForceStatus) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": "
-                                                                     << exitInfo);
+                                                                     << exitInfoForceStatus);
         }
     }
     return ExitCode::Ok;
