@@ -106,6 +106,7 @@ void UserDrivesModel::rebuild() {
     using DriveKey = std::pair<AccountId, DriveId>;
     std::map<DriveKey, DriveEntry> synchronizedByKey;
     std::map<DriveKey, DriveEntry> availableByKey;
+    // Retains the cache identity of the configured row selected for each backend drive identity, for duplicate diagnostics.
     std::map<DriveKey, DriveDbId> configuredDriveDbIds;
 
     for (const auto &context: _cache.driveContexts()) {
