@@ -31,6 +31,8 @@
 - Do not add links to `.md` files that are not versioned in git.
 - Use Swiss German orthography for German Linux v4 translations: write `ss` instead of `ß`.
 - Never launch a build unless explicitly asked by the user.
+- Treat the Linux v4 GUI and server as sharing one application lifecycle: the server cannot be replaced or upgraded
+  while the GUI remains open. Do not design frontend cache invalidation around a hot server-version replacement.
 - For the Activities PR stack, preparing a PR means isolating and staging its changes only. Leave commit, push, and PR
   creation to the user unless they explicitly ask Codex to publish them.
 - Treat native Wayland as the default Linux runtime on current Ubuntu/GNOME systems. XCB/XWayland is a compatibility
@@ -248,8 +250,10 @@
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
 - `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
   category controllers and is the single source of Settings-window presentation requests.
-- `app/services/exclusiontemplateservice.*`: owns confirmed default/user exclusion snapshots, parallel refresh, and a
-  serialized queue of full-list user replacements. A successful write is always followed by a readback before publish.
+- `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
+  `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
+  missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a
+  readback. Full-list user replacements must remain serialized through `FileExclusionController`.
 - `app/settings/fileexclusioncontroller.*`: QML-facing exclusion validation, selection, rollback, and immediate-save
   actions; `exclusionrulemodel.*` exposes only confirmed rules while keeping user selection local.
 - `app/settings/advancedsettingscontroller.*`: confirmed Matomo/Sentry consent presentation, page-scoped errors,
