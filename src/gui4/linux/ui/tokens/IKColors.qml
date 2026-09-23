@@ -228,6 +228,7 @@ QtObject {
     readonly property color syncConfigurationFolderIcon: textTertiary
     readonly property color syncConfigurationDisclosureIcon: textSecondary
     readonly property color settingsCardSurface: surfaceSecondary
+    readonly property color settingsAlternateRowSurface: surfacePrimary
     readonly property color settingsDivider: surfaceTertiary
     readonly property color settingsNavigationIcon: _p.grayNavigation
     readonly property color settingsSupportIconSurface: _p.kDrive600
