@@ -64,14 +64,6 @@ void SettingsUserService::refresh() const {
     }
 }
 
-void SettingsUserService::deactivate() const {
-    for (const auto &user: _appCache.users()) {
-        if (_userService.isLoadAvailableDrivesPending(user.dbId())) {
-            _userService.invalidateAvailableDrivesRequest(user.dbId());
-        }
-    }
-}
-
 void SettingsUserService::retryAvailableDrives(const qint64 userDbId) const {
     refreshAvailableDrives(static_cast<UserDbId>(userDbId));
 }
