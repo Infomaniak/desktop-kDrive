@@ -94,6 +94,10 @@
             <source>Imported</source> 
             <translation>Geïmporteerd</translation> 
         </message> 
+        <message id="activityInstructionGetWithTimeLabel"> 
+            <source>Imported %1</source> 
+            <translation>Geïmporteerd %1</translation> 
+        </message> 
         <message id="activityInstructionIgnoreLabel"> 
             <source>Ignored</source> 
             <translation>Genegeerd</translation> 
@@ -102,21 +106,41 @@
             <source>Moved</source> 
             <translation>Verplaatst</translation> 
         </message> 
+        <message id="activityInstructionMoveWithTimeLabel"> 
+            <source>Moved %1</source> 
+            <translation>Verplaatst %1</translation> 
+        </message> 
         <message id="activityInstructionPutLabel"> 
             <source>Added</source> 
             <translation>Toegevoegd</translation> 
+        </message> 
+        <message id="activityInstructionPutWithTimeLabel"> 
+            <source>Added %1</source> 
+            <translation>Toegevoegd %1</translation> 
         </message> 
         <message id="activityInstructionRemoveLabel"> 
             <source>Moved to trash</source> 
             <translation>Verplaatst naar prullenbak</translation> 
         </message> 
+        <message id="activityInstructionRemoveWithTimeLabel"> 
+            <source>Moved to the trash %1</source> 
+            <translation>In de prullenbak geplaatst %1</translation> 
+        </message> 
         <message id="activityInstructionRenameLabel"> 
             <source>Renamed</source> 
             <translation>Hernoemd</translation> 
         </message> 
+        <message id="activityInstructionRenameWithTimeLabel"> 
+            <source>Renamed %1</source> 
+            <translation>Hernoemd naar %1</translation> 
+        </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
             <translation>Gewijzigd</translation> 
+        </message> 
+        <message id="activityInstructionUpdateWithTimeLabel"> 
+            <source>Modified %1</source> 
+            <translation>Gewijzigd %1</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
