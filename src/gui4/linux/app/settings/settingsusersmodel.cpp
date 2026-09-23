@@ -89,18 +89,19 @@ void SettingsUsersModel::rebuild() {
         return lhs.dbId() < rhs.dbId();
     });
 
-    std::vector<Entry> entries;
+    std::vector<UserEntry> entries;
     entries.reserve(users.size());
     for (const auto &user: users) {
         const auto displayInfo = _cache.userDisplayInfo(user.dbId());
         if (!displayInfo.has_value()) {
             continue;
         }
-        entries.push_back(Entry{
+        entries.push_back(UserEntry{
                 .userDbId = displayInfo->dbId(),
                 .name = QString::fromStdString(displayInfo->name()),
                 .email = QString::fromStdString(displayInfo->email()),
-                .avatarSource = displayInfo->avatarSource(),
+                .avatarSource = displayInfo->avatarSource().isEmpty() ? QString::fromStdString(displayInfo->avatarUrl())
+                                                                      : displayInfo->avatarSource(),
                 .drivesModel = std::make_unique<UserDrivesModel>(_cache, user.dbId(), this),
         });
     }
@@ -115,7 +116,7 @@ void SettingsUsersModel::rebuild() {
 }
 
 void SettingsUsersModel::handleUserStateChanged(const UserDbId userDbId) {
-    const auto it = std::ranges::find_if(_entries, [userDbId](const Entry &entry) { return entry.userDbId == userDbId; });
+    const auto it = std::ranges::find_if(_entries, [userDbId](const UserEntry &entry) { return entry.userDbId == userDbId; });
     if (it == _entries.end()) {
         return;
     }
