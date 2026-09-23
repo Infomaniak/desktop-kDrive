@@ -401,12 +401,9 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         if (const ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to run create directory job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-            job.reset();
-            return handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
-        }
-
-        if (const ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
-            !exitInfo) {
+        } else if (const ExitInfo exitInfo =
+                           convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
+                   !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
