@@ -397,7 +397,13 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     if (job) job->setScope(Scope::Sync);
 
     if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
-        job->runSynchronously();
+        if (const ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to run create directory job for: "
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
+            job.reset();
+            return exitInfo;
+        }
+
         if (const ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
             !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
@@ -890,7 +896,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
         job->setAffectedFilePath(relativeLocalFilePath);
     }
 
-     // update vfs status
+    // update vfs status
     VfsStatus vfsStatus;
     if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
         LOGW_SYNCPAL_WARN(_logger,
