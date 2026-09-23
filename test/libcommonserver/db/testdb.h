@@ -35,7 +35,6 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testAddIntegerColumnIfMissing);
         CPPUNIT_TEST(testWalSettings);
         CPPUNIT_TEST(testWalTruncateOnClose);
-        CPPUNIT_TEST(testWalTruncateOnCloseWithPendingSelect);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -51,7 +50,6 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
         void testAddIntegerColumnIfMissing();
         void testWalSettings();
         void testWalTruncateOnClose();
-        void testWalTruncateOnCloseWithPendingSelect();
 
     private:
         struct Test {

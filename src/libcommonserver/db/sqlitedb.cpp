@@ -510,10 +510,6 @@ bool SqliteDb::walCheckpointTruncate() {
     if (!isOpened()) {
         return false;
     }
-    // A cached statement left mid-iteration keeps a read transaction open, which makes the checkpoint fail with SQLITE_LOCKED.
-    for (const auto &queryEntry: _queries) {
-        (void) queryResetAndClearBindings(queryEntry.first);
-    }
     auto nLog = 0;
     auto nCkpt = 0;
 
