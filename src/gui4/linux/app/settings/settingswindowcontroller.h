@@ -36,11 +36,11 @@ class UpdateStatusService;
 /** Process-long composition facade exposed to the independent Settings window. */
 class SettingsWindowController final : public QObject {
         Q_OBJECT
-        Q_PROPERTY(GeneralSettingsController *general READ general CONSTANT)
-        Q_PROPERTY(SettingsUserService *users READ users CONSTANT)
-        Q_PROPERTY(AdvancedSettingsController *advanced READ advanced CONSTANT)
-        Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusions CONSTANT)
-        Q_PROPERTY(NetworkSettingsController *network READ network CONSTANT)
+        Q_PROPERTY(GeneralSettingsController *general READ generalController CONSTANT)
+        Q_PROPERTY(SettingsUserService *users READ settingsUserService CONSTANT)
+        Q_PROPERTY(AdvancedSettingsController *advanced READ advancedController CONSTANT)
+        Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusionController CONSTANT)
+        Q_PROPERTY(NetworkSettingsController *network READ networkController CONSTANT)
 
     public:
         SettingsWindowController(SettingsUserService &settingsUserService, ParametersStore &parametersStore,
@@ -48,11 +48,11 @@ class SettingsWindowController final : public QObject {
                                  UpdateStatusService &updateStatusService, ExclusionTemplateService &exclusionTemplateService,
                                  SentryService &sentryService, const CommService &commService, QObject *parent = nullptr);
 
-        [[nodiscard]] GeneralSettingsController *general() { return &_general; }
-        [[nodiscard]] SettingsUserService *users() { return &_users; }
-        [[nodiscard]] AdvancedSettingsController *advanced() { return &_advanced; }
-        [[nodiscard]] FileExclusionController *fileExclusions() { return &_fileExclusions; }
-        [[nodiscard]] NetworkSettingsController *network() { return &_network; }
+        [[nodiscard]] GeneralSettingsController *generalController() { return &_generalController; }
+        [[nodiscard]] SettingsUserService *settingsUserService() { return &_settingsUserService; }
+        [[nodiscard]] AdvancedSettingsController *advancedController() { return &_advancedController; }
+        [[nodiscard]] FileExclusionController *fileExclusionController() { return &_fileExclusionController; }
+        [[nodiscard]] NetworkSettingsController *networkController() { return &_networkController; }
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
 
@@ -62,11 +62,11 @@ class SettingsWindowController final : public QObject {
         void openRequested();
 
     private:
-        GeneralSettingsController _general;
-        SettingsUserService &_users;
-        AdvancedSettingsController _advanced;
-        FileExclusionController _fileExclusions;
-        NetworkSettingsController _network;
+        GeneralSettingsController _generalController;
+        SettingsUserService &_settingsUserService;
+        AdvancedSettingsController _advancedController;
+        FileExclusionController _fileExclusionController;
+        NetworkSettingsController _networkController;
 };
 
 } // namespace KDC
