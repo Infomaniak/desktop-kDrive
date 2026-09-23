@@ -46,7 +46,6 @@ namespace KDC {
  */
 class ActivityListModel final : public QAbstractListModel {
         Q_OBJECT
-        Q_PROPERTY(QStringList timeTextSamples READ timeTextSamples NOTIFY translationChanged)
         Q_PROPERTY(QStringList sizeTextSamples READ sizeTextSamples NOTIFY translationChanged)
 
     public:
@@ -85,9 +84,8 @@ class ActivityListModel final : public QAbstractListModel {
             RowIdRole = Qt::UserRole + 1,
             NameRole,
             FileIconNameRole,
-            ActionTextRole,
+            SubtitleTextRole,
             FolderRole,
-            TimeTextRole,
             SizeTextRole,
             NodeTypeRole,
             StatusRole,
@@ -117,14 +115,7 @@ class ActivityListModel final : public QAbstractListModel {
         /** Returns the stable model row identifier for an activity. */
         [[nodiscard]] static QString activityRowId(GenericId localId);
 
-        /**
-         * Widest strings the time and size columns can ever render in the active locale.
-         *
-         * Both columns are fixed-width, so the view sizes them from these samples instead of a hard-coded constant that
-         * would truncate in the languages with the longest wordings. The values are the real per-tier maxima, not
-         * estimates. Notified when the application language changes.
-         */
-        [[nodiscard]] static QStringList timeTextSamples();
+        /** Widest strings the size column can render in the active locale. Notified when the application language changes. */
         [[nodiscard]] static QStringList sizeTextSamples();
 
         /** Widest advance width of @p texts rendered with @p font. */
@@ -146,6 +137,16 @@ class ActivityListModel final : public QAbstractListModel {
     private:
         using MatchScore = uint8_t;
 
+        enum class SubtitleKind : uint8_t {
+            TimeOnly,
+            Updated,
+            Removed,
+            Renamed,
+            Moved,
+            Imported,
+            Added,
+        };
+
         static constexpr MatchScore noMatchScore = 0;
         static constexpr MatchScore pathMatchScore = 1;
         static constexpr MatchScore remoteNodeIdMatchScore = 2;
@@ -157,10 +158,10 @@ class ActivityListModel final : public QAbstractListModel {
                 SyncDbId syncDbId{0};
                 QString name;
                 QString fileIconName;
-                QString actionText;
+                QString subtitleText;
                 QString folder;
-                QString timeText;
                 QString sizeText;
+                SubtitleKind subtitleKind{SubtitleKind::TimeOnly};
                 NodeType nodeType{NodeType::Unknown};
                 Status status{Status::Synchronized};
                 Source source{Source::Unknown};
@@ -187,6 +188,9 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
         [[nodiscard]] static AvailableActions availableActions(const Row &row);
+        [[nodiscard]] static SubtitleKind subtitleKind(const ActivityEntry &activity);
+        [[nodiscard]] static QString formatSubtitle(SubtitleKind kind, const QDateTime &timestampUtc,
+                                                    const QDateTime &nowUtc = QDateTime::currentDateTimeUtc());
         void finalizeProjection(std::vector<Row> &rows) const;
         void resetProjection();
         void scheduleProjectionReconciliation();
@@ -194,7 +198,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] bool removeStaleRows(const std::vector<Row> &nextRows);
         [[nodiscard]] bool applyProjectionRows(const std::vector<Row> &nextRows);
         [[nodiscard]] bool updateRow(qsizetype rowIndex, const Row &nextRow);
-        void refreshRelativeTimes();
+        void refreshSubtitles();
 
         const ActivityStore &_activityStore;
         const AppCache &_appCache;
@@ -203,7 +207,7 @@ class ActivityListModel final : public QAbstractListModel {
         Filter _filter{Filter::MyActivityOnly};
         FileIconResolver _fileIconResolver;
         QTimer _projectionRefreshTimer;
-        QTimer _relativeTimeTimer;
+        QTimer _subtitleRefreshTimer;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ActivityListModel::AvailableActions)
