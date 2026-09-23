@@ -29,7 +29,6 @@ Item {
     required property var rowModel
     required property real nameColumnWidth
     required property real folderColumnWidth
-    required property real timeColumnWidth
     required property real sizeColumnWidth
     required property real statusColumnWidth
     required property Item menuViewport
@@ -39,9 +38,8 @@ Item {
     readonly property string rowId: rowModel.rowId
     readonly property string name: rowModel.name
     readonly property string fileIconName: rowModel.fileIconName
-    readonly property string actionText: rowModel.actionText
+    readonly property string subtitleText: rowModel.subtitleText
     readonly property string folder: rowModel.folder
-    readonly property string timeText: rowModel.timeText
     readonly property string sizeText: rowModel.sizeText
     readonly property bool isDirectory: rowModel.isDirectory
     readonly property int source: rowModel.source
@@ -65,7 +63,7 @@ Item {
         optionsMenu.open();
     }
 
-    width: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
+    width: nameColumnWidth + folderColumnWidth + sizeColumnWidth + statusColumnWidth
     height: IKActivities.rowHeight
     onRowIdChanged: dismissOptionsMenu()
     onViewportOffsetChanged: dismissOptionsMenu()
@@ -90,7 +88,7 @@ Item {
                 anchors.right: parent.right
                 anchors.rightMargin: IKSpacing.s8
                 anchors.verticalCenter: parent.verticalCenter
-                height: root.actionText.length > 0 ? IKActivities.primaryTextLineHeight * 2 : IKActivities.primaryTextLineHeight
+                height: root.subtitleText.length > 0 ? IKActivities.primaryTextLineHeight * 2 : IKActivities.primaryTextLineHeight
                 spacing: IKSpacing.s4
 
                 ActivityFileIcon {
@@ -127,15 +125,26 @@ Item {
                     }
 
                     Text {
+                        id: subtitleLabel
+
                         width: parent.width
                         height: IKActivities.primaryTextLineHeight
-                        visible: root.actionText.length > 0
-                        text: root.actionText
+                        visible: root.subtitleText.length > 0
+                        text: root.subtitleText
                         color: IKColors.textSecondary
                         font.pixelSize: IKFonts.subheadlineSize
                         font.weight: IKFonts.regular
                         elide: Text.ElideRight
                         verticalAlignment: Text.AlignVCenter
+
+                        HoverHandler {
+                            id: subtitleHover
+                        }
+
+                        IKToolTip {
+                            showRequested: subtitleHover.hovered && subtitleLabel.truncated
+                            text: root.subtitleText
+                        }
                     }
                 }
             }
@@ -178,10 +187,6 @@ Item {
                     text: root.folder
                 }
             }
-        }
-        SecondaryCell {
-            width: root.timeColumnWidth
-            text: root.timeText
         }
         SecondaryCell {
             width: root.sizeColumnWidth

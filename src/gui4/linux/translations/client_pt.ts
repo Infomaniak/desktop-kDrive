@@ -94,6 +94,10 @@
             <source>Imported</source> 
             <translation>Importado</translation> 
         </message> 
+        <message id="activityInstructionGetWithTimeLabel"> 
+            <source>Imported %1</source> 
+            <translation>Importado %1</translation> 
+        </message> 
         <message id="activityInstructionIgnoreLabel"> 
             <source>Ignored</source> 
             <translation>Ignorado</translation> 
@@ -102,21 +106,41 @@
             <source>Moved</source> 
             <translation>Movido</translation> 
         </message> 
+        <message id="activityInstructionMoveWithTimeLabel"> 
+            <source>Moved %1</source> 
+            <translation>Deslocado %1</translation> 
+        </message> 
         <message id="activityInstructionPutLabel"> 
             <source>Added</source> 
             <translation>Adicionado</translation> 
+        </message> 
+        <message id="activityInstructionPutWithTimeLabel"> 
+            <source>Added %1</source> 
+            <translation>Adicionado %1</translation> 
         </message> 
         <message id="activityInstructionRemoveLabel"> 
             <source>Moved to trash</source> 
             <translation>Movido para o lixo</translation> 
         </message> 
+        <message id="activityInstructionRemoveWithTimeLabel"> 
+            <source>Moved to the trash %1</source> 
+            <translation>Colocado na lixeira %1</translation> 
+        </message> 
         <message id="activityInstructionRenameLabel"> 
             <source>Renamed</source> 
             <translation>Renomeado</translation> 
         </message> 
+        <message id="activityInstructionRenameWithTimeLabel"> 
+            <source>Renamed %1</source> 
+            <translation>Renomeado %1</translation> 
+        </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
             <translation>Modificado</translation> 
+        </message> 
+        <message id="activityInstructionUpdateWithTimeLabel"> 
+            <source>Modified %1</source> 
+            <translation>Alterado %1</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 
