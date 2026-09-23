@@ -773,6 +773,8 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
+
+
         job = std::make_shared<DownloadJob>(
                 vfs(), _cacheDirectory, DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize},
                 DownloadJob::DateTimePolicy::IgnoreDateTime);
@@ -840,9 +842,7 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
         if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
             if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
                 itJob->second->abort();
-                (void) _directDownloadJobsMap.erase(itJob);
             }
-            (void) _syncPathToDownloadJobMap.erase(itId);
         }
         if (_folderHydrationInProgress.contains(filePath)) {
             _vfs->cancelHydrate(filePath);
@@ -863,8 +863,6 @@ ExitCode SyncPal::cancelAllDlDirectJobs() {
         _vfs->cancelHydrate(directDownloadJobsMapElt.second->localPath(), ExitCode::SyncPaused);
     }
 
-    _directDownloadJobsMap.clear();
-    _syncPathToDownloadJobMap.clear();
     for (const auto &[parentFolderPath, _]: _folderHydrationInProgress) {
         _vfs->cancelHydrate(parentFolderPath);
     }

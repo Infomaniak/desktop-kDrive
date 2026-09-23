@@ -397,11 +397,12 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
     if (job) job->setScope(Scope::Sync);
 
     if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
+        bool bypassProgressComplete = false;
         if (const ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to run create directory job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             job.reset();
-            return exitInfo;
+            return handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
         }
 
         if (const ExitInfo exitInfo = convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
@@ -410,7 +411,6 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
             return exitInfo;
         }
-        bool bypassProgressComplete = false;
         ExitInfo exitInfo = handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
         job.reset();
         return exitInfo;

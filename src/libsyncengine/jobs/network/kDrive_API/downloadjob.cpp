@@ -154,8 +154,8 @@ ExitInfo DownloadJob::runJob() noexcept {
         LOGW_DEBUG(_logger, L"resolveDownloadNeed: proceeding with download - " << exitInfo);
     }
 
-    if (_vfs) {
-        // Update size on file system
+    if (_vfs && !_isHydrated) {
+        // Update placeholder size on file system before hydration
         FileStat filestat;
         IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(_fileDownloadInfo.localpath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
