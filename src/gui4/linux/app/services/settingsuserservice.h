@@ -50,7 +50,6 @@ class SettingsUserService final : public QObject {
         [[nodiscard]] bool availableDrivesFailed(UserDbId userDbId) const;
 
         Q_INVOKABLE void refresh() const;
-        Q_INVOKABLE void deactivate() const;
         Q_INVOKABLE void retryAvailableDrives(qint64 userDbId) const;
 
     signals:
