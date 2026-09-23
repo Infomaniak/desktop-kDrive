@@ -4043,8 +4043,15 @@ bool AppServer::startClient() {
             return false;
         }
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
-                                                             << (arguments.size() >= 1 ? arguments[0].toStdWString() : L""));
+#if defined(__APPLE__)
+        if (synthesisAsked()) {
+            arguments << "--synthesis";
+        } else if (settingsAsked()) {
+            arguments << "--settings";
+        }
+#endif
+
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
 
         _clientProcess = new QProcess(this);
         _clientProcess->setProgram(pathToExecutable);

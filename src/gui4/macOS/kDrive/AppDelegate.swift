@@ -70,7 +70,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         manyDeletesModalPresenter = ManyDeletesModalPresenter()
 
         observeAppPresentation()
-        openMainWindow()
+        handleLaunchArguments()
+    }
+
+    private func handleLaunchArguments() {
+        let arguments = ProcessInfo.processInfo.arguments
+
+        if arguments.contains("--synthesis") {
+            openMainWindow()
+        } else if arguments.contains("--settings") {
+            openPreferencesWindow()
+        } else {
+            #if DEBUG
+            openMainWindow()
+            #endif
+        }
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
@@ -162,9 +176,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag {
-            openMainWindow()
-        }
+        bringAllWindowsToFront()
         return true
     }
 
