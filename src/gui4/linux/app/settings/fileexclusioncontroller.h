@@ -54,7 +54,7 @@ class FileExclusionController final : public QObject {
         [[nodiscard]] Qt::CheckState selectionCheckState() const;
         [[nodiscard]] QString errorTextId() const;
 
-        Q_INVOKABLE void refresh();
+        Q_INVOKABLE void ensureLoaded();
         Q_INVOKABLE void addRule(const QString &pattern, bool notificationEnabled);
         Q_INVOKABLE void setRuleNotification(qint32 row, bool notificationEnabled);
         Q_INVOKABLE void setSelected(qint32 row, bool selected);
