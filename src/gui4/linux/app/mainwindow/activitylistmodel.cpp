@@ -135,56 +135,7 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
     return ActivityListModel::Source::Unknown;
 }
 
-QString activityActionText(const ActivityEntry &activity) {
-    switch (activity.instruction) {
-        using enum SyncFileInstruction;
-
-        case UpdateMetadata: // We shouldn't receive an UpdateMetadata on linux, reserved instruction for macOS and Windows for
-                             // the litesync. Here for possible future litesync linux implem.
-        case Update:
-            return qtTrId("activityInstructionUpdateLabel");
-        case Remove:
-            return qtTrId("activityInstructionRemoveLabel");
-        case Move: {
-            if (!activity.path.empty() && !activity.newPath.empty() &&
-                normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
-                return qtTrId("activityInstructionRenameLabel");
-            }
-            return qtTrId("activityInstructionMoveLabel");
-        }
-        case Get:
-            return qtTrId("activityInstructionGetLabel");
-        case Put:
-            return qtTrId("activityInstructionPutLabel");
-        case Ignore:
-            return qtTrId("activityInstructionIgnoreLabel");
-        case None:
-        case EnumEnd:
-            return {};
-    }
-    return {};
-}
-
 } // namespace
-
-QStringList ActivityListModel::timeTextSamples() {
-    // Upper bound of every branch of formatRelativeTime(): the last value before each threshold rolls over.
-    QStringList samples{
-            qtTrId("labelJustNow"),
-            formatAgo(minute - second, second, "labelShortSecond"),
-            formatAgo(hour - minute, minute, "labelShortMinute"),
-            formatAgo(day - hour, hour, "labelShortHour"),
-            formatAgo(relativeDateThreshold - day, day, "labelShortDay"),
-    };
-
-    // Past the relative threshold the cell shows a short date, whose width varies by month in locales that abbreviate
-    // it, so every month is a candidate. Day 28 exists in all of them and is two digits wide.
-    for (uint8_t month = 1; month <= 12; ++month) {
-        const QLocale locale;
-        samples << locale.toString(QDate{2026, month, 28}, QLocale::ShortFormat);
-    }
-    return samples;
-}
 
 QStringList ActivityListModel::sizeTextSamples() {
     // Widest value of each unit tier, capped at terabytes: drive quotas make larger files unreachable, and the Windows
@@ -233,9 +184,9 @@ ActivityListModel::ActivityListModel(const ActivityStore &activityStore, const A
     _projectionRefreshTimer.setSingleShot(true);
     (void) connect(&_projectionRefreshTimer, &QTimer::timeout, this, &ActivityListModel::reconcileProjection);
 
-    _relativeTimeTimer.setInterval(relativeTimeRefreshInterval);
-    (void) connect(&_relativeTimeTimer, &QTimer::timeout, this, &ActivityListModel::refreshRelativeTimes);
-    _relativeTimeTimer.start();
+    _subtitleRefreshTimer.setInterval(relativeTimeRefreshInterval);
+    (void) connect(&_subtitleRefreshTimer, &QTimer::timeout, this, &ActivityListModel::refreshSubtitles);
+    _subtitleRefreshTimer.start();
     resetProjection();
 }
 
@@ -257,12 +208,10 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return row.name;
         case FileIconNameRole:
             return row.fileIconName;
-        case ActionTextRole:
-            return row.actionText;
+        case SubtitleTextRole:
+            return row.subtitleText;
         case FolderRole:
             return row.folder;
-        case TimeTextRole:
-            return row.timeText;
         case SizeTextRole:
             return row.sizeText;
         case NodeTypeRole:
@@ -293,9 +242,8 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {RowIdRole, "rowId"},
             {NameRole, "name"},
             {FileIconNameRole, "fileIconName"},
-            {ActionTextRole, "actionText"},
+            {SubtitleTextRole, "subtitleText"},
             {FolderRole, "folder"},
-            {TimeTextRole, "timeText"},
             {SizeTextRole, "sizeText"},
             {NodeTypeRole, "nodeType"},
             {StatusRole, "status"},
@@ -392,9 +340,9 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.syncDbId = syncDbId;
     row.name = itemName(relativePath);
     row.fileIconName = _fileIconResolver.iconName(row.name, activity.nodeType);
-    row.actionText = activityActionText(activity);
+    row.subtitleKind = subtitleKind(activity);
+    row.subtitleText = formatSubtitle(row.subtitleKind, activity.receivedAtUtc);
     row.folder = parentFolder(relativePath);
-    row.timeText = formatRelativeTime(activity.receivedAtUtc);
     row.sizeText = formatSize(activity.nodeType, activity.size);
     row.nodeType = activity.nodeType;
     row.status = status;
@@ -422,7 +370,7 @@ ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, 
     row.name = itemName(relativePath);
     row.fileIconName = _fileIconResolver.iconName(row.name, error.nodeType());
     row.folder = parentFolder(relativePath);
-    row.timeText = formatRelativeTime(timestampUtc);
+    row.subtitleText = formatSubtitle(row.subtitleKind, timestampUtc);
     row.nodeType = error.nodeType();
     row.status = Status::Failed;
     row.timestampUtc = timestampUtc;
@@ -461,6 +409,58 @@ ActivityListModel::AvailableActions ActivityListModel::availableActions(const Ro
         actions |= FixErrorsAction;
     }
     return actions;
+}
+
+ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEntry &activity) {
+    switch (activity.instruction) {
+        using enum SyncFileInstruction;
+
+        case UpdateMetadata: // Reserved for possible future Linux Lite Sync support.
+        case Update:
+            return SubtitleKind::Updated;
+        case Remove:
+            return SubtitleKind::Removed;
+        case Move:
+            if (!activity.path.empty() && !activity.newPath.empty() &&
+                normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
+                return SubtitleKind::Renamed;
+            }
+            return SubtitleKind::Moved;
+        case Get:
+            return SubtitleKind::Imported;
+        case Put:
+            return SubtitleKind::Added;
+        case Ignore:
+        case None:
+        case EnumEnd:
+            return SubtitleKind::TimeOnly;
+    }
+    return SubtitleKind::TimeOnly;
+}
+
+QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTime &timestampUtc, const QDateTime &nowUtc) {
+    const QString relativeTime = formatRelativeTime(timestampUtc, nowUtc);
+    if (relativeTime.isEmpty()) {
+        return {};
+    }
+
+    switch (kind) {
+        case SubtitleKind::Updated:
+            return qtTrId("activityInstructionUpdateWithTimeLabel").arg(relativeTime);
+        case SubtitleKind::Removed:
+            return qtTrId("activityInstructionRemoveWithTimeLabel").arg(relativeTime);
+        case SubtitleKind::Renamed:
+            return qtTrId("activityInstructionRenameWithTimeLabel").arg(relativeTime);
+        case SubtitleKind::Moved:
+            return qtTrId("activityInstructionMoveWithTimeLabel").arg(relativeTime);
+        case SubtitleKind::Imported:
+            return qtTrId("activityInstructionGetWithTimeLabel").arg(relativeTime);
+        case SubtitleKind::Added:
+            return qtTrId("activityInstructionPutWithTimeLabel").arg(relativeTime);
+        case SubtitleKind::TimeOnly:
+            return relativeTime;
+    }
+    return relativeTime;
 }
 
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
@@ -626,9 +626,8 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
     };
     addRoleIf(row.name != nextRow.name, NameRole);
     addRoleIf(row.fileIconName != nextRow.fileIconName, FileIconNameRole);
-    addRoleIf(row.actionText != nextRow.actionText, ActionTextRole);
+    addRoleIf(row.subtitleText != nextRow.subtitleText, SubtitleTextRole);
     addRoleIf(row.folder != nextRow.folder, FolderRole);
-    addRoleIf(row.timeText != nextRow.timeText, TimeTextRole);
     addRoleIf(row.sizeText != nextRow.sizeText, SizeTextRole);
     addRoleIf(row.nodeType != nextRow.nodeType, NodeTypeRole);
     addRoleIf(row.nodeType != nextRow.nodeType, IsDirectoryRole);
@@ -647,19 +646,19 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
     return true;
 }
 
-void ActivityListModel::refreshRelativeTimes() {
+void ActivityListModel::refreshSubtitles() {
     if (_rows.empty()) {
         return;
     }
     const QDateTime nowUtc = QDateTime::currentDateTimeUtc();
     for (qsizetype rowIndex = 0; rowIndex < static_cast<qsizetype>(_rows.size()); ++rowIndex) {
         auto &row = _rows[static_cast<std::size_t>(rowIndex)];
-        const QString nextTimeText = formatRelativeTime(row.timestampUtc, nowUtc);
-        if (row.timeText == nextTimeText) {
+        const QString nextSubtitleText = formatSubtitle(row.subtitleKind, row.timestampUtc, nowUtc);
+        if (row.subtitleText == nextSubtitleText) {
             continue;
         }
-        row.timeText = nextTimeText;
-        emit dataChanged(index(rowIndex, 0), index(rowIndex, 0), {TimeTextRole});
+        row.subtitleText = nextSubtitleText;
+        emit dataChanged(index(rowIndex, 0), index(rowIndex, 0), {SubtitleTextRole});
     }
 }
 
