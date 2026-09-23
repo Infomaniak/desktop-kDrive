@@ -27,10 +27,10 @@ namespace KDC {
 using namespace testcommhelpers;
 
 namespace {
-Parameters getExpectedParametersInfo() {
+ServerParameters getExpectedParameters() {
     const ProxyConfig proxyConfig(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
 
-    Parameters parametersInfo;
+    ServerParameters parametersInfo;
     parametersInfo.setLanguage(Language::Default);
     parametersInfo.setMonoIcons(false);
     parametersInfo.setAutoStart(true);
@@ -52,17 +52,17 @@ Parameters getExpectedParametersInfo() {
     return parametersInfo;
 };
 
-Poco::JSON::Object createParametersInfoObject() {
-    Poco::JSON::Object parametersInfoObj;
-    (void) parametersInfoObj.set("language", toInt(Language::Default));
-    (void) parametersInfoObj.set("monoIcons", false);
-    (void) parametersInfoObj.set("autoStart", true);
-    (void) parametersInfoObj.set("moveToTrash", true);
-    (void) parametersInfoObj.set("notificationsDisabled", toInt(NotificationsDisabled::Never));
-    (void) parametersInfoObj.set("useLog", true);
-    (void) parametersInfoObj.set("logLevel", toInt(LogLevel::Debug));
-    (void) parametersInfoObj.set("extendedLog", true);
-    (void) parametersInfoObj.set("purgeOldLogs", true);
+Poco::JSON::Object createParametersObject() {
+    Poco::JSON::Object parametersObj;
+    (void) parametersObj.set("language", toInt(Language::Default));
+    (void) parametersObj.set("monoIcons", false);
+    (void) parametersObj.set("autoStart", true);
+    (void) parametersObj.set("moveToTrash", true);
+    (void) parametersObj.set("notificationsDisabled", toInt(NotificationsDisabled::Never));
+    (void) parametersObj.set("useLog", true);
+    (void) parametersObj.set("logLevel", toInt(LogLevel::Debug));
+    (void) parametersObj.set("extendedLog", true);
+    (void) parametersObj.set("purgeOldLogs", true);
 
     Poco::JSON::Object proxyConfigObj;
     (void) proxyConfigObj.set("type", toInt(ProxyType::HTTP));
@@ -72,26 +72,26 @@ Poco::JSON::Object createParametersInfoObject() {
     (void) proxyConfigObj.set("user", toBase64(Str("john.doe")));
     (void) proxyConfigObj.set("pwd", toBase64(Str("1234")));
 
-    (void) parametersInfoObj.set("proxyConfigInfo", proxyConfigObj);
+    (void) parametersObj.set("proxyConfigInfo", proxyConfigObj);
 #ifdef KD_MACOS
-    (void) parametersInfoObj.set("darkTheme", true);
+    (void) parametersObj.set("darkTheme", true);
 #endif
 
     Poco::JSON::Object dialogGeometryObj;
     (void) dialogGeometryObj.set("preferencesWindow", toBase64(Str("blob1234")));
     (void) dialogGeometryObj.set("drivePreferencesPanel", toBase64(Str("blob4567")));
 
-    (void) parametersInfoObj.set("dialogGeometry", dialogGeometryObj);
-    (void) parametersInfoObj.set("maxAllowedCpu", 50);
-    (void) parametersInfoObj.set("distributionChannel", toInt(DistributionChannel::Prod));
-    (void) parametersInfoObj.set("sentryEnabled", true);
-    (void) parametersInfoObj.set("matomoEnabled", true);
+    (void) parametersObj.set("dialogGeometry", dialogGeometryObj);
+    (void) parametersObj.set("maxAllowedCpu", 50);
+    (void) parametersObj.set("distributionChannel", toInt(DistributionChannel::Prod));
+    (void) parametersObj.set("sentryEnabled", true);
+    (void) parametersObj.set("matomoEnabled", true);
 
-    return parametersInfoObj;
+    return parametersObj;
 };
 } // namespace
 
-void TestGuiCommChannel::testParametersInfoJob() {
+void TestGuiCommChannel::testParametersJob() {
     Poco::JSON::Object queryObj;
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     (void) queryObj.set("id", 1);
@@ -109,7 +109,7 @@ void TestGuiCommChannel::testParametersInfoJob() {
     (void) answerObj.set("id", 1);
 
     Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("parametersInfo", createParametersInfoObject());
+    (void) paramsObj.set("parametersInfo", createParametersObject());
     (void) answerObj.set("params", paramsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
@@ -122,7 +122,7 @@ void TestGuiCommChannel::testParametersInfoJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersInfoJob = std::dynamic_pointer_cast<ParametersInfoJob>(job);
         CPPUNIT_ASSERT(parametersInfoJob);
-        parametersInfoJob->_parametersInfo = getExpectedParametersInfo();
+        parametersInfoJob->_parameters = getExpectedParameters();
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
@@ -140,7 +140,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
 #endif
     (void) queryObj.set("num", toInt(RequestNum::PARAMETERS_UPDATE));
     Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("parametersInfo", createParametersInfoObject());
+    (void) queryParamsObj.set("parametersInfo", createParametersObject());
     (void) queryObj.set("params", queryParamsObj);
 
     const auto queryStr = stringifyQueryObj(queryObj);
@@ -164,8 +164,8 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
-        Parameters res = getExpectedParametersInfo();
-        CPPUNIT_ASSERT(res == parametersUpdateJob->_parametersInfo);
+        auto res = getExpectedParameters();
+        CPPUNIT_ASSERT(res == parametersUpdateJob->_parameters);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

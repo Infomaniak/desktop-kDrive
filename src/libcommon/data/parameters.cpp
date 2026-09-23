@@ -20,11 +20,7 @@
 
 #include "utility/utility.h"
 
-#define UPLOAD_SESSION_PARALLEL_THREADS 3
-
 namespace KDC {
-
-int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
 
 static const auto parametersLanguage = "language";
 static const auto parametersMonoIcons = "monoIcons";
@@ -43,10 +39,6 @@ static const auto parametersVersionChannel = "distributionChannel";
 static const auto parametersSentryEnabled = "sentryEnabled";
 static const auto parametersMatomoEnabled = "matomoEnabled";
 static const auto parametersAskBeforeDelete = "askBeforeDelete";
-
-Parameters::Parameters() {
-    _uploadSessionParallelJobs = Parameters::_uploadSessionParallelJobsDefault;
-}
 
 void Parameters::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersLanguage, _language);
@@ -114,7 +106,7 @@ void Parameters::fromDynamicStruct(const Poco::DynamicStruct &dstruct) {
                         CommString commStr;
                         CommonUtility::convertFromBase64Str(blob64Str, commStr);
                         std::string str = CommonUtility::commString2Str(commStr);
-                        dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
+                        (void) dialogGeometry.insert(QString::fromStdString(key), QByteArray(str.data()));
                     }
                     return dialogGeometry;
                 };

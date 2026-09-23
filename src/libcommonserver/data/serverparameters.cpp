@@ -16,28 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "data/serverparameters.h"
 
-#include "server/comm/guijobs/abstractguijob.h"
-
+#define UPLOAD_SESSION_PARALLEL_THREADS 3
 
 namespace KDC {
 
-class ParametersInfoJob : public AbstractGuiJob {
-    public:
-        ParametersInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                          std::shared_ptr<AbstractCommChannel> channel);
+int ServerParameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
 
-    private:
-        // Output parameters
-        ServerParameters _parameters;
-
-
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
-};
+ServerParameters::ServerParameters() {
+    _uploadSessionParallelJobs = ServerParameters::_uploadSessionParallelJobsDefault;
+}
 
 } // namespace KDC

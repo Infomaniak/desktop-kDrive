@@ -34,6 +34,8 @@ set(libcommonserver_SRCS
     db/sqlitequery.h db/sqlitequery.cpp
     db/db.h db/db.cpp
     db/dbdefs.h
+    # Data
+    data/serverparameters.h data/serverparameters.cpp
     # Network
     # VFS
     vfs/vfs.h vfs/vfs.cpp

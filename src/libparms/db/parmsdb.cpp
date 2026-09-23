@@ -18,12 +18,12 @@
 
 #include "parmsdb.h"
 
-
 #include "libcommon/utility/utility.h"
 #include "libcommon/utility/logiffail.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
+#include "../../libcommonserver/data/serverparameters.h"
 
 #include <sqlite3.h>
 
@@ -675,7 +675,7 @@ bool ParmsDb::insertDefaultParameters() {
         return true;
     }
 
-    Parameters parameters;
+    ServerParameters parameters;
 
     ProxyConfig proxyConfig(parameters.proxyConfig());
     proxyConfig.setType(ProxyType::None);
@@ -852,7 +852,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     {
         // This upgrade helper runs before prepare(), so SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
         auto scopeGuard = createAndPrepareScopedRequest(SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
-                                                       SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
+                                                        SELECT_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
         if (!scopeGuard) return false;
 
         LOG_INFO(_logger, "Inserting the normalizations of user exclusion file patterns.");
@@ -883,7 +883,7 @@ bool ParmsDb::insertUserTemplateNormalizations(const std::string &fromVersion) {
     {
         // This upgrade helper runs before prepare(), so DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID does not exist here.
         auto scopeGuard1 = createAndPrepareScopedRequest(DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST_ID,
-                                                        DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
+                                                         DELETE_ALL_EXCLUSION_TEMPLATE_BY_DEF_REQUEST);
         if (!scopeGuard1) return false;
 
         // This upgrade helper runs before prepare(), so INSERT_EXCLUSION_TEMPLATE_REQUEST_ID does not exist here.
@@ -1365,7 +1365,7 @@ bool ParmsDb::upgradeTables() {
         auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST);
         if (!scopeGuard) return false;
         LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, Parameters::_uploadSessionParallelJobsDefault));
+        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, ServerParameters::_uploadSessionParallelJobsDefault));
         LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, 0));
         if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
             return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
@@ -1508,10 +1508,10 @@ bool ParmsDb::initData() {
     return true;
 }
 
-bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
+bool ParmsDb::updateParameters(const ServerParameters &parameters, bool &found) {
     const std::scoped_lock lock(_mutex);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     auto index = 1;
@@ -1563,7 +1563,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
+bool ParmsDb::selectParameters(ServerParameters &parameters, bool &found) {
     const std::scoped_lock lock(_mutex);
 
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
@@ -3895,10 +3895,10 @@ bool ParmsDb::replaceShortDbPathsWithLongPaths() {
 bool ParmsDb::enableSentryAndMatomo() {
     LOG_INFO(_logger, "Enabling sentry and matomo by default")
 
-    Parameters parameters;
+    ServerParameters parameters;
     {
         // This upgrade helper runs before prepare(), so SELECT_PARAMETERS_REQUEST_ID does not exist here.
-        auto scopeGuard = createAndPrepareScopedRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST);
+        const auto scopeGuard = createAndPrepareScopedRequest(SELECT_PARAMETERS_REQUEST_ID, SELECT_PARAMETERS_REQUEST);
         if (!scopeGuard) return false;
 
         bool found = false;
@@ -3916,7 +3916,7 @@ bool ParmsDb::enableSentryAndMatomo() {
 
     {
         // This upgrade helper runs before prepare(), so UPDATE_PARAMETERS_REQUEST_ID does not exist here.
-        auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST);
+        const auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_REQUEST_ID, UPDATE_PARAMETERS_REQUEST);
         if (!scopeGuard) return false;
 
         bool found = false;

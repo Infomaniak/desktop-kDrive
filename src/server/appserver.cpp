@@ -826,15 +826,15 @@ void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled)
     LOG_INFO(_logger, msg);
 }
 
-ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &parametersInfo) {
-    auto newParametersInfo = parametersInfo;
+ExitInfo AppServer::updateParametersAndPropagateChanges(const ServerParameters &newParameters) {
+    auto updatedParameters = newParameters;
 
     // Retrieve current settings
-    const Parameters previousParameters = ParametersCache::instance()->parameters();
+    const ServerParameters previousParameters = ParametersCache::instance()->parameters();
 
     // Proxy parameters change propagation. Must be executed before "updateParameters" in order to save the new keychain
     // key in DB.
-    if (newParametersInfo.proxyConfig().needsAuth()) {
+    if (updatedParameters.proxyConfig().needsAuth()) {
         std::string keychainKey;
         if (!previousParameters.proxyConfig().needsAuth()) {
             // Proxy needs authentification now, generate keychain key and save password to the keychain.
@@ -843,14 +843,14 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &parame
             // Proxy already needed authentification, keep the same keychain key and update the password in the keychain.
             keychainKey = previousParameters.proxyConfig().keychainKey();
         }
-        if (!KeyChainManager::instance()->writeData(keychainKey, newParametersInfo.proxyConfig().pwd())) {
+        if (!KeyChainManager::instance()->writeData(keychainKey, updatedParameters.proxyConfig().pwd())) {
             LOG_WARN(_logger, "Failed to write password token into keychain");
             return ExitInfo(ExitCode::SystemError);
         }
 
-        auto proxyConfig = newParametersInfo.proxyConfig();
+        auto proxyConfig = updatedParameters.proxyConfig();
         proxyConfig.setKeychainKey(keychainKey);
-        newParametersInfo.setProxyConfig(proxyConfig);
+        updatedParameters.setProxyConfig(proxyConfig);
     } else if (previousParameters.proxyConfig().needsAuth()) {
         // Proxy does not need authentification anymore, remove the entry from the keychain key.
         if (!KeyChainManager::instance()->deleteData(previousParameters.proxyConfig().keychainKey())) {
@@ -859,42 +859,42 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &parame
     }
 
     // Update parameters
-    const ExitCode exitCode = ServerRequests::updateParameters(newParametersInfo);
+    const ExitCode exitCode = ServerRequests::updateParameters(updatedParameters);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::updateParameters");
         addError(Error(ERR_ID, exitCode));
     }
 
     // Propagate extendedLog change
-    if (previousParameters.extendedLog() != newParametersInfo.extendedLog()) {
-        logExtendedLogActivationMessage(newParametersInfo.extendedLog());
+    if (previousParameters.extendedLog() != updatedParameters.extendedLog()) {
+        logExtendedLogActivationMessage(updatedParameters.extendedLog());
         const std::scoped_lock lock(vfsMapMutex);
         for (const auto &[_, vfs]: vfsMap) {
-            vfs->setExtendedLog(newParametersInfo.extendedLog());
+            vfs->setExtendedLog(updatedParameters.extendedLog());
         }
     }
 
     // Propagate language change
-    if (previousParameters.language() != newParametersInfo.language()) {
-        const auto language = newParametersInfo.language();
+    if (previousParameters.language() != updatedParameters.language()) {
+        const auto language = updatedParameters.language();
         QTimer::singleShot(100, this, [this, language]() { CommonUtility::setupTranslations(this, language); });
     }
 
     // Propagate autostart change
-    if (previousParameters.autoStart() != newParametersInfo.autoStart()) {
+    if (previousParameters.autoStart() != updatedParameters.autoStart()) {
         auto *theme = Theme::instance();
-        (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), newParametersInfo.autoStart());
+        (void) Utility::setLaunchOnStartup(theme->appName(), theme->appName(), updatedParameters.autoStart());
     }
 
     // Propagate Sentry activation change
     if (KDRIVE_VERSION_MAJOR >= 4) {
-        if (previousParameters.sentryEnabled() != newParametersInfo.sentryEnabled()) {
-            sentry::Handler::instance()->setIsSentryActivated(newParametersInfo.sentryEnabled());
+        if (previousParameters.sentryEnabled() != updatedParameters.sentryEnabled()) {
+            sentry::Handler::instance()->setIsSentryActivated(updatedParameters.sentryEnabled());
         }
     }
 
     // Propagate distribution channel change
-    setDistributionChannel(newParametersInfo.distributionChannel());
+    setDistributionChannel(updatedParameters.distributionChannel());
 
     return exitCode;
 }
@@ -2218,23 +2218,23 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
 #endif
         case RequestNum::PARAMETERS_INFO: {
-            Parameters parametersInfo;
-            const auto exitCode = ServerRequests::getParameters(parametersInfo);
+            ServerParameters parameters;
+            const auto exitCode = ServerRequests::getParameters(parameters);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::getParameters");
                 addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
             }
 
             resultStream << toInt(exitCode);
-            resultStream << parametersInfo;
+            resultStream << parameters;
             break;
         }
         case RequestNum::PARAMETERS_UPDATE: {
-            Parameters parametersInfo;
+            ServerParameters parameters;
             QDataStream paramsStream(params);
-            paramsStream >> parametersInfo;
+            paramsStream >> parameters;
 
-            const auto exitInfo = updateParametersAndPropagateChanges(parametersInfo);
+            const auto exitInfo = updateParametersAndPropagateChanges(parameters);
 
             resultStream << toInt(exitInfo.code());
             break;

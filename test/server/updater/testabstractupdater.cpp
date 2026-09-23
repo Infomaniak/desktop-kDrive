@@ -78,7 +78,7 @@ void TestAbstractUpdater::testSkipUnskipVersion() {
     CPPUNIT_ASSERT_EQUAL(testStr, ParametersCache::instance()->parameters().seenVersion());
 
     bool found = false;
-    Parameters parameters;
+    ServerParameters parameters;
     (void) ParmsDb::instance()->selectParameters(parameters, found);
     CPPUNIT_ASSERT(parameters.seenVersion() == testStr);
 

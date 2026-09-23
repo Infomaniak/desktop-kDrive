@@ -349,12 +349,12 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
 
-        Parameters newParametersInfo = ParametersCache::instance()->parameters();
+        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
         newParametersInfo.setProxyConfig(proxyConfigTest);
 
         CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
 
-        Parameters parametersFromDb;
+        ServerParameters parametersFromDb;
         auto found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
         CPPUNIT_ASSERT(found);
@@ -370,12 +370,12 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "password");
 
-        Parameters newParametersInfo = ParametersCache::instance()->parameters();
+        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
         newParametersInfo.setProxyConfig(proxyConfigTest);
 
         CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
 
-        Parameters parametersFromDb;
+        ServerParameters parametersFromDb;
         auto found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
         CPPUNIT_ASSERT(found);
@@ -397,12 +397,12 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "newpassword");
 
-        Parameters newParametersInfo = ParametersCache::instance()->parameters();
+        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
         newParametersInfo.setProxyConfig(proxyConfigTest);
 
         CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
 
-        Parameters parametersFromDb;
+        ServerParameters parametersFromDb;
         auto found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
         CPPUNIT_ASSERT(found);
@@ -424,12 +424,12 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
 
-        Parameters newParametersInfo = ParametersCache::instance()->parameters();
+        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
         newParametersInfo.setProxyConfig(proxyConfigTest);
 
         CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
 
-        Parameters parametersFromDb;
+        ServerParameters parametersFromDb;
         auto found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
         CPPUNIT_ASSERT(found);
@@ -449,12 +449,12 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::None, "", 0, false);
 
-        Parameters newParametersInfo = ParametersCache::instance()->parameters();
+        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
         newParametersInfo.setProxyConfig(proxyConfigTest);
 
         CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
 
-        Parameters parametersFromDb;
+        ServerParameters parametersFromDb;
         auto found = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parametersFromDb, found));
         CPPUNIT_ASSERT(found);
@@ -467,17 +467,17 @@ void TestAppServer::testProxyConfigUpdate() {
     }
 }
 
-bool TestAppServer::waitForSyncStatus(int syncDbId, SyncStatus targetStatus) const {
-    int count = 0;
+bool TestAppServer::waitForSyncStatus(const int syncDbId, const SyncStatus targetStatus) const {
+    auto count = 0;
     while (count++ < 100) {
-        if (auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
+        if (const auto status = _appPtr->syncPalMap[syncDbId]->status(); status == targetStatus) return true;
         Utility::msleep(100);
     }
     return false;
 }
 
-bool TestAppServer::syncIsActive(int syncDbId) const {
-    SyncStatus status = _appPtr->syncPalMap[syncDbId]->status();
+bool TestAppServer::syncIsActive(const int syncDbId) const {
+    const auto status = _appPtr->syncPalMap[syncDbId]->status();
     return status == SyncStatus::Starting || status == SyncStatus::Running || status == SyncStatus::Idle;
 }
 

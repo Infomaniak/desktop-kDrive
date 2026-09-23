@@ -95,7 +95,7 @@ ParametersCache::ParametersCache(bool isTest /*= false*/) {
 
 void ParametersCache::save(ExitCode *exitCode /*= nullptr*/) const {
     // Get old parameters
-    Parameters oldParameters;
+    ServerParameters oldParameters;
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(oldParameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");

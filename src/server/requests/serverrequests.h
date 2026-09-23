@@ -28,11 +28,11 @@
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/data/syncfileitem.h"
 #include "libcommon/data/error.h"
-#include "libcommon/data/parameters.h"
 #include "libcommon/data/proxyconfig.h"
 #include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/exclusionapp.h"
 #include "libsyncengine/login/login.h"
+#include "../../libcommonserver/data/serverparameters.h"
 
 #include <QList>
 #include <QString>
@@ -56,8 +56,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo updateDrive(const Drive &drive);
         static ExitCode getSyncList(QList<Sync> &list);
         static ExitCode getSyncList(std::vector<Sync> &list);
-        static ExitCode getParameters(Parameters &parameters);
-        static ExitCode updateParameters(const Parameters &parameters);
+        static ExitCode getParameters(ServerParameters &parameters);
+        static ExitCode updateParameters(const ServerParameters &parameters);
         static ExitInfo isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid);
         static ExitInfo folderContainsNonExcludedItem(const SyncPath &path, bool &containsNonExcludedFile);
         static ExitInfo findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error);
