@@ -1172,8 +1172,6 @@ ExitInfo ExecutorWorker::generateMoveJob(SyncOpPtr syncOp, bool &ignored, bool &
                 // Do not show error message for other conflicts
                 break;
         }
-
-        return ExitCode::Ok;
     }
 
     return handleFinishedJob(job, syncOp, relativeDestLocalFilePath, ignored, bypassProgressComplete);
