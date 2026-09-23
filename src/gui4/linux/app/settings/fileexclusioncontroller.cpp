@@ -76,8 +76,16 @@ QString FileExclusionController::errorTextId() const {
     return {};
 }
 
-void FileExclusionController::refresh() {
+void FileExclusionController::ensureLoaded() {
     if (_loading || _saving) {
+        return;
+    }
+
+    if (ready()) {
+        if (_error != Error::None) {
+            _error = Error::None;
+            emit changed();
+        }
         return;
     }
 
@@ -85,7 +93,7 @@ void FileExclusionController::refresh() {
     _error = Error::None;
     emit changed();
 
-    _service.refresh([self = QPointer(this)](const ExitInfo &result) {
+    _service.ensureLoaded([self = QPointer(this)](const ExitInfo &result) {
         if (!self) {
             return;
         }
