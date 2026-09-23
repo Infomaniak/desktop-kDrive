@@ -56,6 +56,7 @@ QtObject {
     readonly property real userHeaderHeight: 52
     readonly property real userAvatarSize: 36
     readonly property real userDriveRowHeight: 52
+    readonly property real availableDriveFailureRowHeight: rowHeight
     readonly property real userDriveLeadingIndent: 43
     readonly property real userDriveIconSize: 20
     readonly property real userDriveIconGlyphInset: 4
