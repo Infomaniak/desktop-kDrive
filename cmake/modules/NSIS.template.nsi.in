@@ -51,7 +51,14 @@
 !define VFS_APPX_DIRECTORY "@{vfs_appx_directory}"
 !define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64_arm64.msixbundle"
 !define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
+; Publisher id (AUMID suffix) of the certificate the extension shipped here was signed with.
+!define VFS_PACKAGE_PUBLISHER_ID "@{AUMID}"
 !define EXTENSION_NAME "FileExplorerExtension.exe"
+
+; Helper embedded in the installer and in the uninstaller. It is extracted to $PLUGINSDIR when
+; needed, so that it is never deployed on the user machine nor manually launchable.
+!define SHELLEXT_SETUP_SCRIPT "${SOURCE_PATH}\admin\win\shell-extension-setup.ps1"
+!define SHELLEXT_SETUP_SCRIPT_NAME "shell-extension-setup.ps1"
 
 Var InstallRunIfSilent
 Var NoAutomaticUpdates
@@ -371,11 +378,35 @@ finish_${PSExecID}:
 	Pop $R0
 	!undef PSExecID
 !macroend
+
+; Same as PowerShellExecFileLogMacro but forwards arguments to the script. The x64 file system
+; redirection is disabled so that the native PowerShell is used: the DISM cmdlets handling the
+; provisioned packages are not usable from a 32 bit host on a 64 bit Windows.
+!macro PowerShellExecFileLogArgsMacro PSFile PSArgs
+	!define PSExecID ${__LINE__}
+	Push $R0
+
+	DetailPrint "Executing PowerShell script: ${PSFile}"
+
+	${DisableX64FSRedirection}
+	nsExec::ExecToLog 'powershell -inputformat none -NoProfile -ExecutionPolicy Bypass -File "${PSFile}" ${PSArgs}'
+	Pop $R0 ;return value is on stack
+	${EnableX64FSRedirection}
+
+	DetailPrint "Return value: $R0"
+	IntCmp $R0 0 finish_${PSExecID}
+	SetErrorLevel 2
+
+finish_${PSExecID}:
+	Pop $R0
+	!undef PSExecID
+!macroend
  
 !define PowerShellExec '!insertmacro PowerShellExecMacro'
 !define PowerShellExecLog '!insertmacro PowerShellExecLogMacro'
 !define PowerShellExecFile '!insertmacro PowerShellExecFileMacro'
 !define PowerShellExecFileLog '!insertmacro PowerShellExecFileLogMacro'
+!define PowerShellExecFileLogArgs '!insertmacro PowerShellExecFileLogArgsMacro'
 
 Function EnsureKDriveShutdown
 	; Stop processes
@@ -500,10 +531,23 @@ SectionEnd
 		SetOutPath "$INSTDIR\shellext\AppX"
 
 		File /a /r "${VFS_APPX_DIRECTORY}\"
-        File /a "${BUILD_PATH}\repair-shell-extension.ps1"
 
 		!insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
-		${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
+
+		; Provision the extension instead of installing it, so that every user of the computer gets
+		; it. Extensions signed with another certificate belong to another package family: on
+		; Windows 10 they prevent this one from being installed at all, they are removed first.
+		; The sync roots are detached before that, so that the placeholders are kept.
+		InitPluginsDir
+		File /oname=$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME} "${SHELLEXT_SETUP_SCRIPT}"
+		${PowerShellExecFileLogArgs} "$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME}" '-Mode Install -BundlePath "$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}" -PackageName "${VFS_PACKAGE_NAME}" -PublisherId "${VFS_PACKAGE_PUBLISHER_ID}" -ProviderName "${APPLICATION_NAME}"'
+
+		; A provisioned package is only registered for a user when he logs on: register it for the
+		; user running the installer so that Explorer picks the extension up right away.
+		; Note: UAC_AsUser_ExecShell wraps the parameters in single quotes, the ones needed by
+		; PowerShell have to be escaped.
+		!insertmacro UAC_AsUser_ExecShell "" "powershell.exe" `-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command "Add-AppxPackage -Path $\'$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}$\' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"` "" SW_HIDE
+
 		SetOutPath "$INSTDIR"
 	${MementoSectionEnd}
 !endif
@@ -759,22 +803,14 @@ Function un.UninstallFct
 		System::Call 'ADVAPI32::CredFree(pr2)'
 		${EndIf}
 
-		;Uninstall extension
-		!define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
-		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-			uninstall_x64:
-			DetailPrint $UNINSTALL_EXTENSION
-			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-		!undef PackageFullName_x64
-		uninstall_kdrive_ext_x64_done:
-
-		!define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
-		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
-			uninstall_arm64:
-			DetailPrint $UNINSTALL_EXTENSION
-			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
-		!undef PackageFullName_arm64
-		uninstall_kdrive_ext_arm64_done:
+		;Uninstall the File Explorer extension, whatever the certificate (hence the AUMID) it was
+		;signed with. This block is skipped on a silent uninstallation, i.e. when the installer
+		;removes the previous version during an update: the extension is updated, not removed, and
+		;the placeholders are kept.
+		DetailPrint $UNINSTALL_EXTENSION
+		InitPluginsDir
+		File /oname=$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME} "${SHELLEXT_SETUP_SCRIPT}"
+		${PowerShellExecFileLogArgs} "$PLUGINSDIR\${SHELLEXT_SETUP_SCRIPT_NAME}" '-Mode Uninstall -PackageName "${VFS_PACKAGE_NAME}" -ProviderName "${APPLICATION_NAME}"'
 	${EndIf}
 	
 	;Remove all the Program Files.
