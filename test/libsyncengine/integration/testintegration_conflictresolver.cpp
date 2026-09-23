@@ -19,10 +19,14 @@
 #include "testintegration.h"
 #include "propagation/executor/filerescuer.h"
 #include "syncpal_test_helper/syncpaltesthelper.h"
+#include "test_utility/testhelpers.h"
+
 
 namespace KDC {
 
 void TestIntegration::testParentDeleteRescuesModifiedLocalChildren() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
