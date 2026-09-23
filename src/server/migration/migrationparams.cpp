@@ -555,7 +555,7 @@ void MigrationParams::migrateGeometry(Parameters::DialogGeometry &dialogGeometry
         QByteArray dialogGeo = settings.value(geometryC).toByteArray();
 
         if (!dialogGeo.isEmpty()) {
-            dialogGeometry.insert(QString::fromStdString(dialog), dialogGeo);
+            (void) dialogGeometry.insert(QString::fromStdString(dialog), dialogGeo);
         }
         settings.endGroup();
     }
