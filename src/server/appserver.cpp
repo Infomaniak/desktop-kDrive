@@ -4247,7 +4247,6 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
             LOGW_WARN(_logger, L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
             return ExitCode::SystemError;
         }
-        vfsSetupParams.localPath = sync.localPath();
         vfsSetupParams.targetPath = sync.targetPath();
         vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
