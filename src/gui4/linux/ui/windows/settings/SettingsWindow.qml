@@ -169,7 +169,56 @@ IKShadowedWindow {
     Component {
         id: advancedRootComponent
 
-        AdvancedSettingsView {}
+        AdvancedSettingsView {
+            onDataManagementRequested: trigger => {
+                trigger.forceActiveFocus();
+                advancedPane.push(dataManagementComponent);
+            }
+        }
+    }
+
+    Component {
+        id: dataManagementComponent
+
+        DataManagementView {
+            controller: root.controller.advanced
+            onMatomoRequested: trigger => {
+                trigger.forceActiveFocus();
+                advancedPane.push(matomoComponent);
+            }
+            onSentryRequested: trigger => {
+                trigger.forceActiveFocus();
+                advancedPane.push(sentryComponent);
+            }
+        }
+    }
+
+    Component {
+        id: matomoComponent
+
+        TrackingConsentView {
+            controller: root.controller.advanced
+            navigationTitle: "Matomo"
+            logoSource: ThemeMode.isDark ? "qrc:/assets/settings/matomo-logo-dark.svg" : "qrc:/assets/settings/matomo-logo.svg"
+            description: qsTrId("matomoDescription")
+            errorText: root.controller.advanced.matomoErrorText
+            trackingEnabled: root.controller.advanced.matomoEnabled
+            toggleAction: value => root.controller.advanced.setMatomoEnabled(value)
+        }
+    }
+
+    Component {
+        id: sentryComponent
+
+        TrackingConsentView {
+            controller: root.controller.advanced
+            navigationTitle: "Sentry"
+            logoSource: ThemeMode.isDark ? "qrc:/assets/settings/sentry-logo-dark.svg" : "qrc:/assets/settings/sentry-logo.svg"
+            description: qsTrId("sentryDescription")
+            errorText: root.controller.advanced.sentryErrorText
+            trackingEnabled: root.controller.advanced.sentryEnabled
+            toggleAction: value => root.controller.advanced.setSentryEnabled(value)
+        }
     }
 
     SettingsInformationDialog {
