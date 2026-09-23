@@ -278,12 +278,12 @@ ExitCode ServerRequests::getSyncList(std::vector<Sync> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getParameters(Parameters &parameters) {
+ExitCode ServerRequests::getParameters(ServerParameters &parameters) {
     parameters = ParametersCache::instance()->parameters();
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateParameters(const Parameters &parameters) {
+ExitCode ServerRequests::updateParameters(const ServerParameters &parameters) {
     ParametersCache::instance()->parameters() = parameters;
     auto exitCode = ExitCode::Ok;
     ParametersCache::instance()->save(&exitCode);

@@ -36,6 +36,7 @@
 #include "libcommonserver/db/db.h"
 
 #include "libcommon/data/drive.h"
+#include "../../libcommonserver/data/serverparameters.h"
 
 namespace KDC {
 
@@ -58,8 +59,8 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool initData();
 
-        bool updateParameters(const Parameters &parameters, bool &found);
-        bool selectParameters(Parameters &parameters, bool &found);
+        bool updateParameters(const ServerParameters &parameters, bool &found);
+        bool selectParameters(ServerParameters &parameters, bool &found);
 
         bool insertUser(const User &user);
         bool updateUser(const User &user, bool &found);

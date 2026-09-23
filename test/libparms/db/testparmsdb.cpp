@@ -44,8 +44,8 @@ void TestParmsDb::tearDown() {
 void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(ParmsDb::instance()->exists());
 
-    Parameters defaultParameters;
-    Parameters parameters;
+    ServerParameters defaultParameters;
+    ServerParameters parameters;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
     CPPUNIT_ASSERT(parameters.language() == defaultParameters.language());
@@ -67,7 +67,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == defaultParameters.matomoEnabled());
 
-    Parameters parameters2;
+    ServerParameters parameters2;
     parameters2.setLanguage(Language::French);
     parameters2.setMonoIcons(true);
     parameters2.setAutoStart(false);

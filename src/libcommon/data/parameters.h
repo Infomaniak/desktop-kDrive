@@ -36,8 +36,6 @@ class Parameters {
     public:
         using DialogGeometry = QMap<QString, QByteArray>;
 
-        Parameters();
-
         inline void setLanguage(const Language language) { _language = language; }
         inline Language language() const { return _language; }
         inline void setMonoIcons(const bool monoIcons) { _monoIcons = monoIcons; }
@@ -85,65 +83,40 @@ class Parameters {
         [[nodiscard]] bool notifyBeforeDelete() const { return _notifyBeforeDelete; }
         void setNotifyBeforeDelete(const bool notifyBeforeDelete) { _notifyBeforeDelete = notifyBeforeDelete; }
 
-        // Server-internal attributes (not exposed via IPC / not persisted in toDynamicStruct or QDataStream operators)
-        inline const std::string &updateFileAvailable() const { return _updateFileAvailable; }
-        inline void setUpdateFileAvailable(const std::string &updateFileAvailable) { _updateFileAvailable = updateFileAvailable; }
-
-        inline const std::string &updateTargetVersion() const { return _updateTargetVersion; }
-        inline void setUpdateTargetVersion(const std::string &updateTargetVersion) { _updateTargetVersion = updateTargetVersion; }
-
-        inline const std::string &updateTargetVersionString() const { return _updateTargetVersionString; }
-        inline void setUpdateTargetVersionString(const std::string &updateTargetVersionString) {
-            _updateTargetVersionString = updateTargetVersionString;
-        }
-
-        inline bool autoUpdateAttempted() const { return _autoUpdateAttempted; }
-        inline void setAutoUpdateAttempted(const bool autoUpdateAttempted) { _autoUpdateAttempted = autoUpdateAttempted; }
-
-        inline const std::string &seenVersion() const { return _seenVersion; }
-        inline void setSeenVersion(const std::string &seenVersion) { _seenVersion = seenVersion; }
-
-        inline int uploadSessionParallelJobs() const { return _uploadSessionParallelJobs; }
-        inline void setUploadSessionParallelJobs(const int uploadSessionParallelJobs) {
-            _uploadSessionParallelJobs = uploadSessionParallelJobs;
-        }
-
-        static int _uploadSessionParallelJobsDefault;
-
-        // Do not compare server-internal attributes
-        friend bool operator==(const Parameters &lhs, const Parameters &rhs) {
-            return lhs._language == rhs._language && lhs._monoIcons == rhs._monoIcons && lhs._autoStart == rhs._autoStart &&
-                   lhs._moveToTrash == rhs._moveToTrash && lhs._notificationsDisabled == rhs._notificationsDisabled &&
-                   lhs._useLog == rhs._useLog && lhs._logLevel == rhs._logLevel && lhs._extendedLog == rhs._extendedLog &&
-                   lhs._purgeOldLogs == rhs._purgeOldLogs && lhs._darkTheme == rhs._darkTheme &&
-                   lhs._dialogGeometry == rhs._dialogGeometry && lhs._maxAllowedCpu == rhs._maxAllowedCpu &&
-                   lhs._proxyConfig == rhs._proxyConfig && lhs._distributionChannel == rhs._distributionChannel &&
-                   lhs._sentryEnabled == rhs._sentryEnabled && lhs._matomoEnabled == rhs._matomoEnabled &&
-                   lhs._notifyBeforeDelete == rhs._notifyBeforeDelete;
-        }
-
-        // Do not update server-internal attributes
-        Parameters &operator=(const Parameters &other) {
-            _language = other._language;
-            _monoIcons = other._monoIcons;
-            _autoStart = other._autoStart;
-            _moveToTrash = other._moveToTrash;
-            _notificationsDisabled = other._notificationsDisabled;
-            _useLog = other._useLog;
-            _logLevel = other._logLevel;
-            _extendedLog = other._extendedLog;
-            _purgeOldLogs = other._purgeOldLogs;
-            _darkTheme = other._darkTheme;
-            _dialogGeometry = other._dialogGeometry;
-            _maxAllowedCpu = other._maxAllowedCpu;
-            _proxyConfig = other._proxyConfig;
-            _distributionChannel = other._distributionChannel;
-            _sentryEnabled = other._sentryEnabled;
-            _matomoEnabled = other._matomoEnabled;
-            _notifyBeforeDelete = other._notifyBeforeDelete;
-
-            return *this;
-        }
+        // // Do not compare server-internal attributes
+        // friend bool operator==(const Parameters &lhs, const Parameters &rhs) {
+        //     return lhs._language == rhs._language && lhs._monoIcons == rhs._monoIcons && lhs._autoStart == rhs._autoStart &&
+        //            lhs._moveToTrash == rhs._moveToTrash && lhs._notificationsDisabled == rhs._notificationsDisabled &&
+        //            lhs._useLog == rhs._useLog && lhs._logLevel == rhs._logLevel && lhs._extendedLog == rhs._extendedLog &&
+        //            lhs._purgeOldLogs == rhs._purgeOldLogs && lhs._darkTheme == rhs._darkTheme &&
+        //            lhs._dialogGeometry == rhs._dialogGeometry && lhs._maxAllowedCpu == rhs._maxAllowedCpu &&
+        //            lhs._proxyConfig == rhs._proxyConfig && lhs._distributionChannel == rhs._distributionChannel &&
+        //            lhs._sentryEnabled == rhs._sentryEnabled && lhs._matomoEnabled == rhs._matomoEnabled &&
+        //            lhs._notifyBeforeDelete == rhs._notifyBeforeDelete;
+        // }
+        //
+        // // Do not update server-internal attributes
+        // Parameters &operator=(const Parameters &other) {
+        //     _language = other._language;
+        //     _monoIcons = other._monoIcons;
+        //     _autoStart = other._autoStart;
+        //     _moveToTrash = other._moveToTrash;
+        //     _notificationsDisabled = other._notificationsDisabled;
+        //     _useLog = other._useLog;
+        //     _logLevel = other._logLevel;
+        //     _extendedLog = other._extendedLog;
+        //     _purgeOldLogs = other._purgeOldLogs;
+        //     _darkTheme = other._darkTheme;
+        //     _dialogGeometry = other._dialogGeometry;
+        //     _maxAllowedCpu = other._maxAllowedCpu;
+        //     _proxyConfig = other._proxyConfig;
+        //     _distributionChannel = other._distributionChannel;
+        //     _sentryEnabled = other._sentryEnabled;
+        //     _matomoEnabled = other._matomoEnabled;
+        //     _notifyBeforeDelete = other._notifyBeforeDelete;
+        //
+        //     return *this;
+        // }
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
@@ -186,14 +159,6 @@ class Parameters {
         bool _sentryEnabled{true};
         bool _matomoEnabled{true};
         bool _notifyBeforeDelete{true};
-
-        // Server-internal attributes
-        std::string _updateFileAvailable;
-        std::string _updateTargetVersion;
-        std::string _updateTargetVersionString;
-        bool _autoUpdateAttempted{false};
-        std::string _seenVersion;
-        int _uploadSessionParallelJobs{0};
 };
 
 } // namespace KDC
