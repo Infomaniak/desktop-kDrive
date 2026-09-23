@@ -231,6 +231,7 @@ QtObject {
     readonly property color settingsCardSurface: surfaceSecondary
     readonly property color settingsAlternateRowSurface: surfacePrimary
     readonly property color settingsDivider: surfaceTertiary
+    readonly property color settingsDriveGlyph: _p.white
     readonly property color settingsEmptyUserAvatarSurface: darkMode ? _p.neutralBlue700 : _p.gray100
     readonly property color settingsEmptyUserAvatarBorder: darkMode ? _p.neutralBlue600 : _p.gray200
     readonly property color settingsNavigationIcon: _p.grayNavigation
