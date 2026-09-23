@@ -387,6 +387,33 @@ void TestDb::testWalTruncateOnClose() {
     }
 }
 
+void TestDb::testWalTruncateOnCloseWithPendingSelect() {
+    LocalTemporaryDirectory tmpDir("testWalTruncatePendingSelect");
+    const auto dbPath = tmpDir.path() / "test_wal_truncate_pending_select.db";
+
+    {
+        MyTestDb db(dbPath);
+        if (!db.isWalMode()) {
+            return; // skip on non-WAL file systems (e.g. FAT32, some macOS volumes)
+        }
+
+        const Test t0(0, 1, 2, 3.0, "a");
+        const Test t1(1, 4, 5, 6.0, "b");
+        CPPUNIT_ASSERT(db.insertTest(t0));
+        CPPUNIT_ASSERT(db.insertTest(t1));
+
+        // Read only the first row: the statement stays mid-iteration and keeps a read transaction open
+        CPPUNIT_ASSERT(db.queryResetAndClearBindings(SELECT_TEST_REQUEST_ID));
+        bool hasData = false;
+        CPPUNIT_ASSERT(db.queryNext(SELECT_TEST_REQUEST_ID, hasData) && hasData);
+    }
+
+    // The pending statement must not prevent the TRUNCATE checkpoint on close
+    if (const auto walPath = std::filesystem::path(dbPath.string() + "-wal"); std::filesystem::exists(walPath)) {
+        CPPUNIT_ASSERT_EQUAL(static_cast<std::uintmax_t>(0), std::filesystem::file_size(walPath));
+    }
+}
+
 bool TestDb::MyTestDb::walAutocheckpointPragma(int &value) {
     constexpr auto queryId = "wal_autocheckpoint_query";
     LOG_IF_FAIL(queryCreate(queryId));
