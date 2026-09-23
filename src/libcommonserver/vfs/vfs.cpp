@@ -37,7 +37,7 @@ Vfs::Vfs(const VfsSetupParams &vfsSetupParams, QObject *parent) :
     QObject(parent),
     _vfsSetupParams(vfsSetupParams) {}
 
-void Vfs::starVfsWorkers() {
+void Vfs::startVfsWorkers() {
     // Start hydration/dehydration workers
     // !!! Disabled for testing because no QEventLoop !!!
     if (qApp) {
@@ -57,14 +57,40 @@ void Vfs::starVfsWorkers() {
     }
 }
 
-Vfs::~Vfs() {
-    // Ask worker threads to stop
+void Vfs::stopVfsWorkers() {
+    LOG_DEBUG(logger(), "Stop VFS workers for syncdbid=" << _vfsSetupParams.syncDbId);
+
+    // Ask workers to stop
     for (auto &worker: _workerInfo) {
         worker._mutex.lock();
-        worker._stop = true;
-        worker._mutex.unlock();
-        worker._queueWC.wakeAll();
+        if (!worker._stop) {
+            worker._stop = true;
+            worker._mutex.unlock();
+            worker._queueWC.wakeAll();
+        } else {
+            worker._mutex.unlock();
+        }
     }
+
+    for (auto &worker: _workerInfo) {
+        for (QThread *const workerThread: std::as_const(worker._threadList)) {
+            if (!workerThread) {
+                continue;
+            }
+            workerThread->quit();
+            if (!workerThread->wait(1000)) {
+                workerThread->terminate();
+                (void) workerThread->wait();
+            }
+        }
+        worker._threadList.clear();
+    }
+
+    LOG_DEBUG(logger(), "Stop VFS workers for syncdbid=" << _vfsSetupParams.syncDbId << " done");
+}
+
+Vfs::~Vfs() {
+    LOG_DEBUG(logger(), "~Vfs");
 }
 
 CommString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
@@ -107,6 +133,8 @@ ExitInfo Vfs::start(bool &installationDone, bool &activationDone, bool &connecti
 }
 
 void Vfs::stop(bool unregister) {
+    stopVfsWorkers();
+
     if (_started) {
         stopImpl(unregister);
         _started = false;

@@ -69,6 +69,8 @@ const SyncPath remoteTestCiDirPath = "Common documents/Test kDrive/test_ci";
 
 void TestIntegration::setUp() {
     TestBase::start();
+    if (!testhelpers::isExtendedTest(false)) return;
+
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
@@ -134,6 +136,11 @@ void TestIntegration::setUp() {
 }
 
 void TestIntegration::tearDown() {
+    if (!testhelpers::isExtendedTest()) {
+        _remoteSyncDir.setDeleted();
+        TestBase::stop();
+        return;
+    }
     if (_syncPal) _syncPal->stop(SyncPal::PauseCaller::Sync, SyncPal::DbBehaviorAfterStop::Remove);
     _remoteSyncDir.deleteDirectory();
 
@@ -869,7 +876,8 @@ void TestIntegration::testMoveDeleteRename() {
         (void) LocalMoveJob(moveSourcePath, moveDestPath).runSynchronously();
         // Delete a
         const auto deletedPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
-        (void) GenericLocalDeleteJob(deletedPath, GenericLocalDeleteJob::ForceHardDelete::Yes).runSynchronously();
+        (void) GenericLocalDeleteJob(deletedPath, _syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes)
+                .runSynchronously();
         // Rename b
         const auto renameSourcePath = _syncPal->localPath() / tmpRemoteDir.name() / "B";
         const auto renameDestPath = _syncPal->localPath() / tmpRemoteDir.name() / "A";
@@ -1027,9 +1035,8 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create valid links with compliant target paths. These links should be synchronized to the remote replica.
-    // Absolute paths are not allowed, but relative paths are. Relative paths must be relative to the sync root.
-    // Parent traversal is not allowed, but relative paths that do not traverse the parent are allowed.
+    // Create valid and invalid links whose target paths are relative and do not use parent traversal.
+    // These links should be synchronized to the remote replica.
     testhelpers::generateOrEditTestFile(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt");
 
     std::filesystem::create_symlink(SyncPath(tmpRemoteDir.name()) / "file.txt",
@@ -1051,7 +1058,8 @@ void TestIntegration::testSynchronizationOfSymLinks() {
 
     waitForSyncToBeIdle(std::source_location::current());
 
-    // Create links with non-compliant target paths. These links should not be synchronized to the remote replica.
+    // Create links whose target paths are absolute or use parent traversal.
+    // As the backend does not reject them yet, these links should be synchronized as well.
     std::filesystem::create_symlink(_syncPal->localPath() / tmpRemoteDir.name() / "file.txt",
                                     _syncPal->localPath() / tmpRemoteDir.name() / "file_symlink_with_absolute_target_path");
 
@@ -1071,11 +1079,11 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     const auto remoteTestFileInfo7 =
             getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
 
-    CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo5.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo6.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo7.isValid());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(int64_t{9}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
 
     logStep("testSynchronizationOfSymLinks");

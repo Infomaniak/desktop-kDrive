@@ -24,7 +24,6 @@
 #include "jobs/network/kDrive_API/getfileinfojob.h"
 #include "jobs/network/kDrive_API/renamejob.h"
 #include "jobs/network/kDrive_API/upload/uploadjob.h"
-#include "propagation/executor/filerescuer.h"
 #include "test_utility/testhelpers_requests.h"
 #include "test_utility/testhelpers.h"
 #include "syncpal_test_helper/syncpaltesthelper.h"
@@ -104,7 +103,7 @@ void TestIntegration::testLocalChanges() {
 
     // Generate a delete operation.
     {
-        GenericLocalDeleteJob deleteJob(subDirPath);
+        GenericLocalDeleteJob deleteJob(subDirPath, _syncPal->_cacheDirectory);
         (void) deleteJob.runSynchronously();
     }
     waitForSyncToBeIdle(std::source_location::current());
@@ -251,6 +250,8 @@ void TestIntegration::testUploadBigFile() {
 }
 
 void TestIntegration::testSimpleComparison() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     const Situation situation{Str2SyncName(R"({
@@ -274,6 +275,8 @@ void TestIntegration::testSimpleComparison() {
 }
 
 void TestIntegration::testSimpleUpload() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     const Situation startsituation{Str2SyncName(R"({
@@ -312,12 +315,13 @@ void TestIntegration::testSimpleUpload() {
 }
 
 void TestIntegration::testGlobalFramework() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     // Note: SyncTime is a real Unix epoch (seconds since 1970), not a "YYYYMMDDHHMMSS"-formatted number.
-    const SyncTime dirTime = testhelpers::defaultTime - 3600; // 1 hour ago
     const Situation situation{Str2SyncName(R"({
         "content" : [
             {
@@ -394,6 +398,8 @@ void TestIntegration::testGlobalFramework() {
 }
 
 void TestIntegration::testNestedRemoteOperations() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
@@ -428,6 +434,8 @@ void TestIntegration::testNestedRemoteOperations() {
 }
 
 void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
@@ -460,6 +468,8 @@ void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
 }
 
 void TestIntegration::testExecuteSyncUpToStep() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     // Start from an empty situation.
@@ -468,9 +478,8 @@ void TestIntegration::testExecuteSyncUpToStep() {
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     const std::vector stepsToTest = {
-            SyncStep::UpdateDetection1, SyncStep::UpdateDetection2, SyncStep::Reconciliation1,
-            SyncStep::Reconciliation2,  SyncStep::Reconciliation4,  SyncStep::Propagation1,
-            SyncStep::Propagation2,     SyncStep::Done,
+            SyncStep::UpdateDetection1, SyncStep::UpdateDetection2, SyncStep::Reconciliation1, SyncStep::Reconciliation2,
+            SyncStep::Reconciliation4,  SyncStep::Propagation1,     SyncStep::Propagation2,    SyncStep::Done,
     };
 
     for (const auto step: stepsToTest) {

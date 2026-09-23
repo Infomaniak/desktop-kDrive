@@ -3175,8 +3175,8 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>La verificación de la suma de comprobación ha fallado. Es posible que el archivo esté dañado.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>La verificación del instalador ha fallado. Es posible que el archivo esté dañado.</translation>
     </message>
 </context>
 <context>

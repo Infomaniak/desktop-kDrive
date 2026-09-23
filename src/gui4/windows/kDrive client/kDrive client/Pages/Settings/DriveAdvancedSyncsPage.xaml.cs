@@ -50,7 +50,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         if (_baseDrive is null)
         {
             var errorMessage = "Drive parameter missing when navigating to DriveManagementPage";
-            Logger.Log(Logger.Level.Error, errorMessage);
+            Logger.LogError(errorMessage, "DriveAdvancedSyncsPage: Missing drive parameter");
             AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
             return;
         }
@@ -70,7 +70,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         else if (_viewModel.AllDrives.Any(d => d.DriveId == _baseDrive.DriveId && d.AccountId == _baseDrive.AccountId && d.UserDbId == _baseDrive.UserDbId))
         {
             // Can happen if a user uses the back button after setting up a new drive.
-            Logger.Log(Logger.Level.Info, "The Available drive have an equivalent configured drive that should be used");
+            Logger.LogInfo("The Available drive have an equivalent configured drive that should be used");
             AppModel.UIThreadDispatcher.TryEnqueue(() => { Frame.GoBack(); }); // Frame.GoBack() must be called outside of OnNavigatedTo
             return;
         }
@@ -87,13 +87,13 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         if (args.Index == 0)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.DriveBreadcrumbs);
-            Logger.Log(Logger.Level.Debug, "Navigating to SettingsPage");
+            Logger.LogDebug("Navigating to SettingsPage");
             Frame.Navigate(typeof(SettingsPage));
         }
         else if (args.Index == 1)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.DriveManagementBreadcrumbs);
-            Logger.Log(Logger.Level.Debug, "Navigating to DriveManagementPage");
+            Logger.LogDebug("Navigating to DriveManagementPage");
             Frame.Navigate(typeof(DriveManagementPage), _baseDrive);
         }
     }
@@ -102,7 +102,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         Sync? sync = (sender as FrameworkElement)?.DataContext as Sync;
         if (sync is null)
         {
-            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on local path link");
+            Logger.LogError("Could not get sync from DataContext when clicking on local path link");
             return;
         }
 
@@ -115,7 +115,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         Sync? sync = (sender as FrameworkElement)?.DataContext as Sync;
         if (sync is null)
         {
-            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on remote path link");
+            Logger.LogError("Could not get sync from DataContext when clicking on remote path link");
             return;
         }
 
@@ -128,7 +128,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var control = sender as Control;
         if (control is null)
         {
-            Logger.Log(Logger.Level.Error, "Remove sync button is null when clicking on remove sync button");
+            Logger.LogError("Remove sync button is null when clicking on remove sync button");
             return;
         }
 
@@ -136,14 +136,14 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         Sync? sync = control.DataContext as Sync;
         if (sync is null)
         {
-            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on remove sync button");
+            Logger.LogError("Could not get sync from DataContext when clicking on remove sync button");
             control.IsEnabled = true;
             return;
         }
 
         if (ManagedDrive is null)
         {
-            Logger.Log(Logger.Level.Error, "Cannot remove sync: ManagedDrive or sync is null");
+            Logger.LogError("Cannot remove sync: ManagedDrive or sync is null");
             control.IsEnabled = true;
             return;
         }
@@ -161,16 +161,16 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var dialogResult = await dialog.ShowAsync();
         if (dialogResult != ContentDialogResult.Primary)
         {
-            Logger.Log(Logger.Level.Info, "User canceled sync removal");
+            Logger.LogInfo("User canceled sync removal");
             control.IsEnabled = true;
             return;
         }
 
-        Logger.Log(Logger.Level.Info, "User confirmed advanced sync removal");
+        Logger.LogInfo("User confirmed advanced sync removal");
         _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.Delete);
         if (!await sync.Drive.RemoveSync(sync, CancellationToken.None))
         {
-            Logger.Log(Logger.Level.Error, "Failed to remove sync");
+            Logger.LogError("Failed to remove sync");
             Utility.ShowUnexpectedErrorTeachingTip();
         }
 
@@ -182,7 +182,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var radioButton = sender as RadioButton;
         if (radioButton is null)
         {
-            Logger.Log(Logger.Level.Error, "Sender of SyncTypeRadioButton_Click is not a RadioButton");
+            Logger.LogError("Sender of SyncTypeRadioButton_Click is not a RadioButton");
             return;
         }
 
@@ -192,7 +192,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         Sync? sync = radioButton.DataContext as Sync;
         if (sync is null)
         {
-            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync mode radio button");
+            Logger.LogError("Could not get sync from DataContext when clicking on sync mode radio button");
             return;
         }
 
@@ -201,19 +201,19 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         if (!targetOffline && !targetOnline)
         {
-            Logger.Log(Logger.Level.Error, "Unknown radio button name for sync mode change");
+            Logger.LogError("Unknown radio button name for sync mode change");
             return;
         }
 
         if (targetOffline && sync.SyncType == Types.SyncType.Offline)
         {
-            Logger.Log(Logger.Level.Info, "User clicked on Offline sync mode radio button while already in Offline mode");
+            Logger.LogInfo("User clicked on Offline sync mode radio button while already in Offline mode");
             return;
         }
 
         if (targetOnline && sync.SyncType == Types.SyncType.Online)
         {
-            Logger.Log(Logger.Level.Info, "User clicked on Online sync mode radio button while already in Online mode");
+            Logger.LogInfo("User clicked on Online sync mode radio button while already in Online mode");
             return;
         }
 
@@ -231,7 +231,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         if (canceledByUser)
         {
             _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.CancelSyncModeSwitch);
-            Logger.Log(Logger.Level.Info, "User canceled the change to online Sync mode");
+            Logger.LogInfo("User canceled the change to online Sync mode");
             // This is needed to revert the radio button state back to offline, as changing the sync type to online can fail and we want to reflect that in the UI.
             if (targetOnline)
             {
@@ -282,7 +282,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
     {
         if (_baseDrive is null)
         {
-            Logger.Log(Logger.Level.Error, "Cannot add sync: _baseDrive is null");
+            Logger.LogError("Cannot add sync: _baseDrive is null");
             return;
         }
 
@@ -295,7 +295,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
 
         if (dialog.Result == CustomControls.AdvancedSyncSetupContentDialog.AdvancedSyncSetupResult.Cancelled)
         {
-            Logger.Log(Logger.Level.Info, "User canceled advanced sync creation in content dialog");
+            Logger.LogInfo("User canceled advanced sync creation in content dialog");
             if (control is not null)
                 control.IsEnabled = true;
             return;
@@ -304,21 +304,21 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var newSync = dialog.GetNewSync();
         if (newSync is null || newSync.Drive is null)
         {
-            Logger.Log(Logger.Level.Error, "User confirmed new advanced sync creation in content dialog but GetNewSync returned null or newSync.Drive is null");
+            Logger.LogError("User confirmed new advanced sync creation in content dialog but GetNewSync returned null or newSync.Drive is null");
             Utility.ShowUnexpectedErrorTeachingTip();
             if (control is not null)
                 control.IsEnabled = true;
             return;
         }
 
-        Logger.Log(Logger.Level.Info, "User confirmed new advanced sync creation in content dialog, creating sync");
+        Logger.LogInfo("User confirmed new advanced sync creation in content dialog, creating sync");
         _analyticsService.TrackClick(Analytics.Keys.Category.DriveAdvancedSyncsPage, Analytics.Keys.EventName.Create);
 
         var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
-        Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
+        Logger.LogDebug($"Setting up new sync: LocalPath={newSync.LocalPath}, RemotePath={newSync.RemotePath}, Drive={newSync.Drive.Name}");
         if (!await commService.AddSync(newSync, CancellationToken.None))
         {
-            Logger.Log(Logger.Level.Error, $"Failed to add new sync for drive");
+            Logger.LogError($"Failed to add new sync for drive");
             if (control is not null)
                 control.IsEnabled = true;
             Utility.ShowUnexpectedErrorTeachingTip();
@@ -334,7 +334,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         Control? control = sender as Control;
         if (control is null)
         {
-            Logger.Log(Logger.Level.Error, "Sync exclusion button is null when clicking on sync exclusion button");
+            Logger.LogError("Sync exclusion button is null when clicking on sync exclusion button");
             Utility.ShowUnexpectedErrorTeachingTip();
             return;
         }
@@ -342,7 +342,7 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         ISync? sync = control.DataContext as ISync;
         if (sync is null)
         {
-            Logger.Log(Logger.Level.Error, "Could not get sync from DataContext when clicking on sync exclusion button");
+            Logger.LogError("Could not get sync from DataContext when clicking on sync exclusion button");
             Utility.ShowUnexpectedErrorTeachingTip();
             return;
         }
@@ -361,12 +361,12 @@ public sealed partial class DriveAdvancedSyncsPage : Page
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
-            Logger.Log(Logger.Level.Info, "User confirmed sync exclusion changes");
+            Logger.LogInfo("User confirmed sync exclusion changes");
             await exclusionPage.SaveChanges();
         }
         else
         {
-            Logger.Log(Logger.Level.Info, "User canceled sync exclusion changes");
+            Logger.LogInfo("User canceled sync exclusion changes");
         }
 
     }

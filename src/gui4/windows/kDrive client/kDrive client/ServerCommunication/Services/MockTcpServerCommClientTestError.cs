@@ -61,7 +61,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var syncs = appModel.Users[0].Accounts[0].Drives[0].Syncs;
             if (syncs.Count == 0)
             {
-                Logger.Log(Logger.Level.Warning, "No syncs available for test errors");
+                Logger.LogWarning("No syncs available for test errors");
                 return;
             }
 

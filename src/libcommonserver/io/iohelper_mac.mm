@@ -381,6 +381,8 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
         exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
     }
 
+    if (ioError == IoError::NoSuchFileOrDirectory) ioError = IoError::Success;
+
     return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
 }
 

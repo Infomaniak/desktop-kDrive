@@ -261,7 +261,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private async Task<CommData> UpdateStartInstaller(JsonObject parameters)
         {
-            Logger.Log(Logger.Level.Debug, "Received UpdateStartInstaller request.");
+            Logger.LogDebug("Received UpdateStartInstaller request.");
             await Task.Delay(2000);
             return new CommData
             {
@@ -274,7 +274,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private async Task<CommData> UpdaterSkipVersion(JsonObject parameters)
         {
-            Logger.Log(Logger.Level.Debug, "Received UpdaterSkipVersion request.");
+            Logger.LogDebug("Received UpdaterSkipVersion request.");
             await Task.CompletedTask;
             return new CommData
             {
@@ -287,7 +287,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> UpdaterVersionInfo(JsonObject parameters)
         {
-            Logger.Log(Logger.Level.Debug, "Received UpdateVersionInfo request.");
+            Logger.LogDebug("Received UpdateVersionInfo request.");
             DistributionChannel channel = _mockData.Settings.DistributionChannel ?? throw new InvalidOperationException("Distribution channel is not set in mocked settings.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
             {
@@ -314,14 +314,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         }
         private Task<CommData> UpdaterChangeChannel(JsonObject parameters)
         {
-            Logger.Log(Logger.Level.Debug, "Received UpdaterChangeChannel request.");
+            Logger.LogDebug("Received UpdaterChangeChannel request.");
             if (parameters.ContainsKey(JsonKeys.UpdateChannel) && parameters[JsonKeys.UpdateChannel] != null)
             {
                 _mockData.Settings.DistributionChannel = (DistributionChannel)parameters[JsonKeys.UpdateChannel]!.GetValue<int>();
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "No channel specified in UpdaterChangeChannel request, using current channel.");
+                Logger.LogWarning("No channel specified in UpdaterChangeChannel request, using current channel.");
 
             }
             EnqueueSignal(SignalNum.UPDATER_STATE_CHANGED, []);
@@ -336,7 +336,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> ParametersInfo(JsonObject parameters)
         {
-            Logger.Log(Logger.Level.Debug, "Received ParametersInfo request.");
+            Logger.LogDebug("Received ParametersInfo request.");
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
@@ -357,10 +357,10 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private Task<CommData> ParametersUpdate(JsonObject parameters)
         {
-            Logger.Log(Logger.Level.Debug, "Received ParametersUpdate request.");
+            Logger.LogDebug("Received ParametersUpdate request.");
             if (!parameters.ContainsKey(JsonKeys.ParmsInfo) || parameters[JsonKeys.ParmsInfo] == null)
             {
-                Logger.Log(Logger.Level.Warning, "No parmsInfo specified in ParametersUpdate request, using existing settings.");
+                Logger.LogWarning("No parmsInfo specified in ParametersUpdate request, using existing settings.");
 
                 return Task.FromResult(new CommData
                 {
@@ -379,7 +379,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             var updatedSettings = parameters[JsonKeys.ParmsInfo]!.Deserialize<ParmsInfo>(options);
             if (updatedSettings is null)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to deserialize parmsInfo from ${parameters["parmsInfos"]}");
+                Logger.LogError($"Failed to deserialize parmsInfo from ${parameters["parmsInfos"]}",
+                    "MockTcpServerCommClient: Failed to deserialize parameters");
                 throw new InvalidOperationException("Failed to deserialize parmsInfo in ParametersUpdate request.");
             }
             _mockData.Settings = updatedSettings;

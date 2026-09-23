@@ -31,13 +31,13 @@ namespace Infomaniak.kDrive.Converters
             {
                 return !list.Any() ? Visibility.Collapsed : Visibility.Visible;
             }
-            Logger.Log(Logger.Level.Fatal, "ListEmptyToInvertedVisibilityConverter: value is not a list.");
+            Logger.LogFatal("ListEmptyToInvertedVisibilityConverter: value is not a list.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "ListEmptyToInvertedVisibilityConverter: ConvertBack is not supported.");
+            Logger.LogFatal("ListEmptyToInvertedVisibilityConverter: ConvertBack is not supported.");
             throw new NotSupportedException("ConvertBack is not supported.");
         }
     }

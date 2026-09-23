@@ -685,7 +685,8 @@ function Package-RecoveryUpdater {
     param (
         [string] $buildPath,
         [string] $contentPath,
-        [string] $thumbprint
+        [string] $thumbprint,
+        [bool] $newGui
     )
 
     $updaterExe = "$buildPath/bin/kDriveRecoveryUpdater.exe"
@@ -744,7 +745,7 @@ function Package-RecoveryUpdater {
     $sfxExe = "$contentPath/kDriveRecoveryUpdater-$version.exe"
     $nsiTemplate = "$repositoryRootPath/infomaniak-build-tools/windows/recovery-updater.nsi"
     $nsiFile = "$buildPath/recovery-updater.nsi"
-    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $false
+    $iconPath = Get-Icon-Path -buildPath $buildPath -newGui $newGui
 
     $nsiContent = Get-Content $nsiTemplate -Raw
     $nsiContent = $nsiContent -replace '@{output}', ($sfxExe -replace '/', '\')
@@ -991,7 +992,7 @@ if ($msi) {
 #################################################################################################
 
 if ($ci) {
-    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
+    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -NewGui $newGui
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
         exit $LASTEXITCODE

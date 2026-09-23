@@ -79,6 +79,7 @@ void TestGuiCommChannel::testErrorListJob() {
 
     Poco::JSON::Object answerParamsObj;
     (void) answerParamsObj.set("errorInfoList", errorInfoListArr);
+    (void) answerParamsObj.set("hasMore", false);
     (void) answerObj.set("params", answerParamsObj);
 
     Poco::JSON::Object answerObjWithNumAndType = answerObj;
@@ -109,6 +110,7 @@ void TestGuiCommChannel::testErrorListJob() {
         e1.setCancelType(CancelType::None);
         e1.setDestinationPath("");
         errorJob->_errorList = {e1};
+        errorJob->_hasMore = false;
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)

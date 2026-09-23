@@ -419,7 +419,7 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error iterating directory with IoHelper::DirectoryIterator: " << Utility::formatIoError(path, ioError));
-        return IoHelper::directoryIteratorExitCode(ioError);
+        return IoHelper::toExitInfo(ioError);
     }
 
     return ExitCode::Ok;
@@ -1224,7 +1224,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
         case TooManyDeleteOperations:
             return false;
         case Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength;
+            return error.inconsistencyType() != InconsistencyType::PathLength && !error.isStale();
         }
         default:
             return true;
@@ -1577,19 +1577,52 @@ ExitCode ServerRequests::getErrorList(const ErrorLevel level, const SyncDbId syn
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::getErrorList(const int limit, std::vector<Error> &list) {
-    std::vector<Error> errorList;
-    if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
-        return ExitCode::DbError;
+namespace {
+
+bool deleteIfStale(const Error &error) {
+    if (!error.isStale()) {
+        return false;
     }
 
-    list.clear();
-    for (const Error &error: errorList) {
-        if (isDisplayableError(error)) {
-            list.push_back(error);
-        }
+    LOG_INFO(Log::instance()->getLogger(), "Deleting stale error with dbId: " << error.dbId());
+
+    bool found = false;
+    if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
+        return false;
     }
+
+    return true;
+}
+
+} // namespace
+
+ExitInfo ServerRequests::getErrorList(const int32_t limit, std::vector<Error> &list, bool &hasMore) {
+    constexpr int32_t maxStaleCount = 10;
+
+    int32_t staleCount = 0;
+    do {
+        std::vector<Error> errorList;
+        if (!ParmsDb::instance()->selectAllErrors(limit, errorList)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
+            return ExitCode::DbError;
+        }
+
+        list.clear();
+        hasMore = errorList.size() >= limit;
+        staleCount = 0;
+
+        for (const Error &error: errorList) {
+            if (deleteIfStale(error)) {
+                ++staleCount;
+                continue;
+            }
+
+            if (isDisplayableError(error)) {
+                list.push_back(error);
+            }
+        }
+    } while (staleCount > maxStaleCount);
 
     return ExitCode::Ok;
 }
@@ -2142,7 +2175,6 @@ void ServerRequests::parametersToParametersInfo(const Parameters &parameters, Pa
     parametersInfo.setDistributionChannel(parameters.distributionChannel());
     parametersInfo.setSentryEnabled(parameters.sentryEnabled());
     parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
-    parametersInfo.setNotifyBeforeDelete(parameters.notifyBeforeDelete());
 }
 
 void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
@@ -2173,7 +2205,6 @@ void ServerRequests::parametersInfoToParameters(const ParametersInfo &parameters
     parameters.setDistributionChannel(parametersInfo.distributionChannel());
     parameters.setSentryEnabled(parametersInfo.sentryEnabled());
     parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
-    parameters.setNotifyBeforeDelete(parametersInfo.notifyBeforeDelete());
 }
 
 } // namespace KDC

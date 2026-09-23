@@ -57,7 +57,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 
     if (!IoHelper::getRecursiveDirectoryIterator(parentPath, ioError, dirIt)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(parentPath, ioError));
-        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+        _exitInfo = IoHelper::toExitInfo(ioError);
         return false;
     }
 
@@ -93,7 +93,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
             LOGW_DEBUG(_logger, L"Error in checkIfItemShouldStayOnDisk " << Utility::formatIoError(entry.path(), entryIoError));
             if (IoHelper::isExpectedError(entryIoError)) continue;
 
-            _exitInfo = IoHelper::directoryIteratorExitCode(entryIoError);
+            _exitInfo = IoHelper::toExitInfo(entryIoError);
             return false;
         }
 
@@ -158,7 +158,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursively(const SyncPath &parentPa
 
     const bool success = (ioError == IoError::Success) && endOfDir && !directoryIterationException;
     if (!success) {
-        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+        _exitInfo = IoHelper::toExitInfo(ioError);
     }
 
     return success;
@@ -240,7 +240,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
     IoHelper::DirectoryIterator dirIt;
     if (auto ioError = IoError::Success; !IoHelper::getRecursiveDirectoryIterator(_rootPath, ioError, dirIt)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getRecursiveDirectoryIterator: " << Utility::formatIoError(_rootPath, ioError));
-        _exitInfo = IoHelper::directoryIteratorExitCode(ioError);
+        _exitInfo = IoHelper::toExitInfo(ioError);
         return false;
     }
 
@@ -258,7 +258,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             LOGW_WARN(_logger, L"Error in checkFileType " << Utility::formatIoError(entry.path(), tmpIoError));
             if (IoHelper::isExpectedError(tmpIoError)) continue;
 
-            _exitInfo = IoHelper::directoryIteratorExitCode(tmpIoError);
+            _exitInfo = IoHelper::toExitInfo(tmpIoError);
             return false;
         }
 
@@ -276,7 +276,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
         if (auto tmpIoError = IoError::Success; !IoHelper::deleteItem(entry.path(), tmpIoError)) {
             LOGW_WARN(_logger, L"Failed to remove " << Utility::formatIoError(entry.path(), tmpIoError));
-            _exitInfo = IoHelper::directoryIteratorExitCode(tmpIoError);
+            _exitInfo = IoHelper::toExitInfo(tmpIoError);
 
             failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, entry.path()));
         }
@@ -295,7 +295,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
     const bool iterationSuccess = (iterationIoError == IoError::Success) && endOfDir && !directoryIterationException;
     if (!iterationSuccess) {
-        _exitInfo = IoHelper::directoryIteratorExitCode(iterationIoError);
+        _exitInfo = IoHelper::toExitInfo(iterationIoError);
     }
 
     return iterationSuccess && failedToRemovePlaceholders.empty();

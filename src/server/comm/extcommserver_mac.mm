@@ -97,6 +97,7 @@ class ExtCommServerPrivate : public AbstractCommServerPrivate {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
     auto *channelPrivate = new ExtCommChannelPrivate(newConnection);
+    assert(self.wrapper);
     auto *server = (KDC::ExtCommServer *) self.wrapper->publicPtr;
 
     auto channel = std::make_shared<KDC::ExtCommChannel>(channelPrivate);

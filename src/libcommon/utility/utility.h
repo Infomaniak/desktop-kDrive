@@ -137,7 +137,6 @@ struct COMMON_EXPORT CommonUtility {
         static QString escape(const QString &in);
         static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
         static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
-        static std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept;
 
         static bool compressFile(const std::wstring &originalName, const std::wstring &targetName,
                                  const std::function<bool(int)> &progressCallback = nullptr);

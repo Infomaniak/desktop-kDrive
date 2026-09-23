@@ -103,7 +103,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to build TLS client certificate from keychain material: {ex.Message}");
+                Logger.LogError($"Failed to build TLS client certificate from keychain material: {ex.Message}",
+                    "SecureSocketConnection: Failed to build TLS client certificate");
                 return null;
             }
         }
@@ -118,7 +119,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (presentedCertificate is null)
             {
-                Logger.Log(Logger.Level.Error, "TLS validation failed: server presented no certificate.");
+                Logger.LogError("TLS validation failed: server presented no certificate.");
                 return false;
             }
 
@@ -126,7 +127,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             bool matches = presented.RawData.SequenceEqual(serverCertificate.RawData);
             if (!matches)
             {
-                Logger.Log(Logger.Level.Error, "TLS validation failed: server certificate does not match the server certificate.");
+                Logger.LogError("TLS validation failed: server certificate does not match the server certificate.");
             }
             return matches;
         }

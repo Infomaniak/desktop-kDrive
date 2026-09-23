@@ -44,7 +44,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!await ControlViewModel.ResolveDriveFullError())
             {
-                Logger.Log(Logger.Level.Error, "Failed to resolve drive full error");
+                Logger.LogError("Failed to resolve drive full error");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
@@ -53,7 +53,7 @@ namespace Infomaniak.kDrive.CustomControls
         {
             if (!await ControlViewModel.ResolveTmpDirAccessError())
             {
-                Logger.Log(Logger.Level.Error, "Failed to resolve tmp dir access error");
+                Logger.LogError("Failed to resolve tmp dir access error");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }

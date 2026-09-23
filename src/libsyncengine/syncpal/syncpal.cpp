@@ -384,9 +384,10 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
     }
 }
 
-void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const uint64_t nbFiles) {
+void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const int64_t nbDeletes,
+                                          const std::vector<SyncPath> &filesPaths) {
     if (_sendManyDeletesNotification) {
-        _sendManyDeletesNotification(syncDbId(), notificationType, nbFiles);
+        _sendManyDeletesNotification(syncDbId(), notificationType, nbDeletes, filesPaths);
     }
 }
 
@@ -682,7 +683,9 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         error.setExitCause(ExitCause::NotFound);
         addError(error);
 
-        vfs()->cancelHydrate(downloadJob->localPath());
+        vfs()->cancelHydrate(downloadJob->localPath(), {ExitCode::BackError, ExitCause::NotFound});
+    } else if (!downloadJob->exitInfo() || downloadJob->isAborted()) {
+        vfs()->cancelHydrate(downloadJob->localPath(), downloadJob->exitInfo());
     }
 
     (void) _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
@@ -719,14 +722,14 @@ void SyncPal::resetSnapshotInvalidationCounters() {
     _remoteFSObserverWorker->resetInvalidateCounter();
 }
 
-ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
+ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &absoluteLocalPath,
                                  const SyncPath &parentFolderPath) {
     // Get the nodeId from the File System (not from the DB).
     // It is possible that an element of the path has been renamed and that the change has not yet been synchronized.
     NodeId localNodeId;
     if (!IoHelper::getNodeId(absoluteLocalPath, localNodeId)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(absoluteLocalPath));
-        return ExitCode::DataError;
+        return {ExitCode::SystemError, ExitCause::NotFound};
     }
 
     NodeId remoteNodeId;
@@ -737,7 +740,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     int64_t expectedSize = -1;
@@ -747,7 +750,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     }
     if (!found) {
         LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for localNodeId=" << CommonUtility::s2ws(localNodeId));
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::NotFound};
     }
 
     // Hydration job
@@ -787,7 +790,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             return;
         }
 
-        if (!setProgress(job->affectedFilePath(), progress)) {
+        if (!setProgress(job->affectedFilePath(), static_cast<int16_t>(progress))) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
     };
@@ -840,6 +843,7 @@ ExitCode SyncPal::cancelAllDlDirectJobs() {
     for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         directDownloadJobsMapElt.second->abort();
+        _vfs->cancelHydrate(directDownloadJobsMapElt.second->localPath(), ExitCode::SyncPaused);
     }
 
     _directDownloadJobsMap.clear();
@@ -1039,7 +1043,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) const {
     exists = false;
 
-    if (!_remoteFSObserverWorker) return {ExitCode::LogicError};
+    if (!_remoteFSObserverWorker) return {ExitCode::SyncPaused};
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1065,7 +1069,7 @@ ExitInfo SyncPal::checkIfExistsOnServer(const SyncPath &path, bool &exists) cons
 ExitInfo SyncPal::checkIfCanShareItem(const SyncPath &path, bool &canShare) const {
     canShare = false;
 
-    if (!_remoteFSObserverWorker) return ExitCode::LogicError;
+    if (!_remoteFSObserverWorker) return ExitCode::SyncPaused;
 
     // Path is normalized on server side
     SyncPath normalizedPath;
@@ -1464,9 +1468,9 @@ void SyncPal::fixInconsistentFileNames() {
             }
 
             GenericLocalDeleteJob deleteJob(
-                    oldLocalPath,
-                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put dehydrated placeholder
-                                                                  // in the trash.
+                    oldLocalPath, _cacheDirectory,
+                    GenericLocalDeleteJob::ForceHardDelete::Yes); // Hard delete to make sure we do not put
+                                                                  // dehydrated placeholder in the trash.
             deleteJob.runSynchronously();
         }
     }

@@ -58,13 +58,13 @@ namespace Infomaniak.kDrive
                 CultureInfo.CurrentCulture.ClearCachedData();
                 ApplicationLanguages.PrimaryLanguageOverride = cultureName;
                 context.QualifierValues["language"] = cultureName;
-                Logger.Log(Logger.Level.Info, $"Culture set to {cultureName}");
+                Logger.LogInfo($"Culture set to {cultureName}");
                 TriggerRefresh();
             }
             catch (Exception e)
             {
-                Logger.Log(Logger.Level.Error,
-                    $"Failed to set culture to {cultureName}. Error: {e.Message}");
+                Logger.LogError($"Failed to set culture to {cultureName}. Error: {e.Message}",
+                    "Localizer: Failed to set culture");
             }
         }
 
@@ -155,13 +155,15 @@ namespace Infomaniak.kDrive
 
             if (!Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uri))
             {
-                Logger.Log(Logger.Level.Error, $"Invalid URI string for key {uriKey}: {uriString}");
+                Logger.LogError($"Invalid URI string for key {uriKey}: {uriString}",
+                    "Localizer: Invalid localized URI");
                 return false;
             }
 
             bool success = await Windows.System.Launcher.LaunchUriAsync(uri);
             if (!success)
-                Logger.Log(Logger.Level.Error, $"Failed to launch URI: {uri}");
+                Logger.LogError($"Failed to launch URI: {uri}",
+                    "Localizer: Failed to launch URI");
 
             return success;
         }
@@ -182,13 +184,15 @@ namespace Infomaniak.kDrive
 
             if (localizedString.Length == 0)
             {
-                Logger.Log(Logger.Level.Error, $"Missing resource for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+                Logger.LogError($"Missing resource for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}",
+                    "Localizer: Missing resource");
                 return $"!{key}!"; // Return the key wrapped in exclamation marks to indicate a missing localization
             }
 
             if (localizedString is null || localizedString.Length == 0)
             {
-                Logger.Log(Logger.Level.Error, $"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+                Logger.LogError($"Missing localization for key: {key} in current culture {System.Globalization.CultureInfo.CurrentUICulture.Name}",
+                    "Localizer: Missing localization");
                 return $"!{key}!"; // Return the key wrapped in exclamation marks to indicate a missing localization
             }
 
@@ -216,7 +220,8 @@ namespace Infomaniak.kDrive
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(Logger.Level.Error, $"Failed to format localized string: {localizedString} with args: {string.Join(", ", args)}. Error: {e.Message}");
+                    Logger.LogError($"Failed to format localized string: {localizedString} with args: {string.Join(", ", args)}. Error: {e.Message}",
+                        "Localizer: Failed to format localized string");
                 }
             }
 
@@ -234,13 +239,14 @@ namespace Infomaniak.kDrive
         private string GetBestAvailableCultureName(Language language)
         {
             if (languageToCultureMap.Count != Language.GetValues(typeof(Language)).Length - 1) // -1 because of Language.Default
-                Logger.Log(Logger.Level.Warning, "The language to culture map does not contain all languages defined in the Language enum. This may cause issues with localization.");
+                Logger.LogWarning("The language to culture map does not contain all languages defined in the Language enum. This may cause issues with localization.");
 
             if (language == Language.Default)
                 return GetBestAvailableSystemDefaultCultureName();
             else if (!languageToCultureMap.ContainsKey(language))
             {
-                Logger.Log(Logger.Level.Error, $"Unsupported Language {language}, falling back to english.");
+                Logger.LogError($"Unsupported Language {language}, falling back to english.",
+                    "Localizer: Unsupported language");
                 return languageToCultureMap.GetValueOrDefault(Language.English, "en");
             }
             else
@@ -254,7 +260,8 @@ namespace Infomaniak.kDrive
                 return systemCultureName;
             else
             {
-                Logger.Log(Logger.Level.Warning, $"System language {systemCultureName} is not supported, falling back to english.");
+                Logger.LogWarning($"System language {systemCultureName} is not supported, falling back to english.",
+                    "Localizer: Unsupported system language");
                 return "en"; // Fallback to english if system language is not supported
             }
         }

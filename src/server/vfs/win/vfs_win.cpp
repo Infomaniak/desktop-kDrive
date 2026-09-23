@@ -51,7 +51,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
         return;
     }
 
-    starVfsWorkers();
+    startVfsWorkers();
 }
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
@@ -137,11 +137,21 @@ void VfsWin::hydrate(const SyncPath &pathStd) {
     _setSyncFileSyncing(_vfsSetupParams.syncDbId, QStr2Path(relativePath), false);
 }
 
-void VfsWin::cancelHydrate(const SyncPath &pathStd) {
+void VfsWin::cancelHydrate(const SyncPath &pathStd, const ExitInfo &exitInfo) {
     LOGW_DEBUG(logger(), L"cancelHydrate: " << Utility::formatSyncPath(pathStd));
     const QString path = SyncName2QStr(pathStd.native());
+
+    auto status = STATUS_UNSUCCESSFUL;
+    if (exitInfo.cause() == ExitCause::NotFound) {
+        status = STATUS_CLOUD_FILE_NOT_IN_SYNC;
+    } else if (exitInfo.code() == ExitCode::SyncPaused) {
+        status = STATUS_CLOUD_FILE_PROVIDER_NOT_RUNNING;
+    } else if (exitInfo.code() == ExitCode::NetworkError) {
+        status = STATUS_CLOUD_FILE_NETWORK_UNAVAILABLE;
+    }
+
     if (vfsCancelFetch(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
-                       QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
+                       QStr2Path(QDir::toNativeSeparators(path)).c_str(), status) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsCancelFetch: " << Utility::formatSyncPath(QStr2Path(path)));
         return;
     }
@@ -642,18 +652,20 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
 
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
-                _workerInfo[workerDehydration]._mutex.lock();
-                _workerInfo[workerDehydration]._queue.push_front(fullPath);
-                _workerInfo[workerDehydration]._mutex.unlock();
+                {
+                    QMutexLocker locker(&_workerInfo[workerDehydration]._mutex);
+                    _workerInfo[workerDehydration]._queue.push_front(fullPath);
+                }
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
                 // Set hydrating indicator (avoid double hydration)
                 _setSyncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, true);
 
                 // Add file path to hydration queue
-                _workerInfo[workerHydration]._mutex.lock();
-                _workerInfo[workerHydration]._queue.push_front(fullPath);
-                _workerInfo[workerHydration]._mutex.unlock();
+                {
+                    QMutexLocker locker(&_workerInfo[workerHydration]._mutex);
+                    _workerInfo[workerHydration]._queue.push_front(fullPath);
+                }
                 _workerInfo[workerHydration]._queueWC.wakeOne();
             }
 

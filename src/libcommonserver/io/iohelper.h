@@ -55,6 +55,7 @@ static constexpr std::string_view pinStateExcluded("E");
 } // namespace litesync_attrs
 #endif
 
+class CacheDirectory;
 struct FileStat;
 
 struct IoHelper {
@@ -88,7 +89,7 @@ struct IoHelper {
             EnumEnd
         };
 
-        static ExitInfo directoryIteratorExitCode(const IoError ioError);
+        static ExitInfo toExitInfo(const IoError ioError);
 
         IoHelper() = default;
 
@@ -184,6 +185,8 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \param sensitive is a boolean set with true for a case & encoding sensitive check.
          \return true if no unexpected error occurred, false otherwise.
+
+         \note This method never sets ioError with `IoError::NoSuchFileOrDirectory`.
          */
         static bool checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError, PathCheckOption option) noexcept;
 
@@ -307,6 +310,17 @@ struct IoHelper {
          * @return true if no unexpected error occurred, false otherwise.
          */
         static bool deleteItem(const SyncPath &path) noexcept;
+
+        //! Remove an item located under the specified path.
+        //! If the function fails, the item is left unmodified and an error ExitInfo is returned.
+        //! If it succeeds, the item is removed from its original path and ExitCode::Ok is returned.
+        /*!
+         \param path is the file system path of the item to remove.
+         \param cacheDirectory holds the cache directory pointer. The item to delete is first moved to the cache directory before
+         being deleted.
+         \return ExitInfo.
+         */
+        static ExitInfo deleteItemAtomically(const SyncPath &path, std::shared_ptr<CacheDirectory> cacheDirectory) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the
         //! directory.

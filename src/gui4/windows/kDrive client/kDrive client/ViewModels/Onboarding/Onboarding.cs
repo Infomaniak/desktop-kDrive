@@ -59,11 +59,12 @@ namespace Infomaniak.kDrive.ViewModels
             try
             {
                 await StopDriveAvailabilityWatcherAsync();
-                Logger.Log(Logger.Level.Info, "Onboarding disposed successfully");
+                Logger.LogInfo("Onboarding disposed successfully");
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Error while disposing Onboarding: {ex.Message}");
+                Logger.LogError($"Error while disposing Onboarding: {ex.Message}",
+                    "Onboarding: Disposal failed");
             }
         }
 
@@ -72,7 +73,7 @@ namespace Infomaniak.kDrive.ViewModels
             if (_driveAvailableWatcherTask is not null && !_driveAvailableWatcherTask.IsCompleted)
                 return;
 
-            Logger.Log(Logger.Level.Info, "Starting drive availability watcher task");
+            Logger.LogInfo("Starting drive availability watcher task");
             _driveAvailableWatcherCts = new CancellationTokenSource();
             _driveAvailableWatcherTask = WatchAvailableDrives(_driveAvailableWatcherCts.Token);
         }
@@ -82,7 +83,7 @@ namespace Infomaniak.kDrive.ViewModels
             if (_driveAvailableWatcherTask is null)
                 return;
 
-            Logger.Log(Logger.Level.Info, "Cancelling drive availability watcher task");
+            Logger.LogInfo("Cancelling drive availability watcher task");
             if (_driveAvailableWatcherCts is not null)
             {
                 await _driveAvailableWatcherCts.CancelAsync();
@@ -94,7 +95,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Drive availability watcher task cancelled successfully");
+                Logger.LogInfo("Drive availability watcher task cancelled successfully");
             }
             finally
             {
@@ -121,7 +122,7 @@ namespace Infomaniak.kDrive.ViewModels
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Drive availability watcher task cancelled");
+                Logger.LogInfo("Drive availability watcher task cancelled");
             }
         }
 
@@ -129,14 +130,14 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (SelectedUser is null)
             {
-                Logger.Log(Logger.Level.Warning, "SelectedUser is null - Cannot check available drives");
+                Logger.LogWarning("SelectedUser is null - Cannot check available drives");
                 return false;
             }
 
             await SelectedUser.RefreshAvailableDrives(cancellationToken);
             if (!cancellationToken.IsCancellationRequested && SelectedUser.AllDrives.Any())
             {
-                Logger.Log(Logger.Level.Info, "Drives found for user");
+                Logger.LogInfo("Drives found for user");
                 DrivesAvailable?.Invoke(this, EventArgs.Empty);
                 return true;
             }
@@ -152,30 +153,31 @@ namespace Infomaniak.kDrive.ViewModels
                 var OAutCodes = await OAuthHelper.GetCode(cancelationToken);
                 if (OAutCodes.Code != "")
                 {
-                    Logger.Log(Logger.Level.Debug, "Successfully obtained user code.");
+                    Logger.LogDebug("Successfully obtained user code.");
                     CurrentOAuth2State = OAuth2State.ProcessingResponse;
                     User? user = await _serverCommService.AddOrRelogUser(OAutCodes.Code, OAutCodes.CodeVerifier, cancelationToken);
                     if (user is not null)
                     {
                         SelectedUser = user;
                         CurrentOAuth2State = OAuth2State.Success;
-                        Logger.Log(Logger.Level.Info, $"User {user.Name} successfully connected.");
+                        Logger.LogInfo($"User {user.Name} successfully connected.");
                         return;
                     }
                 }
 
                 CurrentOAuth2State = OAuth2State.Error;
-                Logger.Log(Logger.Level.Warning, "Authentication process failed");
+                Logger.LogWarning("Authentication process failed");
             }
             catch (OperationCanceledException)
             {
                 CurrentOAuth2State = OAuth2State.Error;
-                Logger.Log(Logger.Level.Warning, "Authentication process canceled by user.");
+                Logger.LogWarning("Authentication process canceled by user.");
             }
             catch (Exception ex)
             {
                 CurrentOAuth2State = OAuth2State.Error;
-                Logger.Log(Logger.Level.Error, $"Authentication process failed {ex.Message}");
+                Logger.LogError($"Authentication process failed {ex.Message}",
+                    "Onboarding: Authentication failed");
             }
         }
 
@@ -183,27 +185,28 @@ namespace Infomaniak.kDrive.ViewModels
         {
             if (SelectedUser == null)
             {
-                Logger.Log(Logger.Level.Error, "No user selected to finish onboarding.");
+                Logger.LogError("No user selected to finish onboarding.");
                 return false;
             }
             if (!NewSyncs.Any())
             {
-                Logger.Log(Logger.Level.Warning, "No new syncs to set up during onboarding.");
+                Logger.LogWarning("No new syncs to set up during onboarding.");
                 return false;
             }
 
-            Logger.Log(Logger.Level.Info, $"Finishing onboarding for user {SelectedUser.Name} with {NewSyncs.Count} new syncs.");
+            Logger.LogInfo($"Finishing onboarding for user {SelectedUser.Name} with {NewSyncs.Count} new syncs.");
             int successCount = 0;
             foreach (NewSync sync in NewSyncs)
             {
-                Logger.Log(Logger.Level.Debug, $"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive?.Name ?? "unknown"}");
+                Logger.LogDebug($"Setting up new sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}, Drive={sync.Drive?.Name ?? "unknown"}");
                 bool result = await _serverCommService.AddSync(sync, CancellationToken.None);
                 if (!result)
-                    Logger.Log(Logger.Level.Warning, $"Failed to set up sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}");
+                    Logger.LogWarning($"Failed to set up sync: LocalPath={sync.LocalPath}, RemotePath={sync.RemotePath}",
+                        "Onboarding: Failed to set up sync");
 
                 successCount += result ? 1 : 0;
             }
-            Logger.Log(Logger.Level.Info, $"Onboarding sync setup completed: {successCount}/{NewSyncs.Count} syncs successfully set up.");
+            Logger.LogInfo($"Onboarding sync setup completed: {successCount}/{NewSyncs.Count} syncs successfully set up.");
             return successCount == NewSyncs.Count;
         }
 

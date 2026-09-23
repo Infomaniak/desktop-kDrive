@@ -30,15 +30,15 @@ namespace Infomaniak.kDrive.Pages
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public NotRenewErrorPage() : base([SyncErrorStates.NotRenew])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to NotRenewErrorPage - Initializing NotRenewErrorPage components");
+            Logger.LogInfo("Navigated to NotRenewErrorPage - Initializing NotRenewErrorPage components");
             InitializeComponent();
             UpdateContent();
-            Logger.Log(Logger.Level.Debug, "NotRenewErrorPage components initialized");
+            Logger.LogDebug("NotRenewErrorPage components initialized");
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-           base.OnNavigatedTo(e);
+            base.OnNavigatedTo(e);
             _analyticsService.TrackPageView(Analytics.Keys.Category.NotRenewErrorPage);
         }
 
@@ -63,7 +63,7 @@ namespace Infomaniak.kDrive.Pages
 
         private async void SecondaryButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Renew drive button clicked - Restarting sync");
+            Logger.LogInfo("Renew drive button clicked - Restarting sync");
             _analyticsService.TrackClick(Analytics.Keys.Category.NotRenewErrorPage, Analytics.Keys.EventName.StartSync);
             await RestartSync();
         }
@@ -72,13 +72,13 @@ namespace Infomaniak.kDrive.Pages
         {
             if (ViewModel.SelectedSync?.Drive.IsAdmin ?? false)
             {
-                Logger.Log(Logger.Level.Info, "Renew drive button clicked - Opening drive renewal page");
+                Logger.LogInfo("Renew drive button clicked - Opening drive renewal page");
                 _analyticsService.TrackClick(Analytics.Keys.Category.NotRenewErrorPage, Analytics.Keys.EventName.OpenRenewWeb);
                 await Windows.System.Launcher.LaunchUriAsync(App.Constants.Drive.RenewUrl(ViewModel.SelectedSync?.Drive.DriveId));
             }
             else
             {
-                Logger.Log(Logger.Level.Info, "Retry button clicked - Starting sync to retry connection");
+                Logger.LogInfo("Retry button clicked - Starting sync to retry connection");
                 _analyticsService.TrackClick(Analytics.Keys.Category.NotRenewErrorPage, Analytics.Keys.EventName.StartSync);
                 await RestartSync();
             }

@@ -72,7 +72,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 if (_requestIdCounter >= int.MaxValue - 1)
                 {
-                    Logger.Log(Logger.Level.Info, "Request ID counter overflow, resetting to 0.");
+                    Logger.LogInfo("Request ID counter overflow, resetting to 0.");
                     Interlocked.Exchange(ref _requestIdCounter, 0);
                 }
                 Interlocked.Increment(ref _requestIdCounter);
@@ -104,18 +104,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (FileNotFoundException)
             {
-                Logger.Log(Logger.Level.Info, $".comm file not found at {_commPortFilePath}. The server may not be running.");
+                Logger.LogInfo($".comm file not found at {_commPortFilePath}. The server may not be running.");
                 return null;
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to read server port from .comm file: {ex.Message}");
+                Logger.LogError($"Failed to read server port from .comm file: {ex.Message}",
+                    "TcpServerCommClient: Failed to read server port");
                 return null;
             }
 #else
             if (!TryParseServerPortFromArguments(Environment.GetCommandLineArgs(), out int port, out string errorMessage))
             {
-                Logger.Log(Logger.Level.Info, errorMessage);
+                Logger.LogInfo( errorMessage);
                 return null;
             }
 
@@ -148,7 +149,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             string? pem = _keychainStore.ReadSecret(_certKeychainKey);
             if (string.IsNullOrEmpty(pem))
             {
-                Logger.Log(Logger.Level.Warning, "TLS certificate not found in keychain yet.");
+                Logger.LogWarning("TLS certificate not found in keychain yet.");
                 return null;
             }
 
@@ -158,7 +159,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Failed to parse server TLS certificate from keychain: {ex.Message}");
+                Logger.LogError($"Failed to parse server TLS certificate from keychain: {ex.Message}",
+                    "TcpServerCommClient: Failed to parse server TLS certificate");
                 return null;
             }
         }
@@ -169,7 +171,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             string? keyPem = _keychainStore.ReadSecret(_clientKeyKeychainKey);
             if (string.IsNullOrEmpty(certPem) || string.IsNullOrEmpty(keyPem))
             {
-                Logger.Log(Logger.Level.Warning, "TLS client certificate/key not found in keychain yet.");
+                Logger.LogWarning("TLS client certificate/key not found in keychain yet.");
                 return null;
             }
 
@@ -180,7 +182,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (_pollingTask is not null)
             {
-                Logger.Log(Logger.Level.Error, "Connection initialization attempted while polling task is already running.");
+                Logger.LogError("Connection initialization attempted while polling task is already running.");
                 return false;
             }
 
@@ -193,7 +195,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
             if (port is null)
             {
-                Logger.Log(Logger.Level.Info, "Failed to get server port, starting a server and closing.");
+                Logger.LogInfo("Failed to get server port, starting a server and closing.");
                 ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerUnreachable));
                 return false;
             }
@@ -215,26 +217,27 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     return false;
                 }
 
-                Logger.Log(Logger.Level.Info, $"Attempting to connect to {_host}:{port}");
+                Logger.LogInfo($"Attempting to connect to {_host}:{port}");
                 DisposeConnection();
                 using (serverCertificate)
                 using (clientCertificate)
                 {
                     _stream = await SecureSocketConnection.ConnectAsync(_host, port.Value, serverCertificate, clientCertificate, cancellationToken).ConfigureAwait(false);
                 }
-                Logger.Log(Logger.Level.Info, "Connected to server over TLS.");
+                Logger.LogInfo("Connected to server over TLS.");
                 _pollingTask = Task.Run(PollingLoop);
                 return true;
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Connection initialization was canceled.");
-                
+                Logger.LogInfo("Connection initialization was canceled.");
+
             }
             catch (Exception ex) when (ex is SocketException or System.Security.Authentication.AuthenticationException or IOException)
             {
-                Logger.Log(Logger.Level.Warning, $"Connection failed: {ex.Message}");
-             
+                Logger.LogWarning($"Connection failed: {ex.Message}",
+                    "TcpServerCommClient: Connection failed");
+
             }
             ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerUnreachable));
             return false;
@@ -250,7 +253,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (_stream is null)
             {
-                Logger.Log(Logger.Level.Warning, "Unable to read: stream is not connected.");
+                Logger.LogWarning("Unable to read: stream is not connected.");
                 return;
             }
 
@@ -261,7 +264,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     int bytesRead = await _stream.ReadAsync(_receiveBuffer).ConfigureAwait(false);
                     if (bytesRead == 0)
                     {
-                        Logger.Log(Logger.Level.Warning, "Server has closed the connection.");
+                        Logger.LogWarning("Server has closed the connection.");
                         DisposeConnection();
                         ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                         return;
@@ -277,14 +280,16 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 catch (SocketException ex)
                 {
-                    Logger.Log(Logger.Level.Error, $"Socket poll error: {ex.Message}");
+                    Logger.LogError($"Socket poll error: {ex.Message}",
+                        "TcpServerCommClient: Socket polling failed");
                     DisposeConnection();
                     ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(Logger.Level.Error, $"Error processing incoming message: {ex.Message}");
+                    Logger.LogError($"Error processing incoming message: {ex.Message}",
+                        "TcpServerCommClient: Failed to process incoming message");
                     // Continue the loop to keep the connection alive, unless it's a critical error
                 }
             }
@@ -304,7 +309,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                     if (lastLogTime.ElapsedMilliseconds > softWaitTimeMs)
                     {
-                        Logger.Log(Logger.Level.Warning, "Client not connected, waiting to send request...");
+                        Logger.LogWarning("Client not connected, waiting to send request...");
                         lastLogTime.Restart();
                     }
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
@@ -336,18 +341,18 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 {
                     _sendLock.Release();
                 }
-                Logger.Log(Logger.Level.Info, $"Sent request: {jsonString}");
+                Logger.LogInfo($"Sent request: {jsonString}");
                 cancellationToken.ThrowIfCancellationRequested();
                 CommData reply = await WaitForReplyAsync(requestId, replySource, cancellationToken).ConfigureAwait(false);
                 if (reply.RequestNum == RequestNum.Unknown)
                 {
-                    Logger.Log(Logger.Level.Debug, "Request not implemented server-side");
+                    Logger.LogDebug("Request not implemented server-side");
                 }
                 return reply;
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Request operation was canceled.");
+                Logger.LogInfo("Request operation was canceled.");
                 if (_pendingRequests.TryRemove(requestId, out var tcs))
                     tcs.SetResult(new CommData());
                 return new CommData();
@@ -357,7 +362,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 if (_pendingRequests.TryRemove(requestId, out var tcs))
                     tcs.SetResult(new CommData());
                 ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
-                Logger.Log(Logger.Level.Error, $"Socket write error: {ex.Message}");
+                Logger.LogError($"Socket write error: {ex.Message}",
+                    "TcpServerCommClient: Socket write failed");
                 return new CommData();
             }
         }
@@ -382,7 +388,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 return true;
             if (_inBuffer[0] != '{')
             {
-                Logger.Log(Logger.Level.Error, "Invalid message format: does not start with '{'.");
+                Logger.LogError("Invalid message format: does not start with '{'.");
                 return false;
             }
             return true;
@@ -406,14 +412,14 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
                 if (jsonEndIndex == -1)
                 {
-                    Logger.Log(Logger.Level.Extended, "Incomplete JSON message, waiting for more data.");
+                    Logger.LogExtended("Incomplete JSON message, waiting for more data.");
                     return;
                 }
 
                 ReadOnlySpan<char> jsonSpan = _inBuffer.ToString(0, jsonEndIndex + 1);
                 if (!jsonSpan.EndsWith("}"))
                 {
-                    Logger.Log(Logger.Level.Error, "Unexpected end character");
+                    Logger.LogError("Unexpected end character");
                     ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
@@ -425,7 +431,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 var messageObj = JsonSerializer.Deserialize<CommData>(jsonSpan, _jsonOptions);
                 if (messageObj is null)
                 {
-                    Logger.Log(Logger.Level.Error, "Invalid message format.");
+                    Logger.LogError("Invalid message format.");
                     ConnectionLost?.Invoke(this, new ConnectionLostArgs(ConnectionLostArgs.ConnectionLostReason.ServerDisconnected));
                     return;
                 }
@@ -457,18 +463,19 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
 
         private void HandleServerMessageAsync(CommData data)
         {
-            Logger.Log(Logger.Level.Info, $"Message type: {data.Type}, id: {data.Id}, num: {data.Num}");
+            Logger.LogInfo($"Message type: {data.Type}, id: {data.Id}, num: {data.Num}");
             switch (data.Type)
             {
                 case CommMessageType.Request:
-                    Logger.Log(Logger.Level.Info, $"Received a reply for id {data.Id}");
+                    Logger.LogInfo($"Received a reply for id {data.Id}");
                     if (_pendingRequests.TryRemove(data.Id, out var tcs))
                     {
                         tcs.TrySetResult(data);
                     }
                     else
                     {
-                        Logger.Log(Logger.Level.Warning, $"Received reply for unknown request ID {data.Id}");
+                        Logger.LogWarning($"Received reply for unknown request ID {data.Id}",
+                            "TcpServerCommClient: Reply received for unknown request");
                     }
                     break;
                 case CommMessageType.Signal:
@@ -477,7 +484,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                     RaiseSignal(signalNum, data.Params ?? []);
                     break;
                 default:
-                    Logger.Log(Logger.Level.Warning, $"Unknown message type: {data.Type}");
+                    Logger.LogWarning($"Unknown message type: {data.Type}",
+                        "TcpServerCommClient: Unknown message type");
                     break;
             }
         }

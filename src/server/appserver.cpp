@@ -2924,11 +2924,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4528,6 +4528,12 @@ ExitInfo AppServer::getNodePath(const SyncDbId syncDbId, const NodeId &nodeId, C
 }
 
 void AppServer::addError(const Error &error) const {
+    if (error.isStale()) {
+        LOG_WARN(Log::instance()->getLogger(), "Cannot add a stale error");
+        sentry::Handler::captureMessage(sentry::Level::Warning, "Cannot add a stale error", "Cannot add a stale error");
+        return;
+    }
+
     Error errorCopy = error;
     // Fetch all errors.
     std::vector<Error> errorList;
@@ -4935,16 +4941,16 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
 }
 
 void AppServer::sendManyDeletesNotification(const SyncDbId syncDbId, const TooManyDeletesNotificationType notificationType,
-                                            uint64_t nbFiles) const {
+                                            const int64_t nbDeletes, const std::vector<SyncPath> &filesPaths) const {
     if (useOldCommServer()) {
         int id = 0;
         const auto params =
-                QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType, static_cast<quint64>(nbFiles)));
-
+                QByteArray(ArgsReader(static_cast<qint64>(syncDbId), notificationType, static_cast<qint64>(nbDeletes)));
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_NOTIFY_MANY_DELETES, params, id);
     }
     if (useCommManager()) {
-        _commManager->sendGuiSignal(std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbFiles));
+        _commManager->sendGuiSignal(
+                std::make_shared<SignalSyncNotifyManyDeletesJob>(syncDbId, notificationType, nbDeletes, filesPaths));
     }
 }
 

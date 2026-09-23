@@ -19,6 +19,8 @@
 #include "log/sentry/handler.h"
 #include "filestat.h"
 #include "iohelper.h"
+#include "cachedirectory.h"
+
 #include "config.h" // APPLICATION
 
 #include <filesystem>
@@ -678,30 +680,16 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
-    auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+
+    [[maybe_unused]] const auto status = std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
+
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;
         return true;
     }
 
-#if defined(KD_WINDOWS) // TODO: Remove this block when migrating the release process to Visual Studio 2022.
-    // Prior to Visual Studio 2022, std::filesystem::symlink_status would return a misleading InvalidArgument if the path is
-    // found but located on a FAT32 disk. If the file is not found, it works as expected. This behavior is fixed when
-    // compiling with VS2022, see
-    // https://developercommunity.visualstudio.com/t/std::filesystem::is_symlink-is-broken-on/1638272
-    if (ioError == IoError::InvalidArgument && !CommonUtility::isNTFS(path)) {
-        (void) std::filesystem::status(
-                path, ec); // Symlink are only supported on NTFS on Windows, there is no risk to follow a symlink.
-        ioError = stdError2ioError(ec);
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            ioError = IoError::Success;
-            return true;
-        }
-    }
-#endif
-
-    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+    exists = ioError != IoError::FileNameTooLong;
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
     if (exists && option == PathCheckOption::Sensitive) {
@@ -933,18 +921,84 @@ bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinatio
     std::error_code ec;
     _rename(sourcePath, destinationPath, ec);
     ioError = stdError2ioError(ec);
+
     return ioError == IoError::Success;
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     // NB: Symlinks are not followed (symlink is removed, not its target).
     std::error_code ec;
-    (void) std::filesystem::remove_all(path, ec);
+    (void) std::filesystem::remove_all(
+            path,
+            ec); // No error is raised if the path does not exist, see https://en.cppreference.com/w/cpp/filesystem/remove_all
     ioError = stdError2ioError(ec);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteItem: " << Utility::formatIoError(path, ioError));
+    if (ec) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::remove_all: " << Utility::formatStdError(path, ec));
     }
+
     return ioError == IoError::Success;
+}
+
+ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_ptr<CacheDirectory> cacheDirectory) noexcept {
+    SyncPath cacheDirectoryPath;
+    if (!cacheDirectory) return {ExitCode::LogicError, ExitCause::InvalidArgument};
+
+    // If the cache directory is invalid and if the path does not exist, return success.
+    if (const auto exitInfo = cacheDirectory->path(cacheDirectoryPath); !exitInfo) {
+        bool sourceItemExists = true;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        const auto checkOption = PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+        const auto checkOption = PathCheckOption::Sensitive;
+#endif
+        if (auto checkIfPathExistsError = IoError::Success;
+            checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, checkOption) && !sourceItemExists) {
+            return ExitCode::Ok;
+        }
+        return exitInfo;
+    }
+
+    const SyncPath destPath = cacheDirectoryPath / CacheDirectory::createTmpFileName();
+    auto ioError = IoError::Success;
+    (void) IoHelper::renameItem(path, destPath, ioError);
+
+    if (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(logger(), L"Error in IoHelper::renameItem: source " << Utility::formatSyncPath(path) << L", destination "
+                                                                      << Utility::formatSyncPath(destPath) << L", error: "
+                                                                      << Utility::formatIoError(ioError));
+    }
+
+    // If `ioError` is `NoSuchFileOrDirectory`, this is due to a non-existent source item or to a non-existent parent
+    // directory of the rename target. Check if the source item exists. If it does not exist, return success.
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        bool sourceItemExists = true;
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+        const auto checkOption = PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+        const auto checkOption = PathCheckOption::Sensitive;
+#endif
+        if (auto checkIfPathExistsError = IoError::Success;
+            !checkIfPathExists(path, sourceItemExists, checkIfPathExistsError, checkOption)) {
+            LOGW_WARN(logger(),
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, checkIfPathExistsError));
+            return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+        }
+        if (!sourceItemExists) return ExitCode::Ok;
+    }
+
+    switch (ioError) {
+        case IoError::Success:
+            if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
+                LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
+                                             << Utility::formatIoError(destPath, ioError)
+                                             << L". The item will be deleted later by the cache directory cleanup process.");
+            }
+            return ExitCode::Ok;
+        case IoError::AccessDenied:
+            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
+        default:
+            return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+    }
 }
 
 bool IoHelper::deleteItem(const SyncPath &path) noexcept {
@@ -1152,7 +1206,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
 }
 
-ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
+ExitInfo IoHelper::toExitInfo(const IoError ioError) {
     switch (ioError) {
         case IoError::Success:
             return ExitCode::Ok;
@@ -1160,6 +1214,12 @@ ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         case IoError::FileOrDirectoryCorrupted:
             return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+        case IoError::NoSuchFileOrDirectory:
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        case IoError::DirectoryExists:
+            return {ExitCode::SystemError, ExitCause::DirExists};
+        case IoError::FileExists:
+            return {ExitCode::SystemError, ExitCause::FileExists};
         default:
             return ExitCode::SystemError;
     }
