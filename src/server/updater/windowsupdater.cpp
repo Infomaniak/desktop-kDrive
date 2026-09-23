@@ -145,6 +145,11 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
         setState(UpdateState::DownloadError);
         return;
     }
+    if (!downloadJob->exitInfo() || downloadJob->isAborted()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Unable to download update to: " << downloadJob->getDestinationFile().c_str());
+        setState(UpdateState::DownloadError);
+        return;
+    }
 
     // Verify that the installer is present on local filesystem
     SyncPath filepath;
@@ -155,7 +160,7 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
 
     if (std::error_code ec; !std::filesystem::exists(filepath, ec)) {
         LOGW_WARN(Log::instance()->getLogger(), L"Installer file not found. " << Utility::formatStdError(filepath, ec));
-        downloadUpdate();
+        retryDownload(filepath);
         return;
     }
 
@@ -180,6 +185,8 @@ void WindowsUpdater::downloadFinished(const UniqueId jobId) {
 
 bool WindowsUpdater::getInstallerPath(SyncPath &path) const {
     const auto url = versionInfo().downloadUrl;
+    if (!versionInfo().isValid() || url.empty()) return false;
+
     const auto pos = url.find_last_of('/');
     const auto installerName = url.substr(pos + 1);
     SyncPath tmpDirPath;
