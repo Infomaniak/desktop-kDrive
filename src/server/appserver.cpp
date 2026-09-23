@@ -566,6 +566,11 @@ void AppServer::init() {
 void AppServer::cleanup() {
     LOG_DEBUG(_logger, "AppServer::cleanup");
 
+    // Stop timers: their slots access the SyncPals and ParmsDb, which are released below
+    _loadSyncsProgressTimer.stop();
+    _sendFilesNotificationsTimer.stop();
+    _restartSyncsTimer.stop();
+
     // Stop CommManager
     if (useCommManager()) {
         _commManager->stop();
