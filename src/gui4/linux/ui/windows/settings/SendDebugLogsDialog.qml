@@ -36,7 +36,10 @@ IKModal {
 
     function showFrom(trigger) {
         triggerItem = trigger;
-        lastSessionCheckBox.checkState = Qt.Unchecked;
+        // Reopened during an upload: keep the option the running upload was started with.
+        if (!controller.uploadInProgress) {
+            lastSessionCheckBox.checkState = Qt.Unchecked;
+        }
         open();
     }
 
