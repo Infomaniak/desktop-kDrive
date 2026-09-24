@@ -20,6 +20,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import kDrive.UI
 
 ScrollView {
@@ -126,10 +127,30 @@ ScrollView {
                     SettingsSupportIcon {}
                 ]
 
+                IKLoadingSpinner {
+                    Layout.preferredWidth: IKSettings.informationIconSize
+                    Layout.preferredHeight: IKSettings.informationIconSize
+                    visible: root.controller.uploadInProgress
+                    strokeWidth: 2
+                    Accessible.role: Accessible.Indicator
+                    Accessible.name: root.controller.uploadStatusText
+                }
+
+                SettingsInfoButton {
+                    readonly property bool failed: root.controller.latestUploadFailed
+
+                    visible: !root.controller.uploadInProgress
+                             && (failed || root.controller.lastSuccessfulUploadText.length > 0)
+                    text: failed ? qsTrId("logsUploadErrorTooltip")
+                                 : qsTrId("logsUploadSuccess") + "\n" + root.controller.lastSuccessfulUploadText
+                    iconSource: failed ? "qrc:/assets/main/triangle-alert.svg"
+                                       : "qrc:/assets/main/activities/status-synchronized-outline.svg"
+                    iconColor: failed ? IKColors.statusStrongWarning : IKColors.statusMediumSuccess
+                }
+
                 IKModalButton {
                     id: sendLogsButton
                     text: qsTrId("buttonSendLog")
-                    actionEnabled: !root.controller.uploadInProgress
                     onClicked: root.sendLogsRequested(sendLogsButton)
                 }
             }
