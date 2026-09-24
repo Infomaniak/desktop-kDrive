@@ -41,7 +41,6 @@
 #include <unistd.h>
 #endif
 
-static const int logSizeWatcherTimeout = 60000;
 constexpr char logMessagePattern[] =
         "%{time yyyy-MM-dd hh:mm:ss:zzz} "
         "[%{if-debug}D%{endif}%{if-info}I%{endif}%{if-warning}W%{endif}%{if-critical}C%{endif}%{if-fatal}F%{endif}] "
@@ -210,19 +209,12 @@ Logger::Logger(QObject *parent) :
 #else
     Q_UNUSED(kdriveLogCatcher)
 #endif
-
-    connect(&_watchLogSizeTimer, &QTimer::timeout, this, &Logger::slotWatchLogSize);
-    _watchLogSizeTimer.start(logSizeWatcherTimeout);
 }
 
 Logger::~Logger() {
 #ifndef NO_MSG_HANDLER
     qInstallMessageHandler(0);
 #endif
-}
-
-void Logger::setIsClientLog(bool newIsCLientLog) {
-    _isClientLog = newIsCLientLog;
 }
 
 int Logger::minLogLevel() const {
@@ -314,6 +306,35 @@ void Logger::setLogExpire(const std::chrono::days expire) {
     _logExpire = expire;
 }
 
+void Logger::purgeExpiredLogFiles() const {
+    if (_logExpire.count() <= 0) {
+        return;
+    }
+
+    // File logging may be disabled, which clears the log directory: fall back to the default one so the cleanup still applies.
+    QString logDirectoryPath = _logDirectoryPath;
+    if (logDirectoryPath.isEmpty()) {
+        SyncPath defaultLogDirectoryPath;
+        if (!CommonUtility::logDirectoryPath(defaultLogDirectoryPath)) {
+            return;
+        }
+        logDirectoryPath = Path2QStr(defaultLogDirectoryPath);
+    }
+
+    QDir dir(logDirectoryPath);
+    const QDateTime now = QDateTime::currentDateTime();
+    for (const QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(logAppName())), QDir::Files, QDir::Name);
+         const QString &fileName: files) {
+        if (const QFileInfo fileInfo(dir.absoluteFilePath(fileName)); fileInfo.lastModified().addDays(_logExpire.count()) < now) {
+            (void) dir.remove(fileName);
+        }
+    }
+}
+
+QString Logger::logAppName() {
+    return QString("%1_client").arg(APPLICATION_NAME);
+}
+
 void Logger::setLogDir(const QString &dir) {
     _logDirectoryPath = dir;
 }
@@ -356,13 +377,11 @@ void Logger::enterNextLogFile() {
 
     // Tentative new log name, will be adjusted if one like this already exists
     const QDateTime now = QDateTime::currentDateTime();
-    QString appName(APPLICATION_NAME);
-    if (_isClientLog) {
-        appName += QString("_client");
-    }
+    const QString appName = logAppName();
     QString newLogName = now.toString("yyyyMMdd_HHmm") + QString("_%1.log").arg(appName);
 
     // Expire old log files and deal with conflicts
+    purgeExpiredLogFiles();
     const QStringList files = dir.entryList(QStringList(QString("*%1.log.*").arg(appName)), QDir::Files, QDir::Name);
     QString rxPattern(QString(R"(.*%1\.log\.(\d+).*)").arg(appName));
     rxPattern = QRegularExpression::anchoredPattern(rxPattern);
@@ -373,13 +392,6 @@ void Logger::enterNextLogFile() {
     int32_t maxNumber = -1;
     QStringList unzippedFiles;
     foreach (const QString &s, files) {
-        if (_logExpire.count() > 0) {
-            const QFileInfo fileInfo(dir.absoluteFilePath(s));
-            if (fileInfo.lastModified().addDays(_logExpire.count()) < now) {
-                dir.remove(s);
-            }
-        }
-
         QRegularExpressionMatch rxMatch = QRegularExpression(rxPattern).match(s);
         if (s.startsWith(newLogName) && rxMatch.hasMatch()) {
             maxNumber = qMax(maxNumber, rxMatch.captured(1).toInt());
@@ -405,19 +417,6 @@ void Logger::enterNextLogFile() {
             } else {
                 QFile::remove(compressedName);
             }
-        }
-    }
-}
-
-void Logger::slotWatchLogSize() {
-    if (_isClientLog) {
-        // Do not check log size from client
-        _watchLogSizeTimer.stop();
-    } else {
-        if (_logFile.size() > CommonUtility::logMaxSize) {
-            kdriveLog("Log too big, archiving current log and creating a new one.");
-            emit logTooBig();
-            enterNextLogFile();
         }
     }
 }

@@ -25,7 +25,6 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMutex>
-#include <QTimer>
 
 #include <atomic>
 #include <chrono>
@@ -63,6 +62,8 @@ class Logger : public QObject {
 
         void setLogFile(const QString &name);
         void setLogExpire(std::chrono::days expire);
+        /** Removes this logger's log files older than the configured expiration. Does nothing when expiration is 0. */
+        void purgeExpiredLogFiles() const;
         void setLogDir(const QString &dir);
 
         bool logDebug() const { return _logDebug; }
@@ -82,23 +83,18 @@ class Logger : public QObject {
 
         bool compressSingleLog(const QString &sourceName, const QString &targetName);
 
-        void setIsClientLog(bool newIsClientLog);
-
     signals:
         void logWindowLog(const QString &);
 
         void showNotification(const QString &, const QString &);
-        void logTooBig();
 
     public slots:
         void enterNextLogFile();
 
-    private slots:
-        void slotWatchLogSize();
-
     private:
         Logger(QObject *parent = 0);
         ~Logger();
+        static QString logAppName();
         QFile _logFile;
         std::chrono::days _logExpire{0};
         bool _logDebug{false};
@@ -107,8 +103,6 @@ class Logger : public QObject {
         QString _logDirectoryPath;
         bool _logEnabled = false;
         int _minLogLevel;
-        QTimer _watchLogSizeTimer;
-        bool _isClientLog = false;
         inline static std::atomic_bool _sentryBreadcrumbsEnabled{false};
 };
 

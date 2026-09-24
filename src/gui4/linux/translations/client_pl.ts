@@ -2862,4 +2862,16 @@ Aby przyspieszyć przesyłanie, zalecamy wysłanie tylko ostatniej sesji kDrive.
             <translation>Czy na pewno chcesz zamknąć kDrive?</translation>
         </message>
     </context>
+    <context>
+        <name></name>
+        <message id="logsUploadCanceled">
+            <source>The debug folder upload was canceled.</source>
+            <extracomment>Terminal canceled state. Keep distinct from the intermediate CancelRequested state.</extracomment>
+            <translation>Wysyłanie folderu debugowania zostało anulowane.</translation>
+        </message>
+        <message id="logsUploadSuccess">
+            <source>The debug folder was successfully sent to Infomaniak Support.</source>
+            <translation>Folder debugowania został pomyślnie wysłany do działu wsparcia Infomaniak.</translation>
+        </message>
+    </context>
 </TS>
