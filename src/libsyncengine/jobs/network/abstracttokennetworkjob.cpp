@@ -189,7 +189,10 @@ ExitInfo AbstractTokenNetworkJob::handleUserUnauthorizedResponse() {
     // There is no longer any refresh of the token since v3.5.6
     // This code is only used when updating from a version < v3.5.6
     ApiToken apiToken;
-    (void) loadApiToken(apiToken);
+    if (const auto exitInfo = loadApiToken(apiToken); !exitInfo) {
+        disableRetry();
+        return exitInfo;
+    }
     if (apiToken != _apiToken) {
         LOG_DEBUG(_logger, "Token refreshed by another request");
         _accessTokenAlreadyRefreshed = false;
