@@ -250,6 +250,8 @@ void TestIntegration::testUploadBigFile() {
 }
 
 void TestIntegration::testSimpleComparison() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     const Situation situation{Str2SyncName(R"({
@@ -273,6 +275,8 @@ void TestIntegration::testSimpleComparison() {
 }
 
 void TestIntegration::testSimpleUpload() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     const Situation startsituation{Str2SyncName(R"({
@@ -311,6 +315,8 @@ void TestIntegration::testSimpleUpload() {
 }
 
 void TestIntegration::testGlobalFramework() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
@@ -392,6 +398,8 @@ void TestIntegration::testGlobalFramework() {
 }
 
 void TestIntegration::testNestedRemoteOperations() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
@@ -426,6 +434,8 @@ void TestIntegration::testNestedRemoteOperations() {
 }
 
 void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
@@ -458,6 +468,8 @@ void TestIntegration::testRemoteMoveDirectoryDescendantRekey() {
 }
 
 void TestIntegration::testExecuteSyncUpToStep() {
+    if (!testhelpers::isExtendedTest()) return;
+
     SyncpalTestHelper testHelper(_syncPal);
 
     // Start from an empty situation.
