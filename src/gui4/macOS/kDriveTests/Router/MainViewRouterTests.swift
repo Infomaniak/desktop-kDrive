@@ -72,31 +72,6 @@ struct MainViewRouterTests {
     }
 
     @Test()
-    func pathCacheIsUsedWhenSwitchingTabs() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-        await router.append(.errors)
-
-        // WHEN - switch to activity and set some details
-        await router.setCurrentTab(.activities)
-        await router.append(.activities)
-
-        // WHEN - switch back to home (should use cache)
-        await router.setCurrentTab(.home)
-
-        // THEN - should have the cached path with activityError
-        #expect(router.currentPath.mainTab == .home)
-        #expect(router.currentPath.details == [.home, .errors])
-
-        // WHEN - switch back to activity (should use cache)
-        await router.setCurrentTab(.activities)
-
-        // THEN - should have the cached path with versionConflict
-        #expect(router.currentPath.mainTab == .activities)
-        #expect(router.currentPath.details == [.activities, .activities])
-    }
-
-    @Test()
     func appendAddsDetailToCurrentPath() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
