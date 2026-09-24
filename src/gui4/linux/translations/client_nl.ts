@@ -2869,5 +2869,25 @@ Om het uploaden te versnellen, raden we aan alleen de laatste kDrive-sessie te v
             <source>The debug folder was successfully sent to Infomaniak Support.</source>
             <translation>De debugmap is met succes verzonden naar Infomaniak-ondersteuning.</translation>
         </message>
+        <message id="buttonSaveAnyway">
+            <source>Save anyway</source>
+            <extracomment>Primary action that bypasses the reachability check.</extracomment>
+            <translation>Toch opslaan</translation>
+        </message>
+        <message id="proxyConnectionFailedDescription">
+            <source>The connection to the proxy server could not be established.</source>
+            <extracomment>Dialog description.</extracomment>
+            <translation>De verbinding met de proxyserver kon niet tot stand worden gebracht.</translation>
+        </message>
+        <message id="proxyConnectionFailedTitle">
+            <source>Unable to connect to the proxy</source>
+            <extracomment>Dialog title.</extracomment>
+            <translation>Kan geen verbinding maken met de proxy</translation>
+        </message>
+        <message id="proxySaveAnywayQuestion">
+            <source>Do you still want to save these settings?</source>
+            <extracomment>Emphasized confirmation question.</extracomment>
+            <translation>Wil je deze instellingen toch opslaan?</translation>
+        </message>
     </context>
 </TS>
