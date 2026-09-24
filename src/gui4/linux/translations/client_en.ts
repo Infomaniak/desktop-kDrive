@@ -2869,5 +2869,25 @@ To speed up the upload, we recommend sending only the last kDrive session.</tran
             <source>The debug folder was successfully sent to Infomaniak Support.</source>
             <translation>The debug folder was successfully sent to Infomaniak Support.</translation>
         </message>
+        <message id="buttonSaveAnyway">
+            <source>Save anyway</source>
+            <extracomment>Primary action that bypasses the reachability check.</extracomment>
+            <translation>Save anyway</translation>
+        </message>
+        <message id="proxyConnectionFailedDescription">
+            <source>The connection to the proxy server could not be established.</source>
+            <extracomment>Dialog description.</extracomment>
+            <translation>The connection to the proxy server could not be established.</translation>
+        </message>
+        <message id="proxyConnectionFailedTitle">
+            <source>Unable to connect to the proxy</source>
+            <extracomment>Dialog title.</extracomment>
+            <translation>Unable to connect to the proxy</translation>
+        </message>
+        <message id="proxySaveAnywayQuestion">
+            <source>Do you still want to save these settings?</source>
+            <extracomment>Emphasized confirmation question.</extracomment>
+            <translation>Do you still want to save these settings?</translation>
+        </message>
     </context>
 </TS>
