@@ -4250,7 +4250,7 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         if (const auto ioError = IoHelper::getWeakCanonicalPath(sync.localPath(), vfsSetupParams.localPath);
             ioError != IoError::Success) {
             LOGW_WARN(_logger, L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
         }
         vfsSetupParams.targetPath = sync.targetPath();
         vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
