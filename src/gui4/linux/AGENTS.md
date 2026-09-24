@@ -73,7 +73,9 @@
   `SettingsUsersModel` and `UserDrivesModel` project users, configured classic synchronizations, and available drives
   directly from `AppCache`. Loading or retrying available drives must preserve the last cache-backed rows.
 - Expose a process-long Settings feature service directly to QML when an intermediate controller would only forward its
-  properties and calls one-for-one; add a controller only when it owns view-specific state or orchestration.
+  properties and calls one-for-one; add a controller only when it owns view-specific state or orchestration. For example,
+  `SettingsUserService` is passed to `SettingsWindow` as its own `users` initial property, not through
+  `SettingsWindowController`.
 - Name presentation classes after the cache entity they project: `Account*` classes operate on backend `Account` nodes,
   `User*` classes operate on users, and so on. Expose only model roles that current QML actually consumes; add future
   identities, capabilities, or pending roles only with the QML feature that uses them.

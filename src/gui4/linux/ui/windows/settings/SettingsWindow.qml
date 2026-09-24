@@ -32,6 +32,7 @@ IKShadowedWindow {
     }
 
     required property var controller
+    required property var users
     property int selectedCategory: SettingsWindow.Category.General
 
     function selectGeneral() {
@@ -43,7 +44,7 @@ IKShadowedWindow {
     function selectAccounts() {
         advancedPane.reset(advancedRootComponent);
         selectedCategory = SettingsWindow.Category.Accounts;
-        controller.users.refresh();
+        users.refresh();
     }
 
     function selectAdvanced() {
@@ -64,7 +65,7 @@ IKShadowedWindow {
     windowTitleVisible: false
     onVisibleChanged: {
         if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
-            controller.users.refresh();
+            users.refresh();
         }
     }
 
@@ -211,7 +212,7 @@ IKShadowedWindow {
         id: accountsRootComponent
 
         UsersSettingsView {
-            controller: root.controller.users
+            controller: root.users
         }
     }
 

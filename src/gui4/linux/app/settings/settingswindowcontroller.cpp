@@ -20,15 +20,14 @@
 
 namespace KDC {
 
-SettingsWindowController::SettingsWindowController(SettingsUserService &settingsUserService, ParametersStore &parametersStore,
-                                                   ParametersService &parametersService, TranslationService &translationService,
+SettingsWindowController::SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
+                                                   TranslationService &translationService,
                                                    UpdateStatusService &updateStatusService,
                                                    ExclusionTemplateService &exclusionTemplateService,
                                                    SentryService &sentryService, const CommService &commService,
                                                    QObject *const parent) :
     QObject(parent),
     _generalController(parametersStore, parametersService, translationService, updateStatusService, this),
-    _settingsUserService(settingsUserService),
     _advancedController(parametersStore, parametersService, sentryService, commService, translationService, this),
     _fileExclusionController(exclusionTemplateService, this),
     _networkController(parametersStore, parametersService, translationService, this) {}
