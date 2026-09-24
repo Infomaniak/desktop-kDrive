@@ -65,7 +65,6 @@ ScrollView {
             SettingsNavigationRow {
                 title: qsTrId("logLevelDebug")
                 separator: false
-                enabled: false
                 onNavigationRequested: trigger => root.debugRequested(trigger)
             }
         }
