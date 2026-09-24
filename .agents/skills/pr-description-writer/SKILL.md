@@ -26,10 +26,13 @@ a description with a French section and an English section.
    `feat/...`).
 
 3. **Get the diff.**
+    - Refresh the base first: `git fetch origin <base>`.
     - Committed work: `git diff origin/<base>...HEAD` (add `--stat` when the diff is large).
     - Run `git status` too. Work is sometimes staged or uncommitted, or a commit is being reverted in the index. If the
-      user says the changes are not committed yet, or if the index changes what the PR will contain, use
-      `git diff origin/<base>` (working tree) instead, and say so in your answer.
+      user says the changes are not committed yet, or if the index changes what the PR will contain, diff the working
+      tree against the merge base instead: `git diff $(git merge-base origin/<base> HEAD)`, and say so in your answer.
+    - `git diff` never shows untracked files. List them with `git ls-files --others --exclude-standard`, read the ones
+      that belong to the change, and ignore local notes or build artifacts.
     - If the branch is not pushed yet (`origin/<branch>` missing), fall back to `HEAD` and warn the user.
 
 4. **Read the real content.** Never infer the content of the PR from commit titles: several commits can share the same
