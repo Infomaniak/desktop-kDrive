@@ -25,23 +25,16 @@ struct GeneralPreferencesMiscSection: View {
     @InjectService private var matomo: MatomoUtils
     @ObservedObject var repository: PreferencesRepository
 
-    @State private var notificationsState: UINotificationState = .never
+    @State private var areNotificationsEnabled = true
     @State private var launchOnStartup = true
     @State private var moveDeletedFilesToTrash = true
 
     var body: some View {
         Section {
-            OptionPicker(
-                KDriveLocalizable.labelNotifications,
-                options: UINotificationState.allCases,
-                selection: $notificationsState
-            )
-            .onChange(of: notificationsState) { newValue in
-                updateRepositoryValue(\.$notificationsState, \.notificationsState, newValue: newValue, repository: repository)
-
-                guard newValue != repository.parametersInfo.notificationsState else { return }
-                matomo.track(eventWithCategory: .generalSettingsPage, name: "changeNotifications")
-            }
+            Toggle(KDriveLocalizable.labelNotifications, isOn: $areNotificationsEnabled)
+                .onChange(of: areNotificationsEnabled) { newValue in
+                    updateNotificationsState(areNotificationsEnabled: newValue)
+                }
 
             Toggle(KDriveLocalizable.openKDriveAtStartupSetting, isOn: $launchOnStartup)
                 .onChange(of: launchOnStartup) { newValue in
@@ -84,9 +77,23 @@ struct GeneralPreferencesMiscSection: View {
     }
 
     private func updatePropertiesFromParametersInfo(_ parametersInfo: UIParametersInfo) {
-        notificationsState = parametersInfo.notificationsState
+        areNotificationsEnabled = parametersInfo.notificationsState != .always
         launchOnStartup = parametersInfo.launchOnStartup
         moveDeletedFilesToTrash = parametersInfo.moveDeletedFilesToTrash
+    }
+
+    private func updateNotificationsState(areNotificationsEnabled: Bool) {
+        let newState: UINotificationState = areNotificationsEnabled ? .never : .always
+        guard newState != repository.parametersInfo.notificationsState else { return }
+
+        matomo.track(eventWithCategory: .generalSettingsPage, name: "changeNotifications")
+        Task {
+            do {
+                try await repository.update(\.notificationsState, value: newState)
+            } catch {
+                self.areNotificationsEnabled = repository.parametersInfo.notificationsState != .always
+            }
+        }
     }
 }
 
