@@ -4043,7 +4043,7 @@ bool AppServer::startClient() {
             return false;
         }
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         if (synthesisAsked()) {
             arguments << "--synthesis";
         } else if (settingsAsked()) {
