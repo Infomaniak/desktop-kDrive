@@ -61,6 +61,9 @@ Rectangle {
             hoverEnabled: true
             Accessible.name: root.name
             Accessible.description: root.email
+            Accessible.checkable: true
+            Accessible.checked: root.expanded
+            Accessible.onToggleAction: headerButton.clicked()
             onClicked: root.expanded = !root.expanded
 
             background: Rectangle {
