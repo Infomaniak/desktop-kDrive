@@ -218,9 +218,18 @@ void TestAppServer::testStartAndStopSync() {
 }
 
 void TestAppServer::testCleanup() {
+    CPPUNIT_ASSERT(_appPtr->_loadSyncsProgressTimer.isActive());
+    CPPUNIT_ASSERT(_appPtr->_sendFilesNotificationsTimer.isActive());
+    CPPUNIT_ASSERT(_appPtr->_restartSyncsTimer.isActive());
+
     _appPtr->cleanup();
+
+    // Timers must be stopped, their slots access resources released by cleanup
+    CPPUNIT_ASSERT(!_appPtr->_loadSyncsProgressTimer.isActive());
+    CPPUNIT_ASSERT(!_appPtr->_sendFilesNotificationsTimer.isActive());
+    CPPUNIT_ASSERT(!_appPtr->_restartSyncsTimer.isActive());
+
     delete _appPtr;
-    CPPUNIT_ASSERT(true);
 }
 
 /**
