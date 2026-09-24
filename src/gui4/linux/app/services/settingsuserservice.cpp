@@ -69,7 +69,8 @@ void SettingsUserService::retryAvailableDrives(const qint64 userDbId) const {
 }
 
 void SettingsUserService::refreshAvailableDrives(const UserDbId userDbId) const {
-    if (!_appCache.user(userDbId).has_value()) {
+    // Reuse an in-flight request, e.g. one started by onboarding: a new one would supersede it and duplicate the IPC call.
+    if (!_appCache.user(userDbId).has_value() || _userService.isLoadAvailableDrivesPending(userDbId)) {
         return;
     }
 
