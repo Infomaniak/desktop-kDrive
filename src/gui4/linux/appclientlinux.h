@@ -56,6 +56,8 @@
 #include <QQmlApplicationEngine>
 #include <QWindow>
 
+#include <optional>
+
 namespace KDC {
 
 Q_DECLARE_LOGGING_CATEGORY(lcAppClientLinux)
@@ -115,7 +117,7 @@ class AppClientLinux : public QApplication {
         void handleBootstrapCompletion();
         void openSettingsWindow();
         void retranslatePresentation();
-        void updateLoggerMinLevel() const;
+        void updateLoggerSettings();
         void requestQuit();
         void quitOnServerDisconnection();
         void handleManyDeletesPresentationRequested();
@@ -156,8 +158,13 @@ class AppClientLinux : public QApplication {
         StorageController _storageController{_mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        SettingsWindowController _settingsWindowController{_parametersStore,     _parametersService, _translationService,
-                                                           _updateStatusService, _sentryService,     this};
+        SettingsWindowController _settingsWindowController{_parametersStore,
+                                                           _parametersService,
+                                                           _translationService,
+                                                           _updateStatusService,
+                                                           _sentryService,
+                                                           _serverCommService,
+                                                           this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
@@ -166,6 +173,7 @@ class AppClientLinux : public QApplication {
         bool _preferSetupHomeWhenUnconfigured{false};
         bool _hadConfiguredSync{false};
         bool _quitPending{false};
+        std::optional<bool> _appliedPurgeOldLogs;
 };
 
 } // namespace KDC
