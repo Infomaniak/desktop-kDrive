@@ -45,7 +45,7 @@ class ConflictingFilesCorrector : public AbstractPropagatorJob {
                 bool valid = false;
         };
 
-        CanonicalPaths getCanonicalSourceAndDestinationPaths(const SyncPath &sourcePath, const SyncPath &destinationPath);
+        CanonicalPaths getCanonicalSourceAndDestinationPaths(const SyncPath &sourcePath, const SyncPath &destinationPath) const;
 
         bool keepLocalVersion(const Error &error);
         bool keepRemoteVersion(const Error &error);

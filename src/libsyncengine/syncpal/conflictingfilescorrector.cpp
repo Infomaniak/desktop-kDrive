@@ -94,43 +94,43 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
 }
 
 ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonicalSourceAndDestinationPaths(
-        const SyncPath &sourcePath, const SyncPath &destinationPath) {
+        const SyncPath &sourcePath, const SyncPath &destinationPath) const {
     CanonicalPaths result;
 
     std::error_code ec;
-    result.destinationPath = std::filesystem::canonical(destinationPath, ec);
+    result.destinationPath = std::filesystem::canonical(destinationPath.parent_path(), ec) / destinationPath.filename();
 
     if (ec) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for destinationPath: "
                                                         << Utility::formatSyncPath(destinationPath) << L" - "
                                                         << CommonUtility::s2ws(ec.message()));
-        return result;
+        return {};
     }
 
-    result.sourcePath = std::filesystem::canonical(sourcePath);
+    result.sourcePath = std::filesystem::canonical(sourcePath, ec) / sourcePath.filename();
     if (ec) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for sourcePath: "
                                                         << Utility::formatSyncPath(sourcePath) << L" - "
                                                         << CommonUtility::s2ws(ec.message()));
-        return result;
+        return {};
     }
 
     if (result.destinationPath.parent_path() != result.sourcePath.parent_path()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Source and destination paths do not have the same parent path: "
                                                         << Utility::formatSyncPath(sourcePath) << L", "
                                                         << Utility::formatSyncPath(destinationPath));
-        return result;
+        return {};
     }
 
     if (!CommonUtility::isSubDir(_syncPal->localPath(), result.destinationPath) ||
         result.destinationPath == _syncPal->localPath()) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Invalid canonicalDestinationPath: " << Utility::formatSyncPath(result.destinationPath));
-        return result;
+                  L"Invalid canonical destinationPath: " << Utility::formatSyncPath(result.destinationPath));
+        return {};
     }
 
     if (!CommonUtility::isSubDir(_syncPal->localPath(), result.sourcePath) || result.sourcePath == _syncPal->localPath()) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Invalid canonicalSourcePath: " << Utility::formatSyncPath(result.sourcePath));
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid canonical sourcePath: " << Utility::formatSyncPath(result.sourcePath));
     }
 
     result.valid = true;
@@ -165,7 +165,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 
     // Set the local modification time to now
     const Poco::Timestamp lastModifiedTimestamp;
-    Poco::File(Path2Str(canonicalPaths.destinationPath)).setLastModified(lastModifiedTimestamp);
+    (void) Poco::File(Path2Str(canonicalPaths.destinationPath)).setLastModified(lastModifiedTimestamp);
 
     return true;
 }
@@ -182,7 +182,9 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     }
 
     std::error_code ec;
-    const SyncPath absoluteLocalPathToDelete = std::filesystem::canonical(_syncPal->localPath() / error.destinationPath(), ec);
+    const SyncPath absoluteLocalPathToDelete =
+            std::filesystem::canonical(_syncPal->localPath() / error.destinationPath().parent_path(), ec) /
+            error.destinationPath().filename();
     if (ec) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for absolute local path to delete: "
                                                         << Utility::formatSyncPath(absoluteLocalPathToDelete) << L" - "
