@@ -1,4 +1,5 @@
 .gitmodules
+.worktrees
 *flymake*
 CMakeLists.txt.user*
 *~
