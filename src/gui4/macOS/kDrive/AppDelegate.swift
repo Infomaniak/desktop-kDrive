@@ -217,6 +217,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let server = Process()
         server.executableURL = executableURL
+        server.arguments = ProcessInfo.processInfo.arguments.contains("--settings") ? ["--settings"] : ["--synthesis"]
         do {
             try server.run()
         } catch {
