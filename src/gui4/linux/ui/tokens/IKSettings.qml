@@ -33,6 +33,7 @@ QtObject {
     readonly property real buttonHeight: 28
     readonly property real iconButtonSize: 28
     readonly property real navigationIconSize: 16
+    readonly property real exclusionRowHeight: 36
     readonly property real informationIconSize: 14
     readonly property real supportIconSize: 20
     readonly property real supportIconRadius: 4
@@ -46,6 +47,7 @@ QtObject {
     readonly property real switchHeight: 20
     readonly property real switchInset: 2
     readonly property real comboWidth: 150
+    readonly property real textFieldHeight: 36
     readonly property real informationDialogWidth: 454
     readonly property real dialogChromeHeight: 180
     readonly property real logoSize: 64
