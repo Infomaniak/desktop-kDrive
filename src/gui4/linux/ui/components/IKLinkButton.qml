@@ -35,12 +35,19 @@ Button {
 
     enabled: actionEnabled
     padding: 0
-    implicitWidth: linkText.implicitWidth + externalIconAllowance
+    implicitWidth: Math.ceil(labelMetrics.advanceWidth) + externalIconAllowance
     implicitHeight: Math.max(linkText.implicitHeight, IKLinkTokens.minimumHeight)
     focusPolicy: Qt.StrongFocus
     hoverEnabled: true
     Accessible.role: Accessible.Button
     Accessible.name: text
+
+    TextMetrics {
+        id: labelMetrics
+
+        font: linkText.font
+        text: root.text
+    }
 
     // The control sizes background and contentItem itself, so neither is anchored here.
     background: Rectangle {
