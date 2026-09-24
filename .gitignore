@@ -215,3 +215,6 @@ enc_temp_folder
 # QT Creator
 .qtcreator
 /src/libcommonserver/vfs/win
+
+# Skill pr-description-writer (.agents/skills/pr-description-writer)
+PR.md
