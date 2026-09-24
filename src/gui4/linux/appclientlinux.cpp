@@ -160,6 +160,8 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &AppClientLinux::ipcConnected, &_updateStatusService, &UpdateStatusService::refresh);
+    (void) connect(this, &AppClientLinux::ipcConnected, _settingsWindowController.advanced(),
+                   &AdvancedSettingsController::restoreUploadStatus);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_updateStatusService, &UpdateStatusService::stateChanged, &_systemTrayController,
                    &SystemTrayController::handleUpdateStateChanged);
@@ -184,7 +186,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &AppClientLinux::handleConfiguredSyncsChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerMinLevel);
+    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerSettings);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, &AppClientLinux::requestQuit);
 }
 
@@ -250,15 +252,37 @@ void AppClientLinux::handleBootstrapCompletion() {
     openMainWindow();
 }
 
-void AppClientLinux::updateLoggerMinLevel() const {
+void AppClientLinux::updateLoggerSettings() {
     const auto parametersInfo = _parametersStore.parametersInfo();
-    if (!parametersInfo.has_value() || Logger::instance()->minLogLevel() == toInt(parametersInfo->logLevel())) {
+    if (!parametersInfo) {
         return;
     }
 
-    Logger::instance()->setMinLogLevel(toInt(parametersInfo->logLevel()));
-    qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
-                             << QString::fromStdString(toString(parametersInfo->logLevel()));
+    auto *const logger = Logger::instance();
+    // Expiration waits for the confirmed option: purging at startup could delete logs the user asked to keep.
+    const bool purgeOldLogs = parametersInfo->purgeOldLogs();
+    const bool purgeOldLogsChanged = _appliedPurgeOldLogs != purgeOldLogs;
+    if (purgeOldLogsChanged) {
+        logger->setLogExpire(std::chrono::days(purgeOldLogs ? CommonUtility::logsPurgeRate : 0));
+        _appliedPurgeOldLogs = purgeOldLogs;
+    }
+
+    if (parametersInfo->useLog() && !logger->isLoggingToFile()) {
+        logger->setupLogDir();
+        logger->enterNextLogFile();
+    } else if (!parametersInfo->useLog() && logger->isLoggingToFile()) {
+        logger->disableLog();
+    }
+
+    if (purgeOldLogsChanged && purgeOldLogs) {
+        logger->purgeExpiredLogFiles();
+    }
+
+    if (logger->minLogLevel() != toInt(parametersInfo->logLevel())) {
+        logger->setMinLogLevel(toInt(parametersInfo->logLevel()));
+        qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
+                                 << QString::fromStdString(toString(parametersInfo->logLevel()));
+    }
 }
 
 void AppClientLinux::requestQuit() {
@@ -441,10 +465,8 @@ void AppClientLinux::setupLogging() {
 
 void AppClientLinux::configureLogger() {
     auto *const logger = Logger::instance();
-    logger->setIsClientLog(true);
     logger->setLogDebug(true);
     logger->setupLogDir();
-    logger->setLogExpire(std::chrono::days(CommonUtility::logsPurgeRate));
     logger->enterNextLogFile();
 }
 
