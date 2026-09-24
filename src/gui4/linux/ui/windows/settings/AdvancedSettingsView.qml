@@ -57,7 +57,6 @@ ScrollView {
 
             SettingsNavigationRow {
                 title: qsTrId("networkSettings")
-                enabled: false
                 onNavigationRequested: trigger => root.networkRequested(trigger)
             }
 
