@@ -218,6 +218,10 @@ set(testserver_SRCS
     comm/testguijobpriority.h comm/testguijobpriority.cpp
 )
 
+if(APPLE OR WIN32)
+    list(APPEND testserver_SRCS comm/testextensionjob.h comm/testextensionjob.cpp)
+endif()
+
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesynccommclient.h vfs/mac/testlitesynccommclient.cpp)
     list(APPEND testserver_SRCS vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)

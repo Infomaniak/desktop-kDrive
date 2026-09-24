@@ -39,6 +39,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include <stdexcept>
+
 namespace KDC {
 
 bool syncForPath(const std::vector<Sync> &syncList, const SyncPath &path, Sync &sync) {
@@ -121,15 +123,30 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
 }
 
 ExitInfo ExtensionJob::runJob() noexcept {
+    // The command handlers parse extension-provided arguments: make sure that no exception escapes this noexcept
+    // function, as it would terminate the server, and translate any failure into the returned ExitInfo.
+    ExitInfo exitInfo(ExitCode::Ok);
+    const auto executeCommandSafely = [this, &exitInfo](std::shared_ptr<AbstractCommChannel> channel) {
+        try {
+            executeCommand(_commandLineStr, channel);
+        } catch (const std::exception &e) {
+            LOG_ERROR(Log::instance()->getLogger(), "Error in ExtensionJob::executeCommand - err=" << e.what());
+            exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        } catch (...) {
+            LOG_ERROR(Log::instance()->getLogger(), "Unknown error in ExtensionJob::executeCommand");
+            exitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown);
+        }
+    };
+
     if (_channels.empty()) {
-        executeCommand(_commandLineStr, nullptr);
+        executeCommandSafely(nullptr);
     } else {
         foreach (auto &channel, _channels) {
-            executeCommand(_commandLineStr, channel);
+            executeCommandSafely(channel);
         }
     }
 
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 void ExtensionJob::commandGetMenuItems(const CommString &argument, std::shared_ptr<AbstractCommChannel> channel) {
@@ -397,8 +414,15 @@ void ExtensionJob::commandForceStatus(const CommString &argument, std::shared_pt
         return;
     }
 
-    bool isSyncing(std::stoi(argumentList[0]));
-    bool isHydrated(std::stoi(argumentList[2]));
+    bool isSyncing = false;
+    bool isHydrated = false;
+    try {
+        isSyncing = static_cast<bool>(std::stoi(argumentList[0]));
+        isHydrated = static_cast<bool>(std::stoi(argumentList[2]));
+    } catch (const std::exception &) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
+        return;
+    }
 
     CommString status;
     if (isSyncing) {
@@ -552,7 +576,13 @@ void ExtensionJob::commandGetThumbnail(const CommString &argument, std::shared_p
     CommString msgId(argumentList[0]);
 
     // Picture width asked
-    unsigned int width(std::stoi(argumentList[1]));
+    unsigned int width = 0;
+    try {
+        width = static_cast<unsigned int>(std::stoi(argumentList[1]));
+    } catch (const std::exception &) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid argument - arg=" << CommonUtility::commString2WStr(argument));
+        return;
+    }
     if (width == 0) {
         LOG_WARN(Log::instance()->getLogger(), "Bad width - value=" << width);
         return;
