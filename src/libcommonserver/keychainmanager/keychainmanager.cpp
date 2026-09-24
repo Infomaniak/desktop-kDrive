@@ -21,6 +21,7 @@
 
 #include <chrono>
 #include <condition_variable>
+#include <exception>
 #include <mutex>
 #include <thread>
 
@@ -101,9 +102,22 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
     const auto state = std::make_shared<ReadState>();
 
     std::thread([this, keychainKey, state]() {
-        std::string tmpData;
+        // Always release the in-flight slot, even if an exception is thrown.
+        struct InFlightReadGuard {
+                std::atomic<uint16_t> &counter;
+                ~InFlightReadGuard() { (void) counter.fetch_sub(1, std::memory_order_acq_rel); }
+        } inFlightReadGuard{_inFlightReadThreads};
+
+        bool ok = false;
         bool tmpFound = false;
-        const bool ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
+        std::string tmpData;
+        try {
+            ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
+        } catch (const std::exception &e) {
+            LOG_WARN(Log::instance()->getLogger(), std::string("Exception while reading data from keychain: ") + e.what());
+        } catch (...) {
+            LOG_WARN(Log::instance()->getLogger(), "Unknown exception while reading data from keychain");
+        }
 
         {
             const std::lock_guard lock(state->mutex);
@@ -113,7 +127,6 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
             state->done = true;
         }
         state->conditionVariable.notify_one();
-        (void) _inFlightReadThreads.fetch_sub(1, std::memory_order_acq_rel);
     }).detach();
 
     std::unique_lock lock(state->mutex);

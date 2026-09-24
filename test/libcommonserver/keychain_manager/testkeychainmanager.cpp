@@ -26,6 +26,7 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -38,7 +39,10 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
                            [[maybe_unused]] const std::string &rawData) override {
             return true;
         }
-        bool readPassword([[maybe_unused]] const std::string &keychainKey, std::string &data, bool &found) override {
+        bool readPassword(const std::string &keychainKey, std::string &data, bool &found) override {
+            if (keychainKey == throwingKey) {
+                throw std::runtime_error("Simulated keychain failure");
+            }
             Utility::msleep(90000); // Simulate a timeout by sleeping for 90 seconds
             data = "dummy_data";
             found = true;
@@ -47,6 +51,8 @@ class MockKeyChainStorageWithTimeout : public IKeyChainStorage {
         bool deletePassword([[maybe_unused]] const std::string &keychainKey) override { return true; }
 
         bool isTesting() override { return true; }
+
+        inline static const std::string throwingKey = "throwing_key";
 };
 } // namespace
 
@@ -63,6 +69,15 @@ void TestKeychainManager::testTimeOut() {
     // Ensure that the timeout occurred after 60 seconds and before 90 seconds
     CPPUNIT_ASSERT_GREATEREQUAL(std::chrono::seconds(60).count(), timer.elapsed<std::chrono::seconds>().count());
     CPPUNIT_ASSERT_LESS(std::chrono::seconds(90).count(), timer.elapsed<std::chrono::seconds>().count());
+}
+
+void TestKeychainManager::testReadPasswordThrows() {
+    std::string data;
+    bool found = false;
+    (void) KeyChainManager::instance(std::make_shared<MockKeyChainStorageWithTimeout>());
+    const auto exitInfo = KeyChainManager::instance()->readData(MockKeyChainStorageWithTimeout::throwingKey, data, found);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::SystemError, ExitCause::KeychainAccessError), exitInfo);
+    CPPUNIT_ASSERT(!found);
 }
 
 void TestKeychainManager::testConcurrentReadLimit() {
