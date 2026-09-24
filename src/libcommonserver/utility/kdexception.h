@@ -18,6 +18,10 @@
 
 #pragma once
 
+#include "libcommon/utility/types.h"
+
+#include <stdexcept>
+
 namespace KDC {
 
 struct KdException : std::runtime_error {
