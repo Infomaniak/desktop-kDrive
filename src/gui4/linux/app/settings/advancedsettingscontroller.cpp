@@ -25,6 +25,7 @@
 #include "libcommon/utility/utility.h"
 
 #include <QDesktopServices>
+#include <QLocale>
 #include <QLoggingCategory>
 #include <QPointer>
 #include <QVariantMap>
@@ -118,6 +119,14 @@ QString AdvancedSettingsController::uploadStatusText() const {
         default:
             return {};
     }
+}
+
+QString AdvancedSettingsController::lastSuccessfulUploadText() const {
+    if (!_lastSuccessfulUploadDate.isValid()) {
+        return {};
+    }
+
+    return QLocale().toString(_lastSuccessfulUploadDate, QLocale::ShortFormat);
 }
 
 QString AdvancedSettingsController::dataManagementErrorText() const {
@@ -224,6 +233,7 @@ void AdvancedSettingsController::sendDebugLogs(const bool lastSessionOnly) {
     if (uploadInProgress()) return;
 
     _uploadRequestPending = true;
+    ++_uploadStatusRevision;
     // Present the first server phase immediately. The request acknowledgement can arrive before the first asynchronous
     // status signal; keeping Archiving here avoids briefly restoring the idle controls between those two messages.
     _uploadState = LogUploadState::Archiving;
@@ -238,6 +248,7 @@ void AdvancedSettingsController::sendDebugLogs(const bool lastSessionOnly) {
         self->_uploadRequestPending = false;
         if (!result) {
             self->_uploadState = LogUploadState::Failed;
+            self->setLatestUploadOutcome(LogUploadState::Failed);
         }
         emit self->changed();
     });
@@ -252,6 +263,7 @@ void AdvancedSettingsController::cancelDebugLogs() {
     _commService.requestCancelLogToSupport([self = QPointer(this)](const ExitInfo &result) {
         if (self && !result && self->_uploadState == LogUploadState::CancelRequested) {
             self->_uploadState = LogUploadState::Failed;
+            self->setLatestUploadOutcome(LogUploadState::Failed);
             emit self->changed();
         }
     });
@@ -263,6 +275,46 @@ void AdvancedSettingsController::resetDebugLogsUploadPresentation() {
     _uploadState = LogUploadState::None;
     _uploadPercentage = 0;
     emit changed();
+}
+
+void AdvancedSettingsController::restoreUploadStatus() {
+    const uint32_t revision = _uploadStatusRevision;
+    _commService.requestGetAppState(
+            AppStateKey::LogUploadState, [self = QPointer(this), revision](const ExitInfo &result, const QString &value) {
+                if (!self) return;
+
+                if (!result) {
+                    qCWarning(lcAdvancedSettings) << "Cannot read the persisted log upload state | code:" << result.code()
+                                                  << "/ cause:" << result.cause();
+                    return;
+                }
+
+                // A live status or a new upload since the request is more recent than the persisted state.
+                if (self->_uploadStatusRevision != revision) return;
+
+                bool isNumber = false;
+                const int32_t stateValue = value.toInt(&isNumber);
+                if (!isNumber || stateValue < 0 || stateValue >= static_cast<int32_t>(LogUploadState::EnumEnd)) {
+                    qCWarning(lcAdvancedSettings) << "Invalid persisted log upload state" << value;
+                    return;
+                }
+
+                // Only an upload still running is restored as the live state: a finished one must not reopen the dialog
+                // on its result.
+                switch (const auto state = static_cast<LogUploadState>(stateValue); state) {
+                    case LogUploadState::Archiving:
+                    case LogUploadState::Uploading:
+                    case LogUploadState::CancelRequested:
+                        self->setUploadStatus(state, self->_uploadPercentage);
+                        break;
+                    default:
+                        self->setLatestUploadOutcome(state);
+                        emit self->changed();
+                        break;
+                }
+            });
+
+    refreshLastSuccessfulUploadDate();
 }
 
 void AdvancedSettingsController::setError(const ErrorContext context, const Error error, const QUrl &failedUrl) {
@@ -293,13 +345,51 @@ void AdvancedSettingsController::save(const ParametersService::ParametersMutatio
 }
 
 void AdvancedSettingsController::setUploadStatus(const LogUploadState state, const int32_t percentage) {
+    ++_uploadStatusRevision;
     _uploadRequestPending = false;
     _uploadState = state;
     if (state == LogUploadState::Archiving || state == LogUploadState::Uploading) {
         _lastUploadPhase = state;
     }
     _uploadPercentage = std::clamp(percentage, int32_t{0}, int32_t{100});
+    setLatestUploadOutcome(state);
     emit changed();
+
+    // The server stores the upload date before notifying the success.
+    if (state == LogUploadState::Success) {
+        refreshLastSuccessfulUploadDate();
+    }
+}
+
+// Keeps the outcome of the latest finished upload for the persistent indicator; other states leave it unchanged.
+void AdvancedSettingsController::setLatestUploadOutcome(const LogUploadState state) {
+    if (state == LogUploadState::Success || state == LogUploadState::Failed || state == LogUploadState::Canceled) {
+        _latestUploadOutcome = state;
+    }
+}
+
+void AdvancedSettingsController::refreshLastSuccessfulUploadDate() {
+    _commService.requestGetAppState(
+            AppStateKey::LastSuccessfulLogUploadDate, [self = QPointer(this)](const ExitInfo &result, const QString &value) {
+                if (!self) return;
+
+                if (!result) {
+                    qCWarning(lcAdvancedSettings) << "Cannot read the last successful log upload date | code:" << result.code()
+                                                  << "/ cause:" << result.cause();
+                    return;
+                }
+
+                // Stored in local time as "month,day,year,hour,minute,second" with a two-digit year; "0" means never.
+                const QDateTime date = QDateTime::fromString(value, u"MM,dd,yy,HH,mm,ss"_s, 2000);
+                if (!date.isValid() && value != u"0"_s) {
+                    qCWarning(lcAdvancedSettings) << "Invalid last successful log upload date" << value;
+                }
+
+                if (date == self->_lastSuccessfulUploadDate) return;
+
+                self->_lastSuccessfulUploadDate = date;
+                emit self->changed();
+            });
 }
 
 } // namespace KDC

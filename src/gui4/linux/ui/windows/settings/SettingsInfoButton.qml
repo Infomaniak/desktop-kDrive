@@ -23,6 +23,8 @@ import kDrive.UI
 
 ToolButton {
     id: root
+    property url iconSource: "qrc:/assets/settings/information.svg"
+    property color iconColor: IKColors.textSecondary
     implicitWidth: IKSettings.iconButtonSize
     implicitHeight: IKSettings.iconButtonSize
     text: qsTrId("accessibilityMoreInformation")
@@ -34,8 +36,8 @@ ToolButton {
             anchors.centerIn: parent
             width: IKSettings.informationIconSize
             height: width
-            source: "qrc:/assets/settings/information.svg"
-            color: IKColors.textSecondary
+            source: root.iconSource
+            color: root.iconColor
         }
     }
     background: Rectangle {

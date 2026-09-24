@@ -58,6 +58,11 @@
 - Present debug-log upload activity with the shared indeterminate loader, not a percentage progress bar. Keep the modal
   open on terminal success, failure, or confirmed cancellation so the result remains readable until the user closes it
   explicitly. Present confirmed cancellation with neutral text rather than success or warning colors.
+- Restore the persisted debug-log upload state (`AppStateKey::LogUploadState`, `LastSuccessfulLogUploadDate`) once on
+  `ipcConnected` in `AdvancedSettingsController`; live `logUploadStatusUpdated` signals take precedence over a pending
+  read. Only an upload still running becomes the dialog state; a finished outcome feeds the persistent Support-row
+  indicator and must not reopen the dialog on its result. `CommService::requestGetAppState` returns the decoded raw
+  database string for every key.
 - Share server update detection through `UpdateStatusService`; the system tray and Settings must not request or cache
   independent updater states.
 - Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
