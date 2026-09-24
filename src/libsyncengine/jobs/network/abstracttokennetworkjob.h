@@ -109,7 +109,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         void fetchDriveDbIdFromSync();
         void fetchFirstUserDbId();
-        virtual ExitInfo loadApiToken(ApiToken &apiToken);
+        virtual ExitInfo loadApiToken(ApiToken &apiToken) noexcept;
 
         std::string getUrl() override;
         ExitInfo handleUnauthorizedResponse();
