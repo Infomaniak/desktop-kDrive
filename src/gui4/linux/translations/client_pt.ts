@@ -2869,5 +2869,25 @@ Para acelerar o envio, recomendamos enviar apenas a última sessão do kDrive.</
             <source>The debug folder was successfully sent to Infomaniak Support.</source>
             <translation>A pasta de depuração foi enviada com sucesso para o suporte da Infomaniak.</translation>
         </message>
+        <message id="buttonSaveAnyway">
+            <source>Save anyway</source>
+            <extracomment>Primary action that bypasses the reachability check.</extracomment>
+            <translation>Guardar na mesma</translation>
+        </message>
+        <message id="proxyConnectionFailedDescription">
+            <source>The connection to the proxy server could not be established.</source>
+            <extracomment>Dialog description.</extracomment>
+            <translation>Não foi possível estabelecer a ligação ao servidor proxy.</translation>
+        </message>
+        <message id="proxyConnectionFailedTitle">
+            <source>Unable to connect to the proxy</source>
+            <extracomment>Dialog title.</extracomment>
+            <translation>Não foi possível ligar ao proxy</translation>
+        </message>
+        <message id="proxySaveAnywayQuestion">
+            <source>Do you still want to save these settings?</source>
+            <extracomment>Emphasized confirmation question.</extracomment>
+            <translation>Ainda pretende guardar estas definições?</translation>
+        </message>
     </context>
 </TS>
