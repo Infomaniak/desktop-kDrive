@@ -39,7 +39,7 @@ class SettingsWindowController final : public QObject {
     public:
         SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
                                  TranslationService &translationService, UpdateStatusService &updateStatusService,
-                                 SentryService &sentryService, QObject *parent = nullptr);
+                                 SentryService &sentryService, const CommService &commService, QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *general() { return &_general; }
         [[nodiscard]] AdvancedSettingsController *advanced() { return &_advanced; }
