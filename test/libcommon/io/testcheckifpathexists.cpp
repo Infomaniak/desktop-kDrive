@@ -167,7 +167,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         // check.
         { std::ofstream ofs(subDirPath / "test_file.txt"); }
         const SyncPath symlinkDirPath = temporaryDirectory.path() / "regular_dir_symbolic_link";
-        std::filesystem::create_symlink(subDirPath, symlinkDirPath);
+        std::filesystem::create_directory_symlink(subDirPath, symlinkDirPath);
 
         bool exists = false;
         IoError ioError = IoError::Unknown;
