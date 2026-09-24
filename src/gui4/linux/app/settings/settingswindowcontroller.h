@@ -22,7 +22,6 @@
 #include "app/settings/fileexclusioncontroller.h"
 #include "app/settings/generalsettingscontroller.h"
 #include "app/settings/networksettingscontroller.h"
-#include "app/services/settingsuserservice.h"
 
 #include <QObject>
 
@@ -37,19 +36,17 @@ class UpdateStatusService;
 class SettingsWindowController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(GeneralSettingsController *general READ generalController CONSTANT)
-        Q_PROPERTY(SettingsUserService *users READ settingsUserService CONSTANT)
         Q_PROPERTY(AdvancedSettingsController *advanced READ advancedController CONSTANT)
         Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusionController CONSTANT)
         Q_PROPERTY(NetworkSettingsController *network READ networkController CONSTANT)
 
     public:
-        SettingsWindowController(SettingsUserService &settingsUserService, ParametersStore &parametersStore,
-                                 ParametersService &parametersService, TranslationService &translationService,
-                                 UpdateStatusService &updateStatusService, ExclusionTemplateService &exclusionTemplateService,
-                                 SentryService &sentryService, const CommService &commService, QObject *parent = nullptr);
+        SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
+                                 TranslationService &translationService, UpdateStatusService &updateStatusService,
+                                 ExclusionTemplateService &exclusionTemplateService, SentryService &sentryService,
+                                 const CommService &commService, QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *generalController() { return &_generalController; }
-        [[nodiscard]] SettingsUserService *settingsUserService() { return &_settingsUserService; }
         [[nodiscard]] AdvancedSettingsController *advancedController() { return &_advancedController; }
         [[nodiscard]] FileExclusionController *fileExclusionController() { return &_fileExclusionController; }
         [[nodiscard]] NetworkSettingsController *networkController() { return &_networkController; }
@@ -63,7 +60,6 @@ class SettingsWindowController final : public QObject {
 
     private:
         GeneralSettingsController _generalController;
-        SettingsUserService &_settingsUserService;
         AdvancedSettingsController _advancedController;
         FileExclusionController _fileExclusionController;
         NetworkSettingsController _networkController;
