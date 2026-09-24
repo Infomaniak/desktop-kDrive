@@ -185,7 +185,7 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
             return;
         }
 
-        do {
+        while (!response.empty()) {
             // Read next menu item info
             std::wstring commandName;
             if (!Utilities::readNextValue(response, commandName)) {
@@ -207,7 +207,7 @@ void ExplorerCommandHandler::loadCommandItems(IShellItemArray *psiItemArray) {
             MenuItem menuItem{false, title, L"", true /*enabled*/,
                               commandName}; // enabled flag not supported by new Windows 11 menu
             _contextMenuInfo._subMenuItems.push_back(menuItem);
-        } while (!response.empty());
+        } ;
 
         GetModuleFileNameW(nullptr, _contextMenuInfo._menuItem._iconPath, MAX_FULL_PATH);
         _contextMenuInfo._menuItem._enabled = _contextMenuInfo._subMenuItems.size() > 0;
