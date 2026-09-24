@@ -237,3 +237,70 @@ flowchart LR
 - `Vfs.dll` is the **CFAPI backend adapter** and callback endpoint.
 - `FileExplorerExtension.exe` is the **modern CloudFiles COM host** that translates shell requests to server commands.
 - **Named pipe IPC** is the primary runtime channel between shell integration binaries and kDrive server.
+
+---
+
+## 9. MSIX Packaging and Deployment
+
+`FileExplorerExtension.exe` and its CloudFiles handlers are shipped in a sparse MSIX bundle
+(`FileExplorerExtensionPackage_<version>_x64_arm64.msixbundle`) installed under
+`$INSTDIR\shellext\AppX`.
+
+### AUMID and package family
+
+Windows links a sync root to the package that provides its Explorer integration through the
+`AUMID` value of `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\<syncRootId>`,
+written by `CloudProviderRegistrar::registerWithShell()`
+(`extensions/windows/cfapi/Vfs/cloudproviderregistrar.cpp`) as
+`Infomaniak.kDrive.Extension_<publisherId>!App`.
+
+`<publisherId>` is a hash of the *subject of the signing certificate*, so **changing the
+certificate changes the package family**. Windows cannot update a package in place across package
+families, and the consequences differ from one Windows version to the other:
+
+- **Windows 11**: both packages are installed side by side. The next kDrive start migrates the sync
+  roots to the new extension, the stale package simply stays behind.
+- **Windows 10**: installing the new package *fails*, because two packages sharing the same name
+  but having a different publisher id cannot coexist on the machine. The next kDrive start still
+  migrates the sync roots to the new extension, which is not installed, and the Explorer
+  integration breaks.
+
+Removing the packages belonging to the other families before deploying the new one avoids both
+situations.
+
+### What the installer does
+
+The NSIS installer and uninstaller drive `admin/win/shell-extension-setup.ps1`. The script is
+embedded in the installer, extracted to `$PLUGINSDIR` when needed and run elevated: it is never
+deployed on the user machine and is not meant to be started manually.
+
+| Mode | When | Action |
+| --- | --- | --- |
+| `Install` | First installation and update | Removes the extension packages signed with another certificate, then provisions the bundle. |
+| `Uninstall` | Full uninstallation only | Removes every kDrive extension package, whatever the certificate it was signed with. |
+| `RestartExplorer` | Right after `Install` or `Uninstall` | Stops the Explorer process of the current session so that it unloads the packages that were just removed or replaced. |
+
+The two modes treat the sync roots differently, because placeholders must survive an update but
+have to disappear on an uninstallation:
+
+- On **install**, the `AUMID` of the kDrive sync roots is cleared before the stale packages are
+  removed. This detaches them from the package so Windows does not tear the sync roots down with
+  it, leaving the placeholders (i.e. the user files) untouched. The installer does not restore the
+  value: kDrive points the sync roots at the extension it expects on its next start.
+- On **uninstall**, the sync roots are left attached, so that Windows removes them — and the
+  placeholders they contain — along with the extension.
+
+A silent uninstallation is the update path (the installer runs the previous `Uninstall.exe /S`),
+and it does not run the script at all: only an interactive uninstallation removes the extension.
+
+Explorer keeps the DLLs of the packages it loaded: the `RestartExplorer` mode stops the Explorer
+process of the current session right after the extension has been deployed or removed, so that it
+unloads them. Windows restarts the shell right away and the script relaunches it if that automatic
+restart is disabled; other sessions pick the change up when their user logs on. A stale Explorer
+being only cosmetic, every failure of this mode is logged as a warning and never fails the
+installation or the uninstallation.
+
+The bundle is **provisioned** (`Add-AppxProvisionedPackage -Online -SkipLicense`) rather than
+installed, so that every user of the computer gets the extension. A provisioned package is only
+registered for a user when he logs on, so the installer additionally registers it for the user
+running it (`Add-AppxPackage`, run unelevated through `UAC_AsUser_ExecShell`).

@@ -41,6 +41,17 @@ msbuild kDriveCfApiExtension.sln /p:Configuration=Release /p:Platform=x64
 Key files:
 - CFAPI shell integration entry: `extensions/windows/cfapi/` — look for `CfRegisterSyncRoot`.
 
+### Deployment
+The CFAPI extension is shipped as an MSIX bundle **provisioned** for every user of the computer by
+the NSIS installer, which drives `admin/win/shell-extension-setup.ps1`. The sync roots are bound to
+the package through an AUMID derived from the signing certificate, so changing the certificate
+changes the package family and requires removing the previous packages — on Windows 10 the new
+package cannot even be installed otherwise. After deploying or removing the extension, the
+installer/uninstaller also restarts the session's `explorer.exe` so that it unloads the stale
+packages. See
+[`extensions/windows/docs/windows-explorer-vfs-architecture.md`](windows/docs/windows-explorer-vfs-architecture.md),
+section "MSIX Packaging and Deployment".
+
 ## Patterns & Conventions
 - **Language:** Objective-C/Objective-C++ for macOS; C++ for Windows CFAPI.
 - **IPC with server:** Use XPC (macOS) or named pipes (Windows) to communicate extension status back to the server process. Mirror the comm protocol in `src/libcommon/comm.h`.
