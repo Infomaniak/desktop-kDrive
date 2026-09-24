@@ -2858,4 +2858,16 @@ To speed up the upload, we recommend sending only the last kDrive session.</sour
             <translation>Θέλετε πραγματικά να κλείσετε το kDrive;</translation>
         </message>
     </context>
+    <context>
+        <name></name>
+        <message id="logsUploadCanceled">
+            <source>The debug folder upload was canceled.</source>
+            <extracomment>Terminal canceled state. Keep distinct from the intermediate CancelRequested state.</extracomment>
+            <translation>Η αποστολή του φακέλου εντοπισμού σφαλμάτων ακυρώθηκε.</translation>
+        </message>
+        <message id="logsUploadSuccess">
+            <source>The debug folder was successfully sent to Infomaniak Support.</source>
+            <translation>Ο φάκελος εντοπισμού σφαλμάτων στάλθηκε με επιτυχία στην υποστήριξη της Infomaniak.</translation>
+        </message>
+    </context>
 </TS>
