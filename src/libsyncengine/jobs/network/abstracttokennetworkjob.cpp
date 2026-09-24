@@ -603,12 +603,21 @@ void AbstractTokenNetworkJob::fetchFirstUserDbId() {
     _userDbId = userList[0].dbId();
 }
 
-ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
+ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) noexcept {
     apiToken = ApiToken();
     const auto retrieveAndValidateApiToken = [this, &apiToken]() -> ExitInfo {
-        if (const auto exitInfo = retrieveApiTokenFromUserCache(apiToken); !exitInfo) {
-            return exitInfo;
+        try {
+            if (const auto exitInfo = retrieveApiTokenFromUserCache(apiToken); !exitInfo) {
+                return exitInfo;
+            }
+        } catch (const JobException &e) {
+            LOG_WARN(_logger, "Error in retrieveApiTokenFromUserCache: " << e.what());
+            return exception2ExitCode(e);
+        } catch (...) {
+            LOG_WARN(_logger, "Unknown error in retrieveApiTokenFromUserCache");
+            return ExitCode::Unknown;
         }
+
         if (apiToken.accessToken().empty()) {
             LOG_WARN(_logger, "No access token found");
             return ExitInfo{ExitCode::InvalidToken, ExitCause::LoginError};
@@ -622,6 +631,9 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
         } catch (const JobException &e) {
             LOG_WARN(_logger, "Error in fetchDriveDbIdFromSync: " << e.what());
             return exception2ExitCode(e);
+        } catch (...) {
+            LOG_WARN(_logger, "Unknown error in fetchDriveDbIdFromSync");
+            return ExitCode::Unknown;
         }
     } else if (_apiType == ApiType::Internal) {
         try {
@@ -629,6 +641,9 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
         } catch (const JobException &e) {
             LOG_WARN(_logger, "Error in fetchFirstUserDbId: " << e.what());
             return exception2ExitCode(e);
+        } catch (...) {
+            LOG_WARN(_logger, "Unknown error in fetchFirstUserDbId");
+            return ExitCode::Unknown;
         }
     }
 
@@ -644,6 +659,9 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
                 } catch (const JobException &e) {
                     LOG_WARN(_logger, "Error in loadUserInfoFromDriveDbId: " << e.what());
                     return exception2ExitCode(e);
+                } catch (...) {
+                    LOG_WARN(_logger, "Unknown error in loadUserInfoFromDriveDbId");
+                    return ExitCode::Unknown;
                 }
             }
             return retrieveAndValidateApiToken();
@@ -658,6 +676,9 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
             } catch (const JobException &e) {
                 LOG_WARN(_logger, "Error in loadUserInfoFromUserDbId: " << e.what());
                 return exception2ExitCode(e);
+            } catch (...) {
+                LOG_WARN(_logger, "Unknown error in loadUserInfoFromUserDbId");
+                return ExitCode::Unknown;
             }
 
             return retrieveAndValidateApiToken();

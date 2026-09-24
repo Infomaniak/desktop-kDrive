@@ -1913,7 +1913,7 @@ void TestNetworkJobs::testGetInfoUserTrialsOn401Error() {
         private:
             // /!\ The base class constructor will not call this override.
             // This method can only be called after the derived class constructor has completed.
-            ExitInfo loadApiToken(ApiToken &apiToken) override {
+            ExitInfo loadApiToken(ApiToken &apiToken) noexcept override {
                 apiToken = _apiToken;
                 return ExitCode::Ok;
             }
