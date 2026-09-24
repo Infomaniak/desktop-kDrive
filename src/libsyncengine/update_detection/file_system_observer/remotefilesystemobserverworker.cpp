@@ -707,7 +707,7 @@ bool shouldContainPath(const ActionCode actionCode) {
     // However, we still want to process the `ActionInfo` if it is
     // - a trash action,
     // - a user access right removal action,
-    // as the path is superfluous in this case and is actually dropped for the deleted  or unauthorized remote folders located at
+    // as the path is superfluous in this case and is actually dropped for the deleted or unauthorized remote folders located at
     // the root of `Common documents`.
 
     switch (actionCode) {
