@@ -337,7 +337,8 @@ void AppClientLinux::openSettingsWindow() {
         QQmlComponent component(&_qmlEngine);
         component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
         auto *object = component.createWithInitialProperties(
-                {{"controller", QVariant::fromValue<QObject *>(&_settingsWindowController)}});
+                {{"controller", QVariant::fromValue<SettingsWindowController *>(&_settingsWindowController)},
+                 {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
