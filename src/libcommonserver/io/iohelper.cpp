@@ -1211,7 +1211,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
 }
 
-ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
+ExitInfo IoHelper::toExitInfo(const IoError ioError) {
     switch (ioError) {
         case IoError::Success:
             return ExitCode::Ok;
@@ -1219,6 +1219,12 @@ ExitInfo IoHelper::directoryIteratorExitCode(const IoError ioError) {
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         case IoError::FileOrDirectoryCorrupted:
             return {ExitCode::SystemError, ExitCause::FileOrDirectoryCorrupted};
+        case IoError::NoSuchFileOrDirectory:
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        case IoError::DirectoryExists:
+            return {ExitCode::SystemError, ExitCause::DirExists};
+        case IoError::FileExists:
+            return {ExitCode::SystemError, ExitCause::FileExists};
         default:
             return ExitCode::SystemError;
     }

@@ -8,9 +8,14 @@ $RepoUrl    = "__REPO_URL__"
 $Token      = "__REG_TOKEN__"
 $Labels     = "__TAGS__"
 $RunnerName = "__REG_NAME__"
-
+$AdminPass = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String("__ADMIN_PASS_B64__"))
 # Local Administrator account (consistent with the AutoLogon set in the unattend file).
-$AdminAccount = "Administrateur"
+$AdminAccount = "Administrator"
+
+$WinlogonKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+Set-ItemProperty -Path $WinlogonKey -Name AutoAdminLogon -Value "1"
+Set-ItemProperty -Path $WinlogonKey -Name DefaultUserName -Value $AdminAccount
+Set-ItemProperty -Path $WinlogonKey -Name DefaultPassword -Value $AdminPass
 
 # --- Register the runner (no service, no logon-account flags) ---
 if (-not (Test-Path $MarkerFile)) {
@@ -53,11 +58,6 @@ $adminSession = Get-Process -Name explorer -IncludeUserName -ErrorAction Silentl
     Where-Object { $_.UserName -like "*$AdminAccount" }
 
 # --- Allow execution of .ps1 scripts (required by the runner to run job scripts) ---
-# The runner invokes temporary .ps1 files (e.g. from _work\_temp). Without a
-# permissive execution policy these fail with:
-#   "... cannot be loaded because running scripts is disabled on this system."
-# Set the policy for both the LocalMachine and CurrentUser scopes so the runner
-# (and any interactive session) can execute scripts.
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 

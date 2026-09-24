@@ -89,7 +89,7 @@ struct IoHelper {
             EnumEnd
         };
 
-        static ExitInfo directoryIteratorExitCode(const IoError ioError);
+        static ExitInfo toExitInfo(const IoError ioError);
 
         IoHelper() = default;
 

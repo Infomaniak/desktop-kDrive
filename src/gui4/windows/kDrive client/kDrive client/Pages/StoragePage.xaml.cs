@@ -41,9 +41,9 @@ namespace Infomaniak.kDrive.Pages
         public StoragePageViewModel PageViewModel => _pageViewModel;
         public StoragePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to StoragePage - Initializing StoragePage components");
+            Logger.LogInfo("Navigated to StoragePage - Initializing StoragePage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "StoragePage components initialized");
+            Logger.LogDebug("StoragePage components initialized");
         }
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.Pages
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+                Logger.LogInfo("Disk size update was canceled.");
             }
 
             _analyticsService.TrackPageView(Analytics.Keys.Category.StoragePage);
@@ -87,7 +87,7 @@ namespace Infomaniak.kDrive.Pages
                 }
                 catch (OperationCanceledException)
                 {
-                    Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+                    Logger.LogInfo("Disk size update was canceled.");
                 }
                 btn.IsEnabled = true;
                 btn.Visibility = Visibility.Visible;
@@ -102,7 +102,8 @@ namespace Infomaniak.kDrive.Pages
             string? prettySize = converter.Convert(diskSize ?? -1, typeof(string), "Decimals = 0", "") as string;
             if (prettySize is null)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to convert disk size {diskSize} to human readable string");
+                Logger.LogWarning($"Failed to convert disk size {diskSize} to human readable string",
+                    "StoragePage: Failed to format disk size");
                 prettySize = $"{diskSize} bytes";
             }
 
@@ -116,7 +117,8 @@ namespace Infomaniak.kDrive.Pages
             string? prettySize = converter.Convert(usedSize ?? -1, typeof(string), "Decimals = 0", "") as string;
             if (prettySize is null)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to convert usedSize size {usedSize} to human readable string");
+                Logger.LogWarning($"Failed to convert usedSize size {usedSize} to human readable string",
+                    "StoragePage: Failed to format used size");
                 prettySize = $"{usedSize} bytes";
             }
             return Localizer.Instance.GetStringWithPlural("labelStorageUsed", ParseNumberFromPrettySize(prettySize), prettySize);
@@ -129,7 +131,8 @@ namespace Infomaniak.kDrive.Pages
             string? prettySize = converter.Convert(usedSize ?? -1, typeof(string), "Decimals = 0", "") as string;
             if (prettySize is null)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to convert usedSize size {usedSize} to human readable string");
+                Logger.LogWarning($"Failed to convert usedSize size {usedSize} to human readable string",
+                    "StoragePage: Failed to format used size");
                 prettySize = $"{usedSize} bytes";
             }
 
@@ -144,7 +147,8 @@ namespace Infomaniak.kDrive.Pages
             double number;
             if (!double.TryParse(numberPart, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out number))
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to parse number part '{numberPart}' from prettySize '{prettySize}'");
+                Logger.LogWarning($"Failed to parse number part '{numberPart}' from prettySize '{prettySize}'",
+                    "StoragePage: Failed to parse formatted size");
                 number = 2; // Default to 2 to use plural form if parsing fails
             }
             return (int)Math.Round(number);
@@ -187,7 +191,7 @@ namespace Infomaniak.kDrive.Pages
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "Disk size update was canceled.");
+                Logger.LogInfo("Disk size update was canceled.");
             }
         }
 
@@ -295,7 +299,8 @@ namespace Infomaniak.kDrive.Pages
             DiskRoot = Path.GetPathRoot(syncPath) ?? "";
             if (DiskRoot.Length == 0)
             {
-                Logger.Log(Logger.Level.Warning, $"Unable to get disk root of {syncPath}");
+                Logger.LogWarning($"Unable to get disk root of {syncPath}",
+                    "StoragePageViewModel: Failed to get disk root");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 DiskSize = -1;
                 DiskFreeSize = -1;
@@ -322,7 +327,8 @@ namespace Infomaniak.kDrive.Pages
                     if (!_cancellationTokenSource.IsCancellationRequested)
                     {
                         Utility.ShowUnexpectedErrorTeachingTip();
-                        Logger.Log(Logger.Level.Warning, $"Unable to get hydrated file size of {syncPath}");
+                        Logger.LogWarning($"Unable to get hydrated file size of {syncPath}",
+                            "StoragePageViewModel: Failed to get hydrated file size");
                     }
                     return;
                 }
@@ -330,7 +336,7 @@ namespace Infomaniak.kDrive.Pages
             }
             catch (System.IO.IOException ex)
             {
-                Logger.Log(Logger.Level.Info, $"Error accessing drive info for root {DiskRoot}: {ex.Message}");
+                Logger.LogInfo($"Error accessing drive info for root {DiskRoot}: {ex.Message}");
                 IsDiskConnected = false;
             }
             Loading = false;
@@ -347,7 +353,7 @@ namespace Infomaniak.kDrive.Pages
             if (res is null)
             {
                 if (!cancellationToken.IsCancellationRequested)
-                    Logger.Log(Logger.Level.Warning, "GetSyncOfflineFilesSize returned null");
+                    Logger.LogWarning("GetSyncOfflineFilesSize returned null");
                 return null;
             }
 

@@ -356,6 +356,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Page Update="CustomControls\ManyDeletesDialogHost.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <None Update="CustomControls\LocalizedHyperlinkText.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>

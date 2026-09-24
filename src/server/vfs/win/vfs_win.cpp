@@ -51,7 +51,7 @@ VfsWin::VfsWin(const VfsSetupParams &vfsSetupParams, QObject *parent) :
         return;
     }
 
-    starVfsWorkers();
+    startVfsWorkers();
 }
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
@@ -652,18 +652,20 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
 
             if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
-                _workerInfo[workerDehydration]._mutex.lock();
-                _workerInfo[workerDehydration]._queue.push_front(fullPath);
-                _workerInfo[workerDehydration]._mutex.unlock();
+                {
+                    QMutexLocker locker(&_workerInfo[workerDehydration]._mutex);
+                    _workerInfo[workerDehydration]._queue.push_front(fullPath);
+                }
                 _workerInfo[workerDehydration]._queueWC.wakeOne();
             } else if (localPinState == PinState::AlwaysLocal && isDehydrated && !syncing) {
                 // Set hydrating indicator (avoid double hydration)
                 _setSyncFileSyncing(_vfsSetupParams.syncDbId, fileRelativePath, true);
 
                 // Add file path to hydration queue
-                _workerInfo[workerHydration]._mutex.lock();
-                _workerInfo[workerHydration]._queue.push_front(fullPath);
-                _workerInfo[workerHydration]._mutex.unlock();
+                {
+                    QMutexLocker locker(&_workerInfo[workerHydration]._mutex);
+                    _workerInfo[workerHydration]._queue.push_front(fullPath);
+                }
                 _workerInfo[workerHydration]._queueWC.wakeOne();
             }
 

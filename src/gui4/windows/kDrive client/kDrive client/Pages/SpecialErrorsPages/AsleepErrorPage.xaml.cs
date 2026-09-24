@@ -29,19 +29,19 @@ namespace Infomaniak.kDrive.Pages
         private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
         public AsleepErrorPage() : base([SyncErrorStates.Asleep])
         {
-            Logger.Log(Logger.Level.Info, "Navigated to AsleepErrorPage - Initializing AsleepErrorPage components");
+            Logger.LogInfo("Navigated to AsleepErrorPage - Initializing AsleepErrorPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "AsleepErrorPage components initialized");
+            Logger.LogDebug("AsleepErrorPage components initialized");
         }
         private async void PrimaryButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Primary button clicked - Opening drive home page");
+            Logger.LogInfo("Primary button clicked - Opening drive home page");
             await Windows.System.Launcher.LaunchUriAsync(ViewModel.SelectedSync?.Drive.GetWebUri());
         }
 
         private async void SecondaryButton_Click(object sender, RoutedEventArgs e)
         {
-            Logger.Log(Logger.Level.Info, "Retry button clicked - Starting sync");
+            Logger.LogInfo("Retry button clicked - Starting sync");
             await RestartSync();
         }
     }

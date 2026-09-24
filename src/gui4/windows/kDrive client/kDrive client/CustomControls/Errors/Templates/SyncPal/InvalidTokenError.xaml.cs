@@ -43,7 +43,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.SyncPal
             var frame = Utility.GetFrame(this);
             if (frame is null)
             {
-                Logger.Log(Logger.Level.Warning, "Unable to get the current frame");
+                Logger.LogWarning("Unable to get the current frame");
                 return;
             }
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageInvalidToken);

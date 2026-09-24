@@ -66,7 +66,8 @@ namespace Infomaniak.kDrive.CustomControls
             var fullUri = ResolveUri(uriSource);
             if (!File.Exists(fullUri.LocalPath))
             {
-                Logger.Log(Logger.Level.Error, $"SVG file not found: {fullUri.LocalPath}");
+                Logger.LogError($"SVG file not found: {fullUri.LocalPath}",
+                    "SvgHelper: SVG file not found");
                 return null;
             }
 
@@ -109,11 +110,12 @@ namespace Infomaniak.kDrive.CustomControls
                 }
                 catch (OperationCanceledException)
                 {
-                    Logger.Log(Logger.Level.Extended, $"{logContext} refresh canceled");
+                    Logger.LogExtended($"{logContext} refresh canceled");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(Logger.Level.Error, $"{logContext} refresh failed: {ex.Message}");
+                    Logger.LogError($"{logContext} refresh failed: {ex.Message}",
+                        "SvgHelper: SVG refresh failed");
                 }
             });
 

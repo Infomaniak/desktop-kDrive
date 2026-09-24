@@ -44,7 +44,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (!CredRead(targetName, CRED_TYPE_GENERIC, 0, out IntPtr credentialPtr))
             {
                 int error = Marshal.GetLastWin32Error();
-                Logger.Log(Logger.Level.Warning, $"Failed to read keychain entry '{targetName}': Win32 error {error}.");
+                Logger.LogWarning($"Failed to read keychain entry '{targetName}': Win32 error {error}.",
+                    "WindowsKeychainStore: Failed to read keychain entry");
                 return null;
             }
 

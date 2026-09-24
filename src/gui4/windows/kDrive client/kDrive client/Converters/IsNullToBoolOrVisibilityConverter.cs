@@ -36,13 +36,13 @@ namespace Infomaniak.kDrive.Converters
             else if (targetType == typeof(bool))
                 return result;
 
-            Logger.Log(Logger.Level.Fatal, "IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
+            Logger.LogFatal("IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
             throw new NotSupportedException("IsNullToBoolOrVisibilityConverter: Convert - Unsupported target type.");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "IsNullToBoolOrVisibilityConverter: ConvertBack is not implemented.");
+            Logger.LogFatal("IsNullToBoolOrVisibilityConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

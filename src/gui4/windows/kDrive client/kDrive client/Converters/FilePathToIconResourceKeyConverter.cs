@@ -35,7 +35,7 @@ namespace Infomaniak.kDrive.Converters
             }
             else
             {
-                Logger.Log(Logger.Level.Error, "FilePathToIconResourceKeyConverter: value is not a string or Uri.");
+                Logger.LogError("FilePathToIconResourceKeyConverter: value is not a string or Uri.");
                 path = "";
             }
 
@@ -108,7 +108,7 @@ namespace Infomaniak.kDrive.Converters
             };
             if (iconResourceKey == "")
             {
-                Logger.Log(Logger.Level.Info, $"FilePathToIconResourceKeyConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
+                Logger.LogInfo($"FilePathToIconResourceKeyConverter: Using default icon for unknown extension '{extension}' in path '{path}'.");
                 iconResourceKey = "Infomaniak.DS.Icons.Documents.file";
                 // This is not an error, just a warning for tracking purposes.
                 // The above warning will lead to a Sentry allowing us to add more extensions in the future.
@@ -119,7 +119,7 @@ namespace Infomaniak.kDrive.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Logger.Log(Logger.Level.Fatal, "StringPathToFileNameConverter: ConvertBack is not implemented.");
+            Logger.LogFatal("StringPathToFileNameConverter: ConvertBack is not implemented.");
             throw new NotImplementedException();
         }
     }

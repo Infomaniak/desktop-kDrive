@@ -3182,8 +3182,8 @@ Proszę skorzystać z poniższego linku, aby przesłać logi do działu pomocy t
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>Weryfikacja sumy kontrolnej nie powiodła się. Plik może być uszkodzony.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>Weryfikacja programu instalacyjnego nie powiodła się. Plik może być uszkodzony.</translation>
     </message>
 </context>
 <context>

@@ -39,8 +39,9 @@ namespace Infomaniak.kDrive.Converters
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error,
-                    $"NumberToGridLengthConverter: Unable to convert value '{value}' of type '{value.GetType()}' to double. Exception: {ex}");
+                Logger.LogError(
+                    $"NumberToGridLengthConverter: Unable to convert value '{value}' of type '{value.GetType()}' to double. Exception: {ex}",
+                    "NumberToGridLengthConverter: Failed to convert value to double");
                 return new Microsoft.UI.Xaml.GridLength(0, Microsoft.UI.Xaml.GridUnitType.Star);
             }
         }
@@ -51,7 +52,7 @@ namespace Infomaniak.kDrive.Converters
             {
                 return gridLength.Value;
             }
-            Logger.Log(Logger.Level.Fatal, "NumberToGridLengthConverter: value is not a GridLength.");
+            Logger.LogFatal("NumberToGridLengthConverter: value is not a GridLength.");
             throw new ArgumentException("Invalid value type", nameof(value));
         }
     }

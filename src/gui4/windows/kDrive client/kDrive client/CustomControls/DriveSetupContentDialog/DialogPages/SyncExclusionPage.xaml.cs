@@ -37,16 +37,16 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         private ISync? Sync { get; set; }
         public SyncExclusionPage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveSetupContentDialog.SyncExclusionPage - Initializing DriveSetupContentDialog.SyncExclusionPage components");
+            Logger.LogInfo("Navigated to DriveSetupContentDialog.SyncExclusionPage - Initializing DriveSetupContentDialog.SyncExclusionPage components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.SyncExclusionPage components initialized");
+            Logger.LogDebug("DriveSetupContentDialog.SyncExclusionPage components initialized");
         }
         public SyncExclusionPage(ISync sync)
         {
-            Logger.Log(Logger.Level.Info, "Navigated to DriveSetupContentDialog.SyncExclusionPage - Initializing DriveSetupContentDialog.SyncExclusionPage components");
+            Logger.LogInfo("Navigated to DriveSetupContentDialog.SyncExclusionPage - Initializing DriveSetupContentDialog.SyncExclusionPage components");
             Sync = sync;
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "DriveSetupContentDialog.SyncExclusionPage components initialized");
+            Logger.LogDebug("DriveSetupContentDialog.SyncExclusionPage components initialized");
         }
 
         // Navigation method
@@ -61,7 +61,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
             }
             else if (Sync is null)
             {
-                Logger.Log(Logger.Level.Fatal, "Invalid parameter type when navigating to SyncExclusionPage");
+                Logger.LogFatal("Invalid parameter type when navigating to SyncExclusionPage");
                 throw new Exception("Invalid parameter type when navigating to SyncExclusionPage");
             }
         }
@@ -91,7 +91,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         {
             if (DriveSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                Logger.LogError("DriveSetupContentDialogVM is null");
                 return;
             }
             await ExclusionSelector.SaveChanges();
@@ -103,7 +103,7 @@ namespace Infomaniak.kDrive.Pages.DriveSetupContentDialog
         {
             if (DriveSetupContentDialogVM is null)
             {
-                Logger.Log(Logger.Level.Error, "DriveSetupContentDialogVM is null");
+                Logger.LogError("DriveSetupContentDialogVM is null");
                 return;
             }
 

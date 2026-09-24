@@ -27,6 +27,7 @@ namespace KDC {
 
 class TestDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestDb);
+        CPPUNIT_TEST(testCreateAndPrepareLocalRequest);
         CPPUNIT_TEST(testQueries);
         CPPUNIT_TEST(testTableExist);
         CPPUNIT_TEST(testColumnExist);
@@ -41,6 +42,7 @@ class TestDb : public CppUnit::TestFixture, public TestBase {
         void tearDown() override;
 
     protected:
+        void testCreateAndPrepareLocalRequest();
         void testQueries();
         void testTableExist();
         void testColumnExist();
