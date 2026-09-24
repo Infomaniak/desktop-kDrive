@@ -4049,6 +4049,9 @@ bool AppServer::startClient() {
         } else if (settingsAsked()) {
             arguments << "--settings";
         }
+
+        _synthesisAsked = false;
+        _settingsAsked = false;
 #endif
 
         LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)));
@@ -4062,9 +4065,6 @@ bool AppServer::startClient() {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }
-
-        _synthesisAsked = false;
-        _settingsAsked = false;
     }
 
     return true;
