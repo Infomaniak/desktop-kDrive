@@ -879,10 +879,10 @@ void CommService::requestGetAppState(const AppStateKey key, const AppStateCallba
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
                                QString value;
                                if (exitInfo) {
-                                   // AppState values are stored as a std::variant on the server side, so the wire
-                                   // type may not be a plain string. Use Poco's type-coercing convert<> instead
-                                   // of readValueFromStruct (which uses strict extraction) to handle all variants.
-                                   value = QString::fromStdString(result[msgParamValue].convert<std::string>());
+                                   // The server always sends the raw database string, base64-encoded like any string.
+                                   std::string rawValue;
+                                   CommonUtility::readValueFromStruct(result, msgParamValue, rawValue);
+                                   value = QString::fromStdString(rawValue);
                                }
                                callback(exitInfo, value);
                            });
