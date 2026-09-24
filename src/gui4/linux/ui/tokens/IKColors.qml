@@ -230,4 +230,11 @@ QtObject {
     readonly property color settingsCardSurface: surfaceSecondary
     readonly property color settingsDivider: surfaceTertiary
     readonly property color settingsNavigationIcon: _p.grayNavigation
+    readonly property color settingsSupportIconSurface: _p.kDrive600
+    readonly property color settingsSupportIconGlyph: _p.white
+    readonly property color settingsSupportIconBorder: onboardingDriveIconBorder
+    readonly property color settingsSupportIconHighlightStart: onboardingDriveIconHighlightStart
+    readonly property color settingsSupportIconHighlightEnd: onboardingDriveIconHighlightEnd
+    readonly property color settingsSupportIconInnerBorder: onboardingDriveIconInnerBorder
+    readonly property color settingsSupportIconShadow: _p.neutralBlack35
 }
