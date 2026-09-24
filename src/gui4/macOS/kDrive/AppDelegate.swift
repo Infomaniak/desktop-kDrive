@@ -57,7 +57,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        guard !startServerIfNeeded() else {
+        switch startServerIfNeeded() {
+        case .startedAndHandedOff:
+            return
+        case .alreadyRunning:
+            IKLogger.general.info("kDrive server is already running; continuing with client launch")
+        case .failedNotLocated:
+            IKLogger.general.error("Launch aborted: kDrive server application could not be located")
+            NSApp.terminate(nil)
+            return
+        case .failedToStart(let error):
+            IKLogger.general.error("Launch aborted: failed to start kDrive server: \(error)")
+            NSApp.terminate(nil)
             return
         }
 
@@ -199,20 +210,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return .terminateLater
     }
 
-    private func startServerIfNeeded() -> Bool {
+    private enum ServerStartResult {
+        case startedAndHandedOff
+        case alreadyRunning
+        case failedNotLocated
+        case failedToStart(Error)
+    }
+
+    private func startServerIfNeeded() -> ServerStartResult {
         #if DEBUG
         IKLogger.general.warning("Debug build: skipping automatic server start/handoff")
-        return false
+        return .alreadyRunning
         #else
         let serverBundleID = "com.infomaniak.drive.desktopclient"
         guard NSRunningApplication.runningApplications(withBundleIdentifier: serverBundleID).isEmpty else {
-            return false
+            IKLogger.general.info("kDrive server is already running")
+            return .alreadyRunning
         }
 
         guard let serverURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: serverBundleID),
               let executableURL = Bundle(url: serverURL)?.executableURL else {
             IKLogger.general.error("Could not locate the kDrive server application")
-            return false
+            return .failedNotLocated
         }
 
         let server = Process()
@@ -222,13 +241,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             try server.run()
         } catch {
             IKLogger.general.error("Failed to start the kDrive server: \(error)")
-            return false
+            return .failedToStart(error)
         }
 
         IKLogger.general.info("Started the kDrive server; exiting so it can relaunch the client")
         isHandingOffToServer = true
         NSApp.terminate(nil)
-        return true
+        return .startedAndHandedOff
         #endif
     }
 
