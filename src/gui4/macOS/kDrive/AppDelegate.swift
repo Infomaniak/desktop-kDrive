@@ -201,7 +201,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func startServerIfNeeded() -> Bool {
         #if DEBUG
-        IKLogger.general.warn("Debug build: skipping automatic server start/handoff")
+        IKLogger.general.warning("Debug build: skipping automatic server start/handoff")
         return false
         #else
         let serverBundleID = "com.infomaniak.drive.desktopclient"
