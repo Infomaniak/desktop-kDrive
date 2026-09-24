@@ -1196,6 +1196,48 @@ void TestNetworkJobs::testThumbnail() {
     CPPUNIT_ASSERT(!job.octetStreamRes().empty());
 }
 
+void TestNetworkJobs::testDuplicateRenameMove() {
+    // Create the file to be duplicated inside a temporary remote directory.
+    const RemoteTemporaryDirectory remoteSourceTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMoveSource");
+
+    const SyncName filename =
+            Str("file_to_duplicate_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+    CopyToDirectoryJob copyFileJob(_driveDbId, testFileRemoteId, remoteSourceTmpDir.id(), filename);
+    const ExitCode copyFileJobExitCode = copyFileJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, copyFileJobExitCode);
+
+    // Duplicate the uploaded file
+    DuplicateJob dupJob(nullptr, _driveDbId, copyFileJob.nodeId(), Str("test_duplicate.txt"));
+    const ExitCode duplicateJobExitCode = dupJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, duplicateJobExitCode);
+
+    NodeId dupFileId;
+    if (dupJob.jsonRes()) {
+        Poco::JSON::Object::Ptr dataObj = dupJob.jsonRes()->getObject(dataKey);
+        if (dataObj) {
+            dupFileId = dataObj->get(idKey).toString();
+        }
+    }
+
+    CPPUNIT_ASSERT(!dupFileId.empty());
+
+    // Move
+    const RemoteTemporaryDirectory remoteTargetTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMoveTarget");
+    MoveJob moveJob(nullptr, _driveDbId, "", dupFileId, remoteTargetTmpDir.id());
+    moveJob.setBypassCheck(true);
+    const ExitCode moveExitCode = moveJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveExitCode);
+
+    GetFileListJob fileListJob(_driveDbId, remoteTargetTmpDir.id());
+    const ExitCode getFileListExitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, getFileListExitCode);
+
+    Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
+    CPPUNIT_ASSERT(resObj);
+    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
+    CPPUNIT_ASSERT_EQUAL(dupFileId, NodeId(dataArray->getObject(0)->get(idKey).convert<std::string>()));
+    CPPUNIT_ASSERT_EQUAL(std::string("test_duplicate.txt"), dataArray->getObject(0)->get(nameKey).convert<std::string>());
+}
 void TestNetworkJobs::testRename() {
     // Rename
     const SyncName filename = Str("test_rename_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
@@ -1474,8 +1516,7 @@ void TestNetworkJobs::testUploadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testUploadAborted");
     const SyncPath localFilePath = testhelpers::generateBigFile(temporaryDirectory.path(), 97);
 
-    auto job = std::make_shared<UploadJob>(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
-                                           0, 0);
+    auto job = std::make_shared<UploadJob>(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0, 0);
     SyncJobManagerSingleton::instance()->queueAsyncJob(job);
 
     int counter = 0;
