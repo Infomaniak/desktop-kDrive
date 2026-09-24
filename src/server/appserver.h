@@ -126,7 +126,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         inline bool versionAsked() { return _versionAsked; }
         inline bool clearSyncNodesAsked() { return _clearSyncNodesAsked; }
         inline bool settingsAsked() { return _settingsAsked; }
+        inline void clearSettingsAsked() { _settingsAsked = false; }
         inline bool synthesisAsked() { return _synthesisAsked; }
+        inline void clearSynthesisAsked() { _synthesisAsked = false; }
         inline bool authorizationCodeReceived() { return !_authorizationCodeStr.isEmpty(); }
         inline bool clearKeychainKeysAsked() { return _clearKeychainKeysAsked; }
         inline qint64 runningServerPid() const { return _runningServerPid; }

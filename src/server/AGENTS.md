@@ -30,6 +30,7 @@ Pattern: `src/server/comm/guijobs/abstractguijob.{h,cpp}` — each job has a `ru
 - **IPC messages** are defined in `src/libcommon/comm.h`. Any new message type must be added there and handled symmetrically in both `src/server/comm/guicommserver.cpp` and `src/libcommongui/commclient.cpp`.
 - **VFS plugin** is loaded dynamically at runtime. VFS-related code must guard against the plugin being absent (`if (_vfs)`).
 - **Platform-specific server code** follows the `_mac.mm` / `_win.cpp` / `_linux.cpp` suffix convention (see `src/server/appserver_mac.mm`).
+- **Platform macros:** use project-defined `KD_MACOS`, `KD_WINDOWS`, and `KD_LINUX` instead of standard macros such as `__APPLE__`, `_WIN32`, or `__linux__`.
 - **Logging:** use `LOG_*` macros with the `server` logger name.
 - DO: Add new server-side features as a new `Job` class in `src/server/comm/guijobs/`.
 - DON'T: Call sync engine internals directly from IPC handlers. Use the `SyncPal` public API.

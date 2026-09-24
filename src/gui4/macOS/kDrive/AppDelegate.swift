@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private lazy var mainWindow = MainWindowController()
     private var preferencesWindow: PreferencesWindowController?
     private var onboardingWindow: OnboardingWindowController?
+    private var isHandingOffToServer = false
 
     // periphery:ignore - We keep a strong reference on the statusBarManager
     private(set) var statusBarManager: StatusBarManager?
@@ -56,6 +57,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        switch startServerIfNeeded() {
+        case .startedAndHandedOff:
+            return
+        case .alreadyRunning:
+            IKLogger.general.info("kDrive server is already running; continuing with client launch")
+        case .failedNotLocated:
+            IKLogger.general.error("Launch aborted: kDrive server application could not be located")
+            NSApp.terminate(nil)
+            return
+        case .failedToStart(let error):
+            IKLogger.general.error("Launch aborted: failed to start kDrive server: \(error)")
+            NSApp.terminate(nil)
+            return
+        }
+
         sentryService = SentryService()
         sentryService?.initSentry()
 
@@ -65,7 +81,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         manyDeletesModalPresenter = ManyDeletesModalPresenter()
 
         observeAppPresentation()
-        openMainWindow()
+        handleLaunchArguments()
+    }
+
+    private func handleLaunchArguments() {
+        let arguments = ProcessInfo.processInfo.arguments
+
+        if arguments.contains("--synthesis") {
+            openMainWindow()
+        } else if arguments.contains("--settings") {
+            openPreferencesWindow()
+        } else {
+            #if DEBUG
+            openMainWindow()
+            #endif
+        }
     }
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
@@ -157,9 +187,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        if !flag {
-            openMainWindow()
-        }
+        bringAllWindowsToFront()
         return true
     }
 
@@ -168,6 +196,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        // The server will relaunch the client; do not send it the normal quit request.
+        guard !isHandingOffToServer else {
+            return .terminateNow
+        }
+
         Task {
             #if !DEBUG
             try? await UtilityJobs().quit()
@@ -175,6 +208,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.reply(toApplicationShouldTerminate: true)
         }
         return .terminateLater
+    }
+
+    private enum ServerStartResult {
+        case startedAndHandedOff
+        case alreadyRunning
+        case failedNotLocated
+        case failedToStart(Error)
+    }
+
+    private func startServerIfNeeded() -> ServerStartResult {
+        #if DEBUG
+        IKLogger.general.warning("Debug build: skipping automatic server start/handoff")
+        return .alreadyRunning
+        #else
+        let serverBundleID = "com.infomaniak.drive.desktopclient"
+        guard NSRunningApplication.runningApplications(withBundleIdentifier: serverBundleID).isEmpty else {
+            IKLogger.general.info("kDrive server is already running")
+            return .alreadyRunning
+        }
+
+        guard let serverURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: serverBundleID),
+              let executableURL = Bundle(url: serverURL)?.executableURL else {
+            IKLogger.general.error("Could not locate the kDrive server application")
+            return .failedNotLocated
+        }
+
+        let server = Process()
+        server.executableURL = executableURL
+        server.arguments = ProcessInfo.processInfo.arguments.contains("--settings") ? ["--settings"] : ["--synthesis"]
+        do {
+            try server.run()
+        } catch {
+            IKLogger.general.error("Failed to start the kDrive server: \(error)")
+            return .failedToStart(error)
+        }
+
+        IKLogger.general.info("Started the kDrive server; exiting so it can relaunch the client")
+        isHandingOffToServer = true
+        NSApp.terminate(nil)
+        return .startedAndHandedOff
+        #endif
     }
 
     private func observeAppPresentation() {
