@@ -162,7 +162,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
         SyncPath subDirPath = temporaryDirectory.path() / "regular_dir";
-        std::filesystem::create_directory(subDirPath);
+        CPPUNIT_ASSERT(std::filesystem::create_directory(subDirPath));
         // Create a file inside the subdirectory to check that the symbolic link on the directory is followed during existence
         // check.
         { std::ofstream ofs(subDirPath / "test_file.txt"); }
