@@ -21,6 +21,7 @@
 #include "app/services/commservice.h"
 #include "app/services/parametersservice.h"
 
+#include <QDateTime>
 #include <QObject>
 #include <QUrl>
 #include <QVariantList>
@@ -56,6 +57,8 @@ class AdvancedSettingsController final : public QObject {
         Q_PROPERTY(bool uploadSucceeded READ uploadSucceeded NOTIFY changed)
         Q_PROPERTY(bool lastUploadFailed READ lastUploadFailed NOTIFY changed)
         Q_PROPERTY(QString uploadStatusText READ uploadStatusText NOTIFY changed)
+        Q_PROPERTY(bool latestUploadFailed READ latestUploadFailed NOTIFY changed)
+        Q_PROPERTY(QString lastSuccessfulUploadText READ lastSuccessfulUploadText NOTIFY changed)
         Q_PROPERTY(QString dataManagementErrorText READ dataManagementErrorText NOTIFY changed)
         Q_PROPERTY(QString matomoErrorText READ matomoErrorText NOTIFY changed)
         Q_PROPERTY(QString sentryErrorText READ sentryErrorText NOTIFY changed)
@@ -87,6 +90,10 @@ class AdvancedSettingsController final : public QObject {
         [[nodiscard]] bool uploadSucceeded() const { return _uploadState == LogUploadState::Success; }
         [[nodiscard]] bool lastUploadFailed() const { return _uploadState == LogUploadState::Failed; }
         [[nodiscard]] QString uploadStatusText() const;
+        /** Whether the latest finished upload failed. Unlike lastUploadFailed, it survives the dialog reset. */
+        [[nodiscard]] bool latestUploadFailed() const { return _latestUploadOutcome == LogUploadState::Failed; }
+        /** Localized date of the last successful upload, or an empty string when there is none. */
+        [[nodiscard]] QString lastSuccessfulUploadText() const;
         [[nodiscard]] QString dataManagementErrorText() const;
         [[nodiscard]] QString matomoErrorText() const;
         [[nodiscard]] QString sentryErrorText() const;
@@ -103,6 +110,9 @@ class AdvancedSettingsController final : public QObject {
         Q_INVOKABLE void sendDebugLogs(bool lastSessionOnly);
         Q_INVOKABLE void cancelDebugLogs();
         Q_INVOKABLE void resetDebugLogsUploadPresentation();
+
+        /** Restores the latest upload outcome and last successful upload date persisted by the server. */
+        void restoreUploadStatus();
 
     signals:
         void changed();
@@ -133,6 +143,8 @@ class AdvancedSettingsController final : public QObject {
         void finishSave(const ExitInfo &result, ErrorContext context);
         void save(const ParametersService::ParametersMutation &mutation, ErrorContext context);
         void setUploadStatus(LogUploadState state, int32_t percentage);
+        void setLatestUploadOutcome(LogUploadState state);
+        void refreshLastSuccessfulUploadDate();
 
         ParametersStore &_parametersStore;
         ParametersService &_parametersService;
@@ -144,6 +156,9 @@ class AdvancedSettingsController final : public QObject {
         LogUploadState _lastUploadPhase{LogUploadState::None};
         int32_t _uploadPercentage{0};
         bool _uploadRequestPending{false};
+        LogUploadState _latestUploadOutcome{LogUploadState::None};
+        QDateTime _lastSuccessfulUploadDate;
+        uint32_t _uploadStatusRevision{0};
 };
 
 } // namespace KDC
