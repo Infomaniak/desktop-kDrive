@@ -1,5 +1,5 @@
 find_package(Qt6)
-find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
+find_package(OpenSSL 3.6.2 REQUIRED SSL Crypto)
 
 # List of packages to normalize
 set(_CONAN_PACKAGES openssl-macos)
