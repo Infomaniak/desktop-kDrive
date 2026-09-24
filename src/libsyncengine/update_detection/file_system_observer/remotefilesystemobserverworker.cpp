@@ -330,7 +330,15 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     perfMonitorBackRequest.stop();
     sentry::pTraces::counterScoped::RFSOExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());
     while (job->getItem(item, error, ignore, eof)) {
-        if (ignore) continue;
+        if (ignore) {
+            if (!item.id().empty()) {
+                LOG_SYNCPAL_DEBUG(_logger,
+                                  "Blacklisting item '" << item.id() << "' because of a malformed CSV line in the reply.");
+
+                _syncPal->blacklistTemporarily(item.id(), {}, ReplicaSide::Remote);
+            }
+            continue;
+        }
         if (eof) break;
 
         perfMonitorExploreItem.start();
@@ -383,6 +391,34 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                     << L", isLink:" << item.isLink());
             }
         }
+
+        // If the parent of an item is a file, we have an inconsistency in the remote snapshot. We will ignore this item and
+        // blacklist it temporarily.
+        auto ignoreAndBlacklistItem = [this](const SnapshotItem &itemToIgnore) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(itemToIgnore.name()) << L"\" has a parent that is a file ("
+                                                   << CommonUtility::s2ws(itemToIgnore.parentId()) << L"). Ignoring it.");
+
+            SyncPath path;
+            if (bool dummy = false; !_liveSnapshot.path(itemToIgnore.id(), path, dummy)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(itemToIgnore.id()));
+                path = itemToIgnore.name();
+            }
+
+            sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory", "ID: " + itemToIgnore.id());
+
+            _syncPal->blacklistTemporarily(itemToIgnore.id(), path, ReplicaSide::Remote);
+            (void) _liveSnapshot.removeItem(itemToIgnore.id());
+        };
+
+        if (_liveSnapshot.type(item.parentId()) == NodeType::File) {
+            ignoreAndBlacklistItem(item);
+        }
+
+        if (item.type() == NodeType::File) {
+            for (const auto &childItem: item.children()) {
+                ignoreAndBlacklistItem(*childItem);
+            }
+        }
     }
 
     if (!eof) {
@@ -414,27 +450,6 @@ ExitInfo RemoteFileSystemObserverWorker::checkSnapshotIntegrity() {
             const auto itemName = _liveSnapshot.name(*nodeIdIt);
             LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(itemName) << L"' (" << CommonUtility::s2ws(*nodeIdIt)
                                                   << L") is orphan. Removing it from " << _liveSnapshot.side() << L" snapshot.");
-            if (!_liveSnapshot.removeItem(*nodeIdIt)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(itemName) << L" ("
-                                                                    << CommonUtility::s2ws(*nodeIdIt) << L")");
-                invalidateSnapshot();
-                return ExitCode::DataError;
-            }
-        }
-
-        if (const auto parentId = _liveSnapshot.parentId(*nodeIdIt);
-            !parentId.empty() && _liveSnapshot.type(parentId) != NodeType::Directory) {
-            const auto itemName = _liveSnapshot.name(*nodeIdIt);
-            const auto errorMsg = L"Node '" + SyncName2WStr(itemName) + L"' (" + CommonUtility::s2ws(*nodeIdIt) +
-                                  L") has a parent that is not a directory. Removing it from remote snapshot.";
-            LOGW_SYNCPAL_ERROR(_logger, errorMsg);
-            sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory", CommonUtility::ws2s(errorMsg));
-
-
-            SyncPath path;
-            (void) _liveSnapshot.path(*nodeIdIt, path, ignore);
-            _syncPal->addError(
-                    Error(_syncPal->syncDbId(), "", *nodeIdIt, _liveSnapshot.type(*nodeIdIt), path, ConflictType::None));
             if (!_liveSnapshot.removeItem(*nodeIdIt)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(itemName) << L" ("
                                                                     << CommonUtility::s2ws(*nodeIdIt) << L")");
