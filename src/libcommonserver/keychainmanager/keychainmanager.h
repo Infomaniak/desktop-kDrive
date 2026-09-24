@@ -57,9 +57,13 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         static constexpr uint16_t maxConcurrentKeychainReads = 10;
 
         std::shared_ptr<IKeyChainStorage> _storage;
-        std::atomic<uint16_t> _inFlightReadThreads = 0;
+        // Shared pointer: a read worker may outlive the manager (e.g. after a read timeout) and must
+        // still be able to release its in-flight slot.
+        std::shared_ptr<std::atomic<uint16_t>> _inFlightReadThreads = std::make_shared<std::atomic<uint16_t>>(0);
 
         explicit KeyChainManager(std::shared_ptr<IKeyChainStorage> storage);
+
+        friend class TestKeychainManager;
 };
 
 } // namespace KDC

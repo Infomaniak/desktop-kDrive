@@ -74,16 +74,16 @@ bool KeyChainManager::writeData(const std::string &keychainKey, const std::strin
 ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &data, bool &found) {
     constexpr auto keychainReadTimeout = std::chrono::seconds(60);
 
-    if (_inFlightReadThreads.load(std::memory_order_acquire) >= maxConcurrentKeychainReads) {
+    if (_inFlightReadThreads->load(std::memory_order_acquire) >= maxConcurrentKeychainReads) {
         LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
         found = false;
         return {ExitCode::SystemError, ExitCause::KeychainAccessError};
     }
 
-    uint16_t expectedReads = _inFlightReadThreads.load(std::memory_order_relaxed);
+    uint16_t expectedReads = _inFlightReadThreads->load(std::memory_order_relaxed);
     while (expectedReads < maxConcurrentKeychainReads &&
-           !_inFlightReadThreads.compare_exchange_weak(expectedReads, static_cast<uint16_t>(expectedReads + 1),
-                                                       std::memory_order_acq_rel, std::memory_order_relaxed)) {}
+           !_inFlightReadThreads->compare_exchange_weak(expectedReads, static_cast<uint16_t>(expectedReads + 1),
+                                                        std::memory_order_acq_rel, std::memory_order_relaxed)) {}
     if (expectedReads >= maxConcurrentKeychainReads) {
         LOG_WARN(Log::instance()->getLogger(), "Maximum number of concurrent keychain reads reached");
         found = false;
@@ -101,22 +101,26 @@ ExitInfo KeyChainManager::readData(const std::string &keychainKey, std::string &
 
     const auto state = std::make_shared<ReadState>();
 
-    std::thread([this, keychainKey, state]() {
+    // The worker may still be running when the manager is destroyed (e.g. after a read timeout or
+    // during static teardown of the singleton). It therefore owns everything it touches: the storage,
+    // the in-flight counter and the logger are kept alive by the captured handles, never through this.
+    const auto logger = Log::instance()->getLogger();
+    std::thread([keychainKey, state, storage = _storage, inFlightReads = _inFlightReadThreads, logger]() {
         // Always release the in-flight slot, even if an exception is thrown.
         struct InFlightReadGuard {
                 std::atomic<uint16_t> &counter;
                 ~InFlightReadGuard() { (void) counter.fetch_sub(1, std::memory_order_acq_rel); }
-        } inFlightReadGuard{_inFlightReadThreads};
+        } inFlightReadGuard{*inFlightReads};
 
         bool ok = false;
         bool tmpFound = false;
         std::string tmpData;
         try {
-            ok = _storage->readPassword(keychainKey, tmpData, tmpFound);
+            ok = storage->readPassword(keychainKey, tmpData, tmpFound);
         } catch (const std::exception &e) {
-            LOG_WARN(Log::instance()->getLogger(), std::string("Exception while reading data from keychain: ") + e.what());
+            LOG_WARN(logger, std::string("Exception while reading data from keychain: ") + e.what());
         } catch (...) {
-            LOG_WARN(Log::instance()->getLogger(), "Unknown exception while reading data from keychain");
+            LOG_WARN(logger, "Unknown exception while reading data from keychain");
         }
 
         {
