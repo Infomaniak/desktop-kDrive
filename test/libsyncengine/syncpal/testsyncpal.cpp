@@ -448,7 +448,7 @@ bool TestSyncPal::exec_case_6_4() {
         return false;
     }
 
-    MoveJob job(_syncPal->vfs(), _driveDbId, localCasePath, driveIdT.value(), driveIdN.value(), Str("w"));
+    MoveJob job(_driveDbId, localCasePath, driveIdT.value(), driveIdN.value(), Str("w"));
     job.runSynchronously();
 
     return true;

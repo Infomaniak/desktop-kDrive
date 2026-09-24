@@ -331,7 +331,7 @@ void OperationsExecutor::applyRemoteCreate(const OperationDesc &desc) {
     const NodeId parentId = remoteIdForPath(desc.path.parent_path(), "Create operation");
 
     if (desc.itemType == NodeType::Directory) {
-        CreateDirJob job(nullptr, _syncPal->driveDbId(), parentId, desc.path.filename().native());
+        CreateDirJob job(_syncPal->driveDbId(), parentId, desc.path.filename().native());
         checkExitInfo(job.runSynchronously(), "Create operation (directory)");
         _batchRemoteIds[desc.path] = job.nodeId();
     } else {
@@ -346,7 +346,7 @@ void OperationsExecutor::applyRemoteCreate(const OperationDesc &desc) {
         // UploadJob requires creation/modification times structurally; no date semantics are relevant here, so
         // the current time is used.
         const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, now, now);
+        UploadJob job(_syncPal->driveDbId(), fullPath, desc.path.filename().native(), parentId, now, now);
         checkExitInfo(job.runSynchronously(), "Create operation (file upload)");
         _batchRemoteIds[desc.path] = job.nodeId();
     }
@@ -365,7 +365,7 @@ void OperationsExecutor::applyRemoteEdit(const OperationDesc &desc) {
 
     // UploadJob requires a modification time structurally; no date semantics are relevant here, so the current
     // time is used.
-    UploadJob job(nullptr, _syncPal->driveDbId(), fullPath, fileId,
+    UploadJob job(_syncPal->driveDbId(), fullPath, fileId,
                   std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
     checkExitInfo(job.runSynchronously(), "Edit operation (upload)");
 }
@@ -385,13 +385,13 @@ void OperationsExecutor::applyRemoteMove(const OperationDesc &desc) {
     if (desc.fromPath.parent_path() == desc.toPath.parent_path()) {
         // Same parent: rename only.
         const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
-        RenameJob job(nullptr, _syncPal->driveDbId(), itemId, fullToPath);
+        RenameJob job(_syncPal->driveDbId(), itemId, fullToPath);
         checkExitInfo(job.runSynchronously(), "Move operation (rename)");
     } else {
         const NodeId destParentId = remoteIdForPath(desc.toPath.parent_path(), "Move operation: destination parent");
 
         const SyncPath fullToPath = _syncPal->localPath() / desc.toPath;
-        MoveJob job(nullptr, _syncPal->driveDbId(), fullToPath, itemId, destParentId, desc.toPath.filename().native());
+        MoveJob job(_syncPal->driveDbId(), fullToPath, itemId, destParentId, desc.toPath.filename().native());
         job.setBypassCheck(true);
         checkExitInfo(job.runSynchronously(), "Move operation");
     }

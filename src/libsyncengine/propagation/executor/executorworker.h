@@ -120,7 +120,6 @@ class ExecutorWorker : public OperationProcessor, public std::enable_shared_from
         ExitInfo propagateDeleteToDbAndTree(SyncOpPtr syncOp);
         ExitInfo deleteFromDb(std::shared_ptr<Node> node);
 
-        ExitInfo runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<SyncJob> job);
         void cancelAllOngoingJobs();
 
         [[nodiscard]] bool isLiteSyncActivated() const { return _syncPal->vfsMode() != VirtualFileMode::Off; }

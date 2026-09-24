@@ -91,7 +91,7 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
     try {
         TRACE_DEBUG(L"Converting to placeholder: path='%ls'", filePath);
         winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT) (wcslen(fileId) + 1) * sizeof(WCHAR),
-                                                    CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
+                                                    CF_CONVERT_FLAG_NONE, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught: %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;

@@ -33,7 +33,7 @@
 
 namespace KDC {
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
+UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
                      const SyncName &filename, const NodeId &remoteParentDirId, const SyncTime creationTime,
                      const SyncTime modificationTime) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
@@ -41,16 +41,15 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
     _filename(filename),
     _remoteParentDirId(remoteParentDirId),
     _creationTimeIn(creationTime),
-    _modificationTimeIn(modificationTime),
-    _vfs(vfs) {
+    _modificationTimeIn(modificationTime){
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
 }
 
-UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
+UploadJob::UploadJob(const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
                      const NodeId &fileId, const SyncTime modificationTime, const int64_t remoteSize) :
-    UploadJob(vfs, driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
+    UploadJob(driveDbId, absoluteFilePath, SyncName(), "", 0, modificationTime) {
     _fileId = fileId;
     _remoteSize = remoteSize;
 
@@ -62,18 +61,6 @@ UploadJob::UploadJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, 
         LOGW_WARN(_logger, L"Failed to get FileStat for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << ioError);
     }
     _creationTimeIn = fileStat.creationTime;
-}
-
-UploadJob::~UploadJob() {
-    if (!_vfs || isAborted()) return;
-    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 100});
-    if (const auto exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
-    }
-
-    if (const auto exitInfo = _vfs->setPinState(_absoluteFilePath, PinState::AlwaysLocal); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsSetPinState - " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
-    }
 }
 
 ExitInfo UploadJob::canRun() {

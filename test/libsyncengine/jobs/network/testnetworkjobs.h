@@ -51,8 +51,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testFullFileListWithCursorMissingEof);
         CPPUNIT_TEST(testGetInfoUser);
         CPPUNIT_TEST(testGetInfoDrive);
-        CPPUNIT_TEST(testThumbnail);
         CPPUNIT_TEST(testDuplicateRenameMove);
+        CPPUNIT_TEST(testThumbnail);
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
         CPPUNIT_TEST(testUploadAborted);
@@ -102,8 +102,8 @@ class TestNetworkJobs : public CppUnit::TestFixture, public TestBase {
         void testFullFileListWithCursorMissingEof();
         void testGetInfoUser();
         void testGetInfoDrive();
-        void testThumbnail();
         void testDuplicateRenameMove();
+        void testThumbnail();
         void testRename();
         void testUpload();
         void testUploadChecksum();

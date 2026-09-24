@@ -607,26 +607,8 @@ bool VfsWin::fileStatusChanged(const SyncPath &pathStd, SyncFileStatus status) {
         case SyncFileStatus::Ignored:
             exclude(fullPath);
             break;
-        case SyncFileStatus::Success: {
-            bool isDirectory = false;
-
-            if (IoError ioError = IoError::Success; !IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
-                LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError));
-                return false;
-            }
-
-            if (!isDirectory) {
-                // File
-                bool isDehydrated = false;
-                if (ExitInfo exitInfo = isDehydratedPlaceholder(fileRelativePath, isDehydrated); !exitInfo) {
-                    LOGW_WARN(logger(),
-                              L"Error in isDehydratedPlaceholder: " << Utility::formatSyncPath(fullPath) << L" - " << exitInfo);
-                    return false;
-                }
-                VfsStatus vfsStatus = {.isHydrated = !isDehydrated, .progress = 100};
-                forceStatus(fullPath, vfsStatus);
-            }
-        } break;
+        case SyncFileStatus::Success:
+            break;
         case SyncFileStatus::Syncing: {
             bool isDirectory = false;
 

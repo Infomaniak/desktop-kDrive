@@ -26,17 +26,14 @@ namespace KDC {
 
 class RenameJob : public AbstractTokenNetworkJob {
     public:
-        RenameJob(const std::shared_ptr<Vfs> vfs, DriveDbId driveDbId, const NodeId &remoteFileId,
+        RenameJob(DriveDbId driveDbId, const NodeId &remoteFileId,
                   const SyncPath &absoluteFinalPath);
-        ~RenameJob();
-
     private:
         virtual std::string getSpecificUrl() override;
         virtual ExitInfo setData() override;
 
         std::string _remoteFileId;
         SyncPath _absoluteFinalPath;
-        const std::shared_ptr<Vfs> _vfs;
 };
 
 } // namespace KDC

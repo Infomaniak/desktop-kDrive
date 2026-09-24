@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, const UploadSessionType uploadType,
+UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadType,
                                                const DriveDbId driveDbId, const SyncPath &absoluteFilePath,
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,
@@ -35,8 +35,7 @@ UploadSessionFinishJob::UploadSessionFinishJob(const std::shared_ptr<Vfs> vfs, c
     _totalChunkHash(totalChunkHash),
     _totalChunks(totalChunks),
     _creationTimeIn(creationTime),
-    _modificationTimeIn(modificationTime),
-    _vfs(vfs) {
+    _modificationTimeIn(modificationTime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
@@ -44,16 +43,9 @@ UploadSessionFinishJob::UploadSessionFinishJob(const UploadSessionType uploadTyp
                                                const std::string &sessionToken, const std::string &totalChunkHash,
                                                const uint64_t totalChunks, const SyncTime creationTime,
                                                SyncTime modificationTime) :
-    UploadSessionFinishJob(nullptr, uploadType, 0, absoluteFilePath, sessionToken, totalChunkHash, totalChunks, creationTime,
+    UploadSessionFinishJob(uploadType, 0, absoluteFilePath, sessionToken, totalChunkHash, totalChunks, creationTime,
                            modificationTime) {}
 
-UploadSessionFinishJob::~UploadSessionFinishJob() {
-    if (!_vfs) return;
-    constexpr VfsStatus vfsStatus({.isHydrated = true, .isSyncing = false, .progress = 0});
-    if (const ExitInfo exitInfo = _vfs->forceStatus(_absoluteFilePath, vfsStatus); !exitInfo) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for " << Utility::formatSyncPath(_absoluteFilePath) << L": " << exitInfo);
-    }
-}
 
 ExitInfo UploadSessionFinishJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {

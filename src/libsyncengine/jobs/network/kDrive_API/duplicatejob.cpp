@@ -33,14 +33,6 @@ DuplicateJob::DuplicateJob(const std::shared_ptr<Vfs> vfs, const DriveDbId drive
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-DuplicateJob::~DuplicateJob() {
-    if (!_absoluteFinalPath.empty() && _vfs) {
-        if (const auto exitInfo = _vfs->forceStatus(_absoluteFinalPath, VfsStatus()); !exitInfo) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_absoluteFinalPath) << L" : " << exitInfo);
-        }
-    }
-}
-
 ExitInfo DuplicateJob::handleResponse(std::istream &is) {
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) {
         return exitInfo;

@@ -164,7 +164,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         {
             using namespace std::chrono;
             const auto time = system_clock::to_time_t(system_clock::now());
-            UploadJob job(nullptr, _driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time, time);
+            UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time, time);
             (void) job.runSynchronously();
 
             // Extract file ID
@@ -210,7 +210,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(nullptr, _driveDbId, testFilePath, _testFileId, time);
+        UploadJob job(_driveDbId, testFilePath, _testFileId, time);
         (void) job.runSynchronously();
 
         // Get activity from the server
@@ -223,7 +223,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(nullptr, _driveDbId, testhelpers::localTestDirPath(), _testFileId, nestedRemoteTmpDirId);
+        MoveJob job(_driveDbId, testhelpers::localTestDirPath(), _testFileId, nestedRemoteTmpDirId);
         (void) job.runSynchronously();
 
         // Get activity from the server
@@ -255,7 +255,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         const SyncName newFileName =
                 Str("test_file_renamed_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
 
-        RenameJob job(nullptr, _driveDbId, _testFileId, newFileName);
+        RenameJob job(_driveDbId, _testFileId, newFileName);
         (void) job.runSynchronously();
 
         // Get activity from the server
