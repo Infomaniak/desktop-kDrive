@@ -21,6 +21,7 @@
 #include "app/services/settingsuserservice.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace KDC {
 
