@@ -47,7 +47,6 @@ ScrollView {
             SettingsNavigationRow {
                 title: qsTrId("filesToExclude")
                 description: qsTrId("excludeRuleFileDescription")
-                enabled: false
                 onNavigationRequested: trigger => root.fileExclusionsRequested(trigger)
             }
 
