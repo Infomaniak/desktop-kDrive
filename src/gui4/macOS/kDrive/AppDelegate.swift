@@ -200,6 +200,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func startServerIfNeeded() -> Bool {
+        #if DEBUG
+        IKLogger.general.warn("Debug build: skipping automatic server start/handoff")
+        return false
+        #else
         let serverBundleID = "com.infomaniak.drive.desktopclient"
         guard NSRunningApplication.runningApplications(withBundleIdentifier: serverBundleID).isEmpty else {
             return false
@@ -224,6 +228,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         isHandingOffToServer = true
         NSApp.terminate(nil)
         return true
+        #endif
     }
 
     private func observeAppPresentation() {
