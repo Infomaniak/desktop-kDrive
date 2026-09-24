@@ -137,6 +137,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/exclusionrulemodel.h
         app/settings/fileexclusioncontroller.cpp
         app/settings/fileexclusioncontroller.h
+        app/settings/networksettingscontroller.cpp
+        app/settings/networksettingscontroller.h
         app/settings/settingswindowcontroller.cpp
         app/settings/settingswindowcontroller.h
         app/systraycontroller.cpp
@@ -191,6 +193,8 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/ExclusionRuleRow.qml
         ui/windows/settings/FileExclusionsView.qml
         ui/windows/settings/GeneralSettingsView.qml
+        ui/windows/settings/NetworkSettingsView.qml
+        ui/windows/settings/ProxyConnectionFailureDialog.qml
         ui/windows/settings/SettingsGroup.qml
         ui/windows/settings/SettingsInfoButton.qml
         ui/windows/settings/SettingsInformationDialog.qml
