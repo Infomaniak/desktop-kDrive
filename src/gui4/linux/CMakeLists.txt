@@ -110,6 +110,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/cachepopulator.h
         app/services/driveservice.cpp
         app/services/driveservice.h
+        app/services/exclusiontemplateservice.cpp
+        app/services/exclusiontemplateservice.h
         app/services/settingsservicebindings.cpp
         app/services/parametersservice.cpp
         app/services/parametersservice.h
@@ -131,6 +133,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/generalsettingscontroller.h
         app/settings/advancedsettingscontroller.cpp
         app/settings/advancedsettingscontroller.h
+        app/settings/exclusionrulemodel.cpp
+        app/settings/exclusionrulemodel.h
+        app/settings/fileexclusioncontroller.cpp
+        app/settings/fileexclusioncontroller.h
         app/settings/settingswindowcontroller.cpp
         app/settings/settingswindowcontroller.h
         app/systraycontroller.cpp
@@ -178,9 +184,12 @@ set(GUI_QML_FILES # .qml files for the app
         ui/Main.qml
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
+        ui/windows/settings/AddExclusionRuleDialog.qml
         ui/windows/settings/AdvancedSettingsView.qml
         ui/windows/settings/DataManagementView.qml
         ui/windows/settings/DebugSettingsView.qml
+        ui/windows/settings/ExclusionRuleRow.qml
+        ui/windows/settings/FileExclusionsView.qml
         ui/windows/settings/GeneralSettingsView.qml
         ui/windows/settings/SettingsGroup.qml
         ui/windows/settings/SettingsInfoButton.qml
