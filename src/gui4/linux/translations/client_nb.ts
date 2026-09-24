@@ -2869,5 +2869,25 @@ For å fremskynde opplastingen anbefaler vi å sende bare den siste kDrive-sesjo
             <source>The debug folder was successfully sent to Infomaniak Support.</source>
             <translation>Feilsøkingsmappen ble sendt til Infomaniak-support.</translation>
         </message>
+        <message id="buttonSaveAnyway">
+            <source>Save anyway</source>
+            <extracomment>Primary action that bypasses the reachability check.</extracomment>
+            <translation>Lagre likevel</translation>
+        </message>
+        <message id="proxyConnectionFailedDescription">
+            <source>The connection to the proxy server could not be established.</source>
+            <extracomment>Dialog description.</extracomment>
+            <translation>Tilkoblingen til proxyserveren kunne ikke opprettes.</translation>
+        </message>
+        <message id="proxyConnectionFailedTitle">
+            <source>Unable to connect to the proxy</source>
+            <extracomment>Dialog title.</extracomment>
+            <translation>Kan ikke koble til proxyen</translation>
+        </message>
+        <message id="proxySaveAnywayQuestion">
+            <source>Do you still want to save these settings?</source>
+            <extracomment>Emphasized confirmation question.</extracomment>
+            <translation>Vil du lagre disse innstillingene likevel?</translation>
+        </message>
     </context>
 </TS>
