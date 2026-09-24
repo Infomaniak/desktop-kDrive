@@ -40,7 +40,7 @@ BlacklistPropagator::~BlacklistPropagator() {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator destroyed");
 }
 
-ExitInfo BlacklistPropagator::runJob() {
+ExitInfo BlacklistPropagator::runJob() noexcept {
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator started");
 
     // Select sync

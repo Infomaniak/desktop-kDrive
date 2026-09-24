@@ -120,7 +120,7 @@ void AbstractTokenNetworkJob::clearCache() {
     _userToApiKeyMap.clear();
 }
 
-ExitInfo AbstractTokenNetworkJob::runJob() {
+ExitInfo AbstractTokenNetworkJob::runJob() noexcept {
     if (const auto exitInfo = loadApiToken(_apiToken); !exitInfo) {
         return exitInfo;
     }
@@ -617,9 +617,19 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
     };
 
     if (_apiType == ApiType::Desktop) {
-        fetchDriveDbIdFromSync();
+        try {
+            fetchDriveDbIdFromSync();
+        } catch (const JobException &e) {
+            LOG_WARN(_logger, "Error in fetchDriveDbIdFromSync: " << e.what());
+            return exception2ExitCode(e);
+        }
     } else if (_apiType == ApiType::Internal) {
-        fetchFirstUserDbId();
+        try {
+            fetchFirstUserDbId();
+        } catch (const JobException &e) {
+            LOG_WARN(_logger, "Error in fetchFirstUserDbId: " << e.what());
+            return exception2ExitCode(e);
+        }
     }
 
     switch (_apiType) {
@@ -627,8 +637,13 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
         case ApiType::Desktop:
         case ApiType::NotifyDrive: {
             if (_driveDbId) {
-                if (const auto exitInfo = loadUserInfoFromDriveDbId(); !exitInfo) {
-                    return exitInfo;
+                try {
+                    if (const auto exitInfo = loadUserInfoFromDriveDbId(); !exitInfo) {
+                        return exitInfo;
+                    }
+                } catch (const JobException &e) {
+                    LOG_WARN(_logger, "Error in loadUserInfoFromDriveDbId: " << e.what());
+                    return exception2ExitCode(e);
                 }
             }
             return retrieveAndValidateApiToken();
@@ -636,9 +651,15 @@ ExitInfo AbstractTokenNetworkJob::loadApiToken(ApiToken &apiToken) {
         case ApiType::Profile:
         case ApiType::DriveByUser:
         case ApiType::Internal: {
-            if (const auto exitInfo = loadUserInfoFromUserDbId(); !exitInfo) {
-                return exitInfo;
+            try {
+                if (const auto exitInfo = loadUserInfoFromUserDbId(); !exitInfo) {
+                    return exitInfo;
+                }
+            } catch (const JobException &e) {
+                LOG_WARN(_logger, "Error in loadUserInfoFromUserDbId: " << e.what());
+                return exception2ExitCode(e);
             }
+
             return retrieveAndValidateApiToken();
         }
         case ApiType::InternalUnauthenticated:

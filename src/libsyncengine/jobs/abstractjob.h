@@ -35,7 +35,6 @@ class AbstractJob : public Poco::Runnable {
         AbstractJob();
         ~AbstractJob() override;
 
-        virtual ExitInfo runJob() = 0;
         ExitInfo runSynchronously();
 
         /*
@@ -76,6 +75,8 @@ class AbstractJob : public Poco::Runnable {
         virtual void callback(UniqueId) final;
 
     private:
+        virtual ExitInfo runJob() noexcept = 0;
+
         std::function<void(UniqueId)> _mainCallback = nullptr; // Used by the job manager to keep track of running jobs
         std::mutex _additionalCallbackMutex;
         std::function<void(UniqueId)> _additionalCallback = nullptr; // Used by the caller to be notified of job completion

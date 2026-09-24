@@ -47,7 +47,7 @@ class SyncLocalDeleteJob : public GenericLocalDeleteJob {
         virtual ExitInfo moveToTrash();
 
     private:
-        ExitInfo runJob() override;
+        ExitInfo runJob() noexcept override;
 
         ExitInfo hardDeleteDehydratedPlaceholders();
         ExitInfo handleLiteSyncFile(const SyncPath &path);

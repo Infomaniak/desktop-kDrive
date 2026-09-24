@@ -79,7 +79,7 @@ ExitInfo LocalMoveJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo LocalMoveJob::runJob() {
+ExitInfo LocalMoveJob::runJob() noexcept {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }

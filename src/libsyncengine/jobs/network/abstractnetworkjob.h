@@ -55,7 +55,7 @@ class AbstractNetworkJob : public SyncJob {
         int32_t trials() const noexcept { return _trials; }
         [[nodiscard]] int64_t sleepDuration() const { return _sleepDuration; }
 
-        ExitInfo runJob() override;
+        ExitInfo runJob() noexcept override;
 
     protected:
         void addRawHeader(const std::string &key, const std::string &value);
@@ -115,8 +115,7 @@ class AbstractNetworkJob : public SyncJob {
         bool isError500(const Poco::Net::HTTPResponse::HTTPStatus httpErrorCode, bool &shouldRetry);
         ExitInfo handleError(std::istream &inputStream, const Poco::URI &uri);
 
-        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */
-        }
+        virtual void setQueryParameters(Poco::URI &) { /* Empty by default */ }
         virtual ExitInfo setData() { return ExitCode::Ok; }
         virtual std::string contentType() { return {}; }
         virtual std::string acceptHeader() { return contentType(); }

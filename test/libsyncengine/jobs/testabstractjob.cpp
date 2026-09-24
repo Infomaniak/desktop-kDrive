@@ -29,8 +29,8 @@ namespace KDC {
 namespace {
 
 class TestJob final : public AbstractJob {
-    public:
-        ExitInfo runJob() override { return ExitCode::Ok; }
+    private:
+        ExitInfo runJob() noexcept override { return ExitCode::Ok; }
 };
 
 } // namespace

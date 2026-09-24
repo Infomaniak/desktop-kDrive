@@ -39,8 +39,8 @@ namespace KDC {
 
 namespace {
 class LateCallbackJob final : public SyncJob {
-    public:
-        ExitInfo runJob() override { return ExitCode::Ok; }
+    private:
+        ExitInfo runJob() noexcept override { return ExitCode::Ok; }
 };
 } // namespace
 

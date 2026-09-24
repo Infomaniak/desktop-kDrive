@@ -89,7 +89,7 @@ void TestKeychainManager::testConcurrentReadLimit() {
         std::thread([&]() {
             std::string data;
             bool found = false;
-            const auto exitInfo = KeyChainManager::instance()->readData("dummy_key", data, found);
+            (void) KeyChainManager::instance()->readData("dummy_key", data, found);
         }).detach();
     }
 

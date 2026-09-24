@@ -38,7 +38,7 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
     _keepLocalErrors(keepLocalErrorList),
     _keepRemoteErrors(keepRemoteErrorList) {}
 
-ExitInfo ConflictingFilesCorrector::runJob() {
+ExitInfo ConflictingFilesCorrector::runJob() noexcept {
     if (ExitInfo exitInfo = resolveConflicts(_keepLocalErrors, ConflictResolutionStrategy::KeepLocal); !exitInfo) {
         return exitInfo;
     }

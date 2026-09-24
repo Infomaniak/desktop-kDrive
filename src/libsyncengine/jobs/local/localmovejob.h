@@ -30,7 +30,7 @@ class LocalMoveJob : public SyncJob {
         ExitInfo canRun() override;
 
     private:
-        ExitInfo runJob() override;
+        ExitInfo runJob() noexcept override;
 
         SyncPath _source;
         SyncPath _dest;

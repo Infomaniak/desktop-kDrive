@@ -109,7 +109,7 @@ bool LogUploadJob::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     return result;
 }
 
-ExitInfo LogUploadJob::runJob() {
+ExitInfo LogUploadJob::runJob() noexcept {
     if (const auto exitInfo = canRun(); !exitInfo) {
         LOG_DEBUG(Log::instance()->getLogger(), "LogUploadJob job cannot run.");
         return ExitCode::Ok;
@@ -120,7 +120,6 @@ ExitInfo LogUploadJob::runJob() {
         handleJobFailure(exitInfo);
         return exitInfo;
     }
-
 
     if (const ExitInfo exitInfo = archive(_generatedArchivePath); !exitInfo) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogUploadJob::archive: " << exitInfo);

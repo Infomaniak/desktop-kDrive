@@ -29,11 +29,11 @@ class BlacklistPropagator : public AbstractPropagatorJob {
         BlacklistPropagator(std::shared_ptr<SyncPal> syncPal);
         ~BlacklistPropagator();
 
-        ExitInfo runJob() override;
-
         inline SyncDbId syncDbId() const { return _syncPal->syncDbId(); }
 
     private:
+        ExitInfo runJob() noexcept override;
+
         ExitInfo checkNodes();
         ExitInfo removeItem(const NodeId &localNodeId, const NodeId &remoteNodeId, DbNodeId dbId);
         ExitInfo cancelHydration(const SyncPath &absoluteLocalPath);

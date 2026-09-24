@@ -120,7 +120,7 @@ ExtensionJob::ExtensionJob(std::shared_ptr<CommManager> commManager, const CommS
     };
 }
 
-ExitInfo ExtensionJob::runJob() {
+ExitInfo ExtensionJob::runJob() noexcept {
     if (_channels.empty()) {
         executeCommand(_commandLineStr, nullptr);
     } else {

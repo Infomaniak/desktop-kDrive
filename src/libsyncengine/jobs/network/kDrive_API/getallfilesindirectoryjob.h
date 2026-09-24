@@ -34,9 +34,9 @@ class GetAllFilesInDirectoryJob : public FileListJob {
 
         void abort() override;
 
-    private:
-        ExitInfo runJob() override;
+        ExitInfo runJob() noexcept override;
 
+    private:
         [[nodiscard]] std::string getConstructorFailureCoreMsg() const override {
             return "Error in GetFilesInDirectoryJob::GetFilesInDirectoryJob for ";
         };
