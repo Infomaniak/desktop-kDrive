@@ -30,7 +30,7 @@ class LogUploadJob : public SyncJob, public std::enable_shared_from_this<LogUplo
         LogUploadJob(bool includeArchivedLog, const std::function<void(LogUploadState, int)> &progressStatusCallback,
                      const std::function<void(const Error &error)> &addErrorCallback);
 
-        ExitInfo runJob() override;
+        ExitInfo runJob() noexcept override;
         void abort() override;
         static bool cancelUpload();
         /*! Returns the estimated size of the log files in bytes.

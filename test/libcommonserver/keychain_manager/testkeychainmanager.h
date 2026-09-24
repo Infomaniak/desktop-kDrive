@@ -18,28 +18,30 @@
 
 #pragma once
 
-#include "jobs/abstractpropagatorjob.h"
-#include "syncpal/syncpal.h"
-#include "libcommon/utility/types.h"
+#include "test_utility/testbase.h"
+
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace KDC {
 
-class BlacklistPropagator : public AbstractPropagatorJob {
+class TestKeychainManager : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestKeychainManager);
+        CPPUNIT_TEST(testTimeOut);
+        CPPUNIT_TEST(testReadPasswordThrows);
+        CPPUNIT_TEST(testConcurrentReadLimit);
+        CPPUNIT_TEST(testWorkerOutlivesManager);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        BlacklistPropagator(std::shared_ptr<SyncPal> syncPal);
-        ~BlacklistPropagator();
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
-        inline SyncDbId syncDbId() const { return _syncPal->syncDbId(); }
-
-    private:
-        ExitInfo runJob() noexcept override;
-
-        ExitInfo checkNodes();
-        ExitInfo removeItem(const NodeId &localNodeId, const NodeId &remoteNodeId, DbNodeId dbId);
-        ExitInfo cancelHydration(const SyncPath &absoluteLocalPath);
-
-        std::shared_ptr<SyncPal> _syncPal;
-        Sync _sync;
+    protected:
+        void testTimeOut();
+        void testReadPasswordThrows();
+        void testConcurrentReadLimit();
+        void testWorkerOutlivesManager();
 };
 
 } // namespace KDC

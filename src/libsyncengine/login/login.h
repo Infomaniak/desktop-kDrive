@@ -39,7 +39,8 @@ class Login {
         };
 
         Login();
-        explicit Login(const std::string &keychainKey);
+
+        ExitInfo loadTokenFromKeychain(const std::string &keychain);
 
         /*
          * Retrieve the API tokens

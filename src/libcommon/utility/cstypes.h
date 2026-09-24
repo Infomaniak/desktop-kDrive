@@ -171,6 +171,8 @@ enum class ExitCause {
     FileSystemNotSupported,
     SyncDeletionFailed,
     InvalidLinkTarget,
+    KeychainAccessError,
+    KeychainAccessTimeout,
     EnumEnd
 };
 

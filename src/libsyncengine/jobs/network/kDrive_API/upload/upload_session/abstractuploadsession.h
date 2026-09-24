@@ -50,6 +50,8 @@ class AbstractUploadSession : public SyncJob {
 
         [[nodiscard]] UploadSessionState state() const { return _state; }
 
+        ExitInfo runJob() noexcept override;
+
     protected:
         virtual std::shared_ptr<UploadSessionCancelJob> createCancelJob() = 0;
         virtual std::shared_ptr<UploadSessionStartJob> createStartJob() = 0;
@@ -71,7 +73,6 @@ class AbstractUploadSession : public SyncJob {
         SyncName getFileName() const { return _filename; }
         std::string getSessionToken() const { return _sessionToken; }
         bool isCancelled() const noexcept { return _sessionCancelled; }
-        ExitInfo runJob() override;
 
     private:
         ExitInfo canRun() override;

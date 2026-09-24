@@ -33,18 +33,20 @@ std::unordered_map<int, Login::LoginInfo> Login::_info;
 Login::Login() :
     _logger(Log::instance()->getLogger()) {}
 
-Login::Login(const std::string &keychainKey) :
-    _logger(Log::instance()->getLogger()),
-    _keychainKey(keychainKey) {
+ExitInfo Login::loadTokenFromKeychain(const std::string &keychain) {
+    _keychainKey = keychain;
+
     bool found = false;
-    if (!KeyChainManager::instance()->readApiToken(_keychainKey, _apiToken, found)) {
-        LOG_WARN(_logger, "Failed to read authentification token from keychain");
+    if (const auto exitInfo = KeyChainManager::instance()->readApiToken(_keychainKey, _apiToken, found); !exitInfo) {
+        LOG_WARN(_logger, "Failed to read authentification token from keychain: " << exitInfo);
+        return exitInfo;
     }
     if (!found) {
         LOG_DEBUG(_logger, "Authentification token not found for keychainKey=" << _keychainKey);
     }
 
     _info[_apiToken.userId()] = LoginInfo();
+    return ExitCode::Ok;
 }
 
 ExitInfo Login::requestToken(const std::string &authorizationCode, const std::string &codeVerifier /*= ""*/) {

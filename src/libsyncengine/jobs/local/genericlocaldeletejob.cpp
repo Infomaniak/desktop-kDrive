@@ -28,7 +28,7 @@ GenericLocalDeleteJob::GenericLocalDeleteJob(SyncPath absoluteLocalPath, const s
     _cacheDirectory(cacheDirectory),
     _forceHardDelete(forceHardDelete == ForceHardDelete::Yes) {}
 
-ExitInfo GenericLocalDeleteJob::runJob() {
+ExitInfo GenericLocalDeleteJob::runJob() noexcept {
     if (!_forceHardDelete && ParametersCache::instance()->parameters().moveToTrash())
         return moveToTrashOrHardDeleteIfNeeded(_absoluteLocalPath);
     return hardDelete(absoluteLocalPath());

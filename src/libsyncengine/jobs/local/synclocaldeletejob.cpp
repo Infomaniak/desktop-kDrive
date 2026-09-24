@@ -56,6 +56,7 @@ bool SyncLocalDeleteJob::matchRelativePaths(const SyncPath &remoteTargetPath, co
 
     return remoteRelativePath == relativeRemoteTargetPath / localRelativePath;
 }
+
 SyncLocalDeleteJob::SyncLocalDeleteJob(const std::shared_ptr<SyncPal> syncPal, const SyncPath &relativeLocalPath,
                                        const bool liteSyncIsEnabled, RemoteNodeId remoteNodeId,
                                        ForceToTrash forceToTrash /* = ForceToTrash::No */) :
@@ -286,7 +287,7 @@ ExitInfo SyncLocalDeleteJob::moveToTrash() {
     return moveToTrashOrHardDeleteIfNeeded(absoluteLocalPath());
 }
 
-ExitInfo SyncLocalDeleteJob::runJob() {
+ExitInfo SyncLocalDeleteJob::runJob() noexcept {
     if (!_syncPal) {
         LOG_ERROR(_logger, "`_syncPal` is null!");
         return ExitCode::LogicError;

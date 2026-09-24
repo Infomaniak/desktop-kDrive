@@ -70,7 +70,7 @@ ExitInfo LocalCopyJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo LocalCopyJob::runJob() {
+ExitInfo LocalCopyJob::runJob() noexcept {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }

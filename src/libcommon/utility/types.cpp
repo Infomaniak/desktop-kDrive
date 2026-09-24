@@ -249,6 +249,10 @@ std::string toString(const ExitCause e) {
             return "SyncDeletionFailed";
         case ExitCause::InvalidLinkTarget:
             return "InvalidLinkTarget";
+        case ExitCause::KeychainAccessError:
+            return "KeychainAccessError";
+        case ExitCause::KeychainAccessTimeout:
+            return "KeychainAccessTimeout";
         default:
             return noConversionStr;
     }

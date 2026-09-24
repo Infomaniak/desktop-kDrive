@@ -123,7 +123,6 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/signalutilityloguploadstatejob.h ${server_srcs_path}/comm/guijobs/signalutilityloguploadstatejob.cpp
     ${server_srcs_path}/comm/guijobs/signalutilityquitjob.h ${server_srcs_path}/comm/guijobs/signalutilityquitjob.cpp
 
-    ${server_srcs_path}/migration/migrationparams.h ${server_srcs_path}/migration/migrationparams.cpp
     ${server_srcs_path}/requests/serverrequests.h ${server_srcs_path}/requests/serverrequests.cpp
     ${server_srcs_path}/requests/syncfolderallowedchecker.h ${server_srcs_path}/requests/syncfolderallowedchecker.cpp
     ${server_srcs_path}/updater/abstractupdater.h ${server_srcs_path}/updater/abstractupdater.cpp
@@ -218,6 +217,10 @@ set(testserver_SRCS
     comm/guijobs/testabstractguijob.h comm/guijobs/testabstractguijob.cpp
     comm/testguijobpriority.h comm/testguijobpriority.cpp
 )
+
+if(APPLE OR WIN32)
+    list(APPEND testserver_SRCS comm/testextensionjob.h comm/testextensionjob.cpp)
+endif()
 
 if(APPLE)
     list(APPEND testserver_SRCS vfs/mac/testlitesynccommclient.h vfs/mac/testlitesynccommclient.cpp)

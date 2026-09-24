@@ -37,7 +37,7 @@ void GetAllFilesInDirectoryJob::abort() {
     SyncJob::abort();
 }
 
-ExitInfo GetAllFilesInDirectoryJob::runJob() {
+ExitInfo GetAllFilesInDirectoryJob::runJob() noexcept {
     _remoteNodeInfoList.clear();
     bool hasMore = false;
     std::string cursor;

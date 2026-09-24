@@ -75,7 +75,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     setProgress(0);
 }
 
-ExitInfo AbstractUploadSession::runJob() {
+ExitInfo AbstractUploadSession::runJob() noexcept {
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Starting upload session " << jobId() << L" for file " << Path2WStr(_filePath.filename())
                                                         << L" with " << _nbParallelThread << L" threads");

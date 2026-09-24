@@ -37,7 +37,7 @@ ComputeChecksumJob::ComputeChecksumJob(const NodeId &nodeId, const SyncPath &fil
     _filePath(filepath),
     _localSnapshot(localSnapshot) {}
 
-ExitInfo ComputeChecksumJob::runJob() {
+ExitInfo ComputeChecksumJob::runJob() noexcept {
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Checksum job started: id: " << jobId() << L", path: " << Path2WStr(_filePath));
     }

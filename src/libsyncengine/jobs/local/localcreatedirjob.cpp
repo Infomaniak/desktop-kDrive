@@ -54,7 +54,7 @@ ExitInfo LocalCreateDirJob::canRun() {
     return ExitCode::Ok;
 }
 
-ExitInfo LocalCreateDirJob::runJob() {
+ExitInfo LocalCreateDirJob::runJob() noexcept {
     if (const auto exitInfo = canRun(); !exitInfo) {
         return exitInfo;
     }

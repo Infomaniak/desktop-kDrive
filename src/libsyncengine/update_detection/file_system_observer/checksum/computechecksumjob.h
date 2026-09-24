@@ -29,10 +29,9 @@ class ComputeChecksumJob : public SyncJob {
     public:
         ComputeChecksumJob(const NodeId &nodeId, const SyncPath &filepath, std::shared_ptr<LiveSnapshot> localSnapshot);
 
-    protected:
-        ExitInfo runJob() override;
-
     private:
+        ExitInfo runJob() noexcept override;
+
         log4cplus::Logger _logger;
 
         NodeId _nodeId;

@@ -54,7 +54,7 @@ AbstractGuiJob::AbstractGuiJob() {
     _signalId = _lastSignalId++;
 }
 
-ExitInfo AbstractGuiJob::runJob() {
+ExitInfo AbstractGuiJob::runJob() noexcept {
     if (_type == GuiJobType::Unknown) {
         LOG_WARN(_logger, "The job type must be set");
         return ExitCode::LogicError;

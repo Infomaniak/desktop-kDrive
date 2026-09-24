@@ -42,6 +42,9 @@ extern "C" {
 #endif
 #include "comm/guijobs/testabstractguijob.h"
 #include "comm/testguijobpriority.h"
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+#include "comm/testextensionjob.h"
+#endif
 
 namespace KDC {
 
@@ -63,6 +66,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestPipeComm);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiCommChannel);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractGuiJob);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestGuiJobPriority);
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExtensionJob);
+#endif
 } // namespace KDC
 
 int main(int, char **) {

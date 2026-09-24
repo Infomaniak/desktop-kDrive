@@ -37,11 +37,12 @@ class GenericLocalDeleteJob : public SyncJob {
         [[nodiscard]] const SyncPath &absoluteLocalPath() const { return _absoluteLocalPath; }
 
     protected:
-        ExitInfo runJob() override;
         ExitInfo moveToTrashOrHardDeleteIfNeeded(const SyncPath &path);
         ExitInfo hardDelete(const SyncPath &path);
 
     private:
+        ExitInfo runJob() noexcept override;
+
         SyncPath _absoluteLocalPath;
         std::shared_ptr<CacheDirectory> _cacheDirectory{nullptr};
         bool _forceHardDelete{false};
