@@ -184,11 +184,13 @@ std::int32_t exec(std::unique_ptr<KDC::AppServer> &appPtr) {
 
         if (appPtr->settingsAsked()) {
             appPtr->sendShowSettingsMsg(runningServerPid);
+            appPtr->clearSettingsAsked();
             return 0;
         }
 
         if (appPtr->synthesisAsked()) {
             appPtr->sendShowSynthesisMsg(runningServerPid);
+            appPtr->clearSynthesisAsked();
             return 0;
         }
 

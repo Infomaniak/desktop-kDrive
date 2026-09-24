@@ -4062,6 +4062,9 @@ bool AppServer::startClient() {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }
+
+        _synthesisAsked = false;
+        _settingsAsked = false;
     }
 
     return true;
