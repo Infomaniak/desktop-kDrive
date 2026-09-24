@@ -37,6 +37,7 @@ clang-format -i <file>
 - **Style:** Google-based clang-format, 4-space indent, 130-char line limit. Enforced by `.githooks/pre-commit`.
 - **Includes:** Relative to `src/` root — e.g., `#include "libcommon/utility/types.h"`.
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
+- **Platform macros:** use project-defined `KD_MACOS`, `KD_WINDOWS`, and `KD_LINUX` instead of standard macros such as `__APPLE__`, `_WIN32`, or `__linux__`.
 - **Logging:** `LOG_INFO`, `LOG_DEBUG`, `LOG_WARN`, `LOG_ERROR` from log4cplus. Never `std::cout`.
 - **Commits:** Conventional commits format (`feat(scope):`, `fix(scope):`, `refactor(scope):`), validated by `.githooks/commit-msg`.
 - **Branch naming:** No enforced convention currently.
