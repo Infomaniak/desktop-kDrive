@@ -49,9 +49,11 @@ final class LoginViewModel: ObservableObject {
     }
 
     func startWebAuthenticationLogin() {
+        guard loginState == .idle else { return }
+
         loginState = .waitingForWebAuthentication
-        loginService.loginInDefaultBrowser(delegate: self)
         scheduleLoginTimeout()
+        loginService.loginInDefaultBrowser(delegate: self)
     }
 
     func cancelWebAuthenticationLogin() {
@@ -109,6 +111,11 @@ extension LoginViewModel: WebBrowserLoginDelegate {
     func didFailLoginWith(error: any Error) {
         loginTimeoutTask?.cancel()
         loginState = .idle
+
+        if case .accessDenied? = error as? WebBrowserLoginError {
+            return
+        }
+
         handleLoginFailure(error: error)
     }
 

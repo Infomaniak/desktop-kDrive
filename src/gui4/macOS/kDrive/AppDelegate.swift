@@ -49,11 +49,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
     }
 
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let testing = AppDelegate.isRunningTests
-        DriveTargetAssembly.setupDI(testing: testing)
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        DriveTargetAssembly.setupDI(testing: AppDelegate.isRunningTests)
+    }
 
-        guard !testing else {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        guard !AppDelegate.isRunningTests else {
             return
         }
 
@@ -103,23 +104,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        for url in urls {
-            handleAuthenticationCallback(url)
+        @InjectService var loginService: WebBrowserLoginServiceable
+        for url in urls where loginService.handleRedirectURL(url) {
+            bringLoginWindowToFront()
         }
     }
 
-    private func handleAuthenticationCallback(_ url: URL) {
-        guard let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              urlComponents.scheme == "kdrive",
-              urlComponents.host == "auth-desktop",
-              let queryItems = urlComponents.queryItems,
-              let code = queryItems.first(where: { $0.name == "code" })?.value,
-              let state = queryItems.first(where: { $0.name == "state" })?.value else {
-            return
-        }
-
-        @InjectService var loginService: WebBrowserLoginServiceable
-        loginService.didReceiveAuthorizationCode(code: code, state: state)
+    private func bringLoginWindowToFront() {
+        let loginWindow = onboardingWindow?.window ?? mainWindow.window
+        dockIconManager?.showDockIconAndActivate()
+        loginWindow?.makeKeyAndOrderFront(nil)
     }
 
     @objc func showAboutPanel() {

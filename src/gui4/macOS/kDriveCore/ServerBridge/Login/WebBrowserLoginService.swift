@@ -28,14 +28,19 @@ public protocol WebBrowserLoginDelegate: AnyObject {
 
 public enum WebBrowserLoginError: Error {
     case invalidLoginURL
-    case stateMismatch
+    case randomGenerationFailed
+    case browserOpeningFailed
+    case accessDenied
+    case authorizationFailed(error: String, description: String?)
+    case missingAuthorizationCode
 }
 
 @MainActor
 public protocol WebBrowserLoginServiceable: AnyObject {
     func loginInDefaultBrowser(delegate: WebBrowserLoginDelegate)
     func cancelLogin()
-    func didReceiveAuthorizationCode(code: String, state: String)
+    @discardableResult
+    func handleRedirectURL(_ url: URL) -> Bool
 }
 
 @MainActor
@@ -58,10 +63,14 @@ public final class WebBrowserLoginService: WebBrowserLoginServiceable {
     public func loginInDefaultBrowser(delegate: WebBrowserLoginDelegate) {
         self.delegate = delegate
 
-        let codeVerifier = Self.generateCodeVerifier()
-        self.codeVerifier = codeVerifier
+        guard let codeVerifier = Self.generateRandomString(byteCount: 32),
+              let state = Self.generateRandomString(byteCount: 16) else {
+            reset()
+            delegate.didFailLoginWith(error: WebBrowserLoginError.randomGenerationFailed)
+            return
+        }
 
-        let state = Self.generateState()
+        self.codeVerifier = codeVerifier
         self.state = state
 
         guard let url = makeLoginURL(codeChallenge: Self.generateCodeChallenge(from: codeVerifier), state: state) else {
@@ -70,20 +79,49 @@ public final class WebBrowserLoginService: WebBrowserLoginServiceable {
             return
         }
 
-        NSWorkspace.shared.open(url)
+        guard NSWorkspace.shared.open(url) else {
+            reset()
+            delegate.didFailLoginWith(error: WebBrowserLoginError.browserOpeningFailed)
+            return
+        }
     }
 
-    public func didReceiveAuthorizationCode(code: String, state: String) {
-        guard let delegate, let codeVerifier, let expectedState = self.state else { return }
+    @discardableResult
+    public func handleRedirectURL(_ url: URL) -> Bool {
+        guard let urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              isRedirectURL(urlComponents) else {
+            return false
+        }
+
+        guard let delegate, let codeVerifier, let expectedState = state else {
+            IKLogger.general.info("Ignoring login redirect: no login in progress")
+            return false
+        }
+
+        let queryItems = urlComponents.queryItems ?? []
+        func queryValue(_ name: String) -> String? {
+            queryItems.first { $0.name == name }?.value
+        }
+
+        guard queryValue("state") == expectedState else {
+            IKLogger.general.warning("Ignoring login redirect with unexpected state")
+            return false
+        }
 
         reset()
 
-        guard state == expectedState else {
-            delegate.didFailLoginWith(error: WebBrowserLoginError.stateMismatch)
-            return
+        if let error = queryValue("error") {
+            let loginError: WebBrowserLoginError = error == "access_denied"
+                ? .accessDenied
+                : .authorizationFailed(error: error, description: queryValue("error_description"))
+            delegate.didFailLoginWith(error: loginError)
+        } else if let code = queryValue("code"), !code.isEmpty {
+            delegate.didCompleteLoginWith(code: code, verifier: codeVerifier)
+        } else {
+            delegate.didFailLoginWith(error: WebBrowserLoginError.missingAuthorizationCode)
         }
 
-        delegate.didCompleteLoginWith(code: code, verifier: codeVerifier)
+        return true
     }
 
     public func cancelLogin() {
@@ -94,6 +132,13 @@ public final class WebBrowserLoginService: WebBrowserLoginServiceable {
         codeVerifier = nil
         state = nil
         delegate = nil
+    }
+
+    private func isRedirectURL(_ urlComponents: URLComponents) -> Bool {
+        guard let redirectComponents = URLComponents(string: redirectURI) else { return false }
+
+        return urlComponents.scheme?.lowercased() == redirectComponents.scheme?.lowercased()
+            && urlComponents.host?.lowercased() == redirectComponents.host?.lowercased()
     }
 
     // MARK: - URL building
@@ -116,9 +161,12 @@ public final class WebBrowserLoginService: WebBrowserLoginServiceable {
 
     // MARK: - PKCE
 
-    private static func generateCodeVerifier() -> String {
-        var buffer = [UInt8](repeating: 0, count: 32)
-        _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
+    private static func generateRandomString(byteCount: Int) -> String? {
+        var buffer = [UInt8](repeating: 0, count: byteCount)
+        guard SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer) == errSecSuccess else {
+            IKLogger.general.error("Failed to generate secure random bytes for login")
+            return nil
+        }
         return base64URLEncode(Data(buffer))
     }
 
@@ -132,12 +180,6 @@ public final class WebBrowserLoginService: WebBrowserLoginServiceable {
             _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &buffer)
         }
 
-        return base64URLEncode(Data(buffer))
-    }
-
-    private static func generateState() -> String {
-        var buffer = [UInt8](repeating: 0, count: 16)
-        _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
         return base64URLEncode(Data(buffer))
     }
 
