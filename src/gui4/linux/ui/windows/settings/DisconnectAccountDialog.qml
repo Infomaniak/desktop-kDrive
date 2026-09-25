@@ -66,6 +66,7 @@ IKModal {
         Text {
             width: parent.width
             text: qsTrId("dialogRemoveAccountContent").arg(root.userName)
+            textFormat: Text.PlainText
             color: IKColors.textSecondary
             font.pixelSize: IKFonts.bodySize
             wrapMode: Text.WordWrap
