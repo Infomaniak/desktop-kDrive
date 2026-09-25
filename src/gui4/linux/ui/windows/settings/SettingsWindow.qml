@@ -260,6 +260,28 @@ IKShadowedWindow {
                                                         driveManagement.driveId);
             }
             onDeleteRequested: trigger => deleteSyncDialog.showFrom(trigger)
+            onManageSynchronizationRequested: trigger => {
+                trigger.forceActiveFocus();
+                accountsPane.push(syncFolderSelectionComponent,
+                                  {"syncDbId": root.controller.driveManagement.mainSyncDbId});
+            }
+        }
+    }
+
+    Component {
+        id: syncFolderSelectionComponent
+
+        SyncFolderSelectionView {
+            id: syncFolderSelectionView
+
+            controller: root.controller.syncFolderSelection
+            // The page may have saved a new selection: the custom-selection label reads it again.
+            Component.onDestruction: root.controller.driveManagement.reloadSelection()
+            onCloseRequested: {
+                if (accountsPane.currentItem === syncFolderSelectionView) {
+                    accountsPane.pop();
+                }
+            }
         }
     }
 
