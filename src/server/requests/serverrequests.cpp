@@ -1191,6 +1191,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                 case ExitCause::MigrationProxyNotImplemented:
                 case ExitCause::SyncDirChanged:
                 case ExitCause::BlackListPropagationError:
+                case ExitCause::InvalidName:
                     return true;
                 default:
                     return false;

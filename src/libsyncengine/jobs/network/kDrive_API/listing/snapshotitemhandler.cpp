@@ -213,6 +213,9 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
             LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << CommonUtility::s2ws(line));
+            if (state.index == CsvIndexName && item.name().empty()) {
+                item.setName(state.tmp);
+            }
             ignore = true;
             return true;
         }

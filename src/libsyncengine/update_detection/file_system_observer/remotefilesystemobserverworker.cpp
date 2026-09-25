@@ -331,17 +331,15 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     sentry::pTraces::counterScoped::RFSOExploreItem perfMonitorExploreItem(!saveCursor, syncDbId());
     while (job->getItem(item, error, ignore, eof)) {
         if (ignore) {
-            if (!item.id().empty()) {
-                SyncPath path;
-                if (bool dummy = false; !_liveSnapshot.path(item.id(), path, dummy)) {
+            if (!item.id().empty() && !item.name().empty()) {
+                SyncPath parentPath;
+                if (bool dummy = false; !_liveSnapshot.path(item.id(), parentPath, dummy)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(item.id()));
-                    path = item.name();
                 }
 
-                LOG_SYNCPAL_DEBUG(_logger,
-                                  "Blacklisting item '" << item.id() << "' because of a malformed CSV line in the reply.");
-
-                _syncPal->blacklistTemporarily(item.id(), path, ReplicaSide::Remote);
+                _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(),
+                                         ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::DataError,
+                                         ExitCause::InvalidName));
             }
             continue;
         }

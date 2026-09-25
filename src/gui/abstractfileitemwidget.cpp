@@ -139,14 +139,18 @@ void AbstractFileItemWidget::setPath(const QString &path) const {
     _driveIconLabel->setPixmap(
             GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
 
-    const QFileInfo fInfo(path);
+    QString pathWithoutQuotes = path;
+    (void) pathWithoutQuotes.remove("\"");
+
+    const QFileInfo fInfo(pathWithoutQuotes);
     QString printablePath;
     if (!fInfo.isAbsolute()) printablePath = "/";
-    printablePath += path;
+    printablePath += pathWithoutQuotes;
     GuiUtility::makePrintablePath(printablePath);
 
     printablePath = QDir::toNativeSeparators(printablePath);
-    QString pathStr = QString(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, path, printablePath);
+    const QString pathStr =
+            QString(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, pathWithoutQuotes, printablePath);
 
     _pathLabel->setText(pathStr);
     _pathLabel->setToolTip(path);
