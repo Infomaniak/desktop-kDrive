@@ -323,7 +323,7 @@ void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
     CPPUNIT_ASSERT(liveSnapshot.updateItem(orphanItem));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("orphan"));
 
-    const ExitInfo exitInfo = remoteFSObserverWorker->checkSnapshotIntegrity();
+    const ExitInfo exitInfo = remoteFSObserverWorker->removeOrphans();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
     // Items whose parent is a file are left untouched.

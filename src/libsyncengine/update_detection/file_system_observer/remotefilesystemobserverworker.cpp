@@ -374,7 +374,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     // Check integrity
-    if (const auto exitInfo = checkSnapshotIntegrity(); !exitInfo) {
+    if (const auto exitInfo = removeOrphans(); !exitInfo) {
         return exitInfo;
     }
 
@@ -444,12 +444,11 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInSnapshot(const SnapshotItem
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::checkSnapshotIntegrity() {
+ExitInfo RemoteFileSystemObserverWorker::removeOrphans() {
     NodeSet nodeIds;
     _liveSnapshot.ids(nodeIds);
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
-        bool ignore = false;
         if (_liveSnapshot.isOrphan(*nodeIdIt)) {
             const auto itemName = _liveSnapshot.name(*nodeIdIt);
             LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(itemName) << L"' (" << CommonUtility::s2ws(*nodeIdIt)
