@@ -23,7 +23,6 @@
 #include <QLoggingCategory>
 
 #include <algorithm>
-#include <iterator>
 #include <map>
 #include <ranges>
 
@@ -91,6 +90,8 @@ QVariant UserDrivesModel::data(const QModelIndex &index, const int role) const {
             return QVariant::fromValue<qint64>(entry.driveId);
         case SyncCreationPendingRole:
             return entry.syncCreationPending;
+        case DriveDbIdRole:
+            return QVariant::fromValue<qint64>(entry.driveDbId);
         default:
             return {};
     }
@@ -105,6 +106,7 @@ QHash<int, QByteArray> UserDrivesModel::roleNames() const {
             {AccountIdRole, "accountId"},
             {DriveIdRole, "driveId"},
             {SyncCreationPendingRole, "syncCreationPending"},
+            {DriveDbIdRole, "driveDbId"},
     };
 }
 
@@ -124,17 +126,17 @@ void UserDrivesModel::rebuild() {
             continue;
         }
 
-        std::vector<BaseSync> classicSyncs;
-        (void) std::ranges::copy_if(context.syncInfos, std::back_inserter(classicSyncs),
-                                    [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); });
-        if (classicSyncs.empty()) {
+        // A drive owning only advanced synchronizations is synchronized too: its page offers to enable the main one.
+        if (context.syncInfos.empty()) {
             continue;
         }
 
-        (void) std::ranges::sort(classicSyncs, {}, &BaseSync::dbId);
-        if (classicSyncs.size() > 1) {
+        const auto classicSyncCount = std::ranges::count_if(
+                context.syncInfos, [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); });
+        if (classicSyncCount > 1) {
+            const auto mainSync = _cache.mainSync(context.drive.dbId());
             qCWarning(lcUserDrivesModel) << "Multiple classic synchronizations found for drive | driveDbId:"
-                                         << context.drive.dbId() << "/ selectedSyncDbId:" << classicSyncs.front().dbId();
+                                         << context.drive.dbId() << "/ mainSyncDbId:" << (mainSync ? mainSync->dbId() : 0);
         }
 
         const DriveKey key{context.accountInfo.accountId(), context.drive.driveId()};
@@ -145,6 +147,7 @@ void UserDrivesModel::rebuild() {
                 .synchronized = true,
                 .accountId = context.accountInfo.accountId(),
                 .driveId = context.drive.driveId(),
+                .driveDbId = context.drive.dbId(),
         };
         if (const auto [pair, inserted] = synchronizedByKey.try_emplace(key, entry); !inserted) {
             qCWarning(lcUserDrivesModel) << "Duplicate configured drive found for user card | userDbId:" << _userDbId

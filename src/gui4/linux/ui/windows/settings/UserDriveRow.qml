@@ -31,10 +31,12 @@ Item {
     required property bool syncCreationPending
     required property var accountId
     required property var driveId
+    required property var driveDbId
     property bool actionBusy: false
     readonly property bool hasDistinctAccountName: accountName.length > 0 && accountName !== name
 
     signal activateRequested(Item trigger, var accountId, var driveId)
+    signal manageRequested(Item trigger, var driveDbId)
 
     implicitHeight: IKSettings.userDriveRowHeight
 
@@ -122,9 +124,16 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         role: IKModalButton.Tonal
         text: root.isSynchronized ? qsTrId("buttonManage") : qsTrId("buttonEnable")
-        actionEnabled: !root.isSynchronized && !root.actionBusy
+        // Manage stays enabled; Enable is disabled while its activation is in flight.
+        actionEnabled: root.isSynchronized || !root.actionBusy
         busy: root.actionBusy
         Accessible.name: text + " " + root.name + (root.hasDistinctAccountName ? " " + root.accountName : "")
-        onClicked: root.activateRequested(actionButton, root.accountId, root.driveId)
+        onClicked: {
+            if (root.isSynchronized) {
+                root.manageRequested(actionButton, root.driveDbId);
+            } else {
+                root.activateRequested(actionButton, root.accountId, root.driveId);
+            }
+        }
     }
 }

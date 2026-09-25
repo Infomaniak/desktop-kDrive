@@ -29,6 +29,8 @@ Button {
     required property string title
     property string description: ""
     property bool separator: true
+    // Renders an irreversible action: red title and no chevron, since it does not navigate.
+    property bool destructive: false
 
     signal navigationRequested(var trigger)
 
@@ -66,7 +68,8 @@ Button {
             Text {
                 Layout.fillWidth: true
                 text: root.title
-                color: root.enabled ? IKColors.textPrimary : IKColors.actionDisabled
+                color: !root.enabled ? IKColors.actionDisabled
+                                     : root.destructive ? IKColors.actionDestructive : IKColors.textPrimary
                 font.pixelSize: IKFonts.bodySize
                 wrapMode: Text.WordWrap
             }
@@ -82,6 +85,7 @@ Button {
         }
 
         IKTintedIcon {
+            visible: !root.destructive
             Layout.preferredWidth: IKSettings.navigationIconSize
             Layout.preferredHeight: IKSettings.navigationIconSize
             source: "qrc:/assets/settings/chevron-right.svg"
