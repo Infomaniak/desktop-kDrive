@@ -18,6 +18,7 @@
 
 #include "testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
+#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
 #include "requests/syncnodecache.h"
 
 #include "libcommon/utility/utility.h"
@@ -50,6 +51,7 @@ namespace KDC {
 
 // Test in drive "kDrive Desktop Team"
 static const uint64_t nbFileInTestDir = 5; // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
+static const std::string endOfFileDelimiter("#EOF");
 const NodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
 const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
 const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
@@ -307,8 +309,8 @@ void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
                                 NodeType::File, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(fileItem));
 
-    // Insert an item whose parent is a file. Such items are blacklisted during the CSV parsing (getItemsInDir), the
-    // integrity check must leave them untouched.
+    // Insert an item whose parent is a file. Such items are skipped by getItemsInDir before being inserted into the
+    // snapshot, the integrity check must leave them untouched.
     const SnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
                                        NodeType::File, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(childOfFileItem));
@@ -336,6 +338,77 @@ void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
 
     // No error is reported by the integrity check.
     CPPUNIT_ASSERT_EQUAL(0, nbErrors);
+}
+
+void TestRemoteFileSystemObserverWorker::testInsertItemsFromCorruptedCsvReply() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+
+    // The items of the CSV replies have "1" as parent id (the kDrive root folder). If the snapshot root folder id
+    // differs from "1", insert the corresponding directory item so that these items are not considered as orphans.
+    if (rootId != NodeId("1")) {
+        const SnapshotItem driveRootItem("1", rootId, Str("kDrive"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                         NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+        CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
+    }
+
+    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
+    // Same replies as in TestSnapshotItemHandler::testGetItemWithCorruptedItem.
+    const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
+    const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
+    const std::string myVirusLine = "2891435,1,myVirus.txt,file,14,1789716406,1789716417,1,";
+    const std::string corruptedItemLines = R"csv(2891437,1,"A\"
+2891435,2891434,myVirus.txt,file,,1786459004,1788263590,1,
+Z",file,4,1789735691,1789735698,1,)csv";
+
+    const std::vector csvBodies = {
+            commonDocumentsLine + "\n" + symlinkLine + "\n" + myVirusLine + "\n" + corruptedItemLines, // Case 1
+            commonDocumentsLine + "\n" + symlinkLine + "\n" + corruptedItemLines + "\n" + myVirusLine, // Case 2
+            commonDocumentsLine + "\n" + corruptedItemLines + "\n" + symlinkLine + "\n" + myVirusLine, // Case 3
+            commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine, // Case 4
+    };
+
+    for (const auto &csvBody: csvBodies) {
+        // Parse the reply and insert the valid items into the snapshot, as done by getItemsInDir.
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << csvBody << "\n"
+           << endOfFileDelimiter;
+
+        SnapshotItemHandler handler(_logger);
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        SyncNameSet existingFiles;
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            if (ignore) continue; // Items parsed from a malformed line are blacklisted by getItemsInDir.
+            if (eof) break;
+
+            CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInSnapshot(item, existingFiles));
+        }
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(eof);
+
+        // Whatever the position of the corrupted item in the reply, the valid items must be inserted into the snapshot
+        // and the corrupted item (id 2891437) must be absent.
+        CPPUNIT_ASSERT(liveSnapshot.exists("3"));
+        CPPUNIT_ASSERT(liveSnapshot.exists("2891434"));
+        CPPUNIT_ASSERT(liveSnapshot.exists("2891435"));
+        CPPUNIT_ASSERT_EQUAL(NodeId("1"), liveSnapshot.parentId("2891435"));
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("2891437"));
+
+        // Reset the snapshot for the next case.
+        CPPUNIT_ASSERT(liveSnapshot.removeItem("3"));
+        CPPUNIT_ASSERT(liveSnapshot.removeItem("2891434"));
+        CPPUNIT_ASSERT(liveSnapshot.removeItem("2891435"));
+    }
 }
 
 } // namespace KDC

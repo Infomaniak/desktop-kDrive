@@ -45,6 +45,9 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
         ExitInfo getItemsInDir(const NodeId &dirId, bool saveCursor);
+        //! Insert a valid item into the snapshot. Items that are excluded, contain unsupported characters, are duplicated or
+        //! whose parent is a file are skipped.
+        ExitInfo insertItemInSnapshot(const SnapshotItem &item, SyncNameSet &existingFiles);
         //! Check the integrity of the snapshot items and remove the inconsistent ones (orphan items, items whose parent is
         //! not a directory).
         ExitInfo checkSnapshotIntegrity();

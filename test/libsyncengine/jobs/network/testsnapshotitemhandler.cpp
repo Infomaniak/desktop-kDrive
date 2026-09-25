@@ -543,4 +543,117 @@ void TestSnapshotItemHandler::testGetItem() {
     }
 }
 
+void TestSnapshotItemHandler::testGetItemWithCorruptedItem() {
+    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
+    // The corrupted item spans 3 physical lines. It must be ignored, and the valid items around it must be parsed
+    // whatever their position in the reply.
+    const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
+    const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
+    const std::string myVirusLine = "2891435,1,myVirus.txt,file,14,1789716406,1789716417,1,";
+    const std::string corruptedItemLines = R"csv(2891437,1,"A\"
+2891435,2891434,myVirus.txt,file,,1786459004,1788263590,1,
+Z",file,4,1789735691,1789735698,1,)csv";
+
+    const SnapshotItem expectedCommonDocuments(NodeId("3"), NodeId("1"), Str2SyncName(std::string("Common documents")),
+                                               static_cast<SyncTime>(1627909284), static_cast<SyncTime>(1779373659),
+                                               NodeType::Directory, static_cast<int64_t>(0), false, false, true);
+    const SnapshotItem expectedSymlink(NodeId("2891434"), NodeId("1"),
+                                       Str2SyncName(std::string("symlink_to_folder_outside_sync_dir")),
+                                       static_cast<SyncTime>(1789713856), static_cast<SyncTime>(1789713856), NodeType::File,
+                                       static_cast<int64_t>(17), true, true, true);
+    const SnapshotItem expectedMyVirus(NodeId("2891435"), NodeId("1"), Str2SyncName(std::string("myVirus.txt")),
+                                       static_cast<SyncTime>(1789716406), static_cast<SyncTime>(1789716417), NodeType::File,
+                                       static_cast<int64_t>(14), false, true, true);
+    // The second physical line of the corrupted item is parsed as a separate valid item.
+    const SnapshotItem expectedMyVirusWithFileParent(
+            NodeId("2891435"), NodeId("2891434"), Str2SyncName(std::string("myVirus.txt")), static_cast<SyncTime>(1786459004),
+            static_cast<SyncTime>(1788263590), NodeType::File, static_cast<int64_t>(0), false, true, true);
+
+    struct ParsedItem {
+            bool ignore{false};
+            SnapshotItem item;
+    };
+    const auto parseCsvReply = [](const std::string &body) {
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n" << body << "\n" << endOfFileDelimiter;
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        std::vector<ParsedItem> parsedItems;
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            parsedItems.emplace_back(ignore, item);
+        }
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(eof);
+        return parsedItems;
+    };
+    const auto checkParsedItem = [](const ParsedItem &parsedItem, bool expectedIgnore, const SnapshotItem &expectedItem,
+                                    const NodeId &expectedIgnoredId = NodeId(),
+                                    const NodeId &expectedIgnoredParentId = NodeId()) {
+        CPPUNIT_ASSERT_EQUAL(expectedIgnore, parsedItem.ignore);
+        if (expectedIgnore) {
+            // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
+            CPPUNIT_ASSERT_EQUAL(expectedIgnoredId, parsedItem.item.id());
+            CPPUNIT_ASSERT_EQUAL(expectedIgnoredParentId, parsedItem.item.parentId());
+        } else {
+            const auto result = snapshotitem_checker::compare(expectedItem, parsedItem.item);
+            CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
+        }
+    };
+
+    // Case 1: symlink, valid item, corrupted item
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + symlinkLine + "\n" + myVirusLine + "\n" + corruptedItemLines);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], false, expectedSymlink);
+        checkParsedItem(parsedItems[2], false, expectedMyVirus);
+        checkParsedItem(parsedItems[3], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[4], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[5], true, SnapshotItem());
+    }
+
+    // Case 2: symlink, corrupted item, valid item
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + symlinkLine + "\n" + corruptedItemLines + "\n" + myVirusLine);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], false, expectedSymlink);
+        checkParsedItem(parsedItems[2], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[3], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[4], true, SnapshotItem());
+        checkParsedItem(parsedItems[5], false, expectedMyVirus);
+    }
+
+    // Case 3: corrupted item, symlink, valid item
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + symlinkLine + "\n" + myVirusLine);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[3], true, SnapshotItem());
+        checkParsedItem(parsedItems[4], false, expectedSymlink);
+        checkParsedItem(parsedItems[5], false, expectedMyVirus);
+    }
+
+    // Case 4: corrupted item, valid item, symlink
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[3], true, SnapshotItem());
+        checkParsedItem(parsedItems[4], false, expectedMyVirus);
+        checkParsedItem(parsedItems[5], false, expectedSymlink);
+    }
+}
+
 } // namespace KDC

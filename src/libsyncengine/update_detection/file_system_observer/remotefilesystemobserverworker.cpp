@@ -354,59 +354,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             return ExitCode::Ok;
         }
 
-        if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
-            continue;
-        }
-
-        // Check unsupported characters
-        if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
-            if (exitInfo.cause() == ExitCause::TmpDirAccessError) return exitInfo;
-
-            continue;
-        }
-
-        if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
-            // An item with the exact same name already exists in the parent folder.
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" already exists in directory \""
-                                                   << SyncName2WStr(_liveSnapshot.name(item.parentId())) << L"\"");
-
-            SyncPath path;
-            (void) _liveSnapshot.path(item.parentId(), path, ignore);
-            path /= item.name();
-
-            _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None,
-                                     InconsistencyType::None, CancelType::TmpBlacklisted));
-            continue;
-        }
-
-        // If the parent of an item is a file, we have an inconsistency in the remote snapshot. We will ignore this item.
-        auto logAndSendSentryEvent = [this](const SnapshotItem &item) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" has a parent that is a file ("
-                                                   << CommonUtility::s2ws(item.parentId()) << L"). Ignoring it.");
-            sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory",
-                                            "ID: " + item.id() + ", parent ID: " + item.parentId());
-        };
-
-        if (_liveSnapshot.type(item.parentId()) == NodeType::File) {
-            logAndSendSentryEvent(item);
-            continue;
-        }
-
-        if (item.type() == NodeType::File) {
-            for (const auto &childItem: item.children()) {
-                logAndSendSentryEvent(item);
-                (void) _liveSnapshot.removeItem(childItem->id());
-            }
-        }
-
-        if (_liveSnapshot.updateItem(item) && ParametersCache::isExtendedLogEnabled()) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                << Utility::quotedSyncName(item.name()) << L", inode:"
-                                                << CommonUtility::s2ws(item.id()) << L", parent inode:"
-                                                << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
-                                                << L", modtime:" << item.lastModified() << L", isDir:"
-                                                << (item.type() == NodeType::Directory) << L", size:" << item.size()
-                                                << L", isLink:" << item.isLink());
+        if (const auto exitInfo = insertItemInSnapshot(item, existingFiles); !exitInfo) {
+            return exitInfo;
         }
     }
 
@@ -425,6 +374,66 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     LOG_SYNCPAL_DEBUG(_logger,
                       "End reply parsing in " << timer.elapsed<DoubleSeconds>().count() << "s for " << itemCount << " items");
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::insertItemInSnapshot(const SnapshotItem &item, SyncNameSet &existingFiles) {
+    if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
+        return ExitCode::Ok;
+    }
+
+    // Check unsupported characters
+    if (const auto exitInfo = checkForUnsupportedCharacters(item.name(), item.id(), item.type()); !exitInfo) {
+        if (exitInfo.cause() == ExitCause::TmpDirAccessError) return exitInfo;
+
+        return ExitCode::Ok;
+    }
+
+    if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
+        // An item with the exact same name already exists in the parent folder.
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" already exists in directory \""
+                                               << SyncName2WStr(_liveSnapshot.name(item.parentId())) << L"\"");
+
+        bool ignore = false;
+        SyncPath path;
+        (void) _liveSnapshot.path(item.parentId(), path, ignore);
+        path /= item.name();
+
+        _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None,
+                                 InconsistencyType::None, CancelType::TmpBlacklisted));
+        return ExitCode::Ok;
+    }
+
+    // If the parent of an item is a file, we have an inconsistency in the remote snapshot. We will ignore this item.
+    auto logAndSendSentryEvent = [this](const SnapshotItem &ignoredItem) {
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(ignoredItem.name()) << L"\" has a parent that is a file ("
+                                               << CommonUtility::s2ws(ignoredItem.parentId()) << L"). Ignoring it.");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory",
+                                        "ID: " + ignoredItem.id() + ", parent ID: " + ignoredItem.parentId());
+    };
+
+    if (_liveSnapshot.type(item.parentId()) == NodeType::File) {
+        logAndSendSentryEvent(item);
+        return ExitCode::Ok;
+    }
+
+    if (item.type() == NodeType::File) {
+        for (const auto &childItem: item.children()) {
+            logAndSendSentryEvent(item);
+            (void) _liveSnapshot.removeItem(childItem->id());
+        }
+    }
+
+    if (_liveSnapshot.updateItem(item) && ParametersCache::isExtendedLogEnabled()) {
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
+                                            << Utility::quotedSyncName(item.name()) << L", inode:"
+                                            << CommonUtility::s2ws(item.id()) << L", parent inode:"
+                                            << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                            << L", modtime:" << item.lastModified() << L", isDir:"
+                                            << (item.type() == NodeType::Directory) << L", size:" << item.size() << L", isLink:"
+                                            << item.isLink());
+    }
 
     return ExitCode::Ok;
 }
