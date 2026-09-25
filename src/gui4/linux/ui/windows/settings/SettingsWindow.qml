@@ -27,18 +27,28 @@ IKShadowedWindow {
 
     enum Category {
         General,
+        Accounts,
         Advanced
     }
 
     required property var controller
+    required property var users
     property int selectedCategory: SettingsWindow.Category.General
 
     function selectGeneral() {
+        accountsPane.reset(accountsRootComponent);
         advancedPane.reset(advancedRootComponent);
         selectedCategory = SettingsWindow.Category.General;
     }
 
+    function selectAccounts() {
+        advancedPane.reset(advancedRootComponent);
+        selectedCategory = SettingsWindow.Category.Accounts;
+        users.refresh();
+    }
+
     function selectAdvanced() {
+        accountsPane.reset(accountsRootComponent);
         advancedPane.reset(advancedRootComponent);
         selectedCategory = SettingsWindow.Category.Advanced;
     }
@@ -53,6 +63,11 @@ IKShadowedWindow {
     minimumContentHeight: IKSettings.minimumHeight
     customShadowEnabled: true
     windowTitleVisible: false
+    onVisibleChanged: {
+        if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
+            users.refresh();
+        }
+    }
 
     headerBackgroundData: Rectangle {
         width: IKSettings.sidebarWidth
@@ -84,6 +99,19 @@ IKShadowedWindow {
             font.weight: IKFonts.emphasized
             color: IKColors.textPrimary
             elide: Text.ElideRight
+        }
+
+        SettingsNavigationHeader {
+            anchors.left: parent.left
+            anchors.leftMargin: IKSettings.sidebarWidth
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            visible: root.selectedCategory === SettingsWindow.Category.Accounts
+            canGoBack: accountsPane.canGoBack
+            currentTitle: accountsPane.currentTitle
+            previousTitle: accountsPane.previousTitle
+            onBackRequested: accountsPane.pop()
         }
 
         SettingsNavigationHeader {
@@ -126,7 +154,8 @@ IKShadowedWindow {
                     width: parent.width
                     label: qsTrId("sidebarItemAccounts")
                     iconSource: "qrc:/assets/settings/accounts.svg"
-                    enabled: false
+                    selected: root.selectedCategory === SettingsWindow.Category.Accounts
+                    onTriggered: root.selectAccounts()
                 }
 
                 IKSidebarItem {
@@ -152,6 +181,19 @@ IKShadowedWindow {
             }
 
             SettingsNavigationPane {
+                id: accountsPane
+
+                anchors.fill: parent
+                visible: root.selectedCategory === SettingsWindow.Category.Accounts
+                initialItem: accountsRootComponent
+                onFocusRestorationRequested: target => {
+                    if (target && target.enabled && target.visible) {
+                        target.forceActiveFocus(Qt.BacktabFocusReason);
+                    }
+                }
+            }
+
+            SettingsNavigationPane {
                 id: advancedPane
 
                 anchors.fill: parent
@@ -163,6 +205,14 @@ IKShadowedWindow {
                     }
                 }
             }
+        }
+    }
+
+    Component {
+        id: accountsRootComponent
+
+        UsersSettingsView {
+            controller: root.users
         }
     }
 
