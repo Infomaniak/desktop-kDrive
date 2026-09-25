@@ -65,7 +65,7 @@ void TestSyncPal::setUp() {
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     (void) ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = _localTempDir.path().string();
+    _localPath = _localTempDir.path() / "." / "subdirectory" / "..";
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, "", _remotePath);
     const auto syncDbPath = MockDb::makeDbName(userId, accountId, driveId, sync.dbId());
@@ -190,6 +190,10 @@ void TestSyncPal::testSyncFileItem() {
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->completedFiles());
     CPPUNIT_ASSERT_EQUAL(testhelpers::defaultFileSize, _syncPal->_progressInfo->totalSize());
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1), _syncPal->_progressInfo->totalFiles());
+}
+
+void TestSyncPal::testLocalPathIsCanonical() {
+    CPPUNIT_ASSERT_EQUAL(std::filesystem::weakly_canonical(_localPath), _syncPal->localPath());
 }
 
 void TestSyncPal::testCheckIfExistsOnServer() {

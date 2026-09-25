@@ -26,6 +26,7 @@
 #include "syncpal/excludelistpropagator.h"
 #include "syncpal/conflictingfilescorrector.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
+#include "utility/kdexception.h"
 #if defined(KD_WINDOWS)
 #include "update_detection/file_system_observer/localfilesystemobserverworker_win.h"
 #else
@@ -105,11 +106,16 @@ SyncPal::SyncPal(std::shared_ptr<Vfs> vfs, const int syncDbId_, const std::strin
     }
     _syncInfo.syncDbId = syncDbId_;
     _syncInfo.driveDbId = sync.driveDbId();
-    _syncInfo.localPath = sync.localPath();
-    _syncInfo.localPath.make_preferred();
+    if (const auto ioError = IoHelper::getWeakCanonicalPath(sync.localPath(), _syncInfo.localPath); ioError != IoError::Success) {
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
+        throw SyncPalInitException("Failed to get weak canonical path for localPath: " +
+                                   CommonUtility::ws2s(Utility::formatIoError(sync.localPath(), ioError)));
+    }
+    (void) _syncInfo.localPath.make_preferred();
     _syncInfo.localNodeId = sync.localNodeId();
-    _syncInfo.targetPath = sync.targetPath();
-    _syncInfo.targetPath.make_preferred();
+    _syncInfo.targetPath = sync.targetPath(); // targetPath is a server folder path. It does not need to be canonicalized.
+    (void) _syncInfo.targetPath.make_preferred();
 
     _cacheDirectory = std::make_shared<CacheDirectory>(_syncInfo.localPath);
 
