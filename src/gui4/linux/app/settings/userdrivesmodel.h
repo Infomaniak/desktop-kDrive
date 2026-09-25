@@ -40,6 +40,7 @@ class UserDrivesModel final : public QAbstractListModel {
             SynchronizedRole,
             AccountIdRole,
             DriveIdRole,
+            SyncCreationPendingRole,
         };
         Q_ENUM(Role)
 
@@ -55,6 +56,7 @@ class UserDrivesModel final : public QAbstractListModel {
                 QString accountName;
                 QColor color;
                 bool synchronized{false};
+                bool syncCreationPending{false};
                 AccountId accountId{0};
                 DriveId driveId{0};
 
