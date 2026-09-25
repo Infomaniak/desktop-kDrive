@@ -45,6 +45,8 @@ class SyncFolderSelectionController final : public QObject {
         Q_PROPERTY(bool saving READ saving NOTIFY stateChanged)
         Q_PROPERTY(bool saveFailed READ saveFailed NOTIFY stateChanged)
         Q_PROPERTY(bool canSave READ canSave NOTIFY stateChanged)
+        Q_PROPERTY(bool excludedFolderLimitExceeded READ excludedFolderLimitExceeded NOTIFY stateChanged)
+        Q_PROPERTY(qsizetype maxExcludedFolders READ maxExcludedFolders CONSTANT)
 
     public:
         SyncFolderSelectionController(AppCache &appCache, CommService &commService, QObject *parent = nullptr);
@@ -55,8 +57,10 @@ class SyncFolderSelectionController final : public QObject {
         [[nodiscard]] bool loadFailed() const { return _state == State::LoadFailed; }
         [[nodiscard]] bool saving() const { return _state == State::Saving; }
         [[nodiscard]] bool saveFailed() const { return _saveFailed; }
-        // True once the draft differs from the confirmed blacklist and the tree is fully loaded.
+        // True once the draft differs from the confirmed blacklist, stays within the API limit, and the tree is fully loaded.
         [[nodiscard]] bool canSave() const;
+        [[nodiscard]] bool excludedFolderLimitExceeded() const;
+        [[nodiscard]] static qsizetype maxExcludedFolders();
 
         Q_INVOKABLE void open(qint64 syncDbId);
         /// Releases the target only when it is still the given synchronization, so a closing page cannot reset its
