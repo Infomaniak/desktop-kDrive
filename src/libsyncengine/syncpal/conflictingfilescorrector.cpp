@@ -142,7 +142,7 @@ namespace {
 // A first sanity check for destination path validity. The destination path must be a relative path with a non-empty
 // filename that is not "." or "..".
 bool errorDestinationPathIsValid(const SyncPath &destinationPath) {
-    return !destinationPath.filename().empty() && !destinationPath.is_absolute() && destinationPath.filename() != SyncPath{"."} &&
+    return !destinationPath.is_absolute() && !destinationPath.filename().empty() && destinationPath.filename() != SyncPath{"."} &&
            destinationPath.filename() != SyncPath{".."};
 }
 } // namespace
