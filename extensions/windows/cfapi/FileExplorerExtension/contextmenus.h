@@ -36,6 +36,7 @@ struct MenuItem {
 
 struct ContextMenuInfo {
         MenuItem _menuItem;
+        bool _loaded = false;
         std::vector<MenuItem> _subMenuItems;
 };
 
