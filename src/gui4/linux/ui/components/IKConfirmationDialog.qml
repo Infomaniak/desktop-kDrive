@@ -29,6 +29,8 @@ IKModal {
     required property string confirmText
     required property string description
     property bool busy: false
+    // Optional failure shown under the description, for a confirmed action that can fail and be retried.
+    property string errorText: ""
     property int confirmRole: IKModalButton.Primary
     readonly property real requiredActionsWidth: cancelButton.implicitWidth + confirmButton.implicitWidth
                                                  + IKModalTokens.actionSpacing
@@ -49,15 +51,28 @@ IKModal {
     escapeDismissible: !busy
     initialFocusItem: cancelButton
 
-    bodyData: Text {
-        color: IKColors.textSecondary
-        font.pixelSize: IKFonts.bodySize
-        lineHeight: IKFonts.title2Size
-        lineHeightMode: Text.FixedHeight
-        text: root.description
-        width: parent.width
-        wrapMode: Text.WordWrap
-    }
+    bodyData: [
+        Text {
+            color: IKColors.textSecondary
+            font.pixelSize: IKFonts.bodySize
+            lineHeight: IKFonts.title2Size
+            lineHeightMode: Text.FixedHeight
+            text: root.description
+            width: parent.width
+            wrapMode: Text.WordWrap
+        },
+        Text {
+            visible: root.errorText.length > 0
+            color: IKColors.statusStrongWarning
+            font.pixelSize: IKFonts.bodySize
+            font.weight: IKFonts.emphasized
+            text: root.errorText
+            textFormat: Text.PlainText
+            width: parent.width
+            wrapMode: Text.WordWrap
+            Accessible.role: Accessible.AlertMessage
+        }
+    ]
     footerData: [
         IKModalButton {
             id: cancelButton
