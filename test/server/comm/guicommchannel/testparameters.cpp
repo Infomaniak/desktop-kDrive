@@ -164,7 +164,7 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
         auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
-        auto res = getExpectedParameters();
+        const Parameters res = getExpectedParameters();
         CPPUNIT_ASSERT(res == parametersUpdateJob->_parameters);
     };
 

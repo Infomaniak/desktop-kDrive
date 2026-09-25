@@ -83,6 +83,8 @@ class Parameters {
         bool matomoEnabled() const { return _matomoEnabled; }
         void setMatomoEnabled(const bool value) { _matomoEnabled = value; }
 
+        bool operator==(const Parameters &) const = default;
+
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
 
