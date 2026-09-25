@@ -179,8 +179,10 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     error = false;
     ignore = false;
 
+    item = SnapshotItem();
+
     std::string line;
-    std::getline(ss, line);
+    (void) std::getline(ss, line);
     if (line.empty()) {
         return false;
     }
@@ -190,7 +192,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         // "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link"
         _ignoreFirstLine = false;
         line.clear();
-        std::getline(ss, line);
+        (void) std::getline(ss, line);
         if (line.empty()) {
             return false;
         }
@@ -206,14 +208,18 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     while (state.readNextLine) {
         state.readNextLine = false;
 
+        readSnapshotItemFields(item, line, error, state);
+
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
             LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << CommonUtility::s2ws(line));
+            if (state.index == CsvIndexName && item.name().empty()) {
+                item.setName(Str2SyncName(state.tmp));
+            }
             ignore = true;
             return true;
         }
 
-        readSnapshotItemFields(item, line, error, state);
         if (error) return true;
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
@@ -226,7 +232,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
             state.tmp.push_back('\n');
             state.readNextLine = true;
-            std::getline(ss, line);
+            (void) std::getline(ss, line);
         }
     }
 

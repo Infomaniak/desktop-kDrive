@@ -55,6 +55,27 @@ void TestIo::tearDown() {
     TestBase::stop();
 }
 
+void TestIo::testGetCanonicalPath() {
+    const LocalTemporaryDirectory temporaryDirectory("TestIo-getCanonicalPath");
+    const SyncPath targetPath = temporaryDirectory.path() / "target";
+    const SyncPath symlinkPath = temporaryDirectory.path() / "link";
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::create_directory(targetPath, ec));
+    CPPUNIT_ASSERT_EQUAL(0, ec.value());
+
+    IoError ioError = IoError::Unknown;
+    CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, symlinkPath, true, ioError));
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
+
+    SyncPath canonicalPath;
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getWeakCanonicalPath(symlinkPath / "." / ".." / "target", canonicalPath));
+    CPPUNIT_ASSERT_EQUAL(std::filesystem::canonical(targetPath), canonicalPath);
+
+    const SyncPath missingPath = temporaryDirectory.path() / "does-not-exist";
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, IoHelper::getWeakCanonicalPath(missingPath, canonicalPath));
+    CPPUNIT_ASSERT_EQUAL(std::filesystem::weakly_canonical(missingPath), canonicalPath);
+}
+
 void TestIo::testAccessDeniedOnLockedFiles() {
 #if defined(KD_WINDOWS) // This test is only relevant on Windows, as on Unix systems, there is no standard way to lock files.
     LocalTemporaryDirectory tmpDir("TestIo-testAccessDeniedOnLockedFiles");

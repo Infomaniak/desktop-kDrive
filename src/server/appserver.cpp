@@ -17,6 +17,8 @@
  */
 
 #include "appserver.h"
+
+#include "utility/kdexception.h"
 #if defined(KD_LINUX)
 #include "qtlocalpeer.h"
 #include "runningprocessinfo_linux.h"
@@ -2915,11 +2917,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4063,6 +4065,9 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const NodeSet &blackList, bool
         // Create SyncPal
         try {
             syncPalMap[sync.dbId()] = std::make_shared<SyncPal>(vfs, sync.dbId(), _theme->version());
+        } catch (const SyncPalInitException &e) {
+            LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId() << " : " << e.what());
+            return kdExceptionToExitInfo(e);
         } catch (std::exception const &) {
             LOG_WARN(_logger, "Error in SyncPal::SyncPal for syncDbId=" << sync.dbId());
             return {ExitCode::DbError, ExitCause::Unknown};
@@ -4154,8 +4159,8 @@ ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCal
 ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (auto ioError = IoError::Unknown;
+        !IoHelper::checkIfPathExists(sync.localPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError));
         return ExitCode::SystemError;
     }
@@ -4219,7 +4224,11 @@ ExitInfo AppServer::createAndStartVfs(const Sync &sync) noexcept {
         vfsSetupParams.driveId = drive.driveId();
         vfsSetupParams.userId = user.userId();
 #endif
-        vfsSetupParams.localPath = sync.localPath();
+        if (const auto ioError = IoHelper::getWeakCanonicalPath(sync.localPath(), vfsSetupParams.localPath);
+            ioError != IoError::Success) {
+            LOGW_WARN(_logger, L"Error in IoHelper::getWeakCanonicalPath: " << Utility::formatIoError(sync.localPath(), ioError));
+            return {ExitCode::SystemError, ExitCause::SyncDirAccessError};
+        }
         vfsSetupParams.targetPath = sync.targetPath();
         vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
 #if defined(KD_MACOS) || defined(KD_WINDOWS)

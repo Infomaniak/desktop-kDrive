@@ -79,7 +79,7 @@ ExitInfo FileRescuer::moveToRescueFolder(const SyncPath &relativeOriginPath, Syn
         LocalMoveJob rescueJob(_syncPal->localPath() / relativeOriginPath, _syncPal->localPath() / relativeDestinationPath);
         exitInfo = rescueJob.runSynchronously();
     } while (!exitInfo && exitInfo.cause() == ExitCause::FileExists);
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 SyncPath FileRescuer::getDestinationPath(const SyncPath &relativeOriginPath, const uint16_t counter /*= 0*/) const {

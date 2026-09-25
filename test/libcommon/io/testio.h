@@ -36,12 +36,14 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testCheckIfPathExists);
+        CPPUNIT_TEST(testCheckIfPathTraversesLink);
         CPPUNIT_TEST(testCheckIfIsDirectory);
         CPPUNIT_TEST(testCreateDirectory);
         CPPUNIT_TEST(testCreateSymlink);
         CPPUNIT_TEST(testGetNodeId);
         CPPUNIT_TEST(testGetFileStat);
         CPPUNIT_TEST(testGetFileChecksum);
+        CPPUNIT_TEST(testGetCanonicalPath);
         CPPUNIT_TEST(testGetRights);
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
@@ -86,11 +88,13 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testGetNodeId(void);
         void testCheckDirectoryIterator(void);
         void testCheckIfPathExists(void);
+        void testCheckIfPathTraversesLink(void);
         void testCheckIfIsDirectory(void);
         void testCreateDirectory(void);
         void testCreateSymlink(void);
         void testGetFileStat(void);
         void testGetFileChecksum(void);
+        void testGetCanonicalPath(void);
         void testGetRights(void);
         void testIsFileAccessible(void);
         void testCheckIfIsHiddenFile(void);
