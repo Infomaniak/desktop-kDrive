@@ -49,11 +49,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             || Bundle.allBundles.contains { $0.bundlePath.hasSuffix(".xctest") }
     }
 
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let testing = AppDelegate.isRunningTests
-        DriveTargetAssembly.setupDI(testing: testing)
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        DriveTargetAssembly.setupDI(testing: AppDelegate.isRunningTests)
+    }
 
-        guard !testing else {
+    func applicationDidFinishLaunching(_ aNotification: Notification) {
+        guard !AppDelegate.isRunningTests else {
             return
         }
 
@@ -100,6 +101,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
+    }
+
+    func application(_ application: NSApplication, open urls: [URL]) {
+        @InjectService var loginService: WebBrowserLoginServiceable
+        for url in urls where loginService.handleRedirectURL(url) {
+            bringLoginWindowToFront()
+        }
+    }
+
+    private func bringLoginWindowToFront() {
+        let loginWindow = onboardingWindow?.window ?? mainWindow.window
+        dockIconManager?.showDockIconAndActivate()
+        loginWindow?.makeKeyAndOrderFront(nil)
     }
 
     @objc func showAboutPanel() {
