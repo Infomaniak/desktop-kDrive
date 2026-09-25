@@ -84,8 +84,8 @@ void DriveManagementController::close(const qint64 driveDbId) {
     emit presentationChanged();
 }
 
-void DriveManagementController::retrySelection() {
-    if (!hasMainSync() || _selectionState != SelectionState::Failed) {
+void DriveManagementController::reloadSelection() {
+    if (!hasMainSync() || _selectionState == SelectionState::Loading) {
         return;
     }
 
