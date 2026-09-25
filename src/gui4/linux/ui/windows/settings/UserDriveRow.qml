@@ -123,7 +123,7 @@ Item {
         text: root.isSynchronized ? qsTrId("buttonManage") : qsTrId("buttonEnable")
         actionEnabled: !root.isSynchronized && !root.actionBusy
         busy: root.actionBusy
-        Accessible.name: text + " " + root.name
+        Accessible.name: text + " " + root.name + (root.hasDistinctAccountName ? " " + root.accountName : "")
         onClicked: root.activateRequested(actionButton, root.accountId, root.driveId)
     }
 }
