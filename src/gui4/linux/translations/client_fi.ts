@@ -1129,6 +1129,11 @@ avaa macOS-asetukset ottaaksesi ne käyttöön.</translation>
             <source>Prevent certain temporary or system files from being copied to kDrive.</source> 
             <translation>Varmista, ettei tietyjä väliaikaisia tai järjestelmätiedostoja kopioida kDriveen.</translation> 
         </message> 
+        <message id="excludedFoldersLimitReached"> 
+            <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source> 
+            <extracomment>%1 is the maximum number of excluded folders (3000).</extracomment> 
+            <translation>Et voi sulkea pois enemmän kuin %1 kansiota. Poista ylätason kansioiden valinta.</translation> 
+        </message> 
         <message id="extendedLogDescription"> 
             <source>Enables collection of additional information useful for support.</source> 
             <translation>Ottaa käyttöön tukea hyödyttävien lisätietojen keräämisen.</translation> 
