@@ -1650,7 +1650,7 @@ ExitInfo ServerRequests::getErrorList(const int32_t limit, std::vector<Error> &l
         }
 
         list.clear();
-        hasMore = errorList.size() >= limit;
+        hasMore = errorList.size() >= static_cast<size_t>(limit);
         staleCount = 0;
 
         for (const Error &error: errorList) {
