@@ -33,7 +33,7 @@ Q_LOGGING_CATEGORY(lcOnboardingSession, "gui.v4.onboardingsession", QtInfoMsg)
 } // namespace
 
 OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commService, UserService &userService,
-                                     CachePopulator &cachePopulator, ServiceEventBus &serviceEventBus,
+                                     SyncService &syncService, CachePopulator &cachePopulator, ServiceEventBus &serviceEventBus,
                                      const EntryPoint entryPoint, const std::optional<UserDbId> selectedUserDbId,
                                      const uint64_t generation, QObject *const parent) :
     QObject(parent),
@@ -43,7 +43,8 @@ OnboardingSession::OnboardingSession(AppCache &appCache, CommService &commServic
     _defaultPathResolver(appCache, _onboardingState, commService, serviceEventBus),
     _driveSelectionController(appCache, _onboardingState, userService, _flowController, _defaultPathResolver),
     _syncConfigurationController(appCache, _onboardingState, _flowController, commService),
-    _syncCreationCoordinator(_flowController, _onboardingState, appCache, commService, cachePopulator, serviceEventBus),
+    _syncCreationCoordinator(_flowController, _onboardingState, appCache, commService, syncService, cachePopulator,
+                             serviceEventBus),
     _generation(generation) {
     (void) connect(&_loginCoordinator, &OnboardingLoginCoordinator::openWindowRequested, this,
                    &OnboardingSession::openWindowRequested);
