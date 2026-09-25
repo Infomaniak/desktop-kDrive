@@ -38,6 +38,7 @@ class AvailableDrivesModel;
 class CachePopulator;
 class CommService;
 class ServiceEventBus;
+class SyncService;
 class UserService;
 
 /**
@@ -60,8 +61,9 @@ class OnboardingSession final : public QObject {
         };
 
         explicit OnboardingSession(AppCache &appCache, CommService &commService, UserService &userService,
-                                   CachePopulator &cachePopulator, ServiceEventBus &serviceEventBus, EntryPoint entryPoint,
-                                   std::optional<UserDbId> selectedUserDbId, uint64_t generation, QObject *parent = nullptr);
+                                   SyncService &syncService, CachePopulator &cachePopulator, ServiceEventBus &serviceEventBus,
+                                   EntryPoint entryPoint, std::optional<UserDbId> selectedUserDbId, uint64_t generation,
+                                   QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingFlowController *flowController() { return &_flowController; }
         [[nodiscard]] DriveSelectionController *driveSelectionController() { return &_driveSelectionController; }

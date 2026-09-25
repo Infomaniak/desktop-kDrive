@@ -23,6 +23,7 @@
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
 #include "app/services/serviceeventbus.h"
+#include "app/services/syncservice.h"
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/utility.h"
 
@@ -41,11 +42,12 @@ Q_LOGGING_CATEGORY(lcSettingsSyncActivationController, "gui.v4.settingssyncactiv
 
 
 SettingsSyncActivationController::SettingsSyncActivationController(AppCache &appCache, CommService &commService,
-                                                                   CachePopulator &cachePopulator,
+                                                                   SyncService &syncService, CachePopulator &cachePopulator,
                                                                    ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _commService(commService),
+    _syncService(syncService),
     _cachePopulator(cachePopulator),
     _serviceEventBus(serviceEventBus),
     _folderProvider(commService),
@@ -62,6 +64,8 @@ SettingsSyncActivationController::SettingsSyncActivationController(AppCache &app
         }
     });
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &SettingsSyncActivationController::handleTargetStateChanged);
+    (void) connect(&_appCache, &AppCache::syncCreationPendingChanged, this,
+                   &SettingsSyncActivationController::handleTargetStateChanged);
 }
 
 bool SettingsSyncActivationController::busy() const {
@@ -86,7 +90,7 @@ bool SettingsSyncActivationController::canValidate() const {
     if (_page == Page::FolderSelection) {
         return !_folderTreeModel.loading() && !_folderTreeModel.loadFailed();
     }
-    return !_config.localPath.isEmpty() && targetStillAvailable();
+    return !_config.localPath.isEmpty() && targetStillSelectable();
 }
 
 QString SettingsSyncActivationController::localFolderErrorText() const {
@@ -117,7 +121,7 @@ void SettingsSyncActivationController::activate(const qint64 userDbId, const qin
     _operationErrorId.clear();
 
     const auto availableDrive = _appCache.availableDrive(_key);
-    if (!availableDrive || _appCache.isAvailableDriveConfigured(_key)) {
+    if (!availableDrive || !targetStillSelectable()) {
         qCWarning(lcSettingsSyncActivationController)
                 << "Drive activation ignored because the target is no longer available | userDbId:" << _key.userDbId
                 << "/ accountId:" << _key.accountId << "/ driveId:" << _key.driveId;
@@ -214,7 +218,7 @@ void SettingsSyncActivationController::applyCustomFolder(const QUrl &folderUrl) 
                 if (!self || generation != self->_requestGeneration) {
                     return;
                 }
-                if (!self->targetStillAvailable()) {
+                if (!self->targetStillSelectable()) {
                     self->close();
                     return;
                 }
@@ -240,7 +244,7 @@ void SettingsSyncActivationController::returnToDefaultFolder() {
 }
 
 void SettingsSyncActivationController::selectFolders() {
-    if (_state != State::Editing || !targetStillAvailable()) {
+    if (_state != State::Editing || !targetStillSelectable()) {
         return;
     }
     _folderTreeModel.configure(_key.userDbId, _key.driveId, QStr2Str(_config.targetNodeId), _config.blackList);
@@ -259,12 +263,20 @@ bool SettingsSyncActivationController::targetStillAvailable() const {
 }
 
 /**
+ * Pre-send variant of targetStillAvailable(): also rejects a drive whose creation is in flight elsewhere. Once this
+ * controller has sent SYNC_ADD, the reservation is its own, so post-send states must use targetStillAvailable().
+ */
+bool SettingsSyncActivationController::targetStillSelectable() const {
+    return targetStillAvailable() && !_appCache.isSyncCreationPending(_key);
+}
+
+/**
  * Requests a fresh default folder proposal, either before showing the editor (Preparing) or when the user returns to the
  * default folder (CheckingFolder).
  */
 void SettingsSyncActivationController::requestDefaultFolder() {
     const auto availableDrive = _appCache.availableDrive(_key);
-    if (!availableDrive || _appCache.isAvailableDriveConfigured(_key)) {
+    if (!availableDrive || !targetStillSelectable()) {
         close();
         return;
     }
@@ -281,7 +293,7 @@ void SettingsSyncActivationController::requestDefaultFolder() {
 }
 
 void SettingsSyncActivationController::handleDefaultFolderProposal(const ExitInfo &exitInfo, const GoodPathResult &result) {
-    if (!targetStillAvailable()) {
+    if (!targetStillSelectable()) {
         close();
         return;
     }
@@ -315,7 +327,7 @@ void SettingsSyncActivationController::handleDefaultFolderProposal(const ExitInf
 }
 
 void SettingsSyncActivationController::createSynchronization() {
-    if (!targetStillAvailable()) {
+    if (!targetStillSelectable()) {
         close();
         return;
     }
@@ -334,7 +346,7 @@ void SettingsSyncActivationController::createSynchronization() {
     setState(State::Submitting);
     const uint64_t generation = ++_requestGeneration;
     const QPointer self(this);
-    _commService.requestSyncAdd(request, [self, generation](const ExitInfo &exitInfo, const BaseSync &) {
+    const bool sent = _syncService.addDriveSync(request, [self, generation](const ExitInfo &exitInfo, const BaseSync &) {
         if (!self || generation != self->_requestGeneration) {
             return;
         }
@@ -348,6 +360,10 @@ void SettingsSyncActivationController::createSynchronization() {
         self->setState(State::Reconciling);
         self->_cachePopulator.reconcile();
     });
+    if (!sent) {
+        // Another window has started a sync creation for this drive in the meantime.
+        close();
+    }
 }
 
 /**
@@ -386,6 +402,10 @@ void SettingsSyncActivationController::handleTargetStateChanged() {
     switch (_state) {
         case State::Preparing:
         case State::Editing:
+            if (!targetStillSelectable()) {
+                close();
+            }
+            return;
         case State::AwaitingConfirmation:
             if (!targetStillAvailable()) {
                 close();
