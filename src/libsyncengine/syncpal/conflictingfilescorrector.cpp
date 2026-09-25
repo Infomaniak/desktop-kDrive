@@ -107,7 +107,7 @@ ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonica
         return {};
     }
 
-    result.sourcePath = std::filesystem::canonical(sourcePath, ec) / sourcePath.filename();
+    result.sourcePath = std::filesystem::canonical(sourcePath.parent_path(), ec) / sourcePath.filename();
     if (ec) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for sourcePath: "
                                                         << Utility::formatSyncPath(sourcePath) << L" - "
@@ -142,7 +142,7 @@ namespace {
 // A first sanity check for destination path validity. The destination path must be a relative path with a non-empty
 // filename that is not "." or "..".
 bool errorDestinationPathIsValid(const SyncPath &destinationPath) {
-    return !destinationPath.filename().empty() & !destinationPath.is_absolute() && destinationPath.filename() != SyncPath{"."} &&
+    return !destinationPath.filename().empty() && !destinationPath.is_absolute() && destinationPath.filename() != SyncPath{"."} &&
            destinationPath.filename() != SyncPath{".."};
 }
 } // namespace
