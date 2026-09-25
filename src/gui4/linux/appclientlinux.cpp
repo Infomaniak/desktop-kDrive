@@ -179,8 +179,11 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this, [this] {
         _preferSetupHomeWhenUnconfigured = false;
         QTimer::singleShot(0, this, [this] {
-            openMainWindow();
-            restoreSettingsAfterOnboarding();
+            if (_restoreSettingsAfterOnboarding) {
+                restoreSettingsAfterOnboarding();
+            } else {
+                openMainWindow();
+            }
         });
     });
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCancelled, this, [this] {
