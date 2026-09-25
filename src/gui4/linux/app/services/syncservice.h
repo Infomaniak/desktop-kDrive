@@ -64,6 +64,8 @@ class SyncService : public QObject {
         Q_INVOKABLE void startSync(qint64 syncDbId);
         Q_INVOKABLE void stopSync(qint64 syncDbId);
         Q_INVOKABLE void deleteSync(qint64 syncDbId);
+        // Sends SYNC_DELETE and reports its outcome. The cache still learns the removal from the SYNC_REMOVED push.
+        void deleteSync(SyncDbId syncDbId, const CommService::VoidCallback &callback);
         Q_INVOKABLE void querySyncStatus(qint64 syncDbId);
         Q_INVOKABLE void findGoodPathForNewSync(const QString &basePath);
         Q_INVOKABLE void isPathValidForNewSync(const QString &path, int32_t syncConfiguration);
