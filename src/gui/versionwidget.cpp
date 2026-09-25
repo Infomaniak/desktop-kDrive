@@ -361,7 +361,7 @@ void VersionWidget::initBetaBloc(PreferencesBlocWidget *prefBloc) {
 void VersionWidget::saveDistributionChannel(const DistributionChannel channel) const {
     GuiRequests::changeDistributionChannel(channel);
     ParametersCache::instance()->parameters().setDistributionChannel(channel);
-    ParametersCache::instance()->saveParametersInfo();
+    ParametersCache::instance()->saveParameters();
 }
 
 } // namespace KDC

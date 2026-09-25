@@ -436,7 +436,7 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
         return;
     }
 
-    ParametersCache::instance()->saveParametersInfo();
+    ParametersCache::instance()->saveParameters();
     accept();
 }
 

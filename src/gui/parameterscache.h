@@ -33,7 +33,7 @@ class ParametersCache {
         void operator=(ParametersCache const &) = delete;
 
         Parameters &parameters() { return _parameters; }
-        bool saveParametersInfo(bool displayMessageBoxOnError = true);
+        bool saveParameters(bool displayMessageBoxOnError = true);
 
     private:
         static std::shared_ptr<ParametersCache> _instance;

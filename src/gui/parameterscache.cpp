@@ -49,7 +49,7 @@ ParametersCache::ParametersCache() {
     }
 }
 
-bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
+bool ParametersCache::saveParameters(bool displayMessageBoxOnError) {
     if (const ExitCode exitCode = GuiRequests::updateParameters(_parameters); exitCode != ExitCode::Ok) {
         qCWarning(lcAppParameters()) << "Error in Requests::updateParameters";
         if (displayMessageBoxOnError) {

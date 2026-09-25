@@ -361,7 +361,7 @@ void PreferencesWidget::onDarkThemeSwitchClicked(bool checked) {
 
 void PreferencesWidget::onMonochromeSwitchClicked(bool checked) {
     ParametersCache::instance()->parameters().setMonoIcons(checked);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
+    if (!ParametersCache::instance()->saveParameters()) {
         return;
     }
 
@@ -371,7 +371,7 @@ void PreferencesWidget::onMonochromeSwitchClicked(bool checked) {
 
 void PreferencesWidget::onLaunchAtStartupSwitchClicked(bool checked) {
     ParametersCache::instance()->parameters().setAutoStart(checked);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
+    if (!ParametersCache::instance()->saveParameters()) {
         return;
     }
 
@@ -389,7 +389,7 @@ void PreferencesWidget::onLanguageChange() {
     const auto language = static_cast<Language>(combo->currentData().toInt());
 
     ParametersCache::instance()->parameters().setLanguage(language);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
+    if (!ParametersCache::instance()->saveParameters()) {
         return;
     }
     MatomoClient::sendEvent("preferences", MatomoEventAction::Click, "languagesChange", combo->currentData().toInt());
@@ -402,7 +402,7 @@ void PreferencesWidget::onLanguageChange() {
 
 void PreferencesWidget::onMoveToTrashSwitchClicked(bool checked) {
     ParametersCache::instance()->parameters().setMoveToTrash(checked);
-    if (!ParametersCache::instance()->saveParametersInfo()) {
+    if (!ParametersCache::instance()->saveParameters()) {
         return;
     }
     _moveTotrashDisclaimerWidget->setVisible(checked);
