@@ -50,7 +50,7 @@ final class LoginViewModel: ObservableObject {
         loginState = .waitingForWebAuthentication
         loginService.asWebAuthenticationLoginFrom(
             anchor: anchor ?? ASPresentationAnchor(),
-            useEphemeralSession: true,
+            useEphemeralSession: false,
             hideCreateAccountButton: true,
             delegate: self
         )
