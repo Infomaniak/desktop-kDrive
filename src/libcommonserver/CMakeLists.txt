@@ -29,6 +29,7 @@ set(libcommonserver_SRCS
     utility/truststorehelper.h
     utility/stateholder.h
     utility/jsonparserutility.h
+    utility/kdexception.h utility/kdexception.cpp
     # Db
     db/sqlitedb.h db/sqlitedb.cpp
     db/sqlitequery.h db/sqlitequery.cpp

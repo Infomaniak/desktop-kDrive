@@ -18,6 +18,7 @@
 
 #include "testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
+#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
 #include "requests/syncnodecache.h"
 
 #include "libcommon/utility/utility.h"
@@ -50,6 +51,7 @@ namespace KDC {
 
 // Test in drive "kDrive Desktop Team"
 static const uint64_t nbFileInTestDir = 5; // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
+static const std::string endOfFileDelimiter("#EOF");
 const NodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
 const NodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
 const NodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
@@ -104,7 +106,6 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     _syncPal->_remoteFSObserverWorker =
             std::make_shared<RemoteFileSystemObserverWorker>(_syncPal, "Remote File System Observer", "RFSO");
-    _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
 }
 
 void TestRemoteFileSystemObserverWorker::tearDown() {
@@ -128,6 +129,10 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 }
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
+    // Generating the initial snapshot requires access to the remote drive: it is only done by the tests that need it.
+    const ExitInfo exitInfo = _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
+    CPPUNIT_ASSERT_MESSAGE("Failed to generate the initial remote snapshot", exitInfo);
+
     NodeSet ids;
     _syncPal->liveSnapshot(ReplicaSide::Remote).ids(ids);
 
@@ -141,6 +146,9 @@ void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
 }
 
 void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
+    const ExitInfo exitInfo = _syncPal->_remoteFSObserverWorker->generateInitialSnapshot();
+    CPPUNIT_ASSERT_MESSAGE("Failed to generate the initial remote snapshot", exitInfo);
+
     // Create test file locally
     const LocalTemporaryDirectory temporaryDirectory("testRFSO");
     const SyncName testFileName = Str("test_file_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
@@ -277,6 +285,157 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
 
         CPPUNIT_ASSERT(!_syncPal->liveSnapshot(ReplicaSide::Remote).exists(_testFileId));
     }
+}
+
+void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+
+    int nbErrors = 0;
+    _syncPal->setAddErrorCallback([&nbErrors](const Error &) { ++nbErrors; });
+
+    // Insert a consistent directory with a file inside.
+    const SnapshotItem dirItem("dir", rootId, Str("dir"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                               testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(dirItem));
+
+    const SnapshotItem fileItem("file", "dir", Str("file.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(fileItem));
+
+    // Insert an item whose parent is a file. Such items are skipped by getItemsInDir before being inserted into the
+    // snapshot, the integrity check must leave them untouched.
+    const SnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                       NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(childOfFileItem));
+    CPPUNIT_ASSERT(liveSnapshot.exists("child"));
+
+    // Insert an orphan item. The integrity check must remove it from the snapshot.
+    // Note: `exists` returns false for orphan items, so `type` is used to check the presence of the item in the snapshot.
+    const SnapshotItem orphanItem("orphan", "missingParentId", Str("orphan.txt"), testhelpers::defaultTime,
+                                  testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(orphanItem));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("orphan"));
+
+    const ExitInfo exitInfo = remoteFSObserverWorker->removeOrphans();
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
+
+    // Items whose parent is a file are left untouched.
+    CPPUNIT_ASSERT(liveSnapshot.exists("child"));
+
+    // Consistent items are left untouched.
+    CPPUNIT_ASSERT(liveSnapshot.exists("dir"));
+    CPPUNIT_ASSERT(liveSnapshot.exists("file"));
+
+    // Orphan items are removed from the snapshot.
+    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("orphan"));
+
+    // No error is reported by the integrity check.
+    CPPUNIT_ASSERT_EQUAL(0, nbErrors);
+}
+
+void TestRemoteFileSystemObserverWorker::testInsertItemsFromCorruptedCsvReply() {
+    // This test does not require any remote drive access.
+    const auto remoteFSObserverWorker =
+            std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker);
+    CPPUNIT_ASSERT(remoteFSObserverWorker);
+
+    LiveSnapshot &liveSnapshot = remoteFSObserverWorker->_liveSnapshot;
+    const NodeId rootId = liveSnapshot.rootFolderId();
+    CPPUNIT_ASSERT(!rootId.empty());
+
+    // The items of the CSV replies have "1" as parent id (the kDrive root folder). If the snapshot root folder id
+    // differs from "1", insert the corresponding directory item so that these items are not considered as orphans.
+    if (rootId != NodeId("1")) {
+        const SnapshotItem driveRootItem("1", rootId, Str("kDrive"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                         NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
+        CPPUNIT_ASSERT(liveSnapshot.updateItem(driveRootItem));
+    }
+
+    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
+    // Same replies as in TestSnapshotItemHandler::testGetItemWithCorruptedItem.
+    const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
+    const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
+    const std::string myVirusLine = "2891435,1,myVirus.txt,file,14,1789716406,1789716417,1,";
+    const std::string corruptedItemLines = R"csv(2891437,1,"A\"
+2891435,2891434,myVirus.txt,file,,1786459004,1788263590,1,
+Z",file,4,1789735691,1789735698,1,)csv";
+
+    const std::vector csvBodies = {
+            commonDocumentsLine + "\n" + symlinkLine + "\n" + myVirusLine + "\n" + corruptedItemLines, // Case 1
+            commonDocumentsLine + "\n" + symlinkLine + "\n" + corruptedItemLines + "\n" + myVirusLine, // Case 2
+            commonDocumentsLine + "\n" + corruptedItemLines + "\n" + symlinkLine + "\n" + myVirusLine, // Case 3
+            commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine, // Case 4
+    };
+
+    // Whatever the position of the corrupted item in the reply, getItemsInDir reports an error for it instead of
+    // inserting it into the snapshot. Replicate this behavior and check that exactly one error is reported per case.
+    int nbErrors = 0;
+    _syncPal->setAddErrorCallback([&nbErrors](const Error &reportedError) {
+        ++nbErrors;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, reportedError.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, reportedError.exitCause());
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
+    });
+
+    for (const auto &csvBody: csvBodies) {
+        nbErrors = 0;
+
+        // Parse the reply and insert the valid items into the snapshot, as done by getItemsInDir.
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << csvBody << "\n"
+           << endOfFileDelimiter;
+
+        SnapshotItemHandler handler(_logger);
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        SyncNameSet existingFiles;
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            if (ignore) {
+                // Replicate getItemsInDir: report an error for the malformed item instead of inserting it.
+                if (!item.id().empty() && !item.name().empty()) {
+                    SyncPath parentPath;
+                    if (bool dummy = false; !liveSnapshot.path(item.id(), parentPath, dummy)) {
+                        LOGW_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(item.id()));
+                    }
+
+                    _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(),
+                                             ConflictType::None, InconsistencyType::ForbiddenChar));
+                }
+                continue;
+            }
+            if (eof) break;
+
+            CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInSnapshot(item, existingFiles));
+        }
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(eof);
+        CPPUNIT_ASSERT_EQUAL(1, nbErrors);
+
+        // Whatever the position of the corrupted item in the reply, the valid items must be inserted into the snapshot
+        // and the corrupted item (id 2891437) must be absent.
+        CPPUNIT_ASSERT(liveSnapshot.exists("3"));
+        CPPUNIT_ASSERT(liveSnapshot.exists("2891434"));
+        CPPUNIT_ASSERT(liveSnapshot.exists("2891435"));
+        CPPUNIT_ASSERT_EQUAL(NodeId("1"), liveSnapshot.parentId("2891435"));
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("2891437"));
+
+        // Reset the snapshot for the next case.
+        CPPUNIT_ASSERT(liveSnapshot.removeItem("3"));
+        CPPUNIT_ASSERT(liveSnapshot.removeItem("2891434"));
+        CPPUNIT_ASSERT(liveSnapshot.removeItem("2891435"));
+    }
+
+    _syncPal->setAddErrorCallback(nullptr);
 }
 
 } // namespace KDC
