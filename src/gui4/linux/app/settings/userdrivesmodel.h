@@ -41,6 +41,7 @@ class UserDrivesModel final : public QAbstractListModel {
             AccountIdRole,
             DriveIdRole,
             SyncCreationPendingRole,
+            DriveDbIdRole,
         };
         Q_ENUM(Role)
 
@@ -59,6 +60,8 @@ class UserDrivesModel final : public QAbstractListModel {
                 bool syncCreationPending{false};
                 AccountId accountId{0};
                 DriveId driveId{0};
+                // Zero for an available drive, which has no configured row yet.
+                DriveDbId driveDbId{0};
 
                 friend bool operator==(const DriveEntry &lhs, const DriveEntry &rhs) = default;
         };

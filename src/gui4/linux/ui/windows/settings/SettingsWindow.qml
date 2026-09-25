@@ -240,6 +240,26 @@ IKShadowedWindow {
                 syncConfigurationDialog.returnFocusItem = trigger;
                 root.controller.syncActivation.activate(userDbId, accountId, driveId);
             }
+            onManageDriveRequested: (trigger, driveDbId) => {
+                trigger.forceActiveFocus();
+                accountsPane.push(driveManagementComponent, {"driveDbId": driveDbId});
+            }
+        }
+    }
+
+    Component {
+        id: driveManagementComponent
+
+        DriveManagementView {
+            controller: root.controller.driveManagement
+            activationController: root.controller.syncActivation
+            onActivateRequested: trigger => {
+                syncConfigurationDialog.returnFocusItem = trigger;
+                const driveManagement = root.controller.driveManagement;
+                root.controller.syncActivation.activate(driveManagement.userDbId, driveManagement.accountId,
+                                                        driveManagement.driveId);
+            }
+            onDeleteRequested: trigger => deleteSyncDialog.showFrom(trigger)
         }
     }
 
@@ -404,6 +424,28 @@ IKShadowedWindow {
         }
     }
 
+    DeleteSyncDialog {
+        id: deleteSyncDialog
+
+        controller: root.controller.driveManagement
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+        onFallbackFocusRequested: {
+            if (accountsPane.currentItem) {
+                accountsPane.currentItem.forceActiveFocus(Qt.BacktabFocusReason);
+            }
+        }
+    }
+
+    Connections {
+        target: root.controller.driveManagement
+
+        // The managed drive lost its last synchronization: its page has nothing left to manage.
+        function onDriveRemoved() {
+            accountsPane.reset(accountsRootComponent);
+        }
+    }
+
     FolderDialog {
         id: localFolderDialog
 
@@ -437,6 +479,7 @@ IKShadowedWindow {
         sendDebugLogsDialog.close();
         proxyConnectionFailureDialog.close();
         disconnectAccountDialog.close();
+        deleteSyncDialog.close();
         localFolderDialog.close();
         root.controller.syncActivation.dismissFromHostWindow();
         releaseDialog.close();

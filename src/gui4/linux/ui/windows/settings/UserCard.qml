@@ -42,6 +42,7 @@ Rectangle {
     signal retryRequested
     signal disconnectRequested(Item trigger, var userDbId, string userName)
     signal activateRequested(Item trigger, var userDbId, var accountId, var driveId)
+    signal manageRequested(Item trigger, var driveDbId)
 
     implicitHeight: contentColumn.implicitHeight + 2 * IKSettings.userCardPadding
     radius: IKRadius.r12
@@ -147,6 +148,7 @@ Rectangle {
                                         && (root.activationController.preparing || root.activationController.busy)))
                     onActivateRequested: (trigger, requestedAccountId, requestedDriveId) =>
                                          root.activateRequested(trigger, root.userDbId, requestedAccountId, requestedDriveId)
+                    onManageRequested: (trigger, requestedDriveDbId) => root.manageRequested(trigger, requestedDriveDbId)
                 }
             }
 
