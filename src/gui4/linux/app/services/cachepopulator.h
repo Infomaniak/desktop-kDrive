@@ -37,6 +37,9 @@ namespace KDC {
  * because the app has no coherent cache to run from. Reconciliation reports failures to the caller without emitting the
  * bootstrap signal. Once a snapshot is complete, asks the server to refresh live user/account/drive metadata so
  * quota-only drive updates are pushed through CachePipeline.
+ *
+ * Starting a new run supersedes the previous one: its late responses are ignored and it emits no terminal signal. A
+ * terminal signal therefore always describes a snapshot started after every earlier reconcile() call.
  */
 class CachePopulator : public QObject {
         Q_OBJECT
@@ -85,12 +88,12 @@ class CachePopulator : public QObject {
         };
 
         void startPopulation(PopulationMode mode);
-        void loadParameters(PopulationMode mode);
-        void loadUserData(PopulationMode mode);
-        void loadAccounts(PopulationMode mode);
-        void loadDrives(PopulationMode mode);
-        void loadSyncs(PopulationMode mode);
-        void loadSyncErrors(PopulationMode mode);
+        void loadParameters(PopulationMode mode, uint64_t generation);
+        void loadUserData(PopulationMode mode, uint64_t generation);
+        void loadAccounts(PopulationMode mode, uint64_t generation);
+        void loadDrives(PopulationMode mode, uint64_t generation);
+        void loadSyncs(PopulationMode mode, uint64_t generation);
+        void loadSyncErrors(PopulationMode mode, uint64_t generation);
         void replaceErrorsByLevel(const std::vector<Error> &list);
         void markBranchCompleted(PopulationMode mode, PopulationBranch branch);
         void activateLiveInfoRefresh() const;
@@ -100,6 +103,7 @@ class CachePopulator : public QObject {
         AppCache &_appCache;
         ParametersStore &_parametersStore;
         PopulationProgress _populationProgress;
+        uint64_t _populationGeneration{0};
 };
 
 } // namespace KDC
