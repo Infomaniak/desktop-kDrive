@@ -160,7 +160,8 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
         return true;
     }
 
-    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
+    assert(ioError == IoError::Success ||
+           ioError == IoError::AttrNotFound); // For every other error type, an error should have been returned.
 
     if (!value.empty()) isDehydrated = (value != litesync_attrs::statusOffline);
 

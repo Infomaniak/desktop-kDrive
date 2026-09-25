@@ -171,7 +171,7 @@ void TestIo::testReadAlias() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "dangling_alias.jpg";
-        const SyncPath targetPath = _localTestDirPath / "dummy.txt";
+        const SyncPath targetPath = temporaryDirectory.path() / "dummy.txt";
         {
             std::ofstream ofs(targetPath);
             ofs << "Some content.\n";

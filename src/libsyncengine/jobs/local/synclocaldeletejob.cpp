@@ -166,11 +166,9 @@ ExitInfo SyncLocalDeleteJob::canRun() {
 namespace {
 bool isFileDehydrated(const SyncPath &localPath, log4cplus::Logger logger) {
     bool isDehydrated = false;
-    if (auto errorOnHydrationCheck = IoError::Success;
-        !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, errorOnHydrationCheck) ||
-        errorOnHydrationCheck != IoError::Success) {
-        LOGW_WARN(logger,
-                  L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, errorOnHydrationCheck));
+    if (auto ioError = IoError::Success; !IoHelper::checkIfFileIsDehydrated(localPath, isDehydrated, ioError) ||
+                                         (ioError != IoError::Success && ioError != IoError::AttrNotFound)) {
+        LOGW_WARN(logger, L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(localPath, ioError));
     }
 
     return isDehydrated;

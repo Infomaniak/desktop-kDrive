@@ -265,8 +265,8 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
         if (!hasFileType) continue;
 
         auto isDehydrated = false;
-        if (auto ioError = IoError::Success;
-            !IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError) || ioError != IoError::Success) {
+        if (auto ioError = IoError::Success; !IoHelper::checkIfFileIsDehydrated(entry.path(), isDehydrated, ioError) ||
+                                             (ioError != IoError::Success && ioError != IoError::AttrNotFound)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(entry.path(), ioError));
             continue;
         }

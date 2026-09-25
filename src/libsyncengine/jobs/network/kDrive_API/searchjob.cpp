@@ -126,8 +126,8 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         localProperties.isHydrated = localProperties.isAvailableLocally;
     } else {
         bool isDehydrated = false;
-        if (auto ioError = IoError::Success;
-            !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) || ioError != IoError::Success) {
+        if (auto ioError = IoError::Success; !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
+                                             (ioError != IoError::Success && ioError != IoError::AttrNotFound)) {
             if (ioError == IoError::NoSuchFileOrDirectory) {
                 localProperties.isAvailableLocally = false;
                 localProperties.isHydrated = false;
@@ -135,6 +135,8 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
             } else {
+                // Should not happen
+                assert(false);
                 LOGW_WARN(_logger,
                           L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(absolutePath, ioError));
                 return ExitCode::SystemError;
