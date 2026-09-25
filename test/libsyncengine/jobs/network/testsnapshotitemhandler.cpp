@@ -590,13 +590,14 @@ Z",file,4,1789735691,1789735698,1,)csv";
         return parsedItems;
     };
     const auto checkParsedItem = [](const ParsedItem &parsedItem, bool expectedIgnore, const SnapshotItem &expectedItem,
-                                    const NodeId &expectedIgnoredId = NodeId(),
-                                    const NodeId &expectedIgnoredParentId = NodeId()) {
+                                    const NodeId &expectedIgnoredId = NodeId(), const NodeId &expectedIgnoredParentId = NodeId(),
+                                    const SyncName &expectedIgnoredName = {}) {
         CPPUNIT_ASSERT_EQUAL(expectedIgnore, parsedItem.ignore);
         if (expectedIgnore) {
-            // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
+            // The item fields are parsed before the ignore check, so that an error can be reported for this item.
             CPPUNIT_ASSERT_EQUAL(expectedIgnoredId, parsedItem.item.id());
             CPPUNIT_ASSERT_EQUAL(expectedIgnoredParentId, parsedItem.item.parentId());
+            CPPUNIT_ASSERT_EQUAL(expectedIgnoredName, parsedItem.item.name());
         } else {
             const auto result = snapshotitem_checker::compare(expectedItem, parsedItem.item);
             CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -611,7 +612,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
         checkParsedItem(parsedItems[1], false, expectedSymlink);
         checkParsedItem(parsedItems[2], false, expectedMyVirus);
-        checkParsedItem(parsedItems[3], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[3], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
         checkParsedItem(parsedItems[4], false, expectedMyVirusWithFileParent);
         checkParsedItem(parsedItems[5], true, SnapshotItem());
     }
@@ -623,7 +624,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
         CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
         checkParsedItem(parsedItems[1], false, expectedSymlink);
-        checkParsedItem(parsedItems[2], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[2], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
         checkParsedItem(parsedItems[3], false, expectedMyVirusWithFileParent);
         checkParsedItem(parsedItems[4], true, SnapshotItem());
         checkParsedItem(parsedItems[5], false, expectedMyVirus);
@@ -635,7 +636,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
                 parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + symlinkLine + "\n" + myVirusLine);
         CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
-        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
         checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
         checkParsedItem(parsedItems[3], true, SnapshotItem());
         checkParsedItem(parsedItems[4], false, expectedSymlink);
@@ -648,7 +649,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
                 parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine);
         CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
         checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
-        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"));
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
         checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
         checkParsedItem(parsedItems[3], true, SnapshotItem());
         checkParsedItem(parsedItems[4], false, expectedMyVirus);

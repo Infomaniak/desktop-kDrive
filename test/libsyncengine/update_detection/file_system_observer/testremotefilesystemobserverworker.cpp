@@ -374,7 +374,19 @@ Z",file,4,1789735691,1789735698,1,)csv";
             commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine, // Case 4
     };
 
+    // Whatever the position of the corrupted item in the reply, getItemsInDir reports an error for it instead of
+    // inserting it into the snapshot. Replicate this behavior and check that exactly one error is reported per case.
+    int nbErrors = 0;
+    _syncPal->setAddErrorCallback([&nbErrors](const Error &reportedError) {
+        ++nbErrors;
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Unknown, reportedError.exitCode());
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, reportedError.exitCause());
+        CPPUNIT_ASSERT_EQUAL(InconsistencyType::ForbiddenChar, reportedError.inconsistencyType());
+    });
+
     for (const auto &csvBody: csvBodies) {
+        nbErrors = 0;
+
         // Parse the reply and insert the valid items into the snapshot, as done by getItemsInDir.
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
@@ -388,13 +400,26 @@ Z",file,4,1789735691,1789735698,1,)csv";
         bool eof = false;
         SyncNameSet existingFiles;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            if (ignore) continue; // Items parsed from a malformed line are blacklisted by getItemsInDir.
+            if (ignore) {
+                // Replicate getItemsInDir: report an error for the malformed item instead of inserting it.
+                if (!item.id().empty() && !item.name().empty()) {
+                    SyncPath parentPath;
+                    if (bool dummy = false; !liveSnapshot.path(item.id(), parentPath, dummy)) {
+                        LOGW_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(item.id()));
+                    }
+
+                    _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(),
+                                             ConflictType::None, InconsistencyType::ForbiddenChar));
+                }
+                continue;
+            }
             if (eof) break;
 
             CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInSnapshot(item, existingFiles));
         }
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
+        CPPUNIT_ASSERT_EQUAL(1, nbErrors);
 
         // Whatever the position of the corrupted item in the reply, the valid items must be inserted into the snapshot
         // and the corrupted item (id 2891437) must be absent.
@@ -409,6 +434,8 @@ Z",file,4,1789735691,1789735698,1,)csv";
         CPPUNIT_ASSERT(liveSnapshot.removeItem("2891434"));
         CPPUNIT_ASSERT(liveSnapshot.removeItem("2891435"));
     }
+
+    _syncPal->setAddErrorCallback(nullptr);
 }
 
 } // namespace KDC
