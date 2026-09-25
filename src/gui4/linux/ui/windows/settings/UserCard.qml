@@ -234,6 +234,7 @@ Rectangle {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.DestructiveSecondary
                     text: qsTrId("buttonDisconnectAccount")
+                    Accessible.name: text + " " + root.disconnectLabel
                     onClicked: root.disconnectRequested(disconnectButton, root.userDbId, root.disconnectLabel)
                 }
             }
