@@ -422,6 +422,12 @@ IKShadowedWindow {
             localFolderDialog.currentFolder = initialFolder;
             localFolderDialog.open();
         }
+
+        function onVisibleChanged() {
+            if (!root.controller.syncActivation.visible) {
+                localFolderDialog.close();
+            }
+        }
     }
 
     onClosing: {
