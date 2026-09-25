@@ -333,8 +333,8 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (ignore) {
             if (!item.id().empty() && !item.name().empty()) {
                 SyncPath parentPath;
-                if (bool dummy = false; !_liveSnapshot.path(item.id(), parentPath, dummy)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(item.id()));
+                if (bool dummy = false; !_liveSnapshot.path(item.parentId(), parentPath, dummy)) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(item.parentId()));
                 }
 
                 _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(),
