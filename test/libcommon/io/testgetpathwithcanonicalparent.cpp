@@ -116,8 +116,13 @@ void TestIo::testGetPathWithCanonicalParent() {
         auto ioError = IoError::Success;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(!IoHelper::getPathWithCanonicalParent(filePath, canonicalPath, ioError));
+#if defined(KD_MACOS) || defined(KD_WINDOWS)
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
                                      ioError);
+#elif defined(KD_LINUX)
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::NoSuchFileOrDirectory),
+                                     IoError::NoSuchFileOrDirectory, ioError);
+#endif
         CPPUNIT_ASSERT(canonicalPath.empty());
     }
 
