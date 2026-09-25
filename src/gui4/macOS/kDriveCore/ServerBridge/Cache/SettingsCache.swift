@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import InfomaniakDI
 
 public typealias SettingsPublisher = AnyPublisher<ParametersInfo, Never>
 
@@ -63,6 +64,11 @@ public actor SettingsCache: SettingsCaching, SettingsCacheObservable {
 
         UserDefaults.standard.lastKnownSentryEnabled = settings.sentryEnabled
         UserDefaults.standard.lastKnownMatomoEnabled = settings.matomoEnabled
+
+        let fileLogLevel = LogLevel(kdcLogLevel: settings.logLevel)
+        UserDefaults.standard.lastKnownFileLogLevel = fileLogLevel
+        @InjectService var logService: LogService
+        logService.setMinimumFileLevel(fileLogLevel)
 
         settingsSubject.send(settings)
     }

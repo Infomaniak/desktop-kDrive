@@ -25,6 +25,7 @@ public extension UserDefaults {
         public static let selectedSynchroDbId = "selectedSynchroDbId"
         public static let lastKnownSentryEnabled = "lastKnownSentryEnabled"
         public static let lastKnownMatomoEnabled = "lastKnownMatomoEnabled"
+        public static let lastKnownFileLogLevel = "lastKnownFileLogLevel"
     }
 }
 
@@ -53,6 +54,19 @@ public extension UserDefaults {
         }
         set {
             set(newValue, forKey: Key.lastKnownMatomoEnabled)
+        }
+    }
+
+    var lastKnownFileLogLevel: LogLevel {
+        get {
+            guard let rawValue = object(forKey: Key.lastKnownFileLogLevel) as? Int,
+                  let level = LogLevel(rawValue: rawValue) else {
+                return .debug
+            }
+            return level
+        }
+        set {
+            set(newValue.rawValue, forKey: Key.lastKnownFileLogLevel)
         }
     }
 }
