@@ -430,7 +430,12 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
-    if (callbackParameters->FetchData.Flags & CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
+    if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId &&
+        callbackParameters->FetchData.Flags == CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
+        // On version pre Windows 10 1803, CF_CONNECT_FLAG_BLOCK_SELF_IMPLICIT_HYDRATION has no effect, and the hydration is asked
+        // by the app itself. In this case, we have to cancel the hydration our self to avoid a deadlock.
+        TRACE_DEBUG(L"Hydration implicitly asked by app, cancelling it: path = '%ls'", fullPath.wstring().c_str());
+
         if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
                              callbackParameters->FetchData.RequiredFileOffset, callbackParameters->FetchData.RequiredLength)) {
             TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
@@ -589,7 +594,8 @@ bool CloudProvider::connectSyncRootTransferCallbacks() {
     try {
         // Connect to the sync root using Cloud File API
         winrt::check_hresult(CfConnectSyncRoot(_providerInfo->folderPath(), s_callbackTable, _providerInfo,
-                                               CF_CONNECT_FLAG_REQUIRE_PROCESS_INFO | CF_CONNECT_FLAG_REQUIRE_FULL_FILE_PATH,
+                                               CF_CONNECT_FLAG_REQUIRE_PROCESS_INFO | CF_CONNECT_FLAG_REQUIRE_FULL_FILE_PATH |
+                                                       CF_CONNECT_FLAG_BLOCK_SELF_IMPLICIT_HYDRATION,
                                                &_transferCallbackConnectionKey));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
