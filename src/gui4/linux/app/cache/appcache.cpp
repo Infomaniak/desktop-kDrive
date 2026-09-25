@@ -273,7 +273,9 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
 
 void AppCache::setSyncCreationPending(const AvailableDriveKey &key, const bool pending) {
     const bool changed = pending ? _pendingSyncCreationKeys.insert(key).second : _pendingSyncCreationKeys.erase(key) > 0;
-    if (changed) emit syncCreationPendingChanged();
+    if (changed) {
+        emit syncCreationPendingChanged();
+    }
 }
 
 void AppCache::upsertSync(const BaseSync &info) {
