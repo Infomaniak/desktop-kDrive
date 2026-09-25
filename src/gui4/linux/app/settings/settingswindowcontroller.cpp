@@ -23,14 +23,16 @@ namespace KDC {
 SettingsWindowController::SettingsWindowController(GeneralSettingsController &general, AdvancedSettingsController &advanced,
                                                    FileExclusionController &fileExclusions, NetworkSettingsController &network,
                                                    SettingsSyncActivationController &syncActivation,
-                                                   DriveManagementController &driveManagement, QObject *const parent) :
+                                                   DriveManagementController &driveManagement,
+                                                   SyncFolderSelectionController &syncFolderSelection, QObject *const parent) :
     QObject(parent),
     _generalController(general),
     _advancedController(advanced),
     _fileExclusionController(fileExclusions),
     _networkController(network),
     _syncActivationController(syncActivation),
-    _driveManagementController(driveManagement) {}
+    _driveManagementController(driveManagement),
+    _syncFolderSelectionController(syncFolderSelection) {}
 
 void SettingsWindowController::refreshUpdates() const {
     _generalController.refreshUpdates();
