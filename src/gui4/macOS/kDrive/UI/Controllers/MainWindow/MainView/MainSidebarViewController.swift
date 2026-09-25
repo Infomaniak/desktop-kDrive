@@ -118,6 +118,8 @@ final class MainSidebarViewController: NSViewController {
         outlineView.rowSizeStyle = .medium
         outlineView.headerView = nil
         outlineView.style = .sourceList
+        outlineView.target = self
+        outlineView.action = #selector(didClickOutlineView)
 
         return outlineView
     }()
@@ -378,7 +380,17 @@ extension MainSidebarViewController: ClickableOutlineViewDelegate {
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
-        guard let selectedItem = outlineView.item(atRow: outlineView.selectedRow) as? SidebarItem,
+        guard NSApp.currentEvent?.type != .leftMouseDown else { return }
+        didSelect(outlineView.item(atRow: outlineView.selectedRow))
+    }
+
+    @objc private func didClickOutlineView() {
+        guard outlineView.clickedRow != -1, outlineView.clickedRow == outlineView.selectedRow else { return }
+        didSelect(outlineView.item(atRow: outlineView.clickedRow))
+    }
+
+    private func didSelect(_ item: Any?) {
+        guard let selectedItem = item as? SidebarItem,
               let path = selectedItem.mainViewTab else {
             return
         }
