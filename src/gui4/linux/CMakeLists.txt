@@ -149,6 +149,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/settingswindowcontroller.h
         app/settings/settingssyncactivationcontroller.cpp
         app/settings/settingssyncactivationcontroller.h
+        app/settings/drivemanagementcontroller.cpp
+        app/settings/drivemanagementcontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
         ui/chrome/windowdecorationcontroller.cpp
