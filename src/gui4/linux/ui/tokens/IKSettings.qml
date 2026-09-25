@@ -68,4 +68,9 @@ QtObject {
     readonly property real emptyUserAvatarIconSize: 16.431
     readonly property real connectUserCardHeight: rowHeight
     readonly property real connectAccountButtonHeight: 24
+    readonly property real driveManagementIconSize: 26
+    readonly property real driveManagementIconGlyphInset: driveManagementIconSize * userDriveIconGlyphInset / userDriveIconSize
+    readonly property real driveManagementSectionSpacing: 16
+    // Share of a row a local path may take before eliding, so the row title always stays readable.
+    readonly property real driveManagementPathMaxWidthRatio: 0.6
 }
