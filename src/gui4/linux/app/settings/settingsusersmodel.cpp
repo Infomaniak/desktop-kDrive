@@ -108,6 +108,7 @@ void SettingsUsersModel::rebuild() {
                 .userDbId = displayInfo->dbId(),
                 .name = QString::fromStdString(displayInfo->name()),
                 .email = QString::fromStdString(displayInfo->email()),
+                .disconnectLabel = {}, // Set below once all names are known.
                 .avatarSource = displayInfo->avatarSource().isEmpty() ? QString::fromStdString(displayInfo->avatarUrl())
                                                                       : displayInfo->avatarSource(),
                 .drivesModel = std::make_unique<UserDrivesModel>(_cache, user.dbId(), this),
