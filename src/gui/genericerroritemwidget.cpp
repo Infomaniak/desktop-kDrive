@@ -110,8 +110,7 @@ bool GenericErrorItemWidget::openInWebview() const {
            _error.inconsistencyType() == InconsistencyType::NameLength ||
            _error.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||
            (_error.conflictType() == ConflictType::EditDelete && !_error.remoteNodeId().empty()) ||
-           (_error.exitCode() == ExitCode::BackError && _error.exitCause() == ExitCause::NotFound) ||
-           (_error.exitCode() == ExitCode::DataError && _error.exitCause() == ExitCause::InvalidName);
+           (_error.exitCode() == ExitCode::BackError && _error.exitCause() == ExitCause::NotFound);
 }
 
 } // namespace KDC

@@ -338,8 +338,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                 }
 
                 _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(),
-                                         ConflictType::None, InconsistencyType::None, CancelType::None, "", ExitCode::DataError,
-                                         ExitCause::InvalidName));
+                                         ConflictType::None, InconsistencyType::ForbiddenChar));
             }
             continue;
         }

@@ -536,8 +536,6 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
                           "Note: if you have unsynced changes in the old folder, you will need to copy them manually into the "
                           "new one.")
                         .arg(err);
-            } else if (exitCause == ExitCause::InvalidName) {
-                return tr("Invalid name");
             } else {
                 return tr("A technical error has occurred (error %1).<br>"
                           "Synchronization has been restarted. Please empty the history and if the error persists, please "
