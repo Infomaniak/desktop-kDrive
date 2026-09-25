@@ -58,10 +58,10 @@ public enum KDriveLocalizable {
   public static let activityInstructionPutLabel = KDriveLocalizable.tr("Localizable", "activityInstructionPutLabel", fallback: "Added")
   /// loco:6a69b981afdcf4fa19044503
   public static let activityInstructionRemoveLabel = KDriveLocalizable.tr("Localizable", "activityInstructionRemoveLabel", fallback: "Moved to trash")
-  /// loco:6a69c12889ab5f0cf60a7aa2
-  public static let activityInstructionUpdateLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateLabel", fallback: "Modified")
   /// loco:6a69c6c526f8c2be820035a4
   public static let activityInstructionRenameLabel = KDriveLocalizable.tr("Localizable", "activityInstructionRenameLabel", fallback: "Renamed")
+  /// loco:6a69c12889ab5f0cf60a7aa2
+  public static let activityInstructionUpdateLabel = KDriveLocalizable.tr("Localizable", "activityInstructionUpdateLabel", fallback: "Modified")
   /// loco:69b422369e32a806170ba3c2
   public static let addAdvancedSyncDialogTitle = KDriveLocalizable.tr("Localizable", "addAdvancedSyncDialogTitle", fallback: "Sync a folder with kDrive")
   /// loco:69b422a8be3506a1a305ba12
@@ -81,7 +81,7 @@ public enum KDriveLocalizable {
   /// loco:698af4376b386d18b9037522
   public static let appUpToDate = KDriveLocalizable.tr("Localizable", "appUpToDate", fallback: "The application is up to date")
   /// loco:698b36f2eb276c03d00e7c07
-  public static let autoCleanupLogsDescription = KDriveLocalizable.tr("Localizable", "autoCleanupLogsDescription", fallback: "Deletes logs older than 7 days to save disk space.")
+  public static let autoCleanupLogsDescription = KDriveLocalizable.tr("Localizable", "autoCleanupLogsDescription", fallback: "Deletes logs older than 31 days to save disk space.")
   /// loco:698b36d9eb276c03d00e7c03
   public static let autoCleanupLogsSetting = KDriveLocalizable.tr("Localizable", "autoCleanupLogsSetting", fallback: "Automatic cleanup")
   /// loco:698af0b429d5e005bc08dfb2
@@ -444,7 +444,7 @@ public enum KDriveLocalizable {
   public static let errForbiddenActionTitle = KDriveLocalizable.tr("Localizable", "errForbiddenActionTitle", fallback: "Access forbidden")
   /// loco:698c50d3ad9b9055a00cca42
   public static func errForbiddenCharDescription(_ p1: Any, _ p2: Any) -> String {
-    return KDriveLocalizable.tr("Localizable", "errForbiddenCharDescription", String(describing: p1), String(describing: p2), fallback: "The name of this %@ contains one or more characters not supported by the kDrive Windows application. Rename the %@ from kDrive online.")
+    return KDriveLocalizable.tr("Localizable", "errForbiddenCharDescription", String(describing: p1), String(describing: p2), fallback: "The name of this %@ contains one or more characters that are not supported by the kDrive app. Rename %@ using kDrive online.")
   }
   /// loco:699c5dff17e678a1990c53c4
   public static func errForbiddenCharOnlySpacesDescription(_ p1: Any) -> String {
@@ -682,8 +682,6 @@ public enum KDriveLocalizable {
   public static let instructionOpenSystemSettings = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettings", fallback: "Open System Settings > General")
   /// loco:6930588953221ff00608e983
   public static let instructionOpenSystemSettingsLink = KDriveLocalizable.tr("Localizable", "instructionOpenSystemSettingsLink", fallback: "System Settings")
-  /// loco:69314d1a739c205c410aa087
-  public static let instructionRestartIfNecessary = KDriveLocalizable.tr("Localizable", "instructionRestartIfNecessary", fallback: "Restart the application if required")
   /// loco:6a16da43bc4d91f15c0416e2
   public static let kSuiteOfferUrl = KDriveLocalizable.tr("Localizable", "kSuiteOfferUrl", fallback: "https://www.infomaniak.com/en/ksuite")
   /// loco:69a0079a3f0464f2af0a25d3
@@ -854,6 +852,10 @@ public enum KDriveLocalizable {
   public static func manyConflictErrorTitle(_ p1: Any) -> String {
     return KDriveLocalizable.tr("Localizable", "manyConflictErrorTitle", String(describing: p1), fallback: "%@ version conflicts detected")
   }
+  /// loco:6a9ea3f9ee85c0002403efc5
+  public static func manyDeleteDialogFilesHeader(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "manyDeleteDialogFilesHeader", String(describing: p1), fallback: "%@ items deleted")
+  }
   /// loco:6a6c9bf050ca28e030064893
   public static let manyDeleteDialogHardLimitContent = KDriveLocalizable.tr("Localizable", "manyDeleteDialogHardLimitContent", fallback: "Synchronization is paused to prevent accidental deletion.\nWhat would you like to do?")
   /// loco:6a6c9c2250ca28e030064894
@@ -870,6 +872,64 @@ public enum KDriveLocalizable {
   }
   /// loco:698b2e50ea6bcf51bf026fc2
   public static let matomoDescription = KDriveLocalizable.tr("Localizable", "matomoDescription", fallback: "Matomo is an analytics tool hosted and managed exclusively by Infomaniak to understand how the application is used.\n\nAnalyzing this data allows our team to continuously improve the application’s interface.")
+  /// loco:6ab62d7da8644a8505055479
+  public static func menuAbout(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "menuAbout", String(describing: p1), fallback: "About %@")
+  }
+  /// loco:6ab62dc20048b37cef04f840
+  public static let menuBringAllToFront = KDriveLocalizable.tr("Localizable", "menuBringAllToFront", fallback: "Bring All to Front")
+  /// loco:6ab62d95503409dc3f094356
+  public static let menuCloseWindow = KDriveLocalizable.tr("Localizable", "menuCloseWindow", fallback: "Close Window")
+  /// loco:6ab62d9d6633507bdd0aae97
+  public static let menuCopy = KDriveLocalizable.tr("Localizable", "menuCopy", fallback: "Copy")
+  /// loco:6ab62db46633507bdd0aaea5
+  public static let menuCustomizeToolbar = KDriveLocalizable.tr("Localizable", "menuCustomizeToolbar", fallback: "Customize Toolbar…")
+  /// loco:6ab62d9a37e9f83ca8022dfb
+  public static let menuCut = KDriveLocalizable.tr("Localizable", "menuCut", fallback: "Cut")
+  /// loco:6ab62da60048b37cef04f832
+  public static let menuDelete = KDriveLocalizable.tr("Localizable", "menuDelete", fallback: "Delete")
+  /// loco:6ab62d98d9a5024f0105cca8
+  public static let menuEdit = KDriveLocalizable.tr("Localizable", "menuEdit", fallback: "Edit")
+  /// loco:6ab62db70048b37cef04f83b
+  public static let menuEnterFullScreen = KDriveLocalizable.tr("Localizable", "menuEnterFullScreen", fallback: "Enter Full Screen")
+  /// loco:6ab62d920048b37cef04f828
+  public static let menuFile = KDriveLocalizable.tr("Localizable", "menuFile", fallback: "File")
+  /// loco:6ab62dacd9a5024f0105ccb4
+  public static let menuFind = KDriveLocalizable.tr("Localizable", "menuFind", fallback: "Find…")
+  /// loco:6ab62dc537e9f83ca8022e17
+  public static let menuHelp = KDriveLocalizable.tr("Localizable", "menuHelp", fallback: "Help")
+  /// loco:6ab62d86a8644a850505547c
+  public static func menuHide(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "menuHide", String(describing: p1), fallback: "Hide %@")
+  }
+  /// loco:6ab62d896633507bdd0aae8c
+  public static let menuHideOthers = KDriveLocalizable.tr("Localizable", "menuHideOthers", fallback: "Hide Others")
+  /// loco:6ab62dbdd9a5024f0105ccbf
+  public static let menuMinimize = KDriveLocalizable.tr("Localizable", "menuMinimize", fallback: "Minimize")
+  /// loco:6ab62da037e9f83ca8022dff
+  public static let menuPaste = KDriveLocalizable.tr("Localizable", "menuPaste", fallback: "Paste")
+  /// loco:6ab62da3503409dc3f09435c
+  public static let menuPasteAndMatchStyle = KDriveLocalizable.tr("Localizable", "menuPasteAndMatchStyle", fallback: "Paste and Match Style")
+  /// loco:6ab62d8f10ba3f1d070e3a4e
+  public static func menuQuit(_ p1: Any) -> String {
+    return KDriveLocalizable.tr("Localizable", "menuQuit", String(describing: p1), fallback: "Quit %@")
+  }
+  /// loco:6ab62da9a8644a850505548e
+  public static let menuSelectAll = KDriveLocalizable.tr("Localizable", "menuSelectAll", fallback: "Select All")
+  /// loco:6ab62d83503409dc3f09434c
+  public static let menuServices = KDriveLocalizable.tr("Localizable", "menuServices", fallback: "Services")
+  /// loco:6ab62d806633507bdd0aae87
+  public static let menuSettings = KDriveLocalizable.tr("Localizable", "menuSettings", fallback: "Settings…")
+  /// loco:6ab62d8c0048b37cef04f823
+  public static let menuShowAll = KDriveLocalizable.tr("Localizable", "menuShowAll", fallback: "Show All")
+  /// loco:6ab62db137e9f83ca8022e0b
+  public static let menuShowToolbar = KDriveLocalizable.tr("Localizable", "menuShowToolbar", fallback: "Show Toolbar")
+  /// loco:6ab62daf0048b37cef04f835
+  public static let menuView = KDriveLocalizable.tr("Localizable", "menuView", fallback: "View")
+  /// loco:6ab62dba10ba3f1d070e3a66
+  public static let menuWindow = KDriveLocalizable.tr("Localizable", "menuWindow", fallback: "Window")
+  /// loco:6ab62dc0503409dc3f09436a
+  public static let menuZoom = KDriveLocalizable.tr("Localizable", "menuZoom", fallback: "Zoom")
   /// loco:699c562623c0dac10d09b054
   public static let moveCancelErrorTitle = KDriveLocalizable.tr("Localizable", "moveCancelErrorTitle", fallback: "Move canceled")
   /// loco:698b11f969e305d1ce01e062
@@ -1004,7 +1064,7 @@ public enum KDriveLocalizable {
   public static let searchPlaceholder = KDriveLocalizable.tr("Localizable", "searchPlaceholder", fallback: "Search…")
   /// loco:69eb8290d3fa21c4fb096d82
   ///  * Tooltip shown on search results when file is not available locally and will open in browser.
-  public static let searchResultOpenInBrowserTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserTooltip", fallback: "This file is not available locally and will be opened in your browser")
+  public static let searchResultOpenInBrowserTooltip = KDriveLocalizable.tr("Localizable", "searchResultOpenInBrowserTooltip", fallback: "This item is not available on this device. It will open in kDrive online.")
   /// loco:69eb8061e9130678990a5972
   ///  * Empty search state title in SearchSheetView before any query is entered.
   public static let searchYourFiles = KDriveLocalizable.tr("Localizable", "searchYourFiles", fallback: "Search your files")
