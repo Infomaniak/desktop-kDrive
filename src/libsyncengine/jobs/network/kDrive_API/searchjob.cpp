@@ -129,8 +129,8 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
         if (auto ioError = IoError::Success;
             !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) || ioError != IoError::Success) {
             if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath));
-                return {ExitCode::SystemError, ExitCause::NotFound};
+                localProperties.isAvailableLocally = false;
+                localProperties.isHydrated = false;
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};

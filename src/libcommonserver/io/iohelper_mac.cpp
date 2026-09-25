@@ -55,9 +55,12 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrN
         LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(path));
         ioError = itemType.ioError;
         return true;
+    } else if (itemType.ioError != IoError::Success) {
+        // Should not happen
+        assert(false);
+        ioError = itemType.ioError;
+        return false;
     }
-
-    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
@@ -102,9 +105,12 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
         LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(path));
         ioError = itemType.ioError;
         return true;
+    } else if (itemType.ioError != IoError::Success) {
+        // Should not happen
+        assert(false);
+        ioError = itemType.ioError;
+        return false;
     }
-
-    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
     if (setxattr(path.native().c_str(), attrName.data(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
