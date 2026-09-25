@@ -305,7 +305,9 @@
 - `app/settings/syncfolderselectioncontroller.*`: process-long state of the Settings "Manage synchronization" page,
   exposed as `SettingsWindowController.syncFolderSelection`. The page opens and closes its `SyncDbId` target; the
   controller loads the confirmed blacklist into its own `RemoteFolderTreeModel` and sends the complete list with
-  `BLACKLISTED_NODE_SETLIST`. The draft is dropped on Cancel or back navigation. Leaving the page reloads the blacklist
+  `BLACKLISTED_NODE_SETLIST`. Save is refused above `AppConstants::SyncConfiguration::maxExcludedFolders` (3000), the
+  largest `without_ids` list the kDrive API accepts on listing requests. The draft is dropped on Cancel or back
+  navigation. Leaving the page reloads the blacklist
   of the drive management page, so its custom-selection label reflects a saved change.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
