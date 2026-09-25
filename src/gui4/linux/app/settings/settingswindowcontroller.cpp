@@ -27,13 +27,13 @@ SettingsWindowController::SettingsWindowController(ParametersStore &parametersSt
                                                    SentryService &sentryService, const CommService &commService,
                                                    QObject *const parent) :
     QObject(parent),
-    _general(parametersStore, parametersService, translationService, updateStatusService, this),
-    _advanced(parametersStore, parametersService, sentryService, commService, translationService, this),
-    _fileExclusions(exclusionTemplateService, this),
-    _network(parametersStore, parametersService, translationService, this) {}
+    _generalController(parametersStore, parametersService, translationService, updateStatusService, this),
+    _advancedController(parametersStore, parametersService, sentryService, commService, translationService, this),
+    _fileExclusionController(exclusionTemplateService, this),
+    _networkController(parametersStore, parametersService, translationService, this) {}
 
 void SettingsWindowController::refreshUpdates() const {
-    _general.refreshUpdates();
+    _generalController.refreshUpdates();
 }
 
 } // namespace KDC
