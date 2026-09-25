@@ -98,7 +98,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testExclAppSetListJob);
         CPPUNIT_TEST(testExclAppGetFetchingAppListJob);
 #endif
-        CPPUNIT_TEST(testParametersInfoJob);
+        CPPUNIT_TEST(testParametersJob);
         CPPUNIT_TEST(testParametersUpdateJob);
         CPPUNIT_TEST(testUtilityBestVfsAvailableModeJob);
         CPPUNIT_TEST(testUtilityFindGoodPathForNewSyncJob);
@@ -183,7 +183,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testExclAppSetListJob();
         void testExclAppGetFetchingAppListJob();
 #endif
-        void testParametersInfoJob();
+        void testParametersJob();
         void testParametersUpdateJob();
         void testUtilityBestVfsAvailableModeJob();
         void testUtilityFindGoodPathForNewSyncJob();

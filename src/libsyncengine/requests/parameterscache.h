@@ -18,8 +18,8 @@
 
 #pragma once
 
+#include "../../libcommonserver/data/serverparameters.h"
 #include "syncenginelib.h"
-#include "libparms/db/parameters.h"
 #include "libcommon/utility/types.h"
 
 #include <memory>
@@ -37,7 +37,7 @@ class SYNCENGINE_EXPORT ParametersCache {
         ParametersCache(ParametersCache const &) = delete;
         void operator=(ParametersCache const &) = delete;
 
-        Parameters &parameters() { return _parameters; }
+        ServerParameters &parameters() { return _parameters; }
         void save(ExitCode *exitCode = nullptr) const;
 
         void setUploadSessionParallelThreads(int count); // For testing purpose
@@ -45,10 +45,10 @@ class SYNCENGINE_EXPORT ParametersCache {
 
     private:
         static std::shared_ptr<ParametersCache> _instance;
-        Parameters _parameters;
+        ServerParameters _parameters;
         static bool _forceExtendedLog;
 
-        ParametersCache(bool isTest = false);
+        explicit ParametersCache(bool isTest = false);
 };
 
 } // namespace KDC

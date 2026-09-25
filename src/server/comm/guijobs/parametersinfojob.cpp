@@ -28,20 +28,20 @@ static const auto outParamsParametersInfo = "parametersInfo";
 
 namespace KDC {
 
-ParametersInfoJob::ParametersInfoJob(std::shared_ptr<CommManager> commManager, int requestId, const Poco::DynamicStruct &inParams,
-                                     std::shared_ptr<AbstractCommChannel> channel) :
+ParametersInfoJob::ParametersInfoJob(const std::shared_ptr<CommManager> commManager, const int requestId,
+                                     const Poco::DynamicStruct &inParams, const std::shared_ptr<AbstractCommChannel> channel) :
     AbstractGuiJob(commManager, requestId, inParams, channel) {
     _requestNum = RequestNum::PARAMETERS_INFO;
 }
 
 ExitInfo ParametersInfoJob::serializeOutputParms() {
-    writeParamValue(outParamsParametersInfo, _parametersInfo, info2DynamicVar<ParametersInfo>);
+    writeParamValue(outParamsParametersInfo, _parameters, info2DynamicVar<ServerParameters>);
 
     return ExitCode::Ok;
 }
 
 ExitInfo ParametersInfoJob::process() {
-    if (const auto exitCode = ServerRequests::getParameters(_parametersInfo); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = ServerRequests::getParameters(_parameters); exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in Requests::getParameters");
         addError(Error(ERR_ID, exitCode));
 

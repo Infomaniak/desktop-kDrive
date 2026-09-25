@@ -28,58 +28,85 @@
 #include <QMap>
 #include <QByteArray>
 
+#include <string>
+
 namespace KDC {
 
-class ParametersInfo {
+class Parameters {
     public:
-        using DialogGeometry = QMap<QString, QByteArray>;
-        ParametersInfo() = default;
+        Parameters() = default;
+        virtual ~Parameters() = default;
 
-        inline void setLanguage(Language language) { _language = language; }
+        using DialogGeometry = QMap<QString, QByteArray>;
+
+        inline void setLanguage(const Language language) { _language = language; }
         inline Language language() const { return _language; }
-        inline void setMonoIcons(bool monoIcons) { _monoIcons = monoIcons; }
+        inline void setMonoIcons(const bool monoIcons) { _monoIcons = monoIcons; }
         inline bool monoIcons() const { return _monoIcons; }
-        inline void setAutoStart(bool autoStart) { _autoStart = autoStart; }
+        inline void setAutoStart(const bool autoStart) { _autoStart = autoStart; }
         inline bool autoStart() const { return _autoStart; }
-        inline void setMoveToTrash(bool moveToTrash) { _moveToTrash = moveToTrash; }
+        inline void setMoveToTrash(const bool moveToTrash) { _moveToTrash = moveToTrash; }
         inline bool moveToTrash() const { return _moveToTrash; }
-        inline void setNotificationsDisabled(NotificationsDisabled notificationsDisabled) {
+        inline void setNotificationsDisabled(const NotificationsDisabled notificationsDisabled) {
             _notificationsDisabled = notificationsDisabled;
         }
         inline NotificationsDisabled notificationsDisabled() const { return _notificationsDisabled; }
-        inline void setUseLog(bool useLog) { _useLog = useLog; }
+        inline void setUseLog(const bool useLog) { _useLog = useLog; }
         inline bool useLog() const { return _useLog; }
-        inline void setLogLevel(LogLevel logLevel) { _logLevel = logLevel; }
+        inline void setLogLevel(const LogLevel logLevel) { _logLevel = logLevel; }
         inline LogLevel logLevel() const { return _logLevel; }
-        inline void setExtendedLog(bool extendedLog) { _extendedLog = extendedLog; }
+        inline void setExtendedLog(const bool extendedLog) { _extendedLog = extendedLog; }
         inline bool extendedLog() const { return _extendedLog; }
-        inline void setPurgeOldLogs(bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
+        inline void setPurgeOldLogs(const bool purgeOldLogs) { _purgeOldLogs = purgeOldLogs; }
         inline bool purgeOldLogs() const { return _purgeOldLogs; }
         inline const ProxyConfig &proxyConfig() const { return _proxyConfig; }
         inline void setProxyConfig(const ProxyConfig &proxyConfig) { _proxyConfig = proxyConfig; }
-        inline void setDarkTheme(bool darkTheme) { _darkTheme = darkTheme; }
+        inline void setDarkTheme(const bool darkTheme) { _darkTheme = darkTheme; }
         inline bool darkTheme() const { return _darkTheme; }
+
         inline void setDialogGeometry(const QString &objectName, const QByteArray &saveGeometry) {
             _dialogGeometry[objectName] = saveGeometry;
         }
-        inline const QByteArray dialogGeometry(const QString &objectName) const { return _dialogGeometry[objectName]; }
+        inline void setDialogGeometry(const DialogGeometry &dialogGeometry) { _dialogGeometry = dialogGeometry; }
+        inline QByteArray dialogGeometry(const QString &objectName) const { return _dialogGeometry[objectName]; }
         inline const DialogGeometry &dialogGeometry() const { return _dialogGeometry; }
+
         inline int maxAllowedCpu() const { return _maxAllowedCpu; }
-        inline void setMaxAllowedCpu(int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
+        inline void setMaxAllowedCpu(const int maxAllowedCpu) { _maxAllowedCpu = maxAllowedCpu; }
+
         [[nodiscard]] DistributionChannel distributionChannel() const { return _distributionChannel; }
         void setDistributionChannel(const DistributionChannel channel) { _distributionChannel = channel; }
-        bool sentryEnabled() const { return _sentryEnabled; }
-        void setSentryEnabled(bool value) { _sentryEnabled = value; }
-        bool matomoEnabled() const { return _matomoEnabled; }
-        void setMatomoEnabled(bool value) { _matomoEnabled = value; }
 
-        friend bool operator==(const ParametersInfo &lhs, const ParametersInfo &rhs) = default;
+        bool sentryEnabled() const { return _sentryEnabled; }
+        void setSentryEnabled(const bool value) { _sentryEnabled = value; }
+
+        bool matomoEnabled() const { return _matomoEnabled; }
+        void setMatomoEnabled(const bool value) { _matomoEnabled = value; }
+
+        bool operator==(const Parameters &) const = default;
 
         void toDynamicStruct(Poco::DynamicStruct &) const;
         void fromDynamicStruct(const Poco::DynamicStruct &);
 
-        friend QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo);
-        friend QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo);
+        /// TODO : to be removed once we moved to the new GUI ///
+        friend QDataStream &operator>>(QDataStream &in, Parameters &parameters) {
+            in >> parameters._language >> parameters._monoIcons >> parameters._autoStart >> parameters._moveToTrash >>
+                    parameters._notificationsDisabled >> parameters._useLog >> parameters._logLevel >> parameters._extendedLog >>
+                    parameters._purgeOldLogs >> parameters._darkTheme >> parameters._dialogGeometry >>
+                    parameters._maxAllowedCpu >> parameters._proxyConfig >> parameters._distributionChannel >>
+                    parameters._sentryEnabled >> parameters._matomoEnabled;
+            return in;
+        }
+
+        friend QDataStream &operator<<(QDataStream &out, const Parameters &parameters) {
+            out << parameters._language << parameters._monoIcons << parameters._autoStart << parameters._moveToTrash
+                << parameters._notificationsDisabled << parameters._useLog << parameters._logLevel << parameters._extendedLog
+                << parameters._purgeOldLogs << parameters._darkTheme << parameters._dialogGeometry << parameters._maxAllowedCpu
+                << parameters._proxyConfig << parameters._distributionChannel << parameters._sentryEnabled
+                << parameters._matomoEnabled;
+            return out;
+        }
+        /////////////////////////////////////////////////////////
 
     private:
         Language _language{Language::Default};

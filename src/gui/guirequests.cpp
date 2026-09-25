@@ -403,7 +403,7 @@ ExitCode GuiRequests::setBlacklistedNodeIdSet(const SyncDbId syncDbId, const QSe
     return exitCode;
 }
 
-ExitCode GuiRequests::getParameters(ParametersInfo &parametersInfo) {
+ExitCode GuiRequests::getParameters(Parameters &parameters) {
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::PARAMETERS_INFO, {}, results)) {
         return ExitCode::SystemError;
@@ -412,15 +412,15 @@ ExitCode GuiRequests::getParameters(ParametersInfo &parametersInfo) {
     auto exitCode = ExitCode::Unknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    resultStream >> parametersInfo;
+    resultStream >> parameters;
 
     return exitCode;
 }
 
-ExitCode GuiRequests::updateParameters(const ParametersInfo &parametersInfo) {
+ExitCode GuiRequests::updateParameters(const Parameters &parameters) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << parametersInfo;
+    paramsStream << parameters;
 
     QByteArray results;
     if (!CommClient::instance()->execute(RequestNum::PARAMETERS_UPDATE, params, results)) {

@@ -18,9 +18,8 @@
 
 #pragma once
 
+#include "libcommon/data/parameters.h"
 #include "server/comm/guijobs/abstractguijob.h"
-
-#include "libcommon/info/parametersinfo.h"
 
 namespace KDC {
 
@@ -31,8 +30,7 @@ class ParametersUpdateJob : public AbstractGuiJob {
 
     private:
         // Input parameters
-        ParametersInfo _parametersInfo;
-
+        Parameters _parameters;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; };
