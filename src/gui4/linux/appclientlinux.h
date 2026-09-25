@@ -38,6 +38,7 @@
 #include "app/services/exclusiontemplateservice.h"
 #include "app/services/parametersservice.h"
 #include "app/services/sentryservice.h"
+#include "app/services/settingsuserservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
 #include "app/services/syncservice.h"
@@ -146,6 +147,7 @@ class AppClientLinux : public QApplication {
         SentryService _sentryService{_parametersService, _appCache, _parametersStore, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
+        SettingsUserService _settingsUserService{_appCache, _userService, this};
         OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache,        _serverCommService,
                                                            _userService,    _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};

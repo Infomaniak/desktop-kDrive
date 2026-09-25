@@ -160,7 +160,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
     (void) connect(this, &AppClientLinux::ipcConnected, &_updateStatusService, &UpdateStatusService::refresh);
-    (void) connect(this, &AppClientLinux::ipcConnected, _settingsWindowController.advanced(),
+    (void) connect(this, &AppClientLinux::ipcConnected, _settingsWindowController.advancedController(),
                    &AdvancedSettingsController::restoreUploadStatus);
     (void) connect(this, &QCoreApplication::aboutToQuit, this, [] { qCInfo(lcAppClientLinux) << "Qt aboutToQuit emitted"; });
     (void) connect(&_updateStatusService, &UpdateStatusService::stateChanged, &_systemTrayController,
@@ -337,7 +337,8 @@ void AppClientLinux::openSettingsWindow() {
         QQmlComponent component(&_qmlEngine);
         component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
         auto *object = component.createWithInitialProperties(
-                {{"controller", QVariant::fromValue<QObject *>(&_settingsWindowController)}});
+                {{"controller", QVariant::fromValue<SettingsWindowController *>(&_settingsWindowController)},
+                 {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();

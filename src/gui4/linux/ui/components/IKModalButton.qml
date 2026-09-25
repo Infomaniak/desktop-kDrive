@@ -29,6 +29,7 @@ Button {
         Primary,
         Secondary,
         Destructive,
+        DestructiveSecondary,
         Tonal
     }
 
@@ -42,19 +43,26 @@ Button {
 
     readonly property color foregroundColor: {
         if (!actionEnabled && !busy) {
-            return IKColors.actionDisabled
+            return IKColors.actionDisabled;
         }
-        if (role === IKModalButton.Tonal) return IKColors.textPrimary
+        if (role === IKModalButton.Tonal)
+            return IKColors.textPrimary;
         if (role === IKModalButton.Secondary) {
-            return IKColors.actionPrimary
+            return IKColors.actionPrimary;
         }
-        return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
+        if (role === IKModalButton.DestructiveSecondary) {
+            return down ? IKColors.actionDestructivePressed : IKColors.actionDestructive;
+        }
+        return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary;
     }
     readonly property color focusBorderColor: {
         if (role === IKModalButton.Secondary || role === IKModalButton.Tonal) {
-            return IKColors.accentPrimary
+            return IKColors.accentPrimary;
         }
-        return role === IKModalButton.Destructive ? IKColors.actionOnDestructive : IKColors.actionOnPrimary
+        if (role === IKModalButton.Destructive || role === IKModalButton.DestructiveSecondary) {
+            return IKColors.actionDestructive;
+        }
+        return IKColors.actionOnPrimary;
     }
 
     enabled: actionEnabled && !busy
@@ -115,20 +123,26 @@ Button {
     background: Rectangle {
         radius: IKRadius.r6
         color: {
-            if (root.role === IKModalButton.Tonal) return root.hovered || root.down ? IKColors.surfaceTertiary : IKColors.toolbarControlSurface
+            if (root.role === IKModalButton.Tonal)
+                return root.hovered || root.down ? IKColors.surfaceTertiary : IKColors.toolbarControlSurface;
             if (root.role === IKModalButton.Secondary) {
-                return root.hovered || root.down ? IKColors.modalSecondaryActionHover : "transparent"
+                return root.hovered || root.down ? IKColors.modalSecondaryActionHover : "transparent";
+            }
+            if (root.role === IKModalButton.DestructiveSecondary) {
+                return root.hovered || root.down ? IKColors.modalSecondaryActionHover : "transparent";
             }
             if (root.role === IKModalButton.Destructive) {
-                return root.down ? IKColors.actionDestructivePressed : IKColors.actionDestructive
+                return root.down ? IKColors.actionDestructivePressed : IKColors.actionDestructive;
             }
-            return IKColors.actionPrimary
+            return IKColors.actionPrimary;
         }
         opacity: root.down ? IKModalTokens.pressedOpacity : root.hovered ? IKModalTokens.hoverOpacity : 1
         // Tonal keeps the toolbar control outline: its fill alone is too close to the page surface.
-        border.width: root.visualFocus ? IKModalTokens.focusBorderWidth
-                                       : root.role === IKModalButton.Secondary || root.role === IKModalButton.Tonal
-                                         ? IKModalTokens.borderWidth : 0
+        border.width: root.visualFocus
+                      ? IKModalTokens.focusBorderWidth
+                      : root.role === IKModalButton.Secondary || root.role === IKModalButton.Tonal
+                        ? IKModalTokens.borderWidth
+                        : 0
         border.color: root.visualFocus ? root.focusBorderColor : IKColors.modalBorder
     }
 }
