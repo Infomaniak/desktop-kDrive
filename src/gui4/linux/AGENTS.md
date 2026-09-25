@@ -306,6 +306,9 @@
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
+    - Exception to the server-mirror rule: `isSyncCreationPending`/`setSyncCreationPending` hold the drives whose
+      classic (drive-root) `SYNC_ADD` is in flight. Only `SyncService` writes them; `clearAll()` keeps them. Onboarding shows a reserved drive like an
+      already synchronized one, Settings shows its Enable button as busy; pre-send checks treat it as unavailable.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
   updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for
   the same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct
