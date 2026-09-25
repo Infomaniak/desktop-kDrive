@@ -354,8 +354,7 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             return ExitCode::Ok;
         }
 
-        bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
+        if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
             continue;
         }
 
@@ -380,44 +379,34 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             continue;
         }
 
-        if (_liveSnapshot.updateItem(item)) {
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                    << Utility::quotedSyncName(item.name()) << L", inode:"
-                                                    << CommonUtility::s2ws(item.id()) << L", parent inode:"
-                                                    << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
-                                                    << L", modtime:" << item.lastModified() << L", isDir:"
-                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size()
-                                                    << L", isLink:" << item.isLink());
-            }
-        }
-
-        // If the parent of an item is a file, we have an inconsistency in the remote snapshot. We will ignore this item and
-        // blacklist it temporarily.
-        auto ignoreAndBlacklistItem = [this](const SnapshotItem &itemToIgnore) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(itemToIgnore.name()) << L"\" has a parent that is a file ("
-                                                   << CommonUtility::s2ws(itemToIgnore.parentId()) << L"). Ignoring it.");
-
-            SyncPath path;
-            if (bool dummy = false; !_liveSnapshot.path(itemToIgnore.id(), path, dummy)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Fail to get path for item: " << CommonUtility::s2ws(itemToIgnore.id()));
-                path = itemToIgnore.name();
-            }
-
-            sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory", "ID: " + itemToIgnore.id());
-
-            _syncPal->blacklistTemporarily(itemToIgnore.id(), path, ReplicaSide::Remote);
-            (void) _liveSnapshot.removeItem(itemToIgnore.id());
+        // If the parent of an item is a file, we have an inconsistency in the remote snapshot. We will ignore this item.
+        auto logAndSendSentryEvent = [this](const SnapshotItem &item) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(item.name()) << L"\" has a parent that is a file ("
+                                                   << CommonUtility::s2ws(item.parentId()) << L"). Ignoring it.");
+            sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory",
+                                            "ID: " + item.id() + ", parent ID: " + item.parentId());
         };
 
         if (_liveSnapshot.type(item.parentId()) == NodeType::File) {
-            ignoreAndBlacklistItem(item);
+            logAndSendSentryEvent(item);
+            continue;
         }
 
         if (item.type() == NodeType::File) {
             for (const auto &childItem: item.children()) {
-                ignoreAndBlacklistItem(*childItem);
+                logAndSendSentryEvent(item);
+                (void) _liveSnapshot.removeItem(childItem->id());
             }
+        }
+
+        if (_liveSnapshot.updateItem(item) && ParametersCache::isExtendedLogEnabled()) {
+            LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
+                                                << Utility::quotedSyncName(item.name()) << L", inode:"
+                                                << CommonUtility::s2ws(item.id()) << L", parent inode:"
+                                                << CommonUtility::s2ws(item.parentId()) << L", createdAt:" << item.createdAt()
+                                                << L", modtime:" << item.lastModified() << L", isDir:"
+                                                << (item.type() == NodeType::Directory) << L", size:" << item.size()
+                                                << L", isLink:" << item.isLink());
         }
     }
 
