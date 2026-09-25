@@ -438,7 +438,10 @@
   publishes normalized Linux/Qt runtime tags after the GUI application exists, and refreshes the distribution channel
   from the confirmed `ParametersStore` snapshot.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
-  durable cache mutations stay signal-driven through `CachePipeline`.
+  durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
+  onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
+  classic syncs for the same drive while the first `SYNC_ADDED` push is still in flight. Advanced syncs (non-empty
+  `serverFolderNodeId`) bypass the check and the reservation.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
     - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
