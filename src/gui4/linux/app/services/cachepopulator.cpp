@@ -53,13 +53,18 @@ void CachePopulator::reconcile() {
 }
 
 void CachePopulator::startPopulation(const PopulationMode mode) {
+    const uint64_t generation = ++_populationGeneration;
     _populationProgress = {};
-    loadParameters(mode);
-    loadUserData(mode);
+    loadParameters(mode, generation);
+    loadUserData(mode, generation);
 }
 
-void CachePopulator::loadParameters(const PopulationMode mode) {
-    _commService.requestParametersInfo([this, mode](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
+void CachePopulator::loadParameters(const PopulationMode mode, const uint64_t generation) {
+    _commService.requestParametersInfo([this, mode, generation](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
+        if (generation != _populationGeneration) {
+            return;
+        }
+
         if (!exitInfo && handlePopulationFailure("parameters", exitInfo, mode)) {
             return;
         }
@@ -69,52 +74,73 @@ void CachePopulator::loadParameters(const PopulationMode mode) {
     });
 }
 
-void CachePopulator::loadUserData(const PopulationMode mode) {
-    _commService.requestUserDisplayInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
-        if (!exitInfo && handlePopulationFailure("users", exitInfo, mode)) {
+void CachePopulator::loadUserData(const PopulationMode mode, const uint64_t generation) {
+    _commService.requestUserDisplayInfoList(
+            [this, mode, generation](const ExitInfo &exitInfo, const std::vector<UserDisplayInfo> &list) {
+                if (generation != _populationGeneration) {
+                    return;
+                }
+
+                if (!exitInfo && handlePopulationFailure("users", exitInfo, mode)) {
+                    return;
+                }
+
+                _appCache.replaceUsers(list);
+                loadAccounts(mode, generation);
+            });
+}
+
+void CachePopulator::loadAccounts(const PopulationMode mode, const uint64_t generation) {
+    _commService.requestAccountInfoList([this, mode, generation](const ExitInfo &exitInfo, const std::vector<Account> &list) {
+        if (generation != _populationGeneration) {
             return;
         }
 
-        _appCache.replaceUsers(list);
-        loadAccounts(mode);
-    });
-}
-
-void CachePopulator::loadAccounts(const PopulationMode mode) {
-    _commService.requestAccountInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<Account> &list) {
         if (!exitInfo && handlePopulationFailure("accounts", exitInfo, mode)) {
             return;
         }
 
         _appCache.replaceAccounts(list);
-        loadDrives(mode);
+        loadDrives(mode, generation);
     });
 }
 
-void CachePopulator::loadDrives(const PopulationMode mode) {
-    _commService.requestDriveList([this, mode](const ExitInfo &exitInfo, const std::vector<Drive> &list) {
+void CachePopulator::loadDrives(const PopulationMode mode, const uint64_t generation) {
+    _commService.requestDriveList([this, mode, generation](const ExitInfo &exitInfo, const std::vector<Drive> &list) {
+        if (generation != _populationGeneration) {
+            return;
+        }
+
         if (!exitInfo && handlePopulationFailure("drives", exitInfo, mode)) {
             return;
         }
 
         _appCache.replaceDrives(list);
-        loadSyncs(mode);
+        loadSyncs(mode, generation);
     });
 }
 
-void CachePopulator::loadSyncs(const PopulationMode mode) {
-    _commService.requestSyncInfoList([this, mode](const ExitInfo &exitInfo, const std::vector<BaseSync> &list) {
+void CachePopulator::loadSyncs(const PopulationMode mode, const uint64_t generation) {
+    _commService.requestSyncInfoList([this, mode, generation](const ExitInfo &exitInfo, const std::vector<BaseSync> &list) {
+        if (generation != _populationGeneration) {
+            return;
+        }
+
         if (!exitInfo && handlePopulationFailure("syncs", exitInfo, mode)) {
             return;
         }
 
         _appCache.replaceSyncs(list);
-        loadSyncErrors(mode);
+        loadSyncErrors(mode, generation);
     });
 }
 
-void CachePopulator::loadSyncErrors(const PopulationMode mode) {
-    _commService.requestErrorList([this, mode](const ExitInfo &exitInfo, const std::vector<Error> &list) {
+void CachePopulator::loadSyncErrors(const PopulationMode mode, const uint64_t generation) {
+    _commService.requestErrorList([this, mode, generation](const ExitInfo &exitInfo, const std::vector<Error> &list) {
+        if (generation != _populationGeneration) {
+            return;
+        }
+
         if (!exitInfo && handlePopulationFailure("errors", exitInfo, mode)) {
             return;
         }
