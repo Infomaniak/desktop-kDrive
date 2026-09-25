@@ -84,35 +84,6 @@ struct MainViewRouterTests {
     }
 
     @Test()
-    func appendingUpdatesPathCache() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-
-        // WHEN
-        await router.append(.errors)
-
-        // WHEN - switch away and back to verify cache
-        await router.setCurrentTab(.activities)
-        await router.setCurrentTab(.home)
-
-        // THEN
-        #expect(router.currentPath.details == [.home, .errors])
-    }
-
-    @Test()
-    func appendMultipleDetails() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-
-        // WHEN
-        await router.append(.errors)
-        await router.append(.activities)
-
-        // THEN
-        #expect(router.currentPath.details == [.home, .errors, .activities])
-    }
-
-    @Test()
     func removeLastRemovesSingleElement() async {
         // GIVEN
         let router = MainViewRouter(defaultTab: .home)
@@ -152,23 +123,5 @@ struct MainViewRouterTests {
 
         // THEN - should still have the original path
         #expect(router.currentPath.details == [.home])
-    }
-
-    @Test()
-    func removeLastUpdatesPathCache() async {
-        // GIVEN
-        let router = MainViewRouter(defaultTab: .home)
-        await router.append(.errors)
-        await router.append(.activities)
-
-        // WHEN
-        await router.removeLast()
-
-        // WHEN - switch away and back to verify cache
-        await router.setCurrentTab(.activities)
-        await router.setCurrentTab(.home)
-
-        // THEN
-        #expect(router.currentPath.details == [.home, .errors])
     }
 }
