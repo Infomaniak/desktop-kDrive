@@ -125,8 +125,10 @@ Item {
 
                 Text {
                     Layout.fillWidth: true
-                    visible: root.controller.saveFailed
-                    text: qsTrId("unexpectedErrorTeachingTipContent")
+                    visible: root.controller.saveFailed || root.controller.excludedFolderLimitExceeded
+                    text: root.controller.excludedFolderLimitExceeded
+                          ? qsTrId("excludedFoldersLimitReached").arg(root.controller.maxExcludedFolders)
+                          : qsTrId("unexpectedErrorTeachingTipContent")
                     textFormat: Text.PlainText
                     color: IKColors.statusStrongWarning
                     font.pixelSize: IKFonts.subheadlineSize
@@ -138,7 +140,7 @@ Item {
 
                 Item {
                     Layout.fillWidth: true
-                    visible: !root.controller.saveFailed
+                    visible: !root.controller.saveFailed && !root.controller.excludedFolderLimitExceeded
                 }
 
                 IKModalButton {
