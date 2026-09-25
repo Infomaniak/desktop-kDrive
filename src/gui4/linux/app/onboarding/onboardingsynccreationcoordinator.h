@@ -33,6 +33,7 @@ class CommService;
 class OnboardingFlowController;
 class OnboardingState;
 class ServiceEventBus;
+class SyncService;
 struct GoodPathResult;
 
 /**
@@ -47,8 +48,9 @@ class OnboardingSyncCreationCoordinator final : public QObject {
 
     public:
         explicit OnboardingSyncCreationCoordinator(OnboardingFlowController &flowController, OnboardingState &onboardingState,
-                                                   AppCache &appCache, CommService &commService, CachePopulator &cachePopulator,
-                                                   ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
+                                                   AppCache &appCache, CommService &commService, SyncService &syncService,
+                                                   CachePopulator &cachePopulator, ServiceEventBus &serviceEventBus,
+                                                   QObject *parent = nullptr);
 
     private:
         void startSynchronization();
@@ -66,6 +68,7 @@ class OnboardingSyncCreationCoordinator final : public QObject {
         OnboardingState &_onboardingState;
         AppCache &_appCache;
         CommService &_commService;
+        SyncService &_syncService;
         CachePopulator &_cachePopulator;
         ServiceEventBus &_serviceEventBus;
         std::deque<AvailableDriveKey> _pendingDriveKeys;
