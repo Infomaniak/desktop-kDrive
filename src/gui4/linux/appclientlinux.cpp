@@ -384,6 +384,7 @@ void AppClientLinux::retranslatePresentation() {
     _activitiesController.retranslate();
     _storageController.retranslate();
     _settingsSyncActivationController.retranslate();
+    _syncFolderSelectionController.retranslate();
 
     if (auto *const session = _onboardingSessionManager.activeSession()) {
         emit session->flowController()->titleChanged();
