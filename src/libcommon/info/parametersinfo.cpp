@@ -40,7 +40,6 @@ static const auto parametersInfoMaxAllowedCpu = "maxAllowedCpu";
 static const auto parametersInfoVersionChannel = "distributionChannel";
 static const auto parametersInfoSentryEnabled = "sentryEnabled";
 static const auto parametersInfoMatomoEnabled = "matomoEnabled";
-static const auto parametersInfoAskBeforeDelete = "askBeforeDelete";
 
 void ParametersInfo::toDynamicStruct(Poco::DynamicStruct &dstruct) const {
     CommonUtility::writeValueToStruct(dstruct, parametersInfoLanguage, _language);

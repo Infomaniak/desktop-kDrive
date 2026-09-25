@@ -369,6 +369,7 @@ QString ParametersDialog::getAppErrorText(const QString &fctCode, const ExitCode
         case ExitCode::InvalidOperation:
         case ExitCode::UpdateFailed:
         case ExitCode::TooManyDeleteOperations:
+        case ExitCode::SyncPaused:
             break;
         case ExitCode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
@@ -592,6 +593,7 @@ QString ParametersDialog::getSyncPalErrorText(const QString &fctCode, const Exit
         case ExitCode::LogUploadFailed:
         case ExitCode::UpdateFailed:
         case ExitCode::TooManyDeleteOperations:
+        case ExitCode::SyncPaused:
             break;
         case ExitCode::EnumEnd: {
             assert(false && "Invalid enum value in switch statement.");
