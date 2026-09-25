@@ -81,6 +81,7 @@ set(testsyncengine_SRCS
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         syncpal/testsyncpalworker.h syncpal/testsyncpalworker.cpp
         syncpal/testoperationprocessor.h syncpal/testoperationprocessor.cpp
+        syncpal/testconflictingfilescorrector.h syncpal/testconflictingfilescorrector.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
         requests/testsyncnodecache.h requests/testsyncnodecache.cpp
