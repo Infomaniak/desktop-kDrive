@@ -161,6 +161,15 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "Success";
         case IoError::InvalidDirectoryIterator:
             return "Invalid directory iterator";
+        case IoError::CrossDeviceLink:
+            return "Cross device link";
+        case IoError::FileOrDirectoryCorrupted:
+            return "File or directory corrupted";
+        case IoError::TooManySymbolicLinkLevels:
+            return "Too many symbolic link levels";
+        case IoError::MoveThroughSymlink:
+            return "Move through symlink";
+        case IoError::Unknown:
         default:
             return "Unknown error";
     }
@@ -827,6 +836,31 @@ bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError
     return checkIfIsHiddenFile(path, true, isHidden, ioError);
 }
 
+IoError IoHelper::checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept {
+    traversesLink = false;
+    linkPath.clear();
+
+    // Check each ancestor directory of `path`, from the closest to the farthest. The final component of the path is ignored.
+    SyncPath tmpPath = path.parent_path();
+    while (!tmpPath.empty() && tmpPath != tmpPath.parent_path()) {
+        ItemType itemType;
+        if (!IoHelper::getItemType(tmpPath, itemType) || itemType.ioError != IoError::Success) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(tmpPath, itemType.ioError));
+            return itemType.ioError;
+        }
+
+        if (isLinkFollowedByDefault(itemType.linkType)) {
+            traversesLink = true;
+            linkPath = tmpPath;
+            return IoError::Success;
+        }
+
+        tmpPath = tmpPath.parent_path();
+    }
+
+    return IoError::Success;
+}
+
 bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept {
     isDirectory = false;
 
@@ -863,11 +897,37 @@ bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationP
     return renameItem(sourcePath, destinationPath, ioError);
 }
 
+IoError IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
+    return renameItem(sourcePath, destinationPath);
+}
+
 bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    ioError = renameItem(sourcePath, destinationPath);
+    return ioError == IoError::Success;
+}
+
+IoError IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept {
+    // Refuse to move an item if one of the intermediate components of the source or destination path is a link that would be
+    // followed by the operating system during the move. This check is intentionally not bypassable with bypassCheck().
+    for (const SyncPath &path: {sourcePath, destinationPath}) {
+        auto traversesLink = false;
+        SyncPath linkPath;
+        if (const auto ioError = IoHelper::checkIfPathTraversesLink(path, traversesLink, linkPath); ioError != IoError::Success) {
+            LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathTraversesLink: " << Utility::formatIoError(path, ioError));
+            return ioError;
+        }
+
+        if (traversesLink) {
+            LOGW_WARN(logger(),
+                      L"Move from " << Utility::formatSyncPath(sourcePath) << L" to " << Utility::formatSyncPath(destinationPath)
+                                    << L" is forbidden: the path traverses the link " << Utility::formatSyncPath(linkPath));
+            return IoError::MoveThroughSymlink;
+        }
+    }
+
     std::error_code ec;
     _rename(sourcePath, destinationPath, ec);
-    ioError = stdError2ioError(ec);
-    return ioError == IoError::Success;
+    return stdError2ioError(ec);
 }
 
 bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
@@ -1158,6 +1218,17 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
         LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
+    return IoError::Success;
+}
+
+IoError IoHelper::getWeakCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept {
+    std::error_code ec;
+    canonicalPath = std::filesystem::weakly_canonical(path, ec);
+    if (ec) {
+        LOGW_WARN(logger(), L"Failed to get canonical: " << Utility::formatStdError(path, ec));
+        return stdError2ioError(ec);
+    }
+
     return IoError::Success;
 }
 

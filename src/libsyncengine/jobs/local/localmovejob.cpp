@@ -84,12 +84,12 @@ ExitInfo LocalMoveJob::runJob() {
         return exitInfo;
     }
 
-    std::error_code ec;
-    std::filesystem::rename(_source, _dest, ec);
-
-    if (ec.value() != 0) { // We consider this as a permission denied error
-        LOGW_WARN(_logger, L"Failed to rename " << Utility::formatSyncPath(_source) << L" to " << Utility::formatSyncPath(_dest)
-                                                << L": " << CommonUtility::s2ws(ec.message()) << L" (" << ec.value() << L")");
+    if (const auto ioError = IoHelper::moveItem(_source, _dest); ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in IoHelper::moveItem: " << Utility::formatIoError(_source, ioError));
+        if (ioError == IoError::MoveThroughSymlink) {
+            return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+        }
+        // We consider this as a permission denied error
         return {ExitCode::SystemError, ExitCause::FileAccessError};
     }
 
