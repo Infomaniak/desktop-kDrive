@@ -39,6 +39,7 @@ namespace {
 Q_LOGGING_CATEGORY(lcSettingsSyncActivationController, "gui.v4.settingssyncactivationcontroller", QtInfoMsg)
 }
 
+
 SettingsSyncActivationController::SettingsSyncActivationController(AppCache &appCache, CommService &commService,
                                                                    CachePopulator &cachePopulator,
                                                                    ServiceEventBus &serviceEventBus, QObject *const parent) :
@@ -63,8 +64,23 @@ SettingsSyncActivationController::SettingsSyncActivationController(AppCache &app
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &SettingsSyncActivationController::handleTargetStateChanged);
 }
 
+bool SettingsSyncActivationController::busy() const {
+    switch (_state) {
+        case State::CheckingFolder:
+        case State::Submitting:
+        case State::AwaitingConfirmation:
+        case State::Reconciling:
+            return true;
+        case State::Idle:
+        case State::Preparing:
+        case State::Editing:
+            return false;
+    }
+    return false;
+}
+
 bool SettingsSyncActivationController::canValidate() const {
-    if (_busy || _preparing || !_visible || _reconciliationBlockedKeys.contains(_key)) {
+    if (_state != State::Editing) {
         return false;
     }
     if (_page == Page::FolderSelection) {
@@ -86,22 +102,17 @@ QString SettingsSyncActivationController::currentLocalPath() const {
 }
 
 void SettingsSyncActivationController::activate(const qint64 userDbId, const qint64 accountId, const qint64 driveId) {
-    if (_syncCreationPending) {
+    if (_state != State::Idle && _state != State::Preparing) {
         return;
     }
 
-    const bool targetChangeNeedsNotification = _preparing;
     ++_requestGeneration;
-    _reconciliationPending = false;
-    _reconciliationForActivation = false;
     _key = {
             .userDbId = static_cast<UserDbId>(userDbId),
             .accountId = static_cast<AccountId>(accountId),
             .driveId = static_cast<DriveId>(driveId),
     };
     _config = {};
-    _driveName.clear();
-    _driveColor = AppConstants::Drive::defaultColor();
     _localFolderErrorId.clear();
     _operationErrorId.clear();
 
@@ -110,8 +121,7 @@ void SettingsSyncActivationController::activate(const qint64 userDbId, const qin
         qCWarning(lcSettingsSyncActivationController)
                 << "Drive activation ignored because the target is no longer available | userDbId:" << _key.userDbId
                 << "/ accountId:" << _key.accountId << "/ driveId:" << _key.driveId;
-        resetTarget();
-        emit presentationChanged();
+        close();
         return;
     }
 
@@ -119,17 +129,9 @@ void SettingsSyncActivationController::activate(const qint64 userDbId, const qin
     const QColor driveColor{QString::fromStdString(availableDrive->color())};
     _driveColor = driveColor.isValid() ? driveColor : AppConstants::Drive::defaultColor();
     setPage(Page::DriveConfiguration);
-    setPreparing(true);
-    // The target may change while preparation is already active, in which case setPreparing() emits nothing.
-    if (targetChangeNeedsNotification) {
-        emit presentationChanged();
-    }
-    if (_reconciliationBlockedKeys.contains(_key)) {
-        _reconciliationPending = true;
-        _reconciliationForActivation = true;
-        _cachePopulator.reconcile();
-        return;
-    }
+    // Notify unconditionally: switching targets while already preparing leaves the state unchanged.
+    _state = State::Preparing;
+    emit presentationChanged();
     requestDefaultFolder();
 }
 
@@ -139,7 +141,7 @@ bool SettingsSyncActivationController::targets(const qint64 userDbId, const qint
 }
 
 void SettingsSyncActivationController::cancelCurrentPage() {
-    if (_busy || _preparing) {
+    if (_state != State::Editing) {
         return;
     }
     setLocalFolderErrorId({});
@@ -153,15 +155,19 @@ void SettingsSyncActivationController::cancelCurrentPage() {
 }
 
 void SettingsSyncActivationController::dismissFromHostWindow() {
-    if (_syncCreationPending) {
-        if (_visible) {
-            _visible = false;
-            emit visibleChanged();
-        }
-        return;
+    switch (_state) {
+        case State::Submitting:
+        case State::AwaitingConfirmation:
+        case State::Reconciling:
+            hide();
+            return;
+        case State::Idle:
+        case State::Preparing:
+        case State::Editing:
+        case State::CheckingFolder:
+            close();
+            return;
     }
-
-    close();
 }
 
 void SettingsSyncActivationController::validateCurrentPage() {
@@ -180,7 +186,7 @@ void SettingsSyncActivationController::validateCurrentPage() {
 }
 
 void SettingsSyncActivationController::requestCustomFolder() {
-    if (_busy || _preparing || !_visible) {
+    if (_state != State::Editing) {
         return;
     }
     const QFileInfo currentLocation(_config.localPath);
@@ -194,13 +200,13 @@ void SettingsSyncActivationController::notifyCustomFolderDialogClosed() {
 
 void SettingsSyncActivationController::applyCustomFolder(const QUrl &folderUrl) {
     const QString path = QDir::cleanPath(folderUrl.toLocalFile());
-    if (_busy || _preparing || !_visible || path.isEmpty()) {
+    if (_state != State::Editing || path.isEmpty()) {
         return;
     }
 
-    setBusy(true);
     setLocalFolderErrorId({});
     setOperationErrorId({});
+    setState(State::CheckingFolder);
     const uint64_t generation = ++_requestGeneration;
     const QPointer self(this);
     _commService.requestIsPathValidForNewSync(
@@ -208,33 +214,33 @@ void SettingsSyncActivationController::applyCustomFolder(const QUrl &folderUrl) 
                 if (!self || generation != self->_requestGeneration) {
                     return;
                 }
-                self->setBusy(false);
                 if (!self->targetStillAvailable()) {
                     self->close();
                     return;
                 }
                 if (!exitInfo || !valid) {
                     self->setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
-                    return;
+                } else {
+                    self->_config.localPath = path;
+                    self->_config.usesDefaultLocalPath = QDir::cleanPath(self->_config.defaultLocalPath) == path;
                 }
-                self->_config.localPath = path;
-                self->_config.usesDefaultLocalPath = QDir::cleanPath(self->_config.defaultLocalPath) == path;
+                self->setState(State::Editing);
                 emit self->presentationChanged();
             });
 }
 
 void SettingsSyncActivationController::returnToDefaultFolder() {
-    if (_busy || _preparing || !_visible) {
+    if (_state != State::Editing) {
         return;
     }
-    setBusy(true);
     setLocalFolderErrorId({});
     setOperationErrorId({});
+    setState(State::CheckingFolder);
     requestDefaultFolder();
 }
 
 void SettingsSyncActivationController::selectFolders() {
-    if (_busy || _preparing || !_visible || !targetStillAvailable()) {
+    if (_state != State::Editing || !targetStillAvailable()) {
         return;
     }
     _folderTreeModel.configure(_key.userDbId, _key.driveId, QStr2Str(_config.targetNodeId), _config.blackList);
@@ -252,16 +258,14 @@ bool SettingsSyncActivationController::targetStillAvailable() const {
     return _key.userDbId != 0 && _appCache.availableDrive(_key).has_value() && !_appCache.isAvailableDriveConfigured(_key);
 }
 
+/**
+ * Requests a fresh default folder proposal, either before showing the editor (Preparing) or when the user returns to the
+ * default folder (CheckingFolder).
+ */
 void SettingsSyncActivationController::requestDefaultFolder() {
     const auto availableDrive = _appCache.availableDrive(_key);
     if (!availableDrive || _appCache.isAvailableDriveConfigured(_key)) {
-        if (_visible) {
-            setBusy(false);
-            setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
-        } else {
-            setPreparing(false);
-            resetTarget();
-        }
+        close();
         return;
     }
 
@@ -272,54 +276,41 @@ void SettingsSyncActivationController::requestDefaultFolder() {
                                                    if (!self || generation != self->_requestGeneration) {
                                                        return;
                                                    }
-                                                   self->handleDefaultFolderProposal(generation, exitInfo, result);
+                                                   self->handleDefaultFolderProposal(exitInfo, result);
                                                });
 }
 
-void SettingsSyncActivationController::handleDefaultFolderProposal(const uint64_t generation, const ExitInfo &exitInfo,
-                                                                   const GoodPathResult &result) {
-    if (generation != _requestGeneration) {
+void SettingsSyncActivationController::handleDefaultFolderProposal(const ExitInfo &exitInfo, const GoodPathResult &result) {
+    if (!targetStillAvailable()) {
+        close();
         return;
     }
+
     const QString rawPath = Path2QStr(result.goodPath);
     const QString path = rawPath.isEmpty() ? QString{} : QDir::cleanPath(rawPath);
-    if (!targetStillAvailable()) {
-        if (_visible) {
-            setBusy(false);
-            close();
-        } else {
-            setPreparing(false);
-            resetTarget();
-            emit presentationChanged();
-        }
-        return;
-    }
     if (!exitInfo || path.isEmpty()) {
         if (!exitInfo) {
             _serviceEventBus.notifyGenericError(exitInfo, RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC);
         } else {
             emit _serviceEventBus.genericErrorOccurred();
         }
-        if (_visible) {
-            setBusy(false);
-            setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
-        } else {
-            setPreparing(false);
-            resetTarget();
+        if (_state == State::Preparing) {
+            close();
+            return;
         }
+        setLocalFolderErrorId(u"teachingTipInvalidFolderContent"_s);
+        setState(State::Editing);
         return;
     }
 
     _config.localPath = path;
     _config.defaultLocalPath = path;
     _config.usesDefaultLocalPath = true;
-    if (_visible) {
-        setBusy(false);
-    } else {
-        setPreparing(false);
+    if (!_visible) {
         _visible = true;
         emit visibleChanged();
     }
+    setState(State::Editing);
     emit presentationChanged();
 }
 
@@ -339,9 +330,8 @@ void SettingsSyncActivationController::createSynchronization() {
     request.liteSync = false;
     request.blackList = _config.blackList;
 
-    setBusy(true);
     setOperationErrorId({});
-    _syncCreationPending = true;
+    setState(State::Submitting);
     const uint64_t generation = ++_requestGeneration;
     const QPointer self(this);
     _commService.requestSyncAdd(request, [self, generation](const ExitInfo &exitInfo, const BaseSync &) {
@@ -349,86 +339,72 @@ void SettingsSyncActivationController::createSynchronization() {
             return;
         }
         if (exitInfo) {
-            self->close();
+            self->awaitSyncAddedConfirmation();
             return;
         }
 
         self->_serviceEventBus.notifyGenericError(exitInfo, RequestNum::SYNC_ADD);
-        self->_reconciliationPending = true;
+        // A failed SYNC_ADD may still have persisted the account, drive or sync without the matching pushes.
+        self->setState(State::Reconciling);
         self->_cachePopulator.reconcile();
     });
 }
 
-void SettingsSyncActivationController::handleReconciliationFinished(const bool succeeded) {
-    if (succeeded) {
-        _reconciliationBlockedKeys.clear();
-    }
-    if (!_reconciliationPending) {
-        return;
-    }
-
-    _reconciliationPending = false;
-    if (_reconciliationForActivation) {
-        _reconciliationForActivation = false;
-        if (!succeeded) {
-            emit _serviceEventBus.genericErrorOccurred();
-            setPreparing(false);
-            resetTarget();
-            emit presentationChanged();
-            return;
-        }
-        if (!targetStillAvailable()) {
-            close();
-            return;
-        }
-
-        requestDefaultFolder();
-        return;
-    }
-
-    _syncCreationPending = false;
-    if (!succeeded) {
-        (void) _reconciliationBlockedKeys.insert(_key);
-        if (!_visible) {
-            close();
-            return;
-        }
-        setBusy(false);
-        setOperationErrorId(u"unexpectedErrorTeachingTipContent"_s);
-        return;
-    }
-    if (_appCache.isAvailableDriveConfigured(_key)) {
-        close();
-        return;
-    }
+/**
+ * The server answers SYNC_ADD before its queued SYNC_ADDED push reaches AppCache. Until then, the target still looks
+ * available, so it stays busy to prevent a duplicate SYNC_ADD. handleTargetStateChanged() closes the editor once the cache
+ * no longer offers the target.
+ */
+void SettingsSyncActivationController::awaitSyncAddedConfirmation() {
     if (!targetStillAvailable()) {
         close();
         return;
     }
-    if (!_visible) {
+
+    setState(State::AwaitingConfirmation);
+    hide();
+}
+
+/**
+ * CachePopulator only reports the end of its latest run, so any terminal signal received while Reconciling answers this
+ * request. A failed reconciliation closes the editor: the SYNC_ADD failure has already been reported.
+ */
+void SettingsSyncActivationController::handleReconciliationFinished(const bool succeeded) {
+    if (_state != State::Reconciling) {
+        return;
+    }
+    if (!succeeded || !_visible || !targetStillAvailable()) {
         close();
         return;
     }
-    setBusy(false);
+
     setOperationErrorId(u"unexpectedErrorTeachingTipContent"_s);
+    setState(State::Editing);
 }
 
 void SettingsSyncActivationController::handleTargetStateChanged() {
-    if ((!_visible && !_preparing) || _busy || targetStillAvailable()) {
+    switch (_state) {
+        case State::Preparing:
+        case State::Editing:
+        case State::AwaitingConfirmation:
+            if (!targetStillAvailable()) {
+                close();
+            }
+            return;
+        case State::Idle:
+        case State::CheckingFolder:
+        case State::Submitting:
+        case State::Reconciling:
+            // Idle has no target; the other states re-check the target when their pending response arrives.
+            return;
+    }
+}
+
+void SettingsSyncActivationController::setState(const State state) {
+    if (_state == state) {
         return;
     }
-
-    if (_visible) {
-        if (_appCache.isAvailableDriveConfigured(_key)) {
-            (void) _reconciliationBlockedKeys.erase(_key);
-        }
-        close();
-        return;
-    }
-
-    ++_requestGeneration;
-    setPreparing(false);
-    resetTarget();
+    _state = state;
     emit presentationChanged();
 }
 
@@ -438,22 +414,6 @@ void SettingsSyncActivationController::setPage(const Page page) {
     }
     _page = page;
     emit pageChanged();
-}
-
-void SettingsSyncActivationController::setPreparing(const bool preparing) {
-    if (_preparing == preparing) {
-        return;
-    }
-    _preparing = preparing;
-    emit presentationChanged();
-}
-
-void SettingsSyncActivationController::setBusy(const bool busy) {
-    if (_busy == busy) {
-        return;
-    }
-    _busy = busy;
-    emit presentationChanged();
 }
 
 void SettingsSyncActivationController::setLocalFolderErrorId(const QString &translationId) {
@@ -472,19 +432,20 @@ void SettingsSyncActivationController::setOperationErrorId(const QString &transl
     emit presentationChanged();
 }
 
+void SettingsSyncActivationController::hide() {
+    if (!_visible) {
+        return;
+    }
+    _visible = false;
+    emit visibleChanged();
+}
+
 void SettingsSyncActivationController::close() {
     ++_requestGeneration;
-    _reconciliationPending = false;
-    _reconciliationForActivation = false;
-    _syncCreationPending = false;
-    _preparing = false;
-    _busy = false;
+    _state = State::Idle;
     _localFolderErrorId.clear();
     _operationErrorId.clear();
-    if (_visible) {
-        _visible = false;
-        emit visibleChanged();
-    }
+    hide();
     resetTarget();
     emit presentationChanged();
 }
