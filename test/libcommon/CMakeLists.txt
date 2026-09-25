@@ -30,7 +30,7 @@ set(testcommon_SRCS
         io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testgetrights.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
         io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testrights.cpp io/testopenfile.cpp io/testgetdirectorysize.cpp
         io/testmoveitemtotrash.cpp io/testispathonmounteddisk.cpp
-        io/testcachedirectory.h io/testcachedirectory.cpp io/testdeleteitematomically.h io/testdeleteitematomically.cpp
+        io/testcachedirectory.h io/testcachedirectory.cpp
         io/testgetfilechecksum.cpp io/testcopyfileordirectory.cpp io/testcheckifpathtraverseslink.cpp)
 
 if(APPLE)

@@ -2317,7 +2317,7 @@ ExitInfo ExecutorWorker::handleOpsFileNotFound(const SyncOpPtr syncOp, [[maybe_u
     return removeDependentOps(syncOp);
 }
 
-ExitInfo ExecutorWorker::handleOpsRemoteFileLocked(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
+ExitInfo ExecutorWorker::handleOpsBlacklistRemoteFile(SyncOpPtr syncOp, const ExitInfo &opsExitInfo) {
     // Add error
     NodeId localNodeId;
     NodeId remoteNodeId;
