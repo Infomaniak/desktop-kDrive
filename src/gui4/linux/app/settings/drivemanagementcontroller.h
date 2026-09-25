@@ -47,6 +47,7 @@ class DriveManagementController final : public QObject {
         Q_PROPERTY(QString driveName READ driveName NOTIFY presentationChanged)
         Q_PROPERTY(QColor driveColor READ driveColor NOTIFY presentationChanged)
         Q_PROPERTY(bool hasMainSync READ hasMainSync NOTIFY presentationChanged)
+        Q_PROPERTY(qint64 mainSyncDbId READ mainSyncDbId NOTIFY presentationChanged)
         Q_PROPERTY(QString localPath READ localPath NOTIFY presentationChanged)
         Q_PROPERTY(bool syncCreationPending READ syncCreationPending NOTIFY presentationChanged)
         Q_PROPERTY(bool selectionLoading READ selectionLoading NOTIFY presentationChanged)
@@ -65,6 +66,7 @@ class DriveManagementController final : public QObject {
         [[nodiscard]] QString driveName() const { return _driveName; }
         [[nodiscard]] QColor driveColor() const { return _driveColor; }
         [[nodiscard]] bool hasMainSync() const { return _mainSyncDbId != 0; }
+        [[nodiscard]] qint64 mainSyncDbId() const { return _mainSyncDbId; }
         [[nodiscard]] QString localPath() const { return _localPath; }
         [[nodiscard]] bool syncCreationPending() const { return _syncCreationPending; }
         [[nodiscard]] bool selectionLoading() const { return _selectionState == SelectionState::Loading; }
@@ -77,7 +79,8 @@ class DriveManagementController final : public QObject {
         Q_INVOKABLE void open(qint64 driveDbId);
         /// Releases the target only when it is still the given drive, so a closing page cannot reset its successor.
         Q_INVOKABLE void close(qint64 driveDbId);
-        Q_INVOKABLE void retrySelection();
+        /// Reloads the confirmed blacklist, after a failure or once the folder selection page saved a new one.
+        Q_INVOKABLE void reloadSelection();
         Q_INVOKABLE void openLocalFolder() const;
         Q_INVOKABLE void deleteMainSync();
 
