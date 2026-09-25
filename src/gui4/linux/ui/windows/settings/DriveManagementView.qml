@@ -131,7 +131,7 @@ ScrollView {
                         role: IKModalButton.Tonal
                         text: qsTrId("buttonRetry")
                         Accessible.name: text + " " + qsTrId("labelSynchronisation")
-                        onClicked: root.controller.retrySelection()
+                        onClicked: root.controller.reloadSelection()
                     }
 
                     IKModalButton {
