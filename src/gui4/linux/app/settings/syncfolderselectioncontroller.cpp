@@ -18,6 +18,7 @@
 
 #include "syncfolderselectioncontroller.h"
 
+#include "app/appconstants.h"
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 
@@ -25,6 +26,7 @@
 #include <QPointer>
 
 #include <algorithm>
+#include <iterator>
 
 namespace KDC {
 
@@ -49,11 +51,23 @@ bool SyncFolderSelectionController::canSave() const {
         return false;
     }
 
-    if (_folderTreeModel.loading() || _folderTreeModel.loadFailed()) {
+    if (_folderTreeModel.loading() || _folderTreeModel.loadFailed() || excludedFolderLimitExceeded()) {
         return false;
     }
 
     return _folderTreeModel.blackList() != _confirmedBlackList;
+}
+
+bool SyncFolderSelectionController::excludedFolderLimitExceeded() const {
+    if (_state != State::Editing) {
+        return false;
+    }
+
+    return std::ssize(_folderTreeModel.blackList()) > maxExcludedFolders();
+}
+
+qsizetype SyncFolderSelectionController::maxExcludedFolders() {
+    return AppConstants::SyncConfiguration::maxExcludedFolders;
 }
 
 void SyncFolderSelectionController::open(const qint64 syncDbId) {
