@@ -34,7 +34,7 @@ void TestIo::testGetPathWithCanonicalParent() {
         const SyncPath filePath = directoryPath / "file.txt";
         { std::ofstream ofs(filePath); }
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(IoHelper::getPathWithCanonicalParent(filePath, canonicalPath, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -53,7 +53,7 @@ void TestIo::testGetPathWithCanonicalParent() {
         const SyncPath filePath = symlinkPath / "file.txt";
         { std::ofstream ofs(filePath); }
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(IoHelper::getPathWithCanonicalParent(filePath, canonicalPath, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -65,7 +65,7 @@ void TestIo::testGetPathWithCanonicalParent() {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath filePath = temporaryDirectory.path() / "non_existing_item.txt";
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(IoHelper::getPathWithCanonicalParent(filePath, canonicalPath, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -81,7 +81,7 @@ void TestIo::testGetPathWithCanonicalParent() {
         const SyncPath symlinkFilePath = temporaryDirectory.path() / "symlink_to_file.txt";
         std::filesystem::create_symlink(targetFilePath, symlinkFilePath);
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(IoHelper::getPathWithCanonicalParent(symlinkFilePath, canonicalPath, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -101,7 +101,7 @@ void TestIo::testGetPathWithCanonicalParent() {
 
         const SyncPath differentlyCasedFilePath = directoryPath / "mixedcase.txt";
 
-        IoError ioError = IoError::Unknown;
+        auto ioError = IoError::Unknown;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(IoHelper::getPathWithCanonicalParent(differentlyCasedFilePath, canonicalPath, ioError));
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::Success), IoError::Success, ioError);
@@ -113,16 +113,11 @@ void TestIo::testGetPathWithCanonicalParent() {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath filePath = makeVeryLonPath(temporaryDirectory.path());
 
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(!IoHelper::getPathWithCanonicalParent(filePath, canonicalPath, ioError));
-#if defined(KD_WINDOWS)
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::NoSuchFileOrDirectory),
-                                     IoError::NoSuchFileOrDirectory, ioError);
-#else
         CPPUNIT_ASSERT_EQUAL_MESSAGE(toString(ioError) + "!=" + toString(IoError::FileNameTooLong), IoError::FileNameTooLong,
                                      ioError);
-#endif
         CPPUNIT_ASSERT(canonicalPath.empty());
     }
 
@@ -131,7 +126,7 @@ void TestIo::testGetPathWithCanonicalParent() {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath filePath = temporaryDirectory.path() / "non_existing_directory/file.txt";
 
-        IoError ioError = IoError::Success;
+        auto ioError = IoError::Success;
         SyncPath canonicalPath;
         CPPUNIT_ASSERT(!IoHelper::getPathWithCanonicalParent(filePath, canonicalPath, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
