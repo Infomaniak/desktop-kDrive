@@ -24,6 +24,7 @@
 #include "app/settings/generalsettingscontroller.h"
 #include "app/settings/networksettingscontroller.h"
 #include "app/settings/settingssyncactivationcontroller.h"
+#include "app/settings/syncfolderselectioncontroller.h"
 
 #include <QObject>
 
@@ -43,12 +44,13 @@ class SettingsWindowController final : public QObject {
         Q_PROPERTY(NetworkSettingsController *network READ networkController CONSTANT)
         Q_PROPERTY(SettingsSyncActivationController *syncActivation READ syncActivationController CONSTANT)
         Q_PROPERTY(DriveManagementController *driveManagement READ driveManagementController CONSTANT)
+        Q_PROPERTY(SyncFolderSelectionController *syncFolderSelection READ syncFolderSelectionController CONSTANT)
 
     public:
         SettingsWindowController(GeneralSettingsController &general, AdvancedSettingsController &advanced,
                                  FileExclusionController &fileExclusions, NetworkSettingsController &network,
                                  SettingsSyncActivationController &syncActivation, DriveManagementController &driveManagement,
-                                 QObject *parent = nullptr);
+                                 SyncFolderSelectionController &syncFolderSelection, QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *generalController() { return &_generalController; }
         [[nodiscard]] AdvancedSettingsController *advancedController() { return &_advancedController; }
@@ -56,6 +58,7 @@ class SettingsWindowController final : public QObject {
         [[nodiscard]] NetworkSettingsController *networkController() { return &_networkController; }
         [[nodiscard]] SettingsSyncActivationController *syncActivationController() { return &_syncActivationController; }
         [[nodiscard]] DriveManagementController *driveManagementController() { return &_driveManagementController; }
+        [[nodiscard]] SyncFolderSelectionController *syncFolderSelectionController() { return &_syncFolderSelectionController; }
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
         Q_INVOKABLE void requestAccountConnection() { emit accountConnectionRequested(); }
@@ -73,6 +76,7 @@ class SettingsWindowController final : public QObject {
         NetworkSettingsController &_networkController;
         SettingsSyncActivationController &_syncActivationController;
         DriveManagementController &_driveManagementController;
+        SyncFolderSelectionController &_syncFolderSelectionController;
 };
 
 } // namespace KDC
