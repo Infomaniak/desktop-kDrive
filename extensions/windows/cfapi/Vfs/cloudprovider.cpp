@@ -432,7 +432,7 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
 
     if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId &&
         callbackParameters->FetchData.Flags == CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
-        // On version pre Windows 10 1083, CF_CONNECT_FLAG_BLOCK_SELF_IMPLICIT_HYDRATION has no effect, and the hydration is asked
+        // On version pre Windows 10 1803, CF_CONNECT_FLAG_BLOCK_SELF_IMPLICIT_HYDRATION has no effect, and the hydration is asked
         // by the app itself. In this case, we have to cancel the hydration our self to avoid a deadlock.
         TRACE_DEBUG(L"Hydration implicitly asked by app, cancelling it: path = '%ls'", fullPath.wstring().c_str());
 
