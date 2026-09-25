@@ -25,6 +25,7 @@
 
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 Q_DECLARE_LOGGING_CATEGORY(lcAppCache)
@@ -85,6 +86,11 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<AvailableDriveContext> availableDriveContexts(UserDbId userDbId) const;
         [[nodiscard]] std::vector<AvailableDriveContext> availableDriveContexts() const;
 
+        // Client-side reservation of drives whose SYNC_ADD is in flight, written only by SyncService. Unlike the rest of the
+        // cache, it does not mirror server state and clearAll() keeps it.
+        [[nodiscard]] bool isSyncCreationPending(const AvailableDriveKey &key) const;
+        void setSyncCreationPending(const AvailableDriveKey &key, bool pending);
+
         // Clears all cached product state. Transport/connection state is intentionally not represented here.
         void clearAll();
 
@@ -136,6 +142,7 @@ class AppCache : public QObject {
         void serverErrorsChanged();
         void availableDrivesChanged(UserDbId userDbId);
         void allAvailableDrivesChanged();
+        void syncCreationPendingChanged();
 
     private:
         struct UserNode {
@@ -192,6 +199,7 @@ class AppCache : public QObject {
         std::unordered_map<ErrorDbId, Error> _syncErrorsByDbId;
         std::unordered_map<ErrorDbId, Error> _serverErrorsByDbId;
         std::unordered_map<UserDbId, std::vector<DriveAvailable>> _availableDrivesByUserDbId;
+        std::unordered_set<AvailableDriveKey> _pendingSyncCreationKeys;
 };
 
 } // namespace KDC
