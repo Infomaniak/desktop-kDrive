@@ -28,7 +28,6 @@
 #include <QUrl>
 
 #include <cstdint>
-#include <unordered_set>
 
 namespace KDC {
 
@@ -63,8 +62,8 @@ class SettingsSyncActivationController final : public QObject {
         [[nodiscard]] bool visible() const { return _visible; }
         [[nodiscard]] bool driveConfigurationPage() const { return _page == Page::DriveConfiguration; }
         [[nodiscard]] bool folderSelectionPage() const { return _page == Page::FolderSelection; }
-        [[nodiscard]] bool preparing() const { return _preparing; }
-        [[nodiscard]] bool busy() const { return _busy; }
+        [[nodiscard]] bool preparing() const { return _state == State::Preparing; }
+        [[nodiscard]] bool busy() const;
         [[nodiscard]] bool canValidate() const;
         [[nodiscard]] QString localFolderErrorText() const;
         [[nodiscard]] QString operationErrorText() const;
@@ -101,17 +100,28 @@ class SettingsSyncActivationController final : public QObject {
             FolderSelection,
         };
 
+        enum class State : uint8_t { // Private State
+            Idle, // No target.
+            Preparing, // Default folder requested, editor not shown yet.
+            Editing, // Editor shown, waiting for the user.
+            CheckingFolder, // Custom folder validation or default folder refresh in flight.
+            Submitting, // SYNC_ADD in flight.
+            AwaitingConfirmation, // SYNC_ADD succeeded, waiting for SYNC_ADDED to reach AppCache.
+            Reconciling, // SYNC_ADD failed, cache reconciliation in flight.
+        };
+
         [[nodiscard]] bool targetStillAvailable() const;
         void requestDefaultFolder();
-        void handleDefaultFolderProposal(uint64_t generation, const ExitInfo &exitInfo, const GoodPathResult &result);
+        void handleDefaultFolderProposal(const ExitInfo &exitInfo, const GoodPathResult &result);
         void createSynchronization();
+        void awaitSyncAddedConfirmation();
         void handleReconciliationFinished(bool succeeded);
         void handleTargetStateChanged();
+        void setState(State state);
         void setPage(Page page);
-        void setPreparing(bool preparing);
-        void setBusy(bool busy);
         void setLocalFolderErrorId(const QString &translationId);
         void setOperationErrorId(const QString &translationId);
+        void hide();
         void close();
         void resetTarget();
 
@@ -128,14 +138,9 @@ class SettingsSyncActivationController final : public QObject {
         QString _localFolderErrorId;
         QString _operationErrorId;
         Page _page{Page::DriveConfiguration};
+        State _state{State::Idle};
         uint64_t _requestGeneration{0};
-        std::unordered_set<AvailableDriveKey> _reconciliationBlockedKeys;
         bool _visible{false};
-        bool _preparing{false};
-        bool _busy{false};
-        bool _reconciliationPending{false};
-        bool _reconciliationForActivation{false};
-        bool _syncCreationPending{false};
 };
 
 } // namespace KDC
