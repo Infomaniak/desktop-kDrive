@@ -97,21 +97,16 @@ ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonica
         const SyncPath &sourcePath, const SyncPath &destinationPath) const {
     CanonicalPaths result;
 
-    std::error_code ec;
-    result.destinationPath = std::filesystem::canonical(destinationPath.parent_path(), ec) / destinationPath.filename();
-
-    if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for destinationPath: "
-                                                        << Utility::formatSyncPath(destinationPath) << L" - "
-                                                        << CommonUtility::s2ws(ec.message()));
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getPathWithCanonicalParent(destinationPath, result.destinationPath, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getPathWithCanonicalParent for destinationPath: "
+                                                        << Utility::formatIoError(destinationPath, ioError));
         return {};
     }
 
-    result.sourcePath = std::filesystem::canonical(sourcePath.parent_path(), ec) / sourcePath.filename();
-    if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for sourcePath: "
-                                                        << Utility::formatSyncPath(sourcePath) << L" - "
-                                                        << CommonUtility::s2ws(ec.message()));
+    if (!IoHelper::getPathWithCanonicalParent(sourcePath, result.sourcePath, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getPathWithCanonicalParent for sourcePath: "
+                                                        << Utility::formatIoError(sourcePath, ioError));
         return {};
     }
 
@@ -189,14 +184,14 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
         return false;
     }
 
-    std::error_code ec;
-    const SyncPath absoluteLocalPathToDelete =
-            std::filesystem::canonical(_syncPal->localPath() / error.destinationPath().parent_path(), ec) /
-            error.destinationPath().filename();
-    if (ec) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in std::filesystem::canonical for absolute local path to delete: "
-                                                        << Utility::formatSyncPath(absoluteLocalPathToDelete) << L" - "
-                                                        << CommonUtility::s2ws(ec.message()));
+    const SyncPath absoluteLocalPath = _syncPal->localPath() / error.destinationPath();
+    IoError ioError = IoError::Success;
+    SyncPath absoluteLocalPathToDelete;
+    if (!IoHelper::getPathWithCanonicalParent(absoluteLocalPath, absoluteLocalPathToDelete, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getPathWithCanonicalParent for absolute local path to delete: "
+                          << Utility::formatSyncPath(absoluteLocalPath) << L" - "
+                          << Utility::formatIoError(absoluteLocalPath, ioError));
         return false;
     }
 
