@@ -50,7 +50,6 @@ SyncService::SyncService(CommService &commService, AppCache &appCache, CachePopu
     _serviceEventBus(serviceEventBus) {
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &SyncService::releaseSyncedReservations);
     (void) connect(&_cachePopulator, &CachePopulator::reconciliationCompleted, this, &SyncService::releaseReconciledReservations);
-    (void) connect(&_cachePopulator, &CachePopulator::reconciliationFailed, this, &SyncService::releaseReconciledReservations);
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
                    [this](const ServiceActionTracker::ServiceKey &serviceKey, const bool) {
                        if (serviceKey == serviceKeySync) {
@@ -251,13 +250,13 @@ void SyncService::releaseSyncedReservations() {
 }
 
 /**
- * Releases the reservations of failed creations. reconcile() restarts any running population, so its terminal signal
- * always reflects the server state after the failure.
+ * Releases the reservations of failed creations once a reconciliation succeeds. reconcile() restarts any running
+ * population, so its completion reflects the server state after the failure. A failed reconciliation may end before
+ * the syncs are reloaded, so the drives then stay reserved until a later one succeeds, rather than risk a duplicate.
  */
 void SyncService::releaseReconciledReservations() {
-    const auto keys = std::exchange(_awaitingReconciliation, {});
-    for (const auto &key: keys) {
-        _appCache.setSyncCreationPending(key, false);
+    for (const auto keys = std::exchange(_awaitingReconciliation, {}); const auto &availableDriveKey: keys) {
+        _appCache.setSyncCreationPending(availableDriveKey, false);
     }
 }
 
