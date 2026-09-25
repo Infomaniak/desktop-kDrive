@@ -283,8 +283,9 @@ ExitCode ServerRequests::getParameters(ServerParameters &parameters) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateParameters(const ServerParameters &parameters) {
-    ParametersCache::instance()->parameters() = parameters;
+ExitCode ServerRequests::updateParameters(const Parameters &parameters) {
+    // The client only provides the client-visible fields: keep the server-only fields of the cached parameters.
+    ParametersCache::instance()->parameters().applyClientParameters(parameters);
     auto exitCode = ExitCode::Ok;
     ParametersCache::instance()->save(&exitCode);
     return exitCode;

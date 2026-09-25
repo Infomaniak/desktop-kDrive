@@ -826,11 +826,11 @@ void AppServer::logExtendedLogActivationMessage(const bool isExtendedLogEnabled)
     LOG_INFO(_logger, msg);
 }
 
-ExitInfo AppServer::updateParametersAndPropagateChanges(const ServerParameters &newParameters) {
+ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &newParameters) {
     auto updatedParameters = newParameters;
 
     // Retrieve current settings
-    const ServerParameters previousParameters = ParametersCache::instance()->parameters();
+    const Parameters previousParameters = ParametersCache::instance()->parameters();
 
     // Proxy parameters change propagation. Must be executed before "updateParameters" in order to save the new keychain
     // key in DB.
@@ -2230,7 +2230,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::PARAMETERS_UPDATE: {
-            ServerParameters parameters;
+            Parameters parameters;
             QDataStream paramsStream(params);
             paramsStream >> parameters;
 
