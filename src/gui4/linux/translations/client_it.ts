@@ -1129,6 +1129,11 @@ aprite le Preferenze di macOS per abilitarli.</translation>
             <source>Prevent certain temporary or system files from being copied to kDrive.</source> 
             <translation>Evitare che alcuni file temporanei o di sistema vengano copiati in kDrive.</translation> 
         </message> 
+        <message id="excludedFoldersLimitReached"> 
+            <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source> 
+            <extracomment>%1 is the maximum number of excluded folders (3000).</extracomment> 
+            <translation>Non puoi escludere più di %1 cartelle. Deseleziona le cartelle di livello superiore.</translation> 
+        </message> 
         <message id="extendedLogDescription"> 
             <source>Enables collection of additional information useful for support.</source> 
             <translation>Abilita la raccolta di informazioni aggiuntive utili per il supporto.</translation> 
