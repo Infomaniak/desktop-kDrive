@@ -348,6 +348,22 @@ std::vector<DriveContext> AppCache::driveContexts() const {
     return contexts;
 }
 
+std::optional<BaseSync> AppCache::mainSync(const DriveDbId driveDbId) const {
+    std::vector<BaseSync> classicSyncs;
+    for (const auto &syncInfo: syncsForDrive(driveDbId)) {
+        if (syncInfo.targetNodeId().empty()) {
+            classicSyncs.push_back(syncInfo);
+        }
+    }
+
+    if (classicSyncs.empty()) {
+        return std::nullopt;
+    }
+
+    (void) std::ranges::sort(classicSyncs, {}, &BaseSync::dbId);
+    return classicSyncs.front();
+}
+
 bool AppCache::isAvailableDriveConfigured(const AvailableDriveKey &key) const {
     const auto accountInfo = accountForAvailableDrive(key.userDbId, key.accountId);
     if (!accountInfo) {
@@ -359,8 +375,7 @@ bool AppCache::isAvailableDriveConfigured(const AvailableDriveKey &key) const {
         return false;
     }
 
-    const auto syncInfos = syncsForDrive(configuredDrive->dbId());
-    return std::ranges::any_of(syncInfos, [](const BaseSync &syncInfo) { return syncInfo.targetNodeId().empty(); });
+    return mainSync(configuredDrive->dbId()).has_value();
 }
 
 std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDbId userDbId) const {
