@@ -141,16 +141,16 @@ ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonica
 namespace {
 // A first sanity check for destination path validity. The destination path must be a relative path with a non-empty
 // filename that is not "." or "..".
-bool errorDestinationPathIsValid(const SyncPath &destinationPath) {
-    return !destinationPath.is_absolute() && !destinationPath.filename().empty() && destinationPath.filename() != SyncPath{"."} &&
-           destinationPath.filename() != SyncPath{".."};
+bool errorPathIsValid(const SyncPath &errorPath) {
+    return !errorPath.is_absolute() && !errorPath.filename().empty() && errorPath.filename() != SyncPath{"."} &&
+           errorPath.filename() != SyncPath{".."};
 }
 } // namespace
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, absolute or
     // indicate items located outside the sync directory.
-    if (error.path().filename().empty() || !errorDestinationPathIsValid(error.destinationPath())) {
+    if (!errorPathIsValid(error.path()) || !errorPathIsValid(error.destinationPath())) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error paths in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.path()) << L" / destination "
                                                         << Utility::formatSyncPath(error.destinationPath()));
@@ -182,7 +182,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, absolute or
     // indicates an item located outside the sync directory.
-    if (!errorDestinationPathIsValid(error.destinationPath())) {
+    if (!errorPathIsValid(error.destinationPath())) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
                           << Utility::formatSyncPath(error.destinationPath()));
