@@ -37,9 +37,9 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         public ConflictQuickResolvePage()
         {
-            Logger.Log(Logger.Level.Info, "Navigated to ConflictQuickResolvePage - Initializing components");
+            Logger.LogInfo("Navigated to ConflictQuickResolvePage - Initializing components");
             InitializeComponent();
-            Logger.Log(Logger.Level.Debug, "ConflictQuickResolvePage components initialized");
+            Logger.LogDebug("ConflictQuickResolvePage components initialized");
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -56,7 +56,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
         private void BreadcrumbError_Click(object sender, object e)
         {
-            Logger.Log(Logger.Level.Debug, "Navigating to ActivityPage");
+            Logger.LogDebug("Navigating to ActivityPage");
             Frame.Navigate(typeof(ErrorPage));
             _analyticsService.TrackClick(Analytics.Keys.Category.BatchConflictResolutionPage, Analytics.Keys.EventName.ErrorBreadcrumb);
         }
@@ -113,13 +113,13 @@ namespace Infomaniak.kDrive.Pages.Errors
             }
             else
             {
-                Logger.Log(Logger.Level.Warning, "Apply button clicked without a resolution strategy selected. No action will be taken.");
+                Logger.LogWarning("Apply button clicked without a resolution strategy selected. No action will be taken.");
                 return;
             }
 
             if (_errorPageVM is null)
             {
-                Logger.Log(Logger.Level.Error, "_errorPageVM is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
+                Logger.LogError("_errorPageVM is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 return;
             }
@@ -129,7 +129,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             if (_errorPageVM.Sync is null)
             {
-                Logger.Log(Logger.Level.Error, "_errorPageVM.Sync is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
+                Logger.LogError("_errorPageVM.Sync is null when Apply button clicked. This should never happen, but if it does, we log the error and re-enable the buttons to allow the user to try again or choose to manage conflicts individually.");
                 Utility.ShowUnexpectedErrorTeachingTip();
                 ApplyButton.IsEnabled = true;
                 ManageIndividuallyButton.IsEnabled = true;
@@ -138,7 +138,7 @@ namespace Infomaniak.kDrive.Pages.Errors
 
             if (!await _errorPageVM.Sync.SolveConflictsQuick(resolutionStrategy))
             {
-                Logger.Log(Logger.Level.Error, "Failed to resolve conflicts quickly. Re-enabling buttons to allow user to try again or manage individually.");
+                Logger.LogError("Failed to resolve conflicts quickly. Re-enabling buttons to allow user to try again or manage individually.");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
             else

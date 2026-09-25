@@ -46,31 +46,32 @@ namespace Infomaniak.kDrive
 
                 if (authRequestResult.Response is AuthResponse authResponse)
                 {
-                    Logger.Log(Logger.Level.Info, "OAuth authorization successful.");
+                    Logger.LogInfo("OAuth authorization successful.");
                     TokenRequestParams tokenRequestParams = TokenRequestParams.CreateForAuthorizationCodeRequest(authResponse);
                     return new OAuthResult { Code = authResponse.Code, CodeVerifier = tokenRequestParams.CodeVerifier };
                 }
 
                 if (authRequestResult.Failure is AuthFailure authFailure)
                 {
-                    Logger.Log(Logger.Level.Error,
-                        $"OAuth authorization failed: {authFailure.Error}, {authFailure.ErrorDescription}");
+                    Logger.LogError($"OAuth authorization failed: {authFailure.Error}, {authFailure.ErrorDescription}",
+                        "OAuthHelper: OAuth authorization failed");
                 }
             }
             catch (OperationCanceledException)
             {
-                Logger.Log(Logger.Level.Info, "OAuth authorization canceled by user.");
+                Logger.LogInfo("OAuth authorization canceled by user.");
                 throw;
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Error, $"Unexpected OAuth error: {ex}");
+                Logger.LogError($"Unexpected OAuth error: {ex}",
+                    "OAuthHelper: Unexpected OAuth error");
                 throw;
             }
             finally
             {
                 Utility.BringCurrentWindowToFront();
-                Logger.Log(Logger.Level.Info, "OAuth authorization process completed.");
+                Logger.LogInfo("OAuth authorization process completed.");
             }
 
             return new OAuthResult { Code = "", CodeVerifier = "" };

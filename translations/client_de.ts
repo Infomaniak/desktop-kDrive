@@ -3177,8 +3177,8 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     </message>
     <message>
         <location filename="../src/manualupdater/updater/abstractosupdater.cpp" line="36"/>
-        <source>Checksum verification failed. The file may be corrupted.</source>
-        <translation>Die Prüfsummenüberprüfung ist fehlgeschlagen. Die Datei ist möglicherweise beschädigt.</translation>
+        <source>Installer verification failed. The file may be corrupted.</source>
+        <translation>Die Überprüfung des Installationsprogramms ist fehlgeschlagen. Die Datei ist möglicherweise beschädigt.</translation>
     </message>
 </context>
 <context>

@@ -49,7 +49,7 @@ namespace Infomaniak.kDrive.CustomControls.Errors
             if (Error is null)
             {
                 Content = null;
-                Logger.Log(Logger.Level.Error, "ErrorSelector: Error is null, clearing content.");
+                Logger.LogError("ErrorSelector: Error is null, clearing content.");
                 return;
             }
 
