@@ -142,7 +142,7 @@ void TestIo::testReadAlias() {
         CPPUNIT_ASSERT(!data.empty());
     }
 
-    // The alias is corrupted: success
+    // The alias is corrupted: failure
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "corrupted_alias.jpg";
@@ -165,6 +165,33 @@ void TestIo::testReadAlias() {
         CPPUNIT_ASSERT_EQUAL(IoError::Unknown, readAliasError);
         CPPUNIT_ASSERT(actualTargetPath.empty());
         CPPUNIT_ASSERT(data.empty());
+    }
+
+    // The alias target doesn't exist: success
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "dangling_alias.jpg";
+        const SyncPath targetPath = _localTestDirPath / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Remove the target
+        std::error_code ec;
+        std::filesystem::remove(targetPath, ec);
+
+        IoError readAliasError = IoError::Unknown;
+        std::string data;
+        SyncPath actualTargetPath;
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, readAliasError);
+        CPPUNIT_ASSERT(actualTargetPath.empty());
+        CPPUNIT_ASSERT(!data.empty());
     }
 }
 

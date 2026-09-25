@@ -685,6 +685,33 @@ void TestIo::testGetItemTypeAllBranches() {
         CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.targetPath == SyncPath{});
     }
+
+    // A MacOSX Finder alias whose target does not exist anymore.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "dangling_alias.jpg";
+        const SyncPath targetPath = _localTestDirPath / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Remove the target
+        std::error_code ec;
+        std::filesystem::remove(targetPath, ec);
+
+        ItemType itemType;
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
+        CPPUNIT_ASSERT(itemType.linkType == LinkType::FinderAlias);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
+        CPPUNIT_ASSERT(itemType.targetPath == SyncPath{});
+    }
 #endif
 }
 

@@ -113,18 +113,32 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 
     if (_syncVfsMode == VirtualFileMode::Off) {
         if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, localProperties.isAvailableLocally,
-                                                                             ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfPathExists failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+                                                                             ioError, IoHelper::PathCheckOption::Insensitive) ||
+                                                ioError != IoError::Success) {
+            if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError));
+                return ExitCode::SystemError;
+            }
         }
         localProperties.isHydrated = localProperties.isAvailableLocally;
     } else {
-        IoError ioError = IoError::Success;
         bool isDehydrated = false;
-        if (!IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) ||
-            (ioError != IoError::Success && ioError != IoError::NoSuchFileOrDirectory)) {
-            LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
-            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        if (auto ioError = IoError::Success;
+            !IoHelper::checkIfFileIsDehydrated(absolutePath, isDehydrated, ioError) || ioError != IoError::Success) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
+                LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::NotFound};
+            } else if (ioError == IoError::AccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else {
+                LOGW_WARN(_logger,
+                          L"Error in IoHelper::checkIfFileIsDehydrated: " << Utility::formatIoError(absolutePath, ioError));
+                return ExitCode::SystemError;
+            }
         } else {
             localProperties.isAvailableLocally = true;
             localProperties.isHydrated = !isDehydrated;

@@ -47,11 +47,17 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string_view &attrN
         return false;
     }
 
-    // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(path));
+        ioError = itemType.ioError;
+        return true;
+    } else if (itemType.ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(path));
+        ioError = itemType.ioError;
         return true;
     }
+
+    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
@@ -88,11 +94,17 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string_view &attrN
         return false;
     }
 
-    // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(path));
+        ioError = itemType.ioError;
+        return true;
+    } else if (itemType.ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(path));
+        ioError = itemType.ioError;
         return true;
     }
+
+    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
     if (setxattr(path.native().c_str(), attrName.data(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
@@ -128,8 +140,21 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     ioError = IoError::Success;
 
     std::string value;
-    if (const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError); !result)
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), litesync_attrs::status, value, ioError);
+    if (!result) {
+        LOGW_WARN(logger(), L"Error in getXAttrValue: " << Utility::formatIoError(itemPath.native(), ioError));
         return false;
+    }
+
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        LOGW_WARN(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(itemPath.native()));
+        return true;
+    } else if (ioError == IoError::AccessDenied) {
+        LOGW_WARN(logger(), L"Item misses search permission: " << Utility::formatSyncPath(itemPath.native()));
+        return true;
+    }
+
+    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
     if (!value.empty()) isDehydrated = (value != litesync_attrs::statusOffline);
 

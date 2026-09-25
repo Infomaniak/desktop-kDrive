@@ -445,7 +445,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
 
         IoError ioError = IoError::Success;
         if (!IoHelper::createAlias(data, _fileDownloadInfo.localpath, ioError)) {
-            LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
+            LOGW_DEBUG(_logger,
+                       L"Error in IoHelper::createAlias: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
 
             if (ioError == IoError::Unknown) {
                 // Could be an alias imported into the drive by drag&drop in the webapp
@@ -462,32 +463,36 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                     SyncPath targetPath;
                     if (!IoHelper::readAlias(_tmpPath, data2, targetPath, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::readAlias: " << Utility::formatIoError(_tmpPath, ioError));
-                        if (ioError == IoError::NoSuchFileOrDirectory) {
-                            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_tmpPath));
-                            return {ExitCode::SystemError, ExitCause::NotFound};
-                        } else if (ioError == IoError::AccessDenied) {
-                            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_tmpPath));
-                            return {ExitCode::SystemError, ExitCause::FileAccessError};
-                        } else {
-                            return {ExitCode::SystemError, ExitCause::OperationCanceled};
-                        }
+                        return {ExitCode::SystemError, ExitCause::OperationCanceled};
                     }
 
-                    if (!IoHelper::createAlias(data2, _fileDownloadInfo.localpath, ioError)) {
-                        LOGW_WARN(_logger,
-                                  L"Failed to create alias: " << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
-                        if (ioError == IoError::NoSuchFileOrDirectory) {
-                            LOGW_WARN(_logger,
-                                      L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                            return {ExitCode::SystemError, ExitCause::NotFound};
-                        } else if (ioError == IoError::AccessDenied) {
-                            LOGW_WARN(_logger,
-                                      L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                            return {ExitCode::SystemError, ExitCause::FileAccessError};
-                        } else {
-                            return {ExitCode::SystemError, ExitCause::OperationCanceled};
-                        }
+                    if (ioError == IoError::NoSuchFileOrDirectory) {
+                        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_tmpPath));
+                        return {ExitCode::SystemError, ExitCause::NotFound};
+                    } else if (ioError == IoError::AccessDenied) {
+                        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_tmpPath));
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
                     }
+
+                    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
+
+                    if (!IoHelper::createAlias(data2, _fileDownloadInfo.localpath, ioError)) {
+                        LOGW_WARN(_logger, L"Error in IoHelper::createAlias: "
+                                                   << Utility::formatIoError(_fileDownloadInfo.localpath, ioError));
+                        return {ExitCode::SystemError, ExitCause::OperationCanceled};
+                    }
+
+                    if (ioError == IoError::NoSuchFileOrDirectory) {
+                        LOGW_WARN(_logger,
+                                  L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                        return {ExitCode::SystemError, ExitCause::NotFound};
+                    } else if (ioError == IoError::AccessDenied) {
+                        LOGW_WARN(_logger,
+                                  L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    }
+
+                    assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 
                     return ExitCode::Ok;
                 }
@@ -500,16 +505,20 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                         return {ExitCode::SystemError, ExitCause::FileAccessError};
                     }
                 }
-            } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                return {ExitCode::SystemError, ExitCause::NotFound};
-            } else if (ioError == IoError::AccessDenied) {
-                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                return {ExitCode::SystemError, ExitCause::FileAccessError};
             }
 
             return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
+
+        if (ioError == IoError::NoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+            return {ExitCode::SystemError, ExitCause::NotFound};
+        } else if (ioError == IoError::AccessDenied) {
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
+            return {ExitCode::SystemError, ExitCause::FileAccessError};
+        }
+
+        assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed: MIME type=" << mimeType);
