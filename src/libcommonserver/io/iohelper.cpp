@@ -1112,6 +1112,24 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
     return ioError == IoError::Success;
 }
 
+bool IoHelper::getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept {
+    canonicalPath.clear();
+    ioError = IoError::Success;
+
+    std::error_code ec;
+    const SyncPath canonicalParentPath = std::filesystem::canonical(path.parent_path(), ec);
+    ioError = stdError2ioError(ec);
+
+    if (ec) {
+        LOGW_WARN(logger(), L"Error in std::filesystem::canonical: " << Utility::formatStdError(path.parent_path(), ec));
+        return false;
+    }
+
+    canonicalPath = canonicalParentPath / path.filename();
+
+    return true;
+}
+
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
