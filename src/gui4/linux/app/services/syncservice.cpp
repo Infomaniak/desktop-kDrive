@@ -59,7 +59,8 @@ SyncService::SyncService(CommService &commService, AppCache &appCache, CachePopu
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::actionPendingChanged, this,
                    [this](const ServiceActionTracker::ServiceKey &serviceKey, const ServiceActionTracker::ActionKey &actionKey,
                           const ServiceActionTracker::ScopeId scopeId, const bool) {
-                       if (serviceKey == serviceKeySync && (actionKey == actionStartSync || actionKey == actionStopSync)) {
+                       if (serviceKey == serviceKeySync &&
+                           (actionKey == actionStartSync || actionKey == actionStopSync || actionKey == actionDeleteSync)) {
                            emit syncActionPendingChanged(scopeId);
                        }
                    });
@@ -120,13 +121,21 @@ void SyncService::stopSync(const qint64 syncDbId) {
 }
 
 void SyncService::deleteSync(const qint64 syncDbId) {
+    deleteSync(syncDbId, {});
+}
+
+void SyncService::deleteSync(const SyncDbId syncDbId, const CommService::VoidCallback &callback) {
     beginAction(actionDeleteSync, syncDbId);
 
     // Cache consistency is signal-driven: we wait for syncRemoved/syncUpdated pushes.
-    _commService.requestSyncDelete(syncDbId, [this, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestSyncDelete(syncDbId, [this, syncDbId, callback](const ExitInfo &exitInfo) {
         endAction(actionDeleteSync, syncDbId);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_DELETE);
+        }
+
+        if (callback) {
+            callback(exitInfo);
         }
     });
 }
