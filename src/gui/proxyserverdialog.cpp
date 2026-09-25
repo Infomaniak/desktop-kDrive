@@ -325,7 +325,7 @@ void ProxyServerDialog::onSaveButtonTriggered(const bool checked) {
     }
 
     ParametersCache::instance()->parameters().setProxyConfig(_proxyConfig);
-    (void) ParametersCache::instance()->saveParametersInfo();
+    (void) ParametersCache::instance()->saveParameters();
 
     accept();
 }

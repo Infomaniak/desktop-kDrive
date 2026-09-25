@@ -690,7 +690,7 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
     ParametersCache::instance()->parameters().setExtendedLog(_extendedLog);
     ParametersCache::instance()->parameters().setLogLevel(_minLogLevel);
     ParametersCache::instance()->parameters().setPurgeOldLogs(_deleteLogs);
-    ParametersCache::instance()->saveParametersInfo();
+    ParametersCache::instance()->saveParameters();
 
     accept();
 }

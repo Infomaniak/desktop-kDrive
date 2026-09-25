@@ -814,7 +814,7 @@ void ClientGui::onShowWindowsUpdateDialog(const VersionInfo &versionInfo) const 
 
 void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime value) {
     ParametersCache::instance()->parameters().setNotificationsDisabled(type);
-    ParametersCache::instance()->saveParametersInfo();
+    ParametersCache::instance()->saveParameters();
 
     if (type == NotificationsDisabled::Never) {
         _notificationEnableDate = QDateTime();

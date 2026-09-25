@@ -349,10 +349,10 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
 
-        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
-        newParametersInfo.setProxyConfig(proxyConfigTest);
+        Parameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
 
-        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
 
         ServerParameters parametersFromDb;
         auto found = false;
@@ -370,10 +370,10 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "password");
 
-        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
-        newParametersInfo.setProxyConfig(proxyConfigTest);
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
 
-        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
 
         ServerParameters parametersFromDb;
         auto found = false;
@@ -397,10 +397,10 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, true, "user", "newpassword");
 
-        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
-        newParametersInfo.setProxyConfig(proxyConfigTest);
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
 
-        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
 
         ServerParameters parametersFromDb;
         auto found = false;
@@ -424,10 +424,10 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
 
-        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
-        newParametersInfo.setProxyConfig(proxyConfigTest);
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
 
-        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
 
         ServerParameters parametersFromDb;
         auto found = false;
@@ -449,10 +449,10 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::None, "", 0, false);
 
-        ServerParameters newParametersInfo = ParametersCache::instance()->parameters();
-        newParametersInfo.setProxyConfig(proxyConfigTest);
+        ServerParameters newParameters = ParametersCache::instance()->parameters();
+        newParameters.setProxyConfig(proxyConfigTest);
 
-        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParametersInfo));
+        CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
 
         ServerParameters parametersFromDb;
         auto found = false;

@@ -53,8 +53,8 @@ struct GuiRequests {
         static ExitCode getSyncStatus(SyncDbId syncDbId, SyncStatus &status);
         static ExitCode getBlacklistedNodeIdSet(SyncDbId syncDbId, QSet<QString> &syncIdSet);
         static ExitCode setBlacklistedNodeIdSet(SyncDbId syncDbId, const QSet<QString> &syncIdSet);
-        static ExitCode getParameters(Parameters &parametersInfo);
-        static ExitCode updateParameters(const Parameters &parametersInfo);
+        static ExitCode getParameters(Parameters &parameters);
+        static ExitCode updateParameters(const Parameters &parameters);
         static ExitCode getNodePath(SyncDbId syncDbId, const QString &nodeId, QString &path);
         static ExitCode findGoodPathForNewSync(const QString &driveName, QString &path, QString &error);
         static ExitCode isPathValidForNewSync(const QString &path, SyncConfiguration syncConfig, bool &valid);

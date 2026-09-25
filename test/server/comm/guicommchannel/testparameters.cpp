@@ -30,26 +30,26 @@ namespace {
 ServerParameters getExpectedParameters() {
     const ProxyConfig proxyConfig(ProxyType::HTTP, "myHostName", 6666, true, "john.doe", "1234");
 
-    ServerParameters parametersInfo;
-    parametersInfo.setLanguage(Language::Default);
-    parametersInfo.setMonoIcons(false);
-    parametersInfo.setAutoStart(true);
-    parametersInfo.setMoveToTrash(true);
-    parametersInfo.setNotificationsDisabled(NotificationsDisabled::Never);
-    parametersInfo.setUseLog(true);
-    parametersInfo.setLogLevel(LogLevel::Debug);
-    parametersInfo.setExtendedLog(true);
-    parametersInfo.setPurgeOldLogs(true);
+    ServerParameters parameters;
+    parameters.setLanguage(Language::Default);
+    parameters.setMonoIcons(false);
+    parameters.setAutoStart(true);
+    parameters.setMoveToTrash(true);
+    parameters.setNotificationsDisabled(NotificationsDisabled::Never);
+    parameters.setUseLog(true);
+    parameters.setLogLevel(LogLevel::Debug);
+    parameters.setExtendedLog(true);
+    parameters.setPurgeOldLogs(true);
 #ifdef KD_MACOS // darkTheme only on macOS
-    parametersInfo.setDarkTheme(true);
+    parameters.setDarkTheme(true);
 #else
-    parametersInfo.setDarkTheme(false);
+    parameters.setDarkTheme(false);
 #endif
-    parametersInfo.setDialogGeometry("preferencesWindow", "blob1234");
-    parametersInfo.setDialogGeometry("drivePreferencesPanel", "blob4567");
-    parametersInfo.setMaxAllowedCpu(50);
-    parametersInfo.setProxyConfig(proxyConfig);
-    return parametersInfo;
+    parameters.setDialogGeometry("preferencesWindow", "blob1234");
+    parameters.setDialogGeometry("drivePreferencesPanel", "blob4567");
+    parameters.setMaxAllowedCpu(50);
+    parameters.setProxyConfig(proxyConfig);
+    return parameters;
 };
 
 Poco::JSON::Object createParametersObject() {

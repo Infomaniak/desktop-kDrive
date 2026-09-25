@@ -144,7 +144,7 @@ void ResourcesManagerDialog::setNeedToSave(bool value) {
 
 void ResourcesManagerDialog::onSaveButtonTriggered() {
     ParametersCache::instance()->parameters().setMaxAllowedCpu(_slideBarResources->value());
-    if (!ParametersCache::instance()->saveParametersInfo()) {
+    if (!ParametersCache::instance()->saveParameters()) {
         return;
     }
     accept();
