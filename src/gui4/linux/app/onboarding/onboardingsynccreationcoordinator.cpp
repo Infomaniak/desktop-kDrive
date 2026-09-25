@@ -24,6 +24,7 @@
 #include "app/services/cachepopulator.h"
 #include "app/services/commservice.h"
 #include "app/services/serviceeventbus.h"
+#include "app/services/syncservice.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 
@@ -38,13 +39,15 @@ Q_LOGGING_CATEGORY(lcOnboardingSyncCreationCoordinator, "gui.v4.onboardingsynccr
 
 OnboardingSyncCreationCoordinator::OnboardingSyncCreationCoordinator(OnboardingFlowController &flowController,
                                                                      OnboardingState &onboardingState, AppCache &appCache,
-                                                                     CommService &commService, CachePopulator &cachePopulator,
+                                                                     CommService &commService, SyncService &syncService,
+                                                                     CachePopulator &cachePopulator,
                                                                      ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _flowController(flowController),
     _onboardingState(onboardingState),
     _appCache(appCache),
     _commService(commService),
+    _syncService(syncService),
     _cachePopulator(cachePopulator),
     _serviceEventBus(serviceEventBus) {
     (void) connect(&_flowController, &OnboardingFlowController::driveSelectionContinueRequested, this,
@@ -88,7 +91,7 @@ void OnboardingSyncCreationCoordinator::createNextSynchronization() {
 void OnboardingSyncCreationCoordinator::prepareSynchronization(const AvailableDriveKey &key) {
     const auto availableDrive = _appCache.availableDrive(key);
     if (!availableDrive.has_value() || !_onboardingState.isAvailableDriveSelected(key) ||
-        _appCache.isAvailableDriveConfigured(key)) {
+        _appCache.isAvailableDriveConfigured(key) || _appCache.isSyncCreationPending(key)) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Skipping onboarding sync: available drive is no longer selectable | userDbId:" << key.userDbId
                 << "/ driveId:" << key.driveId;
@@ -142,7 +145,7 @@ void OnboardingSyncCreationCoordinator::handleGoodPathResult(const AvailableDriv
 
 void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDriveKey &key, const PendingSyncConfig &config) {
     if (!_onboardingState.isAvailableDriveSelected(key) || !_appCache.availableDrive(key).has_value() ||
-        _appCache.isAvailableDriveConfigured(key)) {
+        _appCache.isAvailableDriveConfigured(key) || _appCache.isSyncCreationPending(key)) {
         qCWarning(lcOnboardingSyncCreationCoordinator)
                 << "Skipping onboarding sync creation: drive is no longer selectable | userDbId:" << key.userDbId
                 << "/ driveId:" << key.driveId;
@@ -163,7 +166,7 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
     qCInfo(lcOnboardingSyncCreationCoordinator)
             << "Creating onboarding sync | driveId:" << key.driveId << "/ localPath:" << config.localPath;
     const QPointer<OnboardingSyncCreationCoordinator> self(this);
-    _commService.requestSyncAdd(request, [self, key](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
+    const bool sent = _syncService.addDriveSync(request, [self, key](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
         if (!self) {
             return;
         }
@@ -182,6 +185,10 @@ void OnboardingSyncCreationCoordinator::createSynchronization(const AvailableDri
         }
         self->createNextSynchronization();
     });
+    if (!sent) {
+        // The settings have started a sync creation for this drive since the check above.
+        discardPendingSynchronization(key);
+    }
 }
 
 void OnboardingSyncCreationCoordinator::discardPendingSynchronizations() {
