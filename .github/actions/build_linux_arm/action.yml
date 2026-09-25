@@ -75,9 +75,12 @@ runs:
       - name: Setup sentry client artifacts
         if: ${{ steps.build.outcome == 'success' && inputs.release_build == 'true' }}
         run: |
+          source "${{ github.workspace }}/infomaniak-build-tools/linux/build-utils.sh"
+          CLIENT_EXE="$(get_linux_client_executable "${{ github.workspace }}")"
           mkdir -p "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
-          DBG_FILE="${{ github.workspace }}/build-linux-arm64/kDrive_client.dbg"
-          mv "${{ github.workspace }}/build-linux-arm64/kDrive_client.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
+          DBG_FILE="${{ github.workspace }}/build-linux-arm64/${CLIENT_EXE}.dbg"
+          [[ -f "$DBG_FILE" ]] || { echo "::error::Missing $DBG_FILE"; exit 1; }
+          mv "${{ github.workspace }}/build-linux-arm64/${CLIENT_EXE}.src.zip" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
           mv "$DBG_FILE" "${{ github.workspace }}/build-linux-arm64/sentry-client-artifacts"
         shell: bash
 
