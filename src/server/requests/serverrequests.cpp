@@ -456,23 +456,25 @@ ExitInfo ServerRequests::findUnoccupiedPathForNewSync(const SyncPath &homeFolder
 
     Count attemptCount = 0;
     path = homeFolder / initialFolderName;
+    const auto pathCheckOption = IoHelper::getDefaultPathCheckOption();
 
     // Avoid collisions by appending a suffix.
     forever {
         ++attemptCount;
         // Count attempts and give up eventually.
         if (attemptCount > kMaxPathAttempts) {
-            LOG_WARN(Log::instance()->getLogger(), "Cannot find a valid path.");
+            errorMessage = QString("Cannot find a valid path for new sync after %1 attempts.").arg(kMaxPathAttempts);
+            LOG_WARN(Log::instance()->getLogger(), errorMessage.toStdString());
             return ExitCode::SystemError;
         }
 
-        auto suffix = attemptCount == 1 ? Str("") : Str(" ") + Str2SyncName(std::to_string(attemptCount));
+        const auto suffix = attemptCount == 1 ? Str("") : Str(" ") + Str2SyncName(std::to_string(attemptCount));
         path = homeFolder / (initialFolderName + suffix);
 
         // Check if the local directory already exists
         auto ioError = IoError::Success;
         bool alreadyExists = false;
-        if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, IoHelper::getDefaultPathCheckOption())) {
+        if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, pathCheckOption) || ioError != IoError::Success) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
             return ExitCode::SystemError;
