@@ -1614,3 +1614,81 @@
 
 /* loco:6a9ea3f9ee85c0002403efc5 */
 "manyDeleteDialogFilesHeader" = "%@ verwijderde elementen";
+
+/* loco:6ab62d7da8644a8505055479 */
+"menuAbout" = "Over %@";
+
+/* loco:6ab62dc20048b37cef04f840 */
+"menuBringAllToFront" = "Alles op voorgrond";
+
+/* loco:6ab62d95503409dc3f094356 */
+"menuCloseWindow" = "Sluit venster";
+
+/* loco:6ab62d9d6633507bdd0aae97 */
+"menuCopy" = "Kopieer";
+
+/* loco:6ab62db46633507bdd0aaea5 */
+"menuCustomizeToolbar" = "Pas knoppenbalk aan…";
+
+/* loco:6ab62d9a37e9f83ca8022dfb */
+"menuCut" = "Knip";
+
+/* loco:6ab62da60048b37cef04f832 */
+"menuDelete" = "Verwijder";
+
+/* loco:6ab62d98d9a5024f0105cca8 */
+"menuEdit" = "Wijzig";
+
+/* loco:6ab62db70048b37cef04f83b */
+"menuEnterFullScreen" = "Schakel schermvullende weergave in";
+
+/* loco:6ab62d920048b37cef04f828 */
+"menuFile" = "Archief";
+
+/* loco:6ab62dacd9a5024f0105ccb4 */
+"menuFind" = "Zoek…";
+
+/* loco:6ab62dc537e9f83ca8022e17 */
+"menuHelp" = "Help";
+
+/* loco:6ab62d86a8644a850505547c */
+"menuHide" = "Verberg %@";
+
+/* loco:6ab62d896633507bdd0aae8c */
+"menuHideOthers" = "Verberg andere";
+
+/* loco:6ab62dbdd9a5024f0105ccbf */
+"menuMinimize" = "Minimaliseer";
+
+/* loco:6ab62da037e9f83ca8022dff */
+"menuPaste" = "Plak";
+
+/* loco:6ab62da3503409dc3f09435c */
+"menuPasteAndMatchStyle" = "Plak en pas stijl aan";
+
+/* loco:6ab62d8f10ba3f1d070e3a4e */
+"menuQuit" = "Stop %@";
+
+/* loco:6ab62da9a8644a850505548e */
+"menuSelectAll" = "Selecteer alle";
+
+/* loco:6ab62d83503409dc3f09434c */
+"menuServices" = "Voorzieningen";
+
+/* loco:6ab62d806633507bdd0aae87 */
+"menuSettings" = "Instellingen…";
+
+/* loco:6ab62d8c0048b37cef04f823 */
+"menuShowAll" = "Toon alles";
+
+/* loco:6ab62db137e9f83ca8022e0b */
+"menuShowToolbar" = "Toon knoppenbalk";
+
+/* loco:6ab62daf0048b37cef04f835 */
+"menuView" = "Weergave";
+
+/* loco:6ab62dba10ba3f1d070e3a66 */
+"menuWindow" = "Venster";
+
+/* loco:6ab62dc0503409dc3f09436a */
+"menuZoom" = "Vergroot/verklein";

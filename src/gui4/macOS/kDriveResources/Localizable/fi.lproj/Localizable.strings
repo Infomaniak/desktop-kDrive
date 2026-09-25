@@ -1614,3 +1614,81 @@
 
 /* loco:6a9ea3f9ee85c0002403efc5 */
 "manyDeleteDialogFilesHeader" = "%@ poistettua kohdetta";
+
+/* loco:6ab62d7da8644a8505055479 */
+"menuAbout" = "Tietoja: %@";
+
+/* loco:6ab62dc20048b37cef04f840 */
+"menuBringAllToFront" = "Tuo kaikki eteen";
+
+/* loco:6ab62d95503409dc3f094356 */
+"menuCloseWindow" = "Sulje ikkuna";
+
+/* loco:6ab62d9d6633507bdd0aae97 */
+"menuCopy" = "Kopioi";
+
+/* loco:6ab62db46633507bdd0aaea5 */
+"menuCustomizeToolbar" = "Muokkaa työkalupalkkia…";
+
+/* loco:6ab62d9a37e9f83ca8022dfb */
+"menuCut" = "Leikkaa";
+
+/* loco:6ab62da60048b37cef04f832 */
+"menuDelete" = "Poista";
+
+/* loco:6ab62d98d9a5024f0105cca8 */
+"menuEdit" = "Muokkaa";
+
+/* loco:6ab62db70048b37cef04f83b */
+"menuEnterFullScreen" = "Siirry koko näytön tilaan";
+
+/* loco:6ab62d920048b37cef04f828 */
+"menuFile" = "Arkisto";
+
+/* loco:6ab62dacd9a5024f0105ccb4 */
+"menuFind" = "Etsi…";
+
+/* loco:6ab62dc537e9f83ca8022e17 */
+"menuHelp" = "Ohje";
+
+/* loco:6ab62d86a8644a850505547c */
+"menuHide" = "Kätke %@";
+
+/* loco:6ab62d896633507bdd0aae8c */
+"menuHideOthers" = "Kätke muut";
+
+/* loco:6ab62dbdd9a5024f0105ccbf */
+"menuMinimize" = "Pienennä";
+
+/* loco:6ab62da037e9f83ca8022dff */
+"menuPaste" = "Sijoita";
+
+/* loco:6ab62da3503409dc3f09435c */
+"menuPasteAndMatchStyle" = "Sijoita ja sovita tyyli";
+
+/* loco:6ab62d8f10ba3f1d070e3a4e */
+"menuQuit" = "Lopeta %@";
+
+/* loco:6ab62da9a8644a850505548e */
+"menuSelectAll" = "Valitse kaikki";
+
+/* loco:6ab62d83503409dc3f09434c */
+"menuServices" = "Palvelut";
+
+/* loco:6ab62d806633507bdd0aae87 */
+"menuSettings" = "Asetukset…";
+
+/* loco:6ab62d8c0048b37cef04f823 */
+"menuShowAll" = "Näytä kaikki";
+
+/* loco:6ab62db137e9f83ca8022e0b */
+"menuShowToolbar" = "Näytä työkalupalkki";
+
+/* loco:6ab62daf0048b37cef04f835 */
+"menuView" = "Näytä";
+
+/* loco:6ab62dba10ba3f1d070e3a66 */
+"menuWindow" = "Ikkuna";
+
+/* loco:6ab62dc0503409dc3f09436a */
+"menuZoom" = "Zoomaa";
