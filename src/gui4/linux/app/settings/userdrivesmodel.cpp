@@ -60,6 +60,7 @@ UserDrivesModel::UserDrivesModel(const AppCache &cache, const UserDbId userDbId,
         }
     });
     (void) connect(&_cache, &AppCache::allAvailableDrivesChanged, this, &UserDrivesModel::rebuild);
+    (void) connect(&_cache, &AppCache::syncCreationPendingChanged, this, &UserDrivesModel::rebuild);
 
     rebuild();
 }
@@ -88,6 +89,8 @@ QVariant UserDrivesModel::data(const QModelIndex &index, const int role) const {
             return QVariant::fromValue<qint64>(entry.accountId);
         case DriveIdRole:
             return QVariant::fromValue<qint64>(entry.driveId);
+        case SyncCreationPendingRole:
+            return entry.syncCreationPending;
         default:
             return {};
     }
@@ -95,9 +98,13 @@ QVariant UserDrivesModel::data(const QModelIndex &index, const int role) const {
 
 QHash<int, QByteArray> UserDrivesModel::roleNames() const {
     return {
-            {NameRole, "name"},           {AccountNameRole, "accountName"},
-            {ColorRole, "color"},         {SynchronizedRole, "isSynchronized"},
-            {AccountIdRole, "accountId"}, {DriveIdRole, "driveId"},
+            {NameRole, "name"},
+            {AccountNameRole, "accountName"},
+            {ColorRole, "color"},
+            {SynchronizedRole, "isSynchronized"},
+            {AccountIdRole, "accountId"},
+            {DriveIdRole, "driveId"},
+            {SyncCreationPendingRole, "syncCreationPending"},
     };
 }
 
@@ -163,6 +170,7 @@ void UserDrivesModel::rebuild() {
                                                        .name = QString::fromStdString(context.availableDrive.name()),
                                                        .accountName = availableDriveAccountName(context),
                                                        .color = driveColor(context.availableDrive.color()),
+                                                       .syncCreationPending = context.syncCreationPending,
                                                        .accountId = context.availableDrive.accountId(),
                                                        .driveId = context.availableDrive.driveId(),
                                                });
