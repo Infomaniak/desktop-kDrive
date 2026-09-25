@@ -108,6 +108,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/activityservice.h
         app/services/cachepopulator.cpp
         app/services/cachepopulator.h
+        app/services/settingsuserservice.cpp
+        app/services/settingsuserservice.h
         app/services/driveservice.cpp
         app/services/driveservice.h
         app/services/exclusiontemplateservice.cpp
@@ -131,6 +133,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/services/userservice.h
         app/settings/generalsettingscontroller.cpp
         app/settings/generalsettingscontroller.h
+        app/settings/settingsusersmodel.cpp
+        app/settings/settingsusersmodel.h
+        app/settings/userdrivesmodel.cpp
+        app/settings/userdrivesmodel.h
         app/settings/advancedsettingscontroller.cpp
         app/settings/advancedsettingscontroller.h
         app/settings/exclusionrulemodel.cpp
@@ -187,6 +193,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AddExclusionRuleDialog.qml
+        ui/windows/settings/UserCard.qml
+        ui/windows/settings/UserDriveRow.qml
+        ui/windows/settings/UsersSettingsView.qml
         ui/windows/settings/AdvancedSettingsView.qml
         ui/windows/settings/DataManagementView.qml
         ui/windows/settings/DebugSettingsView.qml
@@ -299,6 +308,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/settings/matomo-logo-dark.svg
         ui/assets/settings/sentry-logo.svg
         ui/assets/settings/sentry-logo-dark.svg
+        ui/assets/settings/single-user.svg
         ui/assets/main/activities.svg
         ui/assets/main/activities/empty.svg
         ui/assets/main/activities/empty-dark.svg
