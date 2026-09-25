@@ -93,60 +93,125 @@ ExitInfo ConflictingFilesCorrector::resolveConflicts(const std::vector<Error> &e
     return ExitCode::Ok;
 }
 
+ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonicalSourceAndDestinationPaths(
+        const SyncPath &sourcePath, const SyncPath &destinationPath) const {
+    CanonicalPaths result;
+
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getPathWithCanonicalParent(destinationPath, result.destinationPath, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getPathWithCanonicalParent for destinationPath: "
+                                                        << Utility::formatIoError(destinationPath, ioError));
+        return {};
+    }
+
+    if (!IoHelper::getPathWithCanonicalParent(sourcePath, result.sourcePath, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::getPathWithCanonicalParent for sourcePath: "
+                                                        << Utility::formatIoError(sourcePath, ioError));
+        return {};
+    }
+
+    if (result.destinationPath.parent_path() != result.sourcePath.parent_path()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Source and destination paths do not have the same parent path: "
+                                                        << Utility::formatSyncPath(sourcePath) << L", "
+                                                        << Utility::formatSyncPath(destinationPath));
+        return {};
+    }
+
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), result.destinationPath) ||
+        result.destinationPath == _syncPal->localPath()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Invalid canonical destinationPath: " << Utility::formatSyncPath(result.destinationPath));
+        return {};
+    }
+
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), result.sourcePath) || result.sourcePath == _syncPal->localPath()) {
+        LOGW_WARN(Log::instance()->getLogger(), L"Invalid canonical sourcePath: " << Utility::formatSyncPath(result.sourcePath));
+    }
+
+    result.valid = true;
+
+    return result;
+}
+
+namespace {
+// A first sanity check for destination path validity. The destination path must be a relative path with a non-empty
+// filename that is not "." or "..".
+bool errorPathIsValid(const SyncPath &errorPath) {
+    return !errorPath.is_absolute() && !errorPath.filename().empty() && errorPath.filename() != SyncPath{"."} &&
+           errorPath.filename() != SyncPath{".."};
+}
+} // namespace
+
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
-    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, so we check them here.
-    if (error.path().filename().empty() || error.destinationPath().filename().empty()) {
+    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error paths are empty, absolute or
+    // indicate items located outside the sync directory.
+    if (!errorPathIsValid(error.path()) || !errorPathIsValid(error.destinationPath())) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid error paths in ConflictingFilesCorrector::keepLocalVersion: "
                                                         << Utility::formatSyncPath(error.path()) << L" / destination "
                                                         << Utility::formatSyncPath(error.destinationPath()));
         return false;
     }
 
+    // Source and destination paths refer to the final local rename operation below.
+    const auto canonicalPaths = getCanonicalSourceAndDestinationPaths(
+            _syncPal->localPath() / error.destinationPath(),
+            _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename());
+
+    if (!canonicalPaths.valid) return false;
+
     // Delete remote version locally
-    SyncPath originalAbsolutePath = _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename();
-    SyncLocalDeleteJob deleteJob(_syncPal, originalAbsolutePath);
-    deleteJob.runSynchronously();
-    if (deleteJob.exitInfo().code() != ExitCode::Ok) {
-        return false;
-    }
+    SyncLocalDeleteJob deleteJob(_syncPal, canonicalPaths.destinationPath);
+    if (const auto exitInfo = deleteJob.runSynchronously(); !exitInfo) return false;
 
     // Rename the local version
-    LocalMoveJob renameJob(_syncPal->localPath() / error.destinationPath(), originalAbsolutePath);
-    renameJob.runSynchronously();
-    if (renameJob.exitInfo().code() != ExitCode::Ok) {
-        return false;
-    }
+    LocalMoveJob renameJob(canonicalPaths.sourcePath, canonicalPaths.destinationPath);
+    if (const auto exitInfo = renameJob.runSynchronously(); !exitInfo) return false;
 
     // Set the local modification time to now
     const Poco::Timestamp lastModifiedTimestamp;
-    Poco::File(Path2Str(originalAbsolutePath)).setLastModified(lastModifiedTimestamp);
+    (void) Poco::File(Path2Str(canonicalPaths.destinationPath)).setLastModified(lastModifiedTimestamp);
 
     return true;
 }
 
 bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
-    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, so we check it
-    // here.
-    if (error.destinationPath().filename().empty()) {
+    // A corruption of `ParmsDb` can lead to unwanted deletion of files if the error destination path is empty, absolute or
+    // indicates an item located outside the sync directory.
+    if (!errorPathIsValid(error.destinationPath())) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"ConflictingFilesCorrector::keepRemoteVersion got an invalid error path: destination "
+                  L"Invalid error destination path in ConflictingFilesCorrector::keepRemoteVersion: "
                           << Utility::formatSyncPath(error.destinationPath()));
         return false;
     }
 
-    // Delete local version
-    SyncLocalDeleteJob deleteJob(_syncPal, _syncPal->localPath() / error.destinationPath());
-    deleteJob.runSynchronously();
-    if (deleteJob.exitInfo().code() != ExitCode::Ok) {
+    const SyncPath absoluteLocalPath = _syncPal->localPath() / error.destinationPath();
+    IoError ioError = IoError::Success;
+    SyncPath absoluteLocalPathToDelete;
+    if (!IoHelper::getPathWithCanonicalParent(absoluteLocalPath, absoluteLocalPathToDelete, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getPathWithCanonicalParent for absolute local path to delete: "
+                          << Utility::formatSyncPath(absoluteLocalPath) << L" - "
+                          << Utility::formatIoError(absoluteLocalPath, ioError));
         return false;
     }
+
+    if (!CommonUtility::isSubDir(_syncPal->localPath(), absoluteLocalPathToDelete) ||
+        absoluteLocalPathToDelete == _syncPal->localPath()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Invalid absolute local path to delete in ConflictingFilesCorrector::keepRemoteVersion: "
+                          << Utility::formatSyncPath(absoluteLocalPathToDelete));
+        return false;
+    }
+
+    // Delete local version
+    SyncLocalDeleteJob deleteJob(_syncPal, absoluteLocalPathToDelete);
+    if (const auto exitInfo = deleteJob.runSynchronously(); !exitInfo) return false;
 
     return true;
 }
 
 void ConflictingFilesCorrector::deleteError(const ErrorDbId errorDbId) {
-    bool found = false;
-    if (!ParmsDb::instance()->deleteError(errorDbId, found)) {
+    if (bool found = false; !ParmsDb::instance()->deleteError(errorDbId, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError");
         return;
     }

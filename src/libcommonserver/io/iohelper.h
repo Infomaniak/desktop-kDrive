@@ -370,6 +370,18 @@ struct IoHelper {
          */
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
+        //! Computes the canonical form of the parent directory of the indicated path, followed by the file name of the path.
+        // Only the parent directory is canonicalized, not the file name. The canonical form of a path is an absolute path with
+        // all symbolic links and relative path components resolved except for the file itself.
+        /*!
+         \param path is the file system path whose parent directory is to be canonicalized.
+         \param canonicalPath is set with the canonical form of the parent directory of path followed by the file name of path,
+         or left empty if an error occurred.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept;
+
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         //! If the destination item is a link, remove it before copying.
         /*!
