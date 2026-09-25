@@ -104,6 +104,10 @@ final class LoginViewController: OnboardingStepViewController {
     }
 
     private func handleStateUpdate(_ newState: LoginViewModel.LoginState) {
+        let isIdle = newState == .idle
+        primaryButton.isEnabled = isIdle
+        secondaryButton.isEnabled = isIdle
+
         switch newState {
         case .idle:
             hideLoadingButtonsLabel()
