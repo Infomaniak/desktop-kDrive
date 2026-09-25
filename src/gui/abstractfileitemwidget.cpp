@@ -139,25 +139,23 @@ void AbstractFileItemWidget::setPath(const QString &path) const {
     _driveIconLabel->setPixmap(
             GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
 
-    QString pathWithoutQuotes = path;
-    (void) pathWithoutQuotes.remove("\"");
-
-    const QFileInfo fInfo(pathWithoutQuotes);
+    const QFileInfo fInfo(path);
     QString printablePath;
     if (!fInfo.isAbsolute()) printablePath = "/";
-    printablePath += pathWithoutQuotes;
+    printablePath += path;
     GuiUtility::makePrintablePath(printablePath);
 
     printablePath = QDir::toNativeSeparators(printablePath);
-    const QString pathStr =
-            QString(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, pathWithoutQuotes, printablePath);
+    const QString pathStr = QString(R"(<a style="%1" href="%2">%3</a>)")
+                                    .arg(CommonUtility::linkStyle, path.toHtmlEscaped(), printablePath.toHtmlEscaped());
 
     _pathLabel->setText(pathStr);
     _pathLabel->setToolTip(path);
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {
-    QString str = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, localPath, driveName);
+    QString str = QString("<a style=\"%1\" href=\"%2\">%3</a>")
+                          .arg(CommonUtility::linkStyle, localPath.toHtmlEscaped(), driveName.toHtmlEscaped());
     _pathLabel->setText(str);
 }
 
