@@ -200,7 +200,9 @@ void AvailableDrivesModel::rebuild() {
     auto contexts = userDbId == 0 ? std::vector<AvailableDriveContext>{} : _cache.availableDriveContexts(userDbId);
     (void) std::ranges::sort(contexts, driveContextLessThan);
     // A drive whose sync creation is in flight elsewhere is shown and blocked like an already synchronized one.
-    for (auto &context: contexts) context.alreadyConfigured = context.alreadyConfigured || context.syncCreationPending;
+    for (auto &context: contexts) {
+        context.alreadyConfigured = context.alreadyConfigured || context.syncCreationPending;
+    }
 
     beginResetModel();
     _contexts = std::move(contexts);
