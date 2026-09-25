@@ -589,7 +589,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
         CPPUNIT_ASSERT(eof);
         return parsedItems;
     };
-    const auto checkParsedItem = [](const ParsedItem &parsedItem, bool expectedIgnore, const SnapshotItem &expectedItem,
+    const auto checkParsedItem = [](const ParsedItem &parsedItem, const bool expectedIgnore, const SnapshotItem &expectedItem,
                                     const NodeId &expectedIgnoredId = NodeId(), const NodeId &expectedIgnoredParentId = NodeId(),
                                     const SyncName &expectedIgnoredName = {}) {
         CPPUNIT_ASSERT_EQUAL(expectedIgnore, parsedItem.ignore);
@@ -597,7 +597,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
             // The item fields are parsed before the ignore check, so that an error can be reported for this item.
             CPPUNIT_ASSERT_EQUAL(expectedIgnoredId, parsedItem.item.id());
             CPPUNIT_ASSERT_EQUAL(expectedIgnoredParentId, parsedItem.item.parentId());
-            CPPUNIT_ASSERT_EQUAL(expectedIgnoredName, parsedItem.item.name());
+            CPPUNIT_ASSERT(expectedIgnoredName == parsedItem.item.name());
         } else {
             const auto result = snapshotitem_checker::compare(expectedItem, parsedItem.item);
             CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
