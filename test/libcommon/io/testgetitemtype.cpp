@@ -678,10 +678,10 @@ void TestIo::testGetItemTypeAllBranches() {
         }
 
         ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoError::CorruptedFile);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
-        CPPUNIT_ASSERT(itemType.linkType == LinkType::FinderAlias);
+        CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT(itemType.ioError == IoError::Unknown);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
+        CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
         CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
         CPPUNIT_ASSERT(itemType.targetPath == SyncPath{});
     }

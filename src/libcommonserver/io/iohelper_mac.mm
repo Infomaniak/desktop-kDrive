@@ -49,8 +49,6 @@ IoError nsError2ioError(NSError *nsError) noexcept {
                 return IoError::AccessDenied;
             case NSFileReadInvalidFileNameError:
                 return IoError::InvalidFileName;
-            case NSFileReadUnknownError:
-                return IoError::CorruptedFile;
             default:
                 return IoError::Unknown;
         }
@@ -133,7 +131,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
             if (ioError != IoError::Unknown) {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
+                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError));
                 CFRelease(error);
                 return true;
             } else {
@@ -174,7 +172,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             assert(false);
             ioError = IoError::Unknown;
         }
-        return isExpectedError(ioError) || ioError == IoError::CorruptedFile || ioError == IoError::InvalidFileName;
+        return isExpectedError(ioError);
     }
 
     const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
@@ -189,13 +187,12 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
-        IoError targetIoError = IoError::Success;
+        auto targetIoError = IoError::Unknown;
         if (error) {
             targetIoError = nsError2ioError((__bridge NSError *) error);
-            LOGW_DEBUG(logger(),
-                       L"Error in CFURLCreateByResolvingBookmarkData: "
-                               << (targetIoError == IoError::Unknown ? formatCFError(aliasPath, error)
-                                                                     : Utility::formatIoError(aliasPath, targetIoError)));
+            LOGW_DEBUG(logger(), L"Error in CFURLCreateByResolvingBookmarkData: "
+                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                         : Utility::formatIoError(aliasPath, targetIoError)));
             CFRelease(error);
         } else {
             // Should not happen
@@ -203,8 +200,8 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             targetIoError = IoError::Unknown;
         }
 
-        if (targetIoError == IoError::CorruptedFile) ioError = targetIoError;
-        return true;
+        if (!isExpectedError(targetIoError)) ioError = targetIoError;
+        return isExpectedError(targetIoError);
     }
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);

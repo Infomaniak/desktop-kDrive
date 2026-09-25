@@ -105,7 +105,7 @@ void TestIo::testReadAlias() {
         IoError readAliasError = IoError::Unknown;
         std::string data;
         SyncPath actualTargetPath;
-        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), !IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidFileName, readAliasError);
         CPPUNIT_ASSERT_EQUAL(SyncPath{}, actualTargetPath);
         CPPUNIT_ASSERT(data.empty());
@@ -118,7 +118,7 @@ void TestIo::testReadAlias() {
         IoError readAliasError = IoError::Unknown;
         std::string data;
         SyncPath actualTargetPath;
-        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), !IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidFileName, readAliasError);
         CPPUNIT_ASSERT_EQUAL(SyncPath{}, actualTargetPath);
         CPPUNIT_ASSERT(data.empty());
@@ -161,8 +161,8 @@ void TestIo::testReadAlias() {
         IoError readAliasError = IoError::Unknown;
         std::string data;
         SyncPath actualTargetPath;
-        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
-        CPPUNIT_ASSERT_EQUAL(IoError::CorruptedFile, readAliasError);
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), !IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Unknown, readAliasError);
         CPPUNIT_ASSERT(actualTargetPath.empty());
         CPPUNIT_ASSERT(data.empty());
     }
