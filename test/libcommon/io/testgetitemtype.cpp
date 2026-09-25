@@ -526,6 +526,7 @@ void TestIo::testGetItemTypeAllBranches() {
         });
 
         const auto result = checker.checkItemIsNotFound(path);
+
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 
         _testObj->resetFunctions();
@@ -658,6 +659,58 @@ void TestIo::testGetItemTypeAllBranches() {
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 
         _testObj->resetFunctions();
+    }
+
+    // A corrupted MacOSX Finder alias.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "corrupted_alias.jpg";
+        const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Corrupt the alias
+        {
+            std::ofstream ofs(path);
+            ofs << "qwertz";
+        }
+
+        ItemType itemType;
+        CPPUNIT_ASSERT(!IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT(itemType.ioError == IoError::Unknown);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::Unknown);
+        CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
+        CPPUNIT_ASSERT(itemType.targetPath == SyncPath{});
+    }
+
+    // A MacOSX Finder alias whose target does not exist anymore.
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "dangling_alias.jpg";
+        const SyncPath targetPath = temporaryDirectory.path() / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Remove the target
+        std::error_code ec;
+        std::filesystem::remove(targetPath, ec);
+
+        ItemType itemType;
+        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
+        CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
+        CPPUNIT_ASSERT(itemType.linkType == LinkType::FinderAlias);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
+        CPPUNIT_ASSERT(itemType.targetPath == SyncPath{});
     }
 #endif
 }

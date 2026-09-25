@@ -315,20 +315,18 @@ ExitInfo UploadJob::readLink() {
         IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_absoluteFilePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_absoluteFilePath));
-            return ExitCode::SystemError;
+            return {ExitCode::SystemError, ExitCause::OperationCanceled};
         }
 
         if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::NotFound};
-        }
-
-        if (ioError == IoError::AccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_absoluteFilePath));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         }
 
-        assert(ioError == IoError::Success); // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);

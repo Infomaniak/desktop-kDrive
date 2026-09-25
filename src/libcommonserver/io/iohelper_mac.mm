@@ -129,18 +129,16 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     if (!ret) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            if (ioError != IoError::Unknown) {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-                CFRelease(error);
-                return true;
-            } else {
-                LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << formatCFError(aliasPath, error));
-                CFRelease(error);
-                return false;
-            }
+            LOGW_DEBUG(logger(), L"Error in CFURLWriteBookmarkDataToFile: "
+                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                         : Utility::formatIoError(aliasPath, ioError)));
+            CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            ioError = IoError::Unknown;
         }
-        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath));
-        return false;
+        return isExpectedError(ioError);
     }
 
     return true;
@@ -162,18 +160,16 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     if (bookmarkRef == nil) {
         if (error) {
             ioError = nsError2ioError((__bridge NSError *) error);
-            if (ioError != IoError::Unknown) {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError));
-                CFRelease(error);
-                return true;
-            } else {
-                LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << formatCFError(aliasPath, error));
-                CFRelease(error);
-                return false;
-            }
+            LOGW_DEBUG(logger(), L"Error in CFURLCreateBookmarkDataFromFile: "
+                                         << (ioError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                         : Utility::formatIoError(aliasPath, ioError)));
+            CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            ioError = IoError::Unknown;
         }
-        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath));
-        return false;
+        return isExpectedError(ioError);
     }
 
     const auto size = (uint32_t) CFDataGetLength(bookmarkRef);
@@ -188,10 +184,22 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
+        auto targetIoError = IoError::Unknown;
         if (error) {
+            targetIoError = nsError2ioError((__bridge NSError *) error);
+            LOGW_DEBUG(logger(),
+                       L"Error in CFURLCreateByResolvingBookmarkData: "
+                               << (targetIoError == IoError::Unknown ? formatCFError(aliasPath, error)
+                                                                     : Utility::formatIoError(aliasPath, targetIoError)));
             CFRelease(error);
+        } else {
+            // Should not happen
+            assert(false);
+            targetIoError = IoError::Unknown;
         }
-        return true;
+
+        if (!isExpectedError(targetIoError)) ioError = targetIoError;
+        return isExpectedError(targetIoError);
     }
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);

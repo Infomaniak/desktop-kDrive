@@ -1359,7 +1359,12 @@ FileData FileData::get(const SyncPath &path) {
     }
 
     if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore - " << Utility::formatSyncPath(tmpPath));
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item does not exist anymore: " << Utility::formatSyncPath(tmpPath));
+        return {};
+    }
+
+    if (itemType.ioError == IoError::AccessDenied) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item misses search permission: " << Utility::formatSyncPath(tmpPath));
         return {};
     }
 

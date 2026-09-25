@@ -34,7 +34,6 @@ void TestIo::testReadAlias() {
         IoError createAliasError = IoError::Unknown;
         CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
 
-
         IoError readAliasError = IoError::Unknown;
         std::string data;
         SyncPath actualTargetPath;
@@ -66,7 +65,6 @@ void TestIo::testReadAlias() {
     // The alias file does not exist: success with empty data, empty target path and IoError::NoSuchFileOrDirectory output error.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "non_existing_dir_alias"; // This file does not exist.
 
         IoError readAliasError = IoError::Unknown;
@@ -77,7 +75,6 @@ void TestIo::testReadAlias() {
         CPPUNIT_ASSERT_EQUAL(SyncPath{}, actualTargetPath);
         CPPUNIT_ASSERT_EQUAL(std::string{}, data);
     }
-
 
     // The alias path is the target path (of an existing file): success
     {
@@ -104,12 +101,11 @@ void TestIo::testReadAlias() {
         const std::string veryLongfileName(1000,
                                            'a'); // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
-        const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError readAliasError = IoError::Unknown;
         std::string data;
         SyncPath actualTargetPath;
-        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), !IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidFileName, readAliasError);
         CPPUNIT_ASSERT_EQUAL(SyncPath{}, actualTargetPath);
         CPPUNIT_ASSERT(data.empty());
@@ -117,14 +113,12 @@ void TestIo::testReadAlias() {
 
     // The alias file path is very long: failure
     {
-        const std::string pathSegment(50, 'a');
         const SyncPath path = makeVeryLonPath(_localTestDirPath);
-        const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError readAliasError = IoError::Unknown;
         std::string data;
         SyncPath actualTargetPath;
-        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), !IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
         CPPUNIT_ASSERT_EQUAL(IoError::InvalidFileName, readAliasError);
         CPPUNIT_ASSERT_EQUAL(SyncPath{}, actualTargetPath);
         CPPUNIT_ASSERT(data.empty());
@@ -145,6 +139,58 @@ void TestIo::testReadAlias() {
         CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, readAliasError);
         CPPUNIT_ASSERT_EQUAL(targetPath, actualTargetPath);
+        CPPUNIT_ASSERT(!data.empty());
+    }
+
+    // The alias is corrupted: failure
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "corrupted_alias.jpg";
+        const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Corrupt the alias
+        {
+            std::ofstream ofs(path);
+            ofs << "qwertz";
+        }
+
+        IoError readAliasError = IoError::Unknown;
+        std::string data;
+        SyncPath actualTargetPath;
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), !IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Unknown, readAliasError);
+        CPPUNIT_ASSERT(actualTargetPath.empty());
+        CPPUNIT_ASSERT(data.empty());
+    }
+
+    // The alias target doesn't exist: success
+    {
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "dangling_alias.jpg";
+        const SyncPath targetPath = temporaryDirectory.path() / "dummy.txt";
+        {
+            std::ofstream ofs(targetPath);
+            ofs << "Some content.\n";
+        }
+
+        IoError createAliasError = IoError::Unknown;
+        CPPUNIT_ASSERT_MESSAGE(toString(createAliasError), IoHelper::createAliasFromPath(targetPath, path, createAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, createAliasError);
+
+        // Remove the target
+        std::error_code ec;
+        std::filesystem::remove(targetPath, ec);
+
+        IoError readAliasError = IoError::Unknown;
+        std::string data;
+        SyncPath actualTargetPath;
+        CPPUNIT_ASSERT_MESSAGE(toString(readAliasError), IoHelper::readAlias(path, data, actualTargetPath, readAliasError));
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, readAliasError);
+        CPPUNIT_ASSERT(actualTargetPath.empty());
         CPPUNIT_ASSERT(!data.empty());
     }
 }

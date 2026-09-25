@@ -76,7 +76,8 @@ void TestIo::testGetFileSizeSimpleCases() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
-        std::filesystem::create_symlink(targetPath, path);
+        std::error_code ec;
+        std::filesystem::create_symlink(targetPath, path, ec);
 
         uint64_t fileSize = 0u;
         IoError ioError = IoError::Success;
