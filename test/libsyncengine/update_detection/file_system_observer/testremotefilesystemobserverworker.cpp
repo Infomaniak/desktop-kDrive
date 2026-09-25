@@ -307,23 +307,35 @@ void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
                                 NodeType::File, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(fileItem));
 
-    // Insert an item whose parent is a file. The integrity check must remove it from the snapshot and report an error.
+    // Insert an item whose parent is a file. Such items are blacklisted during the CSV parsing (getItemsInDir), the
+    // integrity check must leave them untouched.
     const SnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
                                        NodeType::File, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(childOfFileItem));
     CPPUNIT_ASSERT(liveSnapshot.exists("child"));
 
+    // Insert an orphan item. The integrity check must remove it from the snapshot.
+    // Note: `exists` returns false for orphan items, so `type` is used to check the presence of the item in the snapshot.
+    const SnapshotItem orphanItem("orphan", "missingParentId", Str("orphan.txt"), testhelpers::defaultTime,
+                                  testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    CPPUNIT_ASSERT(liveSnapshot.updateItem(orphanItem));
+    CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("orphan"));
+
     const ExitInfo exitInfo = remoteFSObserverWorker->checkSnapshotIntegrity();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
-    CPPUNIT_ASSERT(!liveSnapshot.exists("child"));
+    // Items whose parent is a file are left untouched.
+    CPPUNIT_ASSERT(liveSnapshot.exists("child"));
 
     // Consistent items are left untouched.
     CPPUNIT_ASSERT(liveSnapshot.exists("dir"));
     CPPUNIT_ASSERT(liveSnapshot.exists("file"));
 
-    // Exactly one error, corresponding to the removed item, has been reported.
-    CPPUNIT_ASSERT_EQUAL(1, nbErrors);
+    // Orphan items are removed from the snapshot.
+    CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, liveSnapshot.type("orphan"));
+
+    // No error is reported by the integrity check.
+    CPPUNIT_ASSERT_EQUAL(0, nbErrors);
 }
 
 } // namespace KDC

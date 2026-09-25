@@ -378,6 +378,9 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
+        // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
+        CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
+        CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
     }
 
     // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
@@ -397,6 +400,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
+        // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
+        CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
         // The other ones should be correctly parsed
         int counter = 0;
         while (handler.getItem(item, ss, error, ignore, eof)) {
@@ -405,6 +410,30 @@ void TestSnapshotItemHandler::testGetItem() {
             CPPUNIT_ASSERT(!error);
         }
         CPPUNIT_ASSERT_EQUAL(2, counter); // There should be 2 valid items
+    }
+
+    // An ignored line must not inherit the id of the previously parsed item: the item is reset before each line is read.
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "1,0,test,dir,1000,123,124,0,1\n"
+           << "2,0," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.id());
+
+        // The second line is ignored, and the item id is the one of the ignored line, not the one of the previous item.
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT_EQUAL(NodeId("2"), item.id());
     }
 
     // End of line test : normal case
@@ -418,17 +447,20 @@ void TestSnapshotItemHandler::testGetItem() {
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str();
         SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItem lastParsedItem;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            // Nothing to do, just read the whole file
+            lastParsedItem = item;
         }
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
+        // The item is reset when the EOF delimiter is read.
+        CPPUNIT_ASSERT(item.id().empty());
 
         const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")), static_cast<SyncTime>(123),
                                         static_cast<SyncTime>(124), NodeType::Directory, static_cast<int64_t>(1000), true, false,
                                         true);
-        const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+        const auto [success, message] = snapshotitem_checker::compare(expectedItem, lastParsedItem);
         CPPUNIT_ASSERT_MESSAGE(message, success);
     }
 
@@ -442,17 +474,20 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n";
         SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItem lastParsedItem;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            // Nothing to do, just read the whole file
+            lastParsedItem = item;
         }
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(!eof);
+        // The item is reset when no more line can be read.
+        CPPUNIT_ASSERT(item.id().empty());
 
         const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")), static_cast<SyncTime>(123),
                                         static_cast<SyncTime>(124), NodeType::Directory, static_cast<int64_t>(1000), true, false,
                                         true);
-        const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+        const auto [success, message] = snapshotitem_checker::compare(expectedItem, lastParsedItem);
         CPPUNIT_ASSERT_MESSAGE(message, success);
     }
 
@@ -486,13 +521,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
-        {
-            const SnapshotItem expectedItem(NodeId("2"), NodeId("0"), Str2SyncName(std::string("test2")),
-                                            static_cast<SyncTime>(123), static_cast<SyncTime>(124), NodeType::Directory,
-                                            static_cast<int64_t>(1000), true, false, true);
-            const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
-            CPPUNIT_ASSERT_MESSAGE(message, !success);
-        }
+        // The item has been reset when the EOF delimiter was read: the item following the delimiter is not parsed.
+        CPPUNIT_ASSERT(item.id().empty());
     }
 
     // The creation_at value is missing: should be interpreted as 0.
