@@ -421,13 +421,6 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInSnapshot(const SnapshotItem
         return ExitCode::Ok;
     }
 
-    if (item.type() == NodeType::File) {
-        for (const auto &childItem: item.children()) {
-            logAndSendSentryEvent(item);
-            (void) _liveSnapshot.removeItem(childItem->id());
-        }
-    }
-
     if (_liveSnapshot.updateItem(item) && ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
                                             << Utility::quotedSyncName(item.name()) << L", inode:"
@@ -436,6 +429,13 @@ ExitInfo RemoteFileSystemObserverWorker::insertItemInSnapshot(const SnapshotItem
                                             << L", modtime:" << item.lastModified() << L", isDir:"
                                             << (item.type() == NodeType::Directory) << L", size:" << item.size() << L", isLink:"
                                             << item.isLink());
+    }
+
+    if (item.type() == NodeType::File) {
+        for (const auto &childItem: item.children()) {
+            logAndSendSentryEvent(item);
+            (void) _liveSnapshot.removeItem(childItem->id());
+        }
     }
 
     return ExitCode::Ok;
