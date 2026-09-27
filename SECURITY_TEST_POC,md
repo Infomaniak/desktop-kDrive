@@ -1,0 +1,1 @@
+Benign CI-security test PR — checking whether this repo's pull_request workflow auto-runs on self-hosted runners for external contributors. Part of an authorized bug bounty test (see repo's own listed scope). Safe to close immediately, no code changes to anything real.
