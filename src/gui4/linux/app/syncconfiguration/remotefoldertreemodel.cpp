@@ -277,10 +277,12 @@ bool RemoteFolderTreeModel::pathContains(const QString &ancestorPath, const QStr
     return descendantPath.startsWith(prefix);
 }
 
+// Every path is compared in NFC, whatever the form the API or the server returned it in.
 QString RemoteFolderTreeModel::effectivePath(const NodeInfo &info, const TreeNode *const parentNode) const {
-    if (!info.path().isEmpty()) return info.path();
-    if (!parentNode || parentNode == _root.get() || parentNode->path.isEmpty()) return u"/"_s + info.name();
-    return parentNode->path + u'/' + info.name();
+    if (!info.path().isEmpty()) return info.path().normalized(QString::NormalizationForm_C);
+    const QString name = info.name().normalized(QString::NormalizationForm_C);
+    if (!parentNode || parentNode == _root.get() || parentNode->path.isEmpty()) return u"/"_s + name;
+    return parentNode->path + u'/' + name;
 }
 
 // An unresolved path would make every ancestor of the excluded folder look completely selected, so a failure here
@@ -309,7 +311,7 @@ void RemoteFolderTreeModel::handleInitialExclusionPathResult(const QString &node
     if (_pendingInitialPathRequests > 0) --_pendingInitialPathRequests;
 
     if (exitInfo && !info.path().isEmpty()) {
-        (void) _excludedPaths.insert(nodeId, info.path());
+        (void) _excludedPaths.insert(nodeId, info.path().normalized(QString::NormalizationForm_C));
     } else if (!exitInfo && exitInfo.cause() == ExitCause::NotFound) {
         // The folder was deleted remotely since it was blacklisted: dropping it keeps the blacklist canonical.
         (void) _excludedNodeIds.remove(nodeId);
