@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "data/parameters.h"
+#include "libcommon/data/parameters.h"
 
 namespace KDC {
 
