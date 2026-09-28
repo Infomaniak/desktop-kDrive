@@ -668,7 +668,7 @@ void TestParmsDb::testDialogGeometry() {
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters2, found) && found);
     CPPUNIT_ASSERT(parameters2.dialogGeometry().value("preferencesWindow") == geometryWithDelimiters);
 
-    // Rows written before values were Base64-encoded contain raw geometry bytes and must still be read.
+    // A value that is not valid Base64 cannot be decoded and must be ignored.
     const char rawGeometryBytes[] = {'\x00', '\x01', '\x02', '\x03', '\x04'};
     const QByteArray rawGeometry(rawGeometryBytes, sizeof(rawGeometryBytes));
     const QByteArray legacyBlob = QByteArray("preferencesWindow;") + rawGeometry;
@@ -684,7 +684,7 @@ void TestParmsDb::testDialogGeometry() {
 
     ServerParameters parameters3;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters3, found) && found);
-    CPPUNIT_ASSERT(parameters3.dialogGeometry().value("preferencesWindow") == rawGeometry);
+    CPPUNIT_ASSERT(!parameters3.dialogGeometry().contains("preferencesWindow"));
 }
 
 #if defined(KD_MACOS)

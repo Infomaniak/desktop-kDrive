@@ -32,14 +32,14 @@
 
 namespace {
 
-// Decodes a Base64-encoded value, falling back to the raw bytes for rows written before values were encoded.
-QByteArray decodeBase64OrRaw(const QByteArray &value) {
+// Decodes a Base64-encoded value. Returns an empty byte array if the value is not valid Base64.
+QByteArray decodeBase64(const QByteArray &value) {
     const auto result = QByteArray::fromBase64Encoding(QByteArray(value),
                                                        QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
     if (result.decodingStatus == QByteArray::Base64DecodingStatus::Ok) {
         return result.decoded;
     }
-    return value;
+    return QByteArray();
 }
 
 std::shared_ptr<std::vector<char>> dialogGeometryToBlob(const KDC::Parameters::DialogGeometry &dialogGeometry) {
@@ -69,7 +69,11 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     for (const QByteArray &line: lines) {
         const QList<QByteArray> elts = line.split(';');
         if (elts.size() == 2) {
-            (void) dialogGeometry.insert(QString(elts[0]), decodeBase64OrRaw(elts[1]));
+            const QByteArray value = decodeBase64(elts[1]);
+            if (value.isEmpty()) {
+                continue;
+            }
+            (void) dialogGeometry.insert(QString(elts[0]), value);
         }
     }
     return dialogGeometry;
