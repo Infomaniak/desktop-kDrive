@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "libcommon/data/parameters.h"
 #include "server/comm/guijobs/abstractguijob.h"
+
+#include "libcommon/data/parameters.h"
 
 namespace KDC {
 

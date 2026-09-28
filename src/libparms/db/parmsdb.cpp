@@ -53,7 +53,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
         return dialogGeometry;
     }
 
-    const QByteArray arr(blob->data(), static_cast<int>(blob->size()));
+    const QByteArray arr(blob->data(), static_cast<qsizetype>(blob->size()));
     const QList<QByteArray> lines = arr.split('\n');
     for (const QByteArray &line: lines) {
         const QList<QByteArray> elts = line.split(';');
