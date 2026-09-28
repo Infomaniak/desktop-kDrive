@@ -51,8 +51,6 @@ class ServerParameters : public Parameters {
             _uploadSessionParallelJobs = uploadSessionParallelJobs;
         }
 
-        bool operator==(const ServerParameters &parameters) const = default;
-
         static int _uploadSessionParallelJobsDefault;
 
     private:

@@ -36,7 +36,7 @@
 #include "libcommonserver/db/db.h"
 
 #include "libcommon/data/drive.h"
-#include "../../libcommonserver/data/serverparameters.h"
+#include "libcommonserver/data/serverparameters.h"
 
 namespace KDC {
 

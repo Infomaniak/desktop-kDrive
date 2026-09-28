@@ -23,7 +23,7 @@
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
-#include "../../libcommonserver/data/serverparameters.h"
+#include "libcommonserver/data/serverparameters.h"
 
 #include <sqlite3.h>
 
@@ -32,8 +32,6 @@
 
 namespace {
 
-// Encodes the dialog geometry map into the BLOB format stored in the "parameters" table:
-// one "objectName;base64Geometry" pair per line.
 std::shared_ptr<std::vector<char>> dialogGeometryToBlob(const KDC::Parameters::DialogGeometry &dialogGeometry) {
     if (dialogGeometry.isEmpty()) {
         return nullptr;

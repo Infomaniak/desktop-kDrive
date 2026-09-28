@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "../../libcommonserver/data/serverparameters.h"
+#include "libcommonserver/data/serverparameters.h"
 #include "syncenginelib.h"
 #include "libcommon/utility/types.h"
 

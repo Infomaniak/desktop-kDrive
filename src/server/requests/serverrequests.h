@@ -32,7 +32,7 @@
 #include "libcommon/data/exclusiontemplate.h"
 #include "libcommon/data/exclusionapp.h"
 #include "libsyncengine/login/login.h"
-#include "../../libcommonserver/data/serverparameters.h"
+#include "libcommonserver/data/serverparameters.h"
 
 #include <QList>
 #include <QString>
