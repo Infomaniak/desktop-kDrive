@@ -32,7 +32,6 @@
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
 #include "comm/guijobmanager.h"
-#include "appserver/testappserver.h"
 #include "comm/testsocketcomm.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/keychainmanager/apitoken.h"
@@ -342,19 +341,8 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
     CPPUNIT_ASSERT(AbstractGuiJob::deserializeGenericInputParms(CommonUtility::str2CommString(queryStr), requestId, requestNum,
                                                                 inParams));
 
-    std::unique_ptr<MockAppServer> ownedAppServer;
     auto *appServer = dynamic_cast<AppServer *>(QCoreApplication::instance());
-    if (!appServer) {
-        const std::vector<std::string> args = {Path2Str(CommonUtility::applicationFilePath())};
-        std::vector<char *> argv;
-        argv.reserve(args.size());
-        for (const auto &arg: args) {
-            argv.push_back(const_cast<char *>(arg.c_str()));
-        }
-        auto argc = static_cast<int>(argv.size());
-        ownedAppServer = std::make_unique<MockAppServer>(argc, argv.data());
-        appServer = ownedAppServer.get();
-    }
+    CPPUNIT_ASSERT(appServer);
 
     GuiJobManagerSingleton::clear();
 
@@ -392,15 +380,19 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
         }
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    while (clientChannel->canReadMessage()) {
-        Poco::JSON::Parser parser;
-        auto signalMessage = parser.parse(CommonUtility::commString2Str(clientChannel->readMessage()));
-        auto signalStruct = signalMessage.extract<Poco::DynamicStruct>();
+    auto remainingNoExtraSignalWait = 50;
+    while (remainingNoExtraSignalWait-- > 0) {
+        if (clientChannel->canReadMessage()) {
+            Poco::JSON::Parser parser;
+            auto signalMessage = parser.parse(CommonUtility::commString2Str(clientChannel->readMessage()));
+            auto signalStruct = signalMessage.extract<Poco::DynamicStruct>();
 
-        SignalNum signalNum = SignalNum::Unknown;
-        CommonUtility::readValueFromStruct(signalStruct, "num", signalNum);
-        signalNums.push_back(signalNum);
+            SignalNum signalNum = SignalNum::Unknown;
+            CommonUtility::readValueFromStruct(signalStruct, "num", signalNum);
+            signalNums.push_back(signalNum);
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
     }
 
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), signalNums.size());
