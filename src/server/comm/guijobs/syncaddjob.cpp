@@ -61,9 +61,9 @@ ExitInfo SyncAddJob::process() {
     Drive drive;
     bool accountAdded = false;
     bool driveAdded = false;
-    if (const auto exitInfo =
-                ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
-                                        serverFolderNodeId(), liteSync(), account, drive, sync, accountAdded, driveAdded);
+    ExitInfo exitInfo;
+    if (exitInfo = ServerRequests::addSync(_userDbId, _accountId, _driveId, localFolderPath(), serverFolderPath(),
+                                           serverFolderNodeId(), liteSync(), account, drive, sync, accountAdded, driveAdded);
         !exitInfo) {
         LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                    << _userDbId << L" accountId=" << _accountId << L" driveId=" << _driveId << L" local "
@@ -71,7 +71,6 @@ ExitInfo SyncAddJob::process() {
                                    << Utility::formatSyncPath(serverFolderPath()) << L" serverFolderNodeId="
                                    << Utility::v2ws(serverFolderNodeId()) << L" liteSync=" << liteSync());
         addError(Error(ERR_ID, exitInfo));
-        return exitInfo;
     }
 
     if (accountAdded) {
@@ -86,6 +85,10 @@ ExitInfo SyncAddJob::process() {
 
     auto signalSyncAddedJob = std::make_shared<SignalSyncAddedJob>(sync);
     _commManager->sendGuiSignal(signalSyncAddedJob);
+
+    if (!exitInfo) {
+        return exitInfo;
+    }
 
     return AbstractSyncAddJob::process(sync);
 }
