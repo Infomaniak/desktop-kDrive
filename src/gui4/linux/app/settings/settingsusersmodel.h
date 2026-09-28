@@ -41,6 +41,7 @@ class SettingsUsersModel final : public QAbstractListModel {
             UserDbIdRole = Qt::UserRole + 1,
             NameRole,
             EmailRole,
+            DisconnectLabelRole,
             AvatarSourceRole,
             DrivesModelRole,
             AvailableDrivesLoadingRole,
@@ -63,6 +64,7 @@ class SettingsUsersModel final : public QAbstractListModel {
                 UserDbId userDbId{0};
                 QString name;
                 QString email;
+                QString disconnectLabel;
                 QString avatarSource;
                 std::unique_ptr<UserDrivesModel> drivesModel;
         };

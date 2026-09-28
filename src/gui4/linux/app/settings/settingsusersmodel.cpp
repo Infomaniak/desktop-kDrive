@@ -21,7 +21,10 @@
 #include "app/services/settingsuserservice.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
+
+using namespace Qt::StringLiterals;
 
 namespace KDC {
 
@@ -53,6 +56,8 @@ QVariant SettingsUsersModel::data(const QModelIndex &index, const int role) cons
             return entry.name;
         case EmailRole:
             return entry.email;
+        case DisconnectLabelRole:
+            return entry.disconnectLabel;
         case AvatarSourceRole:
             return entry.avatarSource;
         case DrivesModelRole:
@@ -71,6 +76,7 @@ QHash<int, QByteArray> SettingsUsersModel::roleNames() const {
             {UserDbIdRole, "userDbId"},
             {NameRole, "name"},
             {EmailRole, "email"},
+            {DisconnectLabelRole, "disconnectLabel"},
             {AvatarSourceRole, "avatarSource"},
             {DrivesModelRole, "drivesModel"},
             {AvailableDrivesLoadingRole, "availableDrivesLoading"},
@@ -92,6 +98,7 @@ void SettingsUsersModel::rebuild() {
 
     std::vector<UserEntry> entries;
     entries.reserve(users.size());
+    QHash<QString, uint32_t> nameCounts;
     for (const auto &user: users) {
         const auto displayInfo = _cache.userDisplayInfo(user.dbId());
         if (!displayInfo.has_value()) {
@@ -101,10 +108,18 @@ void SettingsUsersModel::rebuild() {
                 .userDbId = displayInfo->dbId(),
                 .name = QString::fromStdString(displayInfo->name()),
                 .email = QString::fromStdString(displayInfo->email()),
+                .disconnectLabel = {}, // Set below once all names are known.
                 .avatarSource = displayInfo->avatarSource().isEmpty() ? QString::fromStdString(displayInfo->avatarUrl())
                                                                       : displayInfo->avatarSource(),
                 .drivesModel = std::make_unique<UserDrivesModel>(_cache, user.dbId(), this),
         });
+        ++nameCounts[entries.back().name];
+    }
+
+    for (auto &entry: entries) {
+        entry.disconnectLabel = nameCounts.value(entry.name) > 1 && !entry.email.isEmpty()
+                                        ? u"%1 (%2)"_s.arg(entry.name, entry.email)
+                                        : entry.name;
     }
 
     beginResetModel();
