@@ -1285,40 +1285,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return value;
         }
 
-        public async Task<bool> SetAppState(AppStateKey key, string value, CancellationToken cancellationToken)
-        {
-            var parms = new JsonObject
-            {
-                [JsonKeys.Key] = (int)key,
-                [JsonKeys.Value] = Utility.ToBase64String(value)
-            };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SET_APPSTATE, parms, cancellationToken);
-            return CheckJobResultAndLogIfError(data, parms);
-        }
-
-        public async Task<string?> GetAppState(AppStateKey key, CancellationToken cancellationToken)
-        {
-            var parms = new JsonObject
-            {
-                [JsonKeys.Key] = (int)key
-            };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, parms))
-                return null;
-
-            if (!HasRequiredParam(data, JsonKeys.Value))
-                return null;
-
-            var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-            options.Converters.Add(new Base64StringJsonConverter());
-
-            string? value = data.Params[JsonKeys.Value].Deserialize<string>(options);
-            return value;
-        }
-
         public async Task Exit()
         {
             // Try and forget, no need to wait for response on exit

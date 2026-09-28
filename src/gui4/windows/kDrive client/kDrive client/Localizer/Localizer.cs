@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 using Infomaniak.kDrive.Types;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Microsoft.Windows.Globalization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Resources.Core;
 
 namespace Infomaniak.kDrive
 {
@@ -30,7 +30,10 @@ namespace Infomaniak.kDrive
     {
         public static Localizer Instance { get; } = new Localizer();
 
-        private static readonly ResourceContext context = ResourceContext.GetForViewIndependentUse();
+        // Windows App SDK MRT Core - self-contained, works unpackaged and on Server SKUs (e.g. Windows Server 2019).
+        private static readonly ResourceManager resourceManager = new ResourceManager();
+        private static readonly ResourceContext context = resourceManager.CreateResourceContext();
+        private static readonly ResourceMap resourceMap = resourceManager.MainResourceMap.GetSubtree("Resources");
         private static Dictionary<Language, string> languageToCultureMap = new Dictionary<Language, string>
             {
                 { Language.English, "en" },
@@ -57,7 +60,7 @@ namespace Infomaniak.kDrive
             {
                 CultureInfo.CurrentCulture.ClearCachedData();
                 ApplicationLanguages.PrimaryLanguageOverride = cultureName;
-                context.QualifierValues["language"] = cultureName;
+                context.QualifierValues["Language"] = cultureName;
                 Logger.Log(Logger.Level.Info, $"Culture set to {cultureName}");
                 TriggerRefresh();
             }
@@ -171,14 +174,9 @@ namespace Infomaniak.kDrive
             key = key.Replace(".", "/");
             string localizedString = "";
 
-            var ressources = ResourceManager.Current.MainResourceMap.GetSubtree("Resources");
-            NamedResource namedResource;
-            if (ressources.TryGetValue(key, out namedResource))
-            {
-                var resourceCandidate = namedResource.Resolve(context);
-                if (resourceCandidate is not null)
-                    localizedString = resourceCandidate.ValueAsString;
-            }
+            var resourceCandidate = resourceMap.TryGetValue(key, context);
+            if (resourceCandidate is not null && resourceCandidate.Kind == ResourceCandidateKind.String)
+                localizedString = resourceCandidate.ValueAsString;
 
             if (localizedString.Length == 0)
             {

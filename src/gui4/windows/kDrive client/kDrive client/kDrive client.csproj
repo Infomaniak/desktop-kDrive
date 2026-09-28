@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>4.0.0.13</AssemblyVersion>
+    <AssemblyVersion>4.0.0.14</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>

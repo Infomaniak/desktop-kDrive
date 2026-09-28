@@ -21,7 +21,8 @@
 namespace KDC {
 
 SnapshotItem::SnapshotItem(const NodeId &id) :
-    _id(id) {}
+    _id(id),
+    _type(NodeType::Directory) {}
 
 SnapshotItem::SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, const SyncTime createdAt,
                            const SyncTime lastModified, const NodeType type, const int64_t size, const bool isLink,
