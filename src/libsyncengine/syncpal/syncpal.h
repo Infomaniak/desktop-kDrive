@@ -163,7 +163,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         inline void setSendManyDeletesNotification(
-                const std::function<void(SyncDbId, TooManyDeletesNotificationType, const int64_t, const std::vector<SyncPath> &)>
+                const std::function<void(SyncDbId, TooManyDeletesNotificationType, const Count, const std::vector<SyncPath> &)>
                         &sendManyDeletesNotification) {
             _sendManyDeletesNotification = sendManyDeletesNotification;
         }
