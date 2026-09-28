@@ -832,7 +832,7 @@ ExitInfo AppServer::updateParametersAndPropagateChanges(const Parameters &newPar
     auto updatedParameters = newParameters;
 
     // Retrieve current settings
-    const Parameters previousParameters = ParametersCache::instance()->parameters();
+    const auto previousParameters = ParametersCache::instance()->parameters();
 
     // Proxy parameters change propagation. Must be executed before "updateParameters" in order to save the new keychain
     // key in DB.
