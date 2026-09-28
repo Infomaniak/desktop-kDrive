@@ -42,16 +42,15 @@ std::shared_ptr<ParametersCache> ParametersCache::instance() noexcept {
 
 ParametersCache::ParametersCache() {
     // Load parameters
-    const ExitCode exitCode = GuiRequests::getParameters(_parametersInfo);
+    const ExitCode exitCode = GuiRequests::getParameters(_parameters);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppParameters()) << "Error in Requests::getParameters: code=" << exitCode;
         throw std::runtime_error("Failed to create ParametersCache instance!");
     }
 }
 
-bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
-    const ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo);
-    if (exitCode != ExitCode::Ok) {
+bool ParametersCache::saveParameters(bool displayMessageBoxOnError) {
+    if (const ExitCode exitCode = GuiRequests::updateParameters(_parameters); exitCode != ExitCode::Ok) {
         qCWarning(lcAppParameters()) << "Error in Requests::updateParameters";
         if (displayMessageBoxOnError) {
             CustomMessageBox msgBox(QMessageBox::Warning,

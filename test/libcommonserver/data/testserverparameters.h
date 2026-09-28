@@ -18,26 +18,24 @@
 
 #pragma once
 
-#include "server/comm/guijobs/abstractguijob.h"
-
-#include "libcommon/data/parameters.h"
+#include "testincludes.h"
+#include "libcommonserver/data/serverparameters.h"
 
 namespace KDC {
 
-class UtilityHasSystemLaunchOnStartupJob : public AbstractGuiJob {
+class TestServerParameters : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestServerParameters);
+        CPPUNIT_TEST(testApplyClientParametersPreservesServerOnlyFields);
+        CPPUNIT_TEST(testApplyClientParametersReplacesDialogGeometry);
+        CPPUNIT_TEST_SUITE_END();
+
     public:
-        UtilityHasSystemLaunchOnStartupJob(std::shared_ptr<CommManager> commManager, int requestId,
-                                           const Poco::DynamicStruct &inParams, std::shared_ptr<AbstractCommChannel> channel);
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
 
-    private:
-        // Output parameter
-        bool _enabled{false};
-
-        ExitInfo deserializeInputParms() override { return ExitCode::Ok; };
-        ExitInfo serializeOutputParms() override;
-        ExitInfo process() override;
-
-        friend class TestGuiCommChannel;
+    protected:
+        void testApplyClientParametersPreservesServerOnlyFields();
+        void testApplyClientParametersReplacesDialogGeometry();
 };
 
 } // namespace KDC
