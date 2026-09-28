@@ -16,18 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include "utility/testutility.h"
-#include "db/testdb.h"
-#include "data/testserverparameters.h"
+#include "testincludes.h"
+#include "libcommonserver/data/serverparameters.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestServerParameters);
-} // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommonServer.log");
-}
+class TestServerParameters : public CppUnit::TestFixture, public TestBase {
+        CPPUNIT_TEST_SUITE(TestServerParameters);
+        CPPUNIT_TEST(testApplyClientParametersPreservesServerOnlyFields);
+        CPPUNIT_TEST(testApplyClientParametersReplacesDialogGeometry);
+        CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp() override { TestBase::start(); }
+        void tearDown() override { TestBase::stop(); }
+
+    protected:
+        void testApplyClientParametersPreservesServerOnlyFields();
+        void testApplyClientParametersReplacesDialogGeometry();
+};
+
+} // namespace KDC

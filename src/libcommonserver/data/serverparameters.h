@@ -27,13 +27,13 @@ class ServerParameters : public Parameters {
         ServerParameters();
 
         /// Overwrite the client-visible fields with those of parameters, keeping the server-only fields unchanged.
-void applyClientParameters(const Parameters &parameters) {
-    const auto previousDialogGeometry = dialogGeometry();
-    Parameters::operator=(parameters);
-    if (parameters.dialogGeometry().isEmpty()) {
-        setDialogGeometry(previousDialogGeometry);
-    }
-}
+        void applyClientParameters(const Parameters &parameters) {
+            const auto previousDialogGeometry = dialogGeometry();
+            Parameters::operator=(parameters);
+            if (parameters.dialogGeometry().isEmpty()) {
+                setDialogGeometry(previousDialogGeometry);
+            }
+        }
 
         inline const std::string &updateFileAvailable() const { return _updateFileAvailable; }
         inline void setUpdateFileAvailable(const std::string &updateFileAvailable) { _updateFileAvailable = updateFileAvailable; }
