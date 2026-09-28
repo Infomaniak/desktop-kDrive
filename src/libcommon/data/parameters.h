@@ -35,7 +35,6 @@ namespace KDC {
 class Parameters {
     public:
         Parameters() = default;
-        virtual ~Parameters() = default;
 
         using DialogGeometry = QMap<QString, QByteArray>;
 
