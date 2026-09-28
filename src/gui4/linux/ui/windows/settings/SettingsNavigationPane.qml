@@ -37,6 +37,7 @@ Item {
     }
 
     property var _focusHistory: []
+    property Component _pendingResetComponent: null
 
     signal focusRestorationRequested(var target)
 
@@ -61,10 +62,13 @@ Item {
     }
 
     function reset(component) {
+        // A reset can come from an asynchronous event: defer it until the transition ends rather than dropping it.
         if (stack.busy) {
+            root._pendingResetComponent = component;
             return;
         }
 
+        root._pendingResetComponent = null;
         root._focusHistory = [];
         stack.clear(StackView.Immediate);
         stack.push(component, {}, StackView.Immediate);
@@ -76,5 +80,11 @@ Item {
         anchors.fill: parent
         clip: true
         initialItem: root.initialItem
+
+        onBusyChanged: {
+            if (!busy && root._pendingResetComponent) {
+                root.reset(root._pendingResetComponent);
+            }
+        }
     }
 }
