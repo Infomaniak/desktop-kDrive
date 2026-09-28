@@ -635,6 +635,7 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                                    << exitInfo);
                 return exitInfo;
             }
+#endif
 
             // update vfs status
             VfsStatus vfsStatus;
@@ -646,7 +647,6 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath)
                                                                          << L": " << exitInfoForceStatus);
             }
-#endif
 
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {
