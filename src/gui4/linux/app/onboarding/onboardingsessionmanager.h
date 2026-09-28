@@ -62,6 +62,9 @@ class OnboardingSessionManager final : public QObject {
          */
         Q_INVOKABLE void openOnboardingWindow();
 
+        /** Starts or activates an onboarding session explicitly at the Login step. */
+        Q_INVOKABLE void startLoginSession();
+
         /** Cancels and unpublishes the active onboarding session, if any. */
         Q_INVOKABLE void cancelActiveSession() const;
 
@@ -95,6 +98,7 @@ class OnboardingSessionManager final : public QObject {
         uint64_t _nextGeneration{1};
         bool _bootstrapCompleted{false};
         bool _restartRequested{false};
+        bool _loginSessionRequested{false};
         bool _windowActivationPending{false};
 };
 
