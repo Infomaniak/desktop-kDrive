@@ -171,6 +171,7 @@ enum class ExitCause {
     FileSystemNotSupported,
     SyncDeletionFailed,
     InvalidLinkTarget,
+    MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
     EnumEnd
 };
 

@@ -404,8 +404,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
-                                                          << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger,
+                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -1547,8 +1547,11 @@ ExitInfo ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath 
         case OperationType::Edit: {
             // Rename the file so as not to lose any information
             SyncPath newSyncPath;
-            PlatformInconsistencyCheckerUtility::renameLocalFile(
-                    absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &newSyncPath);
+            if (const auto exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
+                        absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixType::Conflict, &newSyncPath);
+                !exitInfo) {
+                return exitInfo;
+            }
 
             // Exclude file from sync
             if (!_syncPal->vfs()->fileStatusChanged(newSyncPath, SyncFileStatus::Ignored)) {
@@ -2273,7 +2276,8 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     // Handle specific errors
     switch (static_cast<int>(opsExitInfo)) {
         case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)): {
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
             return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
@@ -2455,10 +2459,13 @@ ExitInfo ExecutorWorker::removeDependentOps(const std::shared_ptr<Node> localNod
     return ExitCode::Ok;
 }
 
-ExitInfo ExecutorWorker::excludeFileFromSync(SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath) {
+ExitInfo ExecutorWorker::excludeFileFromSync(const SyncOpPtr syncOp, const SyncPath &absoluteLocalFilepath) {
     // Blacklist placeholder
-    (void) PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilepath,
-                                                                PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+    if (const auto exitInfo = PlatformInconsistencyCheckerUtility::renameLocalFile(
+                absoluteLocalFilepath, PlatformInconsistencyCheckerUtility::SuffixType::Blacklisted);
+        !exitInfo) {
+        return exitInfo;
+    }
 
     // Clear update tree
     if (!deleteOpNodes(syncOp)) {

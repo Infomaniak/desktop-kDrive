@@ -249,6 +249,8 @@ std::string toString(const ExitCause e) {
             return "SyncDeletionFailed";
         case ExitCause::InvalidLinkTarget:
             return "InvalidLinkTarget";
+        case ExitCause::MoveThroughSymlink:
+            return "MoveThroughSymlink";
         default:
             return noConversionStr;
     }
@@ -741,6 +743,8 @@ std::string toString(const IoError e) {
             return "FileOrDirectoryCorrupted";
         case IoError::TooManySymbolicLinkLevels:
             return "TooManySymbolicLinkLevels";
+        case IoError::MoveThroughSymlink:
+            return "MoveThroughSymlink";
         case IoError::Unknown:
             return "Unknown";
         default:

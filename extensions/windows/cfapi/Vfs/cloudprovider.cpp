@@ -49,7 +49,7 @@ CF_CALLBACK_REGISTRATION CloudProvider::s_callbackTable[] = {
         //{ CF_CALLBACK_TYPE_CANCEL_FETCH_PLACEHOLDERS, CloudProvider::onCancelFetchPlacehoders },
         //{ CF_CALLBACK_TYPE_NOTIFY_FILE_OPEN_COMPLETION, CloudProvider::onNotifyOpenCompletion },
         //{ CF_CALLBACK_TYPE_NOTIFY_FILE_CLOSE_COMPLETION, CloudProvider::onNotifyCloseCompletion },
-        {CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE, CloudProvider::onNotifyDehydrate},
+        //{CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE, CloudProvider::onNotifyDehydrate},
         //{ CF_CALLBACK_TYPE_NOTIFY_DEHYDRATE_COMPLETION, CloudProvider::onNotifyDehydrateCompletion },
         //{ CF_CALLBACK_TYPE_NOTIFY_DELETE, CloudProvider::onNotifyDelete },
         //{ CF_CALLBACK_TYPE_NOTIFY_DELETE_COMPLETION, CloudProvider::onNotifyDeleteCompletion },
@@ -531,29 +531,7 @@ void CALLBACK CloudProvider::onCancelFetchData(_In_ CONST CF_CALLBACK_INFO *call
 
 void CloudProvider::onNotifyDehydrate(_In_ CONST CF_CALLBACK_INFO *callbackInfo,
                                       _In_ CONST CF_CALLBACK_PARAMETERS *callbackParameters) {
-    if (!callbackInfo || !callbackParameters) {
-        TRACE_ERROR(L"Invalid parameters");
-        return;
-    }
-
-    ProviderInfo *providerInfo = (ProviderInfo *) callbackInfo->CallbackContext;
-    if (providerInfo) {
-        std::filesystem::path fullPath =
-                std::filesystem::path(callbackInfo->VolumeDosName) / std::filesystem::path(callbackInfo->NormalizedPath);
-
-        if (callbackInfo->ProcessInfo->ProcessId == Utilities::s_processId) {
-            TRACE_DEBUG(L"Dehydration asked by app: path = '%ls'", fullPath.wstring().c_str());
-        } else {
-            TRACE_DEBUG(L"Dehydration asked: processId = %ld, path = '%ls'", callbackInfo->ProcessInfo->ProcessId,
-                        fullPath.wstring().c_str());
-        }
-
-        if (!PipeClient::getInstance().sendMessageWithoutAnswer(L"MAKE_ONLINE_ONLY_DIRECT", fullPath.wstring())) {
-            TRACE_ERROR(L"Error in Utilities::writeMessage!");
-        }
-    } else {
-        TRACE_ERROR(L"Empty CallbackContext");
-    }
+    TRACE_DEBUG(L"onNotifyDehydrate");
 }
 
 void CloudProvider::onNotifyDehydrateCompletion(_In_ CONST CF_CALLBACK_INFO *callbackInfo,

@@ -30,6 +30,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
     public:
         CPPUNIT_TEST_SUITE(TestLocalJobs);
         CPPUNIT_TEST(testLocalJobs);
+        CPPUNIT_TEST(testLocalMoveJobThroughSymlink);
         CPPUNIT_TEST(testLocalDeleteJob);
         CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
@@ -44,6 +45,7 @@ class TestLocalJobs : public CppUnit::TestFixture, public TestBase {
 
     protected:
         void testLocalJobs();
+        void testLocalMoveJobThroughSymlink();
         void testLocalDeleteJob();
         void testDeleteFilesWithDuplicateNames();
         void testDeleteExcludedDehydratedPlaceholderJob();

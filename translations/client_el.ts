@@ -574,22 +574,22 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         <translation>Να μην εμφανίζεται ξανά</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1508"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Synthesis</source>
         <translation>Σύνοψη</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1509"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Preferences</source>
         <translation>Προτιμήσεις</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1510"/>
+        <location filename="../src/gui/clientgui.cpp" line="1511"/>
         <source>Quit</source>
         <translation>Έξοδος</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1676"/>
+        <location filename="../src/gui/clientgui.cpp" line="1677"/>
         <source>Failed to start synchronizations!</source>
         <translation>Αποτυχία εκκίνησης συγχρονισμών!</translation>
     </message>
@@ -2057,7 +2057,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="803"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="850"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="854"/>
         <source>Synchronization error.</source>
         <translation>Σφάλμα συγχρονισμού.</translation>
     </message>
@@ -2078,38 +2078,43 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Δεν ήταν δυνατή η μετακίνηση του στοιχείου, καθώς η διαδρομή του περιέχει συμβολικό σύνδεσμο ή σημείο διακλάδωσης.&lt;br&gt;Έχει εξαιρεθεί προσωρινά από τον συγχρονισμό.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="838"/>
         <source>System error.</source>
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="841"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="856"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="860"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε τεχνικό σφάλμα.&lt;br&gt;Εκκαθαρίστε το ιστορικό και αν το σφάλμα επιμείνει, επικοινωνήστε με την υποστήριξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1098"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1112"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1116"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Μεταφορά ολοκληρώθηκε!&lt;br&gt;Χρησιμοποιήστε τον αναγνωριστικό &lt;b&gt;%1&lt;/b&gt; σε αναφορές σφαλμάτων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1113"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1117"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Αποτυχία μεταφοράς!
 Χρησιμοποιήστε τον ακόλουθο σύνδεσμο για να στείλετε τα αρχεία καταγραφής: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1134"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1138"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
@@ -2931,82 +2936,82 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Αδύνατη η αποθήκευση παραμέτρων!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1257"/>
         <source>Make available locally</source>
         <translation>Διαθεσιμότητα τοπικά</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
         <source>Free up local space</source>
         <translation>Ελευθέρωση τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
         <source>Cancel free up local space</source>
         <translation>Ακύρωση ελευθέρωσης τοπικού χώρου</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
         <source>Cancel make available locally</source>
         <translation>Ακύρωση τοπικής διαθεσιμότητας</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1262"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
         <source>Resharing this file is not allowed</source>
         <translation>Η κοινοποίηση αυτού του αρχείου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Η κοινοποίηση αυτού του φακέλου δεν επιτρέπεται</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Copy public share link</source>
         <translation>Αντιγραφή δημόσιου συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Copy private share link</source>
         <translation>Αντιγραφή ιδιωτικού συνδέσμου κοινοποίησης</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1275"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Open in browser</source>
         <translation>Άνοιγμα στον περιηγητή</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2024"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2057"/>
         <source>No valid folder selected!</source>
         <translation>Δεν επιλέχθηκε έγκυρος φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
         <source>The selected path does not exist!</source>
         <translation>Η επιλεγμένη διαδρομή δεν υπάρχει!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
         <source>The selected path is not a folder!</source>
         <translation>Η επιλεγμένη διαδρομή δεν είναι φάκελος!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2045"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Δεν έχετε δικαίωμα εγγραφής στον επιλεγμένο φάκελο!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2075"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2108"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχει φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2083"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2116"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 περιέχεται σε φάκελο που συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2091"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Ο τοπικός φάκελος %1 συγχρονίζεται ήδη. Επιλέξτε άλλον!</translation>
     </message>
@@ -3038,7 +3043,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="50"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="79"/>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="124"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="125"/>
         <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="43"/>
         <source>The specified version does not exist or the download failed.</source>
         <translation>Η συγκεκριμένη έκδοση δεν υπάρχει ή η λήψη απέτυχε.</translation>
@@ -3056,7 +3061,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="64"/>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="91"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="92"/>
         <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="57"/>
         <source>Verifying file integrity...</source>
         <translation>Έλεγχος ακεραιότητας αρχείου...</translation>
@@ -3083,7 +3088,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="88"/>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="114"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="115"/>
         <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="73"/>
         <source>Done.</source>
         <translation>Έγινε.</translation>
@@ -3114,42 +3119,42 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
         <translation>Αποτυχία λήψης πακέτου: %1</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="87"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="88"/>
         <source>Package file not found after download.</source>
         <translation>Δεν εντοπίστηκε το αρχείο του πακέτου μετά τη λήψη.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="96"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="97"/>
         <source>Removing old application...</source>
         <translation>Αφαίρεση παλαιάς εφαρμογής...</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="107"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="108"/>
         <source>Opening installer...</source>
         <translation>Έναρξη του προγράμματος εγκατάστασης...</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="109"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="110"/>
         <source>Failed to open installer. Please install manually: %1</source>
         <translation>Δεν ήταν δυνατό το άνοιγμα του προγράμματος εγκατάστασης. Παρακαλώ, πραγματοποιήστε την εγκατάσταση χειροκίνητα: %1</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="113"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="114"/>
         <source>Installer opened and started</source>
         <translation>Το πρόγραμμα εγκατάστασης άνοιξε και ξεκίνησε</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="126"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="127"/>
         <source>Failed to download appcast: %1</source>
         <translation>Δεν κατέστη δυνατή η λήψη του appcast: %1</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="133"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="134"/>
         <source>Failed to read appcast.</source>
         <translation>Δεν κατέστη δυνατή η ανάγνωση του appcast.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="156"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="157"/>
         <source>Could not find download link in appcast.</source>
         <translation>Δεν βρέθηκε ο σύνδεσμος λήψης στο appcast.</translation>
     </message>

@@ -31,6 +31,7 @@ class TestSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUpdateItem);
         CPPUNIT_TEST(testToCsvString);
         CPPUNIT_TEST(testGetItem);
+        CPPUNIT_TEST(testGetItemWithCorruptedItem);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,6 +42,7 @@ class TestSnapshotItemHandler : public CppUnit::TestFixture, public TestBase {
         void testUpdateItem();
         void testToCsvString();
         void testGetItem();
+        void testGetItemWithCorruptedItem();
 };
 
 namespace snapshotitem_checker {

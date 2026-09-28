@@ -574,22 +574,22 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
         <translation>Älä näytä uudelleen</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1508"/>
+        <location filename="../src/gui/clientgui.cpp" line="1509"/>
         <source>Synthesis</source>
         <translation>Yhteenveto</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1509"/>
+        <location filename="../src/gui/clientgui.cpp" line="1510"/>
         <source>Preferences</source>
         <translation>Asetukset</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1510"/>
+        <location filename="../src/gui/clientgui.cpp" line="1511"/>
         <source>Quit</source>
         <translation>Lopeta</translation>
     </message>
     <message>
-        <location filename="../src/gui/clientgui.cpp" line="1676"/>
+        <location filename="../src/gui/clientgui.cpp" line="1677"/>
         <source>Failed to start synchronizations!</source>
         <translation>Synkronointien käynnistäminen epäonnistui!</translation>
     </message>
@@ -2057,7 +2057,7 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="803"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="850"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="854"/>
         <source>Synchronization error.</source>
         <translation>Synkronointivirhe.</translation>
     </message>
@@ -2078,38 +2078,43 @@ Valitse toinen kansio. Jos jatkat, Lite Sync poistetaan käytöstä.&lt;br&gt;
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="834"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Kohdetta ei voitu siirtää, koska sen polku sisältää symbolisen linkin tai liitoskohdan.&lt;br&gt;Se on suljettu pois synkronoinnista väliaikaisesti.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="838"/>
         <source>System error.</source>
         <translation>Järjestelmävirhe.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="841"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Kohde on jo olemassa toisella puolella.&lt;br&gt;Se on lisätty väliaikaisesti estolistalle.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="856"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="860"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Tekninen virhe on tapahtunut.&lt;br&gt;Tyhjennä historia ja ota yhteyttä tukitiimiimme, jos virhe toistuu.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1098"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kansion polkua %1 ei voi avata.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1112"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1116"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Siirto valmis!&lt;br&gt;Viittaa tunnukseen &lt;b&gt;%1&lt;/b&gt; virheraporteissa.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1113"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1117"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Siirto epäonnistui!
 Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1134"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1138"/>
         <source>No kDrive configured!</source>
         <translation>kDrivea ei ole määritetty!</translation>
     </message>
@@ -2931,82 +2936,82 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
         <translation>Parametreja ei voi tallentaa!</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1246"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1257"/>
         <source>Make available locally</source>
         <translation>Tee saataville paikallisesti</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1250"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1261"/>
         <source>Free up local space</source>
         <translation>Vapauta paikallista tilaa</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1254"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1265"/>
         <source>Cancel free up local space</source>
         <translation>Peruuta paikallisen tilan vapautus</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1258"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1269"/>
         <source>Cancel make available locally</source>
         <translation>Peruuta paikallinen saatavillaolo</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1262"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1273"/>
         <source>Resharing this file is not allowed</source>
         <translation>Tämän tiedoston jakaminen uudelleen ei ole sallittu</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1263"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1274"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Tämän kansion jakaminen uudelleen ei ole sallittu</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1267"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1278"/>
         <source>Copy public share link</source>
         <translation>Kopioi julkinen jakolinkki</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1271"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1282"/>
         <source>Copy private share link</source>
         <translation>Kopioi yksityinen jakolinkki</translation>
     </message>
     <message>
-        <location filename="../src/server/comm/extensionjob.cpp" line="1275"/>
+        <location filename="../src/server/comm/extensionjob.cpp" line="1286"/>
         <source>Open in browser</source>
         <translation>Avaa selaimessa</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2024"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2057"/>
         <source>No valid folder selected!</source>
         <translation>Kelvollista kansiota ei ole valittu!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2035"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2068"/>
         <source>The selected path does not exist!</source>
         <translation>Valittu polku ei ole olemassa!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2040"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2073"/>
         <source>The selected path is not a folder!</source>
         <translation>Valittu polku ei ole kansio!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2045"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2078"/>
         <source>You have no permission to write to the selected folder!</source>
         <translation>Sinulla ei ole kirjoitusoikeutta valittuun kansioon!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2075"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2108"/>
         <source>The local folder %1 contains a folder already synced. Please pick another one!</source>
         <translation>Paikallinen kansio %1 sisältää jo synkronoidun kansion. Valitse toinen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2083"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2116"/>
         <source>The local folder %1 is contained in a folder already synced. Please pick another one!</source>
         <translation>Paikallinen kansio %1 on jo synkronoidun kansion sisällä. Valitse toinen!</translation>
     </message>
     <message>
-        <location filename="../src/server/requests/serverrequests.cpp" line="2091"/>
+        <location filename="../src/server/requests/serverrequests.cpp" line="2124"/>
         <source>The local folder %1 is already synced. Please pick another one!</source>
         <translation>Paikallinen kansio %1 on jo synkronoitu. Valitse toinen!</translation>
     </message>
@@ -3038,7 +3043,7 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="50"/>
         <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="79"/>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="124"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="125"/>
         <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="43"/>
         <source>The specified version does not exist or the download failed.</source>
         <translation>Määritettyä versiota ei ole olemassa tai lataus epäonnistui.</translation>
@@ -3056,7 +3061,7 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="64"/>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="91"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="92"/>
         <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="57"/>
         <source>Verifying file integrity...</source>
         <translation>Tiedoston eheyden tarkistaminen...</translation>
@@ -3083,7 +3088,7 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
     </message>
     <message>
         <location filename="../src/manualupdater/updater/osupdater_linux.cpp" line="88"/>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="114"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="115"/>
         <location filename="../src/manualupdater/updater/osupdater_win.cpp" line="73"/>
         <source>Done.</source>
         <translation>Valmis.</translation>
@@ -3114,42 +3119,42 @@ Käytä seuraavaa linkkiä lähettääksesi lokit tuelle: &lt;a style=&quot;%1&q
         <translation>Paketin lataaminen epäonnistui: %1</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="87"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="88"/>
         <source>Package file not found after download.</source>
         <translation>Pakettitiedostoa ei löytynyt latauksen jälkeen.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="96"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="97"/>
         <source>Removing old application...</source>
         <translation>Vanhan sovelluksen poistaminen...</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="107"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="108"/>
         <source>Opening installer...</source>
         <translation>Asennusohjelma käynnistyy...</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="109"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="110"/>
         <source>Failed to open installer. Please install manually: %1</source>
         <translation>Asennusohjelmaa ei voitu avata. Asenna se manuaalisesti: %1</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="113"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="114"/>
         <source>Installer opened and started</source>
         <translation>Asennusohjelma avautui ja käynnistyi</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="126"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="127"/>
         <source>Failed to download appcast: %1</source>
         <translation>Appcastin lataaminen epäonnistui: %1</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="133"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="134"/>
         <source>Failed to read appcast.</source>
         <translation>appcast-tiedoston lukeminen epäonnistui.</translation>
     </message>
     <message>
-        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="156"/>
+        <location filename="../src/manualupdater/updater/osupdater_mac.cpp" line="157"/>
         <source>Could not find download link in appcast.</source>
         <translation>Appcastista ei löytynyt latauslinkkiä.</translation>
     </message>
