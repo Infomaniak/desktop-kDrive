@@ -145,6 +145,8 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
 void AppClientLinux::setupSignalConnections() {
     (void) connect(&_settingsWindowController, &SettingsWindowController::openRequested, this,
                    &AppClientLinux::openSettingsWindow);
+    (void) connect(&_settingsWindowController, &SettingsWindowController::accountConnectionRequested, this,
+                   &AppClientLinux::openOnboardingLoginFromSettings);
     (void) connect(&_systemTrayController, &SystemTrayController::openSettingsWindowRequested, this,
                    &AppClientLinux::openSettingsWindow);
     (void) connect(&_translationService, &TranslationService::languageChanged, this, &AppClientLinux::retranslatePresentation);
@@ -176,9 +178,19 @@ void AppClientLinux::setupSignalConnections() {
                    &SystemTrayController::hideMainWindow);
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCompleted, this, [this] {
         _preferSetupHomeWhenUnconfigured = false;
-        QTimer::singleShot(0, this, &AppClientLinux::openMainWindow);
+        QTimer::singleShot(0, this, [this] {
+            if (_restoreSettingsAfterOnboarding) {
+                restoreSettingsAfterOnboarding();
+            } else {
+                openMainWindow();
+            }
+        });
     });
     (void) connect(&_onboardingSessionManager, &OnboardingSessionManager::onboardingCancelled, this, [this] {
+        if (_restoreSettingsAfterOnboarding) {
+            QTimer::singleShot(0, this, &AppClientLinux::restoreSettingsAfterOnboarding);
+            return;
+        }
         _preferSetupHomeWhenUnconfigured = true;
         qCInfo(lcAppClientLinux) << "Future unconfigured activation will open the Home after onboarding cancellation";
     });
@@ -371,6 +383,7 @@ void AppClientLinux::retranslatePresentation() {
     _systemTrayController.retranslate();
     _activitiesController.retranslate();
     _storageController.retranslate();
+    _settingsSyncActivationController.retranslate();
 
     if (auto *const session = _onboardingSessionManager.activeSession()) {
         emit session->flowController()->titleChanged();
@@ -436,6 +449,28 @@ void AppClientLinux::openOnboardingFromHome() {
 
     _preferSetupHomeWhenUnconfigured = false;
     _onboardingSessionManager.openOnboardingWindow();
+}
+
+void AppClientLinux::openOnboardingLoginFromSettings() {
+    if (!_bootstrapCompleted) {
+        qCWarning(lcAppClientLinux) << "Settings account connection ignored before cache bootstrap completion";
+        emit _serviceEventBus.genericErrorOccurred();
+        return;
+    }
+
+    _restoreSettingsAfterOnboarding = true;
+    if (_settingsWindow) {
+        _settingsWindow->hide();
+    }
+    _onboardingSessionManager.startLoginSession();
+}
+
+void AppClientLinux::restoreSettingsAfterOnboarding() {
+    if (!_restoreSettingsAfterOnboarding) {
+        return;
+    }
+    _restoreSettingsAfterOnboarding = false;
+    openSettingsWindow();
 }
 
 void AppClientLinux::handleConfiguredSyncsChanged() {

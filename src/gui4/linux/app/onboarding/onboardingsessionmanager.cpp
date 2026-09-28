@@ -72,6 +72,34 @@ void OnboardingSessionManager::openOnboardingWindow() {
     openWindowIfDisplayable();
 }
 
+void OnboardingSessionManager::startLoginSession() {
+    if (!_bootstrapCompleted) {
+        qCWarning(lcOnboardingSessionManager) << "Forced Login session ignored before cache bootstrap completion";
+        return;
+    }
+
+    if (_state == LifecycleState::Stopping) {
+        _loginSessionRequested = true;
+        _windowActivationPending = true;
+        return;
+    }
+
+    if (_state == LifecycleState::Active && _activeSession != nullptr) {
+        if (_activeSession->flowController()->currentStep() == OnboardingFlowController::Login) {
+            emit openOnboardingWindowRequested();
+            return;
+        }
+
+        _loginSessionRequested = true;
+        _windowActivationPending = true;
+        stopSession(true);
+        return;
+    }
+
+    startSession(OnboardingSession::EntryPoint::Login, std::nullopt);
+    openWindowIfDisplayable();
+}
+
 void OnboardingSessionManager::cancelActiveSession() const {
     if (_state != LifecycleState::Active || _activeSession == nullptr) {
         return;
@@ -182,6 +210,15 @@ void OnboardingSessionManager::handleRetiringSessionDestroyed() {
     _state = LifecycleState::Inactive;
     const bool activateAfterRestart = _windowActivationPending;
     _windowActivationPending = false;
+    if (_loginSessionRequested) {
+        _loginSessionRequested = false;
+        _restartRequested = false;
+        startSession(OnboardingSession::EntryPoint::Login, std::nullopt);
+        if (activateAfterRestart) {
+            openWindowIfDisplayable();
+        }
+        return;
+    }
     if (!_restartRequested) {
         return;
     }

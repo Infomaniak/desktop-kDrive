@@ -38,6 +38,8 @@ class UserDrivesModel final : public QAbstractListModel {
             AccountNameRole,
             ColorRole,
             SynchronizedRole,
+            AccountIdRole,
+            DriveIdRole,
         };
         Q_ENUM(Role)
 
@@ -53,6 +55,8 @@ class UserDrivesModel final : public QAbstractListModel {
                 QString accountName;
                 QColor color;
                 bool synchronized{false};
+                AccountId accountId{0};
+                DriveId driveId{0};
 
                 friend bool operator==(const DriveEntry &lhs, const DriveEntry &rhs) = default;
         };

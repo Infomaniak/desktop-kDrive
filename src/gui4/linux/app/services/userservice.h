@@ -67,6 +67,8 @@ class UserService : public QObject {
         void loginTokenFailed(const QString &error, const QString &errorDescription);
         void availableDrivesLoaded(UserDbId userDbId);
         void availableDrivesLoadFailed(UserDbId userDbId);
+        void userDeleteSucceeded(UserDbId userDbId);
+        void userDeleteFailed(UserDbId userDbId);
 
     private:
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0) const;

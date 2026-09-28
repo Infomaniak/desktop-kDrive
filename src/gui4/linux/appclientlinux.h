@@ -46,6 +46,7 @@
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
 #include "app/settings/settingswindowcontroller.h"
+#include "app/settings/settingssyncactivationcontroller.h"
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
@@ -125,6 +126,8 @@ class AppClientLinux : public QApplication {
         void handleManyDeletesPresentationRequested();
         void openMainWindow();
         void openOnboardingFromHome();
+        void openOnboardingLoginFromSettings();
+        void restoreSettingsAfterOnboarding();
         void handleConfiguredSyncsChanged();
         [[nodiscard]] bool hasConfiguredSyncs() const { return !_appCache.syncContexts().empty(); }
 
@@ -162,9 +165,17 @@ class AppClientLinux : public QApplication {
         StorageController _storageController{_mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
-        SettingsWindowController _settingsWindowController{
-                _parametersStore,          _parametersService, _translationService, _updateStatusService,
-                _exclusionTemplateService, _sentryService,     _serverCommService,  this};
+        GeneralSettingsController _generalSettingsController{_parametersStore, _parametersService, _translationService,
+                                                             _updateStatusService, this};
+        AdvancedSettingsController _advancedSettingsController{_parametersStore,   _parametersService,  _sentryService,
+                                                               _serverCommService, _translationService, this};
+        FileExclusionController _fileExclusionController{_exclusionTemplateService, this};
+        NetworkSettingsController _networkSettingsController{_parametersStore, _parametersService, _translationService, this};
+        SettingsSyncActivationController _settingsSyncActivationController{_appCache, _serverCommService, _cachePopulator,
+                                                                           _serviceEventBus, this};
+        SettingsWindowController _settingsWindowController{_generalSettingsController,        _advancedSettingsController,
+                                                           _fileExclusionController,          _networkSettingsController,
+                                                           _settingsSyncActivationController, this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};
@@ -173,6 +184,7 @@ class AppClientLinux : public QApplication {
         bool _preferSetupHomeWhenUnconfigured{false};
         bool _hadConfiguredSync{false};
         bool _quitPending{false};
+        bool _restoreSettingsAfterOnboarding{false};
         std::optional<bool> _appliedPurgeOldLogs;
 };
 

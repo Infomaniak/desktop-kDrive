@@ -22,15 +22,11 @@
 #include "app/settings/fileexclusioncontroller.h"
 #include "app/settings/generalsettingscontroller.h"
 #include "app/settings/networksettingscontroller.h"
+#include "app/settings/settingssyncactivationcontroller.h"
 
 #include <QObject>
 
 namespace KDC {
-
-class ParametersStore;
-class ParametersService;
-class TranslationService;
-class UpdateStatusService;
 
 /** Process-long composition facade exposed to the independent Settings window. */
 class SettingsWindowController final : public QObject {
@@ -39,30 +35,34 @@ class SettingsWindowController final : public QObject {
         Q_PROPERTY(AdvancedSettingsController *advanced READ advancedController CONSTANT)
         Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusionController CONSTANT)
         Q_PROPERTY(NetworkSettingsController *network READ networkController CONSTANT)
+        Q_PROPERTY(SettingsSyncActivationController *syncActivation READ syncActivationController CONSTANT)
 
     public:
-        SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
-                                 TranslationService &translationService, UpdateStatusService &updateStatusService,
-                                 ExclusionTemplateService &exclusionTemplateService, SentryService &sentryService,
-                                 const CommService &commService, QObject *parent = nullptr);
+        SettingsWindowController(GeneralSettingsController &general, AdvancedSettingsController &advanced,
+                                 FileExclusionController &fileExclusions, NetworkSettingsController &network,
+                                 SettingsSyncActivationController &syncActivation, QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *generalController() { return &_generalController; }
         [[nodiscard]] AdvancedSettingsController *advancedController() { return &_advancedController; }
         [[nodiscard]] FileExclusionController *fileExclusionController() { return &_fileExclusionController; }
         [[nodiscard]] NetworkSettingsController *networkController() { return &_networkController; }
+        [[nodiscard]] SettingsSyncActivationController *syncActivationController() { return &_syncActivationController; }
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
+        Q_INVOKABLE void requestAccountConnection() { emit accountConnectionRequested(); }
 
         void refreshUpdates() const;
 
     signals:
         void openRequested();
+        void accountConnectionRequested();
 
     private:
-        GeneralSettingsController _generalController;
-        AdvancedSettingsController _advancedController;
-        FileExclusionController _fileExclusionController;
-        NetworkSettingsController _networkController;
+        GeneralSettingsController &_generalController;
+        AdvancedSettingsController &_advancedController;
+        FileExclusionController &_fileExclusionController;
+        NetworkSettingsController &_networkController;
+        SettingsSyncActivationController &_syncActivationController;
 };
 
 } // namespace KDC
