@@ -161,10 +161,10 @@ void TestGuiCommChannel::testParametersUpdateJob() {
     // Job expected answer
     const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
 
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
+    auto processFct = [](const std::shared_ptr<AbstractGuiJob> job) {
+        const auto parametersUpdateJob = std::dynamic_pointer_cast<ParametersUpdateJob>(job);
         CPPUNIT_ASSERT(parametersUpdateJob);
-        const Parameters res = getExpectedParameters();
+        const auto res = getExpectedParameters();
         CPPUNIT_ASSERT(res == parametersUpdateJob->_parameters);
     };
 
