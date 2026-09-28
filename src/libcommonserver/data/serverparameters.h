@@ -51,21 +51,7 @@ class ServerParameters : public Parameters {
             _uploadSessionParallelJobs = uploadSessionParallelJobs;
         }
 
-        bool operator==(const ServerParameters &parameters) const {
-            return language() == parameters.language() && monoIcons() == parameters.monoIcons() &&
-                   autoStart() == parameters.autoStart() && moveToTrash() == parameters.moveToTrash() &&
-                   notificationsDisabled() == parameters.notificationsDisabled() && useLog() == parameters.useLog() &&
-                   logLevel() == parameters.logLevel() && extendedLog() == parameters.extendedLog() &&
-                   purgeOldLogs() == parameters.purgeOldLogs() && proxyConfig() == parameters.proxyConfig() &&
-                   darkTheme() == parameters.darkTheme() && dialogGeometry() == parameters.dialogGeometry() &&
-                   maxAllowedCpu() == parameters.maxAllowedCpu() && distributionChannel() == parameters.distributionChannel() &&
-                   sentryEnabled() == parameters.sentryEnabled() && matomoEnabled() == parameters.matomoEnabled() &&
-                   _updateFileAvailable == parameters._updateFileAvailable &&
-                   _updateTargetVersion == parameters._updateTargetVersion &&
-                   _updateTargetVersionString == parameters._updateTargetVersionString &&
-                   _autoUpdateAttempted == parameters._autoUpdateAttempted && _seenVersion == parameters._seenVersion &&
-                   _uploadSessionParallelJobs == parameters._uploadSessionParallelJobs;
-        }
+        bool operator==(const ServerParameters &parameters) const = default;
 
         static int _uploadSessionParallelJobsDefault;
 
