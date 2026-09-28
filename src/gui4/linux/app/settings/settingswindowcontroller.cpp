@@ -20,17 +20,15 @@
 
 namespace KDC {
 
-SettingsWindowController::SettingsWindowController(ParametersStore &parametersStore, ParametersService &parametersService,
-                                                   TranslationService &translationService,
-                                                   UpdateStatusService &updateStatusService,
-                                                   ExclusionTemplateService &exclusionTemplateService,
-                                                   SentryService &sentryService, const CommService &commService,
-                                                   QObject *const parent) :
+SettingsWindowController::SettingsWindowController(GeneralSettingsController &general, AdvancedSettingsController &advanced,
+                                                   FileExclusionController &fileExclusions, NetworkSettingsController &network,
+                                                   SettingsSyncActivationController &syncActivation, QObject *const parent) :
     QObject(parent),
-    _generalController(parametersStore, parametersService, translationService, updateStatusService, this),
-    _advancedController(parametersStore, parametersService, sentryService, commService, translationService, this),
-    _fileExclusionController(exclusionTemplateService, this),
-    _networkController(parametersStore, parametersService, translationService, this) {}
+    _generalController(general),
+    _advancedController(advanced),
+    _fileExclusionController(fileExclusions),
+    _networkController(network),
+    _syncActivationController(syncActivation) {}
 
 void SettingsWindowController::refreshUpdates() const {
     _generalController.refreshUpdates();

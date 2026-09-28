@@ -273,8 +273,21 @@
 - `app/services/sentryservice.*`: Linux v4 Sentry coordinator. Owns cached consent reconciliation, delayed
   linux-v4-specific Sentry initialization, authenticated user binding, and UI/process capture helpers. Qt log
   breadcrumbs use the shared `Logger` bridge and remain inert whenever this service has not activated Sentry.
-- `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It owns the
-  category controllers and is the single source of Settings-window presentation requests.
+- `app/settings/settingswindowcontroller.*`: process-long Settings composition facade exposed to QML. It references
+  category and sync-activation controllers owned by `AppClientLinux` and is the single source of Settings-window
+  presentation requests. `SettingsUserService` is passed directly to the window through its `users` property.
+- `app/settings/settingssyncactivationcontroller.*`: process-long transactional editor, owned by `AppClientLinux` and
+  exposed as `SettingsWindowController.syncActivation`, that activates one available drive from Accounts. A single
+  private `State` drives it: `Preparing` (server default folder requested, row busy) → `Editing` ⇄ `CheckingFolder` →
+  `Submitting` → `AwaitingConfirmation` or `Reconciling`. After a successful `SYNC_ADD`, the target stays busy until the
+  queued `SYNC_ADDED` push removes it from the available drives, so the row cannot submit twice. A failed `SYNC_ADD`
+  reconciles the cache, then returns to `Editing` with an error, or closes if the target is gone or the reconciliation
+  failed. Closing Settings calls `dismissFromHostWindow()`, which hides the modal without abandoning a submitted
+  synchronization.
+- Settings/onboarding handoff: adding an account from Settings goes through
+  `AppClientLinux::openOnboardingLoginFromSettings()`, which hides Settings and starts a forced Login onboarding
+  session. Completion or cancellation reopens Settings through `restoreSettingsAfterOnboarding()`, and Settings restores
+  focus to the account-connection trigger when it becomes visible again.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
   missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a
@@ -406,7 +419,8 @@
   a node the server no longer knows is dropped from the blacklist rather than treated as a failure.
 - `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
   branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
-  only after both branches succeed, and overlapping population requests are ignored. It is used at initial connection
+  only after both branches succeed. A new run supersedes the previous one, whose late responses are ignored and which
+  emits no terminal signal, so a terminal signal always answers every earlier request. It is used at initial connection
   and for explicit reconciliation after a non-transactional backend mutation may have persisted parents without emitting
   their normal pushes; after each snapshot, it activates the server live-info refresh so only drive updates reach
   `CachePipeline`.

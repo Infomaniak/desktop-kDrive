@@ -28,6 +28,7 @@ Item {
 
     required property Component initialItem
     readonly property int depth: stack.depth
+    readonly property var currentItem: stack.currentItem
     readonly property bool canGoBack: depth > 1 && !stack.busy
     readonly property string currentTitle: stack.currentItem ? stack.currentItem["navigationTitle"] || "" : ""
     readonly property string previousTitle: {

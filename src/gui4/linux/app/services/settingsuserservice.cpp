@@ -46,6 +46,10 @@ SettingsUserService::SettingsUserService(AppCache &appCache, UserService &userSe
         }
     });
     (void) connect(&_appCache, &AppCache::usersChanged, this, &SettingsUserService::pruneMissingUsers);
+    (void) connect(&_userService, &UserService::userDeleteSucceeded, this,
+                   [this](const UserDbId userDbId) { emit disconnectSucceeded(static_cast<qint64>(userDbId)); });
+    (void) connect(&_userService, &UserService::userDeleteFailed, this,
+                   [this](const UserDbId userDbId) { emit disconnectFailed(static_cast<qint64>(userDbId)); });
 }
 
 SettingsUserService::~SettingsUserService() = default;
@@ -66,6 +70,16 @@ void SettingsUserService::refresh() const {
 
 void SettingsUserService::retryAvailableDrives(const qint64 userDbId) const {
     refreshAvailableDrives(static_cast<UserDbId>(userDbId));
+}
+
+void SettingsUserService::disconnectUser(const qint64 userDbId) {
+    if (const auto scopedUserDbId = static_cast<UserDbId>(userDbId);
+        !_appCache.user(scopedUserDbId).has_value() || _userService.isDeleteUserPending(scopedUserDbId)) {
+        emit disconnectFailed(userDbId);
+        return;
+    }
+
+    _userService.deleteUser(userDbId);
 }
 
 void SettingsUserService::refreshAvailableDrives(const UserDbId userDbId) const {
