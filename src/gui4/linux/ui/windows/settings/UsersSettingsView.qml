@@ -26,8 +26,30 @@ Flickable {
     id: root
 
     required property var controller
+    required property var activationController
     property string navigationTitle: qsTrId("sidebarItemAccounts")
+    property var userExpansionStates: ({})
     readonly property bool hasUsers: controller.usersModel.count > 0
+
+    signal connectAccountRequested(Item trigger)
+    signal disconnectAccountRequested(Item trigger, var userDbId, string userName)
+    signal activateDriveRequested(Item trigger, var userDbId, var accountId, var driveId)
+
+    function focusConnectButton() {
+        const button = root.hasUsers ? connectButton : connectEmptyButton;
+        if (button.enabled && button.visible) {
+            button.forceActiveFocus(Qt.BacktabFocusReason);
+        }
+    }
+
+    function userExpanded(userDbId) {
+        const key = userDbId.toString();
+        return userExpansionStates[key] === undefined ? true : userExpansionStates[key];
+    }
+
+    function rememberUserExpansion(userDbId, expanded) {
+        userExpansionStates[userDbId.toString()] = expanded;
+    }
 
     contentWidth: width
     contentHeight: contentColumn.implicitHeight + 2 * IKSettings.pageMargin
@@ -93,7 +115,7 @@ Flickable {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.Tonal
                     text: qsTrId("buttonConnectAccount")
-                    actionEnabled: false
+                    onClicked: root.connectAccountRequested(connectEmptyButton)
                 }
 
                 Rectangle {
@@ -111,7 +133,14 @@ Flickable {
 
             delegate: UserCard {
                 width: contentColumn.width
+                activationController: root.activationController
+                expanded: root.userExpanded(userDbId)
+                onExpandedChanged: root.rememberUserExpansion(userDbId, expanded)
                 onRetryRequested: root.controller.retryAvailableDrives(userDbId)
+                onDisconnectRequested: (trigger, requestedUserDbId, userName) =>
+                                       root.disconnectAccountRequested(trigger, requestedUserDbId, userName)
+                onActivateRequested: (trigger, requestedUserDbId, accountId, driveId) =>
+                                     root.activateDriveRequested(trigger, requestedUserDbId, accountId, driveId)
             }
         }
 
@@ -131,7 +160,7 @@ Flickable {
                     implicitHeight: IKSettings.connectAccountButtonHeight
                     role: IKModalButton.Tonal
                     text: qsTrId("buttonConnectAccount")
-                    actionEnabled: false
+                    onClicked: root.connectAccountRequested(connectButton)
                 }
 
                 Rectangle {

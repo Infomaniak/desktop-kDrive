@@ -51,9 +51,12 @@ class SettingsUserService final : public QObject {
 
         Q_INVOKABLE void refresh() const;
         Q_INVOKABLE void retryAvailableDrives(qint64 userDbId) const;
+        Q_INVOKABLE void disconnectUser(qint64 userDbId);
 
     signals:
         void userStateChanged(UserDbId userDbId);
+        void disconnectSucceeded(qint64 userDbId);
+        void disconnectFailed(qint64 userDbId);
 
     private:
         void refreshAvailableDrives(UserDbId userDbId) const;

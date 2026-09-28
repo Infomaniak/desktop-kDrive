@@ -25,13 +25,32 @@ IKModal {
     id: root
 
     required property var controller
+    property Item returnFocusItem: null
     property real summaryContentY: 0
+    property bool focusRestorationPending: false
+
+    signal fallbackFocusRequested
+
+    onReturnFocusItemChanged: {
+        if (returnFocusItem) {
+            focusRestorationPending = true;
+        }
+    }
 
     preferredWidth: IKSyncConfiguration.modalWidth
     // Escape cancels the current page, but never while a request the user cannot see is still running.
     escapeDismissible: !root.controller.busy
     visible: root.controller.visible
-    onClosed: root.summaryContentY = 0
+    onClosed: {
+        root.summaryContentY = 0;
+        if (root.returnFocusItem && root.returnFocusItem.enabled && root.returnFocusItem.visible) {
+            root.returnFocusItem.forceActiveFocus(Qt.BacktabFocusReason);
+        } else if (root.focusRestorationPending) {
+            root.fallbackFocusRequested();
+        }
+        root.returnFocusItem = null;
+        root.focusRestorationPending = false;
+    }
     title: {
         if (root.controller.driveConfigurationPage) {
             return qsTrId("onBoardingAdvancedSettingsDriveTitle")
@@ -55,6 +74,10 @@ IKModal {
                 }
                 return summaryPage
             }
+        },
+        SyncConfigurationErrorBlock {
+            width: parent ? parent.width : implicitWidth
+            errorText: root.controller.operationErrorText
         }
     ]
 
