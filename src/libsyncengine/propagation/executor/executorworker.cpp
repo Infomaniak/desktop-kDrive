@@ -414,9 +414,10 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         } else if (const ExitInfo exitInfo =
                            convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
                    !exitInfo) {
+            // If the directory is created on the remote side, we need to convert it to a placeholder. In case of failure, we log
+            // a warning but we do not stop the execution.
             LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-            return exitInfo;
         }
         ExitInfo exitInfo = handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
         job.reset();
@@ -634,22 +635,18 @@ ExitInfo ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Syn
                                                    << exitInfo);
                 return exitInfo;
             }
-#endif
 
             // update vfs status
             VfsStatus vfsStatus;
-            if (ExitInfo exitInfo = _syncPal->vfs()->status(absoluteLocalFilePath, vfsStatus); !exitInfo) {
-                LOGW_SYNCPAL_WARN(
-                        _logger, L"Error in vfsStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": " << exitInfo);
-            } else {
-                vfsStatus.isSyncing = true;
-                vfsStatus.progress = 0;
-                if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus);
-                    !exitInfoForceStatus) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath)
-                                                                             << L": " << exitInfoForceStatus);
-                }
+            vfsStatus.isHydrated = true;
+            vfsStatus.isSyncing = true;
+            vfsStatus.progress = 0;
+            if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus);
+                !exitInfoForceStatus) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath)
+                                                                         << L": " << exitInfoForceStatus);
             }
+#endif
 
             uint64_t filesize = 0;
             if (ExitInfo exitInfo = getFileSize(absoluteLocalFilePath, filesize); !exitInfo) {

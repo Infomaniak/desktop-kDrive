@@ -1224,7 +1224,7 @@ void TestNetworkJobs::testDuplicateRenameMove() {
 
     // Move
     const RemoteTemporaryDirectory remoteTargetTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMoveTarget");
-    MoveJob moveJob(nullptr, _driveDbId, "", dupFileId, remoteTargetTmpDir.id());
+    MoveJob moveJob(_driveDbId, "", dupFileId, remoteTargetTmpDir.id());
     moveJob.setBypassCheck(true);
     const ExitCode moveExitCode = moveJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, moveExitCode);

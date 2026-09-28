@@ -711,11 +711,12 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(localPath) << L": " << exitInfo);
     }
 
-    (void) _syncPathToDownloadJobMap.erase(downloadJob->affectedFilePath());
+    SyncPath absoluteLocalPath = this->localPath() / downloadJob->affectedFilePath();
+    (void) _syncPathToDownloadJobMap.erase(absoluteLocalPath);
     (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
     for (auto it = _folderHydrationInProgress.begin(); it != _folderHydrationInProgress.end();) {
         const auto &parentFolderPath = it->first;
-        if (it->second.erase(downloadJob->affectedFilePath())) {
+        if (it->second.erase(absoluteLocalPath)) {
             LOGW_INFO(_logger, L"Download of item " << Utility::formatSyncPath(downloadJob->affectedFilePath())
                                                     << L" from parent folder " << Utility::formatSyncPath(parentFolderPath)
                                                     << L" terminated.");
@@ -779,8 +780,6 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-
-
         job = std::make_shared<DownloadJob>(
                 vfs(), _cacheDirectory, DownloadJob::FileDownloadInfo{driveDbId(), remoteNodeId, absoluteLocalPath, expectedSize},
                 DownloadJob::DateTimePolicy::IgnoreDateTime);
@@ -822,15 +821,15 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
 
     job->setProgressPercentCallback(progressPercentCallback);
 
-    // Queue job
-    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
-
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
     (void) _directDownloadJobsMap.try_emplace(job->jobId(), job);
     (void) _syncPathToDownloadJobMap.try_emplace(absoluteLocalPath, job->jobId());
     if (!parentFolderPath.empty() && _folderHydrationInProgress.contains(parentFolderPath)) {
         (void) _folderHydrationInProgress[parentFolderPath].emplace(absoluteLocalPath);
     }
+
+    // Queue job
+    SyncJobManagerSingleton::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGH);
 
     return ExitCode::Ok;
 }
