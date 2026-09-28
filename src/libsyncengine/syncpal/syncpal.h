@@ -39,6 +39,7 @@
 
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <comm.h>
 
 namespace KDC {
@@ -480,6 +481,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
     private:
+        // Finalize the pin/hydration state of a direct download job and stop tracking it.
+        // _directDownloadJobsMapMutex must be locked by the caller.
+        void finalizeDirectDownload(const std::shared_ptr<DownloadJob> &downloadJob,
+                                    const std::optional<ExitInfo> &cancelExitInfo = std::nullopt);
+
         void setUpBlacklistPropagator(bool restartSync);
         void setUpExcludelistPropagator();
         void setUpConflictingFilesCorrector(const std::vector<Error> &keepLocalErrorList,

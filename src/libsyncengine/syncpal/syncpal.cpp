@@ -680,9 +680,17 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
     }
 
     const auto downloadJob = directDownloadJobsMapIt->second;
+    finalizeDirectDownload(downloadJob);
+}
+
+void SyncPal::finalizeDirectDownload(const std::shared_ptr<DownloadJob> &downloadJob,
+                                     const std::optional<ExitInfo> &cancelExitInfo) {
     const auto localPath = downloadJob->localPath();
     bool downloadSucceeded = true;
-    if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    if (cancelExitInfo) {
+        vfs()->cancelHydrate(localPath, *cancelExitInfo);
+        downloadSucceeded = false;
+    } else if (downloadJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         Error error;
         error.setLevel(ErrorLevel::Node);
         error.setSyncDbId(syncDbId());
@@ -713,7 +721,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
 
     SyncPath absoluteLocalPath = this->localPath() / downloadJob->affectedFilePath();
     (void) _syncPathToDownloadJobMap.erase(absoluteLocalPath);
-    (void) _directDownloadJobsMap.erase(directDownloadJobsMapIt);
+    (void) _directDownloadJobsMap.erase(downloadJob->jobId());
     for (auto it = _folderHydrationInProgress.begin(); it != _folderHydrationInProgress.end();) {
         const auto &parentFolderPath = it->first;
         if (it->second.erase(absoluteLocalPath)) {
@@ -846,7 +854,10 @@ ExitCode SyncPal::cancelDlDirectJobs(const std::vector<SyncPath> &fileList) {
 
         if (const auto itId = _syncPathToDownloadJobMap.find(filePath); itId != _syncPathToDownloadJobMap.end()) {
             if (const auto itJob = _directDownloadJobsMap.find(itId->second); itJob != _directDownloadJobsMap.end()) {
-                itJob->second->abort();
+                // Finalize now since an aborted job might be discarded by the job manager without its callback being called
+                const auto downloadJob = itJob->second;
+                downloadJob->abort();
+                finalizeDirectDownload(downloadJob, ExitInfo(ExitCode::Ok, ExitCause::OperationCanceled));
             }
         }
         if (_folderHydrationInProgress.contains(filePath)) {
@@ -862,16 +873,19 @@ ExitCode SyncPal::cancelAllDlDirectJobs() {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
     const std::scoped_lock<std::mutex> lock(_directDownloadJobsMapMutex);
-    for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
-        LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
-        directDownloadJobsMapElt.second->abort();
-        _vfs->cancelHydrate(directDownloadJobsMapElt.second->localPath(), ExitCode::SyncPaused);
-    }
-
     for (const auto &[parentFolderPath, _]: _folderHydrationInProgress) {
         _vfs->cancelHydrate(parentFolderPath);
     }
     _folderHydrationInProgress.clear();
+
+    // Copy the map since finalizeDirectDownload removes the jobs from it
+    const auto directDownloadJobsMap = _directDownloadJobsMap;
+    for (const auto &[jobId, downloadJob]: directDownloadJobsMap) {
+        LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << jobId);
+        downloadJob->abort();
+        // Finalize now since an aborted job might be discarded by the job manager without its callback being called
+        finalizeDirectDownload(downloadJob, ExitCode::SyncPaused);
+    }
 
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs done");
 
