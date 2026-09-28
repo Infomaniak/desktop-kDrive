@@ -349,7 +349,7 @@ void TestAppServer::testProxyConfigUpdate() {
     {
         const ProxyConfig proxyConfigTest(ProxyType::HTTP, "proxy.example.com", 8080, false);
 
-        Parameters newParameters = ParametersCache::instance()->parameters();
+        auto newParameters = ParametersCache::instance()->parameters();
         newParameters.setProxyConfig(proxyConfigTest);
 
         CPPUNIT_ASSERT(_appPtr->updateParametersAndPropagateChanges(newParameters));
