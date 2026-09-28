@@ -25,7 +25,7 @@ namespace KDC {
 class ServerParameters : public Parameters {
     public:
         ServerParameters();
-
+        bool operator==(const ServerParameters &parameters) const = default;
         /// Overwrite the client-visible fields with those of parameters, keeping the server-only fields unchanged.
         void applyClientParameters(const Parameters &parameters) {
             const auto previousDialogGeometry = dialogGeometry();
