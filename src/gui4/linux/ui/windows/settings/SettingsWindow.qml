@@ -19,6 +19,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import kDrive.UI
 
@@ -34,6 +35,8 @@ IKShadowedWindow {
     required property var controller
     required property var users
     property int selectedCategory: SettingsWindow.Category.General
+    property Item accountConnectionTrigger: null
+    property bool restoreAccountConnectionFocus: false
 
     function selectGeneral() {
         accountsPane.reset(accountsRootComponent);
@@ -66,6 +69,18 @@ IKShadowedWindow {
     onVisibleChanged: {
         if (visible && selectedCategory === SettingsWindow.Category.Accounts) {
             users.refresh();
+            if (root.restoreAccountConnectionFocus) {
+                Qt.callLater(function() {
+                    if (root.accountConnectionTrigger && root.accountConnectionTrigger.enabled
+                            && root.accountConnectionTrigger.visible) {
+                        root.accountConnectionTrigger.forceActiveFocus(Qt.BacktabFocusReason);
+                    } else if (accountsPane.currentItem && accountsPane.currentItem.focusConnectButton) {
+                        accountsPane.currentItem.focusConnectButton();
+                    }
+                    root.accountConnectionTrigger = null;
+                    root.restoreAccountConnectionFocus = false;
+                });
+            }
         }
     }
 
@@ -213,6 +228,18 @@ IKShadowedWindow {
 
         UsersSettingsView {
             controller: root.users
+            activationController: root.controller.syncActivation
+            onConnectAccountRequested: trigger => {
+                root.accountConnectionTrigger = trigger;
+                root.restoreAccountConnectionFocus = true;
+                root.controller.requestAccountConnection();
+            }
+            onDisconnectAccountRequested: (trigger, userDbId, userName) =>
+                                          disconnectAccountDialog.showFrom(trigger, userDbId, userName)
+            onActivateDriveRequested: (trigger, userDbId, accountId, driveId) => {
+                syncConfigurationDialog.returnFocusItem = trigger;
+                root.controller.syncActivation.activate(userDbId, accountId, driveId);
+            }
         }
     }
 
@@ -351,12 +378,67 @@ IKShadowedWindow {
         scrimRadius: root.surfaceRadius
     }
 
+    DisconnectAccountDialog {
+        id: disconnectAccountDialog
+
+        controller: root.users
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+        onFallbackFocusRequested: {
+            if (accountsPane.currentItem && accountsPane.currentItem.focusConnectButton) {
+                accountsPane.currentItem.focusConnectButton();
+            }
+        }
+    }
+
+    SyncConfigurationDialog {
+        id: syncConfigurationDialog
+
+        controller: root.controller.syncActivation
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+        onFallbackFocusRequested: {
+            if (accountsPane.currentItem && accountsPane.currentItem.focusConnectButton) {
+                accountsPane.currentItem.focusConnectButton();
+            }
+        }
+    }
+
+    FolderDialog {
+        id: localFolderDialog
+
+        title: qsTrId("buttonSelectFolder")
+        onAccepted: {
+            root.controller.syncActivation.applyCustomFolder(selectedFolder);
+            root.controller.syncActivation.notifyCustomFolderDialogClosed();
+        }
+        onRejected: root.controller.syncActivation.notifyCustomFolderDialogClosed()
+    }
+
+    Connections {
+        target: root.controller.syncActivation
+
+        function onCustomFolderRequested(initialFolder) {
+            localFolderDialog.currentFolder = initialFolder;
+            localFolderDialog.open();
+        }
+
+        function onVisibleChanged() {
+            if (!root.controller.syncActivation.visible) {
+                localFolderDialog.close();
+            }
+        }
+    }
+
     onClosing: {
         root.controller.network.cancelConnectionCheck();
         root.controller.network.dismissConnectionFailure();
         addExclusionRuleDialog.close();
         sendDebugLogsDialog.close();
         proxyConnectionFailureDialog.close();
+        disconnectAccountDialog.close();
+        localFolderDialog.close();
+        root.controller.syncActivation.dismissFromHostWindow();
         releaseDialog.close();
         aboutDialog.close();
     }

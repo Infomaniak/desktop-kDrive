@@ -47,6 +47,7 @@ class OnboardingSyncConfigurationController final : public QObject {
         Q_PROPERTY(bool busy READ busy NOTIFY presentationChanged)
         Q_PROPERTY(bool canValidate READ canValidate NOTIFY presentationChanged)
         Q_PROPERTY(QString localFolderErrorText READ localFolderErrorText NOTIFY presentationChanged)
+        Q_PROPERTY(QString operationErrorText READ operationErrorText NOTIFY presentationChanged)
         Q_PROPERTY(QString currentDriveName READ currentDriveName NOTIFY presentationChanged)
         Q_PROPERTY(QColor currentDriveColor READ currentDriveColor NOTIFY presentationChanged)
         Q_PROPERTY(QString currentLocalPath READ currentLocalPath NOTIFY presentationChanged)
@@ -74,6 +75,8 @@ class OnboardingSyncConfigurationController final : public QObject {
         [[nodiscard]] bool busy() const { return _busy; }
         [[nodiscard]] bool canValidate() const;
         [[nodiscard]] QString localFolderErrorText() const;
+        /** The shared dialog supports operation failures, but onboarding reports them on its synchronization step. */
+        [[nodiscard]] QString operationErrorText() const { return {}; }
         [[nodiscard]] QString currentDriveName() const;
         [[nodiscard]] QColor currentDriveColor() const;
         /** Local folder of the drive being configured, in its `~`-shortened display form. */
