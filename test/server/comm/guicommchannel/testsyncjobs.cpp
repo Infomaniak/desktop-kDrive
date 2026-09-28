@@ -31,7 +31,18 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
+#include "comm/guijobmanager.h"
+#include "appserver/testappserver.h"
+#include "comm/testsocketcomm.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/keychainmanager/apitoken.h"
+#include "mocks/mockkeychainstorage.h"
+#include "test_utility/testhelpers.h"
 #include "utility/jsonparserutility.h"
+
+#include <chrono>
+#include <fstream>
+#include <thread>
 
 namespace KDC {
 
@@ -286,6 +297,121 @@ void TestGuiCommChannel::testSyncAddJob() {
     testGenericJob(CommonUtility::str2CommString(queryStr), CommonUtility::str2CommString(answerStr), {}, processFct);
 #else
     testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    if (!testhelpers::isRunningOnCI()) {
+        CPPUNIT_SKIP();
+    }
+
+    const testhelpers::TestVariables testVariables;
+
+    auto keyChainManager = KeyChainManager::instance(std::make_shared<MockKeyChainStorage>());
+    CPPUNIT_ASSERT(keyChainManager);
+
+    ApiToken apiToken;
+    apiToken.setAccessToken(testVariables.apiToken);
+    apiToken.setUserId(std::stoi(testVariables.userId));
+
+    const std::string keychainKey = "testSyncAddJobPartialFailureSignals";
+    CPPUNIT_ASSERT(keyChainManager->writeData(keychainKey, apiToken.reconstructJsonString()));
+
+    const User user(1, std::stoi(testVariables.userId), keychainKey);
+    CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user));
+
+    SyncPath blockedPath = _localTempDir.path() / "sync_add_job_blocker";
+    {
+        std::ofstream blockedPathStream(blockedPath);
+        CPPUNIT_ASSERT(blockedPathStream.good());
+    }
+
+    std::string localFolderPath64Str;
+    CommonUtility::convertToBase64Str(Path2Str(blockedPath), localFolderPath64Str);
+
+    const std::string queryStr = R"({ "id": 1, "num": )" + std::to_string(toInt(RequestNum::SYNC_ADD)) +
+                                 R"(, "params": { "userDbId": 1, "accountId": )" + testVariables.accountId + R"(, "driveId": )" +
+                                 testVariables.driveId + R"(, "localFolderPath": ")" + localFolderPath64Str +
+                                 R"(", "serverFolderPath": "dGVzdA==", "serverFolderNodeId": "OTk5", "liteSync": 1, )"
+                                 R"("blackList": [  ], "whiteList": [  ] } })";
+
+    int requestId = 0;
+    RequestNum requestNum = RequestNum::Unknown;
+    Poco::DynamicStruct inParams;
+    CPPUNIT_ASSERT(AbstractGuiJob::deserializeGenericInputParms(CommonUtility::str2CommString(queryStr), requestId, requestNum,
+                                                                inParams));
+
+    std::unique_ptr<MockAppServer> ownedAppServer;
+    auto *appServer = dynamic_cast<AppServer *>(QCoreApplication::instance());
+    if (!appServer) {
+        const std::vector<std::string> args = {Path2Str(CommonUtility::applicationFilePath())};
+        std::vector<char *> argv;
+        argv.reserve(args.size());
+        for (const auto &arg: args) {
+            argv.push_back(const_cast<char *>(arg.c_str()));
+        }
+        auto argc = static_cast<int>(argv.size());
+        ownedAppServer = std::make_unique<MockAppServer>(argc, argv.data());
+        appServer = ownedAppServer.get();
+    }
+
+    GuiJobManagerSingleton::clear();
+
+    auto commManager = std::make_shared<CommManager>(*appServer);
+    commManager->start();
+
+    auto clientSocket = TestSocketComm::newSecureClient(commManager->tryGetGUICommPort());
+    auto clientChannel = std::make_shared<GuiCommChannel>(clientSocket);
+
+    auto remainingConnectionWait = 100;
+    while (!commManager->hasActiveGuiConnection() && remainingConnectionWait-- > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    CPPUNIT_ASSERT(commManager->hasActiveGuiConnection());
+
+    auto syncAddJob = std::make_shared<SyncAddJob>(commManager, requestId, inParams, std::make_shared<GuiCommChannelTest>());
+    CPPUNIT_ASSERT(syncAddJob->deserializeInputParms());
+
+    const auto exitInfo = syncAddJob->process();
+    CPPUNIT_ASSERT(!exitInfo);
+
+    std::vector<SignalNum> signalNums;
+    auto remainingMessageWait = 100;
+    while (signalNums.size() < 2 && remainingMessageWait-- > 0) {
+        if (clientChannel->canReadMessage()) {
+            Poco::JSON::Parser parser;
+            auto signalMessage = parser.parse(CommonUtility::commString2Str(clientChannel->readMessage()));
+            auto signalStruct = signalMessage.extract<Poco::DynamicStruct>();
+
+            SignalNum signalNum = SignalNum::Unknown;
+            CommonUtility::readValueFromStruct(signalStruct, "num", signalNum);
+            signalNums.push_back(signalNum);
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    while (clientChannel->canReadMessage()) {
+        Poco::JSON::Parser parser;
+        auto signalMessage = parser.parse(CommonUtility::commString2Str(clientChannel->readMessage()));
+        auto signalStruct = signalMessage.extract<Poco::DynamicStruct>();
+
+        SignalNum signalNum = SignalNum::Unknown;
+        CommonUtility::readValueFromStruct(signalStruct, "num", signalNum);
+        signalNums.push_back(signalNum);
+    }
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), signalNums.size());
+    CPPUNIT_ASSERT_EQUAL(SignalNum::ACCOUNT_ADDED, signalNums[0]);
+    CPPUNIT_ASSERT_EQUAL(SignalNum::DRIVE_ADDED, signalNums[1]);
+
+    clientChannel->close();
+    commManager->stop();
+    GuiJobManagerSingleton::clear();
+#else
+    CPPUNIT_SKIP();
 #endif
 }
 
@@ -665,7 +791,7 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
                          static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
     auto nbFilesOut = 0;
     (void) JsonParserUtility::extractValue(paramsObj, "nbFiles", nbFilesOut);
-    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);  
+    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);
     std::vector<CommString> filesPathsOut;
     const auto filesPathsArray = JsonParserUtility::extractArrayObject(paramsObj, "filesPaths");
     CPPUNIT_ASSERT(filesPathsArray);
