@@ -205,7 +205,7 @@ bool LiveSnapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) cons
         const std::scoped_lock lock(_mutex);
         while (!parentIsRoot) {
             if (const auto item = findItem(id); item) {
-                ancestors.emplace_back(item->id(), item->name());
+                (void) ancestors.emplace_back(item->id(), item->name());
                 id = item->parentId();
                 parentIsRoot = id == rootFolderId();
                 continue;
@@ -217,7 +217,6 @@ bool LiveSnapshot::path(const NodeId &itemId, SyncPath &path, bool &ignore) cons
     }
 
     // Construct path
-    SyncPath tmpParentPath(path);
     while (!ancestors.empty()) {
         path /= ancestors.back().second;
         ancestors.pop_back();

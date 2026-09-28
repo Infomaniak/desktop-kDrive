@@ -651,6 +651,59 @@ void TestExecutorWorker::testDeleteOpNodes() {
     }
 }
 
+void TestExecutorWorker::testHandleMoveThroughSymlinkError() {
+    _syncPal->_syncOps->clear();
+    _syncPal->setRestart(false);
+
+    const auto localRoot = _syncPal->updateTree(ReplicaSide::Local)->rootNode();
+    const auto remoteRoot = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
+
+    const auto localParent =
+            std::make_shared<Node>(ReplicaSide::Local, Str("parent"), NodeType::Directory, OperationType::None, "local-parent-id",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, localRoot);
+    const auto remoteParent = std::make_shared<Node>(ReplicaSide::Remote, Str("parent"), NodeType::Directory, OperationType::None,
+                                                     "remote-parent-id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                                     testhelpers::defaultFileSize, remoteRoot);
+
+    const auto localChild =
+            std::make_shared<Node>(ReplicaSide::Local, Str("child.txt"), NodeType::File, OperationType::None, "local-child-id",
+                                   testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize, localParent);
+    const auto remoteChild = std::make_shared<Node>(ReplicaSide::Remote, Str("child.txt"), NodeType::File, OperationType::None,
+                                                    "remote-child-id", testhelpers::defaultTime, testhelpers::defaultTime,
+                                                    testhelpers::defaultFileSize, remoteParent);
+
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(localParent);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteParent);
+
+    const auto failedMoveOp = std::make_shared<SyncOperation>();
+    failedMoveOp->setAffectedNode(localParent);
+    failedMoveOp->setCorrespondingNode(remoteParent);
+    failedMoveOp->setTargetSide(ReplicaSide::Remote);
+    failedMoveOp->setType(OperationType::Move);
+
+    const auto dependentEditOp = std::make_shared<SyncOperation>();
+    dependentEditOp->setAffectedNode(localChild);
+    dependentEditOp->setCorrespondingNode(remoteChild);
+    dependentEditOp->setTargetSide(ReplicaSide::Remote);
+    dependentEditOp->setType(OperationType::Edit);
+
+    (void) _syncPal->_syncOps->pushOp(failedMoveOp);
+    (void) _syncPal->_syncOps->pushOp(dependentEditOp);
+    _executorWorker->_opList = _syncPal->_syncOps->opSortedList();
+
+    const ExitInfo exitInfo =
+            _executorWorker->handleExecutorError(failedMoveOp, {ExitCode::SystemError, ExitCause::MoveThroughSymlink});
+
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitInfo.code());
+    CPPUNIT_ASSERT(_syncPal->restart());
+    CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(localParent->getPath(), ReplicaSide::Local));
+    CPPUNIT_ASSERT(_syncPal->isTmpBlacklisted(remoteParent->getPath(), ReplicaSide::Remote));
+    CPPUNIT_ASSERT(opsExist(failedMoveOp));
+    CPPUNIT_ASSERT(!opsExist(dependentEditOp));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Local)->exists(*localParent->id()));
+    CPPUNIT_ASSERT(!_syncPal->updateTree(ReplicaSide::Remote)->exists(*remoteParent->id()));
+}
+
 void TestExecutorWorker::testCheckAlreadyExcluded() {
     const testhelpers::TestVariables testVariables;
     const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, testVariables.remoteDirId, "testCheckAlreadyExcluded");

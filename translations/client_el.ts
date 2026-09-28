@@ -44,7 +44,7 @@
 <context>
     <name>KDC::AbstractFileItemWidget</name>
     <message>
-        <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
+        <location filename="../src/gui/abstractfileitemwidget.cpp" line="179"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
@@ -310,12 +310,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1751"/>
+        <location filename="../src/server/appserver.cpp" line="1753"/>
         <source>Share link copied to clipboard</source>
         <translation>Ο σύνδεσμος κοινοποίησης αντιγράφηκε στο πρόχειρο</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3913"/>
+        <location filename="../src/server/appserver.cpp" line="3915"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο αφαιρέθηκαν.</numerusform>
@@ -323,13 +323,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3915"/>
+        <location filename="../src/server/appserver.cpp" line="3917"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 αφαιρέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3920"/>
+        <location filename="../src/server/appserver.cpp" line="3922"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο προστέθηκαν.</numerusform>
@@ -337,13 +337,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3922"/>
+        <location filename="../src/server/appserver.cpp" line="3924"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 προστέθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3927"/>
+        <location filename="../src/server/appserver.cpp" line="3929"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 και %n άλλο αρχείο ενημερώθηκαν.</numerusform>
@@ -351,13 +351,13 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3929"/>
+        <location filename="../src/server/appserver.cpp" line="3931"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>Το %1 ενημερώθηκε.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3934"/>
+        <location filename="../src/server/appserver.cpp" line="3936"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>Το %1 μετακινήθηκε στο %2 και %n άλλο αρχείο μετακινήθηκε.</numerusform>
@@ -365,12 +365,12 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3937"/>
+        <location filename="../src/server/appserver.cpp" line="3939"/>
         <source>%1 has been moved to %2.</source>
         <translation>Το %1 μετακινήθηκε στο %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3945"/>
+        <location filename="../src/server/appserver.cpp" line="3947"/>
         <source>Sync Activity</source>
         <translation>Δραστηριότητα συγχρονισμού</translation>
     </message>
@@ -1909,7 +1909,7 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="795"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="846"/>
         <source>Synchronization error.</source>
         <translation>Σφάλμα συγχρονισμού.</translation>
     </message>
@@ -1925,38 +1925,48 @@ Please select another folder. If you continue Lite Sync will be disabled.&lt;br&
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="823"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Δεν είναι δυνατή η δημιουργία του αρχείου &quot;%1&quot; επειδή δεν υποστηρίζεται από το σύστημα αρχείων σας.&lt;br&gt;Έχει εξαιρεθεί από τον συγχρονισμό.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="826"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Δεν ήταν δυνατή η μετακίνηση του στοιχείου επειδή η διαδρομή του περιέχει συμβολικό σύνδεσμο ή διασταύρωση.&lt;br&gt;Έχει προσωρινά εξαιρεθεί από τον συγχρονισμό.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>System error.</source>
         <translation>Σφάλμα συστήματος.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Το στοιχείο υπάρχει ήδη στην άλλη πλευρά.&lt;br&gt;Προσωρινά τέθηκε σε μαύρη λίστα.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="852"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Παρουσιάστηκε τεχνικό σφάλμα.&lt;br&gt;Εκκαθαρίστε το ιστορικό και αν το σφάλμα επιμείνει, επικοινωνήστε με την υποστήριξη.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1094"/>
         <source>Unable to open folder path %1.</source>
         <translation>Δεν είναι δυνατό το άνοιγμα της διαδρομής φακέλου %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1108"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Μεταφορά ολοκληρώθηκε!&lt;br&gt;Χρησιμοποιήστε τον αναγνωριστικό &lt;b&gt;%1&lt;/b&gt; σε αναφορές σφαλμάτων.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1109"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Αποτυχία μεταφοράς!
 Χρησιμοποιήστε τον ακόλουθο σύνδεσμο για να στείλετε τα αρχεία καταγραφής: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1130"/>
         <source>No kDrive configured!</source>
         <translation>Δεν έχει διαμορφωθεί kDrive!</translation>
     </message>
@@ -2871,7 +2881,7 @@ Please, use the following link to send the logs to the support: &lt;a style=&quo
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="140"/>
+        <location filename="../src/server/appserver.cpp" line="142"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>Η εφαρμογή kDrive θα κλείσει λόγω κρίσιμου σφάλματος.</translation>
     </message>

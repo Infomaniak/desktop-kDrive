@@ -32,6 +32,7 @@ class Snapshot;
 class SnapshotItem {
     public:
         SnapshotItem() = default;
+        // Constructor with only id, used for creating a root item or parent folder with no other properties.
         explicit SnapshotItem(const NodeId &id);
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
                      NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
@@ -110,7 +111,6 @@ class SnapshotItem {
         void setPath(const SyncPath &path) const { _path = path; }
 
         friend class Snapshot;
-        // friend bool Snapshot::path(const NodeId &, SyncPath &, bool &) const noexcept;
 };
 
 } // namespace KDC

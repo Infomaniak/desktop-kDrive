@@ -44,7 +44,7 @@
 <context>
     <name>KDC::AbstractFileItemWidget</name>
     <message>
-        <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
+        <location filename="../src/gui/abstractfileitemwidget.cpp" line="179"/>
         <source>Unable to open folder path %1.</source>
         <translation>Impossible d’ouvrir le dossier de débogage %1.</translation>
     </message>
@@ -310,12 +310,12 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1751"/>
+        <location filename="../src/server/appserver.cpp" line="1753"/>
         <source>Share link copied to clipboard</source>
         <translation>Lien de partage copié dans le presse-papiers</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3913"/>
+        <location filename="../src/server/appserver.cpp" line="3915"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 a été supprimé.</numerusform>
@@ -323,13 +323,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3915"/>
+        <location filename="../src/server/appserver.cpp" line="3917"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été supprimé.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3920"/>
+        <location filename="../src/server/appserver.cpp" line="3922"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 et %n autre(s) fichier(s) ont été ajouté(s).</numerusform>
@@ -337,13 +337,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3922"/>
+        <location filename="../src/server/appserver.cpp" line="3924"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été ajouté.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3927"/>
+        <location filename="../src/server/appserver.cpp" line="3929"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 a été mis à jour.</numerusform>
@@ -351,13 +351,13 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3929"/>
+        <location filename="../src/server/appserver.cpp" line="3931"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 a été mis à jour.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3934"/>
+        <location filename="../src/server/appserver.cpp" line="3936"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 a été déplacé vers %2.</numerusform>
@@ -365,12 +365,12 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3937"/>
+        <location filename="../src/server/appserver.cpp" line="3939"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 a été déplacé vers %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3945"/>
+        <location filename="../src/server/appserver.cpp" line="3947"/>
         <source>Sync Activity</source>
         <translation>Activité de synchronisation</translation>
     </message>
@@ -1568,22 +1568,22 @@ Veuillez sélectionner un autre dossier. Si vous continuez, Lite Sync sera désa
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1094"/>
         <source>Unable to open folder path %1.</source>
         <translation>Impossible d’ouvrir le dossier de débogage %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1108"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Transmission effectuée !&lt;br&gt;Veuillez vous référer à l&apos;identifiant &lt;b&gt;%1&lt;/b&gt; dans vos rapports de bugs.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1130"/>
         <source>No kDrive configured!</source>
         <translation>Aucun kDrive configuré !</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1109"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Échec de la transmission&#xa0;!
@@ -1937,7 +1937,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="795"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="846"/>
         <source>Synchronization error.</source>
         <translation>Erreur de synchronisation.</translation>
     </message>
@@ -1948,16 +1948,26 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="823"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Impossible de créer le fichier &quot;%1&quot; car il n&apos;est pas pris en charge par votre système de fichiers.&lt;br&gt;Il a été exclu de la synchronisation.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="826"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>L&apos;élément n&apos;a pas pu être déplacé car son chemin contient un lien symbolique ou une jonction.&lt;br&gt;Il a été temporairement exclu de la synchronisation.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>System error.</source>
         <translation>Erreur système.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>L&apos;élément existe déjà de l&apos;autre côté.&lt;br&gt;Il a été temporairement mis sur liste noire.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="852"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Une erreur technique s&apos;est produite.&lt;br&gt;Veuillez vider l&apos;historique et si l&apos;erreur persiste, contactez notre équipe d&apos;assistance.</translation>
     </message>
@@ -2872,7 +2882,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="140"/>
+        <location filename="../src/server/appserver.cpp" line="142"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>L&apos;application kDrive se fermera en raison d&apos;une erreur fatale.</translation>
     </message>

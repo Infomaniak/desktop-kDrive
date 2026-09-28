@@ -1061,11 +1061,11 @@ void TestIntegration::testSynchronizationOfSymLinks() {
     const auto remoteTestFileInfo7 =
             getRemoteFileInfoByName(_driveDbId, tmpRemoteDir.id(), Str("directory_symlink_with_absolute_target_path"));
 
-    CPPUNIT_ASSERT(!remoteTestFileInfo5.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo6.isValid());
-    CPPUNIT_ASSERT(!remoteTestFileInfo7.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo5.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo6.isValid());
+    CPPUNIT_ASSERT(remoteTestFileInfo7.isValid());
 
-    CPPUNIT_ASSERT_EQUAL(int64_t{6}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
+    CPPUNIT_ASSERT_EQUAL(int64_t{9}, countItemsInRemoteDir(_driveDbId, tmpRemoteDir.id()));
 
 
     logStep("testSynchronizationOfSymLinks");

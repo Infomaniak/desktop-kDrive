@@ -378,6 +378,9 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
+        // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
+        CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
+        CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
     }
 
     // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
@@ -397,6 +400,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
+        // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
+        CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
         // The other ones should be correctly parsed
         int counter = 0;
         while (handler.getItem(item, ss, error, ignore, eof)) {
@@ -405,6 +410,30 @@ void TestSnapshotItemHandler::testGetItem() {
             CPPUNIT_ASSERT(!error);
         }
         CPPUNIT_ASSERT_EQUAL(2, counter); // There should be 2 valid items
+    }
+
+    // An ignored line must not inherit the id of the previously parsed item: the item is reset before each line is read.
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        bool eof = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "1,0,test,dir,1000,123,124,0,1\n"
+           << "2,0," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.id());
+
+        // The second line is ignored, and the item id is the one of the ignored line, not the one of the previous item.
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
+        CPPUNIT_ASSERT(ignore);
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT_EQUAL(NodeId("2"), item.id());
     }
 
     // End of line test : normal case
@@ -418,17 +447,20 @@ void TestSnapshotItemHandler::testGetItem() {
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str();
         SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItem lastParsedItem;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            // Nothing to do, just read the whole file
+            lastParsedItem = item;
         }
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
+        // The item is reset when the EOF delimiter is read.
+        CPPUNIT_ASSERT(item.id().empty());
 
         const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")), static_cast<SyncTime>(123),
                                         static_cast<SyncTime>(124), NodeType::Directory, static_cast<int64_t>(1000), true, false,
                                         true);
-        const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+        const auto [success, message] = snapshotitem_checker::compare(expectedItem, lastParsedItem);
         CPPUNIT_ASSERT_MESSAGE(message, success);
     }
 
@@ -442,17 +474,20 @@ void TestSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n";
         SnapshotItemHandler handler(Log::instance()->getLogger());
+        SnapshotItem lastParsedItem;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            // Nothing to do, just read the whole file
+            lastParsedItem = item;
         }
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(!eof);
+        // The item is reset when no more line can be read.
+        CPPUNIT_ASSERT(item.id().empty());
 
         const SnapshotItem expectedItem(NodeId("1"), NodeId("0"), Str2SyncName(std::string("test")), static_cast<SyncTime>(123),
                                         static_cast<SyncTime>(124), NodeType::Directory, static_cast<int64_t>(1000), true, false,
                                         true);
-        const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
+        const auto [success, message] = snapshotitem_checker::compare(expectedItem, lastParsedItem);
         CPPUNIT_ASSERT_MESSAGE(message, success);
     }
 
@@ -486,13 +521,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
-        {
-            const SnapshotItem expectedItem(NodeId("2"), NodeId("0"), Str2SyncName(std::string("test2")),
-                                            static_cast<SyncTime>(123), static_cast<SyncTime>(124), NodeType::Directory,
-                                            static_cast<int64_t>(1000), true, false, true);
-            const auto [success, message] = snapshotitem_checker::compare(expectedItem, item);
-            CPPUNIT_ASSERT_MESSAGE(message, !success);
-        }
+        // The item has been reset when the EOF delimiter was read: the item following the delimiter is not parsed.
+        CPPUNIT_ASSERT(item.id().empty());
     }
 
     // The creation_at value is missing: should be interpreted as 0.
@@ -510,6 +540,120 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!error);
 
         CPPUNIT_ASSERT_EQUAL(SyncTime{0}, item.createdAt());
+    }
+}
+
+void TestSnapshotItemHandler::testGetItemWithCorruptedItem() {
+    // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
+    // The corrupted item spans 3 physical lines. It must be ignored, and the valid items around it must be parsed
+    // whatever their position in the reply.
+    const std::string commonDocumentsLine = R"(3,1,"Common documents",dir,,1627909284,1779373659,,)";
+    const std::string symlinkLine = "2891434,1,symlink_to_folder_outside_sync_dir,file,17,1789713856,1789713856,1,1";
+    const std::string myVirusLine = "2891435,1,myVirus.txt,file,14,1789716406,1789716417,1,";
+    const std::string corruptedItemLines = R"csv(2891437,1,"A\"
+2891435,2891434,myVirus.txt,file,,1786459004,1788263590,1,
+Z",file,4,1789735691,1789735698,1,)csv";
+
+    const SnapshotItem expectedCommonDocuments(NodeId("3"), NodeId("1"), Str2SyncName(std::string("Common documents")),
+                                               static_cast<SyncTime>(1627909284), static_cast<SyncTime>(1779373659),
+                                               NodeType::Directory, static_cast<int64_t>(0), false, false, true);
+    const SnapshotItem expectedSymlink(NodeId("2891434"), NodeId("1"),
+                                       Str2SyncName(std::string("symlink_to_folder_outside_sync_dir")),
+                                       static_cast<SyncTime>(1789713856), static_cast<SyncTime>(1789713856), NodeType::File,
+                                       static_cast<int64_t>(17), true, true, true);
+    const SnapshotItem expectedMyVirus(NodeId("2891435"), NodeId("1"), Str2SyncName(std::string("myVirus.txt")),
+                                       static_cast<SyncTime>(1789716406), static_cast<SyncTime>(1789716417), NodeType::File,
+                                       static_cast<int64_t>(14), false, true, true);
+    // The second physical line of the corrupted item is parsed as a separate valid item.
+    const SnapshotItem expectedMyVirusWithFileParent(
+            NodeId("2891435"), NodeId("2891434"), Str2SyncName(std::string("myVirus.txt")), static_cast<SyncTime>(1786459004),
+            static_cast<SyncTime>(1788263590), NodeType::File, static_cast<int64_t>(0), false, true, true);
+
+    struct ParsedItem {
+            bool ignore{false};
+            SnapshotItem item;
+    };
+    const auto parseCsvReply = [](const std::string &body) {
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n" << body << "\n" << endOfFileDelimiter;
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        std::vector<ParsedItem> parsedItems;
+        SnapshotItem item;
+        bool error = false;
+        bool ignore = false;
+        bool eof = false;
+        while (handler.getItem(item, ss, error, ignore, eof)) {
+            parsedItems.emplace_back(ignore, item);
+        }
+        CPPUNIT_ASSERT(!error);
+        CPPUNIT_ASSERT(eof);
+        return parsedItems;
+    };
+    const auto checkParsedItem = [](const ParsedItem &parsedItem, const bool expectedIgnore, const SnapshotItem &expectedItem,
+                                    const NodeId &expectedIgnoredId = NodeId(), const NodeId &expectedIgnoredParentId = NodeId(),
+                                    const SyncName &expectedIgnoredName = {}) {
+        CPPUNIT_ASSERT_EQUAL(expectedIgnore, parsedItem.ignore);
+        if (expectedIgnore) {
+            // The item fields are parsed before the ignore check, so that an error can be reported for this item.
+            CPPUNIT_ASSERT_EQUAL(expectedIgnoredId, parsedItem.item.id());
+            CPPUNIT_ASSERT_EQUAL(expectedIgnoredParentId, parsedItem.item.parentId());
+            CPPUNIT_ASSERT(expectedIgnoredName == parsedItem.item.name());
+        } else {
+            const auto result = snapshotitem_checker::compare(expectedItem, parsedItem.item);
+            CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
+        }
+    };
+
+    // Case 1: symlink, valid item, corrupted item
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + symlinkLine + "\n" + myVirusLine + "\n" + corruptedItemLines);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], false, expectedSymlink);
+        checkParsedItem(parsedItems[2], false, expectedMyVirus);
+        checkParsedItem(parsedItems[3], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
+        checkParsedItem(parsedItems[4], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[5], true, SnapshotItem());
+    }
+
+    // Case 2: symlink, corrupted item, valid item
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + symlinkLine + "\n" + corruptedItemLines + "\n" + myVirusLine);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], false, expectedSymlink);
+        checkParsedItem(parsedItems[2], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
+        checkParsedItem(parsedItems[3], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[4], true, SnapshotItem());
+        checkParsedItem(parsedItems[5], false, expectedMyVirus);
+    }
+
+    // Case 3: corrupted item, symlink, valid item
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + symlinkLine + "\n" + myVirusLine);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
+        checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[3], true, SnapshotItem());
+        checkParsedItem(parsedItems[4], false, expectedSymlink);
+        checkParsedItem(parsedItems[5], false, expectedMyVirus);
+    }
+
+    // Case 4: corrupted item, valid item, symlink
+    {
+        const auto parsedItems =
+                parseCsvReply(commonDocumentsLine + "\n" + corruptedItemLines + "\n" + myVirusLine + "\n" + symlinkLine);
+        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(6), parsedItems.size());
+        checkParsedItem(parsedItems[0], false, expectedCommonDocuments);
+        checkParsedItem(parsedItems[1], true, SnapshotItem(), NodeId("2891437"), NodeId("1"), Str2SyncName(std::string("A\\")));
+        checkParsedItem(parsedItems[2], false, expectedMyVirusWithFileParent);
+        checkParsedItem(parsedItems[3], true, SnapshotItem());
+        checkParsedItem(parsedItems[4], false, expectedMyVirus);
+        checkParsedItem(parsedItems[5], false, expectedSymlink);
     }
 }
 

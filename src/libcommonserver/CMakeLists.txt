@@ -26,6 +26,7 @@ set(libcommonserver_SRCS
     utility/utility.h utility/utility.cpp
     utility/stateholder.h
     utility/jsonparserutility.h
+    utility/kdexception.h utility/kdexception.cpp
     # Db
     db/sqlitedb.h db/sqlitedb.cpp
     db/sqlitequery.h db/sqlitequery.cpp

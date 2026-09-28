@@ -202,6 +202,18 @@ struct IoHelper {
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
+        //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
+        //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
+        /*!
+          \param path is the file system path whose ancestors are inspected. The final component of the path is ignored.
+          \param traversesLink is a boolean set with true if at least one ancestor of path is a followed link, false otherwise.
+          \param linkPath is set with the path of the first ancestor found to be a followed link, and with an empty path
+          otherwise.
+          \return An ioError representing the success or failure of the underlying OS API call. IoError::Success is returned
+          whether a followed link is found; use traversesLink to know whether one was found.
+         */
+        static IoError checkIfPathTraversesLink(const SyncPath &path, bool &traversesLink, SyncPath &linkPath) noexcept;
+
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
           \param path is the file system path of a file.
@@ -278,14 +290,15 @@ struct IoHelper {
          */
         static bool createDirectory(const SyncPath &path, bool recursive, IoError &ioError) noexcept;
 
-        /** Move an item located under the specified path.
+        /** Move an item located under the specified path (actually calls renameItem).
          *
          * @param sourcePath is the source file system path of the item to move.
          * @param destinationPath is the destination file system path of the item to move.
-         * @param ioError
-         * @return
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if no unexpected error occurred, false otherwise.
          */
         static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+        static IoError moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
 
         /** Rename an item located under the specified path.
          *
@@ -295,6 +308,7 @@ struct IoHelper {
          * @return true if no unexpected error occurred, false otherwise.
          */
         static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+        static IoError renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath) noexcept;
 
         //! Remove an item located under the specified path.
         /*!
@@ -539,6 +553,8 @@ struct IoHelper {
 #endif
 
         static bool moveItemToTrash(const SyncPath &itemPath);
+
+        static IoError getWeakCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept;
 
     protected:
         friend class DirectoryIterator;

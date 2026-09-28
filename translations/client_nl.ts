@@ -44,7 +44,7 @@
 <context>
     <name>KDC::AbstractFileItemWidget</name>
     <message>
-        <location filename="../src/gui/abstractfileitemwidget.cpp" line="177"/>
+        <location filename="../src/gui/abstractfileitemwidget.cpp" line="179"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan debugmap %1 niet openen.</translation>
     </message>
@@ -310,12 +310,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::AppServer</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="1751"/>
+        <location filename="../src/server/appserver.cpp" line="1753"/>
         <source>Share link copied to clipboard</source>
         <translation>Deellink gekopieerd naar klembord</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3913"/>
+        <location filename="../src/server/appserver.cpp" line="3915"/>
         <source>%1 and %n other file(s) have been removed.</source>
         <translation>
             <numerusform>%1 is verwijderd.</numerusform>
@@ -323,13 +323,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3915"/>
+        <location filename="../src/server/appserver.cpp" line="3917"/>
         <source>%1 has been removed.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is verwijderd.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3920"/>
+        <location filename="../src/server/appserver.cpp" line="3922"/>
         <source>%1 and %n other file(s) have been added.</source>
         <translation>
             <numerusform>%1 en %n ander(e) bestand(en) zijn toegevoegd.</numerusform>
@@ -337,13 +337,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3922"/>
+        <location filename="../src/server/appserver.cpp" line="3924"/>
         <source>%1 has been added.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is toegevoegd.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3927"/>
+        <location filename="../src/server/appserver.cpp" line="3929"/>
         <source>%1 and %n other file(s) have been updated.</source>
         <translation>
             <numerusform>%1 is bijgewerkt.</numerusform>
@@ -351,13 +351,13 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3929"/>
+        <location filename="../src/server/appserver.cpp" line="3931"/>
         <source>%1 has been updated.</source>
         <comment>%1 names a file.</comment>
         <translation>%1 is bijgewerkt.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/server/appserver.cpp" line="3934"/>
+        <location filename="../src/server/appserver.cpp" line="3936"/>
         <source>%1 has been moved to %2 and %n other file(s) have been moved.</source>
         <translation>
             <numerusform>%1 is verplaatst naar %2.</numerusform>
@@ -365,12 +365,12 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
         </translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3937"/>
+        <location filename="../src/server/appserver.cpp" line="3939"/>
         <source>%1 has been moved to %2.</source>
         <translation>%1 is verplaatst naar %2.</translation>
     </message>
     <message>
-        <location filename="../src/server/appserver.cpp" line="3945"/>
+        <location filename="../src/server/appserver.cpp" line="3947"/>
         <source>Sync Activity</source>
         <translation>Synchronisatieactiviteit</translation>
     </message>
@@ -1568,22 +1568,22 @@ Selecteer een andere map. Als u doorgaat, wordt Lite Sync uitgeschakeld.&lt;br&g
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1087"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1094"/>
         <source>Unable to open folder path %1.</source>
         <translation>Kan mappad %1 niet openen.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1101"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1108"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>Verzending voltooid!&lt;br&gt;Gelieve te verwijzen naar identificatie &lt;b&gt;%1&lt;/b&gt; in bugrapporten.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1123"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1130"/>
         <source>No kDrive configured!</source>
         <translation>Geen kDrive geconfigureerd!</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1102"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1109"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Verzending mislukt!
@@ -1937,7 +1937,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="795"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="846"/>
         <source>Synchronization error.</source>
         <translation>Synchronisatiefout.</translation>
     </message>
@@ -1948,16 +1948,26 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="823"/>
+        <source>Impossible to create file &quot;%1&quot; because it is not supported on your filesystem.&lt;br&gt;It has been excluded from synchronization.</source>
+        <translation>Kan bestand &quot;%1&quot; niet aanmaken omdat het niet wordt ondersteund door uw bestandssysteem.&lt;br&gt;Het is uitgesloten van synchronisatie.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="826"/>
+        <source>The item could not be moved because its path contains a symbolic link or junction.&lt;br&gt;It has been temporarily excluded from synchronization.</source>
+        <translation>Het item kon niet worden verplaatst omdat het pad een symbolische koppeling of een junction bevat.&lt;br&gt;Het is tijdelijk uitgesloten van synchronisatie.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
         <source>System error.</source>
         <translation>Systeemfout.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="830"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="837"/>
         <source>Item already exists on other side.&lt;br&gt;It has been temporarily blacklisted.</source>
         <translation>Item bestaat al aan de andere kant.&lt;br&gt;Het is tijdelijk op de zwarte lijst gezet.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="852"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Er is een technische fout opgetreden.&lt;br&gt;Wis de geschiedenis en neem contact op met ons ondersteuningsteam als de fout aanhoudt.</translation>
     </message>
@@ -2872,7 +2882,7 @@ Gebruik de volgende link om de logs naar de ondersteuning te sturen: &lt;a style
 <context>
     <name>SharedTools::QtSingleApplication</name>
     <message>
-        <location filename="../src/server/appserver.cpp" line="140"/>
+        <location filename="../src/server/appserver.cpp" line="142"/>
         <source>kDrive application will close due to a fatal error.</source>
         <translation>kDrive-applicatie wordt afgesloten vanwege een fatale fout.</translation>
     </message>
