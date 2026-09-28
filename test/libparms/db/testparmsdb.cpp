@@ -654,6 +654,39 @@ void TestParmsDb::testAppUID() {
     CPPUNIT_ASSERT(ParmsDb::appUID().empty());
 }
 
+void TestParmsDb::testDialogGeometry() {
+    bool found = false;
+
+    // Geometry bytes containing the delimiters must survive a round-trip thanks to Base64 encoding.
+    ServerParameters parameters;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
+    const QByteArray geometryWithDelimiters("a;b\nc");
+    parameters.setDialogGeometry("preferencesWindow", geometryWithDelimiters);
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters, found) && found);
+
+    ServerParameters parameters2;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters2, found) && found);
+    CPPUNIT_ASSERT(parameters2.dialogGeometry().value("preferencesWindow") == geometryWithDelimiters);
+
+    // Rows written before values were Base64-encoded contain raw geometry bytes and must still be read.
+    const char rawGeometryBytes[] = {'\x00', '\x01', '\x02', '\x03', '\x04'};
+    const QByteArray rawGeometry(rawGeometryBytes, sizeof(rawGeometryBytes));
+    const QByteArray legacyBlob = QByteArray("preferencesWindow;") + rawGeometry;
+    int errId = 0;
+    std::string error;
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryCreate("test_raw_geometry"));
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryPrepare("test_raw_geometry", "UPDATE parameters SET dialogGeometry = ?1;", false,
+                                                     errId, error));
+    const auto rawBlob = std::make_shared<std::vector<char>>(legacyBlob.begin(), legacyBlob.end());
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryBindValue("test_raw_geometry", 1, rawBlob));
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryExec("test_raw_geometry", errId, error));
+    ParmsDb::instance()->queryFree("test_raw_geometry");
+
+    ServerParameters parameters3;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters3, found) && found);
+    CPPUNIT_ASSERT(parameters3.dialogGeometry().value("preferencesWindow") == rawGeometry);
+}
+
 #if defined(KD_MACOS)
 void TestParmsDb::testExclusionApp() {
     ExclusionApp exclusionApp1("app id 1", "description 1");

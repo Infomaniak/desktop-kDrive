@@ -32,16 +32,27 @@
 
 namespace {
 
+// Decodes a Base64-encoded value, falling back to the raw bytes for rows written before values were encoded.
+QByteArray decodeBase64OrRaw(const QByteArray &value) {
+    const auto result = QByteArray::fromBase64Encoding(QByteArray(value),
+                                                       QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
+    if (result.decodingStatus == QByteArray::Base64DecodingStatus::Ok) {
+        return result.decoded;
+    }
+    return value;
+}
+
 std::shared_ptr<std::vector<char>> dialogGeometryToBlob(const KDC::Parameters::DialogGeometry &dialogGeometry) {
     if (dialogGeometry.isEmpty()) {
         return nullptr;
     }
 
+    // Values are Base64-encoded because raw geometry bytes may contain the ';' and '\n' delimiters.
     QByteArray arr;
     for (const QString &objectName: dialogGeometry.keys()) {
         arr += objectName.toUtf8();
         arr += ";";
-        arr += dialogGeometry.value(objectName);
+        arr += dialogGeometry.value(objectName).toBase64();
         arr += "\n";
     }
     return std::make_shared<std::vector<char>>(arr.begin(), arr.end());
@@ -58,7 +69,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     for (const QByteArray &line: lines) {
         const QList<QByteArray> elts = line.split(';');
         if (elts.size() == 2) {
-            (void) dialogGeometry.insert(QString(elts[0]), elts[1]);
+            (void) dialogGeometry.insert(QString(elts[0]), decodeBase64OrRaw(elts[1]));
         }
     }
     return dialogGeometry;
