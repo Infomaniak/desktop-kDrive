@@ -571,7 +571,7 @@ bool ActivityListModel::removeStaleRows(const std::vector<Row> &nextRows) {
     }
 
     bool changed = false;
-    for (qsizetype rowIndex = static_cast<qsizetype>(_rows.size()) - 1; rowIndex >= 0; --rowIndex) {
+    for (int32_t rowIndex = static_cast<int32_t>(_rows.size()) - 1; rowIndex >= 0; --rowIndex) {
         if (nextRowIds.contains(_rows[static_cast<std::size_t>(rowIndex)].rowId)) {
             continue;
         }
@@ -585,9 +585,9 @@ bool ActivityListModel::removeStaleRows(const std::vector<Row> &nextRows) {
 
 bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
     bool changed = false;
-    for (qsizetype targetIndex = 0; targetIndex < static_cast<qsizetype>(nextRows.size()); ++targetIndex) {
+    for (int32_t targetIndex = 0; targetIndex < static_cast<int32_t>(nextRows.size()); ++targetIndex) {
         const auto &nextRow = nextRows[static_cast<std::size_t>(targetIndex)];
-        if (targetIndex >= static_cast<qsizetype>(_rows.size())) {
+        if (targetIndex >= static_cast<int32_t>(_rows.size())) {
             beginInsertRows({}, targetIndex, targetIndex);
             _rows.push_back(nextRow);
             endInsertRows();
@@ -605,7 +605,7 @@ bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
                 continue;
             }
 
-            if (const qsizetype sourceIndex = std::distance(_rows.begin(), matchingIt);
+            if (const auto sourceIndex = static_cast<int32_t>(std::distance(_rows.begin(), matchingIt));
                 !beginMoveRows({}, sourceIndex, sourceIndex, {}, targetIndex)) {
                 qCWarning(lcActivityListModel) << "Incremental row move rejected; resetting activity projection"
                                                << "| sourceIndex:" << sourceIndex << "| targetIndex:" << targetIndex;
@@ -625,7 +625,7 @@ bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
     return changed;
 }
 
-bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) {
+bool ActivityListModel::updateRow(const int32_t rowIndex, const Row &nextRow) {
     auto &row = _rows[static_cast<std::size_t>(rowIndex)];
     if (row == nextRow) {
         return false;
@@ -664,7 +664,7 @@ void ActivityListModel::refreshSubtitles() {
         return;
     }
     const QDateTime nowUtc = QDateTime::currentDateTimeUtc();
-    for (qsizetype rowIndex = 0; rowIndex < static_cast<qsizetype>(_rows.size()); ++rowIndex) {
+    for (int32_t rowIndex = 0; rowIndex < static_cast<int32_t>(_rows.size()); ++rowIndex) {
         auto &row = _rows[static_cast<std::size_t>(rowIndex)];
         const QString nextSubtitleText = formatSubtitle(row.subtitleKind, row.timestampUtc, nowUtc);
         if (row.subtitleText == nextSubtitleText) {
