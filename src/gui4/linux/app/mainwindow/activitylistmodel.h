@@ -138,7 +138,7 @@ class ActivityListModel final : public QAbstractListModel {
         using MatchScore = uint8_t;
 
         enum class SubtitleKind : uint8_t {
-            TimeOnly,
+            TimeOnly, // Error rows: relative time without an action.
             Updated,
             Removed,
             Renamed,

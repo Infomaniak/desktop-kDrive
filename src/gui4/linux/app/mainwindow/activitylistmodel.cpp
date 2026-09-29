@@ -105,6 +105,14 @@ QString formatRelativeTime(const QDateTime &timestampUtc, const QDateTime &nowUt
     return QLocale().toString(timestampUtc.toLocalTime().date(), QLocale::ShortFormat);
 }
 
+// Lowercases the first letter so the relative time reads mid-sentence after the action ("Modified just now").
+QString toMidSentence(const QString &text) {
+    if (text.isEmpty()) {
+        return text;
+    }
+    return QLocale().toLower(text.first(1)) + text.sliced(1);
+}
+
 ActivityListModel::Status toModelStatus(const SyncFileStatus status) {
     switch (status) {
         case SyncFileStatus::Success:
@@ -417,6 +425,10 @@ ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEn
 
         case UpdateMetadata: // Reserved for possible future Linux Lite Sync support.
         case Update:
+        // Like the Windows client, instructions without a dedicated wording fall back to "Modified".
+        case Ignore:
+        case None:
+        case EnumEnd:
             return SubtitleKind::Updated;
         case Remove:
             return SubtitleKind::Removed;
@@ -430,12 +442,8 @@ ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEn
             return SubtitleKind::Imported;
         case Put:
             return SubtitleKind::Added;
-        case Ignore:
-        case None:
-        case EnumEnd:
-            return SubtitleKind::TimeOnly;
     }
-    return SubtitleKind::TimeOnly;
+    return SubtitleKind::Updated;
 }
 
 QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTime &timestampUtc, const QDateTime &nowUtc) {
@@ -444,19 +452,24 @@ QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTi
         return {};
     }
 
+    if (kind == SubtitleKind::TimeOnly) {
+        return relativeTime;
+    }
+
+    const QString midSentenceTime = toMidSentence(relativeTime);
     switch (kind) {
         case SubtitleKind::Updated:
-            return qtTrId("activityInstructionUpdateWithTimeLabel").arg(relativeTime);
+            return qtTrId("activityInstructionUpdateWithTimeLabel").arg(midSentenceTime);
         case SubtitleKind::Removed:
-            return qtTrId("activityInstructionRemoveWithTimeLabel").arg(relativeTime);
+            return qtTrId("activityInstructionRemoveWithTimeLabel").arg(midSentenceTime);
         case SubtitleKind::Renamed:
-            return qtTrId("activityInstructionRenameWithTimeLabel").arg(relativeTime);
+            return qtTrId("activityInstructionRenameWithTimeLabel").arg(midSentenceTime);
         case SubtitleKind::Moved:
-            return qtTrId("activityInstructionMoveWithTimeLabel").arg(relativeTime);
+            return qtTrId("activityInstructionMoveWithTimeLabel").arg(midSentenceTime);
         case SubtitleKind::Imported:
-            return qtTrId("activityInstructionGetWithTimeLabel").arg(relativeTime);
+            return qtTrId("activityInstructionGetWithTimeLabel").arg(midSentenceTime);
         case SubtitleKind::Added:
-            return qtTrId("activityInstructionPutWithTimeLabel").arg(relativeTime);
+            return qtTrId("activityInstructionPutWithTimeLabel").arg(midSentenceTime);
         case SubtitleKind::TimeOnly:
             return relativeTime;
     }
