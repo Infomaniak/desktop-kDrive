@@ -522,11 +522,15 @@ function Prepare-Archive {
 
     Write-Host "Copying dependencies to the folder $archivePath"
     foreach ($file in $dependencies) {
-        if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-            Copy-Item -Path "${file}d.dll" -Destination "$archivePath"
+        if (($buildType -eq "Debug") -and (Test-Path -Path "${file}d.dll")) {
+            $dllPath = "${file}d.dll"
         } else {
-            Copy-Item -Path "$file.dll" -Destination "$archivePath"
+            $dllPath = "$file.dll"
         }
+
+        Copy-Item -Path "$dllPath" -Destination "$archivePath"
+        $filename = Split-Path -Leaf $dllPath
+        Sign-File -FilePath "$archivePath/$filename" -Upload $upload -Thumbprint $thumbprint -Description $filename
     }
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
     $packages = @( # Qt dependencies are handled by windeployqt
