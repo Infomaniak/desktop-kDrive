@@ -305,7 +305,7 @@
   ready when the user opens it. It emits `driveRemoved()` once the drive has no synchronization left, and Settings then
   returns to the Accounts root.
 - `app/settings/syncfolderselectioncontroller.*`: process-long state of the Settings "Manage synchronization" page,
-  exposed as `SettingsWindowController.syncFolderSelection`. The page opens and closes its `SyncDbId` target; the
+  passed directly to `SettingsWindow` as its `syncFolderSelection` initial property. The page opens and closes its `SyncDbId` target; the
   controller loads the confirmed blacklist into its own `RemoteFolderTreeModel` and sends the complete list with
   `BLACKLISTED_NODE_SETLIST`. Save is refused above `AppConstants::SyncConfiguration::maxExcludedFolders` (3000), the
   largest `without_ids` list the kDrive API accepts on listing requests. The draft is dropped on Cancel or back

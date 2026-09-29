@@ -179,10 +179,13 @@ class AppClientLinux : public QApplication {
         SyncFolderSelectionController _syncFolderSelectionController{_appCache, _serverCommService, this};
         DriveManagementController _driveManagementController{_appCache, _serverCommService, _syncService,
                                                              _syncFolderSelectionController, this};
-        SettingsWindowController _settingsWindowController{_generalSettingsController,        _advancedSettingsController,
-                                                           _fileExclusionController,          _networkSettingsController,
-                                                           _settingsSyncActivationController, _driveManagementController,
-                                                           _syncFolderSelectionController,    this};
+        SettingsWindowController _settingsWindowController{_generalSettingsController,
+                                                           _advancedSettingsController,
+                                                           _fileExclusionController,
+                                                           _networkSettingsController,
+                                                           _settingsSyncActivationController,
+                                                           _driveManagementController,
+                                                           this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};

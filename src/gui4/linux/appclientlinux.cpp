@@ -350,7 +350,8 @@ void AppClientLinux::openSettingsWindow() {
         component.loadFromModule(AppConstants::Qml::moduleUri, "SettingsWindow");
         auto *object = component.createWithInitialProperties(
                 {{"controller", QVariant::fromValue<SettingsWindowController *>(&_settingsWindowController)},
-                 {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)}});
+                 {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)},
+                 {"syncFolderSelection", QVariant::fromValue<SyncFolderSelectionController *>(&_syncFolderSelectionController)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
