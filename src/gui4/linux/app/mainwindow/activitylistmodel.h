@@ -167,8 +167,10 @@ class ActivityListModel final : public QAbstractListModel {
                 Source source{Source::Unknown};
                 SyncFileInstruction instruction{SyncFileInstruction::None};
                 int32_t progress{0};
+                int64_t size{0};
                 QDateTime timestampUtc;
                 Count receivedSequence{0};
+                Count placementSequence{0};
                 SyncPath relativePath;
                 SyncPath sourcePath;
                 SyncPath destinationPath;
@@ -188,6 +190,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
         [[nodiscard]] static AvailableActions availableActions(const Row &row);
+        [[nodiscard]] static bool isPinnedTransfer(const Row &row);
         [[nodiscard]] static SubtitleKind subtitleKind(const ActivityEntry &activity);
         [[nodiscard]] static QString formatSubtitle(SubtitleKind kind, const QDateTime &timestampUtc,
                                                     const QDateTime &nowUtc = QDateTime::currentDateTimeUtc());

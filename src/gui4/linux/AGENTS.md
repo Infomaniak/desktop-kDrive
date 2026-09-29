@@ -175,8 +175,10 @@
   above when there is insufficient room, and clamp the result when neither side provides its full height.
 - On Activities, a retry in progress for an actively errored node shares the same projected row, and displayed Folder
   values open that exact folder even when the activity target no longer exists.
-- On Activities, keep actual in-progress transfers above failed and synchronized rows; surface active errors separately
-  without displacing transfers that are still running.
+- On Activities, keep actual in-progress transfers of at least 1 KB above failed and synchronized rows, in their start
+  order (newest first): progress updates must never reorder them, and only completion moves a row, as on Windows.
+  Smaller transfers finish too fast to be pinned without flickering. Surface active errors separately without
+  displacing transfers that are still running.
 - Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
   revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
 - Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
@@ -307,11 +309,10 @@
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
-  updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for
-  the same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct
-  anonymous operations, and bounds retention to 500 entries per synchronization. It stays separate from the durable
-  `AppCache`
-  graph and is not exposed directly to QML.
+  updates valid operation ids in place while keeping their placement sequence until completion, removes failed entries
+  superseded by a successful or in-progress activity for the same node, clears interrupted in-progress entries when a
+  synchronization becomes inactive, preserves distinct anonymous operations, and bounds retention to 500 entries per
+  synchronization. It stays separate from the durable `AppCache` graph and is not exposed directly to QML.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
     - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
       violations.
@@ -332,8 +333,8 @@
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
   active node errors. It omits failed activities after their active error is resolved, maps server status and direction
-  to the QML-facing presentation enums, keeps actual in-progress rows first, coalesces bursty cache invalidations, and
-  keeps active errors visible even when their recent activity has been evicted.
+  to the QML-facing presentation enums, keeps in-progress transfers of at least 1 KB first in start order, coalesces
+  bursty cache invalidations, and keeps active errors visible even when their recent activity has been evicted.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
