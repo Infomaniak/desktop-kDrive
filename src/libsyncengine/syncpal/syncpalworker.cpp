@@ -383,6 +383,18 @@ void SyncPalWorker::execute() {
                 if (step != _step) {
                     LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step) << " has finished");
                     waitForExitOfWorkers(stepWorkers);
+
+                    // If the sync root has been unregistered (e.g. shell extension uninstalled), the OS has deleted the
+                    // placeholders: these local deletions must not be propagated.
+                    if (step == SyncStep::Propagation2 && _syncPal->vfs() && !_syncPal->vfs()->isRegistered()) {
+                        LOG_SYNCPAL_WARN(_logger, "Sync root is not registered anymore, stopping sync and VFS");
+                        stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
+                        _syncPal->vfs()->stop(false);
+                        exitCode = ExitCode::SystemError;
+                        setExitCause(ExitCause::UnableToStartVfs);
+                        break;
+                    }
+
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }

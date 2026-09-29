@@ -26,7 +26,8 @@
 
 class CloudProviderRegistrar {
     public:
-        static std::wstring registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+        static std::wstring registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize,
+                                              int64_t *registeredAt);
         static bool unregister(std::wstring syncRootID);
 
     private:

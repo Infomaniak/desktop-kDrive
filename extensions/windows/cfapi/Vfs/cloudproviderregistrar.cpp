@@ -41,6 +41,12 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_ICONRESOURCE L"IconResource"
 #define REGKEY_DEFAULTICON L"DefaultIcon"
 
+constexpr const wchar_t *regKeyUserSyncRoots = L"UserSyncRoots";
+
+// Number of 100ns intervals between 1601-01-01 (FILETIME epoch) and 1970-01-01 (Unix epoch)
+constexpr uint64_t filetimeUnixEpochOffset = 116444736000000000ULL;
+constexpr uint64_t filetimeTicksPerMillisecond = 10000ULL;
+
 void updateRegistryEntry(const HKEY &hKey, const std::wstring &name, const std::wstring &value) {
     TRACE_INFO(L"%s value: %s", name.c_str(), value.c_str());
 
@@ -50,9 +56,40 @@ void updateRegistryEntry(const HKEY &hKey, const std::wstring &name, const std::
     }
 }
 
+// Return the last write time of the UserSyncRoots registry key of the sync root, as a Unix timestamp (in milliseconds).
+// This key is created when the sync root is registered and is not modified afterwards, so its last write time can be
+// considered as the registration time of the sync root.
+// Return 0 if the time cannot be retrieved.
+static int64_t getRegistrationTime(const std::wstring &syncRootID) {
+    const std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID + L"\\" + regKeyUserSyncRoots;
+    HKEY hKey = nullptr;
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not open key %s", subKey.c_str());
+        return 0;
+    }
+
+    FILETIME lastWriteTime{};
+    const LSTATUS status = RegQueryInfoKey(hKey, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                           nullptr, &lastWriteTime);
+    if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not close key %s", subKey.c_str());
+    }
+    if (status != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not query info of key %s", subKey.c_str());
+        return 0;
+    }
+
+    ULARGE_INTEGER ticks{};
+    ticks.LowPart = lastWriteTime.dwLowDateTime;
+    ticks.HighPart = lastWriteTime.dwHighDateTime;
+    if (ticks.QuadPart < filetimeUnixEpochOffset) return 0;
+    return static_cast<int64_t>((ticks.QuadPart - filetimeUnixEpochOffset) / filetimeTicksPerMillisecond);
+}
+
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
-                                                       DWORD *namespaceCLSIDSize) {
+                                                       DWORD *namespaceCLSIDSize, int64_t *registeredAt) {
     std::wstring syncRootID;
+    if (registeredAt) *registeredAt = 0;
 
     try {
         syncRootID = getSyncRootId(providerInfo);
@@ -262,6 +299,11 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
             } else {
                 TRACE_ERROR(L"Could not open key %s", subKey.c_str());
             }
+        }
+
+        if (registeredAt) {
+            *registeredAt = getRegistrationTime(syncRootID);
+            TRACE_DEBUG(L"Sync root registration time: %lld", *registeredAt);
         }
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"Could not register the sync root, hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),

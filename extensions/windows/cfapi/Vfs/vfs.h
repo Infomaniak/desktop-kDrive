@@ -41,7 +41,8 @@ DLL_EXP int __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWOR
                             const wchar_t *trashURI);
 
 DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId, const wchar_t *folderName,
-                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize,
+                             int64_t *registeredAt);
 
 DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, bool unregister);
 

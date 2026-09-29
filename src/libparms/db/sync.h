@@ -34,7 +34,7 @@ class PARMS_EXPORT Sync {
              VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const SyncPath &dbPath = SyncPath(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
-             int64_t listingCursorTimestamp = 0, bool toDelete = false);
+             int64_t listingCursorTimestamp = 0, bool toDelete = false, SyncTime vfsRegisteredAt = 0);
 
         inline void setDbId(SyncDbId dbId) { _dbId = dbId; }
         inline SyncDbId dbId() const { return _dbId; }
@@ -74,6 +74,9 @@ class PARMS_EXPORT Sync {
         [[nodiscard]] bool toDelete() const { return _toDelete; }
         void setToDelete(const bool toDelete) { _toDelete = toDelete; }
 
+        void setVfsRegisteredAt(const SyncTime vfsRegisteredAt) { _vfsRegisteredAt = vfsRegisteredAt; }
+        [[nodiscard]] SyncTime vfsRegisteredAt() const { return _vfsRegisteredAt; }
+
     private:
         SyncDbId _dbId{0};
         DriveDbId _driveDbId{0};
@@ -91,6 +94,7 @@ class PARMS_EXPORT Sync {
         std::string _listingCursor;
         int64_t _listingCursorTimestamp{0};
         bool _toDelete{false};
+        SyncTime _vfsRegisteredAt{0};
 };
 
 } // namespace KDC
