@@ -27,7 +27,7 @@ Item {
 
     required property var controller
 
-    readonly property string filterLabel: controller.filter === ActivityListModel.MyActivityOnly ? qsTrId("activitiesTypeMyActivity") : qsTrId("activitiesTypeAllActivities")
+    readonly property string filterLabel: controller.filter === ActivityListModel.ThisComputerOnly ? qsTrId("activitiesTypeThisComputer") : qsTrId("activitiesTypeAllActivities")
 
     implicitHeight: IKActivities.headerHeight
 
@@ -64,7 +64,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: IKActivities.filterIconSize
                 height: IKActivities.filterIconSize
-                source: root.controller.filter === ActivityListModel.AllActivities ? "qrc:/assets/main/activities/filter-all-activities.svg" : "qrc:/assets/main/activities/filter-my-activity.svg"
+                source: root.controller.filter === ActivityListModel.AllActivities ? "qrc:/assets/main/activities/filter-all-activities.svg" : "qrc:/assets/main/activities/filter-this-computer.svg"
                 color: IKColors.textPrimary
             }
 
