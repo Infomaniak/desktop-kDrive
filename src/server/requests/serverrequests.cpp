@@ -476,8 +476,9 @@ ExitInfo ServerRequests::findUnoccupiedPathForNewSync(const SyncPath &homeFolder
         auto ioError = IoError::Success;
         bool alreadyExists = false;
         if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, pathCheckOption) || ioError != IoError::Success) {
+            errorMessage = QString::fromStdWString(Utility::formatIoError(path, ioError));
             LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(path, ioError));
+                      L"Error in IoHelper::checkIfPathExists: " << QStr2WStr(errorMessage));
             return ExitCode::SystemError;
         }
 
