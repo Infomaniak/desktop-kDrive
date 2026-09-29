@@ -69,7 +69,7 @@ class VFS_EXPORT VfsWin : public Vfs {
         ExitInfo getFetchingAppList(AppTable &) final { return ExitCode::Ok; }
 
         bool isExcluded(const SyncPath &) override { return false; }
-        virtual bool setCreationDate(const QString &, time_t) { return false; }
+        virtual bool setCreationDate(const QString &, const time_t) { return false; }
 
         void dehydrate(const SyncPath &path) override;
         void hydrate(const SyncPath &path) override;
