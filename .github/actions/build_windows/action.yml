@@ -77,20 +77,26 @@ runs:
       - name: Digicert KSP - Set variables
         id: variables
         if: ${{ inputs.use_ksp_cert == 'true' }}
-        shell: cmd
+        env:
+          KSP_HOST: ${{ inputs.ksp_host }}
+          KSP_API_KEY: ${{ inputs.ksp_api_key }}
+          KSP_CLIENT_CERT_PASSWORD: ${{ inputs.ksp_client_cert_pass }}
+        shell: powershell
         run: |
-          >>"%GITHUB_OUTPUT%" echo version=%GITHUB_REF:refs/tags/v=%
-          >>"%GITHUB_OUTPUT%" echo KEYPAIR_NAME=gt-standard-keypair
-          >>"%GITHUB_OUTPUT%" echo CERTIFICATE_NAME=gt-certificate
+          # Sensitive values are read from the step environment and written with [IO.File]::AppendAllText
+          # (UTF-8 without BOM) so their contents are treated as data, never as cmd metacharacters.
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "version=$($env:GITHUB_REF -replace '^refs/tags/v', '')`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "KEYPAIR_NAME=gt-standard-keypair`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_OUTPUT, "CERTIFICATE_NAME=gt-certificate`r`n")
 
-          >>"%GITHUB_ENV%" echo SM_HOST=${{ inputs.ksp_host }}
-          >>"%GITHUB_ENV%" echo SM_API_KEY=${{ inputs.ksp_api_key }}
-          >>"%GITHUB_ENV%" echo SM_CLIENT_CERT_FILE=${{ github.workspace }}\certificate\ksp_client_certificate.pfx
-          >>"%GITHUB_ENV%" echo SM_CLIENT_CERT_PASSWORD=${{ inputs.ksp_client_cert_pass }}
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "SM_HOST=$env:KSP_HOST`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "SM_API_KEY=$env:KSP_API_KEY`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "SM_CLIENT_CERT_FILE=$env:GITHUB_WORKSPACE\certificate\ksp_client_certificate.pfx`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_ENV, "SM_CLIENT_CERT_PASSWORD=$env:KSP_CLIENT_CERT_PASSWORD`r`n")
 
-          >>"%GITHUB_PATH%" echo C:\Program Files (x86)\Windows Kits\10\App Certification Kit
-          >>"%GITHUB_PATH%" echo C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools
-          >>"%GITHUB_PATH%" echo C:\Program Files\DigiCert\DigiCert Keylocker Tools
+          [IO.File]::AppendAllText($env:GITHUB_PATH, "C:\Program Files (x86)\Windows Kits\10\App Certification Kit`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_PATH, "C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools`r`n")
+          [IO.File]::AppendAllText($env:GITHUB_PATH, "C:\Program Files\DigiCert\DigiCert Keylocker Tools`r`n")
 
       - name: Digicert KSP - Setup SSM KSP on Windows latest
         run: |
