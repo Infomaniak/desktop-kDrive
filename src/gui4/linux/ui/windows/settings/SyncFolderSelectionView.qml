@@ -72,6 +72,8 @@ Item {
 
                 anchors.fill: parent
                 visible: root.blackListReady
+                // The saved list is captured when Save is clicked: a later edit would be lost when the page closes.
+                enabled: !root.controller.saving
                 treeModel: root.controller.folderTreeModel
                 onVisibleChanged: {
                     if (visible) {
