@@ -120,7 +120,7 @@
         </message> 
         <message id="activityInstructionPutWithTimeLabel"> 
             <source>Added %1</source> 
-            <translation>%1 hinzugefügt</translation> 
+            <translation>Hinzugefügt %1</translation> 
         </message> 
         <message id="activityInstructionRemoveLabel"> 
             <source>Moved to trash</source> 
@@ -136,7 +136,7 @@
         </message> 
         <message id="activityInstructionRenameWithTimeLabel"> 
             <source>Renamed %1</source> 
-            <translation>Umbenannt in %1</translation> 
+            <translation>Umbenannt %1</translation> 
         </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
