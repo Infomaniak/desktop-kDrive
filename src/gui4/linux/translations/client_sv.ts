@@ -92,7 +92,7 @@
         </message> 
         <message id="activitiesTypeThisComputer"> 
             <source>Activities from this computer</source> 
-            <translation>Aktivitet från den här datorn</translation> 
+            <translation>Aktiviteter från den här datorn</translation> 
         </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
@@ -100,7 +100,7 @@
         </message> 
         <message id="activityInstructionGetWithTimeLabel"> 
             <source>Imported %1</source> 
-            <translation>Importerat %1</translation> 
+            <translation>Importerad %1</translation> 
         </message> 
         <message id="activityInstructionIgnoreLabel"> 
             <source>Ignored</source> 
@@ -136,7 +136,7 @@
         </message> 
         <message id="activityInstructionRenameWithTimeLabel"> 
             <source>Renamed %1</source> 
-            <translation>Omdöpt till %1</translation> 
+            <translation>Bytt namn %1</translation> 
         </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
