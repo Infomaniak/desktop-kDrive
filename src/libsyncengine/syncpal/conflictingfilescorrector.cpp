@@ -126,6 +126,8 @@ ConflictingFilesCorrector::CanonicalPaths ConflictingFilesCorrector::getCanonica
 
     if (!CommonUtility::isSubDir(_syncPal->localPath(), result.sourcePath) || result.sourcePath == _syncPal->localPath()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Invalid canonical sourcePath: " << Utility::formatSyncPath(result.sourcePath));
+
+        return {};
     }
 
     result.valid = true;
