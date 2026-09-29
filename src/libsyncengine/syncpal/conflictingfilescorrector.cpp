@@ -159,7 +159,7 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
             _syncPal->localPath() / error.destinationPath(),
             _syncPal->localPath() / error.destinationPath().parent_path() / error.path().filename());
 
-    if (!canonicalPaths.valid) return false;
+    if (!canonicalPaths.valid || canonicalPaths.sourcePath == canonicalPaths.destinationPath) return false;
 
     // Delete remote version locally
     SyncLocalDeleteJob deleteJob(_syncPal, canonicalPaths.destinationPath);
