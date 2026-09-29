@@ -40,6 +40,7 @@ Item {
     readonly property string fileIconName: rowModel.fileIconName
     readonly property string subtitleText: rowModel.subtitleText
     readonly property string exactTimeText: rowModel.exactTimeText
+    readonly property string changeText: rowModel.changeText
     readonly property string folder: rowModel.folder
     readonly property string sizeText: rowModel.sizeText
     readonly property bool isDirectory: rowModel.isDirectory
@@ -143,8 +144,8 @@ Item {
                         }
 
                         IKToolTip {
-                            // Details: the full subtitle when it is elided, then the exact time.
-                            readonly property string details: [subtitleLabel.truncated ? root.subtitleText : "", root.exactTimeText].filter(line => line.length > 0).join("\n")
+                            // Details: the full subtitle when it is elided, the rename or move ("old → new"), then the exact time.
+                            readonly property string details: [subtitleLabel.truncated ? root.subtitleText : "", root.changeText, root.exactTimeText].filter(line => line.length > 0).join("\n")
 
                             showRequested: subtitleHover.hovered && details.length > 0
                             text: details
