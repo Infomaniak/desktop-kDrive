@@ -484,7 +484,8 @@ ExitInfo RemoteFileSystemObserverWorker::initWithCursor() {
         if (const auto exitInfo = getItemsInRemoteDir(specialFolderRemoteId, CursorPersistence::Save); !exitInfo) return exitInfo;
     }
 
-    deleteOrphans();
+    // Integrity check: remove orphan items from the remote snapshot.
+    if (const auto exitInfo = deleteOrphans(); !exitInfo) return exitInfo;
 
     return ExitCode::Ok;
 }
@@ -495,22 +496,7 @@ ExitInfo RemoteFileSystemObserverWorker::exploreDirectory(const RemoteNodeId &no
     return getItemsInRemoteDir(nodeId, CursorPersistence::None);
 }
 
-ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
-        const RemoteSnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
-        sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
-    if (iterationState.ignore || iterationState.eof) return ExitCode::Ok;
-
-    itemHandlingMonitor.start();
-
-    ++iterationState.itemCount;
-    if (iterationState.error) {
-        LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
-
-        return {ExitCode::LogicError, ExitCause::FullListParsingError};
-    }
-
-    if (stopAsked()) return ExitCode::Ok;
-
+ExitInfo RemoteFileSystemObserverWorker::insertItemInRemoteSnapshot(const RemoteSnapshotItem &item, SyncNameSet &existingFiles) {
     if (bool isWarning = false; ExclusionTemplateCache::instance()->isExcluded(item.name(), isWarning)) {
         return ExitCode::Ok;
     }
@@ -528,14 +514,28 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
         LOGW_SYNCPAL_DEBUG(_logger, L"Item with " << Utility::formatSyncName(item.name()) << L" already exists in directory with "
                                                   << Utility::formatSyncName(_liveSnapshot.name(item.parentId())));
 
+        bool ignore = false;
         SyncPath path;
-        (void) _liveSnapshot.path(item.parentId(), path, iterationState.ignore);
+        (void) _liveSnapshot.path(item.parentId(), path, ignore);
         path /= item.name();
 
         Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
                   CancelType::TmpBlacklisted);
         _syncPal->addError(err);
 
+        return ExitCode::Ok;
+    }
+
+    // If the parent of an item is a file, we have an inconsistency in the remote snapshot. We will ignore this item.
+    auto logAndSendSentryEvent = [this](const SnapshotItem &ignoredItem) {
+        LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(ignoredItem.name()) << L"\" has a parent that is a file ("
+                                               << CommonUtility::s2ws(ignoredItem.parentId()) << L"). Ignoring it.");
+        sentry::Handler::captureMessage(sentry::Level::Error, "Parent is not a directory",
+                                        "ID: " + ignoredItem.id() + ", parent ID: " + ignoredItem.parentId());
+    };
+
+    if (_liveSnapshot.type(item.parentId()) == NodeType::File) {
+        logAndSendSentryEvent(item);
         return ExitCode::Ok;
     }
 
@@ -550,23 +550,67 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
                                             << item.isLink());
     }
 
+    if (item.type() == NodeType::File) {
+        for (const auto &childItem: item.children()) {
+            logAndSendSentryEvent(item);
+            (void) _liveSnapshot.removeItem(childItem->id());
+        }
+    }
+
     return ExitCode::Ok;
 }
 
-void RemoteFileSystemObserverWorker::deleteOrphans() {
+ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotItem(
+        const RemoteSnapshotItem &item, SyncNameSet &existingFiles, ParsingIterationState &iterationState,
+        sentry::pTraces::counterScoped::RFSOExploreItem &itemHandlingMonitor) {
+    if (iterationState.ignore && !item.id().empty() && !item.name().empty()) {
+        SyncPath parentPath;
+        if (bool dummy = false; !_liveSnapshot.path(item.parentId(), parentPath, dummy)) {
+            LOG_SYNCPAL_WARN(_logger, "Fail to get path for item: " << item.parentId());
+        }
+
+        _syncPal->addError(Error(_syncPal->syncDbId(), "", item.id(), item.type(), parentPath / item.name(), ConflictType::None,
+                                 InconsistencyType::ForbiddenChar));
+    }
+
+    if (iterationState.ignore || iterationState.eof) return ExitCode::Ok;
+
+    itemHandlingMonitor.start();
+
+    ++iterationState.itemCount;
+    if (iterationState.error) {
+        LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
+
+        return {ExitCode::LogicError, ExitCause::FullListParsingError};
+    }
+
+    if (stopAsked()) return ExitCode::Ok;
+
+    return insertItemInRemoteSnapshot(item, existingFiles);
+}
+
+ExitInfo RemoteFileSystemObserverWorker::deleteOrphans() {
     NodeSet nodeIds;
     _liveSnapshot.ids(nodeIds);
 
     for (auto nodeIdIt = nodeIds.begin(); nodeIdIt != nodeIds.end(); ++nodeIdIt) {
         if (!_liveSnapshot.isOrphan(*nodeIdIt)) continue;
 
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node with " << Utility::formatSyncName(_liveSnapshot.name(*nodeIdIt)) << L" ("
+        const auto orphanItemName = _liveSnapshot.name(*nodeIdIt);
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node with " << Utility::formatSyncName(orphanItemName) << L" ("
                                                   << CommonUtility::s2ws(*nodeIdIt) << L") is an orphan. Removing it from "
                                                   << _liveSnapshot.side() << L" snapshot.");
-        (void) _liveSnapshot.removeItem(*nodeIdIt);
-    }
-}
 
+        if (!_liveSnapshot.removeItem(*nodeIdIt)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << Utility::formatSyncName(orphanItemName) << L" ("
+                                                                << CommonUtility::s2ws(*nodeIdIt) << L")");
+            invalidateSnapshot();
+            return ExitCode::DataError;
+        }
+    }
+
+    return ExitCode::Ok;
+}
 
 ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence cursorPersistence,
                                                        std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob) {
