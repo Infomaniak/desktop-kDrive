@@ -443,7 +443,9 @@
   visible-row size queue. It must remain independent from onboarding state and synchronization database ids. A folder
   is included or excluded with its complete subtree, as on Windows; the partial state reports that a descendant is
   excluded and is never a state the user selects, and the drive root itself can never be excluded. A visible row loads
-  its size and its immediate children, so its expand affordance reflects whether the folder really has sub-folders. An
+  its size and its immediate children, so its expand affordance reflects whether the folder really has sub-folders.
+  Rows report their visibility by node id (`setNodeVisible`) and resolve their model index only when acting: a view row
+  can show another folder after an expansion without being recreated, so a kept index would target the wrong one. An
   initial blacklist whose paths cannot be resolved fails the page instead of displaying ancestors as fully selected;
   a node the server no longer knows is dropped from the blacklist rather than treated as a failure. The root listing is
   requested alongside that path resolution and kept aside until every path is known. Paths are compared in NFC.
