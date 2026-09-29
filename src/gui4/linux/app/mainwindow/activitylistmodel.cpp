@@ -267,7 +267,7 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
 
 void ActivityListModel::setFilter(const Filter filter) {
     switch (filter) {
-        case Filter::MyActivityOnly:
+        case Filter::ThisComputerOnly:
         case Filter::AllActivities:
             break;
         default:
@@ -480,7 +480,7 @@ void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
     (void) std::erase_if(rows, [this](const Row &row) {
         const bool resolvedFailure = row.status == Status::Failed && row.activeErrorDbIds.empty();
         const bool filteredOutRemoteActivity =
-                row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
+                row.activeErrorDbIds.empty() && _filter == Filter::ThisComputerOnly && row.source != Source::Computer;
         return resolvedFailure || filteredOutRemoteActivity;
     });
     (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {

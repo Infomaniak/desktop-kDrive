@@ -90,6 +90,10 @@
             <source>My activity only</source> 
             <translation>Vain oma toimintani</translation> 
         </message> 
+        <message id="activitiesTypeThisComputer"> 
+            <source>Activities from this computer</source> 
+            <translation>Tämän tietokoneen toiminta</translation> 
+        </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
             <translation>Tuotu</translation> 
