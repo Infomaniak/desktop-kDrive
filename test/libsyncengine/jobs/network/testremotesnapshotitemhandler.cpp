@@ -424,7 +424,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
 
     // An ignored line must not inherit the id of the previously parsed item: the item is reset before each line is read.
     {
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool ignore = false;
         bool error = false;
         bool eof = false;
@@ -432,7 +432,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n"
            << "2,0," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
 
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore, eof));
         CPPUNIT_ASSERT(!ignore);
@@ -457,7 +457,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
            << "1,0,test,dir,1000,123,124,0,1\n"
            << endOfFileDelimiter.c_str();
 
-        SnapshotItem lastParsedItem;
+        RemoteSnapshotItem lastParsedItem;
         RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
         while (handler.getItem(item, ss, error, ignore, eof)) {
             lastParsedItem = item;
@@ -485,7 +485,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
            << "1,0,test,dir,1000,123,124,0,1\n";
 
-        SnapshotItem lastParsedItem;
+        RemoteSnapshotItem lastParsedItem;
         RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
 
         while (handler.getItem(item, ss, error, ignore, eof)) {
@@ -556,7 +556,7 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
     }
 }
 
-void TestSnapshotItemHandler::testGetItemWithCorruptedItem() {
+void TestRemoteSnapshotItemHandler::testGetItemWithCorruptedItem() {
     // Real-world CSV replies containing a corrupted item (id 2891437) whose name contains an escaped double quote.
     // The corrupted item spans 3 physical lines. It must be ignored, and the valid items around it must be parsed
     // whatever their position in the reply.
@@ -567,31 +567,34 @@ void TestSnapshotItemHandler::testGetItemWithCorruptedItem() {
 2891435,2891434,myVirus.txt,file,,1786459004,1788263590,1,
 Z",file,4,1789735691,1789735698,1,)csv";
 
-    const SnapshotItem expectedCommonDocuments(NodeId("3"), NodeId("1"), Str2SyncName(std::string("Common documents")),
-                                               static_cast<SyncTime>(1627909284), static_cast<SyncTime>(1779373659),
-                                               NodeType::Directory, static_cast<int64_t>(0), false, false, true);
-    const SnapshotItem expectedSymlink(NodeId("2891434"), NodeId("1"),
-                                       Str2SyncName(std::string("symlink_to_folder_outside_sync_dir")),
-                                       static_cast<SyncTime>(1789713856), static_cast<SyncTime>(1789713856), NodeType::File,
-                                       static_cast<int64_t>(17), true, true, true);
-    const SnapshotItem expectedMyVirus(NodeId("2891435"), NodeId("1"), Str2SyncName(std::string("myVirus.txt")),
-                                       static_cast<SyncTime>(1789716406), static_cast<SyncTime>(1789716417), NodeType::File,
-                                       static_cast<int64_t>(14), false, true, true);
+    const RemoteSnapshotItem expectedCommonDocuments(NodeId("3"), NodeId("1"), Str2SyncName(std::string("Common documents")),
+                                                     static_cast<SyncTime>(1627909284), static_cast<SyncTime>(1779373659),
+                                                     NodeType::Directory, static_cast<int64_t>(0), false, false, true);
+    const RemoteSnapshotItem expectedSymlink(NodeId("2891434"), NodeId("1"),
+                                             Str2SyncName(std::string("symlink_to_folder_outside_sync_dir")),
+                                             static_cast<SyncTime>(1789713856), static_cast<SyncTime>(1789713856), NodeType::File,
+                                             static_cast<int64_t>(17), true, true, true);
+    const RemoteSnapshotItem expectedMyVirus(NodeId("2891435"), NodeId("1"), Str2SyncName(std::string("myVirus.txt")),
+                                             static_cast<SyncTime>(1789716406), static_cast<SyncTime>(1789716417), NodeType::File,
+                                             static_cast<int64_t>(14), false, true, true);
     // The second physical line of the corrupted item is parsed as a separate valid item.
-    const SnapshotItem expectedMyVirusWithFileParent(
+    const RemoteSnapshotItem expectedMyVirusWithFileParent(
             NodeId("2891435"), NodeId("2891434"), Str2SyncName(std::string("myVirus.txt")), static_cast<SyncTime>(1786459004),
             static_cast<SyncTime>(1788263590), NodeType::File, static_cast<int64_t>(0), false, true, true);
 
     struct ParsedItem {
+            ParsedItem(bool ignore_, RemoteSnapshotItem item_) :
+                ignore{ignore_},
+                item(std::move(item_)){};
             bool ignore{false};
-            SnapshotItem item;
+            RemoteSnapshotItem item;
     };
-    const auto parseCsvReply = [](const std::string &body) {
+    const auto parseCsvReply = [this](const std::string &body) {
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n" << body << "\n" << endOfFileDelimiter;
-        SnapshotItemHandler handler(Log::instance()->getLogger());
+        RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
         std::vector<ParsedItem> parsedItems;
-        SnapshotItem item;
+        RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;

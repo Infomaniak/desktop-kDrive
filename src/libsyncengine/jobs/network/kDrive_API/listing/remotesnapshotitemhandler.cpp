@@ -188,14 +188,11 @@ void RemoteSnapshotItemHandler::readRemoteSnapshotItemFields(RemoteSnapshotItem 
 bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore, bool &eof) {
     error = false;
     ignore = false;
-
-    item = SnapshotItem();
+    item = RemoteSnapshotItem();
 
     std::string line;
     (void) std::getline(ss, line);
-    if (line.empty()) {
-        return false;
-    }
+    if (line.empty()) return false;
 
     if (_ignoreFirstLine) {
         // The first line of the CSV full listing consists of the column names:
@@ -203,9 +200,7 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
         _ignoreFirstLine = false;
         line.clear();
         (void) std::getline(ss, line);
-        if (line.empty()) {
-            return false;
-        }
+        if (line.empty()) return false;
     }
 
     if (line == endOfFileDelimiter) {
@@ -218,7 +213,7 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
     while (state.readNextLine) {
         state.readNextLine = false;
 
-        readSnapshotItemFields(item, line, error, state);
+        readRemoteSnapshotItemFields(item, line, error, state);
 
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
@@ -229,8 +224,6 @@ bool RemoteSnapshotItemHandler::getItem(RemoteSnapshotItem &item, std::stringstr
             ignore = true;
             return true;
         }
-
-        readRemoteSnapshotItemFields(item, line, error, state);
 
         if (error) return true;
 

@@ -266,7 +266,7 @@ QString FolderTreeItemWidget::getPath(const QString &nodeId) {
     return path;
 }
 
-void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackset) {
+void FolderTreeItemWidget::createBlackSet(const QTreeWidgetItem *parentItem, QSet<QString> &blackSet) {
     // Traverse the tree even before a sync DB exists; getPath() handles the uninitialized ID.
     if (!parentItem) parentItem = topLevelItem(0);
     if (!parentItem) return;
