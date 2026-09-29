@@ -27,6 +27,7 @@
 
 #include <sqlite3.h>
 
+#include <chrono>
 #include <fstream>
 #include <string>
 
@@ -150,9 +151,6 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "autoUpdateAttempted, seenVersion, dialogGeometry, extendedLog, maxAllowedCpu, uploadSessionParallelJobs, "            \
     "jobPoolCapacityFactor, distributionChannel, sentryEnabled, matomoEnabled "                                            \
     "FROM parameters;"
-
-#define UPDATE_PARAMETERS_JOB_REQUEST_ID "update_parameters_job"
-#define UPDATE_PARAMETERS_JOB_REQUEST "UPDATE parameters SET uploadSessionParallelJobs=?1, jobPoolCapacityFactor=?2;"
 
 //
 // user
@@ -324,6 +322,7 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "listingCursor TEXT,"                                                                    \
     "listingCursorTimestamp INTEGER,"                                                        \
     "toDelete INTEGER,"                                                                      \
+    "vfsRegisteredAt INTEGER,"                                                               \
     "FOREIGN KEY (driveDbId) REFERENCES drive(dbId) ON DELETE CASCADE ON UPDATE NO ACTION) " \
     "WITHOUT ROWID;"
 
@@ -331,16 +330,17 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
 #define INSERT_SYNC_REQUEST                                                                                             \
     "INSERT INTO sync (dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, " \
     "virtualFileMode, "                                                                                                 \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete) "  \
-    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16);"
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "  \
+    "vfsRegisteredAt) "                                                                                                 \
+    "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17);"
 
 #define UPDATE_SYNC_REQUEST_ID "update_sync"
 #define UPDATE_SYNC_REQUEST                                                                                                \
     "UPDATE sync SET driveDbId=?1, localPath=?2, localNodeId = ?3, targetPath=?4, targetNodeId=?5, dbPath=?6, paused=?7, " \
     "supportVfs=?8, "                                                                                                      \
     "virtualFileMode=?9, notificationsDisabled=?10, hasFullyCompleted=?11, navigationPaneClsid=?12, listingCursor=?13, "   \
-    "listingCursorTimestamp=?14, toDelete=?15 "                                                                            \
-    "WHERE dbId=?16;"
+    "listingCursorTimestamp=?14, toDelete=?15, vfsRegisteredAt=?16 "                                                       \
+    "WHERE dbId=?17;"
 
 #define UPDATE_SYNC_PAUSED_REQUEST_ID "update_sync_paused"
 #define UPDATE_SYNC_PAUSED_REQUEST \
@@ -363,30 +363,33 @@ KDC::Parameters::DialogGeometry blobToDialogGeometry(const std::shared_ptr<std::
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
-#define SELECT_SYNC_REQUEST                                                                                                     \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_SYNC_REQUEST                                                                                                   \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "        \
+    "vfsRegisteredAt FROM sync "                                                                                              \
     "WHERE dbId=?1;"
 
 #define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
-#define SELECT_SYNC_BY_PATH_REQUEST                                                                                             \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                           \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "        \
+    "vfsRegisteredAt FROM sync "                                                                                              \
     "WHERE dbPath=?1;"
 
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
-#define SELECT_ALL_SYNCS_REQUEST                                                                                                \
-    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "   \
-    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync " \
+#define SELECT_ALL_SYNCS_REQUEST                                                                                              \
+    "SELECT dbId, driveDbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, "        \
+    "vfsRegisteredAt FROM sync "                                                                                              \
     "ORDER BY dbId;"
 
 #define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID "select_syncs_by_drive"
-#define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                          \
-    "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, " \
-    "notificationsDisabled, "                                                                                      \
-    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete FROM sync "           \
-    "WHERE driveDbId=?1 "                                                                                          \
+#define SELECT_ALL_SYNCS_BY_DRIVE_REQUEST                                                                                 \
+    "SELECT dbId, localPath, localNodeId, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "        \
+    "notificationsDisabled, "                                                                                             \
+    "hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp, toDelete, vfsRegisteredAt FROM sync " \
+    "WHERE driveDbId=?1 "                                                                                                 \
     "ORDER BY dbId;"
 
 //
@@ -1353,43 +1356,25 @@ bool ParmsDb::prepare() {
 }
 
 bool ParmsDb::upgradeTables() {
-    int errId = 0;
-    std::string error;
-
     // Parameters table
     std::string tableName = "parameters";
     std::string columnName = "maxAllowedCpu";
-    if (!addIntegerColumnIfMissing(tableName, columnName)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, 0)) {
         return false;
     }
 
-    bool updateParameters = false;
     columnName = "uploadSessionParallelJobs";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, ServerParameters::_uploadSessionParallelJobsDefault)) {
         return false;
     }
 
     columnName = "jobPoolCapacityFactor";
-    if (!addIntegerColumnIfMissing(tableName, columnName, &updateParameters)) {
+    if (!addIntegerColumnIfMissing(tableName, columnName, 0)) {
         return false;
     }
 
-    if (updateParameters) {
-        auto scopeGuard = createAndPrepareScopedRequest(UPDATE_PARAMETERS_JOB_REQUEST_ID, UPDATE_PARAMETERS_JOB_REQUEST);
-        if (!scopeGuard) return false;
-        LOG_IF_FAIL(queryResetAndClearBindings(UPDATE_PARAMETERS_JOB_REQUEST_ID));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 1, ServerParameters::_uploadSessionParallelJobsDefault));
-        LOG_IF_FAIL(queryBindValue(UPDATE_PARAMETERS_JOB_REQUEST_ID, 2, 0));
-        if (!queryExec(UPDATE_PARAMETERS_JOB_REQUEST_ID, errId, error)) {
-            return sqlFail(UPDATE_PARAMETERS_JOB_REQUEST_ID, error);
-        }
-        if (numRowsAffected() != 1) {
-            return false;
-        }
-    }
-
     for (const auto &name: {"distributionChannel", "sentryEnabled", "matomoEnabled"}) {
-        if (!addIntegerColumnIfMissing(tableName, name)) {
+        if (!addIntegerColumnIfMissing(tableName, name, 1)) {
             return false;
         }
     }
@@ -1421,7 +1406,15 @@ bool ParmsDb::upgradeTables() {
     if (!addTextColumnIfMissing(tableName, "localNodeId")) {
         return false;
     }
-    if (!addIntegerColumnIfMissing(tableName, "toDelete")) {
+    if (!addIntegerColumnIfMissing(tableName, "toDelete", 0)) {
+        return false;
+    }
+
+    // Use the migration time as the reference VFS registration time of the existing syncs: a sync root registered after it
+    // means that it has been recreated (e.g. following an uninstallation of the extension), see SyncPal::start.
+    const int64_t now =
+            std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    if (!addIntegerColumnIfMissing(tableName, "vfsRegisteredAt", now)) {
         return false;
     }
 
@@ -2520,6 +2513,7 @@ bool ParmsDb::insertSync(const Sync &sync) {
     LOG_IF_FAIL(queryBindValue(requestId, 14, listingCursor));
     LOG_IF_FAIL(queryBindValue(requestId, 15, listingCursorTimestamp));
     LOG_IF_FAIL(queryBindValue(requestId, 16, static_cast<int>(sync.toDelete())));
+    LOG_IF_FAIL(queryBindValue(requestId, 17, sync.vfsRegisteredAt()));
 
     int errId = -1;
     std::string error;
@@ -2557,7 +2551,8 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 13, listingCursor));
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
     LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 15, static_cast<int>(sync.toDelete())));
-    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 16, sync.dbId()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 16, sync.vfsRegisteredAt()));
+    LOG_IF_FAIL(queryBindValue(UPDATE_SYNC_REQUEST_ID, 17, sync.dbId()));
     if (!queryExec(UPDATE_SYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_SYNC_REQUEST_ID);
         return false;
@@ -2723,6 +2718,10 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
     int32_t toDeleteResult{0};
     LOG_IF_FAIL(queryIntValue(requestId, 15, toDeleteResult));
     sync.setToDelete(static_cast<bool>(toDeleteResult));
+
+    int64_t vfsRegisteredAtResult{0};
+    LOG_IF_FAIL(queryInt64Value(requestId, 16, vfsRegisteredAtResult));
+    sync.setVfsRegisteredAt(vfsRegisteredAtResult);
 }
 
 bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
@@ -2817,12 +2816,14 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 14, listingCursorTimestamp));
         int32_t toDelete = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_REQUEST_ID, 15, toDelete));
+        int64_t vfsRegisteredAt = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_REQUEST_ID, 16, vfsRegisteredAt));
 
         syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
                                 static_cast<bool>(paused), static_cast<bool>(supportVfs),
                                 static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
                                 SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp, static_cast<bool>(toDelete)));
+                                listingCursorTimestamp, static_cast<bool>(toDelete), vfsRegisteredAt));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_REQUEST_ID));
 
@@ -2876,12 +2877,14 @@ bool ParmsDb::selectAllSyncs(const DriveDbId driveDbId, std::vector<Sync> &syncL
         LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 13, listingCursorTimestamp));
         int32_t toDelete = 0;
         LOG_IF_FAIL(queryIntValue(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 14, toDelete));
+        int64_t vfsRegisteredAt = 0;
+        LOG_IF_FAIL(queryInt64Value(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID, 15, vfsRegisteredAt));
 
         syncList.push_back(Sync(id, driveDbId, SyncPath(localPath), localNodeId, SyncPath(targetPath), targetNodeId,
                                 static_cast<bool>(paused), static_cast<bool>(supportVfs),
                                 static_cast<VirtualFileMode>(virtualFileMode), static_cast<bool>(notificationsDisabled),
                                 SyncPath(dbPath), static_cast<bool>(hasFullyCompleted), navigationPaneClsid, listingCursor,
-                                listingCursorTimestamp, static_cast<bool>(toDelete)));
+                                listingCursorTimestamp, static_cast<bool>(toDelete), vfsRegisteredAt));
     }
     LOG_IF_FAIL(queryResetAndClearBindings(SELECT_ALL_SYNCS_BY_DRIVE_REQUEST_ID));
 

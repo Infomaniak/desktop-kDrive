@@ -33,13 +33,15 @@ namespace KDC {
 
 BaseSync::BaseSync(const SyncDbId dbId, const DriveDbId driveDbId, const std::filesystem::path &localPath,
                    const std::filesystem::path &targetPath, const NodeId &targetNodeId, const bool supportVfs,
-                   const VirtualFileMode virtualFileMode, const std::string &navigationPaneClsid) :
+                   const VirtualFileMode virtualFileMode, const std::string &navigationPaneClsid,
+                   const SyncTime vfsRegisteredAt) :
     _dbId(dbId),
     _driveDbId(driveDbId),
     _localPath(localPath),
     _targetPath(targetPath),
     _targetNodeId(targetNodeId),
     _supportVfs(supportVfs),
+    _vfsRegisteredAt(vfsRegisteredAt),
     _virtualFileMode(virtualFileMode),
     _navigationPaneClsid(navigationPaneClsid) {}
 
@@ -87,8 +89,9 @@ Sync::Sync(SyncDbId dbId, DriveDbId driveDbId, const std::filesystem::path &loca
            const std::filesystem::path &targetPath, const NodeId &targetNodeId, bool paused, bool supportVfs,
            VirtualFileMode virtualFileMode, bool notificationsDisabled, const std::filesystem::path &dbPath,
            bool hasFullyCompleted, const std::string &navigationPaneClsid, const std::string &listingCursor,
-           int64_t listingCursorTimestamp, bool toDelete) :
-    BaseSync(dbId, driveDbId, localPath, targetPath, targetNodeId, supportVfs, virtualFileMode, navigationPaneClsid),
+           int64_t listingCursorTimestamp, bool toDelete, SyncTime vfsRegisteredAt) :
+    BaseSync(dbId, driveDbId, localPath, targetPath, targetNodeId, supportVfs, virtualFileMode, navigationPaneClsid,
+             vfsRegisteredAt),
     _localNodeId(localNodeId),
     _paused(paused),
     _notificationsDisabled(notificationsDisabled),

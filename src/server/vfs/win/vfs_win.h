@@ -42,6 +42,7 @@ class VFS_EXPORT VfsWin : public Vfs {
         VirtualFileMode mode() const override;
 
         bool showPinStateActions() const override { return false; }
+        bool isRegistered() const override;
 
         ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modificationTime, int64_t size,
                                 const NodeId &fileId) override;

@@ -68,7 +68,8 @@ DLL_EXP int __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWOR
 }
 
 DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId, const wchar_t *folderName,
-                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
+                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize,
+                             int64_t *registeredAt) {
     CloudProvider *cloudProvider = nullptr;
     try {
         cloudProvider = new CloudProvider(PROVIDERID_CSTR(driveId, folderId), driveId, folderId, userId, folderName, folderPath);
@@ -86,7 +87,7 @@ DLL_EXP int __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, cons
         }
 
         s_cloudProviders[PROVIDERID(driveId, folderId)] = cloudProvider;
-        if (!cloudProvider->start(namespaceCLSID, namespaceCLSIDSize)) {
+        if (!cloudProvider->start(namespaceCLSID, namespaceCLSIDSize, registeredAt)) {
             TRACE_ERROR(L"Start failed!");
             return E_ABORT;
         }

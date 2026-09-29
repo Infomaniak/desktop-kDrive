@@ -20,6 +20,7 @@ target_link_libraries("${APPLICATION_EXECUTABLE}_vfs_win"
     ${libcommonserver_NAME}
     ${VFS_STATIC_LIBRARY}
     Qt6::Core
+    cldapi
 )
 
 generate_export_header("${APPLICATION_EXECUTABLE}_vfs_win"
