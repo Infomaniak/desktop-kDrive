@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/types.h"
 
 #include <QAbstractItemModel>
@@ -26,12 +27,12 @@
 #include <QSet>
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace KDC {
 
 class AbstractRemoteFolderProvider;
-class NodeInfo;
 
 /**
  * Reusable remote-folder tree for selective synchronization.
@@ -128,6 +129,11 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
             Failed,
         };
 
+        struct PendingRootChildren {
+                bool success{false};
+                std::vector<NodeInfo> children;
+        };
+
         struct TreeNode {
                 QString nodeId;
                 QString name;
@@ -168,6 +174,8 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         QSet<QString> _excludedNodeIds;
         QHash<QString, QString> _excludedPaths;
         QQueue<QString> _sizeQueue;
+        // Root listing received before the initial exclusion paths were resolved, applied once they are.
+        std::optional<PendingRootChildren> _pendingRootChildren;
         UserDbId _userDbId{0};
         DriveId _driveId{0};
         uint64_t _generation{0};
