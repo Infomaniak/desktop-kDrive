@@ -90,6 +90,10 @@
             <source>My activity only</source> 
             <translation>Μόνο η δική μου δραστηριότητα</translation> 
         </message> 
+        <message id="activitiesTypeThisComputer"> 
+            <source>Activities from this computer</source> 
+            <translation>Δραστηριότητες από αυτόν τον υπολογιστή</translation> 
+        </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
             <translation>Εισήχθη</translation> 

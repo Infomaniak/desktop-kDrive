@@ -342,7 +342,7 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/activities/file-zip.svg
         ui/assets/main/activities/file-zip-dark.svg
         ui/assets/main/activities/filter-all-activities.svg
-        ui/assets/main/activities/filter-my-activity.svg
+        ui/assets/main/activities/filter-this-computer.svg
         ui/assets/main/activities/dots-vertical.svg
         ui/assets/main/activities/fix-errors.svg
         ui/assets/main/activities/open-local.svg
