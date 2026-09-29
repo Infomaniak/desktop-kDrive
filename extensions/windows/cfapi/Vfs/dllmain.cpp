@@ -19,6 +19,7 @@
 #include "..\Common\utilities.h"
 #include "vfs.h"
 #include "cloudprovider.h"
+#include "cloudproviderregistrar.h"
 #include "placeholders.h"
 
 #define PROVIDERID(driveId, folderId) std::wstring(driveId) + L"-" + std::wstring(folderId)
@@ -134,6 +135,21 @@ DLL_EXP int __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, boo
     Utilities::s_traceCbk = nullptr;
 
     return ret;
+}
+
+DLL_EXP int __cdecl vfsIsRegistered(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId,
+                                    const wchar_t *folderPath, bool *registered) {
+    if (!driveId || !userId || !folderId || !folderPath || !registered) {
+        return E_INVALIDARG;
+    }
+
+    // Does not rely on the running cloud provider, so that it can be called even if the VFS is stopped
+    if (!CloudProviderRegistrar::isRegistered(PROVIDERID(driveId, folderId), userId, folderPath, *registered)) {
+        TRACE_ERROR(L"Error in CloudProviderRegistrar::isRegistered!");
+        return E_ABORT;
+    }
+
+    return S_OK;
 }
 
 DLL_EXP int __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPlaceholder, bool *isDehydrated, bool *isSynced) {
