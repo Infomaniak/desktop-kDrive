@@ -129,9 +129,6 @@ ExitInfo Vfs::start(bool &installationDone, bool &activationDone, bool &connecti
         _started = exitInfo.code() == ExitCode::Ok;
         return exitInfo;
     }
-    installationDone = true;
-    activationDone = true;
-    connectionDone = true;
     return ExitCode::Ok;
 }
 
@@ -256,10 +253,7 @@ ExitInfo VfsOff::forceStatus(const SyncPath &pathStd, const VfsStatus &vfsStatus
     return ExitCode::Ok;
 }
 
-ExitInfo VfsOff::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
-    installationDone = true;
-    activationDone = true;
-    connectionDone = true;
+ExitInfo VfsOff::startImpl(bool &, bool &, bool &) {
     return ExitCode::Ok;
 }
 
