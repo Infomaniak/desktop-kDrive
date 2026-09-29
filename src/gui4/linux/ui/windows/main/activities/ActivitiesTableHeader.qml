@@ -30,6 +30,7 @@ Item {
     required property real statusColumnWidth
 
     signal resizeRequested(real delta)
+    signal resetRequested
 
     width: nameColumnWidth + folderColumnWidth + sizeColumnWidth + statusColumnWidth
     height: IKActivities.tableHeaderHeight
@@ -118,6 +119,8 @@ Item {
                 previousX = currentX;
                 root.resizeRequested(delta);
             }
+            // Like a spreadsheet column separator: double-clicking restores the default name/folder split.
+            onDoubleClicked: root.resetRequested()
         }
     }
 }
