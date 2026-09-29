@@ -71,6 +71,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 uint64_t itemCount{0};
         };
 
+        [[nodiscard]] ExitInfo insertItemInRemoteSnapshot(const RemoteSnapshotItem &item, SyncNameSet &existingFiles);
         [[nodiscard]] ExitInfo handleRemoteSnapshotItem(const RemoteSnapshotItem &item, SyncNameSet &existingFiles,
                                                         ParsingIterationState &iterationState,
                                                         sentry::pTraces::counterScoped::RFSOExploreItem &perfMonitor);
@@ -111,17 +112,17 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitInfo checkForUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 
         void countListingRequests();
-        void deleteOrphans();
+        [[nodiscard]] ExitInfo deleteOrphans();
 
-        ExitInfo getSpecialFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const;
+        [[nodiscard]] ExitInfo getSpecialFoldersRemoteIds(std::vector<RemoteNodeId> &specialFoldersRemoteIds) const;
 
         DriveDbId _driveDbId = -1;
 
         using CursorMap = std::unordered_map<RemoteNodeId, CursorData, StringHashFunction, std::equal_to<>>;
         // Map tracking the cursors of the listing requests made for folders specified by their remote IDs.
         CursorMap _listingCursorMap;
-        ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData);
-        ExitInfo saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData);
+        [[nodiscard]] ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData);
+        [[nodiscard]] ExitInfo saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData);
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
         int _listingFullCounter = 0;

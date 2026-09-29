@@ -118,7 +118,6 @@ class RemoteSnapshotItem : public SnapshotItem {
         explicit RemoteSnapshotItem(const RemoteNodeId &id);
         RemoteSnapshotItem(const RemoteNodeId &id, const RemoteNodeId &parentId, const SyncName &name, SyncTime createdAt,
                            SyncTime lastModified, NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
-        RemoteSnapshotItem(const RemoteSnapshotItem &other) = default;
 
         [[nodiscard]] ExitInfo setV2Id(UserDbId userDbId, DriveId driveId, const RemoteNodeId &v3Id);
 

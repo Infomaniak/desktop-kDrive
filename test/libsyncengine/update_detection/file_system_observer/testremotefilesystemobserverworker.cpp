@@ -18,7 +18,7 @@
 
 #include "testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
-#include "jobs/network/kDrive_API/listing/snapshotitemhandler.h"
+#include "jobs/network/kDrive_API/listing/remotesnapshotitemhandler.h"
 #include "requests/syncnodecache.h"
 
 #include "libcommon/utility/utility.h"
@@ -52,6 +52,7 @@ namespace KDC {
 
 // Test in drive "kDrive Desktop Team"
 static const uint64_t nbFileInTestDir = 5; // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
+static const std::string endOfFileDelimiter("#EOF");
 const RemoteNodeId testRemoteFsoDirId = "59541"; // Common documents/Test kDrive/test_ci/test_remote_FSO/
 const RemoteNodeId testBlackListedDirId = "56851"; // Common documents/Test kDrive/test_ci/test_pictures/
 const RemoteNodeId testBlackListedFileId = "97373"; // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
@@ -306,29 +307,31 @@ void TestRemoteFileSystemObserverWorker::testCheckSnapshotIntegrity() {
     _syncPal->setAddErrorCallback([&nbErrors](const Error &) { ++nbErrors; });
 
     // Insert a consistent directory with a file inside.
-    const SnapshotItem dirItem("dir", rootId, Str("dir"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                               testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem dirItem("dir", rootId, Str("dir"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                     NodeType::Directory, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(dirItem));
 
-    const SnapshotItem fileItem("file", "dir", Str("file.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
-                                NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem fileItem("file", "dir", Str("file.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                      NodeType::File, testhelpers::defaultFileSize, false, true, true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(fileItem));
 
     // Insert an item whose parent is a file. Such items are skipped by getItemsInDir before being inserted into the
     // snapshot, the integrity check must leave them untouched.
-    const SnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime, testhelpers::defaultTime,
-                                       NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem childOfFileItem("child", "file", Str("child.txt"), testhelpers::defaultTime,
+                                             testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true,
+                                             true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(childOfFileItem));
     CPPUNIT_ASSERT(liveSnapshot.exists("child"));
 
     // Insert an orphan item. The integrity check must remove it from the snapshot.
     // Note: `exists` returns false for orphan items, so `type` is used to check the presence of the item in the snapshot.
-    const SnapshotItem orphanItem("orphan", "missingParentId", Str("orphan.txt"), testhelpers::defaultTime,
-                                  testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true, true);
+    const RemoteSnapshotItem orphanItem("orphan", "missingParentId", Str("orphan.txt"), testhelpers::defaultTime,
+                                        testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, false, true,
+                                        true);
     CPPUNIT_ASSERT(liveSnapshot.updateItem(orphanItem));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, liveSnapshot.type("orphan"));
 
-    const ExitInfo exitInfo = remoteFSObserverWorker->removeOrphans();
+    const ExitInfo exitInfo = remoteFSObserverWorker->deleteOrphans();
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
 
     // Items whose parent is a file are left untouched.
@@ -398,8 +401,8 @@ Z",file,4,1789735691,1789735698,1,)csv";
            << csvBody << "\n"
            << endOfFileDelimiter;
 
-        SnapshotItemHandler handler(_logger);
-        SnapshotItem item;
+        RemoteSnapshotItemHandler handler(_userDbId, _driveId, Log::instance()->getLogger());
+        RemoteSnapshotItem item;
         bool error = false;
         bool ignore = false;
         bool eof = false;
@@ -420,7 +423,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
             }
             if (eof) break;
 
-            CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInSnapshot(item, existingFiles));
+            CPPUNIT_ASSERT(remoteFSObserverWorker->insertItemInRemoteSnapshot(item, existingFiles));
         }
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);
