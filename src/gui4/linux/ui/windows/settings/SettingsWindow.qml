@@ -34,6 +34,7 @@ IKShadowedWindow {
 
     required property var controller
     required property var users
+    required property var syncFolderSelection
     property int selectedCategory: SettingsWindow.Category.General
     property Item accountConnectionTrigger: null
     property bool restoreAccountConnectionFocus: false
@@ -274,7 +275,7 @@ IKShadowedWindow {
         SyncFolderSelectionView {
             id: syncFolderSelectionView
 
-            controller: root.controller.syncFolderSelection
+            controller: root.syncFolderSelection
             // The page may have saved a new selection: the custom-selection label reads it again.
             Component.onDestruction: root.controller.driveManagement.reloadSelection()
             onCloseRequested: {
