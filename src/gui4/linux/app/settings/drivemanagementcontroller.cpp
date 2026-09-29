@@ -22,6 +22,7 @@
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/syncservice.h"
+#include "app/settings/syncfolderselectioncontroller.h"
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/types.h"
 
@@ -44,11 +45,12 @@ Q_LOGGING_CATEGORY(lcDriveManagementController, "gui.v4.drivemanagementcontrolle
 } // namespace
 
 DriveManagementController::DriveManagementController(AppCache &appCache, CommService &commService, SyncService &syncService,
-                                                     QObject *const parent) :
+                                                     SyncFolderSelectionController &syncFolderSelection, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _commService(commService),
-    _syncService(syncService) {
+    _syncService(syncService),
+    _syncFolderSelection(syncFolderSelection) {
     (void) connect(&_appCache, &AppCache::accountsChanged, this, &DriveManagementController::refresh);
     (void) connect(&_appCache, &AppCache::drivesChanged, this, &DriveManagementController::refresh);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &DriveManagementController::refresh);
@@ -179,12 +181,15 @@ void DriveManagementController::refresh() {
     _syncCreationPending = _appCache.isSyncCreationPending(_availableDriveKey);
 
     if (mainSyncDbId != _mainSyncDbId) {
+        _syncFolderSelection.releasePreload(_mainSyncDbId);
         _mainSyncDbId = mainSyncDbId;
         _customSelection = false;
         ++_selectionGeneration;
         _selectionState = SelectionState::Idle;
         if (hasMainSync()) {
             loadSelection();
+            // The folder selection page is one click away: its tree is ready by the time it opens.
+            _syncFolderSelection.preload(_mainSyncDbId);
         }
     }
 
@@ -217,6 +222,8 @@ void DriveManagementController::loadSelection() {
 }
 
 void DriveManagementController::resetTarget() {
+    // Before `_mainSyncDbId` is cleared: the release only applies to the synchronization this page preloaded.
+    _syncFolderSelection.releasePreload(_mainSyncDbId);
     ++_targetGeneration;
     ++_selectionGeneration;
     _driveDbId = 0;
