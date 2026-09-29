@@ -169,21 +169,27 @@ void TestVfsWinRegistration::testLocalDeletesRevertedAfterReRegistration() {
     // No reference registration time for a new sync: the current one is stored as is.
     CPPUNIT_ASSERT_EQUAL(firstRegisteredAt, storedVfsRegisteredAt());
 
-    // Create a remote file, synchronized locally as a dehydrated placeholder
+    // Create a remote file and a remote directory, synchronized locally as dehydrated placeholders
     const Operations remoteOperations{Str2SyncName(R"({
         "operations": [
-            { "type": "Create", "itemType": "File", "name": "A", "size": 1234 }
+            { "type": "Create", "itemType": "File", "name": "A", "size": 1234 },
+            { "type": "Create", "itemType": "Directory", "name": "D" },
+            { "type": "Create", "itemType": "File", "path": "D", "name": "B", "size": 1234 }
         ]
     })")};
     CPPUNIT_ASSERT(testHelper.execute(ReplicaSide::Remote, remoteOperations));
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
 
     const Situation situation{Str2SyncName(R"({
-        "content": [ {"type": "File", "name": "A", "size": 1234} ]
+        "content": [
+            {"type": "File", "name": "A", "size": 1234},
+            {"type": "Directory", "name": "D", "content": [ {"type": "File", "name": "B", "size": 1234} ] }
+        ]
     })")};
     CPPUNIT_ASSERT(testHelper.matchesCurrentSituation(situation, situation));
 
     const SyncPath placeholderPath = _syncPal->localPath() / "A";
+    const SyncPath dirPlaceholderPath = _syncPal->localPath() / "D";
     VfsStatus vfsStatus;
     CPPUNIT_ASSERT(_vfs->status(placeholderPath, vfsStatus));
     CPPUNIT_ASSERT(vfsStatus.isPlaceholder);
@@ -193,9 +199,14 @@ void TestVfsWinRegistration::testLocalDeletesRevertedAfterReRegistration() {
     CPPUNIT_ASSERT(testHelper.stopSync());
     _vfs->stop(true);
 
-    // The dehydrated placeholder is deleted by the OS
-    CPPUNIT_ASSERT(TimeoutHelper::waitFor([&placeholderPath]() { return !std::filesystem::exists(placeholderPath); },
-                                          std::chrono::seconds(10), std::chrono::milliseconds(100)));
+    // The dehydrated file placeholders are deleted by the OS, directories are kept
+    const SyncPath dirFilePlaceholderPath = dirPlaceholderPath / "B";
+    CPPUNIT_ASSERT(TimeoutHelper::waitFor(
+            [&placeholderPath, &dirFilePlaceholderPath]() {
+                return !std::filesystem::exists(placeholderPath) && !std::filesystem::exists(dirFilePlaceholderPath);
+            },
+            std::chrono::seconds(10), std::chrono::milliseconds(100)));
+    CPPUNIT_ASSERT(std::filesystem::exists(dirPlaceholderPath));
 
     // Simulate an app restart: register the sync root again with a new VFS instance, then restart the sync.
     _vfs = startNewVfs();

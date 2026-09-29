@@ -188,7 +188,7 @@ void TestDb::testAddIntegerColumnIfMissing() {
     CPPUNIT_ASSERT(_testObj->queryBindValue(SELECT_TEST_INTVALUE2_REQUEST_ID, 1, 3));
     bool found = false;
     CPPUNIT_ASSERT(_testObj->queryNext(SELECT_TEST_INTVALUE2_REQUEST_ID, found) && found);
-    int value = 0;
+    int32_t value = 0;
     CPPUNIT_ASSERT(_testObj->queryIntValue(SELECT_TEST_INTVALUE2_REQUEST_ID, 0, value));
     CPPUNIT_ASSERT_EQUAL(5, value);
 
