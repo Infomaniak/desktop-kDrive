@@ -85,6 +85,7 @@ class ActivityListModel final : public QAbstractListModel {
             NameRole,
             FileIconNameRole,
             SubtitleTextRole,
+            ExactTimeTextRole,
             FolderRole,
             SizeTextRole,
             NodeTypeRole,
@@ -159,6 +160,7 @@ class ActivityListModel final : public QAbstractListModel {
                 QString name;
                 QString fileIconName;
                 QString subtitleText;
+                QString exactTimeText;
                 QString folder;
                 QString sizeText;
                 SubtitleKind subtitleKind{SubtitleKind::TimeOnly};
