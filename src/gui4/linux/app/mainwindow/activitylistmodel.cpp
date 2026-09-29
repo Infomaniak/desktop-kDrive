@@ -23,6 +23,7 @@
 #include <QFontMetricsF>
 #include <QLocale>
 #include <QLoggingCategory>
+#include <QRegularExpression>
 #include <QSet>
 
 #include <algorithm>
@@ -30,6 +31,8 @@
 #include <qtimezone.h>
 
 namespace KDC {
+
+using namespace Qt::StringLiterals;
 
 namespace {
 Q_LOGGING_CATEGORY(lcActivityListModel, "gui.v4.activitylistmodel", QtInfoMsg)
@@ -105,6 +108,25 @@ QString formatRelativeTime(const QDateTime &timestampUtc, const QDateTime &nowUt
         return formatAgo(elapsed, day, "labelShortDay");
     }
     return QLocale().toString(timestampUtc.toLocalTime().date(), QLocale::ShortFormat);
+}
+
+// Exact local date and time to the second, e.g. "29/09/2026 - 10:41:04". Qt has no short time format with seconds, so
+// the seconds are inserted after the minutes of the locale's short time format, with the same separator.
+QString formatExactTime(const QDateTime &timestampUtc) {
+    if (!timestampUtc.isValid()) {
+        return {};
+    }
+
+    const QLocale locale;
+    QString timeFormat = locale.timeFormat(QLocale::ShortFormat);
+    if (!timeFormat.contains(u's')) {
+        static const QRegularExpression minutesPattern{u"([hH]+)([^hHm]+)(mm)"_s};
+        (void) timeFormat.replace(minutesPattern, u"\\1\\2\\3\\2ss"_s);
+    }
+
+    const QDateTime localTime = timestampUtc.toLocalTime();
+    return u"%1 - %2"_s.arg(locale.toString(localTime.date(), QLocale::ShortFormat),
+                            locale.toString(localTime.time(), timeFormat));
 }
 
 // Lowercases the first letter so the relative time reads mid-sentence after the action ("Modified just now").
@@ -220,6 +242,8 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return row.fileIconName;
         case SubtitleTextRole:
             return row.subtitleText;
+        case ExactTimeTextRole:
+            return row.exactTimeText;
         case FolderRole:
             return row.folder;
         case SizeTextRole:
@@ -253,6 +277,7 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {NameRole, "name"},
             {FileIconNameRole, "fileIconName"},
             {SubtitleTextRole, "subtitleText"},
+            {ExactTimeTextRole, "exactTimeText"},
             {FolderRole, "folder"},
             {SizeTextRole, "sizeText"},
             {NodeTypeRole, "nodeType"},
@@ -352,6 +377,7 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.fileIconName = _fileIconResolver.iconName(row.name, activity.nodeType);
     row.subtitleKind = subtitleKind(activity);
     row.subtitleText = formatSubtitle(row.subtitleKind, activity.receivedAtUtc);
+    row.exactTimeText = formatExactTime(activity.receivedAtUtc);
     row.folder = parentFolder(relativePath);
     row.sizeText = formatSize(activity.nodeType, activity.size);
     row.nodeType = activity.nodeType;
@@ -383,6 +409,7 @@ ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, 
     row.fileIconName = _fileIconResolver.iconName(row.name, error.nodeType());
     row.folder = parentFolder(relativePath);
     row.subtitleText = formatSubtitle(row.subtitleKind, timestampUtc);
+    row.exactTimeText = formatExactTime(timestampUtc);
     row.nodeType = error.nodeType();
     row.status = Status::Failed;
     row.timestampUtc = timestampUtc;
@@ -653,6 +680,7 @@ bool ActivityListModel::updateRow(const int32_t rowIndex, const Row &nextRow) {
     addRoleIf(row.name != nextRow.name, NameRole);
     addRoleIf(row.fileIconName != nextRow.fileIconName, FileIconNameRole);
     addRoleIf(row.subtitleText != nextRow.subtitleText, SubtitleTextRole);
+    addRoleIf(row.exactTimeText != nextRow.exactTimeText, ExactTimeTextRole);
     addRoleIf(row.folder != nextRow.folder, FolderRole);
     addRoleIf(row.sizeText != nextRow.sizeText, SizeTextRole);
     addRoleIf(row.nodeType != nextRow.nodeType, NodeTypeRole);
