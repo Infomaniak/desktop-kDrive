@@ -256,6 +256,7 @@ void TestVfsWinRegistration::testSyncStoppedWhenUnregisteredWhileRunning() {
 
     // Simulate an uninstallation of the extension while the sync is running: unregister the sync root.
     CPPUNIT_ASSERT(_syncPal->isRunning());
+    CPPUNIT_ASSERT(_vfs->isRegistered());
     _vfs->stop(true);
     CPPUNIT_ASSERT(!_vfs->isRegistered());
 
