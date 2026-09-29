@@ -27,7 +27,6 @@
 #include "libcommonserver/utility/utility.h"
 
 #include <shobjidl_core.h>
-#include <cfapi.h>
 
 #include <QCoreApplication>
 #include <QDir>
@@ -105,22 +104,20 @@ ExitInfo VfsWin::startImpl(bool &, bool &, bool &) {
 }
 
 bool VfsWin::isRegistered() const {
-    CF_SYNC_ROOT_BASIC_INFO info{};
-    DWORD returnedLength = 0;
-    const HRESULT hr = CfGetSyncRootInfoByPath(_vfsSetupParams.localPath.lexically_normal().native().c_str(),
-                                               CF_SYNC_ROOT_INFO_BASIC, &info, sizeof(info), &returnedLength);
-    if (hr == HRESULT_FROM_WIN32(ERROR_CLOUD_FILE_NOT_UNDER_SYNC_ROOT)) {
-        LOGW_WARN(logger(), L"Sync root is not registered anymore: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
-        return false;
-    }
-
-    if (FAILED(hr)) {
+    bool registered = true;
+    if (vfsIsRegistered(std::to_wstring(_vfsSetupParams.driveId).c_str(), std::to_wstring(_vfsSetupParams.userId).c_str(),
+                        std::to_wstring(_vfsSetupParams.syncDbId).c_str(),
+                        _vfsSetupParams.localPath.lexically_normal().native().c_str(), &registered) != S_OK) {
         // Unable to know, don't block the sync on a transient error
-        LOGW_WARN(logger(),
-                  L"Error in CfGetSyncRootInfoByPath: " << Utility::formatSyncPath(_vfsSetupParams.localPath) << L" hr=" << hr);
+        LOGW_WARN(logger(), L"Error in vfsIsRegistered: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
+        return true;
     }
 
-    return true;
+    if (!registered) {
+        LOGW_WARN(logger(), L"Sync root is not registered anymore: " << Utility::formatSyncPath(_vfsSetupParams.localPath));
+    }
+
+    return registered;
 }
 
 void VfsWin::stopImpl(bool unregister) {

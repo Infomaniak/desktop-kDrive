@@ -52,6 +52,9 @@ DLL_EXP int32_t __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, 
 
 DLL_EXP int32_t __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, bool unregister);
 
+DLL_EXP int32_t __cdecl vfsIsRegistered(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId,
+                                        const wchar_t *folderPath, bool *registered);
+
 DLL_EXP int32_t __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPlaceholder, bool *isDehydrated, bool *isSynced);
 
 DLL_EXP int32_t __cdecl vfsSetPlaceHolderStatus(const wchar_t *path, bool syncOngoing);

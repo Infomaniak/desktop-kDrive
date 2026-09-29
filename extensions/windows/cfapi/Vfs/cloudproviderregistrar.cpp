@@ -333,6 +333,50 @@ bool CloudProviderRegistrar::unregister(std::wstring syncRootID) {
     return true;
 }
 
+bool CloudProviderRegistrar::isRegistered(const std::wstring &providerId, const std::wstring &userId, const wchar_t *folderPath,
+                                          bool &registered) {
+    registered = false;
+
+    std::wstring syncRootID;
+    try {
+        syncRootID = getSyncRootId(providerId, userId);
+    } catch (const std::exception &) {
+        TRACE_ERROR(L"Error in getSyncRootId");
+        return false;
+    }
+
+    // The UserSyncRoots registry key of the sync root is removed when the sync root is unregistered (e.g. extension uninstall)
+    const std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID + L"\\" + regKeyUserSyncRoots;
+    HKEY hKey = nullptr;
+    const LSTATUS status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_READ, &hKey);
+    if (status == ERROR_FILE_NOT_FOUND) {
+        TRACE_INFO(L"Sync root registry key not found: %ls", subKey.c_str());
+        return true;
+    }
+    if (status != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not open key %ls, status %ld", subKey.c_str(), status);
+        return false;
+    }
+    if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not close key %ls", subKey.c_str());
+    }
+
+    CF_SYNC_ROOT_BASIC_INFO info{};
+    DWORD returnedLength = 0;
+    const HRESULT hr = CfGetSyncRootInfoByPath(folderPath, CF_SYNC_ROOT_INFO_BASIC, &info, sizeof(info), &returnedLength);
+    if (hr == HRESULT_FROM_WIN32(ERROR_CLOUD_FILE_NOT_UNDER_SYNC_ROOT)) {
+        TRACE_INFO(L"Folder is not under a sync root anymore: %ls", folderPath);
+        return true;
+    }
+    if (FAILED(hr)) {
+        TRACE_ERROR(L"Error in CfGetSyncRootInfoByPath: %ls, hr %08x", folderPath, hr);
+        return false;
+    }
+
+    registered = true;
+    return true;
+}
+
 std::unique_ptr<TOKEN_USER> CloudProviderRegistrar::getTokenInformation() {
     std::unique_ptr<TOKEN_USER> tokenInfo;
 
@@ -354,13 +398,17 @@ std::unique_ptr<TOKEN_USER> CloudProviderRegistrar::getTokenInformation() {
 }
 
 std::wstring CloudProviderRegistrar::getSyncRootId(const ProviderInfo *providerInfo) {
+    return getSyncRootId(providerInfo->id(), providerInfo->userId());
+}
+
+std::wstring CloudProviderRegistrar::getSyncRootId(const std::wstring &providerId, const std::wstring &userId) {
     std::unique_ptr<TOKEN_USER> tokenInfo(getTokenInformation());
     auto sidString = convertSidToStringSid(tokenInfo->User.Sid);
-    std::wstring syncRootID(providerInfo->id());
+    std::wstring syncRootID(providerId);
     syncRootID.append(L"!");
     syncRootID.append(sidString.data());
     syncRootID.append(L"!");
-    syncRootID.append(providerInfo->userId());
+    syncRootID.append(userId);
 
     return syncRootID;
 }
