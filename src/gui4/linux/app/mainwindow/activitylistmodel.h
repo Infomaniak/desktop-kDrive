@@ -197,7 +197,7 @@ class ActivityListModel final : public QAbstractListModel {
         void reconcileProjection();
         [[nodiscard]] bool removeStaleRows(const std::vector<Row> &nextRows);
         [[nodiscard]] bool applyProjectionRows(const std::vector<Row> &nextRows);
-        [[nodiscard]] bool updateRow(qsizetype rowIndex, const Row &nextRow);
+        [[nodiscard]] bool updateRow(int32_t rowIndex, const Row &nextRow);
         void refreshSubtitles();
 
         const ActivityStore &_activityStore;
