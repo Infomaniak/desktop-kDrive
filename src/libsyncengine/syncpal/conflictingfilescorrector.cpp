@@ -174,7 +174,6 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     if (const auto ioError = IoHelper::setLastModifiedTime(canonicalPaths.destinationPath, now); ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::setModificationTime " << Utility::formatIoError(canonicalPaths.destinationPath, ioError));
-        return false;
     }
 
     return true;
