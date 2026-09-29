@@ -117,48 +117,44 @@ Item {
             }
         }
 
-        SettingsGroup {
+        RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: IKSettings.rowHeight
+            spacing: IKSettings.rowSpacing
 
-            RowLayout {
-                width: parent.width
-                height: IKSettings.rowHeight
-                spacing: IKSettings.rowSpacing
+            Text {
+                Layout.fillWidth: true
+                visible: root.controller.saveFailed || root.controller.excludedFolderLimitExceeded
+                text: root.controller.excludedFolderLimitExceeded
+                      ? qsTrId("excludedFoldersLimitReached").arg(root.controller.maxExcludedFolders)
+                      : qsTrId("unexpectedErrorTeachingTipContent")
+                textFormat: Text.PlainText
+                color: IKColors.statusStrongWarning
+                font.pixelSize: IKFonts.subheadlineSize
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
+                elide: Text.ElideRight
+                Accessible.role: Accessible.AlertMessage
+            }
 
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.controller.saveFailed || root.controller.excludedFolderLimitExceeded
-                    text: root.controller.excludedFolderLimitExceeded
-                          ? qsTrId("excludedFoldersLimitReached").arg(root.controller.maxExcludedFolders)
-                          : qsTrId("unexpectedErrorTeachingTipContent")
-                    textFormat: Text.PlainText
-                    color: IKColors.statusStrongWarning
-                    font.pixelSize: IKFonts.subheadlineSize
-                    wrapMode: Text.WordWrap
-                    maximumLineCount: 2
-                    elide: Text.ElideRight
-                    Accessible.role: Accessible.AlertMessage
-                }
+            Item {
+                Layout.fillWidth: true
+                visible: !root.controller.saveFailed && !root.controller.excludedFolderLimitExceeded
+            }
 
-                Item {
-                    Layout.fillWidth: true
-                    visible: !root.controller.saveFailed && !root.controller.excludedFolderLimitExceeded
-                }
+            IKModalButton {
+                role: IKModalButton.Tonal
+                text: qsTrId("buttonCancel")
+                actionEnabled: !root.controller.saving
+                onClicked: root.closeRequested()
+            }
 
-                IKModalButton {
-                    role: IKModalButton.Tonal
-                    text: qsTrId("buttonCancel")
-                    actionEnabled: !root.controller.saving
-                    onClicked: root.closeRequested()
-                }
-
-                IKModalButton {
-                    role: IKModalButton.Primary
-                    text: qsTrId("buttonSave")
-                    actionEnabled: root.controller.canSave
-                    busy: root.controller.saving
-                    onClicked: root.controller.save()
-                }
+            IKModalButton {
+                role: IKModalButton.Primary
+                text: qsTrId("buttonSave")
+                actionEnabled: root.controller.canSave
+                busy: root.controller.saving
+                onClicked: root.controller.save()
             }
         }
     }
