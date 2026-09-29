@@ -60,6 +60,14 @@ QString itemName(const SyncPath &path) {
     return Path2QStr(path.filename());
 }
 
+// Folder name of the synchronization root, tolerating a trailing separator in the configured path.
+QString rootFolderDisplayName(const SyncPath &localPath) {
+    const SyncPath normalizedPath = localPath.lexically_normal();
+    const SyncPath folderName =
+            normalizedPath.has_filename() ? normalizedPath.filename() : normalizedPath.parent_path().filename();
+    return Path2QStr(folderName);
+}
+
 QString parentFolder(const SyncPath &path) {
     const auto parent = path.parent_path();
     return parent.empty() || parent == SyncPath{"."} ? QString{} : Path2QStr(parent);
@@ -127,6 +135,39 @@ QString formatExactTime(const QDateTime &timestampUtc) {
     const QDateTime localTime = timestampUtc.toLocalTime();
     return u"%1 - %2"_s.arg(locale.toString(localTime.date(), QLocale::ShortFormat),
                             locale.toString(localTime.time(), timeFormat));
+}
+
+// Displayed folder of a synchronized item, the synchronization root being shown by its own folder name.
+QString displayedFolder(const SyncPath &relativePath, const QString &rootFolderName) {
+    const QString folder = parentFolder(relativePath);
+    return folder.isEmpty() ? rootFolderName : folder;
+}
+
+// "old → new" for a rename or a move, empty for any other activity. A rename shows the names, a move the folders, and a
+// move that also renames the item its full relative paths.
+QString formatChange(const ActivityEntry &activity, const QString &rootFolderName) {
+    if (activity.instruction != SyncFileInstruction::Move || activity.path.empty() || activity.newPath.empty()) {
+        return {};
+    }
+
+    const SyncPath sourcePath = normalizedRelativePath(activity.path);
+    const SyncPath destinationPath = normalizedRelativePath(activity.newPath);
+    const bool sameFolder = sourcePath.parent_path() == destinationPath.parent_path();
+    const bool sameName = sourcePath.filename() == destinationPath.filename();
+
+    QString source;
+    QString destination;
+    if (sameFolder) {
+        source = itemName(sourcePath);
+        destination = itemName(destinationPath);
+    } else if (sameName) {
+        source = displayedFolder(sourcePath, rootFolderName);
+        destination = displayedFolder(destinationPath, rootFolderName);
+    } else {
+        source = Path2QStr(sourcePath);
+        destination = Path2QStr(destinationPath);
+    }
+    return u"%1 → %2"_s.arg(source, destination);
 }
 
 // Lowercases the first letter so the relative time reads mid-sentence after the action ("Modified just now").
@@ -244,6 +285,8 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return row.subtitleText;
         case ExactTimeTextRole:
             return row.exactTimeText;
+        case ChangeTextRole:
+            return row.changeText;
         case FolderRole:
             return row.folder;
         case SizeTextRole:
@@ -278,6 +321,7 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {FileIconNameRole, "fileIconName"},
             {SubtitleTextRole, "subtitleText"},
             {ExactTimeTextRole, "exactTimeText"},
+            {ChangeTextRole, "changeText"},
             {FolderRole, "folder"},
             {SizeTextRole, "sizeText"},
             {NodeTypeRole, "nodeType"},
@@ -338,9 +382,11 @@ std::vector<ActivityListModel::Row> ActivityListModel::buildProjection() const {
 std::vector<ActivityListModel::Row> ActivityListModel::activityRows(const SyncDbId syncDbId) const {
     std::vector<Row> rows;
     const auto activities = _activityStore.activities(syncDbId);
+    const auto context = _appCache.syncContext(syncDbId);
+    const QString rootFolderName = context ? rootFolderDisplayName(context->syncInfo.localPath()) : QString{};
     rows.reserve(activities.size());
     for (const auto &activity: activities) {
-        rows.push_back(makeActivityRow(syncDbId, activity));
+        rows.push_back(makeActivityRow(syncDbId, activity, rootFolderName));
     }
     return rows;
 }
@@ -363,7 +409,8 @@ void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &
     rows.push_back(makeErrorRow(syncDbId, error));
 }
 
-ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity) const {
+ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity,
+                                                          const QString &rootFolderName) const {
     const SyncPath &currentPath =
             activity.instruction == SyncFileInstruction::Move && !activity.newPath.empty() ? activity.newPath : activity.path;
     const SyncPath relativePath = normalizedRelativePath(currentPath);
@@ -378,6 +425,7 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.subtitleKind = subtitleKind(activity);
     row.subtitleText = formatSubtitle(row.subtitleKind, activity.receivedAtUtc);
     row.exactTimeText = formatExactTime(activity.receivedAtUtc);
+    row.changeText = formatChange(activity, rootFolderName);
     row.folder = parentFolder(relativePath);
     row.sizeText = formatSize(activity.nodeType, activity.size);
     row.nodeType = activity.nodeType;
@@ -681,6 +729,7 @@ bool ActivityListModel::updateRow(const int32_t rowIndex, const Row &nextRow) {
     addRoleIf(row.fileIconName != nextRow.fileIconName, FileIconNameRole);
     addRoleIf(row.subtitleText != nextRow.subtitleText, SubtitleTextRole);
     addRoleIf(row.exactTimeText != nextRow.exactTimeText, ExactTimeTextRole);
+    addRoleIf(row.changeText != nextRow.changeText, ChangeTextRole);
     addRoleIf(row.folder != nextRow.folder, FolderRole);
     addRoleIf(row.sizeText != nextRow.sizeText, SizeTextRole);
     addRoleIf(row.nodeType != nextRow.nodeType, NodeTypeRole);
