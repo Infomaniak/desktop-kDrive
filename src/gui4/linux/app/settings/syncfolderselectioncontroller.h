@@ -62,6 +62,14 @@ class SyncFolderSelectionController final : public QObject {
         [[nodiscard]] bool excludedFolderLimitExceeded() const;
         [[nodiscard]] static qsizetype maxExcludedFolders();
 
+        /**
+         * Starts loading the given synchronization before its page opens, so the page shows an already loaded tree.
+         * The preloaded target is kept until `releasePreload()`, and reloaded each time the page closes.
+         */
+        void preload(SyncDbId syncDbId);
+        void releasePreload(SyncDbId syncDbId);
+
+        /// Reuses the preloaded target when it is the given synchronization.
         Q_INVOKABLE void open(qint64 syncDbId);
         /// Releases the target only when it is still the given synchronization, so a closing page cannot reset its
         /// successor.
@@ -84,6 +92,7 @@ class SyncFolderSelectionController final : public QObject {
             Saving,
         };
 
+        [[nodiscard]] bool isLoadedOrLoading(SyncDbId syncDbId) const;
         void loadBlackList();
         void setState(State state);
         void resetTarget();
@@ -93,10 +102,14 @@ class SyncFolderSelectionController final : public QObject {
         CommRemoteFolderProvider _folderProvider;
         RemoteFolderTreeModel _folderTreeModel;
         SyncDbId _syncDbId{0};
+        SyncDbId _preloadSyncDbId{0};
+        // Invalidates the responses of a previous target, which a preload can give the same synchronization.
+        uint64_t _targetGeneration{0};
         State _state{State::Idle};
         // Sorted like RemoteFolderTreeModel::blackList(), so the draft compares directly with it.
         std::vector<NodeId> _confirmedBlackList;
         bool _saveFailed{false};
+        bool _pageOpen{false};
 };
 
 } // namespace KDC

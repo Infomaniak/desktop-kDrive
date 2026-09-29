@@ -70,7 +70,43 @@ qsizetype SyncFolderSelectionController::maxExcludedFolders() {
     return AppConstants::SyncConfiguration::maxExcludedFolders;
 }
 
+// An open page keeps its draft untouched: the target is only recorded, and `close()` loads it once the page leaves.
+void SyncFolderSelectionController::preload(const SyncDbId syncDbId) {
+    _preloadSyncDbId = syncDbId;
+    if (_pageOpen || isLoadedOrLoading(syncDbId)) {
+        return;
+    }
+
+    resetTarget();
+    _syncDbId = syncDbId;
+    qCInfo(lcSyncFolderSelectionController) << "Preloading folder selection | syncDbId:" << _syncDbId;
+
+    loadBlackList();
+}
+
+void SyncFolderSelectionController::releasePreload(const SyncDbId syncDbId) {
+    if (syncDbId == 0 || syncDbId != _preloadSyncDbId) {
+        return;
+    }
+
+    _preloadSyncDbId = 0;
+    // The open page keeps its target; `close()` resets it now that nothing is preloaded.
+    if (_pageOpen) {
+        return;
+    }
+
+    resetTarget();
+    emit stateChanged();
+}
+
 void SyncFolderSelectionController::open(const qint64 syncDbId) {
+    _pageOpen = true;
+    // A preloaded target never carries a stale draft: `close()` reloads it each time the page leaves.
+    if (isLoadedOrLoading(static_cast<SyncDbId>(syncDbId))) {
+        qCInfo(lcSyncFolderSelectionController) << "Opening preloaded folder selection | syncDbId:" << _syncDbId;
+        return;
+    }
+
     resetTarget();
 
     _syncDbId = static_cast<SyncDbId>(syncDbId);
@@ -84,7 +120,15 @@ void SyncFolderSelectionController::close(const qint64 syncDbId) {
         return;
     }
 
+    _pageOpen = false;
     resetTarget();
+    // Still preloaded: reload it, which drops an abandoned draft and picks up a saved selection, for the next opening.
+    if (_preloadSyncDbId != 0) {
+        _syncDbId = _preloadSyncDbId;
+        loadBlackList();
+        return;
+    }
+
     emit stateChanged();
 }
 
@@ -102,6 +146,7 @@ void SyncFolderSelectionController::save() {
     }
 
     const SyncDbId syncDbId = _syncDbId;
+    const uint64_t targetGeneration = _targetGeneration;
     const std::vector<NodeId> blackList = _folderTreeModel.blackList();
     qCInfo(lcSyncFolderSelectionController) << "Saving folder selection | syncDbId:" << syncDbId
                                             << "/ excludedFolders:" << blackList.size();
@@ -110,8 +155,8 @@ void SyncFolderSelectionController::save() {
     setState(State::Saving);
 
     _commService.requestBlacklistedNodeSetList(
-            syncDbId, blackList, [self = QPointer(this), syncDbId, blackList](const ExitInfo &exitInfo) {
-                if (!self || syncDbId != self->_syncDbId) {
+            syncDbId, blackList, [self = QPointer(this), targetGeneration, syncDbId, blackList](const ExitInfo &exitInfo) {
+                if (!self || targetGeneration != self->_targetGeneration) {
                     return;
                 }
 
@@ -133,6 +178,11 @@ void SyncFolderSelectionController::retranslate() {
     _folderTreeModel.retranslate();
 }
 
+// A failed load is never reused, so opening the page retries it.
+bool SyncFolderSelectionController::isLoadedOrLoading(const SyncDbId syncDbId) const {
+    return syncDbId != 0 && syncDbId == _syncDbId && _state != State::Idle && _state != State::LoadFailed;
+}
+
 void SyncFolderSelectionController::loadBlackList() {
     const auto context = _appCache.syncContext(_syncDbId);
     if (!context) {
@@ -145,26 +195,28 @@ void SyncFolderSelectionController::loadBlackList() {
     const DriveId driveId = context->drive.driveId();
     const NodeId rootNodeId = context->syncInfo.targetNodeId();
     const SyncDbId syncDbId = _syncDbId;
+    const uint64_t targetGeneration = _targetGeneration;
     setState(State::LoadingBlackList);
 
-    _commService.requestBlacklistedNodeList(syncDbId, [self = QPointer(this), syncDbId, userDbId, driveId, rootNodeId](
-                                                              const ExitInfo &exitInfo, const std::vector<NodeId> &blackList) {
-        if (!self || syncDbId != self->_syncDbId) {
-            return;
-        }
+    _commService.requestBlacklistedNodeList(
+            syncDbId, [self = QPointer(this), targetGeneration, syncDbId, userDbId, driveId, rootNodeId](
+                              const ExitInfo &exitInfo, const std::vector<NodeId> &blackList) {
+                if (!self || targetGeneration != self->_targetGeneration) {
+                    return;
+                }
 
-        if (!exitInfo) {
-            qCWarning(lcSyncFolderSelectionController) << "Blacklist loading failed | syncDbId:" << syncDbId
-                                                       << "/ code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
-            self->setState(State::LoadFailed);
-            return;
-        }
+                if (!exitInfo) {
+                    qCWarning(lcSyncFolderSelectionController) << "Blacklist loading failed | syncDbId:" << syncDbId
+                                                               << "/ code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
+                    self->setState(State::LoadFailed);
+                    return;
+                }
 
-        self->_confirmedBlackList = blackList;
-        (void) std::ranges::sort(self->_confirmedBlackList);
-        self->setState(State::Editing);
-        self->_folderTreeModel.configure(userDbId, driveId, rootNodeId, blackList);
-    });
+                self->_confirmedBlackList = blackList;
+                (void) std::ranges::sort(self->_confirmedBlackList);
+                self->setState(State::Editing);
+                self->_folderTreeModel.configure(userDbId, driveId, rootNodeId, blackList);
+            });
 }
 
 void SyncFolderSelectionController::setState(const State state) {
@@ -177,6 +229,7 @@ void SyncFolderSelectionController::setState(const State state) {
 }
 
 void SyncFolderSelectionController::resetTarget() {
+    ++_targetGeneration;
     _syncDbId = 0;
     _state = State::Idle;
     _confirmedBlackList.clear();
