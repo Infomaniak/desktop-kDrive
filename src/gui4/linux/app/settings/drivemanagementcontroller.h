@@ -30,14 +30,16 @@ namespace KDC {
 
 class AppCache;
 class CommService;
+class SyncFolderSelectionController;
 class SyncService;
 
 /**
  * Settings "kDrive management" page state for one user drive.
  *
  * Role: resolve the main synchronization of one configured drive from AppCache, load its confirmed blacklist to present a
- * custom selection, open its local folder, and delete it. The page targets a DriveDbId rather than a backend DriveId: a
- * drive row belongs to one account of one user, so another user's synchronizations of the same drive are never presented.
+ * custom selection, preload its folder selection page, open its local folder, and delete it. The page targets a DriveDbId rather
+ * than a backend DriveId: a drive row belongs to one account of one user, so another user's synchronizations of the same drive
+ * are never presented.
  */
 class DriveManagementController final : public QObject {
         Q_OBJECT
@@ -57,7 +59,7 @@ class DriveManagementController final : public QObject {
 
     public:
         DriveManagementController(AppCache &appCache, CommService &commService, SyncService &syncService,
-                                  QObject *parent = nullptr);
+                                  SyncFolderSelectionController &syncFolderSelection, QObject *parent = nullptr);
 
         // Identity of the drive for the activation editor, which works on available drives.
         [[nodiscard]] qint64 userDbId() const { return _availableDriveKey.userDbId; }
@@ -107,6 +109,7 @@ class DriveManagementController final : public QObject {
         AppCache &_appCache;
         CommService &_commService;
         SyncService &_syncService;
+        SyncFolderSelectionController &_syncFolderSelection;
         DriveDbId _driveDbId{0};
         AvailableDriveKey _availableDriveKey;
         SyncDbId _mainSyncDbId{0};
