@@ -188,6 +188,7 @@ IoError IoHelper::unlock(const SyncPath &path) noexcept {
         LOGW_DEBUG(logger(), L"Failed to unset uchg flag for " << Utility::formatSyncPath(path));
         return IoError::Unknown;
     }
+
     return IoError::Success;
 }
 
