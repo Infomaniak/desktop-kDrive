@@ -34,8 +34,8 @@ QtObject {
     readonly property real nameColumnMinWidth: 112
     readonly property real folderColumnMinWidth: 72
     readonly property real columnResizeHandleWidth: 10
-    readonly property real nameColumnRatio: 0.50
-    readonly property real folderColumnRatio: 0.18
+    readonly property real nameColumnRatio: 0.40
+    readonly property real folderColumnRatio: 0.25
     readonly property real secondaryCellPadding: IKSpacing.s8
     readonly property real fileIconSize: 16
     readonly property real activityIconSize: 16
