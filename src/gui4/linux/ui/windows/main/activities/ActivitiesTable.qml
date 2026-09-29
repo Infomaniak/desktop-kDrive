@@ -28,7 +28,8 @@ Item {
     required property var model
     required property var controller
 
-    property real nameFolderRatio: IKActivities.nameColumnRatio / (IKActivities.nameColumnRatio + IKActivities.folderColumnRatio)
+    readonly property real defaultNameFolderRatio: IKActivities.nameColumnRatio / (IKActivities.nameColumnRatio + IKActivities.folderColumnRatio)
+    property real nameFolderRatio: defaultNameFolderRatio
 
     // Metadata columns are fixed, so they are sized from the widest string they can ever hold in the active locale
     // rather than a constant. The header label counts too, since it elides the same way.
@@ -50,6 +51,10 @@ Item {
         const target = root.nameColumnWidth + requestedDelta;
         const clamped = Math.max(IKActivities.nameColumnMinWidth, Math.min(root.flexibleWidth - IKActivities.folderColumnMinWidth, target));
         root.nameFolderRatio = clamped / root.flexibleWidth;
+    }
+
+    function resetNameBoundary() {
+        root.nameFolderRatio = root.defaultNameFolderRatio;
     }
 
     // Measured, never rendered: cell samples use the row font, header labels the header font.
@@ -85,6 +90,7 @@ Item {
         sizeColumnWidth: root.sizeColumnWidth
         statusColumnWidth: root.statusColumnWidth
         onResizeRequested: delta => root.resizeNameBoundary(delta)
+        onResetRequested: root.resetNameBoundary()
     }
 
     ListView {
