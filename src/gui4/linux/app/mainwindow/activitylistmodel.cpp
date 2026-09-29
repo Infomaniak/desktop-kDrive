@@ -178,6 +178,14 @@ QString toMidSentence(const QString &text) {
     return QLocale().toLower(text.first(1)) + text.sliced(1);
 }
 
+// Uppercases the first letter of a composed subtitle, whatever the position of the time in the translation.
+QString toSentenceStart(const QString &text) {
+    if (text.isEmpty()) {
+        return text;
+    }
+    return QLocale().toUpper(text.first(1)) + text.sliced(1);
+}
+
 ActivityListModel::Status toModelStatus(const SyncFileStatus status) {
     switch (status) {
         case SyncFileStatus::Success:
@@ -540,24 +548,35 @@ QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTi
         return relativeTime;
     }
 
-    const QString midSentenceTime = toMidSentence(relativeTime);
+    const char *translationId = nullptr;
     switch (kind) {
         case SubtitleKind::Updated:
-            return qtTrId("activityInstructionUpdateWithTimeLabel").arg(midSentenceTime);
+            translationId = "activityInstructionUpdateWithTimeLabel";
+            break;
         case SubtitleKind::Removed:
-            return qtTrId("activityInstructionRemoveWithTimeLabel").arg(midSentenceTime);
+            translationId = "activityInstructionRemoveWithTimeLabel";
+            break;
         case SubtitleKind::Renamed:
-            return qtTrId("activityInstructionRenameWithTimeLabel").arg(midSentenceTime);
+            translationId = "activityInstructionRenameWithTimeLabel";
+            break;
         case SubtitleKind::Moved:
-            return qtTrId("activityInstructionMoveWithTimeLabel").arg(midSentenceTime);
+            translationId = "activityInstructionMoveWithTimeLabel";
+            break;
         case SubtitleKind::Imported:
-            return qtTrId("activityInstructionGetWithTimeLabel").arg(midSentenceTime);
+            translationId = "activityInstructionGetWithTimeLabel";
+            break;
         case SubtitleKind::Added:
-            return qtTrId("activityInstructionPutWithTimeLabel").arg(midSentenceTime);
+            translationId = "activityInstructionPutWithTimeLabel";
+            break;
         case SubtitleKind::TimeOnly:
             return relativeTime;
     }
-    return relativeTime;
+    if (translationId == nullptr) {
+        return relativeTime;
+    }
+
+    // The time reads mid-sentence, but a translation may place it first: the composed text starts with a capital.
+    return toSentenceStart(qtTrId(translationId).arg(toMidSentence(relativeTime)));
 }
 
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
