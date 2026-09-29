@@ -227,9 +227,12 @@ void RemoteFolderTreeModel::toggleRootSelection() {
     emit selectionChanged();
 }
 
-void RemoteFolderTreeModel::setRowVisible(const QModelIndex &modelIndex, const bool visible) {
-    TreeNode *const node = nodeForIndex(modelIndex);
-    if (!node || node == _root.get()) return;
+void RemoteFolderTreeModel::setNodeVisible(const QString &nodeId, const bool visible) {
+    TreeNode *const node = _nodesById.value(nodeId, nullptr);
+    if (!node) {
+        return;
+    }
+
     node->sizeRequested = visible;
     if (!visible) {
         if (node->sizeState == SizeState::Queued) node->sizeState = SizeState::NotRequested;
