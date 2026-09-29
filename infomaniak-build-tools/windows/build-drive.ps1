@@ -146,11 +146,7 @@ function Get-Cert-Property {
         [bool] $ci, # On CI build machines, the certificate are located in local computer store
         [string] $property
     )
-    if ($ci) {
-        $certStore = "Cert:\LocalMachine\My"
-    } else {
-        $certStore = "Cert:\CurrentUser\My"
-    }
+    $certStore = "Cert:\CurrentUser\My"
     
     $value = Get-ChildItem $certStore/$thumbprint | Select -ExpandProperty $property
 
@@ -283,11 +279,12 @@ function Build-Extension {
     $aumid = Get-Aumid -Thumbprint $thumbprint -Ci $ci
     Write-Host "Building extension with AUMID: $aumid"
 
+    msbuild "$extPath\kDriveExt.sln" /t:Restore /p:RestorePackagesConfig=true
     msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_DEBUG_AUMID="$aumid" /p:KDC_RELEASE_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
+    Sign-File -FilePath $bundlePath -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -486,7 +483,7 @@ function Sign-File {
         [string] $description = ""
     )
     Write-Host "Signing the file $filePath with thumbprint $thumbprint"
-    & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
+    & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /d $description $filePath
     $res = $LASTEXITCODE
     Write-Host "Signing exit code: $res" -ForegroundColor Yellow
     if ($res -ne 0) {
@@ -581,7 +578,7 @@ function Prepare-Archive {
 
         $filename = Split-Path -Leaf $file
 
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
+        Sign-File -FilePath $archivePath/$filename -Thumbprint $thumbprint -Description $filename
 
     }
 
@@ -599,7 +596,7 @@ function Prepare-Archive {
             $signature.Status -eq 'NotSigned'
         }
         foreach ($file in $filesToSign) {
-            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
+            Sign-File -FilePath $file.FullName -Thumbprint $thumbprint -Description $file.Name
             Write-Host "Signed file: $($file.FullName)"
         }
     }
@@ -643,7 +640,7 @@ function Create-Archive {
     $installerPath = Get-Installer-Path -ContentPath $contentPath
 
     if (Test-Path -Path $installerPath) {
-        Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
+        Sign-File -FilePath $installerPath -Thumbprint $thumbprint -Description $appName
         Write-Host ("$installerPath signed successfully.") -f Green
     }
     else {
@@ -678,7 +675,7 @@ function Create-MSI-Package {
 	$installerPath = Get-Installer-Path -ContentPath $contentPath -msi
 
 	if (Test-Path -Path $installerPath) {
-		Sign-File -FilePath $installerPath -Upload $upload -Thumbprint $thumbprint -Description $appName
+		Sign-File -FilePath $installerPath -Thumbprint $thumbprint -Description $appName
 		Write-Host ("$installerPath signed successfully.") -f Green
 	}
 	else {
@@ -695,7 +692,7 @@ function Create-MSI-Package {
 #                                                                                               #
 #################################################################################################
 
-$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" "-version" "[16.0, 17.0]" "-products" "*" "-requires" "Microsoft.Component.MSBuild" "-find" "MSBuild\**\Bin\MSBuild.exe"
+$msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" "-version" "18.0" "-products" "*" "-requires" "Microsoft.Component.MSBuild" "-find" "MSBuild\**\Bin\MSBuild.exe"
 $7zaPath = "${env:ProgramFiles}\7-Zip\7za.exe"
 
 Write-Host "Using MSBuild at: $msbuildPath"
@@ -749,7 +746,7 @@ Parameters :
 
     Write-Host ("It is mandatory that all dependencies are already built and installed before building.
 To run this script, you will need to call it from the Native Tools Command Prompt for VS.
-Alternatively, you can run vcvars64.bat from your command prompt (usually located in C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build)
+Alternatively, you can run vcvars64.bat from your command prompt (usually located in C:\Program Files (x86)\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build)
 This is required to make the compiler work with CMake.
 To avoid issues with the NSIS packaging, please use NSIS version 3.03.
 The installer packages are first compressed using 7za.exe, you will need to have it installed") -f Yellow

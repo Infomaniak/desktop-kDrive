@@ -34,7 +34,7 @@ env:
 
 jobs:
   Windows-extended-tests:
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ self-hosted, Windows, vs2026 ]
     env:
       KDRIVE_TEST_CI_8MO_PARTITION_PATH: ${{ vars.KDRIVE_TEST_CI_8MO_PARTITION_PATH_WIN }}
       COVFILE: ${{ github.workspace }}\\src\\test.cov
@@ -52,9 +52,6 @@ jobs:
       - name: Clean the log directory
         run : rm -r -force C:/Windows/Temp/kDrive-logdir/*
 
-      - name: Restore extension packages
-        run : nuget restore extensions/windows/cfapi/kDriveExt.sln
-
       - name: Import Windows certificate
         env:
           WINDOWS_DEBUG_CERT_FILE_B64: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
@@ -63,7 +60,7 @@ jobs:
             Set-Content -Path certificate/tempCert.txt -Value $env:WINDOWS_DEBUG_CERT_FILE_B64
             certutil -decode certificate/tempCert.txt certificate/debug_certificate.pfx
             Remove-Item -path certificate -include tempCert.txt
-            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\LocalMachine\My -Password (ConvertTo-SecureString -String "${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}" -Force -AsPlainText)
+            Import-PfxCertificate -FilePath certificate/debug_certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String "${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}" -Force -AsPlainText)
             Write-Host "Debug certificate imported successfully."
 
         shell: powershell
@@ -72,7 +69,8 @@ jobs:
         env:
           WINDOWS_DEBUG_CERT_THUMBPRINT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
-          call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
+          msbuild ./extensions/windows/cfapi/kDriveExt.sln /t:Restore
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -thumbprint $env:WINDOWS_DEBUG_CERT_THUMBPRINT -ci -coverage -unitTests
         shell: cmd
 
@@ -102,7 +100,7 @@ jobs:
         env:
           WINDOWS_DEBUG_CERT_THUMBPRINT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
-            Get-ChildItem "Cert:\LocalMachine\My\$env:WINDOWS_DEBUG_CERT_THUMBPRINT" | Remove-Item
+            Get-ChildItem "Cert:\CurrentUser\My\$env:WINDOWS_DEBUG_CERT_THUMBPRINT" | Remove-Item
             Remove-Item -path certificate -include debug_certificate.pfx
             Write-Host "Debug certificate removed successfully."
 
@@ -222,7 +220,7 @@ jobs:
     if: ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && always())
     needs: [ Windows-extended-tests, MacOS-extended-tests, Linux-extended-tests ]
 
-    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    runs-on: [ windows-latest ]
     env:
       KCHAT_WEBHOOK_URL: ${{ secrets.KCHAT_WEBHOOK_URL }}
     steps:
