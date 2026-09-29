@@ -50,7 +50,7 @@ class ActivityListModel final : public QAbstractListModel {
 
     public:
         enum class Filter : uint8_t {
-            MyActivityOnly,
+            ThisComputerOnly,
             AllActivities,
         };
         Q_ENUM(Filter)
@@ -204,7 +204,7 @@ class ActivityListModel final : public QAbstractListModel {
         const AppCache &_appCache;
         MainSelectionStore &_selectionStore;
         std::vector<Row> _rows;
-        Filter _filter{Filter::MyActivityOnly};
+        Filter _filter{Filter::AllActivities};
         FileIconResolver _fileIconResolver;
         QTimer _projectionRefreshTimer;
         QTimer _subtitleRefreshTimer;

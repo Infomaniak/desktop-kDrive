@@ -90,6 +90,10 @@
             <source>My activity only</source> 
             <translation>Kun min aktivitet</translation> 
         </message> 
+        <message id="activitiesTypeThisComputer"> 
+            <source>Activities from this computer</source> 
+            <translation>Aktiviteter fra denne computer</translation> 
+        </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
             <translation>Importeret</translation> 
