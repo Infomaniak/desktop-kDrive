@@ -490,7 +490,7 @@ function Sign-File {
 
     if (-not $force) {
         $signature = Get-AuthenticodeSignature -FilePath $filePath
-        if (($null -ne $signature.SignerCertificate) -and ($signature.Status -ne 'HashMismatch')) {
+        if ($signature.Status -eq 'Valid') {
             Write-Host "Skipping $filePath, already signed by $($signature.SignerCertificate.Subject)"
             return
         }
