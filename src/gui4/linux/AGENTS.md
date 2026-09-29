@@ -440,7 +440,8 @@
   excluded and is never a state the user selects, and the drive root itself can never be excluded. A visible row loads
   its size and its immediate children, so its expand affordance reflects whether the folder really has sub-folders. An
   initial blacklist whose paths cannot be resolved fails the page instead of displaying ancestors as fully selected;
-  a node the server no longer knows is dropped from the blacklist rather than treated as a failure.
+  a node the server no longer knows is dropped from the blacklist rather than treated as a failure. The root listing is
+  requested alongside that path resolution and kept aside until every path is known. Paths are compared in NFC.
 - `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
   branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
   only after both branches succeed. A new run supersedes the previous one, whose late responses are ignored and which
