@@ -42,6 +42,8 @@ constexpr auto minute = std::chrono::minutes{1};
 constexpr auto hour = std::chrono::hours{1};
 constexpr auto day = std::chrono::days{1};
 constexpr auto relativeDateThreshold = std::chrono::days{4};
+// Like the Windows client: smaller transfers finish too fast to be kept on top without flickering.
+constexpr int64_t minPinnedTransferSize = 1024;
 
 QString errorRowId(const ErrorDbId errorDbId) {
     return QStringLiteral("error:%1").arg(static_cast<qlonglong>(errorDbId));
@@ -357,8 +359,10 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.source = toModelSource(activity.direction);
     row.instruction = activity.instruction;
     row.progress = activity.progress;
+    row.size = activity.size;
     row.timestampUtc = activity.receivedAtUtc;
     row.receivedSequence = activity.receivedSequence;
+    row.placementSequence = activity.placementSequence;
     row.relativePath = relativePath;
     row.sourcePath = normalizedRelativePath(activity.path);
     row.destinationPath = normalizedRelativePath(activity.newPath);
@@ -417,6 +421,11 @@ ActivityListModel::AvailableActions ActivityListModel::availableActions(const Ro
         actions |= FixErrorsAction;
     }
     return actions;
+}
+
+/** Returns whether an in-progress transfer is large enough to stay above the other rows until it finishes. */
+bool ActivityListModel::isPinnedTransfer(const Row &row) {
+    return row.status == Status::InProgress && row.size >= minPinnedTransferSize;
 }
 
 ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEntry &activity) {
@@ -484,10 +493,14 @@ void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
         return resolvedFailure || filteredOutRemoteActivity;
     });
     (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {
-        const bool lhsInProgress = lhs.status == Status::InProgress;
-        const bool rhsInProgress = rhs.status == Status::InProgress;
-        if (lhsInProgress != rhsInProgress) {
-            return lhsInProgress;
+        const bool lhsPinned = isPinnedTransfer(lhs);
+        const bool rhsPinned = isPinnedTransfer(rhs);
+        if (lhsPinned != rhsPinned) {
+            return lhsPinned;
+        }
+        // Pinned transfers keep their start order, newest first, whatever the rhythm of their progress updates.
+        if (lhsPinned && lhs.placementSequence != rhs.placementSequence) {
+            return lhs.placementSequence > rhs.placementSequence;
         }
         const bool lhsHasActiveError = !lhs.activeErrorDbIds.empty();
         const bool rhsHasActiveError = !rhs.activeErrorDbIds.empty();
