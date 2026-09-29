@@ -170,8 +170,12 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     if (const auto exitInfo = renameJob.runSynchronously(); !exitInfo) return false;
 
     // Set the local modification time to now
-    const Poco::Timestamp lastModifiedTimestamp;
-    (void) Poco::File(Path2Str(canonicalPaths.destinationPath)).setLastModified(lastModifiedTimestamp);
+    const SyncTime now = CommonUtility::getCurrentSyncTime();
+    if (const auto ioError = IoHelper::setLastModifiedTime(canonicalPaths.destinationPath, now); ioError != IoError::Success) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::setModificationTime " << Utility::formatIoError(canonicalPaths.destinationPath, ioError));
+        return false;
+    }
 
     return true;
 }

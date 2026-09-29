@@ -570,6 +570,15 @@ struct IoHelper {
         static IoError setFileDates(const KDC::SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                     bool symlink) noexcept;
 
+        //! Set the last modification date of the item indicated by `absoluteLocalPath`.
+        //! The creation date is left unchanged. Symlinks are not followed.
+        /*!
+         \param absoluteLocalPath is the file system path of the item.
+         \param lastModifiedTime is the modification date to be set.
+         \return IoError::Success if the process succeeds. An appropriate IoError otherwise.
+         */
+        static IoError setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept;
+
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
                    (linkType == LinkType::FinderAlias && CommonUtility::isMac()) ||

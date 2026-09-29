@@ -757,6 +757,20 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *const buf, bool &exis
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
 }
 
+IoError IoHelper::setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept {
+    // Check that the item exists and retrieve its creation date, as setFileDates sets both dates.
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!getFileStat(absoluteLocalPath, &fileStat, ioError, PathCheckOption::Insensitive)) return ioError;
+    if (ioError != IoError::Success) return ioError; // The item does not exist or another expected error occurred.
+
+    // Check whether the item is a symlink, so that setFileDates does not follow it.
+    ItemType itemType;
+    if (!getItemType(absoluteLocalPath, itemType)) return itemType.ioError;
+
+    return setFileDates(absoluteLocalPath, fileStat.creationTime, lastModifiedTime, itemType.linkType == LinkType::Symlink);
+}
+
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
     using enum IoError;
     checksum.clear();
