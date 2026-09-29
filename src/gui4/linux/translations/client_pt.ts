@@ -112,7 +112,7 @@
         </message> 
         <message id="activityInstructionMoveWithTimeLabel"> 
             <source>Moved %1</source> 
-            <translation>Deslocado %1</translation> 
+            <translation>Movido %1</translation> 
         </message> 
         <message id="activityInstructionPutLabel"> 
             <source>Added</source> 

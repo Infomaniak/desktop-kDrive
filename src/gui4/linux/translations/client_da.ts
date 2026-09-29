@@ -136,7 +136,7 @@
         </message> 
         <message id="activityInstructionRenameWithTimeLabel"> 
             <source>Renamed %1</source> 
-            <translation>Omdøbt til %1</translation> 
+            <translation>Omdøbt %1</translation> 
         </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 

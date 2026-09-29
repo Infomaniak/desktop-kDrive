@@ -92,7 +92,7 @@
         </message> 
         <message id="activitiesTypeThisComputer"> 
             <source>Activities from this computer</source> 
-            <translation>Aktivitet fra denne datamaskinen</translation> 
+            <translation>Aktiviteter fra denne datamaskinen</translation> 
         </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
@@ -136,7 +136,7 @@
         </message> 
         <message id="activityInstructionRenameWithTimeLabel"> 
             <source>Renamed %1</source> 
-            <translation>Omdøpt til %1</translation> 
+            <translation>Omdøpt %1</translation> 
         </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 

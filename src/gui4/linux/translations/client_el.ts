@@ -100,7 +100,7 @@
         </message> 
         <message id="activityInstructionGetWithTimeLabel"> 
             <source>Imported %1</source> 
-            <translation>Εισαγωγή %1</translation> 
+            <translation>Εισήχθη %1</translation> 
         </message> 
         <message id="activityInstructionIgnoreLabel"> 
             <source>Ignored</source> 
@@ -136,7 +136,7 @@
         </message> 
         <message id="activityInstructionRenameWithTimeLabel"> 
             <source>Renamed %1</source> 
-            <translation>Μετονομάστηκε σε %1</translation> 
+            <translation>Μετονομάστηκε %1</translation> 
         </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
