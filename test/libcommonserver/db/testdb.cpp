@@ -55,6 +55,12 @@
 #define DROP_TEST_TABLE_ID "testdb6"
 #define DROP_TEST_TABLE "DROP TABLE IF EXISTS test;"
 
+#define SELECT_TEST_INTVALUE2_REQUEST_ID "testdb7"
+#define SELECT_TEST_INTVALUE2_REQUEST "SELECT intValue2 FROM test WHERE id=?1;"
+
+#define SELECT_TEST_INT64VALUE2_REQUEST_ID "testdb8"
+#define SELECT_TEST_INT64VALUE2_REQUEST "SELECT int64Value2 FROM test WHERE id=?1;"
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -160,24 +166,44 @@ void TestDb::testColumnExist() {
     CPPUNIT_ASSERT(!_testObj->columnExists("not_existing_table_name", "not_existing_column_name", exist));
 }
 
-void TestDb::testAddColumnIfMissing() {
-    const std::string requestId = "test_request_id";
-    std::string request = "ALTER TABLE test ADD COLUMN intValue INTEGER;";
-    bool columnAdded = false;
-    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue", requestId, request, &columnAdded) && !columnAdded);
-
-    request = "ALTER TABLE test ADD COLUMN intValue2 INTEGER;";
-    CPPUNIT_ASSERT(_testObj->addColumnIfMissing("test", "intValue2", requestId, request, &columnAdded) && columnAdded);
-
-    request = "ALTER TABLE not_existing_table_name ADD COLUMN intValue3 INTEGER;";
-    CPPUNIT_ASSERT(!_testObj->addColumnIfMissing("not_existing_table_name", "intValue3", requestId, request, &columnAdded));
-}
-
 void TestDb::testAddIntegerColumnIfMissing() {
-    bool columnAdded = false;
-    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue", &columnAdded) && !columnAdded);
-    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue2", &columnAdded) && columnAdded);
-    CPPUNIT_ASSERT(!_testObj->addIntegerColumnIfMissing("not_existing_table_name", "intValue3", &columnAdded));
+    // Existing row, created before the column is added
+    CPPUNIT_ASSERT(_testObj->insertTest(Test(3, 0, 0, 0.0, "")));
+
+    // Existing column: nothing to do
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue", 0));
+
+    // Missing column: added
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "intValue2", 5));
+    bool exist = false;
+    CPPUNIT_ASSERT(_testObj->columnExists("test", "intValue2", exist) && exist);
+
+    // Missing table: error
+    CPPUNIT_ASSERT(!_testObj->addIntegerColumnIfMissing("not_existing_table_name", "intValue3", 0));
+
+    // The existing row gets the default value
+    auto scopeGuard = _testObj->createAndPrepareScopedRequest(SELECT_TEST_INTVALUE2_REQUEST_ID, SELECT_TEST_INTVALUE2_REQUEST);
+    CPPUNIT_ASSERT(scopeGuard);
+    CPPUNIT_ASSERT(_testObj->queryResetAndClearBindings(SELECT_TEST_INTVALUE2_REQUEST_ID));
+    CPPUNIT_ASSERT(_testObj->queryBindValue(SELECT_TEST_INTVALUE2_REQUEST_ID, 1, 3));
+    bool found = false;
+    CPPUNIT_ASSERT(_testObj->queryNext(SELECT_TEST_INTVALUE2_REQUEST_ID, found) && found);
+    int value = 0;
+    CPPUNIT_ASSERT(_testObj->queryIntValue(SELECT_TEST_INTVALUE2_REQUEST_ID, 0, value));
+    CPPUNIT_ASSERT_EQUAL(5, value);
+
+    // Default value exceeding 32 bits (e.g. a timestamp in milliseconds)
+    constexpr int64_t bigDefaultValue = 1790664065256;
+    CPPUNIT_ASSERT(_testObj->addIntegerColumnIfMissing("test", "int64Value2", bigDefaultValue));
+    auto scopeGuard2 =
+            _testObj->createAndPrepareScopedRequest(SELECT_TEST_INT64VALUE2_REQUEST_ID, SELECT_TEST_INT64VALUE2_REQUEST);
+    CPPUNIT_ASSERT(scopeGuard2);
+    CPPUNIT_ASSERT(_testObj->queryResetAndClearBindings(SELECT_TEST_INT64VALUE2_REQUEST_ID));
+    CPPUNIT_ASSERT(_testObj->queryBindValue(SELECT_TEST_INT64VALUE2_REQUEST_ID, 1, 3));
+    CPPUNIT_ASSERT(_testObj->queryNext(SELECT_TEST_INT64VALUE2_REQUEST_ID, found) && found);
+    int64_t value64 = 0;
+    CPPUNIT_ASSERT(_testObj->queryInt64Value(SELECT_TEST_INT64VALUE2_REQUEST_ID, 0, value64));
+    CPPUNIT_ASSERT_EQUAL(bigDefaultValue, value64);
 }
 
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) :
