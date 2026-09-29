@@ -175,8 +175,10 @@ class AppClientLinux : public QApplication {
         NetworkSettingsController _networkSettingsController{_parametersStore, _parametersService, _translationService, this};
         SettingsSyncActivationController _settingsSyncActivationController{_appCache,       _serverCommService, _syncService,
                                                                            _cachePopulator, _serviceEventBus,   this};
-        DriveManagementController _driveManagementController{_appCache, _serverCommService, _syncService, this};
+        // Declared before DriveManagementController, which preloads it.
         SyncFolderSelectionController _syncFolderSelectionController{_appCache, _serverCommService, this};
+        DriveManagementController _driveManagementController{_appCache, _serverCommService, _syncService,
+                                                             _syncFolderSelectionController, this};
         SettingsWindowController _settingsWindowController{_generalSettingsController,        _advancedSettingsController,
                                                            _fileExclusionController,          _networkSettingsController,
                                                            _settingsSyncActivationController, _driveManagementController,
