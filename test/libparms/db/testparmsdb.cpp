@@ -44,8 +44,8 @@ void TestParmsDb::tearDown() {
 void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(ParmsDb::instance()->exists());
 
-    Parameters defaultParameters;
-    Parameters parameters;
+    ServerParameters defaultParameters;
+    ServerParameters parameters;
     bool found = false;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
     CPPUNIT_ASSERT(parameters.language() == defaultParameters.language());
@@ -67,7 +67,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.sentryEnabled() == defaultParameters.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == defaultParameters.matomoEnabled());
 
-    Parameters parameters2;
+    ServerParameters parameters2;
     parameters2.setLanguage(Language::French);
     parameters2.setMonoIcons(true);
     parameters2.setAutoStart(false);
@@ -79,8 +79,7 @@ void TestParmsDb::testParameters() {
     parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 4444, true, "user", "token"));
     parameters2.setDarkTheme(true);
     std::string geometryStr("XXXXXXXXXX");
-    parameters2.setDialogGeometry(
-            std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
+    parameters2.setDialogGeometry("preferencesWindow", QByteArray::fromStdString(geometryStr));
     parameters2.setSentryEnabled(true);
     parameters2.setMatomoEnabled(true);
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
@@ -101,7 +100,7 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.proxyConfig().user() == parameters2.proxyConfig().user());
     CPPUNIT_ASSERT(parameters.proxyConfig().keychainKey() == parameters2.proxyConfig().keychainKey());
     CPPUNIT_ASSERT(parameters.darkTheme() == parameters2.darkTheme());
-    CPPUNIT_ASSERT(*parameters.dialogGeometry() == *parameters2.dialogGeometry());
+    CPPUNIT_ASSERT(parameters.dialogGeometry() == parameters2.dialogGeometry());
     CPPUNIT_ASSERT(parameters.sentryEnabled() == parameters2.sentryEnabled());
     CPPUNIT_ASSERT(parameters.matomoEnabled() == parameters2.matomoEnabled());
 }
@@ -653,6 +652,39 @@ void TestParmsDb::testAppUID() {
     // An uninitialized database must also yield an empty UID.
     ParmsDb::reset();
     CPPUNIT_ASSERT(ParmsDb::appUID().empty());
+}
+
+void TestParmsDb::testDialogGeometry() {
+    bool found = false;
+
+    // Geometry bytes containing the delimiters must survive a round-trip thanks to Base64 encoding.
+    ServerParameters parameters;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
+    const QByteArray geometryWithDelimiters("a;b\nc");
+    parameters.setDialogGeometry("preferencesWindow", geometryWithDelimiters);
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters, found) && found);
+
+    ServerParameters parameters2;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters2, found) && found);
+    CPPUNIT_ASSERT(parameters2.dialogGeometry().value("preferencesWindow") == geometryWithDelimiters);
+
+    // A value that is not valid Base64 cannot be decoded and must be ignored.
+    const char rawGeometryBytes[] = {'\x00', '\x01', '\x02', '\x03', '\x04'};
+    const QByteArray rawGeometry(rawGeometryBytes, sizeof(rawGeometryBytes));
+    const QByteArray legacyBlob = QByteArray("preferencesWindow;") + rawGeometry;
+    int errId = 0;
+    std::string error;
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryCreate("test_raw_geometry"));
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryPrepare("test_raw_geometry", "UPDATE parameters SET dialogGeometry = ?1;", false,
+                                                     errId, error));
+    const auto rawBlob = std::make_shared<std::vector<char>>(legacyBlob.begin(), legacyBlob.end());
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryBindValue("test_raw_geometry", 1, rawBlob));
+    CPPUNIT_ASSERT(ParmsDb::instance()->queryExec("test_raw_geometry", errId, error));
+    ParmsDb::instance()->queryFree("test_raw_geometry");
+
+    ServerParameters parameters3;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters3, found) && found);
+    CPPUNIT_ASSERT(!parameters3.dialogGeometry().contains("preferencesWindow"));
 }
 
 #if defined(KD_MACOS)

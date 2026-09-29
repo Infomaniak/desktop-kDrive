@@ -16,18 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "parameters.h"
-
-#define DEFAULT_VERSION "1"
+#include "data/serverparameters.h"
 
 #define UPLOAD_SESSION_PARALLEL_THREADS 3
 
 namespace KDC {
 
-int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
+int ServerParameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
 
-Parameters::Parameters() {
-    _uploadSessionParallelJobs = Parameters::_uploadSessionParallelJobsDefault;
+ServerParameters::ServerParameters() {
+    _uploadSessionParallelJobs = ServerParameters::_uploadSessionParallelJobsDefault;
 }
 
 } // namespace KDC
