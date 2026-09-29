@@ -96,12 +96,14 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         /** Selects or deselects every folder directly below the drive root. The drive root itself can never be excluded. */
         Q_INVOKABLE void toggleRootSelection();
         /**
-         * Reports that a row entered or left the viewport.
+         * Reports that the folder with the given node id entered or left the viewport.
          *
-         * A visible row loads its folder size and its immediate children, so its expand affordance reflects whether
-         * the folder really has sub-folders instead of assuming it does.
+         * A visible folder loads its size and its immediate children, so its expand affordance reflects whether it
+         * really has sub-folders instead of assuming it does. The folder is named by its node id rather than by an
+         * index: a view row can show another folder after an expansion without being recreated. An unknown id, from a
+         * previous configuration, is ignored.
          */
-        Q_INVOKABLE void setRowVisible(const QModelIndex &modelIndex, bool visible);
+        Q_INVOKABLE void setNodeVisible(const QString &nodeId, bool visible);
 
     signals:
         void stateChanged();
