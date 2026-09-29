@@ -448,7 +448,7 @@
       active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML
       models.
     - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
-      presentation, and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is
+      presentation, and empty state. Size and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
       history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
