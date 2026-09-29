@@ -18,7 +18,7 @@
 
 #include "testio.h"
 
-#include "libcommonserver/io/fileStat.h"
+#include "libcommonserver/io/filestat.h"
 #include "test_utility/testhelpers.h"
 
 #include <filesystem>
