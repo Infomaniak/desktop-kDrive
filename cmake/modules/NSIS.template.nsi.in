@@ -289,7 +289,7 @@ Var kill_counter
 	
 	InitPluginsDir
 	ifErrors 0 +3
-	DetailPrint "Failed to initialize plugin directory. PLUGINSDIR value: ${$PLUGINSDIR}"
+	DetailPrint "Failed to initialize plugin directory. PLUGINSDIR value: $PLUGINSDIR"
 	Goto errorMacroExec
 	
 	;Save command in a temp file.
@@ -480,6 +480,30 @@ Section "${APPLICATION_NAME}" SEC_APPLICATION
 
 SectionEnd
 
+; Migration of the Lite Sync extension when its package identity (name + publisher hash) changed.
+; This happens when the release certificate changes: on Windows 10, the old and the new extensions
+; cannot be installed at the same time, so the old one must be removed first.
+; The placeholders bound to the kDrive sync roots must survive the removal of the old extension: they
+; are detached by removing the AUMID registry value from the kDrive sync roots, so that the platform
+; does not consider them bound to the old extension anymore. The application repopulates the AUMID
+; at the next start.
+Function MigrateLiteSyncExtensionPackages
+	${PowerShellExec} "(Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Where-Object { $$_.PackageFamilyName -ne '${VFS_PACKAGE_FAMILY_NAME}' } | Measure-Object).Count"
+	Pop $R5
+	IntCmp $R5 0 migrate_lite_sync_extension_done migrate_lite_sync_extension migrate_lite_sync_extension
+
+	migrate_lite_sync_extension:
+	DetailPrint "Extension package identity changed, detaching the kDrive sync roots and removing the old extension"
+	; Detach the kDrive sync roots from the old extension so that the placeholders are not deleted
+	; when the old extension is uninstalled. The application repopulates the AUMID at the next start.
+	${PowerShellExecLog} "Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager' -ErrorAction SilentlyContinue | Where-Object { $$_.GetValue('') -eq '${APPLICATION_NAME}' -and $$_.GetValue('AUMID') -ne '${VFS_SYNCROOT_AUMID}' } | ForEach-Object { Remove-ItemProperty -Path $$_.PSPath -Name 'AUMID' -ErrorAction SilentlyContinue }"
+	; Remove the old extension: the provisioned package first, then the packages of all the users.
+	${PowerShellExecLog} "Get-AppxProvisionedPackage -Online | Where-Object { $$_.PackageName -like '${VFS_PACKAGE_NAME}*' } | ForEach-Object { Remove-AppxProvisionedPackage -Online -AllUsers -PackageName $$_.PackageName }"
+	${PowerShellExecLog} "Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Where-Object { $$_.PackageFamilyName -ne '${VFS_PACKAGE_FAMILY_NAME}' } | Remove-AppxPackage -AllUsers"
+
+	migrate_lite_sync_extension_done:
+FunctionEnd
+
 !ifdef OPTION_SECTION_SC_SHELL_EXT
 	${MementoSection} $OPTION_SECTION_SC_SHELL_EXT_SECTION SEC_SHELL_EXT
 		SectionIn 1 2
@@ -518,21 +542,9 @@ SectionEnd
 
 		!insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
 
-		; Check whether an extension with a different package identity (name + publisher hash) is installed.
-		; This happens when the release certificate changes: on Windows 10, the new extension cannot be
-		; installed while the old one is still present.
-		${PowerShellExec} "(Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Where-Object { $$_.PackageFamilyName -ne '${VFS_PACKAGE_FAMILY_NAME}' } | Measure-Object).Count"
-		Pop $R5
-		IntCmp $R5 0 install_lite_sync_extension_done migrate_lite_sync_extension migrate_lite_sync_extension
-
-		migrate_lite_sync_extension:
-		DetailPrint "Extension package identity changed, detaching the kDrive sync roots and removing the old extension"
-		; Detach the kDrive sync roots from the old extension so that the placeholders are not deleted
-		; when the old extension is uninstalled. The application repopulates the AUMID at the next start.
-		${PowerShellExecLog} "Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager' -ErrorAction SilentlyContinue | Where-Object { $$_.GetValue('') -eq '${APPLICATION_NAME}' -and $$_.GetValue('AUMID') -ne '${VFS_SYNCROOT_AUMID}' } | ForEach-Object { Remove-ItemProperty -Path $$_.PSPath -Name 'AUMID' -ErrorAction SilentlyContinue }"
-		; Remove the old extension: the provisioned package first, then the packages of all the users.
-		${PowerShellExecLog} "Get-AppxProvisionedPackage -Online | Where-Object { $$_.PackageName -like '${VFS_PACKAGE_NAME}*' } | ForEach-Object { Remove-AppxProvisionedPackage -Online -AllUsers -PackageName $$_.PackageName }"
-		${PowerShellExecLog} "Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Where-Object { $$_.PackageFamilyName -ne '${VFS_PACKAGE_FAMILY_NAME}' } | Remove-AppxPackage -AllUsers"
+		; Migrate the extension when its package identity (name + publisher hash) changed. See
+		; MigrateLiteSyncExtensionPackages for the details.
+		Call MigrateLiteSyncExtensionPackages
 
 		install_lite_sync_extension_done:
 		${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
