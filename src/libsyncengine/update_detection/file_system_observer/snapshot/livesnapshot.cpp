@@ -325,4 +325,16 @@ void LiveSnapshot::removeChildrenRecursively(const std::shared_ptr<SnapshotItem>
     }
 }
 
+void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
+    const std::scoped_lock lock(_mutex);
+    startUpdate();
+
+    _items.clear();
+    for (const auto &[id, item]: backupSnapshot.items()) {
+        auto newItemPtr = std::make_shared<SnapshotItem>(*item);
+        newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
+        (void) _items.try_emplace(id, newItemPtr);
+    }
+}
+
 } // namespace KDC

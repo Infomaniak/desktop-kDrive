@@ -63,6 +63,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitInfo initWithCursor();
         ExitInfo exploreDirectory(const NodeId &nodeId);
+        [[nodiscard]] ExitInfo restoreRemoteSnapshotBackup();
+        [[nodiscard]] ExitInfo checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const;
 
         struct ParsingIterationState {
                 bool error{false};
@@ -146,6 +148,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                                           LongPollJobMap &longPollJobs);
         [[nodiscard]] ExitInfo processEvents(const std::vector<RemoteNodeId> &specialFoldersRemoteIds,
                                              LongPollJobMap &longPollJobs);
+
+        [[nodiscard]] ExitInfo loadListingCursors();
 
         void abortAndClearLongPollJobs(LongPollJobMap &longPollJobs);
 

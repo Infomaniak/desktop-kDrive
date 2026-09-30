@@ -42,7 +42,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
 
         bool updateItem(const SnapshotItem &newItem);
         bool updateItem(const SnapshotItem &newItem, NodeId &removedNodeId);
-        bool removeItem(const NodeId itemId); // Do not pass by reference to avoid dangling references
+        bool removeItem(NodeId itemId); // Do not pass by reference to avoid dangling references
 
         bool path(const NodeId &itemId, SyncPath &path, bool &ignore) const noexcept override;
         bool setName(const NodeId &itemId, const SyncName &newName);
@@ -55,11 +55,12 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         bool isValid() const;
         void setValid(bool newIsValid);
         SnapshotRevision revision() const override;
+        void restoreFromBackup(const ConstSnapshot &backupSnapshot);
 
     private:
         std::shared_ptr<SnapshotRevisionHandler> _revisionHandlder;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
-        void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> parent);
+        void removeChildrenRecursively(std::shared_ptr<SnapshotItem> parent);
         std::atomic<bool> _isValid = false;
 
         friend class TestSnapshot;
