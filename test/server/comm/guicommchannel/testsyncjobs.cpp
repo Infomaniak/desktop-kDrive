@@ -335,7 +335,7 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
                                  R"(", "serverFolderPath": "dGVzdA==", "serverFolderNodeId": "OTk5", "liteSync": 1, )"
                                  R"("blackList": [  ], "whiteList": [  ] } })";
 
-    int requestId = 0;
+    int32_t requestId = 0;
     RequestNum requestNum = RequestNum::Unknown;
     Poco::DynamicStruct inParams;
     CPPUNIT_ASSERT(AbstractGuiJob::deserializeGenericInputParms(CommonUtility::str2CommString(queryStr), requestId, requestNum,
@@ -353,7 +353,8 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
     auto clientChannel = std::make_shared<GuiCommChannel>(clientSocket);
 
     auto remainingConnectionWait = 100;
-    while (!commManager->hasActiveGuiConnection() && remainingConnectionWait-- > 0) {
+    while (!commManager->hasActiveGuiConnection() && remainingConnectionWait > 0) {
+        --remainingConnectionWait;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     CPPUNIT_ASSERT(commManager->hasActiveGuiConnection());
@@ -366,7 +367,8 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
 
     std::vector<SignalNum> signalNums;
     auto remainingMessageWait = 100;
-    while (signalNums.size() < 2 && remainingMessageWait-- > 0) {
+    while (signalNums.size() < 2 && remainingMessageWait > 0) {
+        --remainingMessageWait;
         if (clientChannel->canReadMessage()) {
             Poco::JSON::Parser parser;
             auto signalMessage = parser.parse(CommonUtility::commString2Str(clientChannel->readMessage()));
