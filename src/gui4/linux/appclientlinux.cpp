@@ -351,7 +351,7 @@ void AppClientLinux::openSettingsWindow() {
         auto *object = component.createWithInitialProperties(
                 {{"controller", QVariant::fromValue<SettingsWindowController *>(&_settingsWindowController)},
                  {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)},
-                 {"syncFolderSelection", QVariant::fromValue<SyncFolderSelectionController *>(&_syncFolderSelectionController)}});
+                 {"excludedFolders", QVariant::fromValue<ExcludedFoldersController *>(&_excludedFoldersController)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
@@ -385,7 +385,7 @@ void AppClientLinux::retranslatePresentation() {
     _activitiesController.retranslate();
     _storageController.retranslate();
     _settingsSyncActivationController.retranslate();
-    _syncFolderSelectionController.retranslate();
+    _excludedFoldersController.retranslate();
 
     if (auto *const session = _onboardingSessionManager.activeSession()) {
         emit session->flowController()->titleChanged();
