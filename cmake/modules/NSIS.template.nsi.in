@@ -51,10 +51,13 @@
 !define VFS_APPX_DIRECTORY "@{vfs_appx_directory}"
 !define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64_arm64.msixbundle"
 !define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
+!define VFS_PACKAGE_FAMILY_NAME "${VFS_PACKAGE_NAME}_@{AUMID}"
+!define VFS_SYNCROOT_AUMID "${VFS_PACKAGE_FAMILY_NAME}!App"
 !define EXTENSION_NAME "FileExplorerExtension.exe"
 
 Var InstallRunIfSilent
 Var NoAutomaticUpdates
+Var PowerShellExe
 ;Var RemoveAllFiles
 
 ;-----------------------------------------------------------------------------
@@ -339,7 +342,7 @@ Var kill_counter
 	
 	DetailPrint "Executing PowerShell script: ${PSFile}"
 	
-	nsExec::ExecToStack 'powershell -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
+	nsExec::ExecToStack '$PowerShellExe -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
 	;return value is first on stack.
 	;script output is second on stack.
 	Pop $R0 
@@ -362,7 +365,7 @@ Var kill_counter
 	!define PSExecID ${__LINE__}
 	Push $R0
 
-	nsExec::ExecToLog 'powershell -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
+	nsExec::ExecToLog '$PowerShellExe -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
 	Pop $R0 ;return value is on stack
 	IntCmp $R0 0 finish_${PSExecID}
 	SetErrorLevel 2
@@ -376,6 +379,18 @@ finish_${PSExecID}:
 !define PowerShellExecLog '!insertmacro PowerShellExecLogMacro'
 !define PowerShellExecFile '!insertmacro PowerShellExecFileMacro'
 !define PowerShellExecFileLog '!insertmacro PowerShellExecFileLogMacro'
+
+; The installer runs as a 32-bit process: on a 64-bit OS, use the 64-bit PowerShell through the
+; Sysnative alias so that the native registry view (SyncRootManager) and the DISM cmdlets
+; (AppxProvisionedPackage) are available.
+!macro SetPowerShellExeMacro
+	${If} ${FileExists} "$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe"
+		StrCpy $PowerShellExe "$WINDIR\Sysnative\WindowsPowerShell\v1.0\powershell.exe"
+	${Else}
+		StrCpy $PowerShellExe "powershell"
+	${EndIf}
+!macroend
+!define SetPowerShellExe '!insertmacro SetPowerShellExeMacro'
 
 Function EnsureKDriveShutdown
 	; Stop processes
@@ -502,7 +517,27 @@ SectionEnd
 		File /a /r "${VFS_APPX_DIRECTORY}\"
 
 		!insertmacro CheckAndConfirmEndProcesse1 "${EXTENSION_NAME}"
+
+		; Check whether an extension with a different package identity (name + publisher hash) is installed.
+		; This happens when the release certificate changes: on Windows 10, the new extension cannot be
+		; installed while the old one is still present.
+		${PowerShellExec} "(Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Where-Object { $$_.PackageFamilyName -ne '${VFS_PACKAGE_FAMILY_NAME}' } | Measure-Object).Count"
+		Pop $R5
+		IntCmp $R5 0 install_lite_sync_extension_done migrate_lite_sync_extension migrate_lite_sync_extension
+
+		migrate_lite_sync_extension:
+		DetailPrint "Extension package identity changed, detaching the kDrive sync roots and removing the old extension"
+		; Detach the kDrive sync roots from the old extension so that the placeholders are not deleted
+		; when the old extension is uninstalled. The application repopulates the AUMID at the next start.
+		${PowerShellExecLog} "Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager' -ErrorAction SilentlyContinue | Where-Object { $$_.GetValue('') -eq '${APPLICATION_NAME}' -and $$_.GetValue('AUMID') -ne '${VFS_SYNCROOT_AUMID}' } | ForEach-Object { Remove-ItemProperty -Path $$_.PSPath -Name 'AUMID' -ErrorAction SilentlyContinue }"
+		; Remove the old extension: the provisioned package first, then the packages of all the users.
+		${PowerShellExecLog} "Get-AppxProvisionedPackage -Online | Where-Object { $$_.PackageName -like '${VFS_PACKAGE_NAME}*' } | ForEach-Object { Remove-AppxProvisionedPackage -Online -AllUsers -PackageName $$_.PackageName }"
+		${PowerShellExecLog} "Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Where-Object { $$_.PackageFamilyName -ne '${VFS_PACKAGE_FAMILY_NAME}' } | Remove-AppxPackage -AllUsers"
+
+		install_lite_sync_extension_done:
 		${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
+		; Provision the extension at the OS level so that it is registered for all the users of the machine.
+		${PowerShellExecLog} "Add-AppxProvisionedPackage -Online -PackagePath '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -SkipLicense"
 		SetOutPath "$INSTDIR"
 	${MementoSectionEnd}
 !endif
@@ -759,21 +794,11 @@ Function un.UninstallFct
 		${EndIf}
 
 		;Uninstall extension
-		!define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_x64__@{AUMID}"
-		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
-			uninstall_x64:
-			DetailPrint $UNINSTALL_EXTENSION
-			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
-		!undef PackageFullName_x64
-		uninstall_kdrive_ext_x64_done:
-
-		!define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.${VER_BUILD}_arm64__@{AUMID}"
-		IfFileExists "$PROGRAMFILES64\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
-			uninstall_arm64:
-			DetailPrint $UNINSTALL_EXTENSION
-			${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
-		!undef PackageFullName_arm64
-		uninstall_kdrive_ext_arm64_done:
+		DetailPrint $UNINSTALL_EXTENSION
+		; Remove the provisioned package so that the extension is not registered for the future users.
+		${PowerShellExecLog} "Get-AppxProvisionedPackage -Online | Where-Object { $$_.PackageName -like '${VFS_PACKAGE_NAME}*' } | ForEach-Object { Remove-AppxProvisionedPackage -Online -AllUsers -PackageName $$_.PackageName }"
+		; Remove the extension for all the users, whatever its version or package identity.
+		${PowerShellExecLog} "Get-AppxPackage -AllUsers -Name '${VFS_PACKAGE_NAME}' -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers"
 	${EndIf}
 	
 	;Remove all the Program Files.
@@ -804,6 +829,9 @@ Function .onInit
 	${EndIf}
 	
 	SetOutPath $INSTDIR
+
+	; Select the PowerShell executable to use (64-bit on a 64-bit OS).
+	${SetPowerShellExe}
 
 	${GetParameters} $R0
 	${GetOptions} $R0 "/launch" $R0
@@ -914,6 +942,9 @@ Function un.onInit
 	!insertmacro INSTALLOPTIONS_EXTRACT "NSIS.InstallOptionsWithButtons.ini"
 	
 	Call un.SetLang
+
+	; Select the PowerShell executable to use (64-bit on a 64-bit OS).
+	${SetPowerShellExe}
 	
 	UAC_TryAgain:
 		!insertmacro UAC_RunElevated
