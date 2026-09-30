@@ -546,7 +546,6 @@ FunctionEnd
 		; MigrateLiteSyncExtensionPackages for the details.
 		Call MigrateLiteSyncExtensionPackages
 
-		install_lite_sync_extension_done:
 		${PowerShellExecLog} "Add-AppxPackage -Path '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -ForceApplicationShutdown -ForceUpdateFromAnyVersion"
 		; Provision the extension at the OS level so that it is registered for all the users of the machine.
 		${PowerShellExecLog} "Add-AppxProvisionedPackage -Online -PackagePath '$INSTDIR\shellext\AppX\${VFS_APPX_BUNDLE}' -SkipLicense"
