@@ -1275,7 +1275,7 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
                                                                      << ", reverting all local deletes");
             if (!syncDb()->revertAllLocalDeletes()) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::revertAllLocalDeletes");
-                addError(Error(syncDbId(), ERR_ID, ExitCode::DataError, ExitCause::MigrationError));
+                addError(Error(syncDbId(), ERR_ID, ExitCode::SystemError, ExitCause::UnableToStartVfs));
                 return;
             }
         }
