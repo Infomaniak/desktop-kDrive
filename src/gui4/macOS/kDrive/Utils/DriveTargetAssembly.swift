@@ -27,6 +27,10 @@ final class DriveTargetAssembly: TargetAssembly {
         clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
         redirectURI: "kdrive://auth-desktop"
     )
+    
+    static let loginFormConfig = InfomaniakLogin.LoginFormConfig(
+        skipAutoRedirect: true
+    )
 
     override static func getTargetServices() -> [Factory] {
         return [
@@ -40,7 +44,7 @@ final class DriveTargetAssembly: TargetAssembly {
                 PreferencesViewRouter(defaultTab: .general)
             },
             Factory(type: InfomaniakLoginable.self) { _, _ in
-                InfomaniakLogin(config: Self.loginConfig)
+                InfomaniakLogin(config: Self.loginConfig, loginFormConfig: Self.loginFormConfig)
             },
             Factory(type: SidebarNotificationPresenting.self) { _, _ in
                 SidebarNotificationPresenter()
