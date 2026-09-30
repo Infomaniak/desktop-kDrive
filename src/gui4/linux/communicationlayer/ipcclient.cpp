@@ -36,11 +36,14 @@
 #include <limits>
 #include <utility>
 
+#include <malloc.h>
+
 Q_LOGGING_CATEGORY(lcIpcClient, "gui.v4.ipc", QtInfoMsg)
 
 namespace {
 constexpr uint16_t initialConnectionRetryDelayMs = 2000;
 constexpr uint8_t initialConnectionLogEveryAttempts = 10;
+constexpr size_t largeReadBufferCapacity = 8 * 1024 * 1024; // 8 MiB
 } // namespace
 
 namespace KDC {
@@ -305,9 +308,18 @@ void IpcClient::onErrorOccurred(const QAbstractSocket::SocketError socketError) 
 
 /** Appends incoming bytes to the read buffer and triggers message extraction with IpcClient::processBuffer. */
 void IpcClient::onReadyRead() {
-    const QByteArray bytes = _socket->readAll();
-    (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
+    {
+        const QByteArray bytes = _socket->readAll();
+        (void) _readBuffer.append(bytes.constData(), static_cast<size_t>(bytes.size()));
+    }
     processBuffer();
+
+    // Keep incomplete messages intact. Release a large buffer only after the parsing temporaries have been destroyed.
+    if (_readBuffer.empty() && _readBuffer.capacity() >= largeReadBufferCapacity) {
+        std::string().swap(_readBuffer);
+        // JSON parsing can leave many freed allocations in glibc's heap even after the read buffer is released.
+        (void) malloc_trim(0);
+    }
 }
 
 
