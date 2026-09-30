@@ -111,7 +111,10 @@ public final class FileTreeOutlineView: NSView {
         if let initialBlacklist {
             if initialBlacklist == resolvedExcludedNodePathsFor {
                 // The paths of this blacklist were already resolved: the checkbox states are known.
-                selectionState = FileTreeSelectionState(initialBlacklist: initialBlacklist, excludedNodePaths: resolvedExcludedNodePaths)
+                selectionState = FileTreeSelectionState(
+                    initialBlacklist: initialBlacklist,
+                    excludedNodePaths: resolvedExcludedNodePaths
+                )
             } else if !initialBlacklist.isEmpty {
                 // Until the paths of the blacklisted folders are resolved, the checkbox state of an
                 // unloaded folder is unknown: pending folders will display a loader instead of a
@@ -289,10 +292,10 @@ public final class FileTreeOutlineView: NSView {
 
             guard let self, !Task.isCancelled else { return }
 
-            self.resolvedExcludedNodePaths = paths
-            self.resolvedExcludedNodePathsFor = nodeIds
-            self.selectionState.finishResolvingExcludedPaths(with: paths)
-            self.refreshSelectionDisplay()
+            resolvedExcludedNodePaths = paths
+            resolvedExcludedNodePathsFor = nodeIds
+            selectionState.finishResolvingExcludedPaths(with: paths)
+            refreshSelectionDisplay()
         }
         excludedPathsTask = task
     }

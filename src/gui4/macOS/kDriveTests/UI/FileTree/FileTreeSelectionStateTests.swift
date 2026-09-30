@@ -21,7 +21,6 @@ import Testing
 
 @Suite("FileTreeSelectionState Test")
 struct FileTreeSelectionStateTests {
-
     // MARK: - Helpers
 
     /// Builds a folder node. The caller must keep a strong reference to the returned node for the
