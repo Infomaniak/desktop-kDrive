@@ -236,6 +236,7 @@
 				UI/BetaOptionTests.swift,
 				UI/FileTree/FileTreeSelectionStateTests.swift,
 				UI/LogUploadSessionTrackerTests.swift,
+				UI/MainViewModelTests.swift,
 				UI/SynchroErrorManagerTests.swift,
 				UI/UISynchroNodeTests.swift,
 				Utils/FinderSidebarFavoritesTests.swift,

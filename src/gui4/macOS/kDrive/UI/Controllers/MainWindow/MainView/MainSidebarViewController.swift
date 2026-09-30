@@ -196,6 +196,7 @@ final class MainSidebarViewController: NSViewController {
                 self?.synchroSelectorViewModel.selectedSynchroId = synchroContext?.synchro.id
                 self?.currentSynchroId = synchroContext?.synchro.id
                 self?.updateActivitiesBadge()
+                self?.updateSidebarIfNecessary()
             }
     }
 
