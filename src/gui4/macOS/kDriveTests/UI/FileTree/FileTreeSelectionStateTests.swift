@@ -181,7 +181,7 @@ struct FileTreeSelectionStateTests {
         #expect(state.displayState(of: root) == .mixed)
     }
 
-    @Test("Folder whose subfolders are all excluded is mixed, not off")
+    @Test("Folder whose subfolders are all excluded is off")
     func folderWithAllSubfoldersExcludedIsMixed() {
         let root = makeFolder(id: "root", path: "root")
         let subA = makeFolder(id: "subA", path: "root/subA", parent: root)
@@ -191,7 +191,7 @@ struct FileTreeSelectionStateTests {
         let state = FileTreeSelectionState(initialBlacklist: ["subA", "subB"])
 
         #expect(state.displayState(of: subA) == .off)
-        #expect(state.displayState(of: root) == .mixed)
+        #expect(state.displayState(of: root) == .off)
     }
 
     @Test("Leaf folder is on")
@@ -299,7 +299,7 @@ struct FileTreeSelectionStateTests {
         #expect(state.blacklist == ["child"])
         #expect(state.excludedNodePaths == ["child": "root/child"])
         #expect(state.displayState(of: child) == .off)
-        #expect(state.displayState(of: root) == .mixed)
+        #expect(state.displayState(of: root) == .off)
     }
 
     @Test("Selecting a folder prunes blacklisted descendants that are not loaded")
