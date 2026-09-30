@@ -377,15 +377,6 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
             LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for remoteDirId=" << remoteDirId << " updated: "
                                                                          << _listingCursorMap[remoteDirId].cursor);
-            exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId));
-            if (!exitInfo) {
-                LOG_SYNCPAL_WARN(_logger,
-                                 "Error in "
-                                 "RemoteFileSystemObserverWorker::"
-                                 "saveListingCursor: "
-                                         << exitInfo);
-                break;
-            }
         }
 
         if (!JsonParserUtility::extractValue(resObj, hasMoreKey, hasMore)) {
@@ -406,6 +397,17 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     }
 
     setUpdateFlagValue(false);
+
+    if (!exitInfo) return exitInfo;
+
+    exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId));
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error in "
+                         "RemoteFileSystemObserverWorker::"
+                         "saveListingCursor: "
+                                 << exitInfo);
+    }
 
     return exitInfo;
 }

@@ -46,7 +46,7 @@ void LiveSnapshot::init() {
     auto newItemPtr = res->second;
     newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
 
-    _isValid = false;
+    setValid(false);
 }
 
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
