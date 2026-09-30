@@ -49,7 +49,7 @@ struct FileTreeSelectionState {
     }
 
     func headerState(for rootNodes: [FileTreeNode]) -> FileTreeCheckboxState {
-        guard !rootNodes.isEmpty else { return .off }
+        guard !rootNodes.isEmpty else { return .mixed }
 
         var sawOn = false
         var sawOff = false
@@ -67,7 +67,7 @@ struct FileTreeSelectionState {
                 return .mixed
             }
         }
-        return sawOn ? .on : .off
+        return sawOn ? .on : .mixed
     }
 
     /// Returns `true` if at least one blacklisted folder is a strict descendant of `node`. Only
