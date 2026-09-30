@@ -234,6 +234,7 @@
 				Signal/SignalProcessorTests.swift,
 				SynchroErrors/SynchroErrorKindTests.swift,
 				UI/BetaOptionTests.swift,
+				UI/FileTree/FileTreeSelectionStateTests.swift,
 				UI/LogUploadSessionTrackerTests.swift,
 				UI/SynchroErrorManagerTests.swift,
 				UI/UISynchroNodeTests.swift,

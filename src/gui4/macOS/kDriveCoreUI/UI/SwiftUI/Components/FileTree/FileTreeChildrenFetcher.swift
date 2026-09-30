@@ -17,10 +17,13 @@
  */
 
 import Foundation
+import InfomaniakConcurrency
 import kDriveCore
 
 @MainActor
 public final class FileTreeChildrenFetcher {
+    private static let maxNetworkingParallelism = 4
+
     private let userDbId: Int32
     private let driveDbId: Int32
     private let rootNodeId: String?
@@ -45,6 +48,7 @@ public final class FileTreeChildrenFetcher {
                 return FileTreeItem(
                     id: item.nodeId,
                     name: item.name,
+                    path: item.path,
                     size: nil,
                     isFolder: true,
                     isEnabled: !item.accessDenied
@@ -53,6 +57,30 @@ public final class FileTreeChildrenFetcher {
         } catch {
             return []
         }
+    }
+
+    /// Resolves the remote path of each node in `nodeIds`, e.g. to derive the checkbox state of folders
+    /// whose children have not been loaded yet. Nodes that cannot be resolved (e.g. stale blacklist
+    /// entries pointing to folders deleted on the server) are silently skipped.
+    public func fetchPaths(for nodeIds: Set<String>) async -> [String: String] {
+        guard !nodeIds.isEmpty else { return [:] }
+
+        let resolvedPaths = await nodeIds.concurrentMap(customConcurrency: Self.maxNetworkingParallelism) { nodeId in
+            await self.remotePath(for: nodeId)
+        }
+
+        return Dictionary(uniqueKeysWithValues: resolvedPaths.compactMap { $0 })
+    }
+
+    private func remotePath(for nodeId: String) async -> (String, String)? {
+        guard let path = try? await NodeJobs().getNodeInfo(
+            userDbId: userDbId,
+            driveId: driveDbId,
+            nodeId: nodeId,
+            withPath: true
+        ).path, !path.isEmpty else { return nil }
+
+        return (nodeId, path)
     }
 
     public func fetchSize(for item: FileTreeItem) async -> Int64? {

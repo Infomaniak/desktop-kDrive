@@ -24,12 +24,13 @@ public struct FoldersToSynchroView: View {
 
     @Binding var blackList: Set<String>
 
-    let initialBlackList: Set<String>
+    /// `nil` while the blacklist has not been fetched yet by the parent view.
+    let initialBlackList: Set<String>?
     let childrenFetcher: FileTreeChildrenFetcher
 
     public init(
         blackList: Binding<Set<String>>,
-        initialBlackList: Set<String>,
+        initialBlackList: Set<String>?,
         userDbId: Int,
         driveDbId: Int,
         rootNodeId: String? = nil
