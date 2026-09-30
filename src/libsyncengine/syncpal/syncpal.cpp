@@ -537,7 +537,8 @@ void SyncPal::freeWorkers() {
     LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
 
-    _remoteLiveSnapshotBackup = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
+    if (_remoteFSObserverWorker)
+        _remoteLiveSnapshotBackup = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
     _remoteFSObserverWorker.reset();
 
     _computeFSOperationsWorker.reset();
