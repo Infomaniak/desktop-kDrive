@@ -34,7 +34,7 @@ IKShadowedWindow {
 
     required property var controller
     required property var users
-    required property var syncFolderSelection
+    required property var excludedFolders
     property int selectedCategory: SettingsWindow.Category.General
     property Item accountConnectionTrigger: null
     property bool restoreAccountConnectionFocus: false
@@ -263,23 +263,23 @@ IKShadowedWindow {
             onDeleteRequested: trigger => deleteSyncDialog.showFrom(trigger)
             onManageSynchronizationRequested: trigger => {
                 trigger.forceActiveFocus();
-                accountsPane.push(syncFolderSelectionComponent,
+                accountsPane.push(excludedFoldersComponent,
                                   {"syncDbId": root.controller.driveManagement.mainSyncDbId});
             }
         }
     }
 
     Component {
-        id: syncFolderSelectionComponent
+        id: excludedFoldersComponent
 
-        SyncFolderSelectionView {
-            id: syncFolderSelectionView
+        ExcludedFoldersView {
+            id: excludedFoldersView
 
-            controller: root.syncFolderSelection
-            // The page may have saved a new selection: the custom-selection label reads it again.
-            Component.onDestruction: root.controller.driveManagement.reloadSelection()
+            controller: root.excludedFolders
+            // The page may have saved a new blacklist: the custom-selection label reads it again.
+            Component.onDestruction: root.controller.driveManagement.reloadBlackList()
             onCloseRequested: {
-                if (accountsPane.currentItem === syncFolderSelectionView) {
+                if (accountsPane.currentItem === excludedFoldersView) {
                     accountsPane.pop();
                 }
             }

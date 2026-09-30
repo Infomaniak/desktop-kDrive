@@ -301,18 +301,18 @@
   `SettingsWindowController.driveManagement`. The page opens and closes its `DriveDbId` target; the controller
   follows the drive's main synchronization in `AppCache`, keeps the last confirmed blacklist to present a custom
   selection, opens the local folder, and deletes the main synchronization. It preloads the main synchronization in
-  `SyncFolderSelectionController` (`preload()` / `releasePreload()`) as soon as it is resolved, so the folder tree is
+  `ExcludedFoldersController` (`preload()` / `releasePreload()`) as soon as it is resolved, so the folder tree is
   ready when the user opens it. It emits `driveRemoved()` once the drive has no synchronization left, and Settings then
   returns to the Accounts root.
-- `app/settings/syncfolderselectioncontroller.*`: process-long state of the Settings "Manage synchronization" page,
-  passed directly to `SettingsWindow` as its `syncFolderSelection` initial property. The page opens and closes its `SyncDbId` target; the
+- `app/settings/excludedfolderscontroller.*`: process-long state of the Settings "Manage synchronization" page,
+  passed directly to `SettingsWindow` as its `excludedFolders` initial property. The page opens and closes its `SyncDbId` target; the
   controller loads the confirmed blacklist into its own `RemoteFolderTreeModel` and sends the complete list with
   `BLACKLISTED_NODE_SETLIST`. Save is refused above `AppConstants::SyncConfiguration::maxExcludedFolders` (3000), the
   largest `without_ids` list the kDrive API accepts on listing requests. The draft is dropped on Cancel or back
   navigation. Leaving the page reloads the blacklist
   of the drive management page, so its custom-selection label reflects a saved change. `open()` reuses a preloaded
   target instead of loading it again; `close()` reloads a target that is still preloaded, which drops an abandoned draft
-  and picks up a saved selection for the next opening. A target generation discards the responses of a previous target
+  and picks up a saved blacklist for the next opening. A target generation discards the responses of a previous target
   that had the same `SyncDbId`.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is

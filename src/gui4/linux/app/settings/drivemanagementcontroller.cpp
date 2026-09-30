@@ -22,7 +22,7 @@
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
 #include "app/services/syncservice.h"
-#include "app/settings/syncfolderselectioncontroller.h"
+#include "app/settings/excludedfolderscontroller.h"
 #include "app/syncconfiguration/localpaths.h"
 #include "libcommon/utility/types.h"
 
@@ -45,12 +45,12 @@ Q_LOGGING_CATEGORY(lcDriveManagementController, "gui.v4.drivemanagementcontrolle
 } // namespace
 
 DriveManagementController::DriveManagementController(AppCache &appCache, CommService &commService, SyncService &syncService,
-                                                     SyncFolderSelectionController &syncFolderSelection, QObject *const parent) :
+                                                     ExcludedFoldersController &excludedFolders, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _commService(commService),
     _syncService(syncService),
-    _syncFolderSelection(syncFolderSelection) {
+    _excludedFolders(excludedFolders) {
     (void) connect(&_appCache, &AppCache::accountsChanged, this, &DriveManagementController::refresh);
     (void) connect(&_appCache, &AppCache::drivesChanged, this, &DriveManagementController::refresh);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &DriveManagementController::refresh);
@@ -86,12 +86,12 @@ void DriveManagementController::close(const qint64 driveDbId) {
     emit presentationChanged();
 }
 
-void DriveManagementController::reloadSelection() {
-    if (!hasMainSync() || _selectionState == SelectionState::Loading) {
+void DriveManagementController::reloadBlackList() {
+    if (!hasMainSync() || _blackListState == BlackListState::Loading) {
         return;
     }
 
-    loadSelection();
+    loadBlackList();
     emit presentationChanged();
 }
 
@@ -181,41 +181,41 @@ void DriveManagementController::refresh() {
     _syncCreationPending = _appCache.isSyncCreationPending(_availableDriveKey);
 
     if (mainSyncDbId != _mainSyncDbId) {
-        _syncFolderSelection.releasePreload(_mainSyncDbId);
+        _excludedFolders.releasePreload(_mainSyncDbId);
         _mainSyncDbId = mainSyncDbId;
         _customSelection = false;
-        ++_selectionGeneration;
-        _selectionState = SelectionState::Idle;
+        ++_blackListGeneration;
+        _blackListState = BlackListState::Idle;
         if (hasMainSync()) {
-            loadSelection();
-            // The folder selection page is one click away: its tree is ready by the time it opens.
-            _syncFolderSelection.preload(_mainSyncDbId);
+            loadBlackList();
+            // The excluded folders page is one click away: its tree is ready by the time it opens.
+            _excludedFolders.preload(_mainSyncDbId);
         }
     }
 
     emit presentationChanged();
 }
 
-void DriveManagementController::loadSelection() {
-    _selectionState = SelectionState::Loading;
-    const uint64_t selectionGeneration = _selectionGeneration;
+void DriveManagementController::loadBlackList() {
+    _blackListState = BlackListState::Loading;
+    const uint64_t blackListGeneration = _blackListGeneration;
     const SyncDbId syncDbId = _mainSyncDbId;
 
-    _commService.requestBlacklistedNodeList(syncDbId, [self = QPointer(this), selectionGeneration, syncDbId](
+    _commService.requestBlacklistedNodeList(syncDbId, [self = QPointer(this), blackListGeneration, syncDbId](
                                                               const ExitInfo &exitInfo, const std::vector<NodeId> &blackList) {
-        if (!self || selectionGeneration != self->_selectionGeneration) {
+        if (!self || blackListGeneration != self->_blackListGeneration) {
             return;
         }
 
         if (!exitInfo) {
             qCWarning(lcDriveManagementController) << "Blacklist loading failed | syncDbId:" << syncDbId
                                                    << "/ code:" << exitInfo.code() << "/ cause:" << exitInfo.cause();
-            self->_selectionState = SelectionState::Failed;
+            self->_blackListState = BlackListState::Failed;
             emit self->presentationChanged();
             return;
         }
 
-        self->_selectionState = SelectionState::Loaded;
+        self->_blackListState = BlackListState::Loaded;
         self->_customSelection = !blackList.empty();
         emit self->presentationChanged();
     });
@@ -223,16 +223,16 @@ void DriveManagementController::loadSelection() {
 
 void DriveManagementController::resetTarget() {
     // Before `_mainSyncDbId` is cleared: the release only applies to the synchronization this page preloaded.
-    _syncFolderSelection.releasePreload(_mainSyncDbId);
+    _excludedFolders.releasePreload(_mainSyncDbId);
     ++_targetGeneration;
-    ++_selectionGeneration;
+    ++_blackListGeneration;
     _driveDbId = 0;
     _availableDriveKey = AvailableDriveKey{};
     _mainSyncDbId = 0;
     _driveName.clear();
     _driveColor = QColor();
     _localPath.clear();
-    _selectionState = SelectionState::Idle;
+    _blackListState = BlackListState::Idle;
     _syncCreationPending = false;
     _customSelection = false;
     _deletingSyncDbId = 0;
