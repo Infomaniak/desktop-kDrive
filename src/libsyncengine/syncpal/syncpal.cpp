@@ -1759,7 +1759,10 @@ bool SyncPal::isLocalItemInSyncWithDb(const SyncPath &localAbsolutePath, std::op
         return true;
     }
 
-    if (dbNode.size() == fileStat.size && dbNode.lastModifiedLocal() == fileStat.modificationTime &&
+    const bool sameModifiedTime = CommonUtility::modificationTimesAreEqual(localPath(), dbNode.lastModifiedLocal().value_or(0),
+                                                                           fileStat.modificationTime);
+
+    if (dbNode.size() == fileStat.size && sameModifiedTime &&
         (!dbNode.created().has_value() || dbNode.created().value() == fileStat.creationTime)) {
         return true;
     }
