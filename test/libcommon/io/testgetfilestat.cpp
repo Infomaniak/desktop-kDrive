@@ -150,6 +150,22 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, ioError);
     }
 
+    // A non-existing file (second method signature)
+    {
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
+        FileStat fileStat;
+
+        bool found = false;
+        IoHelper::getFileStat(path, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT(!found);
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
+    }
+
     // A non-existing file with a very long name
     {
         const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
@@ -168,6 +184,23 @@ void TestIo::testGetFileStat() {
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
 #endif
+    }
+
+    // A non-existing file with a very long name (second method signature)
+    {
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
+        FileStat fileStat;
+
+        bool found = false;
+        IoHelper::getFileStat(path, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT(!found);
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
     }
 
     // A non-existing file with a very long path
@@ -192,6 +225,27 @@ void TestIo::testGetFileStat() {
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
 #endif
+    }
+
+    // A non-existing file with a very long path (second method signature)
+    {
+        const std::string pathSegment(50, 'a');
+        SyncPath path = _localTestDirPath;
+        for (auto i = 0; i < 1000; ++i) {
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
+        }
+
+        FileStat fileStat;
+        bool found = false;
+
+        IoHelper::getFileStat(path, &fileStat, found, IoHelper::PathCheckOption::Insensitive);
+        CPPUNIT_ASSERT(!found);
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT_EQUAL(int64_t{0}, fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(uint64_t{0}, fileStat.inode);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.modificationTime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime{0}, fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
     }
 
     // A hidden file
