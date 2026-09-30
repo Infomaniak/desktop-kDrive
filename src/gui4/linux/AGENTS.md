@@ -595,6 +595,10 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   on the server side.
 - `IpcClient` treats post-connection socket failure as fatal (disconnect/error after first successful connection exits
   process).
+- After processing incoming IPC data, `IpcClient` releases an empty receive buffer whose capacity reached 8 MiB and
+  calls `malloc_trim(0)` after receive and parsing temporaries have been destroyed. Keep incomplete messages intact and
+  retain small buffers for reuse. This reduces retained memory, not the peak during JSON parsing; cached data and
+  queued signals remain allocated while still needed.
 - Request methods should parse `Poco::DynamicStruct` into typed DTOs before exposing data upward.
 - Generic UI-facing request failures from high-level services should be emitted through `ServiceEventBus` so UI can
   subscribe once (`genericErrorOccurred()`).
