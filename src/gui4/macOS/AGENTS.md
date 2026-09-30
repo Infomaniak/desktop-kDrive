@@ -23,6 +23,8 @@ cd src/gui4/macOS && swiftlint lint
 cd src/gui4/macOS && swiftlint --fix
 ```
 
+Requires an Xcode shipping Swift tools >= 6.2 (pinned `swift-foundation` 0.1.0 fails to resolve otherwise). If the selected toolchain is older, prefix commands with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` instead of changing `xcode-select`. The `Swiftlint` build phase runs through `mise` and fails if the project's `mise.toml` files are untrusted — run `mise trust <path-to-mise.toml>` once.
+
 ## Architecture (3 targets)
 
 ```
