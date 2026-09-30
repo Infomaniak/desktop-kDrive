@@ -68,7 +68,7 @@ CloudProvider::~CloudProvider() {
     delete _providerInfo;
 }
 
-bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
+bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize, int64_t *const registeredAt) {
     if (!_providerInfo) {
         TRACE_ERROR(L"Not initialized!");
         return FALSE;
@@ -83,7 +83,7 @@ bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
 
     // Register the provider with the shell so that the Sync Root shows up in File Explorer
     TRACE_DEBUG(L"Calling CloudProviderRegistrar::registerWithShell");
-    _synRootID = CloudProviderRegistrar::registerWithShell(_providerInfo, namespaceCLSID, namespaceCLSIDSize);
+    _synRootID = CloudProviderRegistrar::registerWithShell(_providerInfo, namespaceCLSID, namespaceCLSIDSize, registeredAt);
     if (_synRootID.empty()) {
         TRACE_ERROR(L"Error in CloudProviderRegistrar::registerWithShell!");
         return false;

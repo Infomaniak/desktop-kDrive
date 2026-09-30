@@ -44,13 +44,16 @@ typedef enum {
 } VfsPinState;
 
 DLL_EXP int32_t __cdecl vfsInit(TraceCbk debugCallback, const wchar_t *appName, DWORD processId, const wchar_t *version,
-                            const wchar_t *trashURI);
+                                const wchar_t *trashURI);
 
 DLL_EXP int32_t __cdecl vfsStart(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId,
-                                 const wchar_t *folderName,
-                             const wchar_t *folderPath, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+                                 const wchar_t *folderName, const wchar_t *folderPath, wchar_t *namespaceCLSID,
+                                 DWORD *namespaceCLSIDSize, int64_t *registeredAt);
 
 DLL_EXP int32_t __cdecl vfsStop(const wchar_t *driveId, const wchar_t *folderId, bool unregister);
+
+DLL_EXP int32_t __cdecl vfsIsRegistered(const wchar_t *driveId, const wchar_t *userId, const wchar_t *folderId,
+                                        const wchar_t *folderPath, bool *registered);
 
 DLL_EXP int32_t __cdecl vfsGetPlaceHolderStatus(const wchar_t *filePath, bool *isPlaceholder, bool *isDehydrated, bool *isSynced);
 
@@ -61,7 +64,7 @@ DLL_EXP int32_t __cdecl vfsDehydratePlaceHolder(const wchar_t *path);
 DLL_EXP int32_t __cdecl vfsHydratePlaceHolder(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *path);
 
 DLL_EXP int32_t __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *relativePath, const wchar_t *destPath,
-                                         const WIN32_FIND_DATA *findData);
+                                             const WIN32_FIND_DATA *findData);
 
 DLL_EXP int32_t __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath);
 
@@ -70,7 +73,7 @@ DLL_EXP int32_t __cdecl vfsRevertPlaceHolder(const wchar_t *filePath);
 DLL_EXP int32_t __cdecl vfsUpdatePlaceHolder(const wchar_t *filePath, const WIN32_FIND_DATA *findData);
 
 DLL_EXP int32_t __cdecl vfsUpdateFetchStatus(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath,
-                                         const wchar_t *fromFilePath, LONGLONG completed, bool *canceled, bool *finished);
+                                             const wchar_t *fromFilePath, LONGLONG completed, bool *canceled, bool *finished);
 
 DLL_EXP int32_t __cdecl vfsCancelFetch(const wchar_t *driveId, const wchar_t *folderId, const wchar_t *filePath, NTSTATUS status);
 

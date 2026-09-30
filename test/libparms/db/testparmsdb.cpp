@@ -290,6 +290,7 @@ void TestParmsDb::testSync() {
         sync2.setPaused(true);
         sync2.setNotificationsDisabled(true);
         sync2.setToDelete(true);
+        sync2.setVfsRegisteredAt(1790664065256);
         bool syncIsFound = false;
         CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
     }
@@ -303,6 +304,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
         CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
+        CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), sync.vfsRegisteredAt());
     }
     // Find sync by DB path
     {
@@ -313,6 +315,7 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(sync.paused() == sync2.paused());
         CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
         CPPUNIT_ASSERT(sync.toDelete() == sync2.toDelete());
+        CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), sync.vfsRegisteredAt());
     }
     // Select all syncs
     {
@@ -325,6 +328,8 @@ void TestParmsDb::testSync() {
         CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
         CPPUNIT_ASSERT(syncList[0].toDelete() == sync1.toDelete());
         CPPUNIT_ASSERT(syncList[1].toDelete() == sync2.toDelete());
+        CPPUNIT_ASSERT_EQUAL(sync1.vfsRegisteredAt(), syncList[0].vfsRegisteredAt());
+        CPPUNIT_ASSERT_EQUAL(sync2.vfsRegisteredAt(), syncList[1].vfsRegisteredAt());
     }
     // Delete sync
     {
