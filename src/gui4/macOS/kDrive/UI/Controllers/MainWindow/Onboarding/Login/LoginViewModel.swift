@@ -82,6 +82,7 @@ extension LoginViewModel: InfomaniakLoginDelegate {
                 loginState = .loadingUser
                 let userDbId = try await LoginJob().login(code: code, verifier: verifier)
                 observeUser(for: userDbId)
+                await restartSyncs(userDbId: userDbId)
             } catch {
                 loginState = .idle
                 handleLoginFailure(error: error)
@@ -105,6 +106,14 @@ extension LoginViewModel: InfomaniakLoginDelegate {
             .receiveOnMain(store: &bindStore) { [weak self] user in
                 self?.handleConnectedUser(user)
             }
+    }
+
+    private func restartSyncs(userDbId: Int32) async {
+        do {
+            try await SyncJobs().syncStartAfterLoginJob(userDbId: userDbId)
+        } catch {
+            IKLogger.general.error("Failed to restart synchronizations after login for userDbId=\(userDbId): \(error)")
+        }
     }
 
     private func handleLoginFailure(error: Error) {
