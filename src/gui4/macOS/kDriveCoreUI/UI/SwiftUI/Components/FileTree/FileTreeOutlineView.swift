@@ -76,6 +76,12 @@ public final class FileTreeOutlineView: NSView {
 
     private var loadTasks: [String: Task<Void, Never>] = [:]
     private var sizeTasks: [String: Task<Void, Never>] = [:]
+    private var excludedPathsTask: Task<Void, Never>?
+
+    // Cache of the paths resolved for a blacklist, so that reapplying the same blacklist (e.g. when
+    // the root items are reloaded) does not trigger redundant network calls nor pending states again.
+    private var resolvedExcludedNodePaths: [String: String] = [:]
+    private var resolvedExcludedNodePathsFor: Set<String> = []
 
     private enum Column {
         static let checkbox = NSUserInterfaceItemIdentifier("FileTree.checkbox")
@@ -94,21 +100,47 @@ public final class FileTreeOutlineView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    public func setRootItems(_ items: [FileTreeItem], initialBlacklist: Set<String>, excludedNodePaths: [String: String] = [:]) {
+    /// - Parameter initialBlacklist: `nil` while the blacklist has not been provided by the caller
+    ///   yet (e.g. still being fetched): every checkbox state is then unknown and displayed as
+    ///   pending. An empty set means that nothing is excluded and states are definitive.
+    public func setRootItems(_ items: [FileTreeItem], initialBlacklist: Set<String>?) {
         cancelLoadingTasks()
 
-        selectionState = FileTreeSelectionState(initialBlacklist: initialBlacklist, excludedNodePaths: excludedNodePaths)
         rootNodes = items.map { FileTreeNode(item: $0, parent: nil) }
+
+        if let initialBlacklist {
+            if initialBlacklist == resolvedExcludedNodePathsFor {
+                // The paths of this blacklist were already resolved: the checkbox states are known.
+                selectionState = FileTreeSelectionState(initialBlacklist: initialBlacklist, excludedNodePaths: resolvedExcludedNodePaths)
+            } else if !initialBlacklist.isEmpty {
+                // Until the paths of the blacklisted folders are resolved, the checkbox state of an
+                // unloaded folder is unknown: pending folders will display a loader instead of a
+                // possibly wrong checkbox state.
+                selectionState = FileTreeSelectionState(initialBlacklist: initialBlacklist, isResolvingExcludedPaths: true)
+            } else {
+                // Empty blacklist: every folder is selected.
+                selectionState = FileTreeSelectionState(initialBlacklist: [])
+            }
+        } else {
+            // The blacklist is not known yet: every checkbox state is unknown.
+            selectionState = FileTreeSelectionState(initialBlacklist: [], isResolvingExcludedPaths: true)
+        }
+
         outlineView.reloadData()
         updateHeaderCheckbox()
 
         guard let fetcher = childrenFetcher else { return }
         loadSizes(for: rootNodes.filter(\.isFolder), using: fetcher)
+
+        if selectionState.isResolvingExcludedPaths, let initialBlacklist, !initialBlacklist.isEmpty {
+            resolveExcludedNodePaths(for: initialBlacklist, using: fetcher)
+        }
     }
 
     deinit {
         loadTasks.values.forEach { $0.cancel() }
         sizeTasks.values.forEach { $0.cancel() }
+        excludedPathsTask?.cancel()
     }
 
     private func setupOutlineView() {
@@ -241,8 +273,28 @@ public final class FileTreeOutlineView: NSView {
     private func cancelLoadingTasks() {
         loadTasks.values.forEach { $0.cancel() }
         sizeTasks.values.forEach { $0.cancel() }
+        excludedPathsTask?.cancel()
         loadTasks.removeAll()
         sizeTasks.removeAll()
+        excludedPathsTask = nil
+    }
+
+    // MARK: - Excluded paths resolution
+
+    /// Resolves the remote path of each initially blacklisted folder. Until it completes, unloaded
+    /// folders display a loader instead of a possibly wrong checkbox state.
+    private func resolveExcludedNodePaths(for nodeIds: Set<String>, using fetcher: FileTreeChildrenFetcher) {
+        let task = Task { [weak self] in
+            let paths = await fetcher.fetchPaths(for: nodeIds)
+
+            guard let self, !Task.isCancelled else { return }
+
+            self.resolvedExcludedNodePaths = paths
+            self.resolvedExcludedNodePathsFor = nodeIds
+            self.selectionState.finishResolvingExcludedPaths(with: paths)
+            self.refreshSelectionDisplay()
+        }
+        excludedPathsTask = task
     }
 
     // MARK: - Selection mutation
@@ -293,6 +345,12 @@ public final class FileTreeOutlineView: NSView {
     }
 
     private func updateHeaderCheckbox() {
+        if selectionState.isHeaderStatePending(for: rootNodes) {
+            tableHeaderView.setCheckboxLoading(true)
+            return
+        }
+
+        tableHeaderView.setCheckboxLoading(false)
         tableHeaderView.checkbox.allowsMixedState = true
         tableHeaderView.checkbox.state = selectionState.headerState(for: rootNodes).controlState
     }
@@ -309,6 +367,7 @@ public final class FileTreeOutlineView: NSView {
         cell.identifier = Column.checkbox
         cell.configure(
             state: selectionState.displayState(of: node).controlState,
+            isLoading: selectionState.isStatePending(of: node),
             isEnabled: node.item.isEnabled,
             target: self,
             action: #selector(checkboxToggled(_:))

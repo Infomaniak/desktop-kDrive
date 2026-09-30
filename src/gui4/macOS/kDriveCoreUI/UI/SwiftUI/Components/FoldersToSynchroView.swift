@@ -21,16 +21,16 @@ import SwiftUI
 
 public struct FoldersToSynchroView: View {
     @State private var root = [FileTreeItem]()
-    @State private var excludedNodePaths = [String: String]()
 
     @Binding var blackList: Set<String>
 
-    let initialBlackList: Set<String>
+    /// `nil` while the blacklist has not been fetched yet by the parent view.
+    let initialBlackList: Set<String>?
     let childrenFetcher: FileTreeChildrenFetcher
 
     public init(
         blackList: Binding<Set<String>>,
-        initialBlackList: Set<String>,
+        initialBlackList: Set<String>?,
         userDbId: Int,
         driveDbId: Int,
         rootNodeId: String? = nil
@@ -55,7 +55,6 @@ public struct FoldersToSynchroView: View {
             FileTreeView(
                 rootItems: root,
                 initialBlacklist: initialBlackList,
-                excludedNodePaths: excludedNodePaths,
                 childrenFetcher: childrenFetcher
             ) {
                 blackList = $0
@@ -64,12 +63,6 @@ public struct FoldersToSynchroView: View {
         }
         .task {
             root = await childrenFetcher.fetchChildren(for: nil)
-        }
-        .task(id: initialBlackList) {
-            // The blacklist is known before the tree is built: resolve the path of each excluded
-            // folder so that unloaded folders containing excluded content can be displayed with a
-            // mixed checkbox state.
-            excludedNodePaths = await childrenFetcher.fetchPaths(for: initialBlackList)
         }
     }
 }

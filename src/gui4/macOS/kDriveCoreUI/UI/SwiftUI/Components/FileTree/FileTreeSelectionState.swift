@@ -37,15 +37,53 @@ struct FileTreeSelectionState {
     private(set) var blacklist: Set<String>
     private(set) var excludedNodePaths: [String: String]
 
-    init(initialBlacklist: Set<String>, excludedNodePaths: [String: String] = [:]) {
+    /// `true` while the remote paths of the initially blacklisted folders are still being resolved.
+    /// Until then, the checkbox state of an unloaded folder is unknown and should be displayed as
+    /// pending instead of a possibly wrong value (see `isStatePending(of:)`).
+    private(set) var isResolvingExcludedPaths: Bool
+
+    init(initialBlacklist: Set<String>, excludedNodePaths: [String: String] = [:], isResolvingExcludedPaths: Bool = false) {
         blacklist = initialBlacklist
         self.excludedNodePaths = excludedNodePaths
+        self.isResolvingExcludedPaths = isResolvingExcludedPaths
+    }
+
+    /// Marks the excluded paths resolution as completed and adopts the resolved paths.
+    mutating func finishResolvingExcludedPaths(with paths: [String: String]) {
+        excludedNodePaths = paths
+        isResolvingExcludedPaths = false
     }
 
     // MARK: - Derived checkbox state
 
     func displayState(of node: FileTreeNode) -> FileTreeCheckboxState {
         effectiveState(of: node, ancestorExcluded: isAncestorExcluded(node))
+    }
+
+    /// Returns `true` when the checkbox state of `node` cannot be determined yet: its children have
+    /// not been loaded and the paths of the blacklisted folders are still being resolved. States of
+    /// excluded, disabled or already loaded folders are always definitive.
+    func isStatePending(of node: FileTreeNode) -> Bool {
+        guard isResolvingExcludedPaths, node.item.isEnabled, node.isFolder, node.children == nil else { return false }
+
+        return !isSelfOrAncestorExcluded(node)
+    }
+
+    /// Returns `true` when the header checkbox state is not reliable yet: either the tree has not
+    /// been loaded yet, or at least one node of the tree is pending and its state may still flip
+    /// once the excluded paths are resolved.
+    func isHeaderStatePending(for rootNodes: [FileTreeNode]) -> Bool {
+        guard isResolvingExcludedPaths else { return false }
+
+        // Without root nodes the tree is not loaded yet and the header state is unknown as well.
+        return rootNodes.isEmpty || rootNodes.contains { subtreeContainsPendingNode($0) }
+    }
+
+    private func subtreeContainsPendingNode(_ node: FileTreeNode) -> Bool {
+        if isStatePending(of: node) {
+            return true
+        }
+        return (node.children ?? []).contains { subtreeContainsPendingNode($0) }
     }
 
     func headerState(for rootNodes: [FileTreeNode]) -> FileTreeCheckboxState {
@@ -77,6 +115,10 @@ struct FileTreeSelectionState {
 
         let prefix = path + "/"
         return excludedNodePaths.values.contains { $0.hasPrefix(prefix) }
+    }
+
+    private func isSelfOrAncestorExcluded(_ node: FileTreeNode) -> Bool {
+        blacklist.contains(node.item.id) || isAncestorExcluded(node)
     }
 
     private func isAncestorExcluded(_ node: FileTreeNode) -> Bool {

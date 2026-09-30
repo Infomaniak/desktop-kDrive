@@ -116,7 +116,8 @@ struct FileTreeSelectionStateTests {
         let state = FileTreeSelectionState(initialBlacklist: ["root"])
 
         #expect(state.displayState(of: root) == .off)
-        #expect(state.headerState(for: [root]) == .off)
+        // The root folder can never be completely unchecked: the header shows mixed instead of off.
+        #expect(state.headerState(for: [root]) == .mixed)
     }
 
     @Test("Access denied folder is off")
@@ -203,6 +204,87 @@ struct FileTreeSelectionStateTests {
         #expect(state.displayState(of: root) == .on)
     }
 
+    // MARK: - Pending state (excluded paths being resolved)
+
+    @Test("Unloaded folder is pending while excluded paths are being resolved")
+    func unloadedFolderIsPendingWhileResolving() {
+        let root = makeFolder(id: "root", path: "root")
+
+        let state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+
+        #expect(state.isStatePending(of: root))
+        #expect(state.isHeaderStatePending(for: [root]))
+    }
+
+    @Test("Header is pending when the tree has no root nodes while excluded paths are being resolved")
+    func headerIsPendingWithEmptyTreeWhileResolving() {
+        let state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+
+        #expect(state.isHeaderStatePending(for: []))
+    }
+
+    @Test("Pending folder falls back on on while excluded paths are being resolved")
+    func pendingFolderFallsBackOnOnWhileResolving() {
+        let root = makeFolder(id: "root", path: "root")
+
+        let state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+
+        #expect(state.displayState(of: root) == .on)
+    }
+
+    @Test("Blacklisted folder is not pending while excluded paths are being resolved")
+    func blacklistedFolderIsNotPendingWhileResolving() {
+        let root = makeFolder(id: "root", path: "root")
+
+        let state = FileTreeSelectionState(initialBlacklist: ["root"], isResolvingExcludedPaths: true)
+
+        #expect(!state.isStatePending(of: root))
+    }
+
+    @Test("Disabled folder is not pending while excluded paths are being resolved")
+    func disabledFolderIsNotPendingWhileResolving() {
+        let root = makeFolder(id: "root", path: "root", isEnabled: false)
+
+        let state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+
+        #expect(!state.isStatePending(of: root))
+    }
+
+    @Test("Loaded folder is not pending while excluded paths are being resolved")
+    func loadedFolderIsNotPendingWhileResolving() {
+        let root = makeFolder(id: "root", path: "root")
+        root.children = []
+
+        let state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+
+        #expect(!state.isStatePending(of: root))
+    }
+
+    @Test("Pending descendant does not make a loaded folder pending but makes the header pending")
+    func pendingDescendantMakesHeaderPending() {
+        let root = makeFolder(id: "root", path: "root")
+        let child = makeFolder(id: "child", path: "root/child", parent: root)
+        root.children = [child]
+
+        let state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+
+        #expect(!state.isStatePending(of: root))
+        #expect(state.isStatePending(of: child))
+        #expect(state.isHeaderStatePending(for: [root]))
+    }
+
+    @Test("Folder is not pending once excluded paths resolution completed")
+    func folderIsNotPendingOnceResolutionCompleted() {
+        let root = makeFolder(id: "root", path: "root")
+
+        var state = FileTreeSelectionState(initialBlacklist: ["folder"], isResolvingExcludedPaths: true)
+        state.finishResolvingExcludedPaths(with: ["folder": "root/sub/folder"])
+
+        #expect(!state.isStatePending(of: root))
+        #expect(!state.isHeaderStatePending(for: [root]))
+        #expect(state.displayState(of: root) == .mixed)
+    }
+
     // MARK: - Mutations
 
     @Test("Deselecting a node blacklists it and caches its path")
@@ -280,7 +362,8 @@ struct FileTreeSelectionStateTests {
 
         #expect(state.blacklist == ["a", "b"])
         #expect(state.excludedNodePaths == ["a": "a", "b": "b"])
-        #expect(state.headerState(for: [rootA, rootB]) == .off)
+        // The root folder can never be completely unchecked: the header shows mixed instead of off.
+        #expect(state.headerState(for: [rootA, rootB]) == .mixed)
     }
 
     @Test("Select all clears the blacklist and the cached paths")
