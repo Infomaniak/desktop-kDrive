@@ -170,9 +170,7 @@ struct FileTreeSelectionState {
                 return .mixed
             }
         }
-        // A folder that is not itself excluded is never fully off: its own files keep being
-        // synchronized even when all its subfolders are excluded (matches FolderTreeItemWidget).
-        return sawOn ? .on : (sawOff ? .mixed : .off)
+        return sawOn ? .on : .off
     }
 
     // MARK: - Selection mutation
