@@ -128,23 +128,23 @@ ScrollView {
                     }
 
                     IKModalButton {
-                        visible: root.controller.hasMainSync && root.controller.selectionLoadFailed
+                        visible: root.controller.hasMainSync && root.controller.blackListLoadFailed
                         role: IKModalButton.Tonal
                         text: qsTrId("buttonRetry")
                         Accessible.name: text + " " + qsTrId("labelSynchronisation")
-                        onClicked: root.controller.reloadSelection()
+                        onClicked: root.controller.reloadBlackList()
                     }
 
                     IKModalButton {
                         id: manageButton
 
-                        visible: root.controller.hasMainSync && !root.controller.selectionLoadFailed
+                        visible: root.controller.hasMainSync && !root.controller.blackListLoadFailed
                         role: IKModalButton.Tonal
                         text: qsTrId("buttonManage")
                         Accessible.name: text + " " + qsTrId("labelSynchronisation")
                         Accessible.description: root.controller.customSelection ? qsTrId("onboardingExclusionSummarySome") : ""
-                        busy: root.controller.selectionLoading
-                        actionEnabled: !root.controller.selectionLoading
+                        busy: root.controller.blackListLoading
+                        actionEnabled: !root.controller.blackListLoading
                         onClicked: root.manageSynchronizationRequested(manageButton)
                     }
                 }

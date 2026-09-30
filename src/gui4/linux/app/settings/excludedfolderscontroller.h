@@ -37,7 +37,7 @@ class CommService;
  * Role: load the confirmed blacklist of the synchronization into a RemoteFolderTreeModel, let the user edit a draft, and
  * save the complete list. The draft is never published: only a successful save changes the confirmed blacklist.
  */
-class SyncFolderSelectionController final : public QObject {
+class ExcludedFoldersController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(RemoteFolderTreeModel *folderTreeModel READ folderTreeModel CONSTANT)
         Q_PROPERTY(bool loading READ loading NOTIFY stateChanged)
@@ -49,7 +49,7 @@ class SyncFolderSelectionController final : public QObject {
         Q_PROPERTY(qsizetype maxExcludedFolders READ maxExcludedFolders CONSTANT)
 
     public:
-        SyncFolderSelectionController(AppCache &appCache, CommService &commService, QObject *parent = nullptr);
+        ExcludedFoldersController(AppCache &appCache, CommService &commService, QObject *parent = nullptr);
 
         [[nodiscard]] RemoteFolderTreeModel *folderTreeModel() { return &_folderTreeModel; }
         // Covers the blacklist request only; the tree reports its own loading state.
@@ -80,7 +80,7 @@ class SyncFolderSelectionController final : public QObject {
 
     signals:
         void stateChanged();
-        // The selection was saved; the page returns to the previous one.
+        // The blacklist was saved; the page returns to the previous one.
         void saved();
 
     private:

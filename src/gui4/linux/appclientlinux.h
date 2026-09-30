@@ -46,9 +46,9 @@
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
 #include "app/settings/drivemanagementcontroller.h"
+#include "app/settings/excludedfolderscontroller.h"
 #include "app/settings/settingswindowcontroller.h"
 #include "app/settings/settingssyncactivationcontroller.h"
-#include "app/settings/syncfolderselectioncontroller.h"
 #include "app/systraycontroller.h"
 #include "communicationlayer/ipcclient.h"
 #include "communicationlayer/signaldispatcher.h"
@@ -176,9 +176,9 @@ class AppClientLinux : public QApplication {
         SettingsSyncActivationController _settingsSyncActivationController{_appCache,       _serverCommService, _syncService,
                                                                            _cachePopulator, _serviceEventBus,   this};
         // Declared before DriveManagementController, which preloads it.
-        SyncFolderSelectionController _syncFolderSelectionController{_appCache, _serverCommService, this};
+        ExcludedFoldersController _excludedFoldersController{_appCache, _serverCommService, this};
         DriveManagementController _driveManagementController{_appCache, _serverCommService, _syncService,
-                                                             _syncFolderSelectionController, this};
+                                                             _excludedFoldersController, this};
         SettingsWindowController _settingsWindowController{_generalSettingsController,
                                                            _advancedSettingsController,
                                                            _fileExclusionController,
