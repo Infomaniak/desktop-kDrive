@@ -536,7 +536,10 @@ void SyncPal::createWorkers(const std::chrono::seconds &startDelay) {
 void SyncPal::freeWorkers() {
     LOG_SYNCPAL_DEBUG(_logger, "Free workers");
     _localFSObserverWorker.reset();
+
+    _remoteLiveSnapshotBackup = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
     _remoteFSObserverWorker.reset();
+
     _computeFSOperationsWorker.reset();
     _localUpdateTreeWorker.reset();
     _remoteUpdateTreeWorker.reset();

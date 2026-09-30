@@ -474,6 +474,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
 
+        std::shared_ptr<ConstSnapshot> remoteLiveSnapshotBackup() const { return _remoteLiveSnapshotBackup; }
+
     private:
         void setUpBlacklistPropagator(bool restartSync);
         void setUpExcludelistPropagator();
@@ -488,6 +490,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         TooManyDeletesUserChoice _manyDeleteOpsUserChoice{TooManyDeletesUserChoice::None};
 
         mutable std::mutex _progressInfoMutex;
+
+        std::shared_ptr<ConstSnapshot> _remoteLiveSnapshotBackup{nullptr};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
