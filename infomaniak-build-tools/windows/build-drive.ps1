@@ -287,7 +287,8 @@ function Build-Extension {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
-    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage"
+    # The bundle is already signed by msbuild (without timestamp): force re-signing to add the timestamp.
+    Sign-File -FilePath $bundlePath -Upload $upload -Thumbprint $thumbprint -Description "FileExplorerExtensionPackage" -Force
 
     $srcVfsPath = "$path/src/libcommonserver/vfs/win/."
     Copy-Item -Path "$extPath/Vfs/../Common/debug.h" -Destination $srcVfsPath
@@ -483,8 +484,18 @@ function Sign-File {
     param (
         [string] $filePath,
         [string] $thumbprint,
-        [string] $description = ""
+        [string] $description = "",
+        [switch] $force
     )
+
+    if (-not $force) {
+        $signature = Get-AuthenticodeSignature -FilePath $filePath
+        if ($signature.Status -eq 'Valid') {
+            Write-Host "Skipping $filePath, already signed by $($signature.SignerCertificate.Subject)"
+            return
+        }
+    }
+
     Write-Host "Signing the file $filePath with thumbprint $thumbprint"
     & signtool.exe sign /sha1 $thumbprint /tr http://timestamp.digicert.com?td=sha256 /fd sha256 /td sha256 /v /debug /sm /d $description $filePath
     $res = $LASTEXITCODE
@@ -522,12 +533,15 @@ function Prepare-Archive {
 
     Write-Host "Copying dependencies to the folder $archivePath"
     foreach ($file in $dependencies) {
-        if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
-            Copy-Item -Path "${file}d.dll" -Destination "$archivePath"
+        if (($buildType -eq "Debug") -and (Test-Path -Path "${file}d.dll")) {
+            $dllPath = "${file}d.dll"
         } else {
-            Copy-Item -Path "$file.dll" -Destination "$archivePath"
+            $dllPath = "$file.dll"
         }
+
+        Copy-Item -Path "$dllPath" -Destination "$archivePath"
     }
+
     $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
     $packages = @( # Qt dependencies are handled by windeployqt
         @{ Name = "xxhash";    Dlls = @("xxhash") },
@@ -569,7 +583,7 @@ function Prepare-Archive {
         $binaries += "kDrive_client.exe"
     }
 
-    # Move each executable to the bin folder and sign them
+    # Move each executable to the bin folder
     foreach ($file in $binaries) {
         if (Test-Path -Path $buildPath/bin/$file) {
             Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
@@ -578,11 +592,6 @@ function Prepare-Archive {
         else {
             Copy-Item -Path $file -Destination $archivePath
         }
-
-        $filename = Split-Path -Leaf $file
-
-        Sign-File -FilePath $archivePath/$filename -Upload $upload -Thumbprint $thumbprint -Description $filename
-
     }
 
     Remove-Item -Path "$archivePath/client" -Recurse -Force -ErrorAction SilentlyContinue
@@ -592,16 +601,12 @@ function Prepare-Archive {
         # Copy client files
         Write-Host "Copying new client files ($newGuiDir) to the archive ..."
         Copy-Item -Path "$newGuiDir/." -Destination "$archivePath/client" -Recurse -ErrorAction Stop
+    }
 
-        # Sign all the .exe, .dll and .xbf that have no signature yet
-        $filesToSign = Get-ChildItem -Path "$archivePath/client" -Recurse -Include *.exe, *.dll | Where-Object {
-            $signature = Get-AuthenticodeSignature $_.FullName
-            $signature.Status -eq 'NotSigned'
-        }
-        foreach ($file in $filesToSign) {
-            Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
-            Write-Host "Signed file: $($file.FullName)"
-        }
+    # Sign all the .exe and .dll files of the archive (already signed files, e.g. Qt DLLs, are skipped by Sign-File)
+    $filesToSign = Get-ChildItem -Path "$archivePath" -Recurse -Include *.exe, *.dll
+    foreach ($file in $filesToSign) {
+        Sign-File -FilePath $file.FullName -Upload $upload -Thumbprint $thumbprint -Description $file.Name
     }
 
     Write-Host "Archive prepared."
