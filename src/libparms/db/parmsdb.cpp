@@ -1373,7 +1373,12 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
-    for (const auto &name: {"distributionChannel", "sentryEnabled", "matomoEnabled"}) {
+    columnName = "distributionChannel";
+    if (!addIntegerColumnIfMissing(tableName, columnName, toInt(DistributionChannel::Prod))) {
+        return false;
+    }
+
+    for (const auto &name: {"sentryEnabled", "matomoEnabled"}) {
         if (!addIntegerColumnIfMissing(tableName, name, 1)) {
             return false;
         }
