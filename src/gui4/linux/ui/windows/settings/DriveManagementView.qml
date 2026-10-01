@@ -103,14 +103,18 @@ ScrollView {
                     }
                 }
 
-                SettingsRow {
-                    title: qsTrId("labelSynchronisation")
+                SyncSelectionRow {
                     separator: false
 
+                    syncConfigured: root.controller.hasMainSync
+                    customSelection: root.controller.customSelection
+                    blackListLoading: root.controller.blackListLoading
+                    blackListLoadFailed: root.controller.blackListLoadFailed
+                    onRetryRequested: root.controller.reloadBlackList()
+                    onManageRequested: trigger => root.manageSynchronizationRequested(trigger)
                     Text {
-                        visible: root.controller.hasMainSync ? root.controller.customSelection : true
-                        text: root.controller.hasMainSync ? qsTrId("onboardingExclusionSummarySome")
-                                                          : qsTrId("notSyncedDrive")
+                        visible: !root.controller.hasMainSync
+                        text: qsTrId("notSyncedDrive")
                         color: IKColors.textSecondary
                         font.pixelSize: IKFonts.bodySize
                     }
@@ -125,27 +129,6 @@ ScrollView {
                         actionEnabled: !root.activationBusy
                         busy: root.activationBusy
                         onClicked: root.activateRequested(activateButton)
-                    }
-
-                    IKModalButton {
-                        visible: root.controller.hasMainSync && root.controller.blackListLoadFailed
-                        role: IKModalButton.Tonal
-                        text: qsTrId("buttonRetry")
-                        Accessible.name: text + " " + qsTrId("labelSynchronisation")
-                        onClicked: root.controller.reloadBlackList()
-                    }
-
-                    IKModalButton {
-                        id: manageButton
-
-                        visible: root.controller.hasMainSync && !root.controller.blackListLoadFailed
-                        role: IKModalButton.Tonal
-                        text: qsTrId("buttonManage")
-                        Accessible.name: text + " " + qsTrId("labelSynchronisation")
-                        Accessible.description: root.controller.customSelection ? qsTrId("onboardingExclusionSummarySome") : ""
-                        busy: root.controller.blackListLoading
-                        actionEnabled: !root.controller.blackListLoading
-                        onClicked: root.manageSynchronizationRequested(manageButton)
                     }
                 }
             }
