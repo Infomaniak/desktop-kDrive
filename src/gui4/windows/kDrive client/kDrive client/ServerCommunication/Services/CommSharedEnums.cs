@@ -316,7 +316,12 @@ namespace Infomaniak.kDrive.Types
         TmpDirAccessError,
         UpdateTreeIntegrityCheckFailed,
         MissingReplyData,
-        BlackListPropagationError
+        BlackListPropagationError,
+        FileSystemNotSupported,
+        SyncDeletionFailed,
+        InvalidLinkTarget,
+        MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
+        HardlinkNotSupported // Hardlink are not supported on Windows with liteSync
     };
 
 

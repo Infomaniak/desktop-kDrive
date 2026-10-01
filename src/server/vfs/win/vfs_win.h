@@ -90,6 +90,9 @@ class VFS_EXPORT VfsWin : public Vfs {
 
         void exclude(const SyncPath &path) override;
         ExitInfo setPlaceholderStatus(const SyncPath &path, bool syncOngoing);
+
+        ExitInfo handleVfsWinError(const SyncPath &itemPath, int32_t errorCode,
+                                     const std::source_location &location = std::source_location::current()) const;
 };
 
 class WinVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsWin> {
