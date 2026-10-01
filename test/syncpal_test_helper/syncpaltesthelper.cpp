@@ -169,6 +169,13 @@ bool SyncpalTestHelper::stopSync() const {
     return true;
 }
 
+bool SyncpalTestHelper::setVfs(const std::shared_ptr<Vfs> vfs) const {
+    if (!_syncPal || !vfs || _syncPal->isRunning()) return false;
+
+    _syncPal->setVfs(vfs);
+    return true;
+}
+
 bool SyncpalTestHelper::execute(const ReplicaSide side, const Operations &operations) {
     if (!_syncPal) return false;
 

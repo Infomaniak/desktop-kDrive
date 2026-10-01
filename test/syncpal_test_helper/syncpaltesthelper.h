@@ -67,6 +67,10 @@ class SyncpalTestHelper {
         // Fully stops the SyncPal, keeping its Db. Returns false if no SyncPal.
         bool stopSync() const;
 
+        // Replaces the VFS of the SyncPal (e.g. to simulate an app restart with a new VFS instance). The SyncPal must be
+        // stopped. Returns false if no SyncPal, no VFS or if the SyncPal is running.
+        bool setVfs(std::shared_ptr<Vfs> vfs) const;
+
         // Applies operations (see OperationsExecutor::execute) on the given side. Returns false if invalid.
         bool execute(ReplicaSide side, const Operations &operations);
 
