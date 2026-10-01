@@ -130,4 +130,6 @@ namespace KDC::AppConstants::Settings {
 namespace KDC::AppConstants::SyncConfiguration {
 // Largest blacklist the kDrive API accepts: the daemon sends it as `without_ids` with every listing request.
 inline constexpr qsizetype maxExcludedFolders = 3000;
+// Node id of a drive's root folder in the kDrive API, as the macOS and Windows clients use it.
+inline constexpr char driveRootNodeId[] = "1";
 } // namespace KDC::AppConstants::SyncConfiguration
