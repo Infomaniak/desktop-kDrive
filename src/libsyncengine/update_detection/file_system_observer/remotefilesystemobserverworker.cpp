@@ -302,6 +302,8 @@ ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _liveSnapshot.init();
 
+    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
+
     if (const auto exitInfo = loadListingCursors(); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::loadListingCursors: " << exitInfo);
         return exitInfo;
