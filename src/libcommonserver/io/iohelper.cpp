@@ -1054,21 +1054,16 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
         if (!sourceItemExists) return ExitCode::Ok;
     }
 
-    switch (ioError) {
-        case IoError::Success:
-            if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
-                LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
-                                             << Utility::formatIoError(destPath, ioError)
-                                             << L". The item will be deleted later by the cache directory cleanup process.");
-            }
-            return ExitCode::Ok;
-        case IoError::AccessDenied:
-            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
-        case IoError::MoveThroughSymlink:
-            return ExitInfo{ExitCode::SystemError, ExitCause::MoveThroughSymlink};
-        default:
-            return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+    if (ioError == IoError::Success) {
+        if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
+            LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
+                                         << Utility::formatIoError(destPath, ioError)
+                                         << L". The item will be deleted later by the cache directory cleanup process.");
+        }
+        return ExitCode::Ok;
     }
+
+    return toExitInfo(ioError);
 }
 
 bool IoHelper::deleteItem(const SyncPath &path) noexcept {
@@ -1294,7 +1289,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
 }
 
-ExitInfo IoHelper::toExitInfo(const IoError ioError) {
+ExitInfo IoHelper::toExitInfo(const IoError ioError, const ExitInfo &defaultExitInfo) {
     switch (ioError) {
         case IoError::Success:
             return ExitCode::Ok;
@@ -1308,8 +1303,12 @@ ExitInfo IoHelper::toExitInfo(const IoError ioError) {
             return {ExitCode::SystemError, ExitCause::DirExists};
         case IoError::FileExists:
             return {ExitCode::SystemError, ExitCause::FileExists};
+        case IoError::MoveThroughSymlink:
+            return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+        case IoError::HardlinkNotSupported:
+            return {ExitCode::SystemError, ExitCause::HardlinkNotSupported};
         default:
-            return ExitCode::SystemError;
+            return defaultExitInfo;
     }
 }
 
