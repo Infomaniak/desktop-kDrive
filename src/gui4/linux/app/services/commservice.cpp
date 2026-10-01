@@ -701,10 +701,11 @@ void CommService::requestNodeFolderSize(const UserDbId userDbId, const DriveId d
                            });
 }
 
-void CommService::requestNodeCreateMissingFolders(const DriveDbId driveDbId, const NodeId &parentNodeId,
+void CommService::requestNodeCreateMissingFolders(const UserDbId userDbId, const DriveId driveId, const NodeId &parentNodeId,
                                                   const SyncPath &relativePath, const NodeIdCallback &callback) const {
     Poco::DynamicStruct params;
-    CommonUtility::writeValueToStruct(params, msgParamDriveDbId, driveDbId);
+    CommonUtility::writeValueToStruct(params, msgParamUserDbId, userDbId);
+    CommonUtility::writeValueToStruct(params, msgParamDriveId, driveId);
     CommonUtility::writeValueToStruct(params, msgParamParentNodeId, parentNodeId);
     CommonUtility::writeValueToStruct(params, msgParamRelativePath, CommonUtility::syncPath2CommString(relativePath));
     _ipcClient.sendRequest(RequestNum::NODE_CREATEMISSINGFOLDERS, params,
