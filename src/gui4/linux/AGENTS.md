@@ -445,11 +445,13 @@
   work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, and the free-folder
   derivation that appends the attempt count without a separator, as the server does.
 - `app/syncconfiguration/remotefoldertreemodel.*`: reusable lazy `QAbstractItemModel` for selective synchronization. It
-  owns canonical blacklist editing, tri-state propagation, access-denied rows, retryable child loads, and the bounded
-  visible-row size queue. It must remain independent from onboarding state and synchronization database ids. A folder
-  is included or excluded with its complete subtree, as on Windows; the partial state reports that a descendant is
-  excluded and is never a state the user selects, and the drive root itself can never be excluded. A visible row loads
-  its size and its immediate children, so its expand affordance reflects whether the folder really has sub-folders.
+  owns canonical blacklist editing, tri-state propagation, access-denied rows, retryable child loads, and visible-row
+  size loading. It must remain independent from onboarding state and synchronization database ids. A folder is included
+  or excluded with its complete subtree, as on Windows; the partial state reports that a descendant is excluded and is
+  never a state the user selects, and the drive root itself can never be excluded. After a 150 ms quiet period without
+  visibility changes, a visible row loads its size and its immediate children, so its expand affordance reflects
+  whether the folder really has sub-folders, while folders that only pass through the viewport during a fast scroll
+  request nothing. This debounce is the only bound on these requests.
   Rows report their visibility by node id (`setNodeVisible`) and resolve their model index only when acting: a view row
   can show another folder after an expansion without being recreated, so a kept index would target the wrong one. An
   initial blacklist whose paths cannot be resolved fails the page instead of displaying ancestors as fully selected;
