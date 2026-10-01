@@ -358,7 +358,8 @@ void AppClientLinux::openSettingsWindow() {
         auto *object = component.createWithInitialProperties(
                 {{"controller", QVariant::fromValue<SettingsWindowController *>(&_settingsWindowController)},
                  {"users", QVariant::fromValue<SettingsUserService *>(&_settingsUserService)},
-                 {"excludedFolders", QVariant::fromValue<ExcludedFoldersController *>(&_excludedFoldersController)}});
+                 {"excludedFolders", QVariant::fromValue<ExcludedFoldersController *>(&_excludedFoldersController)},
+                 {"advancedSyncs", QVariant::fromValue<AdvancedSyncsController *>(&_advancedSyncsController)}});
         auto *window = qobject_cast<QWindow *>(object);
         if (!window) {
             qCWarning(lcAppClientLinux) << "Cannot create Settings window:" << component.errors();
