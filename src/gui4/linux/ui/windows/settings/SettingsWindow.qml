@@ -450,12 +450,30 @@ IKShadowedWindow {
     DeleteSyncDialog {
         id: deleteSyncDialog
 
-        controller: root.controller.driveManagement
         scrimInset: root.effectiveShadowMargin
         scrimRadius: root.surfaceRadius
+        busy: root.controller.driveManagement.deletePending
+        onDeleteConfirmed: root.controller.driveManagement.deleteMainSync()
         onFallbackFocusRequested: {
             if (accountsPane.currentItem) {
                 accountsPane.currentItem.forceActiveFocus(Qt.BacktabFocusReason);
+            }
+        }
+
+        Connections {
+            target: root.controller.driveManagement
+            enabled: deleteSyncDialog.opened
+
+            function onDeleteSucceeded() {
+                deleteSyncDialog.close();
+            }
+
+            function onDeleteFailed() {
+                deleteSyncDialog.failed = true;
+            }
+
+            function onDriveRemoved() {
+                deleteSyncDialog.close();
             }
         }
     }
