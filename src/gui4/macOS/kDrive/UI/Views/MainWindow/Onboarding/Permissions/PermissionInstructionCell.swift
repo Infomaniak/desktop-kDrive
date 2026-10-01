@@ -55,6 +55,7 @@ class PermissionInstructionCell: NSView {
     var hint: String? {
         didSet {
             hintLabel.stringValue = hint ?? ""
+            updateHintVisibility()
         }
     }
 
@@ -87,8 +88,16 @@ class PermissionInstructionCell: NSView {
         textField.usesSingleLineMode = false
         textField.textColor = ColorToken.Text.tertiary.asNSColor
         textField.font = NSFont.Tokens.subheadline
-        textField.isHidden = hint == nil
         return textField
+    }()
+
+    private lazy var labelsStack: NSStackView = {
+        let stack = NSStackView(views: [titleLabel, hintLabel])
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = AppPadding.padding2
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
     }()
 
     init(step: Int, title: NSMutableAttributedString) {
@@ -106,23 +115,21 @@ class PermissionInstructionCell: NSView {
     }
 
     private func setupView() {
-        let labelsStack = NSStackView(views: [titleLabel, hintLabel])
-        labelsStack.orientation = .vertical
-        labelsStack.alignment = .leading
-        labelsStack.spacing = AppPadding.padding2
-
-        let stackView = NSStackView(views: [stepCircleView, iconCircleView, labelsStack])
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.spacing = AppPadding.padding8
-        stackView.alignment = .centerY
-        addSubview(stackView)
+        addSubview(stepCircleView)
+        addSubview(iconCircleView)
+        addSubview(labelsStack)
 
         NSLayoutConstraint.activate([
-            stackView.heightAnchor.constraint(greaterThanOrEqualToConstant: 42),
-            stackView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackView.topAnchor.constraint(equalTo: topAnchor),
-            stackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            heightAnchor.constraint(greaterThanOrEqualToConstant: 42),
+            stepCircleView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            stepCircleView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            iconCircleView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            iconCircleView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            labelsStack.leadingAnchor.constraint(equalTo: stepCircleView.trailingAnchor, constant: AppPadding.padding8),
+            labelsStack.topAnchor.constraint(greaterThanOrEqualTo: topAnchor),
+            labelsStack.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor),
+            labelsStack.centerYAnchor.constraint(equalTo: centerYAnchor),
+            labelsStack.trailingAnchor.constraint(equalTo: trailingAnchor)
         ])
     }
 
@@ -137,6 +144,19 @@ class PermissionInstructionCell: NSView {
         case .done:
             stepCircleView.isHidden = true
             iconCircleView.isHidden = false
+        }
+
+        updateHintVisibility()
+    }
+
+    private func updateHintVisibility() {
+        if state == .warning && hint != nil {
+            if hintLabel.superview == nil {
+                labelsStack.addArrangedSubview(hintLabel)
+            }
+        } else if hintLabel.superview === labelsStack {
+            labelsStack.removeArrangedSubview(hintLabel)
+            hintLabel.removeFromSuperview()
         }
     }
 }
@@ -153,7 +173,6 @@ class PermissionInstructionCell: NSView {
         title: .init("Sélectionnez Ouverture et extensions > Extensions de sécurité")
     )
     permissionCell.hint = "Vous devez activer les autorisations avant de continuer"
-    permissionCell.hintLabel.isHidden = false
     permissionCell.state = .warning
     return permissionCell
 }
