@@ -151,6 +151,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/settingswindowcontroller.h
         app/settings/settingssyncactivationcontroller.cpp
         app/settings/settingssyncactivationcontroller.h
+        app/settings/advancedsynclistmodel.cpp
+        app/settings/advancedsynclistmodel.h
+        app/settings/advancedsyncscontroller.cpp
+        app/settings/advancedsyncscontroller.h
         app/settings/drivemanagementcontroller.cpp
         app/settings/drivemanagementcontroller.h
         app/settings/excludedfolderscontroller.cpp
@@ -225,6 +229,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/SettingsSupportIcon.qml
         ui/windows/settings/SettingsWindow.qml
         ui/windows/settings/ExcludedFoldersView.qml
+        ui/windows/settings/SyncSelectionRow.qml
         ui/windows/settings/SendDebugLogsDialog.qml
         ui/windows/settings/TrackingConsentView.qml
         ui/chrome/IKShadowedWindow.qml
@@ -234,7 +239,6 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKBadge.qml
         ui/components/IKAvatar.qml
         ui/components/IKCheckBox.qml
-        ui/windows/settings/SyncSelectionRow.qml
         ui/components/IKConfirmationDialog.qml
         ui/components/IKDriveIcon.qml
         ui/components/IKLinkButton.qml
