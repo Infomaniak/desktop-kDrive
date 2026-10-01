@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Combine
 import Foundation
 @testable import InfomaniakDI
 @testable import kDrive
@@ -246,15 +247,24 @@ extension SharedDITests.MainViewModelTests {
             errorOnB: true
         )
         let viewModel = MainViewModel()
+        var navigatedToBlockingErrorOfB = false
+        let subscription = fixture.router.$currentPath.sink { [weak viewModel] path in
+            MainActor.assumeIsolated {
+                if path.mainTab == .blockingError, viewModel?.currentSynchro?.dbId == Int(Fixture.synchroBDbId) {
+                    navigatedToBlockingErrorOfB = true
+                }
+            }
+        }
+        defer { subscription.cancel() }
         await waitFor(viewModel.currentBlockingError?.error == .loggingError, "Startup should show synchro A error")
 
         // WHEN - user picks synchro B in the SynchroSelector
         viewModel.setCurrentSynchro(UISynchro(synchro: Fixture.synchroB))
 
-        // THEN - the blocking error page reflects synchro B error
+        // THEN - the router navigates again to the blocking error page, now showing synchro B error
         await waitFor(
-            viewModel.currentBlockingError?.error == .asleep,
-            "The blocking error page should show synchro B error"
+            navigatedToBlockingErrorOfB && viewModel.currentBlockingError?.error == .asleep,
+            "Selecting synchro B should refresh the blocking error page with its error"
         )
         #expect(viewModel.currentSynchro?.dbId == Int(Fixture.synchroBDbId))
         #expect(fixture.router.currentPath.mainTab == .blockingError)
