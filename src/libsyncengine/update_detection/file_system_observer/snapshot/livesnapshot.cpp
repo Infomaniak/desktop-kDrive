@@ -330,12 +330,14 @@ void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
     startUpdate();
 
     _items.clear();
+
     for (const auto &[id, item]: backupSnapshot.items()) {
         auto newItemPtr = std::make_shared<SnapshotItem>(*item);
         newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
         (void) _items.try_emplace(id, newItemPtr);
     }
 
+    // Update each child list with the new snapshot item pointers
     for (const auto &[_, item]: _items) {
         NodeSet childIds;
         for (const auto &child: item->children()) {
