@@ -87,7 +87,6 @@ class PermissionInstructionCell: NSView {
         textField.usesSingleLineMode = false
         textField.textColor = ColorToken.Text.tertiary.asNSColor
         textField.font = NSFont.Tokens.subheadline
-        textField.isHidden = hint == nil
         return textField
     }()
 
@@ -153,7 +152,6 @@ class PermissionInstructionCell: NSView {
         title: .init("Sélectionnez Ouverture et extensions > Extensions de sécurité")
     )
     permissionCell.hint = "Vous devez activer les autorisations avant de continuer"
-    permissionCell.hintLabel.isHidden = false
     permissionCell.state = .warning
     return permissionCell
 }
