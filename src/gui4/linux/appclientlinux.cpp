@@ -153,6 +153,13 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_ipcClient, &IpcClient::connected, this, &AppClientLinux::ipcConnected);
     (void) connect(&_ipcClient, &IpcClient::disconnected, this, &AppClientLinux::ipcDisconnected);
     (void) connect(&_ipcClient, &IpcClient::serverSignalReceived, &_signalDispatcher, &SignalDispatcher::dispatch);
+    // A lost signal may have carried an entity change: the cache is reloaded from the server. Before the bootstrap, the
+    // initial snapshot already covers it.
+    (void) connect(&_ipcClient, &IpcClient::serverSignalsLost, this, [this] {
+        if (_bootstrapCompleted) {
+            _cachePopulator.reconcile();
+        }
+    });
     (void) connect(this, &AppClientLinux::ipcDisconnected, this, &AppClientLinux::handleIpcDisconnection);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_cachePipeline, &CachePipeline::markPopulated);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, &_systemTrayController,
