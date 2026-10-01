@@ -106,6 +106,7 @@ final class MainViewModel: ObservableObject {
 
             currentSynchroContext = UISynchroContext(synchroContext: synchroContext)
             UserDefaults.standard.selectedSynchroDbId = synchro.dbId
+            updateRouterTabForCurrentSynchro()
         }
     }
 
@@ -125,7 +126,10 @@ final class MainViewModel: ObservableObject {
 
     private func handleUpdatedSynchroContexts(_ context: UIIndexedSynchroContext) {
         updateCurrentSynchro(context)
+        updateRouterTabForCurrentSynchro()
+    }
 
+    private func updateRouterTabForCurrentSynchro() {
         if currentBlockingError != nil {
             router.setCurrentTab(.blockingError)
         } else if router.currentPath.mainTab == .blockingError {
