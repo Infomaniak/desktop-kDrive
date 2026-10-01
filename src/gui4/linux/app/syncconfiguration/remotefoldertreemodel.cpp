@@ -27,6 +27,7 @@
 #include <QPointer>
 
 #include <algorithm>
+#include <chrono>
 #include <utility>
 
 using namespace Qt::StringLiterals;
@@ -34,13 +35,19 @@ using namespace Qt::StringLiterals;
 namespace KDC {
 
 namespace {
-constexpr uint8_t maxConcurrentSizeRequests = 4;
+// Quiet period after the last visibility change before visible folders request their size and children.
+constexpr std::chrono::milliseconds visibleNodeRequestDelay{150};
 constexpr QStringView unavailableSize = u"—";
 } // namespace
 
 RemoteFolderTreeModel::RemoteFolderTreeModel(AbstractRemoteFolderProvider &remoteFolderProvider, QObject *const parent) :
     QAbstractItemModel(parent),
-    _remoteFolderProvider(remoteFolderProvider) {}
+    _remoteFolderProvider(remoteFolderProvider),
+    _visibleNodeTimer(this) {
+    _visibleNodeTimer.setSingleShot(true);
+    _visibleNodeTimer.setInterval(visibleNodeRequestDelay);
+    (void) connect(&_visibleNodeTimer, &QTimer::timeout, this, &RemoteFolderTreeModel::prefetchVisibleNodes);
+}
 
 QModelIndex RemoteFolderTreeModel::index(const int row, const int column, const QModelIndex &parentIndex) const {
     if (row < 0 || column != 0) return {};
@@ -146,10 +153,9 @@ void RemoteFolderTreeModel::configure(const UserDbId userDbId, const DriveId dri
     _nodesById.clear();
     _excludedNodeIds.clear();
     _excludedPaths.clear();
-    _sizeQueue.clear();
+    _visibleNodeTimer.stop();
+    _visibleNodeCandidates.clear();
     _pendingRootChildren.reset();
-    // `_activeSizeRequests` is deliberately kept: the requests of the previous generation are still in flight and
-    // still occupy the provider, so resetting it here would let this generation start as many again.
     _pendingInitialPathRequests = 0;
     for (const auto &nodeId: initialBlackList) (void) _excludedNodeIds.insert(QString::fromStdString(nodeId));
     _initialPathsState = _excludedNodeIds.isEmpty() ? InitialPathsState::Ready : InitialPathsState::Resolving;
@@ -233,13 +239,31 @@ void RemoteFolderTreeModel::setNodeVisible(const QString &nodeId, const bool vis
         return;
     }
 
-    node->sizeRequested = visible;
     if (!visible) {
-        if (node->sizeState == SizeState::Queued) node->sizeState = SizeState::NotRequested;
+        (void) _visibleNodeCandidates.remove(nodeId);
         return;
     }
-    queueSize(node);
-    if (node->childrenState == LoadState::NotLoaded) requestChildren(node);
+
+    if (node->sizeState == SizeState::NotRequested || node->childrenState == LoadState::NotLoaded) {
+        (void) _visibleNodeCandidates.insert(nodeId);
+        // Restarted on every change, so it only fires once scrolling stops.
+        _visibleNodeTimer.start();
+    }
+}
+
+void RemoteFolderTreeModel::prefetchVisibleNodes() {
+    const QSet<QString> candidates = std::exchange(_visibleNodeCandidates, {});
+    for (const QString &nodeId: candidates) {
+        TreeNode *const node = _nodesById.value(nodeId, nullptr);
+        if (!node) {
+            continue;
+        }
+
+        requestSize(node);
+        if (node->childrenState == LoadState::NotLoaded) {
+            requestChildren(node);
+        }
+    }
 }
 
 RemoteFolderTreeModel::TreeNode *RemoteFolderTreeModel::nodeForIndex(const QModelIndex &modelIndex) const {
@@ -477,43 +501,36 @@ void RemoteFolderTreeModel::notifySelectionDataChanged(const TreeNode *const par
     for (const auto &child: parentNode->children) notifySelectionDataChanged(child.get());
 }
 
-void RemoteFolderTreeModel::queueSize(TreeNode *const node) {
-    if (!node || node->sizeState != SizeState::NotRequested) return;
-    node->sizeState = SizeState::Queued;
-    _sizeQueue.enqueue(node->nodeId);
-    processSizeQueue();
-}
-
-void RemoteFolderTreeModel::processSizeQueue() {
-    while (_activeSizeRequests < maxConcurrentSizeRequests && !_sizeQueue.isEmpty()) {
-        const QString nodeId = _sizeQueue.dequeue();
-        TreeNode *const node = _nodesById.value(nodeId, nullptr);
-        if (!node || node->sizeState != SizeState::Queued || !node->sizeRequested) continue;
-        node->sizeState = SizeState::Loading;
-        ++_activeSizeRequests;
-        const uint64_t generation = _generation;
-        const QPointer self(this);
-        _remoteFolderProvider.requestSize(_userDbId, _driveId, QStr2Str(nodeId),
-                                          [self, nodeId, generation](const bool success, const int64_t size) {
-                                              if (!self) return;
-                                              self->handleSizeResult(nodeId, generation, success, size);
-                                          });
+void RemoteFolderTreeModel::requestSize(TreeNode *const node) {
+    if (node->sizeState != SizeState::NotRequested) {
+        return;
     }
+
+    node->sizeState = SizeState::Loading;
+    const QString nodeId = node->nodeId;
+    const uint64_t generation = _generation;
+    const QPointer self(this);
+    _remoteFolderProvider.requestSize(_userDbId, _driveId, QStr2Str(nodeId),
+                                      [self, nodeId, generation](const bool success, const int64_t size) {
+                                          if (!self) {
+                                              return;
+                                          }
+
+                                          self->handleSizeResult(nodeId, generation, success, size);
+                                      });
 }
 
 void RemoteFolderTreeModel::handleSizeResult(const QString &nodeId, const uint64_t generation, const bool success,
                                              const qint64 size) {
-    // The counter tracks every request in flight, whatever its generation: a result of a previous configuration
-    // frees a slot on the provider just the same, and only its payload is dropped.
-    if (_activeSizeRequests > 0) --_activeSizeRequests;
-    if (generation == _generation) {
-        if (TreeNode *const node = _nodesById.value(nodeId, nullptr)) {
-            node->sizeState = success ? SizeState::Loaded : SizeState::Failed;
-            node->size = size;
-            emit dataChanged(indexForNode(node), indexForNode(node), {SizeTextRole});
-        }
+    if (generation != _generation) {
+        return;
     }
-    processSizeQueue();
+
+    if (TreeNode *const node = _nodesById.value(nodeId, nullptr)) {
+        node->sizeState = success ? SizeState::Loaded : SizeState::Failed;
+        node->size = size;
+        emit dataChanged(indexForNode(node), indexForNode(node), {SizeTextRole});
+    }
 }
 
 } // namespace KDC
