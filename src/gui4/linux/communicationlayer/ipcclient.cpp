@@ -63,6 +63,23 @@ IpcClient::IpcClient(QObject *parent) :
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::signalReady, this, &IpcClient::serverSignalReceived);
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::protocolError, this,
                    [](const QString &message, const QString &details) { SentryService::reportFatalAndExit(message, details); });
+    (void) connect(
+            &_serverSignalSequencer, &ServerSignalSequencer::signalsSkipped, this,
+            [this](const int32_t firstSkippedId, const int32_t lastSkippedId) {
+                SentryService::reportError(
+                        QStringLiteral("Server signals skipped after a timeout"),
+                        QStringLiteral("first skipped id: %1 | last skipped id: %2").arg(firstSkippedId).arg(lastSkippedId));
+                emit serverSignalsLost();
+            });
+    (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::staleSignalDropped, this,
+                   [this](const int32_t signalId, const int32_t lastForwardedId, const SignalNum num) {
+                       SentryService::reportError(QStringLiteral("Stale server signal dropped"),
+                                                  QStringLiteral("received id: %1 | last forwarded id: %2 | SignalNum: %3")
+                                                          .arg(signalId)
+                                                          .arg(lastForwardedId)
+                                                          .arg(toInt(num)));
+                       emit serverSignalsLost();
+                   });
 }
 
 
