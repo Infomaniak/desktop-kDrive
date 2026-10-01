@@ -413,13 +413,13 @@ void TestRemoteSnapshotItemHandler::testGetItem() {
         // The item fields are parsed before the ignore check, so that the item can be blacklisted by id.
         CPPUNIT_ASSERT_EQUAL(NodeId("0"), item.id());
         // The other ones should be correctly parsed
-        int counter = 0;
+        Count counter = 0;
         while (handler.getItem(item, ss, error, ignore, eof)) {
             counter++;
             CPPUNIT_ASSERT(!ignore);
             CPPUNIT_ASSERT(!error);
         }
-        CPPUNIT_ASSERT_EQUAL(2, counter); // There should be 2 valid items
+        CPPUNIT_ASSERT_EQUAL(Count{2}, counter); // There should be 2 valid items
     }
 
     // An ignored line must not inherit the id of the previously parsed item: the item is reset before each line is read.
@@ -583,7 +583,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
             static_cast<SyncTime>(1788263590), NodeType::File, static_cast<int64_t>(0), false, true, true);
 
     struct ParsedItem {
-            ParsedItem(bool ignore_, RemoteSnapshotItem item_) :
+            ParsedItem(const bool ignore_, RemoteSnapshotItem item_) :
                 ignore{ignore_},
                 item(std::move(item_)){};
             bool ignore{false};
@@ -599,7 +599,7 @@ Z",file,4,1789735691,1789735698,1,)csv";
         bool ignore = false;
         bool eof = false;
         while (handler.getItem(item, ss, error, ignore, eof)) {
-            parsedItems.emplace_back(ignore, item);
+            (void) parsedItems.emplace_back(ignore, item);
         }
         CPPUNIT_ASSERT(!error);
         CPPUNIT_ASSERT(eof);

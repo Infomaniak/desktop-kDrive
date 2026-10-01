@@ -58,7 +58,7 @@ bool hasSuccessfullyFinished(const SyncPalWorker::ReplicaWorkers &workers) {
 }
 
 bool shouldBeStoppedAndRestarted(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCode> interruptingExitCodes = {ExitCode::DataError, ExitCode::BackError, ExitCode::LogicError};
+    const std::unordered_set interruptingExitCodes = {ExitCode::DataError, ExitCode::BackError, ExitCode::LogicError};
 
     return std::ranges::any_of(workers, [&interruptingExitCodes](const auto &pair) {
         return pair.second.worker && interruptingExitCodes.contains(pair.second.worker->exitCode());
@@ -66,9 +66,9 @@ bool shouldBeStoppedAndRestarted(const SyncPalWorker::ReplicaWorkers &workers) {
 }
 
 bool shouldBeStopped(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCode> stoppingExitCodes = {ExitCode::DbError,        ExitCode::SystemError,
-                                                            ExitCode::UpdateRequired, ExitCode::InvalidSync,
-                                                            ExitCode::InvalidToken,   ExitCode::TooManyDeleteOperations};
+    const std::unordered_set stoppingExitCodes = {ExitCode::DbError,        ExitCode::SystemError,
+                                                  ExitCode::UpdateRequired, ExitCode::InvalidSync,
+                                                  ExitCode::InvalidToken,   ExitCode::TooManyDeleteOperations};
 
     const bool hasStoppingExitCode = std::ranges::any_of(workers, [&stoppingExitCodes](const auto &pair) {
         return pair.second.worker && stoppingExitCodes.contains(pair.second.worker->exitCode());
@@ -83,9 +83,9 @@ bool shouldBeStopped(const SyncPalWorker::ReplicaWorkers &workers) {
 }
 
 bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCause> exitCausesWithoutConsequences = {
-            ExitCause::NotEnoughDiskSpace, ExitCause::FileAccessError, ExitCause::TmpDirAccessError,
-            ExitCause::SyncDirAccessError, ExitCause::SyncDirDiskMissing};
+    const std::unordered_set exitCausesWithoutConsequences = {ExitCause::NotEnoughDiskSpace, ExitCause::FileAccessError,
+                                                              ExitCause::TmpDirAccessError, ExitCause::SyncDirAccessError,
+                                                              ExitCause::SyncDirDiskMissing};
 
     const auto hasExitCauseWithoutConsequences = std::ranges::any_of(workers, [&exitCausesWithoutConsequences](const auto &pair) {
         return pair.second.worker && pair.second.worker->exitCode() == ExitCode::SystemError &&
@@ -102,10 +102,8 @@ bool shouldExitWithoutError(const SyncPalWorker::ReplicaWorkers &workers) {
 } // namespace
 
 bool SyncPalWorker::shouldBePaused(const SyncPalWorker::ReplicaWorkers &workers) {
-    const std::unordered_set<ExitCause> blockingExitCauses = {ExitCause::Http5xx, ExitCause::HttpErr,
-                                                              ExitCause::MissingReplyData};
-    const std::unordered_set<ExitCause> syncDirNotAccessibleExitCauses = {ExitCause::SyncDirAccessError,
-                                                                          ExitCause::SyncDirDiskMissing};
+    const std::unordered_set blockingExitCauses = {ExitCause::Http5xx, ExitCause::HttpErr, ExitCause::MissingReplyData};
+    const std::unordered_set syncDirNotAccessibleExitCauses = {ExitCause::SyncDirAccessError, ExitCause::SyncDirDiskMissing};
     resetPauseDuration();
 
     if (handleRateLimited(workers)) return true;
@@ -305,7 +303,8 @@ void SyncPalWorker::trySetFullAccess(const SyncPath &path) {
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
+        LOGW_DEBUG(_logger,
+                   L"Path does not exist - " << Utility::formatSyncPath(path) << L". No need to set full access rights.");
         return;
     }
 
@@ -332,7 +331,6 @@ void SyncPalWorker::startFSOWorker(Worker &fsoWorker) {
     LOG_SYNCPAL_DEBUG(_logger, "Start FSO worker " << fsoWorker.worker->name());
     fsoWorker.isInProgress = true;
     fsoWorker.worker->start();
-
 }
 
 void SyncPalWorker::adaptRFSOWorkerToSyncState(Worker &rfsoWorker, const SyncStep step) {

@@ -38,7 +38,7 @@ class RemoteSnapshotItemHandler {
             CsvIndexEnd
         };
 
-        static void incrementCsvIndex(CsvIndex &index) { index = static_cast<CsvIndex>(static_cast<int>(index) + 1); }
+        static void incrementCsvIndex(CsvIndex &index) { index = static_cast<CsvIndex>(static_cast<int32_t>(index) + 1); }
 
         struct ParsingState {
                 CsvIndex index{CsvIndexId}; // The index of the column that is currently read.

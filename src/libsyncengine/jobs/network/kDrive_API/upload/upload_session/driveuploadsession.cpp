@@ -29,7 +29,7 @@ namespace KDC {
 
 DriveUploadSession::DriveUploadSession(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId,
                                        const std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                                       const RemoteNodeId &remoteParentDirId, const SyncTime creationTime,
+                                       RemoteNodeId remoteParentDirId, const SyncTime creationTime,
                                        const SyncTime modificationTime, const uint64_t nbParallelThread) :
     AbstractUploadSession(filepath, filename, nbParallelThread),
     _driveDbId(driveDbId),

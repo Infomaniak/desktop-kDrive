@@ -415,8 +415,8 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
                     if (const ExitInfo exitInfoCheckAlreadyExcluded =
                                 checkAlreadyExcluded(absoluteLocalFilePath, createDirJob->parentDirId());
                         !exitInfoCheckAlreadyExcluded) {
-                        LOG_SYNCPAL_WARN(_logger,
-                                         "Error in ExecutorWorker::checkAlreadyExcluded" << " " << exitInfoCheckAlreadyExcluded);
+                        LOG_SYNCPAL_WARN(_logger, "Error in ExecutorWorker::checkAlreadyExcluded"
+                                                          << " " << exitInfoCheckAlreadyExcluded);
                         return exitInfoCheckAlreadyExcluded;
                     }
 
@@ -475,9 +475,9 @@ ExitInfo ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, cons
     RemoteNodeInfoList remoteNodeInfoList;
     if (const auto exitInfo = job->remoteNodeInfoList(remoteNodeInfoList); !exitInfo) return exitInfo;
 
-    const auto it = std::ranges::find_if(
-            remoteNodeInfoList.cbegin(), remoteNodeInfoList.cend(),
-            [&absolutePath](const NodeInfo &nodeInfo) { return QStr2SyncName(nodeInfo.name()) == absolutePath.filename(); });
+    const auto it = std::ranges::find_if(remoteNodeInfoList, [&absolutePath](const NodeInfo &nodeInfo) {
+        return QStr2SyncName(nodeInfo.name()) == absolutePath.filename();
+    });
 
     if (it == remoteNodeInfoList.cend()) return ExitCode::Ok;
 
