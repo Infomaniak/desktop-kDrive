@@ -71,10 +71,12 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testOpenFileNonExisting);
         CPPUNIT_TEST(testOpenLockedFileRemovedBeforeTimedOut);
         CPPUNIT_TEST(testSetFileDates);
+        CPPUNIT_TEST(testSetLastModifiedTime);
         CPPUNIT_TEST(testGetDirectorySize);
         CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testIsPathOnMountedDisk);
         CPPUNIT_TEST(testCopyFileOrDirectory);
+        CPPUNIT_TEST(testGetPathWithCanonicalParent);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -116,6 +118,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testLock();
         void testReadOnly();
         void testCopyFileOrDirectory();
+        void testGetPathWithCanonicalParent();
 
     private:
         void testGetItemTypeSimpleCases();
@@ -147,6 +150,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testCheckIfPathExistsMixedSeparators();
 
         void testSetFileDates();
+        void testSetLastModifiedTime();
         void testGetDirectorySize();
 
         void testMoveItemToTrash();

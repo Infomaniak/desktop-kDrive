@@ -796,7 +796,7 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             return;
         }
 
-        if (!setProgress(job->affectedFilePath(), static_cast<int16_t>(progress))) {
+        if (!setProgress(job->affectedFilePath(), progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
     };
