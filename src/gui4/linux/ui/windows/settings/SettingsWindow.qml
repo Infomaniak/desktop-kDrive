@@ -35,6 +35,7 @@ IKShadowedWindow {
     required property var controller
     required property var users
     required property var excludedFolders
+    required property var advancedSyncs
     property int selectedCategory: SettingsWindow.Category.General
     property Item accountConnectionTrigger: null
     property bool restoreAccountConnectionFocus: false
@@ -252,6 +253,8 @@ IKShadowedWindow {
         id: driveManagementComponent
 
         DriveManagementView {
+            id: driveManagementView
+
             controller: root.controller.driveManagement
             activationController: root.controller.syncActivation
             onActivateRequested: trigger => {
@@ -266,6 +269,26 @@ IKShadowedWindow {
                 accountsPane.push(excludedFoldersComponent,
                                   {"syncDbId": root.controller.driveManagement.mainSyncDbId});
             }
+            onAdvancedSyncsRequested: trigger => {
+                trigger.forceActiveFocus();
+                accountsPane.push(advancedSyncsComponent, {"driveDbId": driveManagementView.driveDbId});
+            }
+        }
+    }
+
+    Component {
+        id: advancedSyncsComponent
+
+        AdvancedSyncsView {
+            controller: root.advancedSyncs
+            onManageRequested: (trigger, syncDbId) => {
+                trigger.forceActiveFocus();
+                accountsPane.push(excludedFoldersComponent, {"syncDbId": syncDbId, "advancedSync": true});
+            }
+            onDeleteRequested: (trigger, syncDbId) => {
+                advancedSyncDeleteDialog.syncDbId = syncDbId;
+                advancedSyncDeleteDialog.showFrom(trigger);
+            }
         }
     }
 
@@ -275,9 +298,18 @@ IKShadowedWindow {
         ExcludedFoldersView {
             id: excludedFoldersView
 
+            // Set for an advanced synchronization, whose summary belongs to the advanced sync page.
+            property bool advancedSync: false
+
             controller: root.excludedFolders
             // The page may have saved a new blacklist: the custom-selection label reads it again.
-            Component.onDestruction: root.controller.driveManagement.reloadBlackList()
+            Component.onDestruction: {
+                if (excludedFoldersView.advancedSync) {
+                    root.advancedSyncs.reloadBlackList(excludedFoldersView.syncDbId);
+                } else {
+                    root.controller.driveManagement.reloadBlackList();
+                }
+            }
             onCloseRequested: {
                 if (accountsPane.currentItem === excludedFoldersView) {
                     accountsPane.pop();
@@ -478,6 +510,49 @@ IKShadowedWindow {
         }
     }
 
+    DeleteSyncDialog {
+        id: advancedSyncDeleteDialog
+
+        property var syncDbId: 0
+
+        scrimInset: root.effectiveShadowMargin
+        scrimRadius: root.surfaceRadius
+        busy: root.advancedSyncs.deletePending
+        onDeleteConfirmed: root.advancedSyncs.deleteSync(advancedSyncDeleteDialog.syncDbId)
+        onFallbackFocusRequested: {
+            if (accountsPane.currentItem) {
+                accountsPane.currentItem.forceActiveFocus(Qt.BacktabFocusReason);
+            }
+        }
+
+        Connections {
+            target: root.advancedSyncs
+            enabled: advancedSyncDeleteDialog.opened
+
+            function onDeleteSucceeded(syncDbId) {
+                if (syncDbId === advancedSyncDeleteDialog.syncDbId) {
+                    advancedSyncDeleteDialog.close();
+                }
+            }
+
+            function onDeleteFailed(syncDbId) {
+                if (syncDbId === advancedSyncDeleteDialog.syncDbId) {
+                    advancedSyncDeleteDialog.failed = true;
+                }
+            }
+        }
+
+        Connections {
+            target: root.controller.driveManagement
+            enabled: advancedSyncDeleteDialog.opened
+
+            // Deleting the last synchronization of a drive without a main one returns to the Accounts root.
+            function onDriveRemoved() {
+                advancedSyncDeleteDialog.close();
+            }
+        }
+    }
+
     Connections {
         target: root.controller.driveManagement
 
@@ -521,6 +596,7 @@ IKShadowedWindow {
         proxyConnectionFailureDialog.close();
         disconnectAccountDialog.close();
         deleteSyncDialog.close();
+        advancedSyncDeleteDialog.close();
         localFolderDialog.close();
         root.controller.syncActivation.dismissFromHostWindow();
         releaseDialog.close();
