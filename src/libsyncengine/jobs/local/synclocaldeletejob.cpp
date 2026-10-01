@@ -127,13 +127,10 @@ ExitInfo SyncLocalDeleteJob::canRun() {
     // The item must exist locally for the job to run
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(absoluteLocalPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (!IoHelper::checkIfPathExists(absoluteLocalPath(), exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absoluteLocalPath(), ioError));
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(absoluteLocalPath()));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     if (!exists) {
@@ -215,9 +212,10 @@ ExitInfo SyncLocalDeleteJob::deleteFromDB(const SyncPath &relativeLocalPath) {
 ExitInfo SyncLocalDeleteJob::hardDeleteDehydratedPlaceholders() {
     IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
-    if (!IoHelper::getDirectoryIterator(absoluteLocalPath(), true, ioError, dir)) {
+    if (!IoHelper::getDirectoryIterator(absoluteLocalPath(), true, ioError, dir) || ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(absoluteLocalPath(), ioError));
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     DirectoryEntry entry;

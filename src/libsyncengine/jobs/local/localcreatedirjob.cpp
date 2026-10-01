@@ -37,13 +37,10 @@ ExitInfo LocalCreateDirJob::canRun() {
     // Check that we can create the directory here
     bool exists = false;
     IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError, IoHelper::PathCheckOption::Insensitive) ||
+        ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError));
-        return ExitCode::SystemError;
-    }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     if (exists) {
@@ -65,27 +62,16 @@ ExitInfo LocalCreateDirJob::runJob() {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath) << L" created");
         }
     }
-    if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
-    }
+
     if (ioError != IoError::Success) { // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError));
-        return ExitCode::SystemError;
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     FileStat filestat;
-    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive)) {
+    if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError, IoHelper::PathCheckOption::Insensitive) || ioError != IoError::Success) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError));
-        return ExitCode::SystemError;
-    }
-
-    if (ioError == IoError::NoSuchFileOrDirectory) {
-        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath));
-        return {ExitCode::DataError, ExitCause::InvalidSize};
-    } else if (ioError == IoError::AccessDenied) {
-        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath));
-        return {ExitCode::SystemError, ExitCause::FileAccessError};
+        return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
     }
 
     _nodeId = std::to_string(filestat.inode);

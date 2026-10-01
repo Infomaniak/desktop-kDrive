@@ -89,7 +89,7 @@ struct IoHelper {
             EnumEnd
         };
 
-        static ExitInfo toExitInfo(const IoError ioError);
+        static ExitInfo toExitInfo(const IoError ioError, const ExitInfo &defaultExitInfo = ExitInfo(ExitCode::SystemError, ExitCause::Unknown));
 
         static PathCheckOption getDefaultPathCheckOption() noexcept {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
