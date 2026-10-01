@@ -302,6 +302,7 @@ ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
 ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _liveSnapshot.init();
 
+    // Retrieve the list of blacklisted folders.
     (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
     if (const auto exitInfo = loadListingCursors(); !exitInfo) {
@@ -336,9 +337,6 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
     const auto start = std::chrono::steady_clock::now();
     sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
-
-    // Retrieve the list of blacklisted folders.
-    (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
     countListingRequests();
 
