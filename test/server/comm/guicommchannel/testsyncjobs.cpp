@@ -19,6 +19,7 @@
 #include "testguicommchannel.h"
 
 #include "../testcommhelpers.h"
+#include "../testsocketcomm.h"
 #include "comm/guijobs/signalsyncnotifymanydeletesjob.h"
 #include "comm/guijobs/syncacknowledgemanydeletesjob.h"
 
@@ -32,7 +33,6 @@
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
 #include "comm/guijobmanager.h"
-#include "comm/testsocketcomm.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/keychainmanager/apitoken.h"
 #include "mocks/mockkeychainstorage.h"
