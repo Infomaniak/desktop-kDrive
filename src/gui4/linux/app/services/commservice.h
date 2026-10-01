@@ -192,8 +192,9 @@ class CommService : public QObject {
                                     const NodeInfoListCallback &callback) const;
         void requestNodeFolderSize(UserDbId userDbId, DriveId driveId, const NodeId &nodeId,
                                    const FolderSizeCallback &callback) const;
-        void requestNodeCreateMissingFolders(DriveDbId driveDbId, const NodeId &parentNodeId, const SyncPath &relativePath,
-                                             const NodeIdCallback &callback) const;
+        // Creates every missing folder of `relativePath` below `parentNodeId` and returns the id of the last one.
+        void requestNodeCreateMissingFolders(UserDbId userDbId, DriveId driveId, const NodeId &parentNodeId,
+                                             const SyncPath &relativePath, const NodeIdCallback &callback) const;
 
         // --- Parameters ---
         void requestParametersInfo(const ParametersInfoCallback &callback) const;
