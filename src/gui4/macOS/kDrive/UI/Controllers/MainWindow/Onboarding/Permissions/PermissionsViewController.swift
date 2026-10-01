@@ -286,12 +286,15 @@ final class PermissionsViewController: OnboardingStepViewController {
         switch state {
         case .neutral:
             cell.state = .neutral
+            cell.hintLabel.isHidden = true
             primaryButton.isEnabled = false
         case .warning:
             cell.state = .warning
+            cell.hintLabel.isHidden = false
             primaryButton.isEnabled = false
         case .done:
             cell.state = .done
+            cell.hintLabel.isHidden = true
             primaryButton.isEnabled = true
         }
     }
