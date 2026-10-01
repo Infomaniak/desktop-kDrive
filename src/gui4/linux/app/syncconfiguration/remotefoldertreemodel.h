@@ -23,8 +23,8 @@
 
 #include <QAbstractItemModel>
 #include <QHash>
-#include <QQueue>
 #include <QSet>
+#include <QTimer>
 
 #include <memory>
 #include <optional>
@@ -98,8 +98,9 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         /**
          * Reports that the folder with the given node id entered or left the viewport.
          *
-         * A visible folder loads its size and its immediate children, so its expand affordance reflects whether it
-         * really has sub-folders instead of assuming it does. The folder is named by its node id rather than by an
+         * Once the view has settled, a visible folder loads its size and its immediate children, so its expand affordance
+         * reflects whether it really has sub-folders instead of assuming it does. Folders that only pass through the
+         * viewport while the user scrolls request nothing. The folder is named by its node id rather than by an
          * index: a view row can show another folder after an expansion without being recreated. An unknown id, from a
          * previous configuration, is ignored.
          */
@@ -125,7 +126,6 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
 
         enum class SizeState : uint8_t {
             NotRequested,
-            Queued,
             Loading,
             Loaded,
             Failed,
@@ -146,7 +146,6 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
                 SizeState sizeState{SizeState::NotRequested};
                 qint64 size{0};
                 bool accessDenied{false};
-                bool sizeRequested{false};
         };
 
         [[nodiscard]] TreeNode *nodeForIndex(const QModelIndex &modelIndex) const;
@@ -159,6 +158,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void resolveInitialExclusionPaths();
         void handleInitialExclusionPathResult(const QString &nodeId, const ExitInfo &exitInfo, const NodeInfo &info);
         void requestChildren(TreeNode *node);
+        void prefetchVisibleNodes();
         void handleChildrenResult(TreeNode *node, uint64_t generation, bool success, const std::vector<NodeInfo> &children);
         void excludeNode(const TreeNode *node);
         void includeNode(TreeNode *node);
@@ -166,8 +166,7 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         void removeExclusionsAtOrBelow(const TreeNode *node);
         void notifySelectionDataChanged();
         void notifySelectionDataChanged(const TreeNode *parentNode);
-        void queueSize(TreeNode *node);
-        void processSizeQueue();
+        void requestSize(TreeNode *node);
         void handleSizeResult(const QString &nodeId, uint64_t generation, bool success, qint64 size);
 
         AbstractRemoteFolderProvider &_remoteFolderProvider;
@@ -175,13 +174,14 @@ class RemoteFolderTreeModel final : public QAbstractItemModel {
         QHash<QString, TreeNode *> _nodesById;
         QSet<QString> _excludedNodeIds;
         QHash<QString, QString> _excludedPaths;
-        QQueue<QString> _sizeQueue;
         // Root listing received before the initial exclusion paths were resolved, applied once they are.
         std::optional<PendingRootChildren> _pendingRootChildren;
         UserDbId _userDbId{0};
         DriveId _driveId{0};
         uint64_t _generation{0};
-        uint8_t _activeSizeRequests{0};
+        // Visible folders whose size and children are requested once the view has settled.
+        QSet<QString> _visibleNodeCandidates;
+        QTimer _visibleNodeTimer;
         uint32_t _pendingInitialPathRequests{0};
         InitialPathsState _initialPathsState{InitialPathsState::Ready};
         bool _initialPathRequestFailed{false};
