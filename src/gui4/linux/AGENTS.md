@@ -272,9 +272,14 @@
   slots as `KeyChainStorage`) and the `certKeychainKey` / `localHostName` constants from `libcommon/comm.h`; returns
   `false` (not an error) when the entry is not present yet, so the IPC client can retry during startup.
 - `communicationlayer/serversignalsequencer.*`: internal `IpcClient` stage that restores the server-assigned order of
-  asynchronous push signals before exposing them to semantic dispatch; buffers bounded gaps and reports persistent
-  sequence violations as fatal IPC errors. It relies on the single GUI connection receiving a sequence starting at
-  `firstGuiSignalId`; the server does not allocate signal ids while no GUI channel is connected.
+  asynchronous push signals before exposing them to semantic dispatch; buffers bounded gaps. A gap still open after
+  10 s is skipped rather than fatal: the server assigns a signal id before queueing its job in a priority pool, where a
+  `PRIO_LOWEST` `SYNC_COMPLETEDITEM` can starve behind a burst of GUI requests. The skip is reported to Sentry, triggers a
+  `CachePopulator::reconcile()` once the bootstrap is done, and a skipped signal arriving late is dropped. Any other id
+  already passed, such as the id 0 the server can send during a burst of signals, is dropped the same way, reported to
+  Sentry and followed by a reconciliation. Negative ids, duplicates in the reorder buffer and buffer overflow remain
+  fatal IPC errors. It relies on the single GUI connection receiving a sequence starting at `firstGuiSignalId`; the
+  server does not allocate signal ids while no GUI channel is connected.
 - `communicationlayer/signaldispatcher.*`: server-push signal fanout to registered handlers.
 - `app/services/commservice.*`: typed request/signal facade above `IpcClient`.
 - `app/services/serviceactiontracker.*`: shared persistent state for in-flight service actions
