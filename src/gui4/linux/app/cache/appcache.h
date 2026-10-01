@@ -85,6 +85,9 @@ class AppCache : public QObject {
         // row belongs to one account of one user, so another user's synchronizations of the same backend drive never
         // compete. Other classic synchronizations, which only a legacy migration can produce, are presented as advanced.
         [[nodiscard]] std::optional<BaseSync> mainSync(DriveDbId driveDbId) const;
+        // Returns every other synchronization of the drive, sorted by database id: the ones targeting a remote folder, and
+        // the extra classic ones left by a legacy (v3) migration.
+        [[nodiscard]] std::vector<BaseSync> advancedSyncs(DriveDbId driveDbId) const;
 
         // Available-drive contexts reconcile addable drives with configured drives for display/disable decisions.
         // A drive is configured for onboarding only when it owns a classic synchronization.
