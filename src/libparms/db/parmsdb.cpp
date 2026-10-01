@@ -1403,6 +1403,7 @@ bool ParmsDb::upgradeParametersTables() {
     columnName = "distributionChannel";
     if (!addIntegerColumnIfMissing(tableName, columnName, toInt(DistributionChannel::Prod))) {
         return false;
+    }
 
     for (const auto &name: {"sentryEnabled", "matomoEnabled"}) {
         if (!addIntegerColumnIfMissing(tableName, name, 1)) {
@@ -1450,14 +1451,13 @@ bool ParmsDb::upgradeTables() {
     }
 
     if (!addTextColumnIfMissing(tableName, "userPrivateFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "userPrivateFolderCursorTimestamp")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "userPrivateFolderCursorTimestamp", 0)) return false;
     if (!addTextColumnIfMissing(tableName, "commonDocumentsFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderCursorTimestamp")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "commonDocumentsFolderCursorTimestamp", 0)) return false;
     if (!addTextColumnIfMissing(tableName, "sharedFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "sharedFolderCursorTimestamp")) return false;
+    if (!addIntegerColumnIfMissing(tableName, "sharedFolderCursorTimestamp", 0)) return false;
     if (!addTextColumnIfMissing(tableName, "customTargetFolderCursor")) return false;
-    if (!addIntegerColumnIfMissing(tableName, "customTargetFolderCursorTimestamp")) return false;
-
+    if (!addIntegerColumnIfMissing(tableName, "customTargetFolderCursorTimestamp", 0)) return false;
 
     // Account table
     tableName = "account";
@@ -2779,7 +2779,7 @@ void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId, const s
     sync.setToDelete(static_cast<bool>(toDeleteResult));
 
     int64_t vfsRegisteredAtResult{0};
-    LOG_IF_FAIL(queryInt64Value(requestId, 16, vfsRegisteredAtResult));
+    LOG_IF_FAIL(queryInt64Value(requestId, fieldIndex++, vfsRegisteredAtResult));
     sync.setVfsRegisteredAt(vfsRegisteredAtResult);
 }
 
