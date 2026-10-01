@@ -21,13 +21,15 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import kDrive.UI
 
+// Confirms the deletion of one synchronization. The owner binds `busy` to its pending deletion, performs the deletion on
+// `deleteConfirmed`, then closes the dialog or sets `failed` from its outcome.
 IKConfirmationDialog {
     id: root
 
-    required property var controller
     property Item triggerItem: null
     property bool failed: false
 
+    signal deleteConfirmed
     signal fallbackFocusRequested
 
     function showFrom(trigger) {
@@ -41,11 +43,10 @@ IKConfirmationDialog {
     cancelText: qsTrId("buttonCancel")
     confirmText: qsTrId("buttonRemove")
     confirmRole: IKModalButton.Destructive
-    busy: root.controller.deletePending
     errorText: root.failed ? qsTrId("unexpectedErrorTeachingTipContent") : ""
     onConfirmed: {
         root.failed = false;
-        root.controller.deleteMainSync();
+        root.deleteConfirmed();
     }
     onClosed: {
         root.failed = false;
@@ -55,22 +56,5 @@ IKConfirmationDialog {
             root.fallbackFocusRequested();
         }
         root.triggerItem = null;
-    }
-
-    Connections {
-        target: root.controller
-        enabled: root.opened
-
-        function onDeleteSucceeded() {
-            root.close();
-        }
-
-        function onDeleteFailed() {
-            root.failed = true;
-        }
-
-        function onDriveRemoved() {
-            root.close();
-        }
     }
 }
