@@ -58,8 +58,13 @@ class SyncService : public QObject {
 
         // Sends SYNC_ADD. A classic sync (drive root) reserves the drive until AppCache reflects the outcome, and is refused
         // without sending anything when the drive already has a classic sync or one in flight. Advanced syncs are not
-        // restricted.
+        // restricted. An advanced sync must set both `serverFolderNodeId` and `serverFolderPath`: the service recognizes
+        // it by its node id, whereas the server validates it as advanced only when its folder path is not empty.
         [[nodiscard]] bool addDriveSync(const SyncAddRequest &request, const CommService::SyncInfoCallback &callback);
+        // Creates the remote folder `name` directly below `parentNodeId` and returns its node id. The server also adds the
+        // new folder to the blacklist of every synchronization of the drive, so the existing ones do not download it.
+        void createRemoteFolder(UserDbId userDbId, DriveId driveId, const NodeId &parentNodeId, const QString &name,
+                                const CommService::NodeIdCallback &callback);
 
         Q_INVOKABLE void startSync(qint64 syncDbId);
         Q_INVOKABLE void stopSync(qint64 syncDbId);
@@ -76,6 +81,7 @@ class SyncService : public QObject {
         Q_INVOKABLE [[nodiscard]] bool isQuerySyncStatusPending(qint64 syncDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isFindGoodPathForNewSyncPending() const;
         Q_INVOKABLE [[nodiscard]] bool isPathValidForNewSyncPending() const;
+        [[nodiscard]] bool isCreateRemoteFolderPending() const;
 
     signals:
         void loadingChanged();
