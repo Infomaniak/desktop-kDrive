@@ -1131,7 +1131,7 @@ open macOS Preferences to enable them.</source>
         </message> 
         <message id="excludedFoldersLimitReached"> 
             <source>You cannot exclude more than %1 folders. Please uncheck higher-level folders.</source> 
-            <extracomment>%1 is the maximum number of excluded folders (3000).</extracomment> 
+            <extracomment>%1 is the maximum number of excluded folders.</extracomment> 
             <translation>Du kan ikke ekskludere mere end %1 mapper. Fravælg venligst mapper på højere niveau.</translation> 
         </message> 
         <message id="extendedLogDescription"> 
