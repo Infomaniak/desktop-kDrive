@@ -269,6 +269,8 @@ Rectangle {
                 readonly property bool disclosureVisible: folderRow.isTreeNode && folderRow.hasChildren
                 // Folder reported visible to the model, empty while the row is pooled.
                 property string registeredNodeId: ""
+                // Set while the view keeps the delegate aside for reuse.
+                property bool pooled: false
 
                 // The index is resolved when it is used, never kept: after an expansion, a row can show another folder
                 // without its `row` changing, and a kept index would still target the previous one.
@@ -314,8 +316,14 @@ Rectangle {
 
                 Component.onCompleted: folderRow.registerVisibleNode()
                 Component.onDestruction: folderRow.unregisterVisibleNode()
-                TableView.onPooled: folderRow.unregisterVisibleNode()
-                TableView.onReused: folderRow.registerVisibleNode()
+                TableView.onPooled: {
+                    folderRow.pooled = true
+                    folderRow.unregisterVisibleNode()
+                }
+                TableView.onReused: {
+                    folderRow.pooled = false
+                    folderRow.registerVisibleNode()
+                }
                 // A displayed row switching folder hands the visibility over; while pooled, `onReused` registers it.
                 onNodeIdChanged: {
                     if (folderRow.registeredNodeId === "") {
@@ -343,8 +351,12 @@ Rectangle {
                     }
                 }
 
+                // Disabled while pooled: a delegate put aside under the cursor would otherwise keep reporting a hover once
+                // reused for another row, since it no longer receives the pointer leaving it.
                 HoverHandler {
                     id: rowHover
+
+                    enabled: !folderRow.pooled
                 }
 
                 IKCheckBox {
