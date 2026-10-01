@@ -180,10 +180,10 @@ DLL_EXP int __cdecl vfsCreatePlaceHolder(const wchar_t *fileId, const wchar_t *r
     return S_OK;
 }
 
-DLL_EXP int __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath) {
-    if (!Placeholders::convert(fileId, filePath)) {
-        TRACE_ERROR(L"Error in Placeholders::convert: id='%ls', path='%ls'", fileId, filePath);
-        return E_ABORT;
+DLL_EXP int32_t __cdecl vfsConvertToPlaceHolder(const wchar_t *fileId, const wchar_t *filePath) {
+    if (int32_t res = Placeholders::convert(fileId, filePath); res != S_OK) {
+        TRACE_ERROR(L"Error in Placeholders::convert: id='%ls', path='%ls', error=%d", fileId, filePath, res);
+        return res;
     }
 
     return S_OK;

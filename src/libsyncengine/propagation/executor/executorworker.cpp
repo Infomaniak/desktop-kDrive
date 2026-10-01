@@ -411,13 +411,14 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         if (const ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to run create directory job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-        } else if (const ExitInfo exitInfo =
+        } else if (const ExitInfo convertionExitInfo =
                            convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
-                   !exitInfo) {
+                   !convertionExitInfo) {
             // If the directory is created on the remote side, we need to convert it to a placeholder. In case of failure, we log
             // a warning but we do not stop the execution.
             LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
-                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                               << convertionExitInfo);
         }
         ExitInfo exitInfo = handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
         job.reset();
@@ -2244,7 +2245,8 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
             return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
+        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::HardlinkNotSupported)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
         case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {

@@ -671,9 +671,9 @@ bool SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     return true;
 }
 
-void SyncPal::directDownloadCallback(UniqueId jobId) {
+void SyncPal::directDownloadCallback(const UniqueId jobId) {
     const std::scoped_lock lock(_directDownloadJobsMapMutex);
-    auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
+    const auto directDownloadJobsMapIt = _directDownloadJobsMap.find(jobId);
     if (directDownloadJobsMapIt == _directDownloadJobsMap.end()) {
         // No need to send a warning, the job might have been canceled, and therefor not in the map anymore
         return;
