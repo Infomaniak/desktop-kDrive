@@ -335,6 +335,20 @@ void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
         newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
         (void) _items.try_emplace(id, newItemPtr);
     }
+
+    for (const auto &[_, item]: _items) {
+        NodeSet childIds;
+        for (const auto &child: item->children()) {
+            (void) childIds.insert(child->id());
+        }
+        item->removeAllChildren();
+
+        for (const auto &childId: childIds) {
+            if (const auto childIt = _items.find(childId); childIt != _items.end()) {
+                item->addChild(childIt->second);
+            }
+        }
+    }
 }
 
 } // namespace KDC
