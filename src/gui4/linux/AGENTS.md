@@ -314,6 +314,18 @@
   `ExcludedFoldersController` (`preload()` / `releasePreload()`) as soon as it is resolved, so the folder tree is
   ready when the user opens it. It emits `driveRemoved()` once the drive has no synchronization left, and Settings then
   returns to the Accounts root.
+- `app/settings/advancedsyncscontroller.*`: process-long state of the Settings "Advanced sync" page, passed directly to
+  `SettingsWindow` as its `advancedSyncs` initial property and pushed from the drive management page. The page opens and
+  closes its `DriveDbId` target; the controller projects `AppCache::advancedSyncs` into `advancedsynclistmodel.*`,
+  loads each blacklist to present a custom selection, opens local folders and their web location
+  (`SYNC_GETPRIVATELINKURL`, or the web drive root for an extra classic synchronization), and deletes one
+  synchronization at a time. The model updates rows in place, so a card keeps its collapsed state when another
+  synchronization is added or removed. Leaving a drive that has no synchronization left stays the drive management
+  page's job, which remains below it in the navigation stack. "Manage" pushes the shared excluded folders page with the
+  advanced `SyncDbId`; closing it reloads that synchronization's summary.
+- `ui/windows/settings/SyncSelectionRow.qml`: shared "Synchronization" row (custom-selection summary, Manage, Retry) of
+  the drive management page and of each advanced synchronization card. `DeleteSyncDialog.qml` is owner-agnostic: its
+  owner binds `busy`, deletes on `deleteConfirmed`, and closes it or sets `failed`.
 - `app/settings/excludedfolderscontroller.*`: process-long state of the Settings "Manage synchronization" page,
   passed directly to `SettingsWindow` as its `excludedFolders` initial property. The page opens and closes its `SyncDbId` target; the
   controller loads the confirmed blacklist into its own `RemoteFolderTreeModel` and sends the complete list with
