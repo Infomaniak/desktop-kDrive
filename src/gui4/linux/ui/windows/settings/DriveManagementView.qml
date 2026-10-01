@@ -41,6 +41,7 @@ ScrollView {
     signal activateRequested(Item trigger)
     signal deleteRequested(Item trigger)
     signal manageSynchronizationRequested(Item trigger)
+    signal advancedSyncsRequested(Item trigger)
 
     contentWidth: availableWidth
     clip: true
@@ -105,13 +106,13 @@ ScrollView {
 
                 SyncSelectionRow {
                     separator: false
-
                     syncConfigured: root.controller.hasMainSync
                     customSelection: root.controller.customSelection
                     blackListLoading: root.controller.blackListLoading
                     blackListLoadFailed: root.controller.blackListLoadFailed
                     onRetryRequested: root.controller.reloadBlackList()
                     onManageRequested: trigger => root.manageSynchronizationRequested(trigger)
+
                     Text {
                         visible: !root.controller.hasMainSync
                         text: qsTrId("notSyncedDrive")
@@ -154,11 +155,12 @@ ScrollView {
             width: parent.width - 2 * IKSettings.pageMargin
             contentInset: 0
 
-            // The advanced synchronization sub-page comes with a later feature.
             SettingsNavigationRow {
+                id: advancedSyncsRow
+
                 title: qsTrId("advancedSyncTitle")
                 separator: false
-                enabled: false
+                onNavigationRequested: root.advancedSyncsRequested(advancedSyncsRow)
             }
         }
     }
