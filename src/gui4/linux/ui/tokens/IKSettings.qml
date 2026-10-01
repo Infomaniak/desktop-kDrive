@@ -73,4 +73,6 @@ QtObject {
     readonly property real driveManagementSectionSpacing: 16
     // Share of a row a local path may take before eliding, so the row title always stays readable.
     readonly property real driveManagementPathMaxWidthRatio: 0.6
+    // Overflow of an advanced sync card header's hover surface into the card padding.
+    readonly property real advancedSyncHeaderHoverOutset: 6
 }
