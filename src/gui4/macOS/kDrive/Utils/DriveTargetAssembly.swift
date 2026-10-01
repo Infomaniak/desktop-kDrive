@@ -27,7 +27,7 @@ final class DriveTargetAssembly: TargetAssembly {
         clientId: "5EA39279-FF64-4BB8-A872-4A40B5786317",
         redirectURI: "kdrive://auth-desktop"
     )
-    
+
     static let loginFormConfig = InfomaniakLogin.LoginFormConfig(
         skipAutoRedirect: true
     )

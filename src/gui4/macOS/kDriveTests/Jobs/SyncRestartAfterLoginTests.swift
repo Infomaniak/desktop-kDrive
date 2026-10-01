@@ -67,14 +67,29 @@ extension SharedDITests.SyncRestartAfterLoginTests {
             switch request.num {
             case .LOGIN_REQUESTTOKEN:
                 let loginResponse = LoginResponse(userDbId: expectedUserDbId)
-                return try JSONEncoder().encode(CallbackMessage<LoginResponse>(code: .Ok, cause: .Unknown, id: request.id, body: loginResponse))
+                return try JSONEncoder().encode(CallbackMessage<LoginResponse>(
+                    code: .Ok,
+                    cause: .Unknown,
+                    id: request.id,
+                    body: loginResponse
+                ))
             case .SYNC_START_AFTER_LOGIN:
                 let startRequest = try JSONDecoder().decode(RequestMessage<UserQuery>.self, from: requestData)
                 await recorder.recordStartAfterLogin(userDbId: startRequest.body.userDbId)
-                return try JSONEncoder().encode(CallbackMessage(code: .Ok, cause: .Unknown, id: request.id, body: EmptyResponse()))
+                return try JSONEncoder().encode(CallbackMessage(
+                    code: .Ok,
+                    cause: .Unknown,
+                    id: request.id,
+                    body: EmptyResponse()
+                ))
             default:
                 Issue.record("Unexpected request sent to the server: \(request.num)")
-                return try JSONEncoder().encode(CallbackMessage(code: .Ok, cause: .Unknown, id: request.id, body: EmptyResponse()))
+                return try JSONEncoder().encode(CallbackMessage(
+                    code: .Ok,
+                    cause: .Unknown,
+                    id: request.id,
+                    body: EmptyResponse()
+                ))
             }
         }
     }
