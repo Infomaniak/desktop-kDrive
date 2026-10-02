@@ -372,9 +372,11 @@
   transient feedback independent from projected row lifetime.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
-  construction, and delegates pause/resume to `SyncService`. During a transition (pause, resume or start requested, or
-  reported in progress by the server), Home keeps the last settled status of the displayed synchronization instead of
-  flashing its loading state; loading is shown only while no settled status is known for that synchronization.
+  construction, and delegates pause/resume to `SyncService`. During a transition reported by the server (`Starting`,
+  `PauseAsked`, `StopAsked`), Home keeps the last settled status of the displayed synchronization instead of flashing
+  its loading state; loading is shown only while no settled status is known for that synchronization. The settled
+  status is recorded on every `homeChanged`, even while Home is not instantiated. A pending pause or resume request only
+  drives the toolbar control (`SyncControlState::Pending`), never the central status.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
   independent Home banner instead of replacing the central state. An undefined runtime status, reported until the
   server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
