@@ -73,7 +73,7 @@ class AdvancedSyncsController final : public QObject {
 
     private:
         [[nodiscard]] bool hasTarget() const { return _driveDbId != 0; }
-        [[nodiscard]] bool targets(SyncDbId syncDbId) const { return hasTarget() && _model.row(syncDbId) != nullptr; }
+        [[nodiscard]] bool targets(const SyncDbId syncDbId) const { return hasTarget() && _model.row(syncDbId) != nullptr; }
         void refresh();
         void loadBlackList(SyncDbId syncDbId);
         void resetTarget();
