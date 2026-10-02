@@ -307,11 +307,16 @@ bool RemoteFolderPickerModel::select(const QModelIndex &modelIndex) {
 void RemoteFolderPickerModel::setNodeVisible(const QString &nodeId, const bool visible) {
     if (!visible) {
         (void) _childrenPrefetchCandidates.remove(nodeId);
+        // Leaving the viewport is a visibility change too: the remaining candidates wait for the next quiet period.
+        if (_childrenPrefetchCandidates.isEmpty()) {
+            _childrenPrefetchTimer.stop();
+        } else {
+            _childrenPrefetchTimer.start();
+        }
         return;
     }
 
-    const TreeNode *const node = _nodesById.value(nodeId, nullptr);
-    if (!node || node->childrenState != LoadState::NotLoaded) {
+    if (const TreeNode *const node = _nodesById.value(nodeId, nullptr); !node || node->childrenState != LoadState::NotLoaded) {
         return;
     }
 
