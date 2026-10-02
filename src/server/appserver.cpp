@@ -3018,20 +3018,14 @@ ExitInfo AppServer::updateUser(User &user) {
 }
 
 ExitInfo AppServer::createAccount(Account &newAccount) {
-    // Make sure all information are up to date
-    bool accountUpdated = false;
-    if (const auto exitInfo = _loadAccountInfo(newAccount, accountUpdated); !exitInfo) {
-        LOG_WARN(_logger, "Error in Requests::loadDriveInfo: " << exitInfo);
-        return exitInfo;
-    }
+    bool accountCreated = false;
+    ExitInfo exitInfo = ServerRequests::createAccount(newAccount, accountCreated);
 
     // Notify the UI
-    sendAccountAdded(newAccount);
+    if (accountCreated) sendAccountAdded(newAccount);
 
-    // Insert account in DB
-    if (!ParmsDb::instance()->insertAccount(newAccount)) {
-        LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
-        return ExitCode::DbError;
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in ServerRequests::createAccount: " << exitInfo);
     }
 
     return ExitCode::Ok;

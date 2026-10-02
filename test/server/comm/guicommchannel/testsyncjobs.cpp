@@ -32,6 +32,7 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
+#include "appserver.h"
 #include "comm/guijobmanager.h"
 #include "libcommonserver/keychainmanager/keychainmanager.h"
 #include "libcommonserver/keychainmanager/apitoken.h"
@@ -302,7 +303,7 @@ void TestGuiCommChannel::testSyncAddJob() {
 void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
     if (!testhelpers::isRunningOnCI()) {
-        CPPUNIT_SKIP();
+        return;
     }
 
     const testhelpers::TestVariables testVariables;
@@ -344,6 +345,7 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
     auto *appServer = dynamic_cast<AppServer *>(QCoreApplication::instance());
     CPPUNIT_ASSERT(appServer);
 
+    GuiJobManagerSingleton::instance()->stop();
     GuiJobManagerSingleton::clear();
 
     auto commManager = std::make_shared<CommManager>(*appServer);
@@ -403,6 +405,7 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
 
     clientChannel->close();
     commManager->stop();
+    GuiJobManagerSingleton::instance()->stop();
     GuiJobManagerSingleton::clear();
 #else
     CPPUNIT_SKIP();

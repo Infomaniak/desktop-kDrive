@@ -73,17 +73,20 @@ ExitInfo LoginRequestTokenJob::process() {
     ExitCode exitCode =
             ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier), user,
                                          userCreated, _error, _errorDescr);
+
+    if (userCreated) {
+        _userDbId = user.dbId();
+        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(user);
+        _commManager->sendGuiSignal(signalUserAddedJob);
+    }
+
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in ServerRequests::requestToken: code=" << exitCode);
         return exitCode;
     }
 
-    _userDbId = user.dbId();
     _commManager->appServer().updateSentryUser();
-    if (userCreated) {
-        auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(user);
-        _commManager->sendGuiSignal(signalUserAddedJob);
-    } else {
+    if (!userCreated) {
         auto signalUserUpdatedJob = std::make_shared<SignalUserUpdatedJob>(user);
         _commManager->sendGuiSignal(signalUserUpdatedJob);
     }
