@@ -25,7 +25,6 @@
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/navigation/approuter.h"
 #include "app/services/syncservice.h"
-#include "app/systraycontroller.h"
 
 #include <QDesktopServices>
 #include <QLoggingCategory>
@@ -50,14 +49,12 @@ std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const i
 } // namespace
 
 HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
-                               AppRouter &appRouter, SystemTrayController &systemTrayController,
-                               NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
+                               AppRouter &appRouter, NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _mainSelectionStore(mainSelectionStore),
     _syncService(syncService),
     _appRouter(appRouter),
-    _systemTrayController(systemTrayController),
     _networkStatusObserver(networkStatusObserver) {
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentContextChanged, this, &HomeController::homeChanged);
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentSyncStatusChanged, this, &HomeController::homeChanged);
@@ -69,7 +66,6 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
             emit homeChanged();
         }
     });
-    (void) connect(&_systemTrayController, &SystemTrayController::trayModeActiveChanged, this, &HomeController::homeChanged);
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this, &HomeController::homeChanged);
 }
 
@@ -104,7 +100,7 @@ HomeController::PrimaryAction HomeController::primaryAction() const {
             if (errorCount() > 0) {
                 return PrimaryAction::ShowActivities;
             }
-            return _systemTrayController.trayModeActive() ? PrimaryAction::HideWindow : PrimaryAction::None;
+            return PrimaryAction::None;
         case HomeStatus::Syncing:
             return PrimaryAction::ShowActivities;
         case HomeStatus::Paused:
@@ -181,9 +177,6 @@ bool HomeController::hasConnectedUser() const {
 
 void HomeController::triggerPrimaryAction() {
     switch (primaryAction()) {
-        case PrimaryAction::HideWindow:
-            _systemTrayController.hideMainWindow();
-            return;
         case PrimaryAction::ShowActivities:
             _appRouter.showActivities();
             return;
