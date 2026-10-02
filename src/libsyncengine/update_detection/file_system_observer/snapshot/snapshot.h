@@ -105,12 +105,9 @@ class ConstSnapshot : public Snapshot {
         explicit ConstSnapshot(const Snapshot &other) :
             Snapshot(other) {}
 
-        SnapshotItemUnorderedMap items() const {
-            const std::scoped_lock lock(_mutex);
-            return _items;
-        }
-
     private:
+        friend class LiveSnapshot;
+
         // Prevent any derived class to modify the snapshot content.
         using Snapshot::_items;
         using Snapshot::_mutex;
