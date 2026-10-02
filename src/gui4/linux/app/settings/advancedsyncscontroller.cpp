@@ -104,8 +104,8 @@ void AdvancedSyncsController::close(const qint64 driveDbId) {
 }
 
 void AdvancedSyncsController::reloadBlackList(const qint64 syncDbId) {
-    const auto *const row = _model.row(static_cast<SyncDbId>(syncDbId));
-    if (!hasTarget() || !row || row->blackListState == AdvancedSyncListModel::BlackListState::Loading) {
+    if (const auto *const row = _model.row(static_cast<SyncDbId>(syncDbId));
+        !hasTarget() || !row || row->blackListState == AdvancedSyncListModel::BlackListState::Loading) {
         return;
     }
 
@@ -145,8 +145,9 @@ void AdvancedSyncsController::openRemoteFolder(const qint64 syncDbId) {
     }
 
     if (syncInfo->targetNodeId().empty()) {
-        const QUrl driveUrl = AppConstants::WebDrive::destinationUri(_driveId, AppConstants::WebDrive::Destination::OnlineDrive);
-        if (!QDesktopServices::openUrl(driveUrl)) {
+        if (const QUrl driveUrl =
+                    AppConstants::WebDrive::destinationUri(_driveId, AppConstants::WebDrive::Destination::OnlineDrive);
+            !QDesktopServices::openUrl(driveUrl)) {
             qCWarning(lcAdvancedSyncsController) << "Desktop service failed to open the web drive | driveId:" << _driveId;
         }
         return;
