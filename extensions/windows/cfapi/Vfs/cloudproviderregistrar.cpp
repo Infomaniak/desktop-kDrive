@@ -143,7 +143,6 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 }
 
 void CloudProviderRegistrar::getCLSID(HKEY hKey, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
-    // Get CLSID
     TRACE_DEBUG(L"Getting NamespaceCLSID value");
     if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) != ERROR_SUCCESS) {
         TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
@@ -151,7 +150,6 @@ void CloudProviderRegistrar::getCLSID(HKEY hKey, wchar_t *namespaceCLSID, DWORD 
 }
 
 void CloudProviderRegistrar::updateAumidEntry(HKEY hKey) {
-    // Update AUMID key
     const std::wstring aumidValue = KDC_AUMID;
     updateRegistryEntry(hKey, REGKEY_AUMID, L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App");
 }
@@ -184,15 +182,16 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
     std::wstring value;
     if (updateIcons) {
         // Update IconResource
-        std::wstring name(REGKEY_ICONRESOURCE);
         WCHAR exePath[MAX_FULL_PATH];
-        if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
+        bool result = GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH);
+        if (!result) {
             TRACE_ERROR(L"Error in GetModuleFileNameW");
-        } 
-        
-        value = exePath;
+        } else {
+            value = exePath;
+        }
 
         if (!value.empty()) {
+            const std::wstring name(REGKEY_ICONRESOURCE);
             updateRegistryEntry(hKey, name, value);
         }
     }
@@ -212,15 +211,12 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
             HKEY rootKey;
             std::wstring subKey;
     };
-    std::vector<RegKeyInfo> regKeys = {
-            {HKEY_CLASSES_ROOT,
-             REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-            {HKEY_CLASSES_ROOT,
-             REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-            {HKEY_CURRENT_USER,
-             REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-            {HKEY_CURRENT_USER,
-             REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)}};
+
+    const std::wstring defaultIconPath = std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON);
+    const std::vector<RegKeyInfo> regKeys = {{HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_CLSID + defaultIconPath},
+                                             {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + defaultIconPath},
+                                             {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_CLSID + defaultIconPath},
+                                             {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + defaultIconPath}};
 
     for (const auto &regKeyInfo: regKeys) {
         if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
