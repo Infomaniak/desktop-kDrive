@@ -241,10 +241,6 @@ bool SyncService::isPathValidForNewSyncPending() const {
     return isActionPending(actionIsPathValidForNewSync);
 }
 
-bool SyncService::isCreateRemoteFolderPending() const {
-    return isActionPending(actionCreateRemoteFolder);
-}
-
 void SyncService::beginAction(const ServiceActionTracker::ActionKey &actionKey, const ServiceActionTracker::ScopeId scopeId) {
     _serviceActionTracker.beginAction(serviceKeySync, actionKey, scopeId);
 }

@@ -82,7 +82,6 @@ class SyncService : public QObject {
         Q_INVOKABLE [[nodiscard]] bool isQuerySyncStatusPending(qint64 syncDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isFindGoodPathForNewSyncPending() const;
         Q_INVOKABLE [[nodiscard]] bool isPathValidForNewSyncPending() const;
-        [[nodiscard]] bool isCreateRemoteFolderPending() const;
 
     signals:
         void loadingChanged();
