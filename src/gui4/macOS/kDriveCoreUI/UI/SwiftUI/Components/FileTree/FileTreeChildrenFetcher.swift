@@ -55,6 +55,11 @@ public final class FileTreeChildrenFetcher {
                 )
             }
         } catch {
+            if !(error is CancellationError), !Task.isCancelled {
+                IKLogger.data.warning(
+                    "[KD] Folder children fetch failed userDbId=\(userDbId) driveDbId=\(driveDbId) nodeId=\(nodeId) fallback=empty"
+                )
+            }
             return []
         }
     }
@@ -69,7 +74,13 @@ public final class FileTreeChildrenFetcher {
             await self.remotePath(for: nodeId)
         }
 
-        return Dictionary(uniqueKeysWithValues: resolvedPaths.compactMap { $0 })
+        let paths = Dictionary(uniqueKeysWithValues: resolvedPaths.compactMap { $0 })
+        if paths.count != nodeIds.count, !Task.isCancelled {
+            IKLogger.data.warning(
+                "[KD] Exclusion paths partially resolved driveDbId=\(driveDbId) requested=\(nodeIds.count) resolved=\(paths.count)"
+            )
+        }
+        return paths
     }
 
     private func remotePath(for nodeId: String) async -> (String, String)? {
