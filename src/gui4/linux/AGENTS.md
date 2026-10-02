@@ -70,8 +70,14 @@
 - Keep Settings as an independent, single-instance `IKShadowedWindow` activated through
   `AppClientLinux::openSettingsWindow`. Keep General preferences in `GeneralSettingsController`.
 - Keep Settings user cards anchored on `UserDbId`: `SettingsUserService` owns only per-user request state, while
-  `SettingsUsersModel` and `UserDrivesModel` project users, configured classic synchronizations, and available drives
-  directly from `AppCache`. Loading or retrying available drives must preserve the last cache-backed rows.
+  `SettingsUsersModel` and `UserDrivesModel` project users, configured synchronizations, and available drives
+  directly from `AppCache`. Loading or retrying available drives must preserve the last cache-backed rows. A drive with
+  at least one synchronization of the user, advanced ones included, is shown as synchronized with Manage.
+- Identify a configured drive by its `DriveDbId`, never by the backend `DriveId`, which is shared between users. A drive
+  row belongs to one account of one user, and the server reuses it for every synchronization of that user drive, so
+  `AppCache::syncsForDrive` and `mainSync` never mix in another user's synchronizations. Keep `AvailableDriveKey` for
+  drives that are available or being activated. The main synchronization is the classic one with the lowest database id;
+  other classic synchronizations, which only a legacy migration can produce, are presented as advanced ones.
 - Expose a process-long Settings feature service directly to QML when an intermediate controller would only forward its
   properties and calls one-for-one; add a controller only when it owns view-specific state or orchestration. For example,
   `SettingsUserService` is passed to `SettingsWindow` as its own `users` initial property, not through
@@ -95,6 +101,9 @@
 - Let `TranslationService` own the English fallback and selected locale. Language changes retranslate QML and notify C++
   presentation models without resetting navigation or selections. New translated model properties must not be
   `CONSTANT`.
+- Do not translate in C++ whenever QML can: expose states, enums, or translation ids and call `qsTrId` in QML, so the
+  QML engine retranslates on language changes without a `TranslationService` dependency or a `retranslate()` path in
+  the controller. Keep C++ translation for text QML cannot own, such as the system tray menu.
 - Recompute cached translated strings before notifying QML on language changes; emitting a property-change signal alone
   does not retranslate a value stored by a controller.
 - Keep per-sync runtime status and progress exclusively in `AppCache`. Consumers such as the system tray and future UI
@@ -288,6 +297,11 @@
   `AppClientLinux::openOnboardingLoginFromSettings()`, which hides Settings and starts a forced Login onboarding
   session. Completion or cancellation reopens Settings through `restoreSettingsAfterOnboarding()`, and Settings restores
   focus to the account-connection trigger when it becomes visible again.
+- `app/settings/drivemanagementcontroller.*`: process-long state of the Settings "kDrive management" page, exposed as
+  `SettingsWindowController.driveManagement`. The page opens and closes its `DriveDbId` target; the controller
+  follows the drive's main synchronization in `AppCache`, keeps the last confirmed blacklist to present a custom
+  selection, opens the local folder, and deletes the main synchronization. It emits `driveRemoved()` once the drive has
+  no synchronization left, and Settings then returns to the Accounts root.
 - `app/services/exclusiontemplateservice.*`: owns process-long confirmed default/user exclusion snapshots.
   `ensureLoaded()` fetches the immutable default list first and then the user list only while either snapshot is
   missing; later Settings visits reuse the snapshots. Successful user mutations refresh the user snapshot through a
@@ -471,7 +485,8 @@
       roles;
       feature dialogs supply their own wording, state, and actions. Use `IKConfirmationDialog` for standard
       cancel/confirm
-      prompts so consumers only provide copy, busy state, and the confirmed/dismissed workflows. `IKLinkButton` is the
+      prompts so consumers only provide copy, busy state, an optional retryable `errorText`, and the confirmed/dismissed
+      workflows. `IKLinkButton` is the
       inline textual action for rows and cards that must not carry a button surface of their own. `IKCheckBox` is the
       shared tri-state indicator: it
       renders the state it is given and only reports clicks, so a model owning the selection stays authoritative.
