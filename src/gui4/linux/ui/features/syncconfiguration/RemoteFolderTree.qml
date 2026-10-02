@@ -257,6 +257,7 @@ Rectangle {
                 required property int depth
                 required property int row
                 required property int column
+                required property string nodeId
                 required property string folderName
                 required property int checkState
                 required property bool accessDenied
@@ -265,15 +266,35 @@ Rectangle {
                 required property bool childrenLoadFailed
                 required property bool current
 
-                readonly property var treeIndex: folderRow.treeView.index(folderRow.row, folderRow.column)
                 readonly property bool disclosureVisible: folderRow.isTreeNode && folderRow.hasChildren
+                // Folder reported visible to the model, empty while the row is pooled.
+                property string registeredNodeId: ""
+
+                // The index is resolved when it is used, never kept: after an expansion, a row can show another folder
+                // without its `row` changing, and a kept index would still target the previous one.
+                function currentTreeIndex(): var {
+                    return folderRow.treeView.index(folderRow.row, folderRow.column)
+                }
+
+                function registerVisibleNode(): void {
+                    folderRow.registeredNodeId = folderRow.nodeId
+                    root.treeModel.setNodeVisible(folderRow.registeredNodeId, true)
+                }
+
+                function unregisterVisibleNode(): void {
+                    if (folderRow.registeredNodeId === "") {
+                        return
+                    }
+                    root.treeModel.setNodeVisible(folderRow.registeredNodeId, false)
+                    folderRow.registeredNodeId = ""
+                }
 
                 function requestToggle(): void {
                     if (folderRow.accessDenied) {
                         return
                     }
                     treeView.moveCurrentToRow(folderRow.row)
-                    root.treeModel.toggleSelection(folderRow.treeIndex)
+                    root.treeModel.toggleSelection(folderRow.currentTreeIndex())
                 }
 
                 implicitWidth: folderRow.treeView.width
@@ -291,10 +312,18 @@ Rectangle {
                 // The row carries the check state, so it carries its action too: the checkbox is ignored above.
                 Accessible.onToggleAction: folderRow.requestToggle()
 
-                Component.onCompleted: root.treeModel.setRowVisible(folderRow.treeIndex, true)
-                Component.onDestruction: root.treeModel.setRowVisible(folderRow.treeIndex, false)
-                TableView.onPooled: root.treeModel.setRowVisible(folderRow.treeIndex, false)
-                TableView.onReused: root.treeModel.setRowVisible(folderRow.treeIndex, true)
+                Component.onCompleted: folderRow.registerVisibleNode()
+                Component.onDestruction: folderRow.unregisterVisibleNode()
+                TableView.onPooled: folderRow.unregisterVisibleNode()
+                TableView.onReused: folderRow.registerVisibleNode()
+                // A displayed row switching folder hands the visibility over; while pooled, `onReused` registers it.
+                onNodeIdChanged: {
+                    if (folderRow.registeredNodeId === "") {
+                        return
+                    }
+                    folderRow.unregisterVisibleNode()
+                    folderRow.registerVisibleNode()
+                }
 
                 Rectangle {
                     anchors.fill: parent
@@ -355,7 +384,7 @@ Rectangle {
                         Accessible.ignored: true
                         onClicked: {
                             if (folderRow.childrenLoadFailed) {
-                                root.treeModel.retryChildren(folderRow.treeIndex)
+                                root.treeModel.retryChildren(folderRow.currentTreeIndex())
                             } else {
                                 folderRow.treeView.toggleExpanded(folderRow.row)
                             }
