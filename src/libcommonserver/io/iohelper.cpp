@@ -1307,6 +1307,10 @@ ExitInfo IoHelper::toExitInfo(const IoError ioError, const ExitInfo &defaultExit
             return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
         case IoError::HardlinkNotSupported:
             return {ExitCode::SystemError, ExitCause::HardlinkNotSupported};
+        case IoError::DiskFull:
+            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+        case IoError::FileNameTooLong:
+            return {ExitCode::SystemError, ExitCause::InvalidName};
         default:
             return defaultExitInfo;
     }
