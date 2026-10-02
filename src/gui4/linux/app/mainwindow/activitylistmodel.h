@@ -189,7 +189,7 @@ class ActivityListModel final : public QAbstractListModel {
         [[nodiscard]] std::vector<Row> activityRows(SyncDbId syncDbId) const;
         void appendActiveErrors(SyncDbId syncDbId, const std::vector<Error> &errors, std::vector<Row> &rows) const;
         void appendActiveError(SyncDbId syncDbId, const Error &error, std::vector<Row> &rows) const;
-        [[nodiscard]] Row makeActivityRow(SyncDbId syncDbId, const ActivityEntry &activity, const QString &rootFolderName) const;
+        [[nodiscard]] Row makeActivityRow(SyncDbId syncDbId, const ActivityEntry &activity) const;
         [[nodiscard]] Row makeErrorRow(SyncDbId syncDbId, const Error &error) const;
         [[nodiscard]] static Row *findMatchingActivity(std::vector<Row> &rows, const Error &error);
         [[nodiscard]] static MatchScore errorMatchScore(const Row &row, const Error &error);
