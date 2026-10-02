@@ -30,28 +30,28 @@ Item {
     visible: controller.entryCount > 0
     implicitHeight: visible ? currentSelectorItem.implicitHeight : 0
 
-    // Height of the popup list. When the rows do not all fit below the maximum height, the list stops in the middle of the
+    // Height of the popup. When the rows do not all fit below the maximum height, the list stops in the middle of the
     // first row that does not fit (or of the previous one when that middle is still too low), so the half-visible row
     // shows that the list continues. `rowCount` and `contentHeight` are only passed so the binding follows the model.
-    function popupListHeight(rowCount: int, contentHeight: real): real {
+    function popupHeight(rowCount: int, contentHeight: real): real {
         const model = root.controller.selectorModel
-        const maxHeight = IKMainWindow.syncSelectorPopupMaxHeight - 2 * selectorPopup.padding
+        const verticalPadding = selectorPopup.topPadding + selectorPopup.bottomPadding
+        const maxHeight = IKMainWindow.syncSelectorPopupMaxHeight - verticalPadding
         let rowTop = 0
         let previousRowMiddle = 0
         for (let row = 0; row < rowCount; ++row) {
             const subtitle = model.data(model.index(row, 0), SyncSelectorModel.SubtitleRole)
-            const rowHeight = subtitle && subtitle.length > 0 ? IKMainWindow.syncSelectorAdvancedHeight
-                                                             : IKMainWindow.syncSelectorHeight
+            const rowHeight = IKMainWindow.syncSelectorItemHeight(!!subtitle && subtitle.length > 0)
             if (rowTop + rowHeight > maxHeight) {
                 const rowMiddle = rowTop + rowHeight / 2
-                return rowMiddle <= maxHeight || row === 0 ? rowMiddle : previousRowMiddle
+                return (rowMiddle <= maxHeight || row === 0 ? rowMiddle : previousRowMiddle) + verticalPadding
             }
 
             previousRowMiddle = rowTop + rowHeight / 2
             rowTop += rowHeight + selectorList.spacing
         }
 
-        return contentHeight
+        return contentHeight + verticalPadding
     }
 
     IKDriveSyncSelectorItem {
@@ -79,7 +79,7 @@ Item {
         x: 0
         y: root.height + IKSpacing.s4
         width: root.width
-        height: root.popupListHeight(selectorList.count, selectorList.contentHeight) + 2 * padding
+        height: root.popupHeight(selectorList.count, selectorList.contentHeight)
         padding: IKSpacing.s8
         focus: true
         modal: true
