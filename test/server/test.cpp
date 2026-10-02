@@ -32,6 +32,7 @@ extern "C" {
 #include "updater/testabstractupdater.h"
 #if defined(KD_WINDOWS)
 #include "updater/testwindowsupdater.h"
+#include "vfs/win/testvfswinregistration.h"
 #endif
 #include "requests/testserverrequests.h"
 #include "appserver/testappserver.h"
@@ -53,6 +54,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestWorkers);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractUpdater);
 #if defined(KD_WINDOWS)
 CPPUNIT_TEST_SUITE_REGISTRATION(TestWindowsUpdater);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestVfsWinRegistration);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestServerRequests);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAppServer);

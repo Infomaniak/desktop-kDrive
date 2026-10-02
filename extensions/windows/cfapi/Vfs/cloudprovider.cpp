@@ -68,7 +68,7 @@ CloudProvider::~CloudProvider() {
     delete _providerInfo;
 }
 
-bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
+bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize, int64_t *const registeredAt) {
     if (!_providerInfo) {
         TRACE_ERROR(L"Not initialized!");
         return FALSE;
@@ -83,7 +83,7 @@ bool CloudProvider::start(wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
 
     // Register the provider with the shell so that the Sync Root shows up in File Explorer
     TRACE_DEBUG(L"Calling CloudProviderRegistrar::registerWithShell");
-    _synRootID = CloudProviderRegistrar::registerWithShell(_providerInfo, namespaceCLSID, namespaceCLSIDSize);
+    _synRootID = CloudProviderRegistrar::registerWithShell(_providerInfo, namespaceCLSID, namespaceCLSIDSize, registeredAt);
     if (_synRootID.empty()) {
         TRACE_ERROR(L"Error in CloudProviderRegistrar::registerWithShell!");
         return false;
@@ -430,14 +430,6 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
-    if (callbackParameters->FetchData.Flags & CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
-        if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
-                             callbackParameters->FetchData.RequiredFileOffset, callbackParameters->FetchData.RequiredLength)) {
-            TRACE_ERROR(L"Error in cancelFetchData: path='%ls'", fullPath.wstring().c_str());
-        }
-        return;
-    }
-
     std::unique_lock<std::mutex> lck(providerInfo->_fetchMapMutex);
     if (providerInfo->_fetchMap.find(fullPath.wstring()) != providerInfo->_fetchMap.end()) {
         TRACE_DEBUG(L"Fetch already in progress: path='%ls'", fullPath.wstring().c_str());
@@ -589,7 +581,8 @@ bool CloudProvider::connectSyncRootTransferCallbacks() {
     try {
         // Connect to the sync root using Cloud File API
         winrt::check_hresult(CfConnectSyncRoot(_providerInfo->folderPath(), s_callbackTable, _providerInfo,
-                                               CF_CONNECT_FLAG_REQUIRE_PROCESS_INFO | CF_CONNECT_FLAG_REQUIRE_FULL_FILE_PATH,
+                                               CF_CONNECT_FLAG_REQUIRE_PROCESS_INFO | CF_CONNECT_FLAG_REQUIRE_FULL_FILE_PATH |
+                                                       CF_CONNECT_FLAG_BLOCK_SELF_IMPLICIT_HYDRATION,
                                                &_transferCallbackConnectionKey));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());

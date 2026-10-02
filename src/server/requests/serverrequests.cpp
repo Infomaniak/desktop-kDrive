@@ -54,6 +54,7 @@
 #include <QDir>
 #include <QUuid>
 
+#include <algorithm>
 #include <sstream>
 #include <fstream>
 
@@ -278,19 +279,20 @@ ExitCode ServerRequests::getSyncList(std::vector<Sync> &list) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::getParameters(ParametersInfo &parametersInfo) {
-    parametersToParametersInfo(ParametersCache::instance()->parameters(), parametersInfo);
+ExitCode ServerRequests::getParameters(ServerParameters &parameters) {
+    parameters = ParametersCache::instance()->parameters();
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::updateParameters(const ParametersInfo &parametersInfo) {
-    parametersInfoToParameters(parametersInfo, ParametersCache::instance()->parameters());
+ExitCode ServerRequests::updateParameters(const Parameters &parameters) {
+    // The client only provides the client-visible fields: keep the server-only fields of the cached parameters.
+    ParametersCache::instance()->parameters().applyClientParameters(parameters);
     auto exitCode = ExitCode::Ok;
     ParametersCache::instance()->save(&exitCode);
     return exitCode;
 }
 
-ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, SyncConfiguration syncConfig, bool &valid) {
+ExitInfo ServerRequests::isPathValidForNewSync(const SyncPath &path, const SyncConfiguration syncConfig, bool &valid) {
     valid = false;
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"isPathValidForNewSync: checking path=" << Utility::formatSyncPath(path)
@@ -425,6 +427,73 @@ ExitInfo ServerRequests::folderContainsNonExcludedItem(const SyncPath &path, boo
     return ExitCode::Ok;
 }
 
+namespace {
+SyncName getInitialFolderName(const SyncName &driveName) {
+    // We prefix the sync folder name with the app name only if it is not already present in the drive name to avoid redundancy.
+    SyncName prefix;
+    if (const auto appName = Str2SyncName(Theme::instance()->appName());
+        !CommonUtility::startsWithInsensitive(driveName, appName) &&
+        !CommonUtility::startsWithInsensitive(driveName, Str("drive"))) {
+        prefix = appName + Str(" ");
+    }
+#if defined(KD_MACOS)
+    // On macOS, the filesystem is case-insensitive and uses NFD normalization. To avoid issues with sync folder names, we
+    // normalize the drive name to NFD as it is done in addSync.
+    SyncName normalizedDriveName;
+    if (!Utility::normalizedSyncName(driveName, normalizedDriveName, UnicodeNormalization::NFD)) {
+        normalizedDriveName = driveName;
+    }
+    return prefix + normalizedDriveName;
+#else
+    return prefix + driveName;
+#endif
+}
+
+} // namespace
+
+ExitInfo ServerRequests::findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
+                                                      const std::vector<Sync> &syncList, SyncPath &path, QString &errorMessage) {
+    constexpr Count kMaxPathAttempts = 100;
+
+    Count attemptCount = 0;
+    path = homeFolder / initialFolderName;
+    const auto pathCheckOption = IoHelper::getDefaultPathCheckOption();
+
+    // Avoid collisions by appending a suffix.
+    forever {
+        ++attemptCount;
+        // Count attempts and give up eventually.
+        if (attemptCount > kMaxPathAttempts) {
+            errorMessage = QString("Cannot find a valid path for new sync after %1 attempts.").arg(kMaxPathAttempts);
+            LOG_WARN(Log::instance()->getLogger(), errorMessage.toStdString());
+            return ExitCode::SystemError;
+        }
+
+        const auto suffix = attemptCount == 1 ? Str("") : Str(" ") + Str2SyncName(std::to_string(attemptCount));
+        path = homeFolder / (initialFolderName + suffix);
+
+        // Check if the local directory already exists
+        auto ioError = IoError::Success;
+        bool alreadyExists = false;
+        if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, pathCheckOption) || ioError != IoError::Success) {
+            errorMessage = QString::fromStdWString(Utility::formatIoError(path, ioError));
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::checkIfPathExists: " << QStr2WStr(errorMessage));
+            return ExitCode::SystemError;
+        }
+
+        if (alreadyExists) continue;
+
+        // Check if the local directory is referred to by an existing sync.
+        if (const auto exitInfo = checkSyncNesting(syncList, Path2QStr(path), errorMessage); exitInfo)
+            break;
+        else if (exitInfo != ExitInfo{ExitCode::InvalidSync, ExitCause::SyncDirNestingError})
+            return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncPath &path, std::string &error) {
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
@@ -433,61 +502,33 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
     }
 
     SyncPath homeFolder;
-    if (const auto exitCode = CommonUtility::homeDirectoryPath(homeFolder); !exitCode) {
-        return exitCode;
-    }
-    const SyncName initialFolderName = Str2SyncName(Theme::instance()->appName()) + Str(" ") + driveName;
-    SyncPath initialPath = homeFolder / initialFolderName;
+    if (const auto exitInfo = CommonUtility::homeDirectoryPath(homeFolder); !exitInfo) return exitInfo;
 
-    // If the parent folder is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
+    // If `homeFolder` is a sync folder or contained in one, we can't possibly find a valid sync folder inside it.
+    // The user will be prompted to choose a custom folder in this case.
     SyncDbId syncDbId = 0;
-    if (const auto exitCode = syncForPath(syncList, Path2QStr(homeFolder), syncDbId); exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath: code=" << exitCode);
-        return exitCode;
-    }
+    if (const bool someSyncFolderContainsHome = syncForPath(syncList, Path2QStr(homeFolder), syncDbId);
+        someSyncFolderContainsHome) {
+        error = "The home folder is a sync folder or is contained in one.";
+        LOGW_WARN(Log::instance()->getLogger(), CommonUtility::s2ws(error) << L":" << Utility::formatSyncPath(homeFolder));
 
-    if (syncDbId) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"The parent folder is a sync folder or contained in one : " << Utility::formatSyncPath(homeFolder));
-        error = "The parent folder is a sync folder or contained in one";
         return ExitCode::SystemError;
     }
 
     QString errorMessage;
-    const ExitInfo exitInfo = checkSyncNesting(syncList, Path2QStr(initialPath), errorMessage);
-    if (!exitInfo) {
+    const SyncName initialFolderName = getInitialFolderName(driveName);
+    SyncPath unoccupiedPath;
+    if (const auto exitInfo = findUnoccupiedPathForNewSync(homeFolder, initialFolderName, syncList, unoccupiedPath, errorMessage);
+        !exitInfo) {
         LOGW_WARN(Log::instance()->getLogger(), QStr2WStr(errorMessage));
+        error = QStr2Str(errorMessage);
+
         return exitInfo;
     }
 
-    auto attempt = 1;
-    SyncPath finalPath = initialPath;
-    forever {
-        // Check if the local directory already exists
-        auto ioError = IoError::Success;
-        bool alreadyExists = false;
-        if (!IoHelper::checkIfPathExists(finalPath, alreadyExists, ioError, IoHelper::PathCheckOption::Insensitive)) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(finalPath, ioError));
-            return ExitCode::SystemError;
-        }
-        if (!alreadyExists) {
-            break;
-        }
-
-        // Count attempts and give up eventually
-        if (attempt >= 100) {
-            LOG_WARN(Log::instance()->getLogger(), "Can't find a valid path");
-            error = "Can't find a valid path";
-            return ExitCode::SystemError;
-        }
-        attempt++;
-
-        finalPath = homeFolder / (initialFolderName + Str2SyncName(std::to_string(attempt)));
-    }
-
-    path = finalPath;
+    path = unoccupiedPath;
     error = "";
+
     return ExitCode::Ok;
 }
 
@@ -1609,7 +1650,7 @@ ExitInfo ServerRequests::getErrorList(const int32_t limit, std::vector<Error> &l
         }
 
         list.clear();
-        hasMore = errorList.size() >= limit;
+        hasMore = errorList.size() >= static_cast<size_t>(limit);
         staleCount = 0;
 
         for (const Error &error: errorList) {
@@ -2082,15 +2123,22 @@ ExitCode ServerRequests::checkPathValidityRecursive(const QString &path, QString
     return ExitCode::Ok;
 }
 
+namespace {
+Qt::CaseSensitivity getQtPathCheckOption() {
+    if (CommonUtility::isWindows() || CommonUtility::isMac()) {
+        return Qt::CaseInsensitive;
+    }
+
+    return Qt::CaseSensitive;
+}
+} // namespace
+
 ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, const QString &path, QString &error) {
     error.clear();
-    ExitCode exitCode = checkPathValidityRecursive(path, error);
-    if (exitCode != ExitCode::Ok) {
+    if (const ExitCode exitCode = checkPathValidityRecursive(path, error); exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive: code=" << exitCode);
         return exitCode;
     }
-
-    auto cs = Qt::CaseSensitive;
 
     const QString userDir = QDir::cleanPath(canonicalPath(path)) + '/';
 
@@ -2100,7 +2148,8 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
         existingSyncFolderList << sync.localPath();
     }
 
-    for (std::filesystem::path existingSyncFolder: existingSyncFolderList) {
+    const auto cs = getQtPathCheckOption();
+    for (const auto &existingSyncFolder: existingSyncFolderList) {
         const QString existingSyncFolderDir = QDir::cleanPath(canonicalPath(SyncName2QStr(existingSyncFolder.native()))) + '/';
 
         const bool differentPaths = QString::compare(existingSyncFolderDir, userDir, cs) != 0;
@@ -2130,81 +2179,22 @@ ExitInfo ServerRequests::checkSyncNesting(const std::vector<Sync> &syncList, con
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
+bool ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId) {
+    syncDbId = 0;
+
     QString absolutePath = QDir::cleanPath(path) + QLatin1Char('/');
+    const auto cs = getQtPathCheckOption();
 
     for (const BaseSync &sync: syncList) {
         const QString localPath = SyncName2QStr(sync.localPath().native()) + QLatin1Char('/');
 
-        if (absolutePath.startsWith(localPath, (CommonUtility::isWindows() || CommonUtility::isMac()) ? Qt::CaseInsensitive
-                                                                                                      : Qt::CaseSensitive)) {
+        if (absolutePath.startsWith(localPath, cs)) {
             syncDbId = sync.dbId();
-            break;
+            return true;
         }
     }
 
-    return ExitCode::Ok;
-}
-
-void ServerRequests::parametersToParametersInfo(const Parameters &parameters, ParametersInfo &parametersInfo) {
-    parametersInfo.setLanguage(parameters.language());
-    parametersInfo.setAutoStart(parameters.autoStart());
-    parametersInfo.setMonoIcons(parameters.monoIcons());
-    parametersInfo.setMoveToTrash(parameters.moveToTrash());
-    parametersInfo.setNotificationsDisabled(parameters.notificationsDisabled());
-    parametersInfo.setUseLog(parameters.useLog());
-    parametersInfo.setLogLevel(parameters.logLevel());
-    parametersInfo.setExtendedLog(parameters.extendedLog());
-    parametersInfo.setPurgeOldLogs(parameters.purgeOldLogs());
-    parametersInfo.setProxyConfig(parameters.proxyConfig());
-    parametersInfo.setDarkTheme(parameters.darkTheme());
-
-    if (parameters.dialogGeometry()) {
-        QByteArray dialogGeometryArr;
-        std::copy(parameters.dialogGeometry()->begin(), parameters.dialogGeometry()->end(),
-                  std::back_inserter(dialogGeometryArr));
-        QList<QByteArray> dialogGeometryLines = dialogGeometryArr.split('\n');
-        for (const QByteArray &dialogGeometryLine: dialogGeometryLines) {
-            QList<QByteArray> dialogGeometryElts = dialogGeometryLine.split(';');
-            if (dialogGeometryElts.size() == 2) {
-                parametersInfo.setDialogGeometry(QString(dialogGeometryElts[0]), dialogGeometryElts[1]);
-            }
-        }
-    }
-    parametersInfo.setMaxAllowedCpu(parameters.maxAllowedCpu());
-    parametersInfo.setDistributionChannel(parameters.distributionChannel());
-    parametersInfo.setSentryEnabled(parameters.sentryEnabled());
-    parametersInfo.setMatomoEnabled(parameters.matomoEnabled());
-}
-
-void ServerRequests::parametersInfoToParameters(const ParametersInfo &parametersInfo, Parameters &parameters) {
-    parameters.setLanguage(parametersInfo.language());
-    parameters.setMonoIcons(parametersInfo.monoIcons());
-    parameters.setAutoStart(parametersInfo.autoStart());
-    parameters.setNotificationsDisabled(parametersInfo.notificationsDisabled());
-    parameters.setUseLog(parametersInfo.useLog());
-    parameters.setLogLevel(parametersInfo.logLevel());
-    parameters.setExtendedLog(parametersInfo.extendedLog());
-    parameters.setPurgeOldLogs(parametersInfo.purgeOldLogs());
-    parameters.setProxyConfig(parametersInfo.proxyConfig());
-    parameters.setDarkTheme(parametersInfo.darkTheme());
-    parameters.setMoveToTrash(parametersInfo.moveToTrash());
-
-    if (!parametersInfo.dialogGeometry().isEmpty()) {
-        QByteArray dialogGeometryArr;
-        for (const QString &objectName: parametersInfo.dialogGeometry().keys()) {
-            dialogGeometryArr += objectName.toUtf8();
-            dialogGeometryArr += ";";
-            dialogGeometryArr += parametersInfo.dialogGeometry().value(objectName);
-            dialogGeometryArr += "\n";
-        }
-        parameters.setDialogGeometry(
-                std::shared_ptr<std::vector<char>>(new std::vector<char>(dialogGeometryArr.begin(), dialogGeometryArr.end())));
-    }
-    parameters.setMaxAllowedCpu(parametersInfo.maxAllowedCpu());
-    parameters.setDistributionChannel(parametersInfo.distributionChannel());
-    parameters.setSentryEnabled(parametersInfo.sentryEnabled());
-    parameters.setMatomoEnabled(parametersInfo.matomoEnabled());
+    return false;
 }
 
 } // namespace KDC

@@ -192,8 +192,15 @@ set(testserver_SRCS
     ../test_utility/testbase.h
     ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
     ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
+    ../test_utility/timeouthelper.h ../test_utility/timeouthelper.cpp
     ../test.cpp
     ../mocks/mockkeychainstorage.h ../mocks/mockkeychainstorage.cpp
+    # SyncpalTestHelper
+    ../syncpal_test_helper/mocksyncpal.h
+    ../syncpal_test_helper/syncpaltesthelper.h ../syncpal_test_helper/syncpaltesthelper.cpp
+    ../syncpal_test_helper/initialsituationsetter.h ../syncpal_test_helper/initialsituationsetter.cpp
+    ../syncpal_test_helper/operationsexecutor.h ../syncpal_test_helper/operationsexecutor.cpp
+    ../syncpal_test_helper/situationcomparator.h ../syncpal_test_helper/situationcomparator.cpp
 
     test.cpp
     updater/testabstractupdater.h updater/testabstractupdater.cpp
@@ -228,6 +235,7 @@ elseif(UNIX)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_linux.cpp)
 elseif(WIN32)
     list(APPEND testserver_SRCS updater/testwindowsupdater.h updater/testwindowsupdater.cpp)
+    list(APPEND testserver_SRCS vfs/win/testvfswinregistration.h vfs/win/testvfswinregistration.cpp)
     list(APPEND testserver_SRCS ../test_utility/testhelpers_win.cpp)
 endif()
 

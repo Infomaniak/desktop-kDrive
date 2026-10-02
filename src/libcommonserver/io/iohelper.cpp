@@ -731,13 +731,14 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept {
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *const filestat, IoError &ioError, PathCheckOption option) noexcept {
     ioError = IoError::Success;
 
     bool exists = false;
     if (!checkIfPathExists(path, exists, ioError, option)) {
         return false;
     }
+
     if (!exists) {
         if (ioError == IoError::Success) ioError = IoError::NoSuchFileOrDirectory;
         return true;
@@ -746,15 +747,30 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *filestat, IoError &io
     return _getFileStat(path, filestat, ioError);
 }
 
-void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, PathCheckOption option) {
+void IoHelper::getFileStat(const SyncPath &path, FileStat *const buf, bool &exists, const PathCheckOption option) {
     exists = true;
-    IoError ioError = IoError::Success;
+    auto ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError, option)) {
-        exists = (ioError != IoError::NoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
 
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
+
+    exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
+}
+
+IoError IoHelper::setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept {
+    // Check that the item exists and retrieve its creation date, as setFileDates sets both dates.
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!getFileStat(absoluteLocalPath, &fileStat, ioError, PathCheckOption::Insensitive)) return ioError;
+    if (ioError != IoError::Success) return ioError; // The item does not exist or another expected error occurred.
+
+    // Check whether the item is a symlink, so that setFileDates does not follow it.
+    ItemType itemType;
+    if (!getItemType(absoluteLocalPath, itemType)) return itemType.ioError;
+
+    return setFileDates(absoluteLocalPath, fileStat.creationTime, lastModifiedTime, itemType.linkType == LinkType::Symlink);
 }
 
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
@@ -1114,6 +1130,24 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
     return ioError == IoError::Success;
 }
 
+bool IoHelper::getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept {
+    canonicalPath.clear();
+    ioError = IoError::Success;
+
+    std::error_code ec;
+    const SyncPath canonicalParentPath = std::filesystem::canonical(path.parent_path(), ec);
+    ioError = stdError2ioError(ec);
+
+    if (ec) {
+        LOGW_WARN(logger(), L"Error in std::filesystem::canonical: " << Utility::formatStdError(path.parent_path(), ec));
+        return false;
+    }
+
+    canonicalPath = canonicalParentPath / path.filename();
+
+    return true;
+}
+
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path));
@@ -1354,8 +1388,8 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
     bool dummyWrite = false;
     bool exec = true;
     if (const auto ioError = IoHelper::getRights(path, dummyRead, dummyWrite, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        // This is the best effort to re-apply the existing exec rights, therefor we do not return in case of error.
+        LOGW_DEBUG(logger(), L"Failed to get rights for " << Utility::formatIoError(path, ioError));
+        // This is the best effort to re-apply the existing exec rights, therefore we do not return in case of error.
     }
 
     // The file must be unlocked before changing its access rights.
@@ -1365,9 +1399,10 @@ IoError IoHelper::setFullAccess(const SyncPath &path) noexcept {
 
     // Set full access rights.
     if (const auto ioError = IoHelper::setRights(path, true, true, exec); ioError != IoError::Success) {
-        LOGW_DEBUG(logger(), L"Failed to set rights for: " << Utility::formatSyncPath(path));
-        return IoError::Unknown;
+        LOGW_DEBUG(logger(), L"Failed to set rights for " << Utility::formatIoError(path, ioError));
+        return ioError;
     }
+
     return IoError::Success;
 }
 

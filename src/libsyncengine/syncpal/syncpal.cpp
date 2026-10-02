@@ -390,7 +390,7 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
     }
 }
 
-void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const int64_t nbDeletes,
+void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const Count nbDeletes,
                                           const std::vector<SyncPath> &filesPaths) {
     if (_sendManyDeletesNotification) {
         _sendManyDeletesNotification(syncDbId(), notificationType, nbDeletes, filesPaths);
@@ -796,7 +796,7 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             return;
         }
 
-        if (!setProgress(job->affectedFilePath(), static_cast<int16_t>(progress))) {
+        if (!setProgress(job->affectedFilePath(), progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
     };
@@ -1258,6 +1258,35 @@ void SyncPal::start(const std::chrono::seconds &startDelay) {
         return;
     }
     setVfsMode(sync.virtualFileMode());
+
+    // When the Windows shell extension is uninstalled, the sync root is unregistered and all placeholders are deleted.
+    // The sync root is then registered again (with a new registration time) on next VFS start. To avoid propagating those
+    // deletions to the server, all local deletes are reverted if the registration time is later than the stored reference
+    // (the last known registration time, or the DB migration time for syncs created before this field existed).
+    // A stored reference of 0 (new sync or VFS mode change) means that the current registration is legitimate.
+    // The stored reference is only updated once the revert succeeded, so that an interruption (e.g. app closed before
+    // reaching this point) is handled on the next start.
+    // An empty (0) registration time (macOS, VFS off, or unknown) means nothing to do.
+    if (const SyncTime vfsRegisteredAt = vfs() ? vfs()->registeredAt() : 0;
+        vfsRegisteredAt != 0 && vfsRegisteredAt != sync.vfsRegisteredAt()) {
+        if (sync.vfsRegisteredAt() != 0 && vfsRegisteredAt > sync.vfsRegisteredAt()) {
+            LOG_SYNCPAL_INFO(_logger, "VFS sync root registered at " << vfsRegisteredAt << ", after reference time "
+                                                                     << sync.vfsRegisteredAt()
+                                                                     << ", reverting all local deletes");
+            if (!syncDb()->revertAllLocalDeletes()) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::revertAllLocalDeletes");
+                addError(Error(syncDbId(), ERR_ID, ExitCode::SystemError, ExitCause::UnableToStartVfs));
+                return;
+            }
+        }
+
+        sync.setVfsRegisteredAt(vfsRegisteredAt);
+        if (!ParmsDb::instance()->updateSync(sync, found)) {
+            LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::updateSync");
+        } else if (!found) {
+            LOG_SYNCPAL_WARN(_logger, "Sync not found in sync table for syncDbId=" << syncDbId());
+        }
+    }
 
     // Clear tmp blacklist
     SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, NodeSet());

@@ -91,6 +91,17 @@ struct IoHelper {
 
         static ExitInfo toExitInfo(const IoError ioError);
 
+        static PathCheckOption getDefaultPathCheckOption() noexcept {
+#if defined(KD_WINDOWS) || defined(KD_MACOS)
+            return PathCheckOption::Insensitive;
+#elif defined(KD_LINUX)
+            return PathCheckOption::Sensitive;
+#else
+            static_assert(false, "Unknown platform");
+            return PathCheckOption::Insensitive;
+#endif
+        }
+
         IoHelper() = default;
 
         inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
@@ -125,7 +136,8 @@ struct IoHelper {
          successfully retrieved, nullptr otherwise.
          !!! For a symlink, filestat.nodeType is set with the type of the target !!!
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError, PathCheckOption option) noexcept;
@@ -148,7 +160,7 @@ struct IoHelper {
          \param path is a file system path to a directory entry (we also call it an item).
          \param previousSize is a file size in bytes to be checked against.
          \param previousMtime is the previous modification date to be checked against.
-         \param previousBirthtime is the previous creation date to be checked against.
+         \param previousCreationTime is the previous creation date to be checked against.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
          modification time. False otherwise.
@@ -183,7 +195,8 @@ struct IoHelper {
          \param path is the file system path indicating the item to check.
          \param exists is a boolean set with true if an item indicated by the path exists, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
 
          \note This method never sets ioError with `IoError::NoSuchFileOrDirectory`.
@@ -194,10 +207,11 @@ struct IoHelper {
         /*!
          \param path is the file system path indicating the item to check.
          \param nodeId is node identifier that is checked against the identifier indicated by path.
-         \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
-         false otherwise.
+         \param existsWithSameId is a boolean set with true if an item indicated by the path exists with the specified node
+         identifier, false otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
-         \param sensitive is a boolean set with true for a case & encoding sensitive check.
+         \param option is an enum value. Set it with PathCheckOption::Sensitive for a case & encoding sensitive check,
+         PathCheckOption::Insensitive otherwise.
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
@@ -379,6 +393,18 @@ struct IoHelper {
          */
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
+        //! Computes the canonical form of the parent directory of the indicated path, followed by the file name of the path.
+        // Only the parent directory is canonicalized, not the file name. The canonical form of a path is an absolute path with
+        // all symbolic links and relative path components resolved except for the file itself.
+        /*!
+         \param path is the file system path whose parent directory is to be canonicalized.
+         \param canonicalPath is set with the canonical form of the parent directory of path followed by the file name of path,
+         or left empty if an error occurred.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept;
+
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         //! If the destination item is a link, remove it before copying.
         /*!
@@ -552,6 +578,15 @@ struct IoHelper {
          */
         static IoError setFileDates(const KDC::SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                     bool symlink) noexcept;
+
+        //! Set the last modification date of the item indicated by `absoluteLocalPath`.
+        //! The creation date is left unchanged. Symlinks are not followed.
+        /*!
+         \param absoluteLocalPath is the file system path of the item.
+         \param lastModifiedTime is the modification date to be set.
+         \return IoError::Success if the process succeeds. An appropriate IoError otherwise.
+         */
+        static IoError setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept;
 
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||

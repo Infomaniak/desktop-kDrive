@@ -202,7 +202,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
-        [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const ParametersInfo &);
+        [[nodiscard]] ExitInfo updateParametersAndPropagateChanges(const Parameters &newParameters);
         [[nodiscard]] ExitInfo sendAppStartTrace();
 
         // Ask the Finder/File explorer Extension to register the folder
@@ -358,7 +358,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendSyncRemoved(SyncDbId syncDbId) const;
         virtual void sendSyncDeletionFailed(SyncDbId syncDbId) const;
         virtual void sendManyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType,
-                                                 const int64_t nbDeletes, const std::vector<SyncPath> &filesPaths) const;
+                                                 const Count nbDeletes, const std::vector<SyncPath> &filesPaths) const;
         virtual void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) const;
         virtual void sendErrorsCleared(SyncDbId syncDbId) const;
         virtual void sendQuit() const; // Ask client to quit

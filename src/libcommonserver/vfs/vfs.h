@@ -126,6 +126,16 @@ class Vfs : public QObject {
         /// Also deregister the folder with the sync provider, like when a folder is removed.
         void stop(bool unregister);
 
+        /// Registration time of the sync root with the OS (Unix timestamp in milliseconds).
+        /// Only relevant on Windows, where it is the creation time of the sync root registry entry.
+        /// 0 if unknown or not applicable (macOS, VFS off).
+        [[nodiscard]] SyncTime registeredAt() const { return _registeredAt; }
+
+        /// Whether the sync root is still registered with the OS.
+        /// Only relevant on Windows, where unregistering the sync root (e.g. uninstalling the shell extension) deletes all
+        /// placeholders. Always true otherwise.
+        [[nodiscard]] virtual bool isRegistered() const { return true; }
+
         /** Whether the socket api should show pin state options
          *
          * Some plugins might provide alternate shell integration, making the normal
@@ -354,6 +364,8 @@ class Vfs : public QObject {
 
         virtual void stopImpl(bool unregister) = 0;
 
+        void setRegisteredAt(const SyncTime registeredAt) { _registeredAt = registeredAt; }
+
         log4cplus::Logger logger() const { return _vfsSetupParams.logger; }
 
 
@@ -392,6 +404,7 @@ class Vfs : public QObject {
     private:
         bool _extendedLog{false};
         bool _started{false};
+        SyncTime _registeredAt{0};
 };
 } // namespace KDC
 

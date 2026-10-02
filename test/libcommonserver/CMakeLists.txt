@@ -20,6 +20,8 @@ set(testcommonserver_SRCS
         utility/testutility.h utility/testutility.cpp
         # db
         db/testdb.h db/testdb.cpp
+        # data
+        data/testserverparameters.h data/testserverparameters.cpp
 )
 
 if(APPLE)

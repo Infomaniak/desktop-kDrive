@@ -22,6 +22,7 @@
 #include "syncpal/testsyncpal.h"
 #include "syncpal/testsyncpalworker.h"
 #include "syncpal/testoperationprocessor.h"
+#include "syncpal/testconflictingfilescorrector.h"
 #include "update_detection/file_system_observer/testfsoperation.h"
 #include "update_detection/file_system_observer/testfsoperationset.h"
 #include "update_detection/file_system_observer/testremotefilesystemobserverworker.h"
@@ -71,6 +72,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSearchJob);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncNodeCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictingFilesCorrector);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestAbstractJob);
