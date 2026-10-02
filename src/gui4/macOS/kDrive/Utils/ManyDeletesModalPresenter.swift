@@ -119,13 +119,22 @@ final class ManyDeletesModalPresenter {
             return
         }
 
-        guard let driveId = await coherentCache.getDrive(driveDbId: synchro.driveDbId)?.driveId else { return }
+        guard let driveId = await coherentCache.getDrive(driveDbId: synchro.driveDbId)?.driveId else {
+            IKLogger.general.warning("[KD] Many deletes presentation skipped syncDbId=\(syncDbId) reason=missingDrive")
+            return
+        }
+        IKLogger.general.info(
+            "[KD] Many deletes confirmation presented syncDbId=\(syncDbId) type=\(notification.notificationType) files=\(notification.nbFiles)"
+        )
 
         switch notification.notificationType {
         case .SoftLimit:
             await runSoftLimitAlert(nbFiles: notification.nbFiles, driveId: Int(driveId))
         case .HardLimit:
-            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles) else { return }
+            guard let userChoice = await runHardLimitAlert(nbFiles: notification.nbFiles) else {
+                IKLogger.general.info("[KD] Many deletes confirmation aborted syncDbId=\(syncDbId)")
+                return
+            }
 
             await acknowledge(syncDbId: syncDbId, userChoice: userChoice)
         default:
@@ -200,8 +209,10 @@ final class ManyDeletesModalPresenter {
     }
 
     private func acknowledge(syncDbId: Int32, userChoice: KDC.TooManyDeletesUserChoice) async {
+        IKLogger.general.info("[KD] Many deletes decision syncDbId=\(syncDbId) continue=\(userChoice == .Continue)")
         do {
             try await SyncJobs().acknowledgeManyDeletes(syncDbId: syncDbId, userChoice: userChoice)
+            IKLogger.general.info("[KD] Many deletes acknowledgment accepted syncDbId=\(syncDbId)")
         } catch {
             SentrySDK.capture(error: error)
             IKLogger.general.error("[KD] Failed to acknowledge many deletes for syncDbId:\(syncDbId): \(error)")
@@ -212,7 +223,10 @@ final class ManyDeletesModalPresenter {
         @InjectService var settingsCache: SettingsCaching
         Task {
             do {
-                guard let parametersInfo = await settingsCache.getSettings() else { return }
+                guard let parametersInfo = await settingsCache.getSettings() else {
+                    IKLogger.general.warning("[KD] Disable askBeforeDelete skipped reason=settingsUnavailable")
+                    return
+                }
                 let newParametersInfo = ParametersInfo(
                     language: parametersInfo.language,
                     monoIcons: parametersInfo.monoIcons,
@@ -232,6 +246,7 @@ final class ManyDeletesModalPresenter {
                     askBeforeDelete: false
                 )
                 try await ParametersJobs().updateParameters(parametersInfo: newParametersInfo)
+                IKLogger.general.info("[KD] Disable askBeforeDelete accepted")
             } catch {
                 SentrySDK.capture(error: error)
                 IKLogger.general.error("[KD] Failed to disable askBeforeDelete: \(error)")

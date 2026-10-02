@@ -18,12 +18,31 @@
 
 import Foundation
 @testable import InfomaniakDI
+@testable import kDrive
 @testable import kDriveCore
 import Testing
 
 private struct UnencodableRequest: Encodable {
     func encode(to encoder: any Encoder) throws {
         throw EncodingError.invalidValue("private-name", .init(codingPath: [], debugDescription: "private-path"))
+    }
+}
+
+private actor PartiallyFailingSyncCreator: SyncCreator {
+    private(set) var attempts = 0
+
+    func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
+        attempts += 1
+        if attempts > 1 {
+            throw NSError(domain: NSCocoaErrorDomain, code: 513, userInfo: [NSFilePathErrorKey: "/private-name/private-folder"])
+        }
+        return try JSONDecoder().decode(SyncInfo.self, from: Data(
+            #"{"dbId":123,"driveDbId":456,"localPath":"","supportVfs":false,"targetNodeId":"","targetPath":"","virtualFileMode":0}"#.utf8
+        ))
+    }
+
+    func preferredLocalPath(for driveName: String) async throws -> URL {
+        URL(fileURLWithPath: "/private-name/private-folder")
     }
 }
 
@@ -96,6 +115,45 @@ extension SharedDITests {
                 #expect(reporter.capturedEvents.count == 1)
                 #expect(reporter.capturedEvents.first?.message.contains("DataError") == true)
                 #expect(reporter.breadcrumbs.filter { $0.level == .warning }.count == 2)
+            }
+        }
+
+        @Test("Partial onboarding reports created and remaining counts before advancing without logging candidate paths")
+        func reportsPartialOnboarding() async throws {
+            try await withLogger { service, writer, _ in
+                let creator = PartiallyFailingSyncCreator()
+                let resolver = SimpleResolver.sharedResolver
+                let identifier = resolver.buildIdentifier(type: SyncCreator.self)
+                let previousFactory = resolver.factories[identifier]
+                let previousService = resolver.store[identifier]
+                defer {
+                    resolver.factories[identifier] = previousFactory
+                    resolver.store[identifier] = previousService
+                }
+                resolver.store.removeValue(forKey: identifier)
+                resolver.store(factory: Factory(type: SyncCreator.self) { _, _ in creator })
+
+                let (finished, continuation) = AsyncStream<Void>.makeStream()
+                let viewModel = await MainActor.run {
+                    let coordinator = OnboardingFlowCoordinator(user: nil, steps: [.synchronization], initialStep: .synchronization) {
+                        continuation.yield(())
+                    }
+                    let candidate = NewSyncCandidate(
+                        origin: .storedDrive(CacheData.expectedDrive), remoteFolder: .kDriveRoot,
+                        localFolder: URL(fileURLWithPath: "/private-name/private-folder"), blackList: [], useLightSync: false
+                    )
+                    coordinator.synchronizations = [candidate, candidate, candidate]
+                    let viewModel = SynchronizationViewModel(flowCoordinator: coordinator)
+                    viewModel.createSynchronizations()
+                    return viewModel
+                }
+                _ = await finished.first { _ in true }
+                #expect(await creator.attempts == 2)
+                #expect(await viewModel.isShowingError)
+                service.flush()
+                #expect(writer.lines.contains { $0.contains("syncDbId=123 driveDbId=456") })
+                #expect(writer.lines.contains { $0.contains("created=1 remaining=2 advancing=true") })
+                #expect(!writer.lines.contains { $0.contains("creation completed") || $0.contains("private-") })
             }
         }
     }

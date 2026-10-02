@@ -186,12 +186,14 @@ struct QuickConflictsResolutionView: View {
                     strategy = .KeepRemote
                 }
                 let errorDbIds = errors.map { Int32($0.metadata.dbId) }
-
+                IKLogger.general.info("[KD] Batch conflict resolution requested strategy=\(strategy.rawValue) count=\(errorDbIds.count)")
                 try await ErrorJobs().resolveConflictsQuick(errorDbIds: errorDbIds, strategy: strategy)
+                IKLogger.general.info("[KD] Batch conflict resolution accepted count=\(errorDbIds.count)")
 
                 @InjectService var router: MainViewRouter
                 router.removeLast()
             } catch {
+                IKLogger.general.warning("[KD] Batch conflict resolution failed count=\(errors.count)")
                 isShowingGenericError = true
                 SentrySDK.capture(error: error)
             }

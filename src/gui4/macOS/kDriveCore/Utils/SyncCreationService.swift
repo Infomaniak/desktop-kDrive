@@ -72,22 +72,35 @@ public final class SyncCreationService: SyncCreator {
     @discardableResult
     public func create(from sync: NewSyncCandidate) async throws -> SyncInfo {
         let identifier = getIdentifier(from: sync.origin)
+        let driveId = sync.origin.drive.driveId
+        var stage = "resolveLocalFolder"
+        IKLogger.general.info("[KD] Sync creation started driveId=\(driveId) requestedLiteSync=\(sync.useLightSync)")
+        do {
+            let localFolderURL = try await getLocalFolderURL(for: sync)
 
-        let localFolderURL = try await getLocalFolderURL(for: sync)
+            stage = "checkVolumeCapabilities"
+            let volumeSupportsLightSync = try await canUseLightSync(at: localFolderURL)
+            let useLightSync = sync.useLightSync && volumeSupportsLightSync
+            if sync.useLightSync && !volumeSupportsLightSync {
+                IKLogger.general.info("[KD] Sync creation using offline mode driveId=\(driveId) reason=volumeUnsupported")
+            }
+            let metadata = getMetadata(for: sync, useLightSync: useLightSync, localFolderURL: localFolderURL)
 
-        let volumeSupportsLightSync = try await canUseLightSync(at: localFolderURL)
-        let useLightSync = sync.useLightSync && volumeSupportsLightSync
-        let metadata = getMetadata(for: sync, useLightSync: useLightSync, localFolderURL: localFolderURL)
+            stage = "createDestination"
+            try createDestinationIfNecessary(at: localFolderURL)
 
-        try createDestinationIfNecessary(at: localFolderURL)
-
-        let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
-        let syncRootURL = URL(fileURLWithPath: syncInfo.localPath, isDirectory: true)
-        if !FinderSidebarFavorites.add(syncRootURL) {
-            IKLogger.general.warning("Failed to add sync root to Finder Favorites")
+            stage = "addSync"
+            let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
+            IKLogger.general.info("[KD] Sync creation accepted driveId=\(driveId) syncDbId=\(syncInfo.dbId) liteSync=\(useLightSync)")
+            let syncRootURL = URL(fileURLWithPath: syncInfo.localPath, isDirectory: true)
+            if !FinderSidebarFavorites.add(syncRootURL) {
+                IKLogger.general.warning("Failed to add sync root to Finder Favorites")
+            }
+            return syncInfo
+        } catch {
+            IKLogger.general.warning("[KD] Sync creation failed driveId=\(driveId) stage=\(stage)")
+            throw error
         }
-
-        return syncInfo
     }
 
     public func preferredLocalPath(for driveName: String) async throws -> URL {

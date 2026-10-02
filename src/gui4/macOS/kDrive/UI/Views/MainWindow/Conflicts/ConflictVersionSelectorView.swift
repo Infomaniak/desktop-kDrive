@@ -238,12 +238,17 @@ struct ConflictVersionSelectorView: View {
             matomo.track(eventWithCategory: .errors, name: "validateConflictResolution", value: matomoValue)
         }
 
+        IKLogger.general.info(
+            "[KD] Conflict resolution requested keepLocalCount=\(keepLocalErrorDbIds.count) keepRemoteCount=\(keepRemoteErrorDbIds.count)"
+        )
         do {
             try await ErrorJobs().resolveConflicts(
                 keepLocalErrorDbIds: keepLocalErrorDbIds,
                 keepRemoteErrorDbIds: keepRemoteErrorDbIds
             )
+            IKLogger.general.info("[KD] Conflict resolution accepted count=\(selection.count)")
         } catch {
+            IKLogger.general.warning("[KD] Conflict resolution failed count=\(selection.count)")
             isShowingGenericErrorAlert = true
             SentrySDK.capture(error: error)
         }

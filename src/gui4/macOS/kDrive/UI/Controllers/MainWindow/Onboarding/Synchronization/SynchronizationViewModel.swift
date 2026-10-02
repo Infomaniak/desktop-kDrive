@@ -18,7 +18,6 @@
 
 import Combine
 import Foundation
-import InfomaniakConcurrency
 import InfomaniakDI
 import kDriveCore
 
@@ -37,11 +36,19 @@ final class SynchronizationViewModel: ObservableObject {
     func createSynchronizations() {
         Task {
             let syncCandidates = flowCoordinator.synchronizations
+            var createdCount = 0
+            IKLogger.general.info("[KD] Onboarding sync creation started requested=\(syncCandidates.count)")
             do {
-                try await syncCandidates.asyncForEach { syncCandidate in
-                    try await self.syncCreator.create(from: syncCandidate)
+                for syncCandidate in syncCandidates {
+                    let syncInfo = try await syncCreator.create(from: syncCandidate)
+                    createdCount += 1
+                    IKLogger.general.info("[KD] Onboarding sync created syncDbId=\(syncInfo.dbId) driveDbId=\(syncInfo.driveDbId)")
                 }
+                IKLogger.general.info("[KD] Onboarding sync creation completed created=\(createdCount)")
             } catch {
+                IKLogger.general.error(
+                    "[KD] Onboarding sync creation failed created=\(createdCount) remaining=\(syncCandidates.count - createdCount) advancing=true"
+                )
                 isShowingError = true
             }
 
