@@ -28,6 +28,20 @@ Popup {
     required property var controller
     required property Item returnFocusItem
 
+    // The default filter comes first.
+    readonly property var filterOptions: [
+        {
+            filter: ActivityListModel.AllActivities,
+            label: qsTrId("activitiesTypeAllActivities"),
+            icon: "qrc:/assets/main/activities/filter-all-activities.svg"
+        },
+        {
+            filter: ActivityListModel.ThisComputerOnly,
+            label: qsTrId("activitiesTypeThisComputer"),
+            icon: "qrc:/assets/main/activities/filter-this-computer.svg"
+        }
+    ]
+
     width: IKActivities.filterMenuWidth
     height: optionsList.contentHeight + IKSpacing.s8 * 2
     padding: IKSpacing.s8
@@ -36,7 +50,7 @@ Popup {
     dim: false
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     onOpened: {
-        optionsList.currentIndex = root.controller.filter === ActivityListModel.MyActivityOnly ? 0 : 1;
+        optionsList.currentIndex = Math.max(0, root.filterOptions.findIndex(option => option.filter === root.controller.filter));
         Qt.callLater(function () {
             if (optionsList.currentItem) {
                 optionsList.currentItem.forceActiveFocus();
@@ -65,18 +79,7 @@ Popup {
         id: optionsList
 
         interactive: false
-        model: [
-            {
-                filter: ActivityListModel.MyActivityOnly,
-                label: qsTrId("activitiesTypeMyActivity"),
-                icon: "qrc:/assets/main/activities/filter-my-activity.svg"
-            },
-            {
-                filter: ActivityListModel.AllActivities,
-                label: qsTrId("activitiesTypeAllActivities"),
-                icon: "qrc:/assets/main/activities/filter-all-activities.svg"
-            }
-        ]
+        model: root.filterOptions
 
         delegate: ItemDelegate {
             id: option
