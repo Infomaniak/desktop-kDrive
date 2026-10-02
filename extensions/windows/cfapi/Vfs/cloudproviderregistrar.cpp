@@ -110,10 +110,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         for (uint32_t i = 0; i < infoVector.Size(); i++) {
             if (syncRootID.compare(infoVector.GetAt(i).Id().c_str()) == 0) {
                 found = true;
-                break;
-            }
-
-            if (areRelatedFolders(providerInfo->folderPath(), infoVector.GetAt(i).Path().Path().c_str())) {
+            } else if (areRelatedFolders(providerInfo->folderPath(), infoVector.GetAt(i).Path().Path().c_str())) {
                 TRACE_ERROR(
                         L"Cannot register sync root for folder path %s because it is related to an existing sync root with ID %s "
                         L"and path %s",
