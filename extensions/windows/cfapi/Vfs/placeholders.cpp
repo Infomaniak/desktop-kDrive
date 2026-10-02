@@ -93,7 +93,7 @@ int32_t Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
         winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT) (wcslen(fileId) + 1) * sizeof(WCHAR),
                                                     CF_CONVERT_FLAG_NONE, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        const HRESULT hr = static_cast<HRESULT>(ex.code());
+        const auto hr = static_cast<HRESULT>(ex.code());
         TRACE_ERROR(L"WinRT error caught: %08x - %s", hr, ex.message().c_str());
         return HRESULT_CODE(hr);
     }
