@@ -483,6 +483,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void directDownloadCallback(UniqueId jobId);
 
         std::shared_ptr<ConstSnapshot> remoteLiveSnapshotBackup() const { return _remoteLiveSnapshotBackup; }
+        void clearRemoteLiveSnapshotBackup() { _remoteLiveSnapshotBackup.reset(); }
 
     private:
         // Finalize the pin/hydration state of a direct download job and stop tracking it.
