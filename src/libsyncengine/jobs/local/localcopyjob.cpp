@@ -71,7 +71,8 @@ ExitInfo LocalCopyJob::runJob() {
 
     IoError ioError = IoError::Success;
     if (!IoHelper::copyFileOrDirectory(_source, _dest, ioError) || ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source) << L" to " << Path2WStr(_dest) << L", error="
+        LOGW_WARN(_logger, L"Failed to copy item " << Utility::formatSyncPath(_source) << L" to "
+                                                   << Utility::formatSyncPath(_dest) << L", error="
                                                    << Utility::formatIoError(ioError));
 
         return IoHelper::toExitInfo(ioError, {ExitCode::SystemError, ExitCause::FileAccessError});
