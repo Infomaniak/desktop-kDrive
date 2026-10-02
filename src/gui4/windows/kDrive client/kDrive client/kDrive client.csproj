@@ -20,6 +20,7 @@
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <TrimMode>None</TrimMode>
     <PublishTrimmed>false</PublishTrimmed>
+	<CetCompat>false</CetCompat>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />
