@@ -188,7 +188,11 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
         WCHAR exePath[MAX_FULL_PATH];
         if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
             TRACE_ERROR(L"Error in GetModuleFileNameW");
-        } else if (value = exePath; !value.empty()) {
+        } 
+        
+        value = exePath;
+
+        if (!value.empty()) {
             updateRegistryEntry(hKey, name, value);
         }
     }
@@ -199,7 +203,7 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
     }
 
 
-    if (!updateIcons || !namespaceCLSID) {
+    if (value.empty() || !updateIcons || !namespaceCLSID) {
         return;
     }
 
