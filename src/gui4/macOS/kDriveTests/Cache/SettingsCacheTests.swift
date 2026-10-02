@@ -148,7 +148,7 @@ extension SharedDITests.SettingsCacheTests {
         )
     }
 
-    @Test("Server settings disable file logging, persist it for startup, and restore the selected threshold")
+    @Test("Server settings control file logging, extended verbosity, and restoration of the selected threshold")
     func appliesFileLoggingConfiguration() async throws {
         let defaults = UserDefaults.standard
         let resolver = SimpleResolver.sharedResolver
@@ -192,5 +192,57 @@ extension SharedDITests.SettingsCacheTests {
         #expect(defaults.lastKnownFileLoggingEnabled)
         #expect(writer.lines.count == 2)
         #expect(writer.lines.last?.contains("enabled by server") == true)
+
+        payload["extendedLog"] = true
+        let extendedSettings = try JSONDecoder().decode(
+            ParametersInfo.self,
+            from: JSONSerialization.data(withJSONObject: payload)
+        )
+        await cache.setSettings(extendedSettings)
+        service.log(level: .debug, category: "general", message: "extended debug")
+        service.flush()
+
+        #expect(defaults.lastKnownFileLogLevel == .debug)
+        #expect(await cache.getSettings()?.logLevel == .Error)
+        #expect(writer.lines.last?.contains("extended debug") == true)
+
+        payload["logLevel"] = KDC.LogLevel.Fatal.rawValue
+        let updatedSettings = try JSONDecoder().decode(ParametersInfo.self, from: JSONSerialization.data(withJSONObject: payload))
+        await cache.setSettings(updatedSettings)
+        service.log(level: .debug, category: "general", message: "still extended debug")
+        service.flush()
+
+        #expect(defaults.lastKnownFileLogLevel == .debug)
+        #expect(await cache.getSettings()?.logLevel == .Fatal)
+        #expect(writer.lines.last?.contains("still extended debug") == true)
+
+        payload["useLog"] = false
+        let disabledExtendedSettings = try JSONDecoder().decode(
+            ParametersInfo.self,
+            from: JSONSerialization.data(withJSONObject: payload)
+        )
+        let countBeforeDisabling = writer.lines.count
+        await cache.setSettings(disabledExtendedSettings)
+        service.log(level: .fatal, category: "general", message: "disabled extended fatal")
+        service.flush()
+
+        #expect(!defaults.lastKnownFileLoggingEnabled)
+        #expect(defaults.lastKnownFileLogLevel == .debug)
+        #expect(writer.lines.count == countBeforeDisabling)
+
+        payload["useLog"] = true
+        payload["extendedLog"] = false
+        let restoredSettings = try JSONDecoder().decode(
+            ParametersInfo.self,
+            from: JSONSerialization.data(withJSONObject: payload)
+        )
+        await cache.setSettings(restoredSettings)
+        service.log(level: .error, category: "general", message: "below restored threshold")
+        service.log(level: .fatal, category: "general", message: "restored fatal")
+        service.flush()
+
+        #expect(defaults.lastKnownFileLogLevel == .fatal)
+        #expect(writer.lines.count == countBeforeDisabling + 2)
+        #expect(writer.lines.last?.contains("restored fatal") == true)
     }
 }
