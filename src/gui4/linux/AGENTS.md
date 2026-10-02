@@ -464,6 +464,14 @@
   initial blacklist whose paths cannot be resolved fails the page instead of displaying ancestors as fully selected;
   a node the server no longer knows is dropped from the blacklist rather than treated as a failure. The root listing is
   requested alongside that path resolution and kept aside until every path is known. Paths are compared in NFC.
+- `app/syncconfiguration/remotefolderpickermodel.*`: lazy single-selection remote-folder tree used to choose the remote
+  destination of an advanced synchronization. The drive root is its only top-level row (node id
+  `AppConstants::SyncConfiguration::driveRootNodeId`, listed through the root listing request) and cannot be selected,
+  like folders the user cannot open and folders the caller marks as unavailable, such as the targets of the drive's
+  existing synchronizations; those cannot host a new folder either. It hosts the editing row of an inline folder
+  creation but never sends the request: its owner calls `SyncService::createRemoteFolder`, reports the pending state,
+  then inserts the created folder, which becomes the selection. Visible folders list their children after the same
+  150 ms quiet period as `RemoteFolderTreeModel`. Rows are tracked by node id, never by a kept index.
 - `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
   branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
   only after both branches succeed. A new run supersedes the previous one, whose late responses are ignored and which
@@ -490,14 +498,6 @@
   the server adds the new folder to the blacklist of every synchronization of the drive.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
-- `app/syncconfiguration/remotefolderpickermodel.*`: lazy single-selection remote-folder tree used to choose the remote
-  destination of an advanced synchronization. The drive root is its only top-level row (node id
-  `AppConstants::SyncConfiguration::driveRootNodeId`, listed through the root listing request) and cannot be selected,
-  like folders the user cannot open and folders the caller marks as unavailable, such as the targets of the drive's
-  existing synchronizations; those cannot host a new folder either. It hosts the editing row of an inline folder
-  creation but never sends the request: its owner calls `SyncService::createRemoteFolder`, reports the pending state,
-  then inserts the created folder, which becomes the selection. Visible folders list their children after the same
-  150 ms quiet period as `RemoteFolderTreeModel`. Rows are tracked by node id, never by a kept index.
     - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
       routes and arbitrates presentation across global modal families; feature queueing remains in the owning C++
       controller.
