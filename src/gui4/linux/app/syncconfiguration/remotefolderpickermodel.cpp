@@ -413,7 +413,7 @@ bool RemoteFolderPickerModel::isSelectable(const TreeNode *const node) const {
 /**
  * The drive root can host a new folder although it cannot be selected. A folder already targeted by a synchronization
  * cannot: the new folder would lead to a synchronization nested in another one's remote folder. It would not be
- * synchronized twice, though, since the server blacklists a created folder in every synchronization of the drive.
+ * synchronized twice, though, since the server blacklists a created folder in every synchronization of the backend drive.
  */
 bool RemoteFolderPickerModel::canCreateFolder(const TreeNode *const node) const {
     return !node->editing && !node->accessDenied && !_unavailableNodeIds.contains(node->nodeId);
