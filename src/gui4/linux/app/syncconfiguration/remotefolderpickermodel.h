@@ -27,7 +27,6 @@
 #include <QTimer>
 
 #include <memory>
-#include <unordered_set>
 #include <vector>
 
 namespace KDC {
@@ -104,8 +103,7 @@ class RemoteFolderPickerModel final : public QAbstractItemModel {
          * `unavailableNodeIds` lists folders that cannot be chosen, for instance because another synchronization already
          * targets them. A folder can still be expanded to reach its sub-folders.
          */
-        void configure(UserDbId userDbId, DriveId driveId, const QString &driveName,
-                       const std::unordered_set<NodeId> &unavailableNodeIds);
+        void configure(UserDbId userDbId, DriveId driveId, const QString &driveName, const NodeSet &unavailableNodeIds);
         /** Empties the tree without loading anything, and drops the responses still in flight. */
         void reset();
         /**
