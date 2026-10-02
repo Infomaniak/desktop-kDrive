@@ -77,6 +77,8 @@ $archiveName = "kDrive.7z"
 # NSIS needs the path to use backslash
 $archiveDataPath = ('{0}\build-windows\{1}' -f $repositoryRootPath.Replace('/', '\'), $archiveName)
 
+$measureSignatureUsageScript = "$repositoryRootPath/infomaniak-build-tools/windows/Measure-SignatureUsage.ps1"
+
 #################################################################################################
 #                                                                                               #
 #                                            IMPORT                                             #
@@ -277,7 +279,7 @@ function Build-Extension {
     Write-Host "Building extension with AUMID: $aumid"
 
     msbuild "$extPath\kDriveExt.sln" /t:Restore /p:RestorePackagesConfig=true
-    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:PackageCertificateThumbprint="$thumbprint" /p:KDC_DEBUG_AUMID="$aumid" /p:KDC_RELEASE_AUMID="$aumid"
+    msbuild "$extPath\kDriveExt.sln" /p:Configuration=$configuration /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true /p:KDC_DEBUG_AUMID="$aumid" /p:KDC_RELEASE_AUMID="$aumid"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     $bundlePath = "$extPath/FileExplorerExtensionPackage/AppPackages/FileExplorerExtensionPackage_${version}_Test/FileExplorerExtensionPackage_${version}_x64_arm64.msixbundle"
@@ -770,6 +772,33 @@ function Package-RecoveryUpdater {
     Write-Host "Recovery updater installer created: $sfxExe" -f Green
 }
 
+# Counts the signatures performed during the build (billed per signature by DigiCert KeyLocker).
+# Requires an elevated shell: the build continues without counting otherwise.
+function Start-Signature-Count {
+    try {
+        $null = & $measureSignatureUsageScript Start 6>$null
+        Write-Host "Counting the signatures performed during the build."
+        return $true
+    } catch {
+        Write-Warning "The signatures performed during the build are not counted: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Stop-Signature-Count {
+    param (
+        [string] $thumbprint
+    )
+
+    # The event log receives the signature events asynchronously: let it record the last ones.
+    Start-Sleep -Seconds 5
+    try {
+        & $measureSignatureUsageScript Stop -Thumbprint $thumbprint
+    } catch {
+        Write-Warning "Failed to count the signatures performed during the build: $($_.Exception.Message)"
+    }
+}
+
 #################################################################################################
 #                                                                                               #
 #                                           COMMANDS                                            #
@@ -909,93 +938,101 @@ if($thumbprint) {
     Exit 1
 }
 
-if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
-    Build-Extension -RepositoryRootPath $repositoryRootPath -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
+$signatureCountStarted = Start-Signature-Count
+# Stop the count even if the build exits early: stopping it restores the system settings it changed.
+try {
+    if (!(Test-Path "$vfsDir\vfs.dll") -or $ext) {
+        Build-Extension -RepositoryRootPath $repositoryRootPath -ContentPath $contentPath -ExtPath $extPath -BuildType $buildType -Thumbprint $thumbprint
+
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Failed to build the extension. Aborting." -f Red
+            exit $LASTEXITCODE
+        }
+    }
+
+    #################################################################################################
+    #                                                                                               #
+    #                                           CMAKE                   	                        #
+    #                                                                                               #
+    #################################################################################################
+
+    CMake-Build-And-Install -RepositoryRootPath $repositoryRootPath -InstallPath $installPath -VfsDir $vfsDir -Ci $ci -NewGui $newGui
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "Failed to build the extension. Aborting." -f Red
+        Write-Host "CMake build failed. Aborting." -f Red
         exit $LASTEXITCODE
     }
-}
 
-#################################################################################################
-#                                                                                               #
-#                                           CMAKE                   	                        #
-#                                                                                               #
-#################################################################################################
+    #################################################################################################
+    #                                                                                               #
+    #                                           NSIS SETUP                                          #
+    #                                                                                               #
+    #################################################################################################
 
-CMake-Build-And-Install -RepositoryRootPath $repositoryRootPath -InstallPath $installPath -VfsDir $vfsDir -Ci $ci -NewGui $newGui
+    Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "CMake build failed. Aborting." -f Red
-    exit $LASTEXITCODE
-}
-
-#################################################################################################
-#                                                                                               #
-#                                           NSIS SETUP                                          #
-#                                                                                               #
-#################################################################################################
-
-Set-Up-NSIS -BuildPath $buildPath -ContentPath $contentPath -ExtPath $extPath -VfsDir $vfsDir -ArchiveName $archiveName -ArchivePath $archivePath -ArchiveDataPath $archiveDataPath -Thumbprint $thumbprint -Ci $ci -NewGui $newGui
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "NSIS setup failed. Aborting." -f Red
-    exit $LASTEXITCODE
-}
-
-#################################################################################################
-#                                                                                               #
-#                                       ARCHIVE PREPARATION                                     #
-#                                                                                               #
-#################################################################################################
-
-Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
-if ($LASTEXITCODE -ne 0)
-{
-    Write-Host "Archive preparation failed. Aborting." -f Red
-    exit $LASTEXITCODE
-}
-
-#################################################################################################
-#                                                                                               #
-#                                       ARCHIVE CREATION                                        #
-#                                                                                               #
-#################################################################################################
-
-Create-Archive -RepositoryRootPath $repositoryRootPath -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Ci $ci -Thumbprint $thumbprint
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
-    exit $LASTEXITCODE
-}
-
-
-#################################################################################################
-#                                                                                               #
-#                                     MSI PACKAGE CREATION                                      #
-#                                                                                               #
-#################################################################################################
-
-if ($msi) {
-    Create-MSI-Package -RepositoryRootPath $repositoryRootPath -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+        Write-Host "NSIS setup failed. Aborting." -f Red
         exit $LASTEXITCODE
     }
-}
 
+    #################################################################################################
+    #                                                                                               #
+    #                                       ARCHIVE PREPARATION                                     #
+    #                                                                                               #
+    #################################################################################################
 
-#################################################################################################
-#                                                                                               #
-#                                RECOVERY UPdater PACKAGING                                     #
-#                                                                                               #
-#################################################################################################
-
-if ($ci) {
-    Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -NewGui $newGui
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
+    Prepare-Archive -BuildType $buildType -BuildPath $buildPath -VfsDir $vfsDir -ArchivePath $archivePath -Ci $ci -NewGuiDir "$buildPath/bin/client" -NewGui $newGui -Thumbprint $thumbprint
+    if ($LASTEXITCODE -ne 0)
+    {
+        Write-Host "Archive preparation failed. Aborting." -f Red
         exit $LASTEXITCODE
+    }
+
+    #################################################################################################
+    #                                                                                               #
+    #                                       ARCHIVE CREATION                                        #
+    #                                                                                               #
+    #################################################################################################
+
+    Create-Archive -RepositoryRootPath $repositoryRootPath -BuildPath $buildPath -ContentPath $contentPath -InstallPath $installPath -Archivename $archiveName -ArchivePath $archivePath -Ci $ci -Thumbprint $thumbprint
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Archive creation failed ($LASTEXITCODE) . Aborting." -f Red
+        exit $LASTEXITCODE
+    }
+
+
+    #################################################################################################
+    #                                                                                               #
+    #                                     MSI PACKAGE CREATION                                      #
+    #                                                                                               #
+    #################################################################################################
+
+    if ($msi) {
+        Create-MSI-Package -RepositoryRootPath $repositoryRootPath -buildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "MSI package creation failed ($LASTEXITCODE) . Aborting." -f Red
+            exit $LASTEXITCODE
+        }
+    }
+
+
+    #################################################################################################
+    #                                                                                               #
+    #                                RECOVERY UPdater PACKAGING                                     #
+    #                                                                                               #
+    #################################################################################################
+
+    if ($ci) {
+        Package-RecoveryUpdater -BuildPath $buildPath -ContentPath $contentPath -Thumbprint $thumbprint -NewGui $newGui
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Recovery updater packaging failed ($LASTEXITCODE) . Aborting." -f Red
+            exit $LASTEXITCODE
+        }
+    }
+} finally {
+    if ($signatureCountStarted) {
+        Stop-Signature-Count -Thumbprint $thumbprint
     }
 }
 
