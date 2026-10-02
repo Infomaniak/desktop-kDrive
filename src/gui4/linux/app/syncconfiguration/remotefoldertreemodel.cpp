@@ -241,6 +241,12 @@ void RemoteFolderTreeModel::setNodeVisible(const QString &nodeId, const bool vis
 
     if (!visible) {
         (void) _visibleNodeCandidates.remove(nodeId);
+        // Leaving the viewport is a visibility change too: the remaining candidates wait for the next quiet period.
+        if (_visibleNodeCandidates.isEmpty()) {
+            _visibleNodeTimer.stop();
+        } else {
+            _visibleNodeTimer.start();
+        }
         return;
     }
 
