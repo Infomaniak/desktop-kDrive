@@ -18,6 +18,9 @@
 
 #include "movejob.h"
 
+#include "jobs/network/jobexceptions.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
+
 #include "libcommonserver/io/iohelper.h"
 
 #include "libcommonserver/utility/utility.h"
@@ -26,15 +29,20 @@
 
 namespace KDC {
 
-MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, const SyncPath &destFilepath, const NodeId &fileId,
-                 const NodeId &destDirId, const SyncName &name /*= ""*/) :
-    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-    _destFilepath(destFilepath),
-    _fileId(fileId),
-    _destDirId(destDirId),
-    _name(name),
+MoveJob::MoveJob(const std::shared_ptr<Vfs> vfs, const DriveDbId driveDbId, SyncPath destFilepath, RemoteNodeId fileId,
+                 RemoteNodeId destDirId, SyncName name /*= ""*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
+    _destFilepath(std::move(destFilepath)),
+    _fileId(std::move(fileId)),
+    _destDirId(std::move(destDirId)),
+    _name(std::move(name)),
     _vfs(vfs) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
+
+    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _destDirId); !exitInfo) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
+        throw JobException("Translation error in MoveJob::MoveJob.");
+    }
 }
 
 MoveJob::~MoveJob() {
@@ -54,9 +62,7 @@ MoveJob::~MoveJob() {
 }
 
 ExitInfo MoveJob::canRun() {
-    if (bypassCheck()) {
-        return ExitCode::Ok;
-    }
+    if (bypassCheck()) return ExitCode::Ok;
 
     // Check that we still have to move the folder
     bool exists = false;
@@ -65,6 +71,7 @@ ExitInfo MoveJob::canRun() {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError));
         return ExitCode::SystemError;
     }
+
     if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Access denied to " << Utility::formatSyncPath(_destFilepath));
         return {ExitCode::SystemError, ExitCause::FileAccessError};
@@ -85,6 +92,7 @@ std::string MoveJob::getSpecificUrl() {
     str += _fileId;
     str += "/move/";
     str += _destDirId;
+
     return str;
 }
 
@@ -101,6 +109,7 @@ ExitInfo MoveJob::setData() {
         json.stringify(ss);
         _data = ss.str();
     }
+
     return ExitCode::Ok;
 }
 

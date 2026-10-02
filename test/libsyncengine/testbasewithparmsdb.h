@@ -1,6 +1,6 @@
 /*
  * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2026 Infomaniak Network SA
+ * Copyright (C) 2023-2025 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,26 @@
 
 #pragma once
 
-#include "getrootfilelistjob.h"
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
+#include "test_utility/testbase.h"
+
+#include "test_utility/localtemporarydirectory.h"
+
+#include "keychainmanager/apitoken.h"
+
+#include <chrono>
+
 
 namespace KDC {
-
-class GetFileListJob : public GetRootFileListJob {
+class TestBaseWithParmsDb : public TestBase {
     public:
-        GetFileListJob(UserDbId userDbId, DriveId driveId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false,
-                       uint64_t nbItemsPerPage = 1000);
-        GetFileListJob(DriveDbId driveDbId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false,
-                       uint64_t nbItemsPerPage = 1000);
+        void initParmsDb();
 
-    private:
-        std::string getSpecificUrl() override;
-        ExitInfo setData() override { return ExitCode::Ok; }
-
-        std::string _fileId;
+    protected:
+        DriveId _driveId = 0;
+        DriveDbId _driveDbId = 0;
+        UserDbId _userDbId = 0;
+        ApiToken _apiToken;
+        LocalTemporaryDirectory _localParmsDbTempDir{"testBaseWithParmsDb"};
 };
-
 } // namespace KDC

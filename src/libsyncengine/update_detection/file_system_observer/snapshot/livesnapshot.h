@@ -23,6 +23,7 @@
 #include "snapshotrevisionhandler.h"
 #include "db/dbnode.h"
 
+#include <atomic>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -59,7 +60,7 @@ class LiveSnapshot : public Snapshot, public SharedObject {
         std::shared_ptr<SnapshotRevisionHandler> _revisionHandlder;
         bool removeItem(std::shared_ptr<SnapshotItem> &item);
         void removeChildrenRecursively(const std::shared_ptr<SnapshotItem> parent);
-        bool _isValid = false;
+        std::atomic<bool> _isValid = false;
 
         friend class TestSnapshot;
 };

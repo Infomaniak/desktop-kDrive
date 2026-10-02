@@ -46,7 +46,7 @@ void LiveSnapshot::init() {
     auto newItemPtr = res->second;
     newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
 
-    _isValid = false;
+    setValid(false);
 }
 
 bool LiveSnapshot::updateItem(const SnapshotItem &newItem) {
@@ -299,13 +299,11 @@ bool LiveSnapshot::forceUpdateLastChangeRevision(const NodeId &itemId) {
 
 
 bool LiveSnapshot::isValid() const {
-    const std::scoped_lock lock(_mutex);
-    return _isValid;
+    return _isValid.load();
 }
 
 void LiveSnapshot::setValid(const bool newIsValid) {
-    const std::scoped_lock lock(_mutex);
-    _isValid = newIsValid;
+    _isValid.store(newIsValid);
 }
 
 SnapshotRevision LiveSnapshot::revision() const {
