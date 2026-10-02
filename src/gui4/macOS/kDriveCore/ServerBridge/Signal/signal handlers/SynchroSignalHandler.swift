@@ -66,7 +66,7 @@ struct SynchroSignalHandler {
         }
 
         let body = manyDeletesSignal.body
-        IKLogger.xpc.log(
+        IKLogger.xpc.warning(
             "[KD] Too many deletes detected for syncDbId:\(body.syncDbId) type:\(body.notificationType) files:\(body.nbFiles)"
         )
 

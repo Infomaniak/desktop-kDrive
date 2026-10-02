@@ -45,9 +45,9 @@ public struct IKLogger: Sendable {
         logService.log(level: .debug, category: category, message: message, file: file, line: line)
 
         if #available(macOS 11.0, *) {
-            logger.log("\(message)")
+            logger.debug("\(message)")
         } else {
-            os_log(.default, "%@", message)
+            os_log(.debug, "%@", message)
         }
     }
 

@@ -89,7 +89,7 @@ private extension XPCQueryFetcher {
     }
 
     func logRequestSent(_ context: RequestLogContext) {
-        IKLogger.xpc.info("[KD] [Job →] #\(context.id) \(context.num)")
+        IKLogger.xpc.debug("[KD] [Job →] #\(context.id) \(context.num)")
     }
 
     func logNoReply(_ error: Error, context: RequestLogContext, since start: DispatchTime) {
@@ -100,10 +100,14 @@ private extension XPCQueryFetcher {
     func logCallbackReceived(_ header: CallbackMessage<EmptyResponse>, context: RequestLogContext, since start: DispatchTime) {
         let elapsed = String(format: "%.1f", Self.elapsedMilliseconds(since: start))
         let outcome = "[KD] [Job ←] #\(header.id) \(context.num) \(header.code)/\(header.cause) (\(elapsed)ms)"
-        if header.code != .Ok || header.cause != .Unknown {
+        if header.code == .OperationCanceled {
+            IKLogger.xpc.info(outcome)
+        } else if header.code == .RateLimited || header.code == .NetworkError {
+            IKLogger.xpc.warning(outcome)
+        } else if header.code != .Ok || header.cause != .Unknown {
             IKLogger.xpc.error(outcome)
         } else {
-            IKLogger.xpc.info(outcome)
+            IKLogger.xpc.debug(outcome)
         }
     }
 

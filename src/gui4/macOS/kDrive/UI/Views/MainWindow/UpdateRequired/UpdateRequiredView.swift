@@ -21,7 +21,6 @@ import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
-import Sentry
 import SwiftUI
 
 struct UpdateRequiredView: View {
@@ -93,8 +92,7 @@ struct UpdateRequiredView: View {
                 try await UpdaterJobs().startInstaller()
             } catch {
                 failedToStartInstaller = true
-                IKLogger.data.log("Failed to install required update")
-                SentrySDK.capture(error: error)
+                IKLogger.data.error("Failed to install required update")
             }
 
             buttonInstallIsDisabled = false
