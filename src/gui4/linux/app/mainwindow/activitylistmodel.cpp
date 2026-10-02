@@ -31,6 +31,8 @@
 
 namespace KDC {
 
+using namespace Qt::StringLiterals;
+
 namespace {
 Q_LOGGING_CATEGORY(lcActivityListModel, "gui.v4.activitylistmodel", QtInfoMsg)
 
@@ -42,6 +44,8 @@ constexpr auto minute = std::chrono::minutes{1};
 constexpr auto hour = std::chrono::hours{1};
 constexpr auto day = std::chrono::days{1};
 constexpr auto relativeDateThreshold = std::chrono::days{4};
+// Like the Windows client: smaller transfers finish too fast to be kept on top without flickering.
+constexpr int64_t minPinnedTransferSize = 1024;
 
 QString errorRowId(const ErrorDbId errorDbId) {
     return QStringLiteral("error:%1").arg(static_cast<qlonglong>(errorDbId));
@@ -105,6 +109,77 @@ QString formatRelativeTime(const QDateTime &timestampUtc, const QDateTime &nowUt
     return QLocale().toString(timestampUtc.toLocalTime().date(), QLocale::ShortFormat);
 }
 
+// Keep the locale's long time format (including seconds), without timezone tokens. Quoted literals are preserved.
+QString timeFormatWithoutTimeZone(const QLocale &locale) {
+    QString format;
+    bool inLiteral = false;
+    const QString longFormat = locale.timeFormat(QLocale::LongFormat);
+    for (qsizetype index = 0; index < longFormat.size(); ++index) {
+        const QChar character = longFormat.at(index);
+        if (character == u'\'') {
+            format += character;
+            if (index + 1 < longFormat.size() && longFormat.at(index + 1) == u'\'') {
+                format += longFormat.at(++index);
+            } else {
+                inLiteral = !inLiteral;
+            }
+        } else if (inLiteral || character != u't') {
+            format += character;
+        }
+    }
+    return format.trimmed();
+}
+
+// Exact local date and time using a short date and a time with seconds, without the verbose timezone name.
+QString formatExactTime(const QDateTime &timestampUtc) {
+    if (!timestampUtc.isValid()) {
+        return {};
+    }
+
+    const QLocale locale;
+    const QDateTime localTime = timestampUtc.toLocalTime();
+    return u"%1 - %2"_s.arg(locale.toString(localTime.date(), QLocale::ShortFormat),
+                            locale.toString(localTime.time(), timeFormatWithoutTimeZone(locale)));
+}
+
+// "old → new" for a rename or a move, empty for any other activity. A rename shows the names; a move shows full relative paths.
+QString formatChange(const ActivityEntry &activity) {
+    if (activity.instruction != SyncFileInstruction::Move || activity.path.empty() || activity.newPath.empty()) {
+        return {};
+    }
+
+    const SyncPath sourcePath = normalizedRelativePath(activity.path);
+    const SyncPath destinationPath = normalizedRelativePath(activity.newPath);
+    const bool sameFolder = sourcePath.parent_path() == destinationPath.parent_path();
+
+    QString source;
+    QString destination;
+    if (sameFolder) {
+        source = itemName(sourcePath);
+        destination = itemName(destinationPath);
+    } else {
+        source = Path2QStr(sourcePath);
+        destination = Path2QStr(destinationPath);
+    }
+    return u"%1 → %2"_s.arg(source, destination);
+}
+
+// Lowercases the first letter so the relative time reads mid-sentence after the action ("Modified just now").
+QString toMidSentence(const QString &text) {
+    if (text.isEmpty()) {
+        return text;
+    }
+    return QLocale().toLower(text.first(1)) + text.sliced(1);
+}
+
+// Uppercases the first letter of a composed subtitle, whatever the position of the time in the translation.
+QString toSentenceStart(const QString &text) {
+    if (text.isEmpty()) {
+        return text;
+    }
+    return QLocale().toUpper(text.first(1)) + text.sliced(1);
+}
+
 ActivityListModel::Status toModelStatus(const SyncFileStatus status) {
     switch (status) {
         case SyncFileStatus::Success:
@@ -135,56 +210,7 @@ ActivityListModel::Source toModelSource(const SyncDirection direction) {
     return ActivityListModel::Source::Unknown;
 }
 
-QString activityActionText(const ActivityEntry &activity) {
-    switch (activity.instruction) {
-        using enum SyncFileInstruction;
-
-        case UpdateMetadata: // We shouldn't receive an UpdateMetadata on linux, reserved instruction for macOS and Windows for
-                             // the litesync. Here for possible future litesync linux implem.
-        case Update:
-            return qtTrId("activityInstructionUpdateLabel");
-        case Remove:
-            return qtTrId("activityInstructionRemoveLabel");
-        case Move: {
-            if (!activity.path.empty() && !activity.newPath.empty() &&
-                normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
-                return qtTrId("activityInstructionRenameLabel");
-            }
-            return qtTrId("activityInstructionMoveLabel");
-        }
-        case Get:
-            return qtTrId("activityInstructionGetLabel");
-        case Put:
-            return qtTrId("activityInstructionPutLabel");
-        case Ignore:
-            return qtTrId("activityInstructionIgnoreLabel");
-        case None:
-        case EnumEnd:
-            return {};
-    }
-    return {};
-}
-
 } // namespace
-
-QStringList ActivityListModel::timeTextSamples() {
-    // Upper bound of every branch of formatRelativeTime(): the last value before each threshold rolls over.
-    QStringList samples{
-            qtTrId("labelJustNow"),
-            formatAgo(minute - second, second, "labelShortSecond"),
-            formatAgo(hour - minute, minute, "labelShortMinute"),
-            formatAgo(day - hour, hour, "labelShortHour"),
-            formatAgo(relativeDateThreshold - day, day, "labelShortDay"),
-    };
-
-    // Past the relative threshold the cell shows a short date, whose width varies by month in locales that abbreviate
-    // it, so every month is a candidate. Day 28 exists in all of them and is two digits wide.
-    for (uint8_t month = 1; month <= 12; ++month) {
-        const QLocale locale;
-        samples << locale.toString(QDate{2026, month, 28}, QLocale::ShortFormat);
-    }
-    return samples;
-}
 
 QStringList ActivityListModel::sizeTextSamples() {
     // Widest value of each unit tier, capped at terabytes: drive quotas make larger files unreachable, and the Windows
@@ -233,9 +259,9 @@ ActivityListModel::ActivityListModel(const ActivityStore &activityStore, const A
     _projectionRefreshTimer.setSingleShot(true);
     (void) connect(&_projectionRefreshTimer, &QTimer::timeout, this, &ActivityListModel::reconcileProjection);
 
-    _relativeTimeTimer.setInterval(relativeTimeRefreshInterval);
-    (void) connect(&_relativeTimeTimer, &QTimer::timeout, this, &ActivityListModel::refreshRelativeTimes);
-    _relativeTimeTimer.start();
+    _subtitleRefreshTimer.setInterval(relativeTimeRefreshInterval);
+    (void) connect(&_subtitleRefreshTimer, &QTimer::timeout, this, &ActivityListModel::refreshSubtitles);
+    _subtitleRefreshTimer.start();
     resetProjection();
 }
 
@@ -257,12 +283,14 @@ QVariant ActivityListModel::data(const QModelIndex &index, const int role) const
             return row.name;
         case FileIconNameRole:
             return row.fileIconName;
-        case ActionTextRole:
-            return row.actionText;
+        case SubtitleTextRole:
+            return row.subtitleText;
+        case ExactTimeTextRole:
+            return row.exactTimeText;
+        case ChangeTextRole:
+            return row.changeText;
         case FolderRole:
             return row.folder;
-        case TimeTextRole:
-            return row.timeText;
         case SizeTextRole:
             return row.sizeText;
         case NodeTypeRole:
@@ -293,9 +321,10 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
             {RowIdRole, "rowId"},
             {NameRole, "name"},
             {FileIconNameRole, "fileIconName"},
-            {ActionTextRole, "actionText"},
+            {SubtitleTextRole, "subtitleText"},
+            {ExactTimeTextRole, "exactTimeText"},
+            {ChangeTextRole, "changeText"},
             {FolderRole, "folder"},
-            {TimeTextRole, "timeText"},
             {SizeTextRole, "sizeText"},
             {NodeTypeRole, "nodeType"},
             {StatusRole, "status"},
@@ -311,7 +340,7 @@ QHash<int, QByteArray> ActivityListModel::roleNames() const {
 
 void ActivityListModel::setFilter(const Filter filter) {
     switch (filter) {
-        case Filter::MyActivityOnly:
+        case Filter::ThisComputerOnly:
         case Filter::AllActivities:
             break;
         default:
@@ -392,17 +421,21 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.syncDbId = syncDbId;
     row.name = itemName(relativePath);
     row.fileIconName = _fileIconResolver.iconName(row.name, activity.nodeType);
-    row.actionText = activityActionText(activity);
+    row.subtitleKind = subtitleKind(activity);
+    row.subtitleText = formatSubtitle(row.subtitleKind, activity.receivedAtUtc);
+    row.exactTimeText = formatExactTime(activity.receivedAtUtc);
+    row.changeText = formatChange(activity);
     row.folder = parentFolder(relativePath);
-    row.timeText = formatRelativeTime(activity.receivedAtUtc);
     row.sizeText = formatSize(activity.nodeType, activity.size);
     row.nodeType = activity.nodeType;
     row.status = status;
     row.source = toModelSource(activity.direction);
     row.instruction = activity.instruction;
     row.progress = activity.progress;
+    row.size = activity.size;
     row.timestampUtc = activity.receivedAtUtc;
     row.receivedSequence = activity.receivedSequence;
+    row.placementSequence = activity.placementSequence;
     row.relativePath = relativePath;
     row.sourcePath = normalizedRelativePath(activity.path);
     row.destinationPath = normalizedRelativePath(activity.newPath);
@@ -422,7 +455,8 @@ ActivityListModel::Row ActivityListModel::makeErrorRow(const SyncDbId syncDbId, 
     row.name = itemName(relativePath);
     row.fileIconName = _fileIconResolver.iconName(row.name, error.nodeType());
     row.folder = parentFolder(relativePath);
-    row.timeText = formatRelativeTime(timestampUtc);
+    row.subtitleText = formatSubtitle(row.subtitleKind, timestampUtc);
+    row.exactTimeText = formatExactTime(timestampUtc);
     row.nodeType = error.nodeType();
     row.status = Status::Failed;
     row.timestampUtc = timestampUtc;
@@ -463,18 +497,95 @@ ActivityListModel::AvailableActions ActivityListModel::availableActions(const Ro
     return actions;
 }
 
+/** Returns whether an in-progress transfer is large enough to stay above the other rows until it finishes. */
+bool ActivityListModel::isPinnedTransfer(const Row &row) {
+    return row.status == Status::InProgress && row.size >= minPinnedTransferSize;
+}
+
+ActivityListModel::SubtitleKind ActivityListModel::subtitleKind(const ActivityEntry &activity) {
+    switch (activity.instruction) {
+        using enum SyncFileInstruction;
+
+        case UpdateMetadata: // Reserved for possible future Linux Lite Sync support.
+        case Update:
+        // Like the Windows client, instructions without a dedicated wording fall back to "Modified".
+        case Ignore:
+        case None:
+        case EnumEnd:
+            return SubtitleKind::Updated;
+        case Remove:
+            return SubtitleKind::Removed;
+        case Move:
+            if (!activity.path.empty() && !activity.newPath.empty() &&
+                normalizedRelativePath(activity.path).parent_path() == normalizedRelativePath(activity.newPath).parent_path()) {
+                return SubtitleKind::Renamed;
+            }
+            return SubtitleKind::Moved;
+        case Get:
+            return SubtitleKind::Imported;
+        case Put:
+            return SubtitleKind::Added;
+    }
+    return SubtitleKind::Updated;
+}
+
+QString ActivityListModel::formatSubtitle(const SubtitleKind kind, const QDateTime &timestampUtc, const QDateTime &nowUtc) {
+    const QString relativeTime = formatRelativeTime(timestampUtc, nowUtc);
+    if (relativeTime.isEmpty()) {
+        return {};
+    }
+
+    if (kind == SubtitleKind::TimeOnly) {
+        return relativeTime;
+    }
+
+    const char *translationId = nullptr;
+    switch (kind) {
+        case SubtitleKind::Updated:
+            translationId = "activityInstructionUpdateWithTimeLabel";
+            break;
+        case SubtitleKind::Removed:
+            translationId = "activityInstructionRemoveWithTimeLabel";
+            break;
+        case SubtitleKind::Renamed:
+            translationId = "activityInstructionRenameWithTimeLabel";
+            break;
+        case SubtitleKind::Moved:
+            translationId = "activityInstructionMoveWithTimeLabel";
+            break;
+        case SubtitleKind::Imported:
+            translationId = "activityInstructionGetWithTimeLabel";
+            break;
+        case SubtitleKind::Added:
+            translationId = "activityInstructionPutWithTimeLabel";
+            break;
+        case SubtitleKind::TimeOnly:
+            return relativeTime;
+    }
+    if (translationId == nullptr) {
+        return relativeTime;
+    }
+
+    // The time reads mid-sentence, but a translation may place it first: the composed text starts with a capital.
+    return toSentenceStart(qtTrId(translationId).arg(toMidSentence(relativeTime)));
+}
+
 void ActivityListModel::finalizeProjection(std::vector<Row> &rows) const {
     (void) std::erase_if(rows, [this](const Row &row) {
         const bool resolvedFailure = row.status == Status::Failed && row.activeErrorDbIds.empty();
         const bool filteredOutRemoteActivity =
-                row.activeErrorDbIds.empty() && _filter == Filter::MyActivityOnly && row.source != Source::Computer;
+                row.activeErrorDbIds.empty() && _filter == Filter::ThisComputerOnly && row.source != Source::Computer;
         return resolvedFailure || filteredOutRemoteActivity;
     });
     (void) std::ranges::sort(rows, [](const Row &lhs, const Row &rhs) {
-        const bool lhsInProgress = lhs.status == Status::InProgress;
-        const bool rhsInProgress = rhs.status == Status::InProgress;
-        if (lhsInProgress != rhsInProgress) {
-            return lhsInProgress;
+        const bool lhsPinned = isPinnedTransfer(lhs);
+        const bool rhsPinned = isPinnedTransfer(rhs);
+        if (lhsPinned != rhsPinned) {
+            return lhsPinned;
+        }
+        // Pinned transfers keep their start order, newest first, whatever the rhythm of their progress updates.
+        if (lhsPinned && lhs.placementSequence != rhs.placementSequence) {
+            return lhs.placementSequence > rhs.placementSequence;
         }
         const bool lhsHasActiveError = !lhs.activeErrorDbIds.empty();
         const bool rhsHasActiveError = !rhs.activeErrorDbIds.empty();
@@ -558,7 +669,7 @@ bool ActivityListModel::removeStaleRows(const std::vector<Row> &nextRows) {
     }
 
     bool changed = false;
-    for (qsizetype rowIndex = static_cast<qsizetype>(_rows.size()) - 1; rowIndex >= 0; --rowIndex) {
+    for (int32_t rowIndex = static_cast<int32_t>(_rows.size()) - 1; rowIndex >= 0; --rowIndex) {
         if (nextRowIds.contains(_rows[static_cast<std::size_t>(rowIndex)].rowId)) {
             continue;
         }
@@ -572,9 +683,9 @@ bool ActivityListModel::removeStaleRows(const std::vector<Row> &nextRows) {
 
 bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
     bool changed = false;
-    for (qsizetype targetIndex = 0; targetIndex < static_cast<qsizetype>(nextRows.size()); ++targetIndex) {
+    for (int32_t targetIndex = 0; targetIndex < static_cast<int32_t>(nextRows.size()); ++targetIndex) {
         const auto &nextRow = nextRows[static_cast<std::size_t>(targetIndex)];
-        if (targetIndex >= static_cast<qsizetype>(_rows.size())) {
+        if (targetIndex >= static_cast<int32_t>(_rows.size())) {
             beginInsertRows({}, targetIndex, targetIndex);
             _rows.push_back(nextRow);
             endInsertRows();
@@ -592,7 +703,7 @@ bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
                 continue;
             }
 
-            if (const qsizetype sourceIndex = std::distance(_rows.begin(), matchingIt);
+            if (const auto sourceIndex = static_cast<int32_t>(std::distance(_rows.begin(), matchingIt));
                 !beginMoveRows({}, sourceIndex, sourceIndex, {}, targetIndex)) {
                 qCWarning(lcActivityListModel) << "Incremental row move rejected; resetting activity projection"
                                                << "| sourceIndex:" << sourceIndex << "| targetIndex:" << targetIndex;
@@ -612,7 +723,7 @@ bool ActivityListModel::applyProjectionRows(const std::vector<Row> &nextRows) {
     return changed;
 }
 
-bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) {
+bool ActivityListModel::updateRow(const int32_t rowIndex, const Row &nextRow) {
     auto &row = _rows[static_cast<std::size_t>(rowIndex)];
     if (row == nextRow) {
         return false;
@@ -626,9 +737,10 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
     };
     addRoleIf(row.name != nextRow.name, NameRole);
     addRoleIf(row.fileIconName != nextRow.fileIconName, FileIconNameRole);
-    addRoleIf(row.actionText != nextRow.actionText, ActionTextRole);
+    addRoleIf(row.subtitleText != nextRow.subtitleText, SubtitleTextRole);
+    addRoleIf(row.exactTimeText != nextRow.exactTimeText, ExactTimeTextRole);
+    addRoleIf(row.changeText != nextRow.changeText, ChangeTextRole);
     addRoleIf(row.folder != nextRow.folder, FolderRole);
-    addRoleIf(row.timeText != nextRow.timeText, TimeTextRole);
     addRoleIf(row.sizeText != nextRow.sizeText, SizeTextRole);
     addRoleIf(row.nodeType != nextRow.nodeType, NodeTypeRole);
     addRoleIf(row.nodeType != nextRow.nodeType, IsDirectoryRole);
@@ -647,19 +759,19 @@ bool ActivityListModel::updateRow(const qsizetype rowIndex, const Row &nextRow) 
     return true;
 }
 
-void ActivityListModel::refreshRelativeTimes() {
+void ActivityListModel::refreshSubtitles() {
     if (_rows.empty()) {
         return;
     }
     const QDateTime nowUtc = QDateTime::currentDateTimeUtc();
-    for (qsizetype rowIndex = 0; rowIndex < static_cast<qsizetype>(_rows.size()); ++rowIndex) {
+    for (int32_t rowIndex = 0; rowIndex < static_cast<int32_t>(_rows.size()); ++rowIndex) {
         auto &row = _rows[static_cast<std::size_t>(rowIndex)];
-        const QString nextTimeText = formatRelativeTime(row.timestampUtc, nowUtc);
-        if (row.timeText == nextTimeText) {
+        const QString nextSubtitleText = formatSubtitle(row.subtitleKind, row.timestampUtc, nowUtc);
+        if (row.subtitleText == nextSubtitleText) {
             continue;
         }
-        row.timeText = nextTimeText;
-        emit dataChanged(index(rowIndex, 0), index(rowIndex, 0), {TimeTextRole});
+        row.subtitleText = nextSubtitleText;
+        emit dataChanged(index(rowIndex, 0), index(rowIndex, 0), {SubtitleTextRole});
     }
 }
 

@@ -48,6 +48,8 @@ struct ActivityEntry {
         int32_t progress{0};
         QDateTime receivedAtUtc;
         Count receivedSequence{0};
+        /** Sequence of the signal that started or finished the operation; progress updates keep it unchanged. */
+        Count placementSequence{0};
 };
 
 /**
