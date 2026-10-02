@@ -92,7 +92,7 @@ struct UpdateRequiredView: View {
                 try await UpdaterJobs().startInstaller()
             } catch {
                 failedToStartInstaller = true
-IKLogger.data.error("Failed to install required update: \(error)")
+                IKLogger.data.error("Failed to install required update: \(error)")
             }
 
             buttonInstallIsDisabled = false
