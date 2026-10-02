@@ -469,20 +469,24 @@ bool Utility::checkIfDirEntryIsManaged(const DirectoryEntry &dirEntry, bool &isM
         const bool result = IoHelper::getItemType(dirEntry.path(), tmpItemType);
         ioError = tmpItemType.ioError;
         if (!result) {
-            if (ioError == IoError::TooManySymbolicLinkLevels) {
-                LOGW_DEBUG(logger(), L"Invalid symbolic link with "
-                                             << Utility::formatSyncPath(dirEntry.path())
-                                             << L" is managed although it has too many levels of indirection.")
-                isManaged = true;
-                return true;
-            }
-
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirEntry.path(), ioError));
             return false;
         }
 
-        if (IoHelper::isExpectedError(ioError)) {
+        if (ioError == IoError::Success || ioError == IoError::TooManySymbolicLinkLevels) {
+            if (ioError == IoError::TooManySymbolicLinkLevels) {
+                LOGW_DEBUG(logger(), L"Invalid symbolic link with "
+                                             << Utility::formatSyncPath(dirEntry.path())
+                                             << L" is managed although it has too many levels of indirection.");
+            }
+            isManaged = true;
             return true;
+        } else if (IoHelper::isExpectedError(ioError)) {
+            return true;
+        } else {
+            // Should not happen
+            assert(false);
+            return false;
         }
     }
 
