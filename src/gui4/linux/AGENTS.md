@@ -372,7 +372,9 @@
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
   construction, and delegates pause/resume to `SyncService`.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
-  independent Home banner instead of replacing the central state.
+  independent Home banner instead of replacing the central state. An undefined runtime status, reported until the
+  server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
+  as on macOS, instead of an empty loading state.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
