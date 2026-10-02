@@ -25,7 +25,8 @@ QtObject {
     readonly property real headerHeight: 24
     readonly property real filterButtonHeight: 24
     readonly property real filterIconSize: 12
-    readonly property real filterMenuWidth: 197
+    // Matches the default ItemDelegate padding of the Fusion style, now set explicitly so the menu can size itself.
+    readonly property real filterMenuOptionPadding: 6
     readonly property real filterMenuOptionHeight: 24
     readonly property real tableHeaderHeight: 28
     readonly property real rowHeight: 36
