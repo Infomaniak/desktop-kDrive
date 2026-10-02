@@ -271,6 +271,13 @@ void AppCache::removeDrive(const DriveDbId driveDbId) {
     emit syncErrorsChanged();
 }
 
+void AppCache::setSyncCreationPending(const AvailableDriveKey &key, const bool pending) {
+    const bool changed = pending ? _pendingSyncCreationKeys.insert(key).second : _pendingSyncCreationKeys.erase(key) > 0;
+    if (changed) {
+        emit syncCreationPendingChanged();
+    }
+}
+
 void AppCache::upsertSync(const BaseSync &info) {
     if (!_drivesByDbId.contains(info.driveDbId())) {
         qCWarning(lcAppCache) << "Sync upsert dropped | syncDbId:" << info.dbId() << "/ unknown driveDbId:" << info.driveDbId();
@@ -317,7 +324,8 @@ void AppCache::updateSyncRuntimeInfo(const SyncDbId syncDbId, const SyncRuntimeI
                         << "/ step:" << toInt(runtimeInfo.step);
     emit syncRuntimeInfoChanged(syncDbId);
     if (statusChanged) {
-        emit syncStatusChanged(syncDbId); // used by the systray to be triggered only when the status changed and not on progression for example.
+        emit syncStatusChanged(
+                syncDbId); // used by the systray to be triggered only when the status changed and not on progression for example.
     }
 }
 

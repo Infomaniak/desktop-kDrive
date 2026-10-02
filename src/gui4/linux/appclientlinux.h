@@ -150,11 +150,11 @@ class AppClientLinux : public QApplication {
         SentryService _sentryService{_parametersService, _appCache, _parametersStore, this};
         CachePopulator _cachePopulator{_serverCommService, _appCache, _parametersStore, this};
         UserService _userService{_serverCommService, _appCache, _serviceActionTracker, _serviceEventBus, this};
+        SyncService _syncService{_serverCommService, _appCache, _cachePopulator, _serviceActionTracker, _serviceEventBus, this};
         SettingsUserService _settingsUserService{_appCache, _userService, this};
-        OnboardingSessionManager _onboardingSessionManager{_cachePopulator, _appCache,        _serverCommService,
-                                                           _userService,    _serviceEventBus, this};
+        OnboardingSessionManager _onboardingSessionManager{
+                _cachePopulator, _appCache, _serverCommService, _userService, _syncService, _serviceEventBus, this};
         DriveService _driveService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
-        SyncService _syncService{_serverCommService, _serviceActionTracker, _serviceEventBus, this};
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
         NetworkStatusObserver _networkStatusObserver{this};
@@ -171,8 +171,8 @@ class AppClientLinux : public QApplication {
                                                                _serverCommService, _translationService, this};
         FileExclusionController _fileExclusionController{_exclusionTemplateService, this};
         NetworkSettingsController _networkSettingsController{_parametersStore, _parametersService, _translationService, this};
-        SettingsSyncActivationController _settingsSyncActivationController{_appCache, _serverCommService, _cachePopulator,
-                                                                           _serviceEventBus, this};
+        SettingsSyncActivationController _settingsSyncActivationController{_appCache,       _serverCommService, _syncService,
+                                                                           _cachePopulator, _serviceEventBus,   this};
         SettingsWindowController _settingsWindowController{_generalSettingsController,        _advancedSettingsController,
                                                            _fileExclusionController,          _networkSettingsController,
                                                            _settingsSyncActivationController, this};

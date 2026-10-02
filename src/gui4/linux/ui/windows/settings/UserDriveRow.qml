@@ -28,6 +28,7 @@ Item {
     required property string accountName
     required property color color
     required property bool isSynchronized
+    required property bool syncCreationPending
     required property var accountId
     required property var driveId
     property bool actionBusy: false
