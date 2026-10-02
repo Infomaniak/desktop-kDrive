@@ -198,37 +198,40 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
         TRACE_ERROR(L"Could not close key %s", subKey.c_str());
     }
 
-    if (updateIcons && namespaceCLSID) {
-        // Update DefaultIcon keys. Reuses hKey, so it must run after the sync root key is closed
-        struct RegKeyInfo {
-                HKEY rootKey;
-                std::wstring subKey;
-        };
-        std::vector<RegKeyInfo> regKeys = {
-                {HKEY_CLASSES_ROOT,
-                 REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-                {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                            std::wstring(REGKEY_DEFAULTICON)},
-                {HKEY_CURRENT_USER,
-                 REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
-                {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                            std::wstring(REGKEY_DEFAULTICON)}};
 
-        for (const auto &regKeyInfo: regKeys) {
-            if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-                // Update DefaultIcon value
-                updateRegistryEntry(hKey, L"", value);
-                if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
-                }
-            } else {
-                TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
+    if (!updateIcons || !namespaceCLSID) {
+        return;
+    }
+
+    // Update DefaultIcon keys. Reuses hKey, so it must run after the sync root key is closed
+    struct RegKeyInfo {
+            HKEY rootKey;
+            std::wstring subKey;
+    };
+    std::vector<RegKeyInfo> regKeys = {
+            {HKEY_CLASSES_ROOT,
+             REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
+            {HKEY_CLASSES_ROOT,
+             REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
+            {HKEY_CURRENT_USER,
+             REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)},
+            {HKEY_CURRENT_USER,
+             REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON)}};
+
+    for (const auto &regKeyInfo: regKeys) {
+        if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
+            // Update DefaultIcon value
+            updateRegistryEntry(hKey, L"", value);
+            if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+                TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
             }
+        } else {
+            TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
         }
     }
 }
 
-void CloudProviderRegistrar::updateRegistration(ProviderInfo *providerInfo) {
+void CloudProviderRegistrar::updateRegistration(const ProviderInfo *providerInfo) {
     if (!providerInfo->folderPath()) {
         TRACE_ERROR(L"Folder path is empty");
         return;
@@ -241,7 +244,7 @@ void CloudProviderRegistrar::updateRegistration(ProviderInfo *providerInfo) {
     registration.ProviderName = Utilities::s_appName.c_str();
     registration.ProviderVersion = Utilities::s_version.c_str();
     registration.SyncRootIdentity = syncRootIdentity.c_str();
-    registration.SyncRootIdentityLength = (DWORD) syncRootIdentity.size();
+    registration.SyncRootIdentityLength = static_cast<DWORD>(syncRootIdentity.size());
 
     CF_SYNC_POLICIES policies = {};
     policies.StructSize = sizeof(CF_SYNC_POLICIES);
@@ -259,7 +262,7 @@ void CloudProviderRegistrar::updateRegistration(ProviderInfo *providerInfo) {
     }
 }
 
-bool CloudProviderRegistrar::createRegistration(ProviderInfo *providerInfo, const std::wstring &syncRootID) {
+bool CloudProviderRegistrar::createRegistration(const ProviderInfo *providerInfo, const std::wstring &syncRootID) {
     TRACE_DEBUG(L"Registering new provider");
     if (!providerInfo->folderPath()) {
         TRACE_ERROR(L"Folder path is empty");

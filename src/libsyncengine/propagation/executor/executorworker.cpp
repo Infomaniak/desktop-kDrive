@@ -2239,25 +2239,25 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     }
 
     // Handle specific errors
-    switch (static_cast<int>(opsExitInfo)) {
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
+    switch (static_cast<int32_t>(opsExitInfo)) {
+        case static_cast<int32_t>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
             return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::HardlinkNotSupported)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::HardlinkNotSupported)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileExists)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileExists)):
-        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileExists)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::BackError, ExitCause::FileExists)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileExists)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::DataError, ExitCause::FileExists)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::OperationCanceled)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::OperationCanceled)): {
             return ExitCode::Ok;
         }
         default: {
