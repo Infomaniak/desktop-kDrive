@@ -26,8 +26,6 @@ HomeStateContent {
         switch (controller.primaryAction) {
         case HomeController.ShowActivities:
             return qsTrId("buttonSeeActivities")
-        case HomeController.HideWindow:
-            return qsTrId("buttonCloseKDrive")
         default:
             return ""
         }
