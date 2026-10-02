@@ -218,3 +218,5 @@ enc_temp_folder
 
 # Skill pr-description-writer (.agents/skills/pr-description-writer)
 PR.md
+/signature-usage-*.csv
+./BundleArtifacts*

@@ -421,6 +421,8 @@ powershell .\infomaniak-build-tools\windows\build-drive.ps1 -h
 
 > Note: For this script, CMake may require an initialized x64 MSVC environment (`vcvarsall.bat` or `vcvars64.bat`). See script help output.
 
+> Note: When run from an elevated shell, the script counts the signatures performed during the build with `Measure-SignatureUsage.ps1` (DigiCert KeyLocker bills each signature). It prints the total at the end of the packaging and saves the per-event details to `build-windows\signature-usage.csv`. From a non-elevated shell, it prints a warning and builds without counting.
+
 ---
 
 ## 9) Troubleshooting
