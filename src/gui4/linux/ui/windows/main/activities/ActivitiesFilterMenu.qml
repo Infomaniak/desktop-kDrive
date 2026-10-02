@@ -42,7 +42,12 @@ Popup {
         }
     ]
 
-    width: IKActivities.filterMenuWidth
+    // Sized on its widest option, so no translated label is elided.
+    readonly property real widestOptionWidth: Math.max(
+        ...root.filterOptions.map(option => optionFontMetrics.advanceWidth(option.label)))
+
+    width: Math.ceil(widestOptionWidth) + IKActivities.filterIconSize + IKSpacing.s8 + IKActivities.filterMenuOptionPadding * 2
+           + leftPadding + rightPadding
     height: optionsList.contentHeight + IKSpacing.s8 * 2
     padding: IKSpacing.s8
     focus: true
@@ -66,6 +71,13 @@ Popup {
                 optionsList.currentItem.forceActiveFocus();
             }
         });
+    }
+
+    FontMetrics {
+        id: optionFontMetrics
+
+        font.pixelSize: IKFonts.bodySize
+        font.weight: IKFonts.emphasized
     }
 
     background: Rectangle {
@@ -92,6 +104,7 @@ Popup {
 
             width: optionsList.width
             height: IKActivities.filterMenuOptionHeight
+            horizontalPadding: IKActivities.filterMenuOptionPadding
             focusPolicy: Qt.StrongFocus
             hoverEnabled: true
             onClicked: {
@@ -114,11 +127,10 @@ Popup {
 
                 Text {
                     width: Math.max(0, parent.width - x)
+                    font: optionFontMetrics.font
                     anchors.verticalCenter: parent.verticalCenter
                     text: option.modelData.label
                     color: IKColors.textPrimary
-                    font.pixelSize: IKFonts.bodySize
-                    font.weight: IKFonts.emphasized
                     elide: Text.ElideRight
                 }
             }
