@@ -495,7 +495,9 @@
   classic syncs for the same drive while the first `SYNC_ADDED` push is still in flight. Advanced syncs (non-empty
   `serverFolderNodeId`) bypass the check and the reservation; they must also set `serverFolderPath`, which the server
   uses to validate them as advanced. `createRemoteFolder` sends `NODE_CREATEMISSINGFOLDERS` (`userDbId` + `driveId`);
-  the server adds the new folder to the blacklist of every synchronization of the drive.
+  the server adds the new folder to the blacklist of every synchronization of the backend drive. It matches them by
+  `DriveId` only, so another user who configured the same drive gets it blacklisted too; this is a known server
+  limitation, not handled on the client.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
     - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
