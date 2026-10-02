@@ -23,7 +23,9 @@
 #include <QAbstractListModel>
 #include <QString>
 
+#include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 namespace KDC {
@@ -89,8 +91,10 @@ class AdvancedSyncListModel final : public QAbstractListModel {
         void setDeletePending(SyncDbId syncDbId, bool deletePending);
 
     private:
-        [[nodiscard]] int indexOf(SyncDbId syncDbId) const;
-        void notifyRow(int rowIndex, const QList<int> &roles);
+        [[nodiscard]] std::optional<std::size_t> indexOf(SyncDbId syncDbId) const;
+        [[nodiscard]] static int32_t toModelRow(std::size_t rowIndex);
+        // `roles` is a QList<int> because dataChanged() takes one.
+        void notifyRow(std::size_t rowIndex, const QList<int> &roles);
 
         std::vector<Row> _rows;
 };
