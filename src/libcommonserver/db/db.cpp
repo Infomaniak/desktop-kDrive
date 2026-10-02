@@ -623,20 +623,21 @@ bool Db::checkConnect() {
     return true;
 }
 
-bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+bool Db::addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, const int64_t defaultValue) {
     const auto requestId = tableName + "add_column_" + columnName;
-    const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " INTEGER;";
-    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+    const auto request =
+            "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " INTEGER DEFAULT " + std::to_string(defaultValue) + ";";
+    return addColumnIfMissing(tableName, columnName, requestId, request);
 }
 
-bool Db::addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded /*= nullptr*/) {
+bool Db::addTextColumnIfMissing(const std::string &tableName, const std::string &columnName) {
     const auto requestId = tableName + "add_column_" + columnName;
     const auto request = "ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " TEXT;";
-    return addColumnIfMissing(tableName, columnName, requestId, request, columnAdded);
+    return addColumnIfMissing(tableName, columnName, requestId, request);
 }
 
 bool Db::addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
-                            const std::string &request, bool *columnAdded /*= nullptr*/) {
+                            const std::string &request) {
     bool exist = false;
     if (!columnExists(tableName, columnName, exist)) return false;
     if (!exist) {
@@ -649,8 +650,6 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
             return sqlFail(requestId, error);
         }
         queryFree(requestId);
-
-        if (columnAdded) *columnAdded = true;
     }
     return true;
 }

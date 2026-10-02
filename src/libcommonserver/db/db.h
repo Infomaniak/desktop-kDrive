@@ -88,10 +88,10 @@ class COMMONSERVER_EXPORT Db {
         bool sqlFail(const std::string &log, const std::string &error);
         bool checkConnect();
 
-        bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
-        bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName, bool *columnAdded = nullptr);
+        bool addIntegerColumnIfMissing(const std::string &tableName, const std::string &columnName, int64_t defaultValue);
+        bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName);
         bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
-                                const std::string &request, bool *columnAdded = nullptr);
+                                const std::string &request);
 
         // Helpers
         bool createAndPrepareRequest(const char *requestId, const char *query);

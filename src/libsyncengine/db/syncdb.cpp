@@ -646,13 +646,14 @@ bool SyncDb::revertAllLocalDeletes() {
         }
     }
 
+    bool success = true;
     for (const DbNodeId &dbNodeId: nodesToDelete) {
         bool foundNode = false;
         if (!deleteNode(dbNodeId, foundNode)) {
             LOG_ERROR(_logger, "Error deleting node by dbId: " << dbNodeId);
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::revertAllLocalDeletes",
                                                  "Error deleting node by dbId: " + std::to_string(dbNodeId));
-            continue;
+            success = false;
         }
     }
 
@@ -661,7 +662,7 @@ bool SyncDb::revertAllLocalDeletes() {
                                                  " nodes  overall " + std::to_string(localDbNodeIds.size()) +
                                                  " nodes with local node id in the DB");
 
-    return true;
+    return success;
 }
 
 bool SyncDb::dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds) {
@@ -687,13 +688,13 @@ bool SyncDb::dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds) {
             LOG_ERROR(_logger, "Error selecting node by dbId: " << dbId);
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::dbFileLocalNodeIds",
                                                  "Error selecting node by dbId: " + std::to_string(dbId));
-            continue;
+            return false;
         }
         if (!found) {
             LOG_WARN(_logger, "Node not found by dbId: " << dbId);
             KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "SyncDb::dbFileLocalNodeIds",
                                                  "Node not found by dbId: " + std::to_string(dbId));
-            continue;
+            return false;
         }
 
         if (dbNode.type() == NodeType::Directory) {

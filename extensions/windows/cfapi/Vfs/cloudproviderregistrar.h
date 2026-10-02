@@ -26,12 +26,16 @@
 
 class CloudProviderRegistrar {
     public:
-        static std::wstring registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize);
+        static std::wstring registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize,
+                                              int64_t *registeredAt);
         static bool unregister(std::wstring syncRootID);
+        static bool isRegistered(const std::wstring &providerId, const std::wstring &userId, const wchar_t *folderPath,
+                                 bool &registered);
 
     private:
         static std::unique_ptr<TOKEN_USER> getTokenInformation();
         static std::wstring getSyncRootId(const ProviderInfo *providerInfo);
+        static std::wstring getSyncRootId(const std::wstring &providerId, const std::wstring &userId);
         /*static void addCustomState(
             _In_ winrt::IVector<winrt::StorageProviderItemPropertyDefinition> &customStates,
             _In_ LPCWSTR displayNameResource,

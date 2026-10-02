@@ -116,6 +116,8 @@ class SyncDb : public Db {
         // will fail and the user should be prompted to create a new sync directory.
         bool tryToFixDbNodeIdsAfterSyncDirChange(const SyncPath &syncDirPath);
 
+        bool revertAllLocalDeletes();
+
     protected:
         virtual bool updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
 
@@ -145,8 +147,6 @@ class SyncDb : public Db {
         // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
         bool normalizeRemoteNames();
 
-        // Fix issue introduced in version 3.8.2.5/7 (windows): revert all local deletes not yet propagated to the remote side.
-        bool revertAllLocalDeletes();
         bool dbFileLocalNodeIds(std::map<NodeId, DbNodeId> &localDbNodeIds);
         bool fsFileLocalNodeIds(const SyncPath &localSyncPath, std::unordered_set<NodeId> &localFSNodeIds);
 

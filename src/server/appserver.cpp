@@ -4056,8 +4056,8 @@ bool AppServer::startClient() {
         _settingsAsked = false;
 #endif
 
-        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable))
-                                                              << L" args=" << arguments.join(' ').toStdWString());
+        LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
+                                                             << arguments.join(' ').toStdWString());
 
         LOGW_INFO(_logger, L"Starting kDrive client - path=" << Path2WStr(QStr2Path(pathToExecutable)) << L" args="
                                                              << (arguments.size() >= 1 ? arguments[0].toStdWString() : L""));
@@ -4487,6 +4487,10 @@ ExitInfo AppServer::setSupportsVirtualFiles(const SyncDbId syncDbId, const bool 
 
         // Update Vfs mode in sync
         sync.setVirtualFileMode(newMode);
+        // Reset the VFS registration time: a new sync root registration is expected and must not trigger a revert of local
+        // deletes.
+        sync.setVfsRegisteredAt(0);
+
         if (!ParmsDb::instance()->updateSync(sync, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::updateSync");
             return {ExitCode::DbError, ExitCause::DbAccessError};

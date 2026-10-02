@@ -42,6 +42,7 @@ class VFS_EXPORT VfsWin : public Vfs {
         VirtualFileMode mode() const override;
 
         bool showPinStateActions() const override { return false; }
+        bool isRegistered() const override;
 
         ExitInfo updateMetadata(const SyncPath &filePath, time_t creationTime, time_t modificationTime, int64_t size,
                                 const NodeId &fileId) override;
@@ -68,7 +69,7 @@ class VFS_EXPORT VfsWin : public Vfs {
         ExitInfo getFetchingAppList(AppTable &) final { return ExitCode::Ok; }
 
         bool isExcluded(const SyncPath &) override { return false; }
-        virtual bool setCreationDate(const QString &, time_t) { return false; }
+        virtual bool setCreationDate(const QString &, const time_t) { return false; }
 
         void dehydrate(const SyncPath &path) override;
         void hydrate(const SyncPath &path) override;
