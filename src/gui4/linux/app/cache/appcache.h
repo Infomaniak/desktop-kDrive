@@ -80,6 +80,12 @@ class AppCache : public QObject {
         [[nodiscard]] std::vector<SyncContext> syncContexts() const;
         [[nodiscard]] std::optional<DriveContext> driveContext(DriveDbId driveDbId) const;
         [[nodiscard]] std::vector<DriveContext> driveContexts() const;
+
+        // Returns the main synchronization of a configured drive: its oldest classic (drive-root) synchronization. A drive
+        // row belongs to one account of one user, so another user's synchronizations of the same backend drive never
+        // compete. Other classic synchronizations, which only a legacy migration can produce, are presented as advanced.
+        [[nodiscard]] std::optional<BaseSync> mainSync(DriveDbId driveDbId) const;
+
         // Available-drive contexts reconcile addable drives with configured drives for display/disable decisions.
         // A drive is configured for onboarding only when it owns a classic synchronization.
         [[nodiscard]] bool isAvailableDriveConfigured(const AvailableDriveKey &key) const;
