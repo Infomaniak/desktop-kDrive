@@ -28,23 +28,21 @@ Item {
     required property var model
     required property var controller
 
-    property real nameFolderRatio: IKActivities.nameColumnRatio / (IKActivities.nameColumnRatio + IKActivities.folderColumnRatio)
+    readonly property real defaultNameFolderRatio: IKActivities.nameColumnRatio / (IKActivities.nameColumnRatio + IKActivities.folderColumnRatio)
+    property real nameFolderRatio: defaultNameFolderRatio
 
     // Metadata columns are fixed, so they are sized from the widest string they can ever hold in the active locale
-    // rather than a constant: the longest wordings differ enough between languages to truncate otherwise. The header
-    // label counts too, since it elides the same way, and it is the binding constraint for size and status.
-    readonly property real timeContentWidth: Math.max(root.model.maxTextWidth(root.model.timeTextSamples, cellFont.font), timeHeaderMetrics.advanceWidth)
+    // rather than a constant. The header label counts too, since it elides the same way.
     readonly property real sizeContentWidth: Math.max(root.model.maxTextWidth(root.model.sizeTextSamples, cellFont.font), sizeHeaderMetrics.advanceWidth)
     readonly property real statusContentWidth: Math.max(IKActivities.sourceIconSize + 2 * IKSpacing.s8 + IKActivities.activityIconSize + IKActivities.optionsButtonSize, statusHeaderMetrics.advanceWidth)
 
-    readonly property real fixedColumnsWidth: timeColumnWidth + sizeColumnWidth + statusColumnWidth
+    readonly property real fixedColumnsWidth: sizeColumnWidth + statusColumnWidth
     readonly property real flexibleWidth: Math.max(IKActivities.nameColumnMinWidth + IKActivities.folderColumnMinWidth, width - fixedColumnsWidth)
     readonly property real nameColumnWidth: Math.max(IKActivities.nameColumnMinWidth, Math.min(flexibleWidth - IKActivities.folderColumnMinWidth, flexibleWidth * nameFolderRatio))
     readonly property real folderColumnWidth: flexibleWidth - nameColumnWidth
-    readonly property real timeColumnWidth: Math.ceil(timeContentWidth) + 2 * IKActivities.secondaryCellPadding
     readonly property real sizeColumnWidth: Math.ceil(sizeContentWidth) + 2 * IKActivities.secondaryCellPadding
     readonly property real statusColumnWidth: Math.ceil(statusContentWidth) + 2 * IKActivities.secondaryCellPadding
-    readonly property real contentWidth: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
+    readonly property real contentWidth: nameColumnWidth + folderColumnWidth + sizeColumnWidth + statusColumnWidth
 
     function resizeNameBoundary(requestedDelta) {
         if (root.flexibleWidth <= 0) {
@@ -55,6 +53,10 @@ Item {
         root.nameFolderRatio = clamped / root.flexibleWidth;
     }
 
+    function resetNameBoundary() {
+        root.nameFolderRatio = root.defaultNameFolderRatio;
+    }
+
     // Measured, never rendered: cell samples use the row font, header labels the header font.
     Text {
         id: cellFont
@@ -62,13 +64,6 @@ Item {
         visible: false
         font.pixelSize: IKFonts.bodySize
         font.weight: IKFonts.medium
-    }
-    TextMetrics {
-        id: timeHeaderMetrics
-
-        font.pixelSize: IKFonts.subheadlineSize
-        font.weight: IKFonts.medium
-        text: qsTrId("labelTime")
     }
     TextMetrics {
         id: sizeHeaderMetrics
@@ -92,10 +87,10 @@ Item {
 
         nameColumnWidth: root.nameColumnWidth
         folderColumnWidth: root.folderColumnWidth
-        timeColumnWidth: root.timeColumnWidth
         sizeColumnWidth: root.sizeColumnWidth
         statusColumnWidth: root.statusColumnWidth
         onResizeRequested: delta => root.resizeNameBoundary(delta)
+        onResetRequested: root.resetNameBoundary()
     }
 
     ListView {
@@ -117,7 +112,6 @@ Item {
             rowModel: model
             nameColumnWidth: root.nameColumnWidth
             folderColumnWidth: root.folderColumnWidth
-            timeColumnWidth: root.timeColumnWidth
             sizeColumnWidth: root.sizeColumnWidth
             statusColumnWidth: root.statusColumnWidth
             menuViewport: listView
