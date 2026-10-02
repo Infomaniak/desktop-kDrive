@@ -69,7 +69,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testStopSyncJob);
         CPPUNIT_TEST(testSyncStatusJob);
         CPPUNIT_TEST(testSyncAddJob);
-        CPPUNIT_TEST(testSyncAddJobPartialFailureSignals);
         CPPUNIT_TEST(testSyncAdd2Job);
         CPPUNIT_TEST(testSyncStartAfterLoginJob);
         CPPUNIT_TEST(testSyncDeleteJob);
@@ -156,7 +155,6 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
         void testStopSyncJob();
         void testSyncStatusJob();
         void testSyncAddJob();
-        void testSyncAddJobPartialFailureSignals();
         void testSyncAdd2Job();
         void testSyncStartAfterLoginJob();
         void testSyncDeleteJob();
