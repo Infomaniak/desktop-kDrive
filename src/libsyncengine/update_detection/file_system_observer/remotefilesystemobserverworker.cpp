@@ -852,7 +852,11 @@ ExitInfo RemoteFileSystemObserverWorker::createActionInfoList(const Poco::JSON::
                                                               ActionInfoList &actionInfoList) {
     actionInfoList.clear();
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
-        if (stopAsked()) return ExitCode::Ok;
+        if (stopAsked()) {
+            invalidateSnapshot();
+
+            return ExitCode::Ok;
+        }
 
         const auto actionObj = it->extract<Poco::JSON::Object::Ptr>();
         ActionInfo actionInfo;
@@ -899,7 +903,11 @@ ExitInfo RemoteFileSystemObserverWorker::fillActionsFilesInfo(const Poco::JSON::
     if (!actionFilesArray) return ExitCode::LogicError;
 
     for (auto it = actionFilesArray->begin(); it != actionFilesArray->end(); ++it) {
-        if (stopAsked()) return ExitCode::Ok;
+        if (stopAsked()) {
+            invalidateSnapshot();
+
+            return ExitCode::Ok;
+        }
 
         const auto actionFileObj = it->extract<Poco::JSON::Object::Ptr>();
         if (const auto exitInfo = extractActionFileInfo(actionFileObj, actionInfoList); !exitInfo) return exitInfo;
