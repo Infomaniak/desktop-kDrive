@@ -19,6 +19,7 @@
 #pragma once
 
 #include "app/settings/advancedsettingscontroller.h"
+#include "app/settings/drivemanagementcontroller.h"
 #include "app/settings/fileexclusioncontroller.h"
 #include "app/settings/generalsettingscontroller.h"
 #include "app/settings/networksettingscontroller.h"
@@ -28,7 +29,12 @@
 
 namespace KDC {
 
-/** Process-long composition facade exposed to the independent Settings window. */
+/**
+ * Process-long composition facade exposed to the independent Settings window.
+ *
+ * TODO Pass these controllers to SettingsWindow as initial properties, like SettingsUserService, and keep only the
+ * window requests here.
+ */
 class SettingsWindowController final : public QObject {
         Q_OBJECT
         Q_PROPERTY(GeneralSettingsController *general READ generalController CONSTANT)
@@ -36,17 +42,20 @@ class SettingsWindowController final : public QObject {
         Q_PROPERTY(FileExclusionController *fileExclusions READ fileExclusionController CONSTANT)
         Q_PROPERTY(NetworkSettingsController *network READ networkController CONSTANT)
         Q_PROPERTY(SettingsSyncActivationController *syncActivation READ syncActivationController CONSTANT)
+        Q_PROPERTY(DriveManagementController *driveManagement READ driveManagementController CONSTANT)
 
     public:
         SettingsWindowController(GeneralSettingsController &general, AdvancedSettingsController &advanced,
                                  FileExclusionController &fileExclusions, NetworkSettingsController &network,
-                                 SettingsSyncActivationController &syncActivation, QObject *parent = nullptr);
+                                 SettingsSyncActivationController &syncActivation, DriveManagementController &driveManagement,
+                                 QObject *parent = nullptr);
 
         [[nodiscard]] GeneralSettingsController *generalController() { return &_generalController; }
         [[nodiscard]] AdvancedSettingsController *advancedController() { return &_advancedController; }
         [[nodiscard]] FileExclusionController *fileExclusionController() { return &_fileExclusionController; }
         [[nodiscard]] NetworkSettingsController *networkController() { return &_networkController; }
         [[nodiscard]] SettingsSyncActivationController *syncActivationController() { return &_syncActivationController; }
+        [[nodiscard]] DriveManagementController *driveManagementController() { return &_driveManagementController; }
 
         Q_INVOKABLE void requestOpen() { emit openRequested(); }
         Q_INVOKABLE void requestAccountConnection() { emit accountConnectionRequested(); }
@@ -63,6 +72,7 @@ class SettingsWindowController final : public QObject {
         FileExclusionController &_fileExclusionController;
         NetworkSettingsController &_networkController;
         SettingsSyncActivationController &_syncActivationController;
+        DriveManagementController &_driveManagementController;
 };
 
 } // namespace KDC
