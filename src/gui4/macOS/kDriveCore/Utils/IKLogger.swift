@@ -34,7 +34,10 @@ public extension IKLogger {
 public struct IKLogger: Sendable {
     let subsystem: String
     let category: String
-    @InjectService var logService: LogService
+    private var logService: LogService {
+        @InjectService var service: LogService
+        return service
+    }
 
     @available(macOS 11.0, *)
     private var logger: Logger {

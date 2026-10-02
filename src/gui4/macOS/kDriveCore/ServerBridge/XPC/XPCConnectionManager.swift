@@ -314,15 +314,28 @@ import InfomaniakDI
 
         let connectionId = ObjectIdentifier(newConnection)
         Task {
-            IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
-            try await coherentCache.clearAndRefresh()
-            try? await settingsCache.refresh()
+            IKLogger.xpc.info("[KD] Client cache initialization started")
+            do {
+                try await coherentCache.clearAndRefresh()
+            } catch {
+                IKLogger.xpc.error("[KD] Client cache initialization failed phase=coherentCache clientReady=false")
+                return
+            }
+            let settingsReady: Bool
+            do {
+                try await settingsCache.refresh()
+                settingsReady = true
+            } catch {
+                settingsReady = false
+                IKLogger.xpc.warning("[KD] Client settings refresh failed; retaining last-known configuration")
+            }
             await MainActor.run { [weak self] in
-                guard let self, let conn = appConnection else { return }
-                let currentId = ObjectIdentifier(conn)
-                if currentId == connectionId {
-                    guiConnectionState = .connected
+                guard let self, let conn = appConnection, ObjectIdentifier(conn) == connectionId else {
+                    IKLogger.xpc.debug("[KD] Client cache initialization discarded: connection no longer current")
+                    return
                 }
+                IKLogger.xpc.info("[KD] Client cache initialization completed clientReady=true settingsReady=\(settingsReady)")
+                guiConnectionState = .connected
             }
         }
     }

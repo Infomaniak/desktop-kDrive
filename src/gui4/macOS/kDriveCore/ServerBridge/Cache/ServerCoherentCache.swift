@@ -414,12 +414,14 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
 
     public func updateErrors(_ errors: [ErrorInfo]) async throws {
         serverErrors.removeAll()
+        var skippedMissingSync = 0
 
         for error in errors {
             if error.level == .Server {
                 try await addOrUpdateServerError(error)
             } else {
                 guard var synchro = getSynchro(synchroDbId: error.synchroDbId) else {
+                    skippedMissingSync += 1
                     continue
                 }
                 synchro.errors[error.dbId] = error
@@ -428,6 +430,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
                 }
                 try? updateSynchro(synchro)
             }
+        }
+        if skippedMissingSync > 0 {
+            IKLogger.cache.warning("[KD] Error cache update partial received=\(errors.count) skippedMissingSync=\(skippedMissingSync)")
         }
     }
 

@@ -45,9 +45,14 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
 
     @discardableResult
     func query<Response: Decodable>(_ request: Encodable, responseType: Response.Type) async throws -> Response {
-        let requestData = try encoder.encode(request)
-
         let logContext = RequestLogContext(request)
+        let requestData: Data
+        do {
+            requestData = try encoder.encode(request)
+        } catch {
+            IKLogger.xpc.error("[KD] [Job →] #\(logContext.id) \(logContext.num) request encoding failed")
+            throw error
+        }
         logRequestSent(logContext)
 
         let startTime = DispatchTime.now()
@@ -60,7 +65,15 @@ struct XPCQueryFetcher: XPCQueryFetcherProtocol {
             throw error
         }
 
-        let headerMessage = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: replyData)
+        let headerMessage: CallbackMessage<EmptyResponse>
+        do {
+            headerMessage = try decoder.decode(CallbackMessage<EmptyResponse>.self, from: replyData)
+        } catch {
+            IKLogger.xpc.error(
+                "[KD] [Job ←] #\(logContext.id) \(logContext.num) callback header decoding failed bytes=\(replyData.count)"
+            )
+            throw error
+        }
         logCallbackReceived(headerMessage, context: logContext, since: startTime)
 
         try headerMessage.validate()
