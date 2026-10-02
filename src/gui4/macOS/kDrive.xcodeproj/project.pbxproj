@@ -146,7 +146,6 @@
 				Jobs/LoginJobTests.swift,
 				Jobs/SyncRestartAfterLoginTests.swift,
 				Logging/GzipCompressorTests.swift,
-				Logging/LogLevelKDCMappingTests.swift,
 				Logging/LogServiceTests.swift,
 				Onboarding/OnboardingFlowCoordinatorTests.swift,
 				Parsing/Base64CodedTests.swift,
