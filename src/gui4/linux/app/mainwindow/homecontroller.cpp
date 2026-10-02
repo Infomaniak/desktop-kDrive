@@ -78,13 +78,11 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
  * state is shown only when no settled status is known yet for the displayed synchronization.
  */
 HomeController::HomeStatus HomeController::status() const {
-    const HomeStatus currentStatus = resolvedStatus();
-    if (currentStatus != HomeStatus::Loading) {
+    if (const HomeStatus currentStatus = resolvedStatus(); currentStatus != HomeStatus::Loading) {
         return currentStatus;
     }
 
-    const qint64 syncDbId = currentSyncDbId();
-    if (syncDbId != 0 && syncDbId == _settledStatusSyncDbId) {
+    if (const qint64 syncDbId = currentSyncDbId(); syncDbId != 0 && syncDbId == _settledStatusSyncDbId) {
         return _settledStatus;
     }
 
