@@ -45,6 +45,7 @@
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
+#include "app/settings/drivemanagementcontroller.h"
 #include "app/settings/settingswindowcontroller.h"
 #include "app/settings/settingssyncactivationcontroller.h"
 #include "app/systraycontroller.h"
@@ -173,9 +174,14 @@ class AppClientLinux : public QApplication {
         NetworkSettingsController _networkSettingsController{_parametersStore, _parametersService, _translationService, this};
         SettingsSyncActivationController _settingsSyncActivationController{_appCache,       _serverCommService, _syncService,
                                                                            _cachePopulator, _serviceEventBus,   this};
-        SettingsWindowController _settingsWindowController{_generalSettingsController,        _advancedSettingsController,
-                                                           _fileExclusionController,          _networkSettingsController,
-                                                           _settingsSyncActivationController, this};
+        DriveManagementController _driveManagementController{_appCache, _serverCommService, _syncService, this};
+        SettingsWindowController _settingsWindowController{_generalSettingsController,
+                                                           _advancedSettingsController,
+                                                           _fileExclusionController,
+                                                           _networkSettingsController,
+                                                           _settingsSyncActivationController,
+                                                           _driveManagementController,
+                                                           this};
         QPointer<QWindow> _settingsWindow;
         QQmlApplicationEngine _qmlEngine;
         bool _bootstrapCompleted{false};

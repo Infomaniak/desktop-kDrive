@@ -34,6 +34,7 @@ Flickable {
     signal connectAccountRequested(Item trigger)
     signal disconnectAccountRequested(Item trigger, var userDbId, string userName)
     signal activateDriveRequested(Item trigger, var userDbId, var accountId, var driveId)
+    signal manageDriveRequested(Item trigger, var driveDbId)
 
     function focusConnectButton() {
         const button = root.hasUsers ? connectButton : connectEmptyButton;
@@ -141,6 +142,7 @@ Flickable {
                                        root.disconnectAccountRequested(trigger, requestedUserDbId, userName)
                 onActivateRequested: (trigger, requestedUserDbId, accountId, driveId) =>
                                      root.activateDriveRequested(trigger, requestedUserDbId, accountId, driveId)
+                onManageRequested: (trigger, driveDbId) => root.manageDriveRequested(trigger, driveDbId)
             }
         }
 
