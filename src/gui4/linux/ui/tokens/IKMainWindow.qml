@@ -24,6 +24,12 @@ QtObject {
     readonly property real sidebarItemHeight: 36
     readonly property real syncSelectorHeight: 32
     readonly property real syncSelectorAdvancedHeight: 44
+
+    // Single source of the selector row height, shared by the row and the popup that sizes itself on its rows.
+    function syncSelectorItemHeight(hasSubtitle: bool): real {
+        return hasSubtitle ? syncSelectorAdvancedHeight : syncSelectorHeight
+    }
+
     readonly property real syncSelectorIconSize: 14
     readonly property real syncSelectorStatusIconSize: 14
     readonly property real syncSelectorTooltipMaxWidth: 180
