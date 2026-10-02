@@ -321,6 +321,15 @@
   synchronization is added or removed. Leaving a drive that has no synchronization left stays the drive management
   page's job, which remains below it in the navigation stack. "Manage" pushes the shared excluded folders page with the
   advanced `SyncDbId`; closing it reloads that synchronization's summary.
+- `app/settings/advancedsynccreationcontroller.*`: process-long transactional editor of the "Sync a folder with kDrive"
+  dialog (`ui/windows/settings/AddAdvancedSyncDialog.qml`), passed to `SettingsWindow` as its `advancedSyncCreation`
+  initial property. There is no default kDrive location: Validate requires a local folder, accepted by
+  `UTILITY_ISPATHVALIDFORNEWSYNC` with `SyncConfiguration::Advanced` (a refused folder keeps the previous one), and a
+  remote folder confirmed in the picker page of the same `IKModal`. Cancelling the picker drops its selection. The
+  picker tree (`RemoteFolderPickerModel` + `ui/features/syncconfiguration/RemoteFolderPicker.qml`) is loaded on its
+  first opening and kept until the dialog closes. Choosing a row that cannot be selected, such as the drive root, clears
+  the selection. The submission sends `SYNC_ADD` with both `serverFolderPath` and `serverFolderNodeId`, then closes the
+  dialog; the page lists the synchronization once its `SYNC_ADDED` push arrives.
 - `ui/windows/settings/SyncSelectionRow.qml`: shared "Synchronization" row (custom-selection summary, Manage, Retry) of
   the drive management page and of each advanced synchronization card. `DeleteSyncDialog.qml` is owner-agnostic: its
   owner binds `busy`, deletes on `deleteConfirmed`, and closes it or sets `failed`.
@@ -524,7 +533,10 @@
       connection and cache bootstrap complete. It yields to onboarding or the main shell once a product route is ready.
     - `ui/windows/onboarding/`: onboarding window composition and flow screens. Onboarding-only QML stays here unless it
       becomes reusable from another product window.
-    - `ui/features/syncconfiguration/`: reusable advanced-sync presentation. The remote-folder tree is a single tab
+    - `ui/features/syncconfiguration/`: reusable advanced-sync presentation. Model roles consumed by a `TableView` or
+      `TreeView` delegate must not reuse the view's own delegate properties (`selected`, `editing`, `current`, `row`,
+      `column`, `expanded`, ...): the view sets them from its own selection and editing state, so a same-named role
+      shows a second, unrelated state. The remote-folder tree is a single tab
       stop that moves a current row internally, so tabbing never walks through every checkbox of a large folder list;
       the current row is a navigation cursor drawn as a tint, kept distinct from the keyboard focus ring.
     - `ui/components/`: reusable presentation primitives without product-window ownership. Main-window sidebar
