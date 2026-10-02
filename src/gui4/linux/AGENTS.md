@@ -147,6 +147,8 @@
   classic root synchronization and must retain its local-folder action; do not model it as a drive-only entry.
 - Use white source fills for monochrome SVGs tinted through `MultiEffect.colorization`; black source fills retain too
   little luminance and remain dark when the theme color changes.
+- When the main-sidebar synchronization selector popup overflows its maximum height, cut it in the middle of a row so the
+  half-visible row shows that the list scrolls; never stop exactly between two rows.
 - Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
   accessory must remain independent presentation inputs rather than a screen-specific state enum.
 - Route orange error dots progressively in the main sidebar: selected-sync errors appear on Activities, unselected-sync
