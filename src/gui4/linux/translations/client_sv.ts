@@ -90,9 +90,17 @@
             <source>My activity only</source> 
             <translation>Endast min aktivitet</translation> 
         </message> 
+        <message id="activitiesTypeThisComputer"> 
+            <source>Activities from this computer</source> 
+            <translation>Aktiviteter från den här datorn</translation> 
+        </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
             <translation>Importerad</translation> 
+        </message> 
+        <message id="activityInstructionGetWithTimeLabel"> 
+            <source>Imported %1</source> 
+            <translation>Importerad %1</translation> 
         </message> 
         <message id="activityInstructionIgnoreLabel"> 
             <source>Ignored</source> 
@@ -102,21 +110,41 @@
             <source>Moved</source> 
             <translation>Flyttad</translation> 
         </message> 
+        <message id="activityInstructionMoveWithTimeLabel"> 
+            <source>Moved %1</source> 
+            <translation>Flyttad %1</translation> 
+        </message> 
         <message id="activityInstructionPutLabel"> 
             <source>Added</source> 
             <translation>Tillagd</translation> 
+        </message> 
+        <message id="activityInstructionPutWithTimeLabel"> 
+            <source>Added %1</source> 
+            <translation>Lagt till %1</translation> 
         </message> 
         <message id="activityInstructionRemoveLabel"> 
             <source>Moved to trash</source> 
             <translation>Flyttad till papperskorgen</translation> 
         </message> 
+        <message id="activityInstructionRemoveWithTimeLabel"> 
+            <source>Moved to the trash %1</source> 
+            <translation>Flyttad till papperskorgen %1</translation> 
+        </message> 
         <message id="activityInstructionRenameLabel"> 
             <source>Renamed</source> 
             <translation>Bytt namn</translation> 
         </message> 
+        <message id="activityInstructionRenameWithTimeLabel"> 
+            <source>Renamed %1</source> 
+            <translation>Bytt namn %1</translation> 
+        </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
             <translation>Ändrad</translation> 
+        </message> 
+        <message id="activityInstructionUpdateWithTimeLabel"> 
+            <source>Modified %1</source> 
+            <translation>Ändrad %1</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 

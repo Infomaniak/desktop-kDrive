@@ -90,9 +90,17 @@
             <source>My activity only</source> 
             <translation>Solo mi actividad</translation> 
         </message> 
+        <message id="activitiesTypeThisComputer"> 
+            <source>Activities from this computer</source> 
+            <translation>Actividades de este ordenador</translation> 
+        </message> 
         <message id="activityInstructionGetLabel"> 
             <source>Imported</source> 
             <translation>Importado</translation> 
+        </message> 
+        <message id="activityInstructionGetWithTimeLabel"> 
+            <source>Imported %1</source> 
+            <translation>Importado %1</translation> 
         </message> 
         <message id="activityInstructionIgnoreLabel"> 
             <source>Ignored</source> 
@@ -102,21 +110,41 @@
             <source>Moved</source> 
             <translation>Movido</translation> 
         </message> 
+        <message id="activityInstructionMoveWithTimeLabel"> 
+            <source>Moved %1</source> 
+            <translation>Movido %1</translation> 
+        </message> 
         <message id="activityInstructionPutLabel"> 
             <source>Added</source> 
             <translation>Añadido</translation> 
+        </message> 
+        <message id="activityInstructionPutWithTimeLabel"> 
+            <source>Added %1</source> 
+            <translation>Añadido %1</translation> 
         </message> 
         <message id="activityInstructionRemoveLabel"> 
             <source>Moved to trash</source> 
             <translation>Movido a la papelera</translation> 
         </message> 
+        <message id="activityInstructionRemoveWithTimeLabel"> 
+            <source>Moved to the trash %1</source> 
+            <translation>Se ha enviado a la papelera %1</translation> 
+        </message> 
         <message id="activityInstructionRenameLabel"> 
             <source>Renamed</source> 
             <translation>Cambiado de nombre</translation> 
         </message> 
+        <message id="activityInstructionRenameWithTimeLabel"> 
+            <source>Renamed %1</source> 
+            <translation>Renombrado %1</translation> 
+        </message> 
         <message id="activityInstructionUpdateLabel"> 
             <source>Modified</source> 
             <translation>Modificado</translation> 
+        </message> 
+        <message id="activityInstructionUpdateWithTimeLabel"> 
+            <source>Modified %1</source> 
+            <translation>Modificado %1</translation> 
         </message> 
         <message id="addAdvancedSyncDialogTitle"> 
             <source>Sync a folder with kDrive</source> 

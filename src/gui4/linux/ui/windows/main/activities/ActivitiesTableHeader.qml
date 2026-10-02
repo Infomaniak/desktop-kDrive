@@ -26,13 +26,13 @@ Item {
 
     required property real nameColumnWidth
     required property real folderColumnWidth
-    required property real timeColumnWidth
     required property real sizeColumnWidth
     required property real statusColumnWidth
 
     signal resizeRequested(real delta)
+    signal resetRequested
 
-    width: nameColumnWidth + folderColumnWidth + timeColumnWidth + sizeColumnWidth + statusColumnWidth
+    width: nameColumnWidth + folderColumnWidth + sizeColumnWidth + statusColumnWidth
     height: IKActivities.tableHeaderHeight
 
     Rectangle {
@@ -55,10 +55,6 @@ Item {
         HeaderCell {
             width: root.folderColumnWidth
             text: qsTrId("labelFolder")
-        }
-        HeaderCell {
-            width: root.timeColumnWidth
-            text: qsTrId("labelTime")
         }
         HeaderCell {
             width: root.sizeColumnWidth
@@ -123,6 +119,8 @@ Item {
                 previousX = currentX;
                 root.resizeRequested(delta);
             }
+            // Like a spreadsheet column separator: double-clicking restores the default name/folder split.
+            onDoubleClicked: root.resetRequested()
         }
     }
 }
