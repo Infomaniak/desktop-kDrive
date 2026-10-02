@@ -149,6 +149,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/settingswindowcontroller.h
         app/settings/settingssyncactivationcontroller.cpp
         app/settings/settingssyncactivationcontroller.h
+        app/settings/drivemanagementcontroller.cpp
+        app/settings/drivemanagementcontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
         ui/chrome/windowdecorationcontroller.cpp
@@ -195,7 +197,9 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AddExclusionRuleDialog.qml
+        ui/windows/settings/DeleteSyncDialog.qml
         ui/windows/settings/DisconnectAccountDialog.qml
+        ui/windows/settings/DriveManagementView.qml
         ui/windows/settings/UserCard.qml
         ui/windows/settings/UserDriveRow.qml
         ui/windows/settings/UsersSettingsView.qml
