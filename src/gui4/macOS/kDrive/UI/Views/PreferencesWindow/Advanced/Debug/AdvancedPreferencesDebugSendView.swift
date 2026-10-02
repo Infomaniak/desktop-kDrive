@@ -130,12 +130,15 @@ struct SendDebugFolderView: View {
 
     func sendFolder() async {
         let utilityJobs = UtilityJobs()
+        IKLogger.general.info("[KD] Support log upload requested includeArchivedLogs=\(!shouldOnlySendLastSession)")
         do {
             logUploadStatus = nil
             uploadSessionTracker.prepareForUpload()
             isSendingDebugFolder = true
             try await utilityJobs.sendLogToSupport(includeArchivedLogs: !shouldOnlySendLastSession)
+            IKLogger.general.info("[KD] Support log upload request accepted")
         } catch {
+            IKLogger.general.warning("[KD] Support log upload request failed")
             isSendingDebugFolder = false
             isShowingError = true
         }
@@ -143,7 +146,10 @@ struct SendDebugFolderView: View {
 
     private func handleLogUploadStatus(_ status: LogUploadStatus) {
         let effect = uploadSessionTracker.handle(status)
-        guard effect != .ignored else { return }
+        guard effect != .ignored else {
+            IKLogger.general.debug("[KD] Support log upload status ignored state=\(status.state.rawValue)")
+            return
+        }
 
         logUploadStatus = status
 
@@ -173,7 +179,13 @@ struct SendDebugFolderView: View {
         }
 
         Task { @MainActor in
-            try? await UtilityJobs().cancelLogToSupport()
+            IKLogger.general.info("[KD] Support log upload cancellation requested")
+            do {
+                try await UtilityJobs().cancelLogToSupport()
+                IKLogger.general.info("[KD] Support log upload cancellation accepted")
+            } catch {
+                IKLogger.general.warning("[KD] Support log upload cancellation failed; dismissing dialog")
+            }
             dismiss()
         }
     }

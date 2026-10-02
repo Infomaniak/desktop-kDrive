@@ -81,7 +81,15 @@ struct UtilitySignalHandler {
         }
 
         let status = LogUploadStatus(signal: statusSignal.body)
-        IKLogger.xpc.log("[KD] Log upload status changed: \(status.state.rawValue) (\(status.percentage)%)")
+        let message = "[KD] Log upload status changed: \(status.state.rawValue) (\(status.percentage)%)"
+        switch status.state {
+        case .Failed:
+            IKLogger.xpc.error(message)
+        case .Success, .Canceled:
+            IKLogger.xpc.info(message)
+        default:
+            IKLogger.xpc.debug(message)
+        }
 
         await logUploadStatusCache.setLogUploadStatus(status)
     }

@@ -34,7 +34,10 @@ public extension IKLogger {
 public struct IKLogger: Sendable {
     let subsystem: String
     let category: String
-    @InjectService var logService: LogService
+    private var logService: LogService {
+        @InjectService var service: LogService
+        return service
+    }
 
     @available(macOS 11.0, *)
     private var logger: Logger {
@@ -45,9 +48,9 @@ public struct IKLogger: Sendable {
         logService.log(level: .debug, category: category, message: message, file: file, line: line)
 
         if #available(macOS 11.0, *) {
-            logger.log("\(message)")
+            logger.debug("\(message)")
         } else {
-            os_log(.default, "%@", message)
+            os_log(.debug, "%@", message)
         }
     }
 

@@ -149,6 +149,7 @@
 				Jobs/SyncRestartAfterLoginTests.swift,
 				Logging/GzipCompressorTests.swift,
 				Logging/LogServiceTests.swift,
+				Logging/XPCDiagnosticsTests.swift,
 				Onboarding/OnboardingFlowCoordinatorTests.swift,
 				Parsing/Base64CodedTests.swift,
 				Parsing/CallbackMessageTests.swift,

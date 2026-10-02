@@ -63,6 +63,8 @@ import InfomaniakDI
             IKLogger.xpc.log("[KD] initial connection to login item agent")
             do {
                 try await connectToLoginAgent()
+            } catch XPCError.serverGUIEndpointWasNil {
+                IKLogger.xpc.debug("[KD] Login item agent reachable; waiting for server registration")
             } catch {
                 IKLogger.xpc.error("[KD] initial connectToLoginAgent FAILED \(error)")
             }
@@ -138,7 +140,7 @@ import InfomaniakDI
 
             do {
                 try await fetchServerEndpointFromLoginItemAgentAndConnectIfNeeded()
-                IKLogger.xpc.log("[KD] Reconnected to server through the login item agent")
+                IKLogger.xpc.info("[KD] Server transport restored through the login item agent; initializing client caches")
                 notifyLoginItemAgentConnectionState(.connected)
                 break
             } catch {
@@ -171,7 +173,7 @@ import InfomaniakDI
 
         IKLogger.xpc.log("[KD] Set connection handlers for connection with login item agent")
         connection.interruptionHandler = { [weak self] in
-            IKLogger.xpc.error("[KD] Connection with login item agent interrupted (server crash)")
+            IKLogger.xpc.warning("[KD] Connection with login item agent interrupted; scheduling reconnection")
             guard let self else { return }
             loginItemAgentConnection = nil
             notifyLoginItemAgentConnectionState(.disconnected)
@@ -179,7 +181,7 @@ import InfomaniakDI
         }
 
         connection.invalidationHandler = { [weak self] in
-            IKLogger.xpc.error("[KD] Connection with login item agent invalidated (no server running)")
+            IKLogger.xpc.warning("[KD] Connection with login item agent invalidated; scheduling reconnection")
             guard let self else { return }
             loginItemAgentConnection = nil
             notifyLoginItemAgentConnectionState(.disconnected)
@@ -201,7 +203,7 @@ import InfomaniakDI
     }
 
     func reconnectToLoginAgent() async {
-        IKLogger.xpc.log("[KD] Reconnect to login item agent requested")
+        IKLogger.xpc.info("[KD] Reconnect to login item agent requested")
         do {
             if loginItemAgentConnection == nil {
                 try await connectToLoginAgent()
@@ -253,7 +255,7 @@ import InfomaniakDI
                     if let endpoint {
                         continuation.resume(returning: endpoint)
                     } else {
-                        IKLogger.xpc.error("[KD] endpoint nil")
+                        IKLogger.xpc.debug("[KD] Server endpoint not registered yet")
                         continuation.resume(throwing: XPCError.serverGUIEndpointWasNil)
                     }
                 }
@@ -286,7 +288,7 @@ import InfomaniakDI
 
         IKLogger.xpc.log("[KD] Setup connection handlers for connection with app")
         newConnection.interruptionHandler = { [weak self] in
-            IKLogger.xpc.error("[KD] Connection with app interrupted (server crash)")
+            IKLogger.xpc.warning("[KD] Server connection interrupted (possible server crash)")
             guard let self else { return }
             appConnection?.invalidate()
             appConnection = nil
@@ -297,7 +299,7 @@ import InfomaniakDI
         }
 
         newConnection.invalidationHandler = { [weak self] in
-            IKLogger.xpc.error("[KD] Connection with app invalidated (no server running)")
+            IKLogger.xpc.warning("[KD] Server connection invalidated (possible server crash); scheduling reconnection")
             guard let self else { return }
             appConnection?.invalidate()
             appConnection = nil
@@ -312,15 +314,28 @@ import InfomaniakDI
 
         let connectionId = ObjectIdentifier(newConnection)
         Task {
-            IKLogger.xpc.log("[KD] coherentCache.clearAndRefresh")
-            try await coherentCache.clearAndRefresh()
-            try? await settingsCache.refresh()
+            IKLogger.xpc.info("[KD] Client cache initialization started")
+            do {
+                try await coherentCache.clearAndRefresh()
+            } catch {
+                IKLogger.xpc.error("[KD] Client cache initialization failed phase=coherentCache clientReady=false")
+                return
+            }
+            let settingsReady: Bool
+            do {
+                try await settingsCache.refresh()
+                settingsReady = true
+            } catch {
+                settingsReady = false
+                IKLogger.xpc.warning("[KD] Client settings refresh failed; retaining last-known configuration")
+            }
             await MainActor.run { [weak self] in
-                guard let self, let conn = appConnection else { return }
-                let currentId = ObjectIdentifier(conn)
-                if currentId == connectionId {
-                    guiConnectionState = .connected
+                guard let self, let conn = appConnection, ObjectIdentifier(conn) == connectionId else {
+                    IKLogger.xpc.debug("[KD] Client cache initialization discarded: connection no longer current")
+                    return
                 }
+                IKLogger.xpc.info("[KD] Client cache initialization completed clientReady=true settingsReady=\(settingsReady)")
+                guiConnectionState = .connected
             }
         }
     }
