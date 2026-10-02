@@ -40,6 +40,9 @@ public final class PreferencesRepository: ObservableObject {
     public func update<T>(_ keyPath: WritableKeyPath<UIParametersInfo, T>, value: T) async throws {
         var updatedParameters = parametersInfo
         updatedParameters[keyPath: keyPath] = value
+        if keyPath == \UIParametersInfo.isExtendedLogEnabled, updatedParameters.isExtendedLogEnabled {
+            updatedParameters.logLevel = .debug
+        }
 
         if await settingsCache.getSettings() == nil {
             try await settingsCache.refresh()
