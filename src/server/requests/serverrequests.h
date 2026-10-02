@@ -149,6 +149,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode getDbStructsFromSyncDbId(SyncDbId syncDbId, User &user, Account &account, Drive &drive, Sync &sync);
         static void fixProxyConfig();
 
+        static ExitCode createAccount(Account &account, bool &inserted);
+
     private:
         friend class TestServerRequests;
         static ExitCode processRequestTokenFinished(const Login &login, User &user, bool &userCreated);
@@ -158,10 +160,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitInfo findUnoccupiedPathForNewSync(const SyncPath &homeFolder, const SyncName &initialFolderName,
                                                      const std::vector<Sync> &syncList, SyncPath &path, QString &errorMessage);
         static bool syncForPath(const std::vector<Sync> &syncList, const QString &path, SyncDbId &syncDbId);
-        static ExitInfo createUser(User &user);
+        static ExitInfo createUser(User &user, bool &inserted);
         static ExitInfo updateUser(User &user);
-        static ExitCode createAccount(Account &account);
-        static ExitCode createDrive(Drive &drive);
+        static ExitCode createDrive(Drive &drive, bool &inserted);
         static ExitCode createSync(const Sync &sync);
 };
 
