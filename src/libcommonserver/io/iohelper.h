@@ -384,6 +384,18 @@ struct IoHelper {
          */
         static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
+        //! Computes the canonical form of the parent directory of the indicated path, followed by the file name of the path.
+        // Only the parent directory is canonicalized, not the file name. The canonical form of a path is an absolute path with
+        // all symbolic links and relative path components resolved except for the file itself.
+        /*!
+         \param path is the file system path whose parent directory is to be canonicalized.
+         \param canonicalPath is set with the canonical form of the parent directory of path followed by the file name of path,
+         or left empty if an error occurred.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept;
+
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         //! If the destination item is a link, remove it before copying.
         /*!
@@ -557,6 +569,15 @@ struct IoHelper {
          */
         static IoError setFileDates(const KDC::SyncPath &filePath, SyncTime creationDate, SyncTime modificationDate,
                                     bool symlink) noexcept;
+
+        //! Set the last modification date of the item indicated by `absoluteLocalPath`.
+        //! The creation date is left unchanged. Symlinks are not followed.
+        /*!
+         \param absoluteLocalPath is the file system path of the item.
+         \param lastModifiedTime is the modification date to be set.
+         \return IoError::Success if the process succeeds. An appropriate IoError otherwise.
+         */
+        static IoError setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept;
 
         static inline bool isLink(LinkType linkType) {
             return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||

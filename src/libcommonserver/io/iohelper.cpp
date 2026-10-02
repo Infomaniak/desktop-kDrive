@@ -757,6 +757,20 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *const buf, bool &exis
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
 }
 
+IoError IoHelper::setLastModifiedTime(const SyncPath &absoluteLocalPath, SyncTime lastModifiedTime) noexcept {
+    // Check that the item exists and retrieve its creation date, as setFileDates sets both dates.
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    if (!getFileStat(absoluteLocalPath, &fileStat, ioError, PathCheckOption::Insensitive)) return ioError;
+    if (ioError != IoError::Success) return ioError; // The item does not exist or another expected error occurred.
+
+    // Check whether the item is a symlink, so that setFileDates does not follow it.
+    ItemType itemType;
+    if (!getItemType(absoluteLocalPath, itemType)) return itemType.ioError;
+
+    return setFileDates(absoluteLocalPath, fileStat.creationTime, lastModifiedTime, itemType.linkType == LinkType::Symlink);
+}
+
 IoError IoHelper::getFileChecksum(const SyncPath &path, std::string &checksum, size_t chunkSize /*= 0*/) noexcept {
     using enum IoError;
     checksum.clear();
@@ -1112,6 +1126,24 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
     entry = std::filesystem::directory_entry(path, ec);
     ioError = stdError2ioError(ec);
     return ioError == IoError::Success;
+}
+
+bool IoHelper::getPathWithCanonicalParent(const SyncPath &path, SyncPath &canonicalPath, IoError &ioError) noexcept {
+    canonicalPath.clear();
+    ioError = IoError::Success;
+
+    std::error_code ec;
+    const SyncPath canonicalParentPath = std::filesystem::canonical(path.parent_path(), ec);
+    ioError = stdError2ioError(ec);
+
+    if (ec) {
+        LOGW_WARN(logger(), L"Error in std::filesystem::canonical: " << Utility::formatStdError(path.parent_path(), ec));
+        return false;
+    }
+
+    canonicalPath = canonicalParentPath / path.filename();
+
+    return true;
 }
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {

@@ -390,7 +390,7 @@ void SyncPal::resolveSyncErrorsByExitCause(const ExitCause cause) {
     }
 }
 
-void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const int64_t nbDeletes,
+void SyncPal::sendManyDeletesNotification(const TooManyDeletesNotificationType notificationType, const Count nbDeletes,
                                           const std::vector<SyncPath> &filesPaths) {
     if (_sendManyDeletesNotification) {
         _sendManyDeletesNotification(syncDbId(), notificationType, nbDeletes, filesPaths);
@@ -796,7 +796,7 @@ ExitInfo SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &a
             return;
         }
 
-        if (!setProgress(job->affectedFilePath(), static_cast<int16_t>(progress))) {
+        if (!setProgress(job->affectedFilePath(), progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::setProgress: " << Utility::formatSyncPath(job->affectedFilePath()));
         }
     };
