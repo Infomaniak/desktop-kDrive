@@ -187,7 +187,7 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadJobs(co
 
         const auto timeInput =
                 std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        const auto job = std::make_shared<UploadJob>(nullptr, driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
+        const auto job = std::make_shared<UploadJob>(driveDbId, dirEntry.path(), dirEntry.path().filename().native(),
                                                      remoteTmpDirId, timeInput.count(), timeInput.count());
         (void) jobs.push_back(job);
     }
@@ -205,7 +205,7 @@ std::list<std::shared_ptr<SyncJob>> BenchmarkParallelJobs::generateUploadSession
 
         const auto timeInput =
                 std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-        const auto job = std::make_shared<DriveUploadSession>(nullptr, driveDbId, nullptr, dirEntry.path(),
+        const auto job = std::make_shared<DriveUploadSession>(driveDbId, nullptr, dirEntry.path(),
                                                               dirEntry.path().filename().native(), remoteTmpDirId,
                                                               timeInput.count(), timeInput.count(), nbParallelChunkJobs);
         (void) jobs.push_back(job);
