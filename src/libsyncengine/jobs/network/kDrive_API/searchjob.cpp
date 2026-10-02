@@ -137,6 +137,9 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
             } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absolutePath));
                 return {ExitCode::SystemError, ExitCause::FileAccessError};
+            } else if (ioError == IoError::FileNameTooLong) {
+                LOGW_WARN(_logger, L"Item name or path is too long: " << Utility::formatSyncPath(absolutePath));
+                return {ExitCode::SystemError, ExitCause::FileNameTooLong};
             } else {
                 // Should not happen
                 assert(false);
@@ -208,7 +211,6 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         LocalProperties localProperties;
         if (const auto exitInfo = getLocalProperties(path, localProperties); !exitInfo) {
             LOGW_WARN(_logger, L"Error in getLocalProperties: " << Utility::formatExitInfo(path, exitInfo));
-            continue;
         }
 
         (void) _searchResults.emplace_back(nodeId, name, type == "dir" ? NodeType::Directory : NodeType::File,
