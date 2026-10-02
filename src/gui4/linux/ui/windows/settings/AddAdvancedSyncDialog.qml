@@ -262,8 +262,17 @@ IKModal {
                 id: folderPicker
 
                 width: parent.width
+                controller: root.controller
                 treeModel: root.controller.pickerModel
                 driveColor: root.controller.driveColor
+            }
+
+            SyncConfigurationErrorBlock {
+                width: parent.width
+                errorText: root.controller.folderCreationFailed
+                           ? qsTrId("unableToCreateRemoteFolderTeachingTipTitle") + "\n"
+                             + qsTrId("unableToCreateRemoteFolderTeachingTipContent")
+                           : ""
             }
         }
     ]
