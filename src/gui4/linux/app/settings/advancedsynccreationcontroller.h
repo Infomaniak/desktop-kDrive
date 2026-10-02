@@ -38,8 +38,9 @@ class SyncService;
  * Transactional editor of the Settings "Sync a folder with kDrive" dialog, which creates one advanced synchronization.
  *
  * Role: keep the draft of a local folder, validated by the server as an advanced synchronization folder, and of a remote
- * destination chosen in `RemoteFolderPickerModel`. Only the final submission sends SYNC_ADD; the dialog then closes and
- * the new synchronization reaches the advanced sync page through the SYNC_ADDED push.
+ * destination chosen in `RemoteFolderPickerModel`, where the user can also create a folder. Only the final submission
+ * sends SYNC_ADD; the dialog then closes and the new synchronization reaches the advanced sync page through the
+ * SYNC_ADDED push. A remote folder created meanwhile stays on kDrive if the dialog is cancelled.
  *
  * Lifetime: one instance per dialog session, created and released by `AdvancedSyncsController`. A response received
  * after the release reaches a destroyed instance and is dropped.
@@ -59,6 +60,7 @@ class AdvancedSyncCreationController final : public QObject {
         Q_PROPERTY(bool canSubmit READ canSubmit NOTIFY presentationChanged)
         Q_PROPERTY(bool submitFailed READ submitFailed NOTIFY presentationChanged)
         Q_PROPERTY(bool canConfirmLocation READ canConfirmLocation NOTIFY presentationChanged)
+        Q_PROPERTY(bool folderCreationFailed READ folderCreationFailed NOTIFY presentationChanged)
         Q_PROPERTY(RemoteFolderPickerModel *pickerModel READ pickerModel CONSTANT)
 
     public:
@@ -80,6 +82,8 @@ class AdvancedSyncCreationController final : public QObject {
         [[nodiscard]] bool canSubmit() const;
         [[nodiscard]] bool submitFailed() const { return _submitFailed; }
         [[nodiscard]] bool canConfirmLocation() const;
+        // The typed name was refused, locally for a path separator or by the server.
+        [[nodiscard]] bool folderCreationFailed() const { return _folderCreationFailed; }
         [[nodiscard]] RemoteFolderPickerModel *pickerModel() { return &_pickerModel; }
 
         /// Leaves the location picker for the form, or ends the session from the form.
@@ -91,6 +95,10 @@ class AdvancedSyncCreationController final : public QObject {
 
         Q_INVOKABLE void openLocationPicker();
         Q_INVOKABLE void confirmLocation();
+        Q_INVOKABLE void beginFolderCreation(const QModelIndex &parentIndex);
+        /// Creates the folder named by the editing row. An empty name cancels the creation.
+        Q_INVOKABLE void commitFolderCreation(const QString &name);
+        Q_INVOKABLE void cancelFolderCreation();
 
         Q_INVOKABLE void submit();
 
@@ -108,7 +116,10 @@ class AdvancedSyncCreationController final : public QObject {
             Finished, // Cancelled or created, waiting for its release.
         };
 
+        void handleCreatedFolder(const NodeId &nodeId, const QString &name, const QString &parentNodeId,
+                                 const QString &parentPath);
         void setState(State state);
+        void setFolderCreationFailed(bool failed);
         void finish();
 
         AppCache &_appCache;
@@ -127,6 +138,7 @@ class AdvancedSyncCreationController final : public QObject {
         bool _pickerConfigured{false};
         bool _localFolderInvalid{false};
         bool _submitFailed{false};
+        bool _folderCreationFailed{false};
 };
 
 } // namespace KDC
