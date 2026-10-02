@@ -40,6 +40,7 @@ ScrollView {
 
     signal activateRequested(Item trigger)
     signal deleteRequested(Item trigger)
+    signal manageSynchronizationRequested(Item trigger)
 
     contentWidth: availableWidth
     clip: true
@@ -127,22 +128,24 @@ ScrollView {
                     }
 
                     IKModalButton {
-                        visible: root.controller.hasMainSync && root.controller.selectionLoadFailed
+                        visible: root.controller.hasMainSync && root.controller.blackListLoadFailed
                         role: IKModalButton.Tonal
                         text: qsTrId("buttonRetry")
                         Accessible.name: text + " " + qsTrId("labelSynchronisation")
-                        onClicked: root.controller.retrySelection()
+                        onClicked: root.controller.reloadBlackList()
                     }
 
                     IKModalButton {
-                        visible: root.controller.hasMainSync && !root.controller.selectionLoadFailed
+                        id: manageButton
+
+                        visible: root.controller.hasMainSync && !root.controller.blackListLoadFailed
                         role: IKModalButton.Tonal
                         text: qsTrId("buttonManage")
                         Accessible.name: text + " " + qsTrId("labelSynchronisation")
                         Accessible.description: root.controller.customSelection ? qsTrId("onboardingExclusionSummarySome") : ""
-                        busy: root.controller.selectionLoading
-                        // The folder selection sub-page comes with the next change of this feature.
-                        actionEnabled: false
+                        busy: root.controller.blackListLoading
+                        actionEnabled: !root.controller.blackListLoading
+                        onClicked: root.manageSynchronizationRequested(manageButton)
                     }
                 }
             }

@@ -30,14 +30,16 @@ namespace KDC {
 
 class AppCache;
 class CommService;
+class ExcludedFoldersController;
 class SyncService;
 
 /**
  * Settings "kDrive management" page state for one user drive.
  *
  * Role: resolve the main synchronization of one configured drive from AppCache, load its confirmed blacklist to present a
- * custom selection, open its local folder, and delete it. The page targets a DriveDbId rather than a backend DriveId: a
- * drive row belongs to one account of one user, so another user's synchronizations of the same drive are never presented.
+ * custom selection, preload its excluded folders page, open its local folder, and delete it. The page targets a DriveDbId rather
+ * than a backend DriveId: a drive row belongs to one account of one user, so another user's synchronizations of the same drive
+ * are never presented.
  */
 class DriveManagementController final : public QObject {
         Q_OBJECT
@@ -47,16 +49,17 @@ class DriveManagementController final : public QObject {
         Q_PROPERTY(QString driveName READ driveName NOTIFY presentationChanged)
         Q_PROPERTY(QColor driveColor READ driveColor NOTIFY presentationChanged)
         Q_PROPERTY(bool hasMainSync READ hasMainSync NOTIFY presentationChanged)
+        Q_PROPERTY(qint64 mainSyncDbId READ mainSyncDbId NOTIFY presentationChanged)
         Q_PROPERTY(QString localPath READ localPath NOTIFY presentationChanged)
         Q_PROPERTY(bool syncCreationPending READ syncCreationPending NOTIFY presentationChanged)
-        Q_PROPERTY(bool selectionLoading READ selectionLoading NOTIFY presentationChanged)
-        Q_PROPERTY(bool selectionLoadFailed READ selectionLoadFailed NOTIFY presentationChanged)
+        Q_PROPERTY(bool blackListLoading READ blackListLoading NOTIFY presentationChanged)
+        Q_PROPERTY(bool blackListLoadFailed READ blackListLoadFailed NOTIFY presentationChanged)
         Q_PROPERTY(bool customSelection READ customSelection NOTIFY presentationChanged)
         Q_PROPERTY(bool deletePending READ deletePending NOTIFY presentationChanged)
 
     public:
         DriveManagementController(AppCache &appCache, CommService &commService, SyncService &syncService,
-                                  QObject *parent = nullptr);
+                                  ExcludedFoldersController &excludedFolders, QObject *parent = nullptr);
 
         // Identity of the drive for the activation editor, which works on available drives.
         [[nodiscard]] qint64 userDbId() const { return _availableDriveKey.userDbId; }
@@ -65,10 +68,11 @@ class DriveManagementController final : public QObject {
         [[nodiscard]] QString driveName() const { return _driveName; }
         [[nodiscard]] QColor driveColor() const { return _driveColor; }
         [[nodiscard]] bool hasMainSync() const { return _mainSyncDbId != 0; }
+        [[nodiscard]] qint64 mainSyncDbId() const { return _mainSyncDbId; }
         [[nodiscard]] QString localPath() const { return _localPath; }
         [[nodiscard]] bool syncCreationPending() const { return _syncCreationPending; }
-        [[nodiscard]] bool selectionLoading() const { return _selectionState == SelectionState::Loading; }
-        [[nodiscard]] bool selectionLoadFailed() const { return _selectionState == SelectionState::Failed; }
+        [[nodiscard]] bool blackListLoading() const { return _blackListState == BlackListState::Loading; }
+        [[nodiscard]] bool blackListLoadFailed() const { return _blackListState == BlackListState::Failed; }
         // Reports a confirmed non-empty blacklist only; it stays unchanged while a reload is in flight.
         [[nodiscard]] bool customSelection() const { return _customSelection; }
         // Tracked by SyncService, so reopening the page during a deletion cannot send a second SYNC_DELETE.
@@ -77,7 +81,8 @@ class DriveManagementController final : public QObject {
         Q_INVOKABLE void open(qint64 driveDbId);
         /// Releases the target only when it is still the given drive, so a closing page cannot reset its successor.
         Q_INVOKABLE void close(qint64 driveDbId);
-        Q_INVOKABLE void retrySelection();
+        /// Reloads the confirmed blacklist, after a failure or once the excluded folders page saved a new one.
+        Q_INVOKABLE void reloadBlackList();
         Q_INVOKABLE void openLocalFolder() const;
         Q_INVOKABLE void deleteMainSync();
 
@@ -89,7 +94,7 @@ class DriveManagementController final : public QObject {
         void deleteFailed();
 
     private:
-        enum class SelectionState : uint8_t {
+        enum class BlackListState : uint8_t {
             Idle,
             Loading,
             Loaded,
@@ -98,12 +103,13 @@ class DriveManagementController final : public QObject {
 
         [[nodiscard]] bool hasTarget() const { return _driveDbId != 0; }
         void refresh();
-        void loadSelection();
+        void loadBlackList();
         void resetTarget();
 
         AppCache &_appCache;
         CommService &_commService;
         SyncService &_syncService;
+        ExcludedFoldersController &_excludedFolders;
         DriveDbId _driveDbId{0};
         AvailableDriveKey _availableDriveKey;
         SyncDbId _mainSyncDbId{0};
@@ -112,9 +118,9 @@ class DriveManagementController final : public QObject {
         QString _driveName;
         QColor _driveColor;
         QString _localPath;
-        SelectionState _selectionState{SelectionState::Idle};
+        BlackListState _blackListState{BlackListState::Idle};
         uint64_t _targetGeneration{0};
-        uint64_t _selectionGeneration{0};
+        uint64_t _blackListGeneration{0};
         bool _syncCreationPending{false};
         bool _customSelection{false};
 };

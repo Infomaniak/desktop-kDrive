@@ -151,6 +151,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/settingssyncactivationcontroller.h
         app/settings/drivemanagementcontroller.cpp
         app/settings/drivemanagementcontroller.h
+        app/settings/excludedfolderscontroller.cpp
+        app/settings/excludedfolderscontroller.h
         app/systraycontroller.cpp
         app/systraycontroller.h
         ui/chrome/windowdecorationcontroller.cpp
@@ -220,6 +222,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/settings/SettingsRow.qml
         ui/windows/settings/SettingsSupportIcon.qml
         ui/windows/settings/SettingsWindow.qml
+        ui/windows/settings/ExcludedFoldersView.qml
         ui/windows/settings/SendDebugLogsDialog.qml
         ui/windows/settings/TrackingConsentView.qml
         ui/chrome/IKShadowedWindow.qml
