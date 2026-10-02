@@ -145,52 +145,6 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
     }
 }
 
-std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
-    switch (ioError) {
-        case IoError::Success:
-            return "Success";
-        case IoError::AccessDenied:
-            return "Access denied";
-        case IoError::AttrNotFound:
-            return "Attribute not found";
-        case IoError::DirectoryExists:
-            return "Directory exists";
-        case IoError::DiskFull:
-            return "Disk full";
-        case IoError::FileExists:
-            return "File exists";
-        case IoError::FileNameTooLong:
-            return "File name too long";
-        case IoError::InvalidArgument:
-            return "Invalid argument";
-        case IoError::InvalidDirectoryIterator:
-            return "Invalid directory iterator";
-        case IoError::InvalidFileName:
-            return "Invalid file name";
-        case IoError::IsADirectory:
-            return "Is a directory";
-        case IoError::IsAFile:
-            return "Is a file";
-        case IoError::MaxDepthExceeded:
-            return "Max depth exceeded";
-        case IoError::NoSuchFileOrDirectory:
-            return "No such file or directory";
-        case IoError::ResultOutOfRange:
-            return "Result out of range";
-        case IoError::CrossDeviceLink:
-            return "Cross device link";
-        case IoError::FileOrDirectoryCorrupted:
-            return "File or directory corrupted";
-        case IoError::TooManySymbolicLinkLevels:
-            return "Too many symbolic link levels";
-        case IoError::MoveThroughSymlink:
-            return "Move through symlink";
-        case IoError::Unknown:
-        default:
-            return "Unknown";
-    }
-}
-
 bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut /*in seconds*/) {
     int count = 0;
     if (file.is_open()) file.close();

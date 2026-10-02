@@ -108,7 +108,6 @@ struct IoHelper {
         static IoError stdError2ioError(int error) noexcept;
         static IoError stdError2ioError(const std::error_code &ec) noexcept;
         static IoError posixError2ioError(int error) noexcept;
-        static std::string ioError2StdString(IoError ioError) noexcept;
 
         //! Get the item type of the item indicated by `path`.
         //! Hardlinks are not supported
