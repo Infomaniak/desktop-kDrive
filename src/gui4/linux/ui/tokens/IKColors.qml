@@ -226,6 +226,7 @@ QtObject {
     readonly property color syncConfigurationRowSelectedSurface: surfaceSecondary
     readonly property color syncConfigurationRowHover: surfaceTertiary
     readonly property color remoteFolderPickerRowSelected: darkMode ? _p.blue950 : _p.blue100
+    readonly property color remoteFolderPickerCreateIcon: actionPrimary
     readonly property color syncConfigurationDivider: surfaceTertiary
     readonly property color syncConfigurationFolderIcon: textTertiary
     readonly property color syncConfigurationDisclosureIcon: textSecondary
