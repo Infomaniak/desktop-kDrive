@@ -74,8 +74,9 @@ ExitInfo LoginRequestTokenJob::process() {
             ServerRequests::requestToken(CommonUtility::commString2Str(_code), CommonUtility::commString2Str(_codeVerifier), user,
                                          userCreated, _error, _errorDescr);
 
+    _userDbId = user.dbId();
+
     if (userCreated) {
-        _userDbId = user.dbId();
         auto signalUserAddedJob = std::make_shared<SignalUserAddedJob>(user);
         _commManager->sendGuiSignal(signalUserAddedJob);
     }
