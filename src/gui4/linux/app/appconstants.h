@@ -126,3 +126,8 @@ namespace KDC::AppConstants::Settings {
     return QUrl{QStringLiteral("https://github.com/Infomaniak/desktop-kDrive")};
 }
 } // namespace KDC::AppConstants::Settings
+
+namespace KDC::AppConstants::SyncConfiguration {
+// Largest blacklist the kDrive API accepts: the daemon sends it as `without_ids` with every listing request.
+inline constexpr qsizetype maxExcludedFolders = 3000;
+} // namespace KDC::AppConstants::SyncConfiguration
