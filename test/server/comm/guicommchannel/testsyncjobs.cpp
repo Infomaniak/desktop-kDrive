@@ -342,13 +342,15 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
     CPPUNIT_ASSERT(AbstractGuiJob::deserializeGenericInputParms(CommonUtility::str2CommString(queryStr), requestId, requestNum,
                                                                 inParams));
 
-    auto *appServer = dynamic_cast<AppServer *>(QCoreApplication::instance());
-    CPPUNIT_ASSERT(appServer);
+    std::string applicationPath = Path2Str(CommonUtility::applicationFilePath());
+    char *argv[] = {applicationPath.data(), nullptr};
+    int argc = 1;
+    AppServer appServer(argc, argv);
 
     GuiJobManagerSingleton::instance()->stop();
     GuiJobManagerSingleton::clear();
 
-    auto commManager = std::make_shared<CommManager>(*appServer);
+    auto commManager = std::make_shared<CommManager>(appServer);
     commManager->start();
 
     auto clientSocket = TestSocketComm::newSecureClient(commManager->tryGetGUICommPort());
