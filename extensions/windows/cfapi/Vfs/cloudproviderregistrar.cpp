@@ -24,6 +24,7 @@
 #include <winrt/Windows.Storage.h>
 #include <winrt/Windows.Storage.Provider.h>
 #include <winrt/Windows.Security.Cryptography.h>
+#include <filesystem>
 
 namespace winrt {
 using namespace Windows::Foundation;
@@ -109,7 +110,12 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         for (uint32_t i = 0; i < infoVector.Size(); i++) {
             if (syncRootID.compare(infoVector.GetAt(i).Id().c_str()) == 0) {
                 found = true;
-                break;
+            } else if (areRelatedFolders(providerInfo->folderPath(), infoVector.GetAt(i).Path().Path().c_str())) {
+                TRACE_ERROR(
+                        L"Cannot register sync root for folder path %s because it is related to an existing sync root with ID %s "
+                        L"and path %s",
+                        providerInfo->folderPath(), infoVector.GetAt(i).Id().c_str(), infoVector.GetAt(i).Path().Path().c_str());
+                return std::wstring();
             }
         }
 
@@ -231,6 +237,31 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
     }
 }
 
+// Returns true if the two folders are related
+// (i.e. one is a subfolder of the other or they are the same folder).
+bool CloudProviderRegistrar::areRelatedFolders(const std::wstring &folderPath1, const std::wstring &folderPath2) {
+    const std::filesystem::path path1 = std::filesystem::path(folderPath1).lexically_normal();
+    const std::filesystem::path path2 = std::filesystem::path(folderPath2).lexically_normal();
+
+    if (path1.empty() || path2.empty()) {
+        return false;
+    }
+
+    auto it1 = path1.begin();
+    auto it2 = path2.begin();
+
+    while (it1 != path1.end() && it2 != path2.end()) {
+        if (_wcsicmp(it1->c_str(), it2->c_str()) != 0) {
+            return false;
+        }
+
+        ++it1;
+        ++it2;
+    }
+
+    return true;
+}
+
 void CloudProviderRegistrar::updateRegistration(const ProviderInfo *providerInfo) {
     if (!providerInfo->folderPath()) {
         TRACE_ERROR(L"Folder path is empty");
@@ -332,8 +363,16 @@ bool CloudProviderRegistrar::createRegistration(const ProviderInfo *providerInfo
         return false;
     }
 
-    TRACE_DEBUG(L"Calling StorageProviderSyncRootManager::Register");
-    winrt::StorageProviderSyncRootManager::Register(info);
+    try {
+        TRACE_DEBUG(L"Calling StorageProviderSyncRootManager::Register");
+        winrt::StorageProviderSyncRootManager::Register(info);
+    } catch (winrt::hresult_error const &ex) {
+        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        return false;
+    } catch (...) {
+        TRACE_ERROR(L"Error caught while registering sync root");
+        return false;
+    }
     TRACE_DEBUG(L"Registered new provider with syncRootID=%s", syncRootID.c_str());
     // Give the cache some time to invalidate
     Sleep(1000);
