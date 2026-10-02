@@ -20,6 +20,8 @@
 
 #include <QLoggingCategory>
 
+#include <algorithm>
+#include <cstdint>
 #include <limits>
 
 
@@ -167,8 +169,12 @@ void ServerSignalSequencer::handleMissingSignalTimeout() {
                                        << firstSkippedId << "/ last skipped id:" << lastSkippedId
                                        << "/ buffered signals:" << _pendingSignals.size();
 
-    for (int32_t skippedId = firstSkippedId; skippedId <= lastSkippedId; ++skippedId) {
-        (void) _skippedIds.insert(skippedId);
+    // Only the newest ids are remembered: bounding the range before inserting keeps an aberrant buffered id from turning
+    // this loop into billions of insertions.
+    const int64_t firstRememberedId =
+            std::max<int64_t>(firstSkippedId, int64_t{lastSkippedId} - static_cast<int64_t>(_maxPendingSignals) + 1);
+    for (int64_t skippedId = firstRememberedId; skippedId <= lastSkippedId; ++skippedId) {
+        (void) _skippedIds.insert(static_cast<int32_t>(skippedId));
     }
 
     while (_skippedIds.size() > _maxPendingSignals) {
