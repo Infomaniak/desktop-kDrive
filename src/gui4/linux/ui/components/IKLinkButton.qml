@@ -71,6 +71,8 @@ Button {
                 // Width is taken from the content Item rather than from the Row, whose implicit width this feeds back into.
                 width: Math.min(implicitWidth, Math.max(0, linkContent.width - root.externalIconAllowance))
                 text: root.text
+                // Labels can carry external values such as local paths; never interpret them as markup.
+                textFormat: Text.PlainText
                 color: root.enabled ? IKColors.actionPrimary : IKColors.actionDisabled
                 font.pixelSize: IKFonts.bodySize
                 font.underline: root.hovered || root.down
