@@ -23,6 +23,7 @@
 #include "app/services/commservice.h"
 #include "app/services/syncservice.h"
 #include "app/syncconfiguration/localpaths.h"
+#include "libcommon/info/nodeinfo.h"
 #include "libcommon/utility/utility.h"
 
 #include <QDir>
@@ -51,10 +52,12 @@ AdvancedSyncCreationController::AdvancedSyncCreationController(AppCache &appCach
     (void) connect(&_appCache, &AppCache::drivesChanged, this, &AdvancedSyncCreationController::handleTargetStateChanged);
     (void) connect(&_pickerModel, &RemoteFolderPickerModel::selectionChanged, this,
                    &AdvancedSyncCreationController::presentationChanged);
+    (void) connect(&_pickerModel, &RemoteFolderPickerModel::folderCreationChanged, this,
+                   &AdvancedSyncCreationController::presentationChanged);
 }
 
 bool AdvancedSyncCreationController::busy() const {
-    return _state == State::CheckingLocalFolder || _state == State::Submitting;
+    return _state == State::CheckingLocalFolder || _state == State::Submitting || _pickerModel.folderCreationPending();
 }
 
 QString AdvancedSyncCreationController::localFolderName() const {
@@ -71,7 +74,7 @@ bool AdvancedSyncCreationController::canSubmit() const {
 }
 
 bool AdvancedSyncCreationController::canConfirmLocation() const {
-    return _locationPickerOpen && _pickerModel.hasSelection();
+    return _locationPickerOpen && _pickerModel.hasSelection() && !_pickerModel.folderCreationPending();
 }
 
 void AdvancedSyncCreationController::open(const qint64 driveDbId) {
@@ -79,6 +82,7 @@ void AdvancedSyncCreationController::open(const qint64 driveDbId) {
         return;
     }
 
+    ++_targetGeneration;
     ++_requestGeneration;
     _driveDbId = static_cast<DriveDbId>(driveDbId);
     const auto context = _appCache.driveContext(_driveDbId);
@@ -106,6 +110,8 @@ void AdvancedSyncCreationController::cancelCurrentPage() {
     }
 
     if (_locationPickerOpen) {
+        _pickerModel.cancelFolderCreation();
+        setFolderCreationFailed(false);
         _locationPickerOpen = false;
         emit presentationChanged();
         return;
@@ -182,6 +188,7 @@ void AdvancedSyncCreationController::openLocationPicker() {
 
     // The picker starts from the confirmed choice: a selection abandoned by a previous Cancel is dropped.
     _pickerModel.restoreSelection(QStr2Str(_remoteNodeId), _remoteFolderName, _remotePath);
+    setFolderCreationFailed(false);
     _submitFailed = false;
     _locationPickerOpen = true;
     emit presentationChanged();
@@ -192,11 +199,72 @@ void AdvancedSyncCreationController::confirmLocation() {
         return;
     }
 
+    _pickerModel.cancelFolderCreation();
+    setFolderCreationFailed(false);
     _remoteNodeId = _pickerModel.selectedNodeId();
     _remoteFolderName = _pickerModel.selectedName();
     _remotePath = _pickerModel.selectedPath();
     _locationPickerOpen = false;
     emit presentationChanged();
+}
+
+void AdvancedSyncCreationController::beginFolderCreation(const QModelIndex &parentIndex) {
+    if (!_locationPickerOpen) {
+        return;
+    }
+
+    setFolderCreationFailed(false);
+    (void) _pickerModel.beginFolderCreation(parentIndex);
+}
+
+void AdvancedSyncCreationController::commitFolderCreation(const QString &name) {
+    if (!_locationPickerOpen || !_pickerModel.folderCreationActive() || _pickerModel.folderCreationPending()) {
+        return;
+    }
+
+    const QString folderName = name.trimmed();
+    if (folderName.isEmpty()) {
+        cancelFolderCreation();
+        return;
+    }
+
+    // The server would split a path separator into nested folders.
+    if (folderName.contains(u'/')) {
+        setFolderCreationFailed(true);
+        return;
+    }
+
+    const QString parentNodeId = _pickerModel.folderCreationParentNodeId();
+    const QString parentPath = _pickerModel.folderCreationParentPath();
+    setFolderCreationFailed(false);
+    _pickerModel.setFolderCreationPending(true);
+    qCInfo(lcAdvancedSyncCreationController)
+            << "Creating remote folder | driveId:" << _driveId << "/ parentNodeId:" << parentNodeId;
+
+    const uint64_t targetGeneration = _targetGeneration;
+    _syncService.createRemoteFolder(_userDbId, _driveId, QStr2Str(parentNodeId), folderName,
+                                    [self = QPointer(this), targetGeneration, folderName, parentNodeId, parentPath](
+                                            const ExitInfo &exitInfo, const NodeId &nodeId) {
+                                        if (!self || targetGeneration != self->_targetGeneration) {
+                                            return;
+                                        }
+
+                                        if (!exitInfo || nodeId.empty()) {
+                                            qCWarning(lcAdvancedSyncCreationController)
+                                                    << "Remote folder creation failed | code:" << exitInfo.code()
+                                                    << "/ cause:" << exitInfo.cause();
+                                            self->_pickerModel.setFolderCreationPending(false);
+                                            self->setFolderCreationFailed(true);
+                                            return;
+                                        }
+
+                                        self->handleCreatedFolder(nodeId, folderName, parentNodeId, parentPath);
+                                    });
+}
+
+void AdvancedSyncCreationController::cancelFolderCreation() {
+    setFolderCreationFailed(false);
+    _pickerModel.cancelFolderCreation();
 }
 
 void AdvancedSyncCreationController::submit() {
@@ -257,6 +325,32 @@ void AdvancedSyncCreationController::handleTargetStateChanged() {
     close();
 }
 
+/**
+ * Resolves the created folder's path before inserting it, since the synchronization needs it. Should the lookup fail, the
+ * path is derived from its parent: the folder exists, and failing the whole creation would only invite a duplicate.
+ */
+void AdvancedSyncCreationController::handleCreatedFolder(const NodeId &nodeId, const QString &name, const QString &parentNodeId,
+                                                         const QString &parentPath) {
+    const uint64_t targetGeneration = _targetGeneration;
+    _commService.requestNodeInfo(
+            _userDbId, _driveId, nodeId, true,
+            [self = QPointer(this), targetGeneration, nodeId, name, parentNodeId, parentPath](const ExitInfo &exitInfo,
+                                                                                              const NodeInfo &info) {
+                if (!self || targetGeneration != self->_targetGeneration) {
+                    return;
+                }
+
+                NodeInfo createdFolder = info;
+                if (!exitInfo || info.path().isEmpty()) {
+                    qCWarning(lcAdvancedSyncCreationController) << "Created folder path lookup failed, derived from its parent";
+                    createdFolder = NodeInfo(QString::fromStdString(nodeId), name, -1, parentNodeId, 0, parentPath + u'/' + name);
+                }
+
+                self->_pickerModel.setFolderCreationPending(false);
+                self->_pickerModel.insertCreatedFolder(createdFolder);
+            });
+}
+
 void AdvancedSyncCreationController::setState(const State state) {
     if (_state == state) {
         return;
@@ -266,8 +360,18 @@ void AdvancedSyncCreationController::setState(const State state) {
     emit presentationChanged();
 }
 
+void AdvancedSyncCreationController::setFolderCreationFailed(const bool failed) {
+    if (_folderCreationFailed == failed) {
+        return;
+    }
+
+    _folderCreationFailed = failed;
+    emit presentationChanged();
+}
+
 void AdvancedSyncCreationController::close() {
     const bool wasVisible = visible();
+    ++_targetGeneration;
     ++_requestGeneration;
     _state = State::Closed;
     _driveDbId = 0;
@@ -280,6 +384,7 @@ void AdvancedSyncCreationController::close() {
     _remoteNodeId.clear();
     _remoteFolderName.clear();
     _remotePath.clear();
+    _folderCreationFailed = false;
     _locationPickerOpen = false;
     _pickerConfigured = false;
     _localFolderInvalid = false;
