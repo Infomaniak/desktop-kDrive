@@ -89,7 +89,9 @@ public struct SyncJobs: Sendable {
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
             IKLogger.general.info("[KD] Sync start accepted syncDbId=\(syncDbId) requestId=\(request.id)")
         } catch {
-            IKLogger.general.warning("[KD] Sync start failed syncDbId=\(syncDbId) requestId=\(request.id) revertingOptimisticStatus=true")
+            IKLogger.general.warning(
+                "[KD] Sync start failed syncDbId=\(syncDbId) requestId=\(request.id) revertingOptimisticStatus=true"
+            )
             await revertSyncStatus(syncDbId: syncDbId, to: previousProgress)
             throw error
         }
@@ -106,7 +108,9 @@ public struct SyncJobs: Sendable {
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
             IKLogger.general.info("[KD] Sync stop accepted syncDbId=\(syncDbId) requestId=\(request.id)")
         } catch {
-            IKLogger.general.warning("[KD] Sync stop failed syncDbId=\(syncDbId) requestId=\(request.id) revertingOptimisticStatus=true")
+            IKLogger.general.warning(
+                "[KD] Sync stop failed syncDbId=\(syncDbId) requestId=\(request.id) revertingOptimisticStatus=true"
+            )
             await revertSyncStatus(syncDbId: syncDbId, to: previousProgress)
             throw error
         }
@@ -208,7 +212,9 @@ public struct SyncJobs: Sendable {
         do {
             try await queryFetcher.query(request, responseType: CallbackMessage<EmptyResponse>.self)
         } catch {
-            IKLogger.general.warning("[KD] Sync mode change failed syncDbId=\(syncDbId) supportVfs=\(value) requestId=\(request.id)")
+            IKLogger.general.warning(
+                "[KD] Sync mode change failed syncDbId=\(syncDbId) supportVfs=\(value) requestId=\(request.id)"
+            )
             await vfsConversionCache.finishConversion(synchroDbId: syncDbId, token: token)
             throw error
         }

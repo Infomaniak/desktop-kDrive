@@ -91,7 +91,9 @@ public final class SyncCreationService: SyncCreator {
 
             stage = "addSync"
             let syncInfo = try await SyncJobs().addSync(identifier: identifier, metadata: metadata)
-            IKLogger.general.info("[KD] Sync creation accepted driveId=\(driveId) syncDbId=\(syncInfo.dbId) liteSync=\(useLightSync)")
+            IKLogger.general.info(
+                "[KD] Sync creation accepted driveId=\(driveId) syncDbId=\(syncInfo.dbId) liteSync=\(useLightSync)"
+            )
             let syncRootURL = URL(fileURLWithPath: syncInfo.localPath, isDirectory: true)
             if !FinderSidebarFavorites.add(syncRootURL) {
                 IKLogger.general.warning("Failed to add sync root to Finder Favorites")

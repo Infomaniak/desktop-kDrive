@@ -37,7 +37,8 @@ private actor PartiallyFailingSyncCreator: SyncCreator {
             throw NSError(domain: NSCocoaErrorDomain, code: 513, userInfo: [NSFilePathErrorKey: "/private-name/private-folder"])
         }
         return try JSONDecoder().decode(SyncInfo.self, from: Data(
-            #"{"dbId":123,"driveDbId":456,"localPath":"","supportVfs":false,"targetNodeId":"","targetPath":"","virtualFileMode":0}"#.utf8
+            #"{"dbId":123,"driveDbId":456,"localPath":"","supportVfs":false,"targetNodeId":"","targetPath":"","virtualFileMode":0}"#
+                .utf8
         ))
     }
 
@@ -49,7 +50,8 @@ private actor PartiallyFailingSyncCreator: SyncCreator {
 extension SharedDITests {
     @Suite
     struct XPCDiagnosticsTests {
-        private func withLogger(_ operation: (LogService, InMemoryLogFileWriter, SpySentryLogReporter) async throws -> Void) async throws {
+        private func withLogger(_ operation: (LogService, InMemoryLogFileWriter, SpySentryLogReporter) async throws
+            -> Void) async throws {
             let resolver = SimpleResolver.sharedResolver
             let identifier = resolver.buildIdentifier(type: LogService.self)
             let previousFactory = resolver.factories[identifier]
@@ -114,7 +116,7 @@ extension SharedDITests {
                 #expect(writer.lines.count == 4)
                 #expect(reporter.capturedEvents.count == 1)
                 #expect(reporter.capturedEvents.first?.message.contains("DataError") == true)
-                #expect(reporter.breadcrumbs.filter { $0.level == .warning }.count == 2)
+                #expect(reporter.breadcrumbs.count(where: { $0.level == .warning }) == 2)
             }
         }
 
@@ -135,7 +137,11 @@ extension SharedDITests {
 
                 let (finished, continuation) = AsyncStream<Void>.makeStream()
                 let viewModel = await MainActor.run {
-                    let coordinator = OnboardingFlowCoordinator(user: nil, steps: [.synchronization], initialStep: .synchronization) {
+                    let coordinator = OnboardingFlowCoordinator(
+                        user: nil,
+                        steps: [.synchronization],
+                        initialStep: .synchronization
+                    ) {
                         continuation.yield(())
                     }
                     let candidate = NewSyncCandidate(

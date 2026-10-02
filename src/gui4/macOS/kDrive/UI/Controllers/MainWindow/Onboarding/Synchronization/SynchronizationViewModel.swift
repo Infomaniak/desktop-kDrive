@@ -42,7 +42,9 @@ final class SynchronizationViewModel: ObservableObject {
                 for syncCandidate in syncCandidates {
                     let syncInfo = try await syncCreator.create(from: syncCandidate)
                     createdCount += 1
-                    IKLogger.general.info("[KD] Onboarding sync created syncDbId=\(syncInfo.dbId) driveDbId=\(syncInfo.driveDbId)")
+                    IKLogger.general.info(
+                        "[KD] Onboarding sync created syncDbId=\(syncInfo.dbId) driveDbId=\(syncInfo.driveDbId)"
+                    )
                 }
                 IKLogger.general.info("[KD] Onboarding sync creation completed created=\(createdCount)")
             } catch {

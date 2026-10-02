@@ -432,7 +432,9 @@ public actor ServerCoherentCache: CoherentCache, CoherentCacheObservable {
             }
         }
         if skippedMissingSync > 0 {
-            IKLogger.cache.warning("[KD] Error cache update partial received=\(errors.count) skippedMissingSync=\(skippedMissingSync)")
+            IKLogger.cache.warning(
+                "[KD] Error cache update partial received=\(errors.count) skippedMissingSync=\(skippedMissingSync)"
+            )
         }
     }
 

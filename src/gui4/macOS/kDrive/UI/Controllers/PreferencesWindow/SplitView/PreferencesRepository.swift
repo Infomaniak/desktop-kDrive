@@ -59,7 +59,9 @@ public final class PreferencesRepository: ObservableObject {
             try await settingsCache.refresh()
         }
         guard let currentData = await settingsCache.getSettings() else {
-            IKLogger.general.warning("[KD] Preference update skipped setting=\(Self.settingName(for: keyPath)) reason=settingsUnavailable")
+            IKLogger.general.warning(
+                "[KD] Preference update skipped setting=\(Self.settingName(for: keyPath)) reason=settingsUnavailable"
+            )
             return
         }
 
@@ -70,7 +72,9 @@ public final class PreferencesRepository: ObservableObject {
             parametersInfo = UIParametersInfo(parametersInfo: refreshedData)
             IKLogger.general.info("[KD] Preference update completed setting=\(Self.settingName(for: keyPath))")
         } else {
-            IKLogger.general.warning("[KD] Preference update sent but refreshed settings unavailable setting=\(Self.settingName(for: keyPath))")
+            IKLogger.general.warning(
+                "[KD] Preference update sent but refreshed settings unavailable setting=\(Self.settingName(for: keyPath))"
+            )
         }
     }
 
