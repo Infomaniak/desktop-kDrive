@@ -102,7 +102,12 @@ void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item
                 return;
             }
 
+            const Count placementSequence = entryIt->placementSequence;
             *entryIt = makeEntry(syncDbId, item, entryIt->localId);
+            // A progress update must not reorder transfers; only the completion moves the row.
+            if (isInProgress(entryIt->status)) {
+                entryIt->placementSequence = placementSequence;
+            }
             removeSupersededFailures(entries, item);
             emit activitiesChanged(syncDbId);
             return;
@@ -196,6 +201,7 @@ ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileIt
     entry.progress = item.progress();
     entry.receivedAtUtc = QDateTime::currentDateTimeUtc();
     entry.receivedSequence = _nextReceivedSequence++;
+    entry.placementSequence = entry.receivedSequence;
     return entry;
 }
 
