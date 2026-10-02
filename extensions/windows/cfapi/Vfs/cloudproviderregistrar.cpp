@@ -188,9 +188,7 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
         WCHAR exePath[MAX_FULL_PATH];
         if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
             TRACE_ERROR(L"Error in GetModuleFileNameW");
-        }
-        value = exePath;
-        if (!value.empty()) {
+        } else if (value = exePath; !value.empty()) {
             updateRegistryEntry(hKey, name, value);
         }
     }
