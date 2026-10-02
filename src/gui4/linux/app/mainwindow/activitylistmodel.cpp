@@ -23,7 +23,6 @@
 #include <QFontMetricsF>
 #include <QLocale>
 #include <QLoggingCategory>
-#include <QRegularExpression>
 #include <QSet>
 
 #include <algorithm>
@@ -58,14 +57,6 @@ SyncPath normalizedRelativePath(const SyncPath &path) {
 
 QString itemName(const SyncPath &path) {
     return Path2QStr(path.filename());
-}
-
-// Folder name of the synchronization root, tolerating a trailing separator in the configured path.
-QString rootFolderDisplayName(const SyncPath &localPath) {
-    const SyncPath normalizedPath = localPath.lexically_normal();
-    const SyncPath folderName =
-            normalizedPath.has_filename() ? normalizedPath.filename() : normalizedPath.parent_path().filename();
-    return Path2QStr(folderName);
 }
 
 QString parentFolder(const SyncPath &path) {
@@ -118,34 +109,41 @@ QString formatRelativeTime(const QDateTime &timestampUtc, const QDateTime &nowUt
     return QLocale().toString(timestampUtc.toLocalTime().date(), QLocale::ShortFormat);
 }
 
-// Exact local date and time to the second, e.g. "29/09/2026 - 10:41:04". Qt has no short time format with seconds, so
-// the seconds are inserted after the minutes of the locale's short time format, with the same separator.
+// Keep the locale's long time format (including seconds), without timezone tokens. Quoted literals are preserved.
+QString timeFormatWithoutTimeZone(const QLocale &locale) {
+    QString format;
+    bool inLiteral = false;
+    const QString longFormat = locale.timeFormat(QLocale::LongFormat);
+    for (qsizetype index = 0; index < longFormat.size(); ++index) {
+        const QChar character = longFormat.at(index);
+        if (character == u'\'') {
+            format += character;
+            if (index + 1 < longFormat.size() && longFormat.at(index + 1) == u'\'') {
+                format += longFormat.at(++index);
+            } else {
+                inLiteral = !inLiteral;
+            }
+        } else if (inLiteral || character != u't') {
+            format += character;
+        }
+    }
+    return format.trimmed();
+}
+
+// Exact local date and time using a short date and a time with seconds, without the verbose timezone name.
 QString formatExactTime(const QDateTime &timestampUtc) {
     if (!timestampUtc.isValid()) {
         return {};
     }
 
     const QLocale locale;
-    QString timeFormat = locale.timeFormat(QLocale::ShortFormat);
-    if (!timeFormat.contains(u's')) {
-        static const QRegularExpression minutesPattern{u"([hH]+)([^hHm]+)(mm)"_s};
-        (void) timeFormat.replace(minutesPattern, u"\\1\\2\\3\\2ss"_s);
-    }
-
     const QDateTime localTime = timestampUtc.toLocalTime();
     return u"%1 - %2"_s.arg(locale.toString(localTime.date(), QLocale::ShortFormat),
-                            locale.toString(localTime.time(), timeFormat));
+                            locale.toString(localTime.time(), timeFormatWithoutTimeZone(locale)));
 }
 
-// Displayed folder of a synchronized item, the synchronization root being shown by its own folder name.
-QString displayedFolder(const SyncPath &relativePath, const QString &rootFolderName) {
-    const QString folder = parentFolder(relativePath);
-    return folder.isEmpty() ? rootFolderName : folder;
-}
-
-// "old → new" for a rename or a move, empty for any other activity. A rename shows the names, a move the folders, and a
-// move that also renames the item its full relative paths.
-QString formatChange(const ActivityEntry &activity, const QString &rootFolderName) {
+// "old → new" for a rename or a move, empty for any other activity. A rename shows the names; a move shows full relative paths.
+QString formatChange(const ActivityEntry &activity) {
     if (activity.instruction != SyncFileInstruction::Move || activity.path.empty() || activity.newPath.empty()) {
         return {};
     }
@@ -153,16 +151,12 @@ QString formatChange(const ActivityEntry &activity, const QString &rootFolderNam
     const SyncPath sourcePath = normalizedRelativePath(activity.path);
     const SyncPath destinationPath = normalizedRelativePath(activity.newPath);
     const bool sameFolder = sourcePath.parent_path() == destinationPath.parent_path();
-    const bool sameName = sourcePath.filename() == destinationPath.filename();
 
     QString source;
     QString destination;
     if (sameFolder) {
         source = itemName(sourcePath);
         destination = itemName(destinationPath);
-    } else if (sameName) {
-        source = displayedFolder(sourcePath, rootFolderName);
-        destination = displayedFolder(destinationPath, rootFolderName);
     } else {
         source = Path2QStr(sourcePath);
         destination = Path2QStr(destinationPath);
@@ -390,11 +384,9 @@ std::vector<ActivityListModel::Row> ActivityListModel::buildProjection() const {
 std::vector<ActivityListModel::Row> ActivityListModel::activityRows(const SyncDbId syncDbId) const {
     std::vector<Row> rows;
     const auto activities = _activityStore.activities(syncDbId);
-    const auto context = _appCache.syncContext(syncDbId);
-    const QString rootFolderName = context ? rootFolderDisplayName(context->syncInfo.localPath()) : QString{};
     rows.reserve(activities.size());
     for (const auto &activity: activities) {
-        rows.push_back(makeActivityRow(syncDbId, activity, rootFolderName));
+        rows.push_back(makeActivityRow(syncDbId, activity));
     }
     return rows;
 }
@@ -417,8 +409,7 @@ void ActivityListModel::appendActiveError(const SyncDbId syncDbId, const Error &
     rows.push_back(makeErrorRow(syncDbId, error));
 }
 
-ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity,
-                                                          const QString &rootFolderName) const {
+ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbId, const ActivityEntry &activity) const {
     const SyncPath &currentPath =
             activity.instruction == SyncFileInstruction::Move && !activity.newPath.empty() ? activity.newPath : activity.path;
     const SyncPath relativePath = normalizedRelativePath(currentPath);
@@ -433,7 +424,7 @@ ActivityListModel::Row ActivityListModel::makeActivityRow(const SyncDbId syncDbI
     row.subtitleKind = subtitleKind(activity);
     row.subtitleText = formatSubtitle(row.subtitleKind, activity.receivedAtUtc);
     row.exactTimeText = formatExactTime(activity.receivedAtUtc);
-    row.changeText = formatChange(activity, rootFolderName);
+    row.changeText = formatChange(activity);
     row.folder = parentFolder(relativePath);
     row.sizeText = formatSize(activity.nodeType, activity.size);
     row.nodeType = activity.nodeType;
