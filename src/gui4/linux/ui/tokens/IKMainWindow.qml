@@ -60,4 +60,9 @@ QtObject {
     readonly property real toolbarActionGroupSpacing: 4
     readonly property real toolbarActionGroupWidth: toolbarActionGroupButtonSize * 2 + toolbarActionGroupSpacing
                                                      + toolbarActionGroupPadding * 2
+
+    // Single source of the selector row height, shared by the row and the popup that sizes itself on its rows.
+    function syncSelectorItemHeight(hasSubtitle: bool): real {
+        return hasSubtitle ? syncSelectorAdvancedHeight : syncSelectorHeight
+    }
 }

@@ -33,7 +33,6 @@ class AppRouter;
 class MainSelectionStore;
 class NetworkStatusObserver;
 class SyncService;
-class SystemTrayController;
 
 /**
  * Cache-backed QML adapter for the Linux v4 Home and its toolbar controls.
@@ -66,7 +65,6 @@ class HomeController final : public QObject {
 
         enum class PrimaryAction : uint8_t {
             None = 0,
-            HideWindow,
             ShowActivities,
             ResumeSync,
             SignIn,
@@ -83,8 +81,7 @@ class HomeController final : public QObject {
         Q_ENUM(SyncControlState)
 
         explicit HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
-                                AppRouter &appRouter, SystemTrayController &systemTrayController,
-                                NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
+                                AppRouter &appRouter, NetworkStatusObserver &networkStatusObserver, QObject *parent = nullptr);
 
         [[nodiscard]] HomeStatus status() const;
         [[nodiscard]] PrimaryAction primaryAction() const;
@@ -110,13 +107,18 @@ class HomeController final : public QObject {
         [[nodiscard]] std::optional<SyncStatus> currentRuntimeStatus() const;
         [[nodiscard]] qint64 currentSyncDbId() const;
         [[nodiscard]] bool syncActionPending() const;
+        [[nodiscard]] HomeStatus resolvedStatus() const;
+        void updateSettledStatus();
 
         AppCache &_appCache;
         MainSelectionStore &_mainSelectionStore;
         SyncService &_syncService;
         AppRouter &_appRouter;
-        SystemTrayController &_systemTrayController;
         NetworkStatusObserver &_networkStatusObserver;
+        // Last status resolved for `_settledStatusSyncDbId` outside a transition, shown during the next transition so Home
+        // does not flash its loading state.
+        qint64 _settledStatusSyncDbId{0};
+        HomeStatus _settledStatus{HomeStatus::Loading};
 };
 
 } // namespace KDC

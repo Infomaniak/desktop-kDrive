@@ -25,7 +25,6 @@
 #include "app/mainwindow/networkstatusobserver.h"
 #include "app/navigation/approuter.h"
 #include "app/services/syncservice.h"
-#include "app/systraycontroller.h"
 
 #include <QDesktopServices>
 #include <QLoggingCategory>
@@ -50,14 +49,12 @@ std::optional<AppConstants::WebDrive::Destination> toWebDriveDestination(const i
 } // namespace
 
 HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelectionStore, SyncService &syncService,
-                               AppRouter &appRouter, SystemTrayController &systemTrayController,
-                               NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
+                               AppRouter &appRouter, NetworkStatusObserver &networkStatusObserver, QObject *const parent) :
     QObject(parent),
     _appCache(appCache),
     _mainSelectionStore(mainSelectionStore),
     _syncService(syncService),
     _appRouter(appRouter),
-    _systemTrayController(systemTrayController),
     _networkStatusObserver(networkStatusObserver) {
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentContextChanged, this, &HomeController::homeChanged);
     (void) connect(&_mainSelectionStore, &MainSelectionStore::currentSyncStatusChanged, this, &HomeController::homeChanged);
@@ -69,17 +66,27 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
             emit homeChanged();
         }
     });
-    (void) connect(&_systemTrayController, &SystemTrayController::trayModeActiveChanged, this, &HomeController::homeChanged);
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this, &HomeController::homeChanged);
+    // Connected before any QML binding exists, so it runs first and bindings read an up to date settled status.
+    (void) connect(this, &HomeController::homeChanged, this, &HomeController::updateSettledStatus);
+    updateSettledStatus();
 }
 
+/**
+ * A transition reported by the server (`Starting`, `PauseAsked`, `StopAsked`) keeps the last settled status of the same
+ * synchronization until the server reports the next settled one, so Home does not flash its loading state. The loading
+ * state is shown only when no settled status is known yet for the displayed synchronization.
+ */
 HomeController::HomeStatus HomeController::status() const {
-    if (syncActionPending()) {
-        return HomeStatus::Loading;
+    if (const HomeStatus currentStatus = resolvedStatus(); currentStatus != HomeStatus::Loading) {
+        return currentStatus;
     }
 
-    const auto context = _mainSelectionStore.currentSyncContext();
-    return resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
+    if (const qint64 syncDbId = currentSyncDbId(); syncDbId != 0 && syncDbId == _settledStatusSyncDbId) {
+        return _settledStatus;
+    }
+
+    return HomeStatus::Loading;
 }
 
 HomeController::PrimaryAction HomeController::primaryAction() const {
@@ -88,7 +95,7 @@ HomeController::PrimaryAction HomeController::primaryAction() const {
             if (errorCount() > 0) {
                 return PrimaryAction::ShowActivities;
             }
-            return _systemTrayController.trayModeActive() ? PrimaryAction::HideWindow : PrimaryAction::None;
+            return PrimaryAction::None;
         case HomeStatus::Syncing:
             return PrimaryAction::ShowActivities;
         case HomeStatus::Paused:
@@ -165,9 +172,6 @@ bool HomeController::hasConnectedUser() const {
 
 void HomeController::triggerPrimaryAction() {
     switch (primaryAction()) {
-        case PrimaryAction::HideWindow:
-            _systemTrayController.hideMainWindow();
-            return;
         case PrimaryAction::ShowActivities:
             _appRouter.showActivities();
             return;
@@ -234,6 +238,24 @@ void HomeController::showActivities() const {
 std::optional<SyncStatus> HomeController::currentRuntimeStatus() const {
     const auto runtimeInfo = _mainSelectionStore.currentSyncRuntimeInfo();
     return runtimeInfo.has_value() ? std::make_optional(runtimeInfo->status) : std::nullopt;
+}
+
+HomeController::HomeStatus HomeController::resolvedStatus() const {
+    const auto context = _mainSelectionStore.currentSyncContext();
+    return resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
+}
+
+/**
+ * Called on every `homeChanged`, whether or not Home is displayed, so the remembered status never lags behind the cache.
+ */
+void HomeController::updateSettledStatus() {
+    const HomeStatus currentStatus = resolvedStatus();
+    if (currentStatus == HomeStatus::Loading) {
+        return;
+    }
+
+    _settledStatusSyncDbId = currentSyncDbId();
+    _settledStatus = currentStatus;
 }
 
 qint64 HomeController::currentSyncDbId() const {
