@@ -32,6 +32,7 @@ ScrollView {
 
     signal manageRequested(Item trigger, var syncDbId)
     signal deleteRequested(Item trigger, var syncDbId)
+    signal addSyncRequested(Item trigger)
 
     contentWidth: availableWidth
     clip: true
@@ -87,11 +88,12 @@ ScrollView {
             }
         }
 
-        // The creation dialog comes with the next change.
         IKModalButton {
+            id: addSyncButton
+
             role: IKModalButton.Tonal
             text: qsTrId("buttonAddAdvancedSync")
-            actionEnabled: false
+            onClicked: root.addSyncRequested(addSyncButton)
         }
     }
 }
