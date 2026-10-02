@@ -184,8 +184,10 @@
   above when there is insufficient room, and clamp the result when neither side provides its full height.
 - On Activities, a retry in progress for an actively errored node shares the same projected row, and displayed Folder
   values open that exact folder even when the activity target no longer exists.
-- On Activities, keep actual in-progress transfers above failed and synchronized rows; surface active errors separately
-  without displacing transfers that are still running.
+- On Activities, keep actual in-progress transfers of at least 1 KB above failed and synchronized rows, in their start
+  order (newest first): progress updates must never reorder them, and only completion moves a row, as on Windows.
+  Smaller transfers finish too fast to be pinned without flickering. Surface active errors separately without
+  displacing transfers that are still running.
 - Expose Activities row capabilities through one `availableActions` flags role. Keep target ids and paths internal, and
   revalidate every action in `ActivitiesController` or `ActivityService` instead of duplicating guards in QML.
 - Present asynchronous share-link progress in the persistent bottom area of the main sidebar. Keep the notification
@@ -336,11 +338,10 @@
       classic (drive-root) `SYNC_ADD` is in flight. Only `SyncService` writes them; `clearAll()` keeps them. Onboarding shows a reserved drive like an
       already synchronized one, Settings shows its Enable button as busy; pre-send checks treat it as unavailable.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
-  updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for
-  the same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct
-  anonymous operations, and bounds retention to 500 entries per synchronization. It stays separate from the durable
-  `AppCache`
-  graph and is not exposed directly to QML.
+  updates valid operation ids in place while keeping their placement sequence until completion, removes failed entries
+  superseded by a successful or in-progress activity for the same node, clears interrupted in-progress entries when a
+  synchronization becomes inactive, preserves distinct anonymous operations, and bounds retention to 500 entries per
+  synchronization. It stays separate from the durable `AppCache` graph and is not exposed directly to QML.
 - `app/cache/cachepipeline.*`: unique bridge for `CommService -> AppCache/ActivityStore` push signals.
     - Routes entity, sync-runtime, and file-activity pushes after population; drops and logs earlier pushes as invariant
       violations.
@@ -361,8 +362,8 @@
   delegates sync selection to `MainSelectionStore`, and opens the selected local sync folder through desktop services.
 - `app/mainwindow/activitylistmodel.*`: selected-sync projection joining bounded recent activities with authoritative
   active node errors. It omits failed activities after their active error is resolved, maps server status and direction
-  to the QML-facing presentation enums, keeps actual in-progress rows first, coalesces bursty cache invalidations, and
-  keeps active errors visible even when their recent activity has been evicted.
+  to the QML-facing presentation enums, keeps in-progress transfers of at least 1 KB first in start order, coalesces
+  bursty cache invalidations, and keeps active errors visible even when their recent activity has been evicted.
 - `app/mainwindow/activitiescontroller.*`: QML-facing Activities state and action boundary. It owns filtering and title
   presentation, including the local title-state resolver, validates local paths, opens activity and displayed-folder
   locations, and delegates asynchronous link actions to `ActivityService`. Dedicated share-link lifecycle signals keep
@@ -482,7 +483,7 @@
       active and no onboarding session is active. Do not add IPC calls here; dynamic data belongs in cache-backed QML
       models.
     - `ui/windows/main/activities/`: selected-sync Activities page, filter and action popups, table rows, source/status
-      presentation, and empty state. Time, size, and status columns have fixed widths; only the name/folder boundary is
+      presentation, and empty state. Size and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
       history.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
@@ -651,7 +652,7 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
 - Prefer documenting private implementation helpers in `.cpp` rather than headers.
 - Do not run `clang-format` on `CMakeLists.txt` in this repository.
 - Size a fixed-width column from its content, never from a hard-coded constant. The model exposes the widest strings the
-  column can render in the active locale (`ActivityListModel::timeTextSamples`, `sizeTextSamples`) and measures them
+  column can render in the active locale (e.g. `ActivityListModel::sizeTextSamples`) and measures them
   with `maxTextWidth(texts, font)`; the view takes the max with the header label, measured separately via `TextMetrics`
   because the header elides too. A constant tuned on one language truncates in the ones with longer wordings.
 
