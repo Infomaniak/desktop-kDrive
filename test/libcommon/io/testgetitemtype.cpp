@@ -702,7 +702,7 @@ void TestIo::testGetItemTypeAllBranches() {
 
         // Remove the target
         std::error_code ec;
-        std::filesystem::remove(targetPath, ec);
+        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && !ec);
 
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));

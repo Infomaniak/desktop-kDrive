@@ -705,7 +705,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     }
 #endif
 
-    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
+    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,

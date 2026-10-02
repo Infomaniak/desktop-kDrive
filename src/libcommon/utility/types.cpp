@@ -251,6 +251,8 @@ std::string toString(const ExitCause e) {
             return "InvalidLinkTarget";
         case ExitCause::MoveThroughSymlink:
             return "MoveThroughSymlink";
+        case ExitCause::FileNameTooLong:
+            return "FileNameTooLong";
         default:
             return noConversionStr;
     }

@@ -391,7 +391,7 @@ bool IoHelper::_checkIfPathExistsSensitiveFn(const SyncPath &path, const std::fi
 
     if (ioError == IoError::NoSuchFileOrDirectory) ioError = IoError::Success;
 
-    return ioError == IoError::Success || (ioError == IoError::FileNameTooLong) || isExpectedError(ioError);
+    return ioError == IoError::Success || ioError == IoError::FileNameTooLong || isExpectedError(ioError);
 }
 
 bool IoHelper::isPathOnMountedDisk(const SyncPath &path, bool &isMounted, IoError &ioError) noexcept {

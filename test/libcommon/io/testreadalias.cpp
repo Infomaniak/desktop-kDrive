@@ -183,7 +183,7 @@ void TestIo::testReadAlias() {
 
         // Remove the target
         std::error_code ec;
-        std::filesystem::remove(targetPath, ec);
+        CPPUNIT_ASSERT(std::filesystem::remove(targetPath, ec) && !ec);
 
         IoError readAliasError = IoError::Unknown;
         std::string data;
