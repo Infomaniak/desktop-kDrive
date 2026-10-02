@@ -73,8 +73,8 @@ QHash<int, QByteArray> AdvancedSyncListModel::roleNames() const {
 }
 
 const AdvancedSyncListModel::Row *AdvancedSyncListModel::row(const SyncDbId syncDbId) const {
-    const int rowIndex = indexOf(syncDbId);
-    return rowIndex < 0 ? nullptr : &_rows[static_cast<std::size_t>(rowIndex)];
+    const auto rowIndex = indexOf(syncDbId);
+    return rowIndex ? &_rows[*rowIndex] : nullptr;
 }
 
 /**
@@ -87,33 +87,36 @@ std::vector<SyncDbId> AdvancedSyncListModel::replaceRows(std::vector<Row> rows) 
         (void) retainedIds.insert(row.syncDbId);
     }
 
-    for (auto rowIndex = static_cast<int>(_rows.size()) - 1; rowIndex >= 0; --rowIndex) {
-        if (retainedIds.contains(_rows[static_cast<std::size_t>(rowIndex)].syncDbId)) {
+    // Walks backwards so a removal never shifts the rows still to visit.
+    for (std::size_t rowIndex = _rows.size(); rowIndex-- > 0;) {
+        if (retainedIds.contains(_rows[rowIndex].syncDbId)) {
             continue;
         }
 
-        beginRemoveRows({}, rowIndex, rowIndex);
-        (void) _rows.erase(_rows.begin() + rowIndex);
+        beginRemoveRows({}, toModelRow(rowIndex), toModelRow(rowIndex));
+        (void) _rows.erase(_rows.begin() + static_cast<std::ptrdiff_t>(rowIndex));
         endRemoveRows();
     }
 
     std::vector<SyncDbId> addedIds;
     for (std::size_t position = 0; position < rows.size(); ++position) {
         Row &incoming = rows[position];
-        const int existingIndex = indexOf(incoming.syncDbId);
-        if (existingIndex < 0) {
-            const auto rowIndex = static_cast<int>(position);
-            beginInsertRows({}, rowIndex, rowIndex);
-            (void) _rows.insert(_rows.begin() + rowIndex, std::move(incoming));
+        const auto existingIndex = indexOf(incoming.syncDbId);
+        if (!existingIndex) {
+            beginInsertRows({}, toModelRow(position), toModelRow(position));
+            (void) _rows.insert(_rows.begin() + static_cast<std::ptrdiff_t>(position), std::move(incoming));
             endInsertRows();
             addedIds.push_back(_rows[position].syncDbId);
             continue;
         }
 
-        if (static_cast<std::size_t>(existingIndex) != position) {
-            beginMoveRows({}, existingIndex, existingIndex, {}, static_cast<int>(position));
-            Row moved = std::move(_rows[static_cast<std::size_t>(existingIndex)]);
-            (void) _rows.erase(_rows.begin() + existingIndex);
+        if (*existingIndex != position) {
+            // Earlier positions are already final, so an existing row only ever moves up: the move is always valid.
+            [[maybe_unused]] const bool moveAccepted =
+                    beginMoveRows({}, toModelRow(*existingIndex), toModelRow(*existingIndex), {}, toModelRow(position));
+            Q_ASSERT(moveAccepted);
+            Row moved = std::move(_rows[*existingIndex]);
+            (void) _rows.erase(_rows.begin() + static_cast<std::ptrdiff_t>(*existingIndex));
             (void) _rows.insert(_rows.begin() + static_cast<std::ptrdiff_t>(position), std::move(moved));
             endMoveRows();
         }
@@ -125,7 +128,7 @@ std::vector<SyncDbId> AdvancedSyncListModel::replaceRows(std::vector<Row> rows) 
         if (current.localFolderName != incoming.localFolderName || current.localPath != incoming.localPath ||
             current.remoteFolderName != incoming.remoteFolderName || current.remotePath != incoming.remotePath) {
             current = std::move(incoming);
-            notifyRow(static_cast<int>(position), {LocalFolderNameRole, LocalPathRole, RemoteFolderNameRole, RemotePathRole});
+            notifyRow(position, {LocalFolderNameRole, LocalPathRole, RemoteFolderNameRole, RemotePathRole});
         }
     }
 
@@ -133,42 +136,51 @@ std::vector<SyncDbId> AdvancedSyncListModel::replaceRows(std::vector<Row> rows) 
 }
 
 void AdvancedSyncListModel::setBlackListState(const SyncDbId syncDbId, const BlackListState state) {
-    const int rowIndex = indexOf(syncDbId);
-    if (rowIndex < 0 || _rows[static_cast<std::size_t>(rowIndex)].blackListState == state) {
+    const auto rowIndex = indexOf(syncDbId);
+    if (!rowIndex || _rows[*rowIndex].blackListState == state) {
         return;
     }
 
-    _rows[static_cast<std::size_t>(rowIndex)].blackListState = state;
-    notifyRow(rowIndex, {BlackListLoadingRole, BlackListLoadFailedRole});
+    _rows[*rowIndex].blackListState = state;
+    notifyRow(*rowIndex, {BlackListLoadingRole, BlackListLoadFailedRole});
 }
 
 void AdvancedSyncListModel::setCustomSelection(const SyncDbId syncDbId, const bool customSelection) {
-    const int rowIndex = indexOf(syncDbId);
-    if (rowIndex < 0 || _rows[static_cast<std::size_t>(rowIndex)].customSelection == customSelection) {
+    const auto rowIndex = indexOf(syncDbId);
+    if (!rowIndex || _rows[*rowIndex].customSelection == customSelection) {
         return;
     }
 
-    _rows[static_cast<std::size_t>(rowIndex)].customSelection = customSelection;
-    notifyRow(rowIndex, {CustomSelectionRole});
+    _rows[*rowIndex].customSelection = customSelection;
+    notifyRow(*rowIndex, {CustomSelectionRole});
 }
 
 void AdvancedSyncListModel::setDeletePending(const SyncDbId syncDbId, const bool deletePending) {
-    const int rowIndex = indexOf(syncDbId);
-    if (rowIndex < 0 || _rows[static_cast<std::size_t>(rowIndex)].deletePending == deletePending) {
+    const auto rowIndex = indexOf(syncDbId);
+    if (!rowIndex || _rows[*rowIndex].deletePending == deletePending) {
         return;
     }
 
-    _rows[static_cast<std::size_t>(rowIndex)].deletePending = deletePending;
-    notifyRow(rowIndex, {DeletePendingRole});
+    _rows[*rowIndex].deletePending = deletePending;
+    notifyRow(*rowIndex, {DeletePendingRole});
 }
 
-int AdvancedSyncListModel::indexOf(const SyncDbId syncDbId) const {
+std::optional<std::size_t> AdvancedSyncListModel::indexOf(const SyncDbId syncDbId) const {
     const auto it = std::ranges::find(_rows, syncDbId, &Row::syncDbId);
-    return it == _rows.end() ? -1 : static_cast<int>(std::distance(_rows.begin(), it));
+    if (it == _rows.end()) {
+        return std::nullopt;
+    }
+
+    return static_cast<std::size_t>(std::distance(_rows.begin(), it));
 }
 
-void AdvancedSyncListModel::notifyRow(const int rowIndex, const QList<int> &roles) {
-    const QModelIndex modelIndex = index(rowIndex);
+// Qt addresses rows with an int; a settings list never comes close to its range.
+int32_t AdvancedSyncListModel::toModelRow(const std::size_t rowIndex) {
+    return static_cast<int32_t>(rowIndex);
+}
+
+void AdvancedSyncListModel::notifyRow(const std::size_t rowIndex, const QList<int> &roles) {
+    const QModelIndex modelIndex = index(toModelRow(rowIndex));
     emit dataChanged(modelIndex, modelIndex, roles);
 }
 
