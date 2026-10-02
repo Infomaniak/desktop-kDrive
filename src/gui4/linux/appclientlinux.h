@@ -45,6 +45,7 @@
 #include "app/services/translationservice.h"
 #include "app/services/updatestatusservice.h"
 #include "app/services/userservice.h"
+#include "app/settings/advancedsynccreationcontroller.h"
 #include "app/settings/advancedsyncscontroller.h"
 #include "app/settings/drivemanagementcontroller.h"
 #include "app/settings/excludedfolderscontroller.h"
@@ -181,6 +182,7 @@ class AppClientLinux : public QApplication {
         DriveManagementController _driveManagementController{_appCache, _serverCommService, _syncService,
                                                              _excludedFoldersController, this};
         AdvancedSyncsController _advancedSyncsController{_appCache, _serverCommService, _syncService, this};
+        AdvancedSyncCreationController _advancedSyncCreationController{_appCache, _serverCommService, _syncService, this};
         SettingsWindowController _settingsWindowController{_generalSettingsController,
                                                            _advancedSettingsController,
                                                            _fileExclusionController,

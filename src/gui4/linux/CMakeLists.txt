@@ -151,6 +151,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/settings/settingswindowcontroller.h
         app/settings/settingssyncactivationcontroller.cpp
         app/settings/settingssyncactivationcontroller.h
+        app/settings/advancedsynccreationcontroller.cpp
+        app/settings/advancedsynccreationcontroller.h
         app/settings/advancedsynclistmodel.cpp
         app/settings/advancedsynclistmodel.h
         app/settings/advancedsyncscontroller.cpp
