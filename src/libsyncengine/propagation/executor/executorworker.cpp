@@ -411,13 +411,14 @@ ExitInfo ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<SyncJo
         if (const ExitInfo exitInfo = job->runSynchronously(); !exitInfo) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to run create directory job for: "
                                                << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
-        } else if (const ExitInfo exitInfo =
+        } else if (const ExitInfo conversionExitInfo =
                            convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote);
-                   !exitInfo) {
+                   !conversionExitInfo) {
             // If the directory is created on the remote side, we need to convert it to a placeholder. In case of failure, we log
             // a warning but we do not stop the execution.
             LOGW_SYNCPAL_WARN(_logger, L"Failed to convert to placeholder for: "
-                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" " << exitInfo);
+                                               << Utility::formatSyncName(syncOp->affectedNode()->name()) << L" "
+                                               << conversionExitInfo);
         }
         ExitInfo exitInfo = handleFinishedJob(job, syncOp, relativeLocalFilePath, ignored, bypassProgressComplete);
         job.reset();
@@ -2241,24 +2242,25 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
     }
 
     // Handle specific errors
-    switch (static_cast<int>(opsExitInfo)) {
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
+    switch (static_cast<int32_t>(opsExitInfo)) {
+        case static_cast<int32_t>(ExitInfo(ExitCode::BackError, ExitCause::FileLocked)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileSystemNotSupported)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
             return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::HardlinkNotSupported)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::NotFound)): {
             return handleOpsFileNotFound(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::BackError, ExitCause::FileExists)):
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::FileExists)):
-        case static_cast<int>(ExitInfo(ExitCode::DataError, ExitCause::FileExists)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::BackError, ExitCause::FileExists)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileExists)):
+        case static_cast<int32_t>(ExitInfo(ExitCode::DataError, ExitCause::FileExists)): {
             return handleOpsAlreadyExistError(syncOp, opsExitInfo);
         }
-        case static_cast<int>(ExitInfo(ExitCode::SystemError, ExitCause::OperationCanceled)): {
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::OperationCanceled)): {
             return ExitCode::Ok;
         }
         default: {

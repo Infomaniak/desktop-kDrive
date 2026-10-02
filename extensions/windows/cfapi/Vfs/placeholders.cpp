@@ -64,28 +64,28 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
     return update(fullPath.c_str(), findData);
 }
 
-bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
+int32_t Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
     DWORD dwFlagsAndAttributes = 0;
     bool exists = true;
     if (!Utilities::getCreateFileFlagsAndAttributes(filePath, dwFlagsAndAttributes, exists)) {
         TRACE_ERROR(L"Error in Utilities::getCreateFileFlagsAndAttributes: '%ls'", filePath);
-        return false;
+        return ERROR_ACCESS_DENIED;
     }
 
     if (!exists) {
         TRACE_WARNING(L"File or directory does not exist anymore: '%ls'.", filePath);
-        return true;
+        return ERROR_PATH_NOT_FOUND;
     }
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        return true;
+        return S_OK;
     }
 
     winrt::handle fileHandle(CreateFile(filePath, WRITE_DAC, 0, nullptr, OPEN_EXISTING, dwFlagsAndAttributes, nullptr));
     if (fileHandle.get() == INVALID_HANDLE_VALUE) {
         TRACE_ERROR(L"Error in CreateFile: '%ls'", Utilities::getLastErrorMessage().c_str());
-        return false;
+        return ERROR_ACCESS_DENIED;
     }
 
     try {
@@ -93,11 +93,12 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
         winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT) (wcslen(fileId) + 1) * sizeof(WCHAR),
                                                     CF_CONVERT_FLAG_NONE, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught: %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
-        return false;
+        const auto hr = static_cast<HRESULT>(ex.code());
+        TRACE_ERROR(L"WinRT error caught: %08x - %s", hr, ex.message().c_str());
+        return HRESULT_CODE(hr);
     }
 
-    return true;
+    return S_OK;
 }
 
 bool Placeholders::revert(const PCWSTR filePath) {

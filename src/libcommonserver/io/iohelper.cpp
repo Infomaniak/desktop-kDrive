@@ -145,52 +145,6 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
     }
 }
 
-std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
-    switch (ioError) {
-        case IoError::Success:
-            return "Success";
-        case IoError::AccessDenied:
-            return "Access denied";
-        case IoError::AttrNotFound:
-            return "Attribute not found";
-        case IoError::DirectoryExists:
-            return "Directory exists";
-        case IoError::DiskFull:
-            return "Disk full";
-        case IoError::FileExists:
-            return "File exists";
-        case IoError::FileNameTooLong:
-            return "File name too long";
-        case IoError::InvalidArgument:
-            return "Invalid argument";
-        case IoError::InvalidDirectoryIterator:
-            return "Invalid directory iterator";
-        case IoError::InvalidFileName:
-            return "Invalid file name";
-        case IoError::IsADirectory:
-            return "Is a directory";
-        case IoError::IsAFile:
-            return "Is a file";
-        case IoError::MaxDepthExceeded:
-            return "Max depth exceeded";
-        case IoError::NoSuchFileOrDirectory:
-            return "No such file or directory";
-        case IoError::ResultOutOfRange:
-            return "Result out of range";
-        case IoError::CrossDeviceLink:
-            return "Cross device link";
-        case IoError::FileOrDirectoryCorrupted:
-            return "File or directory corrupted";
-        case IoError::TooManySymbolicLinkLevels:
-            return "Too many symbolic link levels";
-        case IoError::MoveThroughSymlink:
-            return "Move through symlink";
-        case IoError::Unknown:
-        default:
-            return "Unknown";
-    }
-}
-
 bool IoHelper::openFile(const SyncPath &path, std::ifstream &file, IoError &ioError, int timeOut /*in seconds*/) {
     int count = 0;
     if (file.is_open()) file.close();
@@ -1054,21 +1008,16 @@ ExitInfo IoHelper::deleteItemAtomically(const SyncPath &path, const std::shared_
         if (!sourceItemExists) return ExitCode::Ok;
     }
 
-    switch (ioError) {
-        case IoError::Success:
-            if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
-                LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
-                                             << Utility::formatIoError(destPath, ioError)
-                                             << L". The item will be deleted later by the cache directory cleanup process.");
-            }
-            return ExitCode::Ok;
-        case IoError::AccessDenied:
-            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
-        case IoError::MoveThroughSymlink:
-            return ExitInfo{ExitCode::SystemError, ExitCause::MoveThroughSymlink};
-        default:
-            return ExitInfo{ExitCode::SystemError, ExitCause::Unknown};
+    if (ioError == IoError::Success) {
+        if (!deleteItem(destPath, ioError) || ioError != IoError::Success) {
+            LOGW_DEBUG(logger(), L"Error in IoHelper::deleteItem: "
+                                         << Utility::formatIoError(destPath, ioError)
+                                         << L". The item will be deleted later by the cache directory cleanup process.");
+        }
+        return ExitCode::Ok;
     }
+
+    return toExitInfo(ioError);
 }
 
 bool IoHelper::deleteItem(const SyncPath &path) noexcept {
@@ -1294,7 +1243,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     if (_dirIterator != std::filesystem::end(_dirIterator)) _dirIterator.disable_recursion_pending();
 }
 
-ExitInfo IoHelper::toExitInfo(const IoError ioError) {
+ExitInfo IoHelper::toExitInfo(const IoError ioError, const ExitInfo &defaultExitInfo) {
     switch (ioError) {
         case IoError::Success:
             return ExitCode::Ok;
@@ -1308,8 +1257,16 @@ ExitInfo IoHelper::toExitInfo(const IoError ioError) {
             return {ExitCode::SystemError, ExitCause::DirExists};
         case IoError::FileExists:
             return {ExitCode::SystemError, ExitCause::FileExists};
+        case IoError::MoveThroughSymlink:
+            return {ExitCode::SystemError, ExitCause::MoveThroughSymlink};
+        case IoError::HardlinkNotSupported:
+            return {ExitCode::SystemError, ExitCause::HardlinkNotSupported};
+        case IoError::DiskFull:
+            return {ExitCode::SystemError, ExitCause::NotEnoughDiskSpace};
+        case IoError::FileNameTooLong:
+            return {ExitCode::SystemError, ExitCause::InvalidName};
         default:
-            return ExitCode::SystemError;
+            return defaultExitInfo;
     }
 }
 

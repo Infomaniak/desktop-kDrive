@@ -114,195 +114,16 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         }
 
         if (found) {
-            HKEY hKey;
-            std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
-            TRACE_DEBUG(L"Provider already registered, opening key %s", subKey.c_str());
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-                TRACE_DEBUG(L"Opened key %s", subKey.c_str());
-                if (namespaceCLSID) {
-                    // Get CLSID
-                    TRACE_DEBUG(L"Getting NamespaceCLSID value");
-                    if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
-                        ERROR_SUCCESS) {
-                        TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
-                    }
-                }
-                TRACE_DEBUG(L"Setting registry values");
-                // Set default key
-                if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
-                                  (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not set default registry value");
-                }
+            // Update existing sync root registration (policies, version, identity) without unregistering it
+            updateRegistration(providerInfo);
 
-                // Update AMUID key
-                std::wstring name(REGKEY_AUMID);
-                const std::wstring aumidValue = KDC_AUMID;
-                std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
-                updateRegistryEntry(hKey, name, value);
-
-                // Update IconResource
-                name = REGKEY_ICONRESOURCE;
-                WCHAR exePath[MAX_FULL_PATH];
-                if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
-                    TRACE_ERROR(L"Error in GetModuleFileNameW");
-                }
-                value = exePath;
-                if (!value.empty()) {
-                    updateRegistryEntry(hKey, name, value);
-                }
-
-                TRACE_DEBUG(L"Closing key %s", subKey.c_str());
-                if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not close key %s", subKey.c_str());
-                }
-
-                if (namespaceCLSID) {
-                    // Update DefaultIcon keys
-                    struct RegKeyInfo {
-                            HKEY rootKey;
-                            std::wstring subKey;
-                    };
-                    std::vector<RegKeyInfo> regKeys = {
-                            {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                        std::wstring(REGKEY_DEFAULTICON)},
-                            {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                        std::wstring(REGKEY_DEFAULTICON)},
-                            {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                        std::wstring(REGKEY_DEFAULTICON)},
-                            {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + std::wstring(namespaceCLSID) + L"\\" +
-                                                        std::wstring(REGKEY_DEFAULTICON)}};
-
-                    for (const auto &regKeyInfo: regKeys) {
-                        if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) ==
-                            ERROR_SUCCESS) {
-                            // Update DefaultIcon value
-                            updateRegistryEntry(hKey, L"", value);
-                            if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-                                TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
-                            }
-                        } else {
-                            TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
-                        }
-                    }
-                }
-
-            } else {
-                TRACE_ERROR(L"Could not open key %s", subKey.c_str());
-            }
+            updateSyncRootRegistryEntries(syncRootID, namespaceCLSID, namespaceCLSIDSize, true);
         } else {
-            TRACE_DEBUG(L"Registering new provider");
-            if (!providerInfo->folderPath()) {
-                TRACE_ERROR(L"Folder path is empty");
+            if (!createRegistration(providerInfo, syncRootID)) {
                 return std::wstring();
             }
 
-            if (!providerInfo->folderName()) {
-                TRACE_ERROR(L"Folder name is empty");
-                return std::wstring();
-            }
-
-            if (!providerInfo->id()) {
-                TRACE_ERROR(L"Sync root id is empty");
-                return std::wstring();
-            }
-
-            winrt::StorageProviderSyncRootInfo info;
-            info.Id(syncRootID);
-
-#ifndef NDEBUG
-            // Silent WINRT_ASSERT(!is_sta())
-            int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
-#endif
-            TRACE_DEBUG(L"Getting StorageFolder from path");
-            auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
-#ifndef NDEBUG
-            // Restore old report mode
-            _CrtSetReportMode(_CRT_ASSERT, reportMode);
-#endif
-
-            info.Path(folder);
-
-            info.DisplayNameResource(providerInfo->folderName());
-
-            WCHAR exePath[MAX_FULL_PATH];
-            TRACE_DEBUG(L"Getting module file name for icon resource");
-            if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
-                TRACE_ERROR(L"Error in GetModuleFileNameW");
-                return std::wstring();
-            }
-            info.IconResource(exePath); // App icon
-
-            info.HydrationPolicy(winrt::StorageProviderHydrationPolicy::Full);
-            info.HydrationPolicyModifier(winrt::StorageProviderHydrationPolicyModifier::AutoDehydrationAllowed);
-            info.PopulationPolicy(winrt::StorageProviderPopulationPolicy::AlwaysFull);
-            info.InSyncPolicy(winrt::StorageProviderInSyncPolicy::FileCreationTime |
-                              winrt::StorageProviderInSyncPolicy::DirectoryCreationTime);
-            info.Version(Utilities::s_version);
-            info.ShowSiblingsAsGroup(false);
-            info.HardlinkPolicy(winrt::StorageProviderHardlinkPolicy::None);
-
-            wchar_t uriStr[MAX_URI];
-            std::swprintf(uriStr, MAX_URI, Utilities::s_trashURI.c_str(), providerInfo->driveId());
-            info.RecycleBinUri(winrt::Uri(uriStr));
-
-            // Context
-            std::wstring syncRootIdentity(providerInfo->id());
-
-            TRACE_DEBUG(L"Converting sync root identity to binary");
-            winrt::IBuffer contextBuffer =
-                    winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
-            info.Context(contextBuffer);
-
-            if (!info.Path() || info.DisplayNameResource().empty() || info.Id().empty()) {
-                TRACE_ERROR(L"Invalid StorageProviderSyncRootInfo");
-                return std::wstring();
-            }
-
-            TRACE_DEBUG(L"Calling StorageProviderSyncRootManager::Register");
-            winrt::StorageProviderSyncRootManager::Register(info);
-            TRACE_DEBUG(L"Registered new provider with syncRootID=%s", syncRootID.c_str());
-            // Give the cache some time to invalidate
-            Sleep(1000);
-
-            HKEY hKey;
-            std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
-            TRACE_DEBUG(L"Opening key %s", subKey.c_str());
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
-                TRACE_DEBUG(L"Opened key %s", subKey.c_str());
-                if (namespaceCLSID) {
-                    TRACE_DEBUG(L"Getting NamespaceCLSID value");
-                    // Get CLSID
-                    if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
-                        ERROR_SUCCESS) {
-                        TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
-                    }
-                }
-                TRACE_DEBUG(L"Setting registry values");
-                // Set default key
-                if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
-                                  (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not set default registry value");
-                }
-
-                // Create AMUID key
-                const std::wstring name(REGKEY_AUMID);
-                const std::wstring aumidValue = KDC_AUMID;
-                const std::wstring value = L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App";
-
-                TRACE_INFO(L"AUMID value: %s", aumidValue.c_str());
-
-                if (RegSetValueEx(hKey, name.c_str(), 0, REG_SZ, (BYTE *) value.c_str(),
-                                  (DWORD) (value.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not set registry value %s=%s", name.c_str(), value.c_str());
-                }
-
-                TRACE_DEBUG(L"Closing key %s", subKey.c_str());
-                if (RegCloseKey(hKey) != ERROR_SUCCESS) {
-                    TRACE_ERROR(L"Could not close key %s", subKey.c_str());
-                }
-            } else {
-                TRACE_ERROR(L"Could not open key %s", subKey.c_str());
-            }
+            updateSyncRootRegistryEntries(syncRootID, namespaceCLSID, namespaceCLSIDSize);
         }
 
         if (registeredAt) {
@@ -319,6 +140,205 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
     }
 
     return syncRootID;
+}
+
+void CloudProviderRegistrar::getCLSID(HKEY hKey, wchar_t *namespaceCLSID, DWORD *namespaceCLSIDSize) {
+    TRACE_DEBUG(L"Getting NamespaceCLSID value");
+    if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not get registry value NamespaceCLSID");
+    }
+}
+
+void CloudProviderRegistrar::updateAumidEntry(HKEY hKey) {
+    const std::wstring aumidValue = KDC_AUMID;
+    updateRegistryEntry(hKey, REGKEY_AUMID, L"Infomaniak.kDrive.Extension_" + aumidValue + L"!App");
+}
+
+void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &syncRootID, wchar_t *namespaceCLSID,
+                                                           DWORD *namespaceCLSIDSize, bool updateIcons) {
+    // Open the sync root registry key and refresh its entries (CLSID, default value, AUMID)
+    HKEY hKey;
+    const std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
+    TRACE_DEBUG(L"Opening key %s", subKey.c_str());
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not open key %s", subKey.c_str());
+        return;
+    }
+
+    TRACE_DEBUG(L"Opened key %s", subKey.c_str());
+    if (namespaceCLSID) {
+        getCLSID(hKey, namespaceCLSID, namespaceCLSIDSize);
+    }
+
+    TRACE_DEBUG(L"Setting registry values");
+    // Set default key
+    if (RegSetValueEx(hKey, nullptr, 0, REG_SZ, (BYTE *) Utilities::s_appName.c_str(),
+                      (DWORD) (Utilities::s_appName.size() + 1) * sizeof(wchar_t)) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not set default registry value");
+    }
+
+    updateAumidEntry(hKey);
+
+    std::wstring value;
+    if (updateIcons) {
+        // Update IconResource
+        WCHAR exePath[MAX_FULL_PATH];
+        bool result = GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH);
+        if (!result) {
+            TRACE_ERROR(L"Error in GetModuleFileNameW");
+        } else {
+            value = exePath;
+        }
+
+        if (!value.empty()) {
+            const std::wstring name(REGKEY_ICONRESOURCE);
+            updateRegistryEntry(hKey, name, value);
+        }
+    }
+
+    TRACE_DEBUG(L"Closing key %s", subKey.c_str());
+    if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+        TRACE_ERROR(L"Could not close key %s", subKey.c_str());
+    }
+
+
+    if (value.empty() || !updateIcons || !namespaceCLSID) {
+        return;
+    }
+
+    // Update DefaultIcon keys. Reuses hKey, so it must run after the sync root key is closed
+    struct RegKeyInfo {
+            HKEY rootKey;
+            std::wstring subKey;
+    };
+
+    const std::wstring defaultIconPath = std::wstring(namespaceCLSID) + L"\\" + std::wstring(REGKEY_DEFAULTICON);
+    const std::vector<RegKeyInfo> regKeys = {{HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_CLSID + defaultIconPath},
+                                             {HKEY_CLASSES_ROOT, REGPATH_HKEY_CLASSES_ROOT_WOW6432_CLSID + defaultIconPath},
+                                             {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_CLSID + defaultIconPath},
+                                             {HKEY_CURRENT_USER, REGPATH_HKEY_CURRENT_USER_WOW6432_CLSID + defaultIconPath}};
+
+    for (const auto &regKeyInfo: regKeys) {
+        if (RegOpenKeyEx(regKeyInfo.rootKey, regKeyInfo.subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
+            // Update DefaultIcon value
+            updateRegistryEntry(hKey, L"", value);
+            if (RegCloseKey(hKey) != ERROR_SUCCESS) {
+                TRACE_ERROR(L"Could not close key %s", regKeyInfo.subKey.c_str());
+            }
+        } else {
+            TRACE_ERROR(L"Could not open key %s", regKeyInfo.subKey.c_str());
+        }
+    }
+}
+
+void CloudProviderRegistrar::updateRegistration(const ProviderInfo *providerInfo) {
+    if (!providerInfo->folderPath()) {
+        TRACE_ERROR(L"Folder path is empty");
+        return;
+    }
+
+    // WARNING: keep these policies in sync with the ones set in createRegistration()
+    const std::string syncRootIdentity = Utilities::utf16ToUtf8(providerInfo->id());
+    CF_SYNC_REGISTRATION registration = {};
+    registration.StructSize = sizeof(CF_SYNC_REGISTRATION);
+    registration.ProviderName = Utilities::s_appName.c_str();
+    registration.ProviderVersion = Utilities::s_version.c_str();
+    registration.SyncRootIdentity = syncRootIdentity.c_str();
+    registration.SyncRootIdentityLength = static_cast<DWORD>(syncRootIdentity.size());
+
+    CF_SYNC_POLICIES policies = {};
+    policies.StructSize = sizeof(CF_SYNC_POLICIES);
+    policies.Hydration.Primary = CF_HYDRATION_POLICY_FULL;
+    policies.Hydration.Modifier = CF_HYDRATION_POLICY_MODIFIER_AUTO_DEHYDRATION_ALLOWED;
+    policies.Population.Primary = CF_POPULATION_POLICY_ALWAYS_FULL;
+    policies.Population.Modifier = CF_POPULATION_POLICY_MODIFIER_NONE;
+    policies.InSync = CF_INSYNC_POLICY_TRACK_FILE_CREATION_TIME | CF_INSYNC_POLICY_TRACK_DIRECTORY_CREATION_TIME;
+    policies.HardLink = CF_HARDLINK_POLICY_ALLOWED;
+
+    TRACE_DEBUG(L"Updating sync root registration with CF_REGISTER_FLAG_UPDATE");
+    const HRESULT hr = CfRegisterSyncRoot(providerInfo->folderPath(), &registration, &policies, CF_REGISTER_FLAG_UPDATE);
+    if (FAILED(hr)) {
+        TRACE_ERROR(L"Could not update the sync root registration, hr %08x", hr);
+    }
+}
+
+bool CloudProviderRegistrar::createRegistration(const ProviderInfo *providerInfo, const std::wstring &syncRootID) {
+    TRACE_DEBUG(L"Registering new provider");
+    if (!providerInfo->folderPath()) {
+        TRACE_ERROR(L"Folder path is empty");
+        return false;
+    }
+
+    if (!providerInfo->folderName()) {
+        TRACE_ERROR(L"Folder name is empty");
+        return false;
+    }
+
+    if (!providerInfo->id()) {
+        TRACE_ERROR(L"Sync root id is empty");
+        return false;
+    }
+
+    winrt::StorageProviderSyncRootInfo info;
+    info.Id(syncRootID);
+
+#ifndef NDEBUG
+    // Silent WINRT_ASSERT(!is_sta())
+    int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+#endif
+    TRACE_DEBUG(L"Getting StorageFolder from path");
+    auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
+#ifndef NDEBUG
+    // Restore old report mode
+    _CrtSetReportMode(_CRT_ASSERT, reportMode);
+#endif
+
+    info.Path(folder);
+
+    info.DisplayNameResource(providerInfo->folderName());
+
+    WCHAR exePath[MAX_FULL_PATH];
+    TRACE_DEBUG(L"Getting module file name for icon resource");
+    if (!GetModuleFileNameW(nullptr, exePath, MAX_FULL_PATH)) {
+        TRACE_ERROR(L"Error in GetModuleFileNameW");
+        return false;
+    }
+    info.IconResource(exePath); // App icon
+
+    // WARNING: keep these policies in sync with the ones set in updateRegistration()
+    info.HydrationPolicy(winrt::StorageProviderHydrationPolicy::Full);
+    info.HydrationPolicyModifier(winrt::StorageProviderHydrationPolicyModifier::AutoDehydrationAllowed);
+    info.PopulationPolicy(winrt::StorageProviderPopulationPolicy::AlwaysFull);
+    info.InSyncPolicy(winrt::StorageProviderInSyncPolicy::FileCreationTime |
+                      winrt::StorageProviderInSyncPolicy::DirectoryCreationTime);
+    info.Version(Utilities::s_version);
+    info.ShowSiblingsAsGroup(false);
+    info.HardlinkPolicy(winrt::StorageProviderHardlinkPolicy::Allowed);
+
+    wchar_t uriStr[MAX_URI];
+    std::swprintf(uriStr, MAX_URI, Utilities::s_trashURI.c_str(), providerInfo->driveId());
+    info.RecycleBinUri(winrt::Uri(uriStr));
+
+    // Context
+    std::wstring syncRootIdentity(providerInfo->id());
+
+    TRACE_DEBUG(L"Converting sync root identity to binary");
+    winrt::IBuffer contextBuffer =
+            winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
+    info.Context(contextBuffer);
+
+    if (!info.Path() || info.DisplayNameResource().empty() || info.Id().empty()) {
+        TRACE_ERROR(L"Invalid StorageProviderSyncRootInfo");
+        return false;
+    }
+
+    TRACE_DEBUG(L"Calling StorageProviderSyncRootManager::Register");
+    winrt::StorageProviderSyncRootManager::Register(info);
+    TRACE_DEBUG(L"Registered new provider with syncRootID=%s", syncRootID.c_str());
+    // Give the cache some time to invalidate
+    Sleep(1000);
+
+    return true;
 }
 
 bool CloudProviderRegistrar::unregister(std::wstring syncRootID) {

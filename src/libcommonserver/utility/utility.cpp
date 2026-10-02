@@ -711,7 +711,7 @@ std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code
 
 std::wstring Utility::formatIoError(const IoError ioError) {
     std::wstringstream ss;
-    ss << CommonUtility::s2ws(IoHelper::ioError2StdString(ioError));
+    ss << CommonUtility::s2ws(toString(ioError));
 
     return ss.str();
 }
