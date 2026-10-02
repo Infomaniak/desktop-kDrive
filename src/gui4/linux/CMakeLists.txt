@@ -207,6 +207,7 @@ set(GUI_QML_FILES # .qml files for the app
         ui/components/IKComboBox.qml
         ui/components/IKSwitch.qml
         ui/windows/settings/AddExclusionRuleDialog.qml
+        ui/windows/settings/AddAdvancedSyncDialog.qml
         ui/windows/settings/AdvancedSyncCard.qml
         ui/windows/settings/AdvancedSyncsView.qml
         ui/windows/settings/DeleteSyncDialog.qml
