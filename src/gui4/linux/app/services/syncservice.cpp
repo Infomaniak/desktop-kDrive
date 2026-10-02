@@ -18,31 +18,38 @@
 
 #include "syncservice.h"
 
+#include "app/cache/appcache.h"
+#include "app/services/cachepopulator.h"
 #include "libcommon/utility/types.h"
 
 #include <QLoggingCategory>
 
+#include <utility>
+
 namespace {
 constexpr char serviceKeySync[] = "sync";
-constexpr char actionAddSync[] = "addSync";
 constexpr char actionStartSync[] = "startSync";
 constexpr char actionStopSync[] = "stopSync";
 constexpr char actionDeleteSync[] = "deleteSync";
 constexpr char actionQuerySyncStatus[] = "querySyncStatus";
 constexpr char actionFindGoodPathForNewSync[] = "findGoodPathForNewSync";
 constexpr char actionIsPathValidForNewSync[] = "isPathValidForNewSync";
+
+Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 } // namespace
 
 namespace KDC {
 
-Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
-
-SyncService::SyncService(CommService &commService, ServiceActionTracker &serviceActionTracker, ServiceEventBus &serviceEventBus,
-                         QObject *const parent) :
+SyncService::SyncService(CommService &commService, AppCache &appCache, CachePopulator &cachePopulator,
+                         ServiceActionTracker &serviceActionTracker, ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _commService(commService),
+    _appCache(appCache),
+    _cachePopulator(cachePopulator),
     _serviceActionTracker(serviceActionTracker),
     _serviceEventBus(serviceEventBus) {
+    (void) connect(&_appCache, &AppCache::syncsChanged, this, &SyncService::releaseSyncedReservations);
+    (void) connect(&_cachePopulator, &CachePopulator::reconciliationCompleted, this, &SyncService::releaseReconciledReservations);
     (void) connect(&_serviceActionTracker, &ServiceActionTracker::servicePendingChanged, this,
                    [this](const ServiceActionTracker::ServiceKey &serviceKey, const bool) {
                        if (serviceKey == serviceKeySync) {
@@ -62,34 +69,38 @@ bool SyncService::loading() const {
     return _serviceActionTracker.isServicePending(serviceKeySync);
 }
 
-void SyncService::addSync(const qint64 userDbId, const qint64 accountId, const qint64 driveId, const QString &localFolderPath,
-                          const QString &serverFolderPath, const QString &serverFolderNodeId, const bool liteSync) {
-    beginAction(actionAddSync);
+bool SyncService::addDriveSync(const SyncAddRequest &request, const CommService::SyncInfoCallback &callback) {
+    if (!request.serverFolderNodeId.empty()) { // Advanced sync: allowed next to a classic one, no reservation.
+        _commService.requestSyncAdd(request, callback);
+        return true;
+    }
 
-    SyncAddRequest request;
-    request.userDbId = static_cast<UserDbId>(userDbId);
-    request.accountId = static_cast<AccountId>(accountId);
-    request.driveId = static_cast<DriveId>(driveId);
-    request.localFolderPath = QStr2Path(localFolderPath);
-    request.serverFolderPath = QStr2Path(serverFolderPath);
-    request.serverFolderNodeId = QStr2Str(serverFolderNodeId);
-    request.liteSync = liteSync;
+    const AvailableDriveKey key{.userDbId = request.userDbId, .accountId = request.accountId, .driveId = request.driveId};
+    if (_appCache.isAvailableDriveConfigured(key) || _appCache.isSyncCreationPending(key)) {
+        qCWarning(lcSyncService) << "Classic sync creation refused: drive already synchronized or being synchronized | userDbId:"
+                                 << key.userDbId << "/ accountId:" << key.accountId << "/ driveId:" << key.driveId;
+        return false;
+    }
 
-    _commService.requestSyncAdd(request, [this](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
-        endAction(actionAddSync);
-        if (!exitInfo) {
-            notifyRequestFailure(exitInfo, RequestNum::SYNC_ADD);
-            return;
+    _appCache.setSyncCreationPending(key, true);
+    _commService.requestSyncAdd(request, [this, key, callback](const ExitInfo &exitInfo, const BaseSync &syncInfo) {
+        if (exitInfo) {
+            _awaitingSyncPush[key] = syncInfo.dbId();
+            releaseSyncedReservations();
+        } else {
+            (void) _awaitingReconciliation.insert(key);
+            _cachePopulator.reconcile();
         }
 
-        emit syncAddCompleted(static_cast<qint64>(syncInfo.dbId()));
+        callback(exitInfo, syncInfo);
     });
+    return true;
 }
 
 void SyncService::startSync(const qint64 syncDbId) {
     beginAction(actionStartSync, syncDbId);
 
-    _commService.requestSyncStart(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestSyncStart(syncDbId, [this, syncDbId](const ExitInfo &exitInfo) {
         endAction(actionStartSync, syncDbId);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_START);
@@ -100,7 +111,7 @@ void SyncService::startSync(const qint64 syncDbId) {
 void SyncService::stopSync(const qint64 syncDbId) {
     beginAction(actionStopSync, syncDbId);
 
-    _commService.requestSyncStop(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestSyncStop(syncDbId, [this, syncDbId](const ExitInfo &exitInfo) {
         endAction(actionStopSync, syncDbId);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_STOP);
@@ -112,7 +123,7 @@ void SyncService::deleteSync(const qint64 syncDbId) {
     beginAction(actionDeleteSync, syncDbId);
 
     // Cache consistency is signal-driven: we wait for syncRemoved/syncUpdated pushes.
-    _commService.requestSyncDelete(static_cast<SyncDbId>(syncDbId), [this, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestSyncDelete(syncDbId, [this, syncDbId](const ExitInfo &exitInfo) {
         endAction(actionDeleteSync, syncDbId);
         if (!exitInfo) {
             notifyRequestFailure(exitInfo, RequestNum::SYNC_DELETE);
@@ -123,16 +134,15 @@ void SyncService::deleteSync(const qint64 syncDbId) {
 void SyncService::querySyncStatus(const qint64 syncDbId) {
     beginAction(actionQuerySyncStatus, syncDbId);
 
-    _commService.requestSyncStatus(static_cast<SyncDbId>(syncDbId),
-                                   [this, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
-                                       endAction(actionQuerySyncStatus, syncDbId);
-                                       if (!exitInfo) {
-                                           notifyRequestFailure(exitInfo, RequestNum::SYNC_STATUS);
-                                           return;
-                                       }
+    _commService.requestSyncStatus(syncDbId, [this, syncDbId](const ExitInfo &exitInfo, const SyncStatus status) {
+        endAction(actionQuerySyncStatus, syncDbId);
+        if (!exitInfo) {
+            notifyRequestFailure(exitInfo, RequestNum::SYNC_STATUS);
+            return;
+        }
 
-                                       emit syncStatusReceived(syncDbId, toInt(status));
-                                   });
+        emit syncStatusReceived(syncDbId, toInt(status));
+    });
 }
 
 void SyncService::findGoodPathForNewSync(const QString &basePath) {
@@ -182,10 +192,6 @@ void SyncService::isPathValidForNewSync(const QString &path, const int32_t syncC
                                               });
 }
 
-bool SyncService::isAddSyncPending() const {
-    return isActionPending(actionAddSync);
-}
-
 bool SyncService::isStartSyncPending(const qint64 syncDbId) const {
     return isActionPending(actionStartSync, syncDbId);
 }
@@ -225,6 +231,33 @@ bool SyncService::isActionPending(const ServiceActionTracker::ActionKey &actionK
 
 bool SyncService::isValidSyncConfigurationValue(const int32_t syncConfiguration) const {
     return syncConfiguration >= toInt(SyncConfiguration::Classic) && syncConfiguration < toInt(SyncConfiguration::EnumEnd);
+}
+
+/**
+ * Releases the reservations of successful creations once their SYNC_ADDED push is in AppCache.
+ */
+void SyncService::releaseSyncedReservations() {
+    for (auto it = _awaitingSyncPush.begin(); it != _awaitingSyncPush.end();) {
+        if (!_appCache.sync(it->second)) {
+            ++it;
+            continue;
+        }
+
+        const auto key = it->first;
+        it = _awaitingSyncPush.erase(it);
+        _appCache.setSyncCreationPending(key, false);
+    }
+}
+
+/**
+ * Releases the reservations of failed creations once a reconciliation succeeds. reconcile() restarts any running
+ * population, so its completion reflects the server state after the failure. A failed reconciliation may end before
+ * the syncs are reloaded, so the drives then stay reserved until a later one succeeds, rather than risk a duplicate.
+ */
+void SyncService::releaseReconciledReservations() {
+    for (const auto keys = std::exchange(_awaitingReconciliation, {}); const auto &availableDriveKey: keys) {
+        _appCache.setSyncCreationPending(availableDriveKey, false);
+    }
 }
 
 void SyncService::notifyRequestFailure(const ExitInfo &exitInfo, const RequestNum requestNum) {

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "app/cache/cachetypes.h"
 #include "app/services/commservice.h"
 #include "app/services/serviceactiontracker.h"
 #include "app/services/serviceeventbus.h"
@@ -26,8 +27,13 @@
 #include <QString>
 
 #include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace KDC {
+
+class AppCache;
+class CachePopulator;
 
 /**
  * High-level sync-oriented facade.
@@ -36,20 +42,25 @@ namespace KDC {
  * - orchestrates sync lifecycle requests through CommService;
  * - keeps durable cache mutations signal-driven through CachePipeline;
  * - reports transient failures through ServiceEventBus;
- * - registers durable pending state in ServiceActionTracker.
+ * - registers durable pending state in ServiceActionTracker;
+ * - is the only sender of SYNC_ADD, so that AppCache can reserve each drive while its creation is in flight.
  */
 class SyncService : public QObject {
         Q_OBJECT
         Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
 
     public:
-        explicit SyncService(CommService &commService, ServiceActionTracker &serviceActionTracker,
-                             ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
+        explicit SyncService(CommService &commService, AppCache &appCache, CachePopulator &cachePopulator,
+                             ServiceActionTracker &serviceActionTracker, ServiceEventBus &serviceEventBus,
+                             QObject *parent = nullptr);
 
         [[nodiscard]] bool loading() const;
 
-        Q_INVOKABLE void addSync(qint64 userDbId, qint64 accountId, qint64 driveId, const QString &localFolderPath,
-                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync);
+        // Sends SYNC_ADD. A classic sync (drive root) reserves the drive until AppCache reflects the outcome, and is refused
+        // without sending anything when the drive already has a classic sync or one in flight. Advanced syncs are not
+        // restricted.
+        [[nodiscard]] bool addDriveSync(const SyncAddRequest &request, const CommService::SyncInfoCallback &callback);
+
         Q_INVOKABLE void startSync(qint64 syncDbId);
         Q_INVOKABLE void stopSync(qint64 syncDbId);
         Q_INVOKABLE void deleteSync(qint64 syncDbId);
@@ -57,7 +68,6 @@ class SyncService : public QObject {
         Q_INVOKABLE void findGoodPathForNewSync(const QString &basePath);
         Q_INVOKABLE void isPathValidForNewSync(const QString &path, int32_t syncConfiguration);
 
-        Q_INVOKABLE [[nodiscard]] bool isAddSyncPending() const;
         Q_INVOKABLE [[nodiscard]] bool isStartSyncPending(qint64 syncDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isStopSyncPending(qint64 syncDbId) const;
         Q_INVOKABLE [[nodiscard]] bool isDeleteSyncPending(qint64 syncDbId) const;
@@ -71,7 +81,6 @@ class SyncService : public QObject {
         void syncStatusReceived(qint64 syncDbId, int32_t status);
         void suggestedPathReceived(const QString &goodPath, const QString &warningMessage);
         void pathValidationReceived(bool isValid);
-        void syncAddCompleted(qint64 syncDbId);
 
     private:
         void beginAction(const ServiceActionTracker::ActionKey &actionKey, ServiceActionTracker::ScopeId scopeId = 0);
@@ -80,12 +89,20 @@ class SyncService : public QObject {
                                            ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
         [[nodiscard]] bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
+        void releaseSyncedReservations();
+        void releaseReconciledReservations();
 
         CommService &_commService;
+        AppCache &_appCache;
+        CachePopulator &_cachePopulator;
         ServiceActionTracker &_serviceActionTracker;
         ServiceEventBus &_serviceEventBus;
         uint64_t _findGoodPathGeneration{0};
         uint64_t _pathValidationGeneration{0};
+        // Successful creations whose SYNC_ADDED push has not reached AppCache yet.
+        std::unordered_map<AvailableDriveKey, SyncDbId> _awaitingSyncPush;
+        // Failed creations: SYNC_ADD may still have persisted the sync, so the reservation lasts until the cache is reconciled.
+        std::unordered_set<AvailableDriveKey> _awaitingReconciliation;
 };
 
 } // namespace KDC

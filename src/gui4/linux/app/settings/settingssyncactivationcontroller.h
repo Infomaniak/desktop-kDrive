@@ -35,6 +35,7 @@ class AppCache;
 class CachePopulator;
 class CommService;
 class ServiceEventBus;
+class SyncService;
 struct GoodPathResult;
 
 /** Transactional editor used to activate one available drive from Settings. */
@@ -56,8 +57,9 @@ class SettingsSyncActivationController final : public QObject {
         Q_PROPERTY(RemoteFolderTreeModel *folderTreeModel READ folderTreeModel CONSTANT)
 
     public:
-        explicit SettingsSyncActivationController(AppCache &appCache, CommService &commService, CachePopulator &cachePopulator,
-                                                  ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
+        explicit SettingsSyncActivationController(AppCache &appCache, CommService &commService, SyncService &syncService,
+                                                  CachePopulator &cachePopulator, ServiceEventBus &serviceEventBus,
+                                                  QObject *parent = nullptr);
 
         [[nodiscard]] bool visible() const { return _visible; }
         [[nodiscard]] bool driveConfigurationPage() const { return _page == Page::DriveConfiguration; }
@@ -111,6 +113,7 @@ class SettingsSyncActivationController final : public QObject {
         };
 
         [[nodiscard]] bool targetStillAvailable() const;
+        [[nodiscard]] bool targetStillSelectable() const;
         void requestDefaultFolder();
         void handleDefaultFolderProposal(const ExitInfo &exitInfo, const GoodPathResult &result);
         void createSynchronization();
@@ -127,6 +130,7 @@ class SettingsSyncActivationController final : public QObject {
 
         AppCache &_appCache;
         CommService &_commService;
+        SyncService &_syncService;
         CachePopulator &_cachePopulator;
         ServiceEventBus &_serviceEventBus;
         CommRemoteFolderProvider _folderProvider;

@@ -32,6 +32,7 @@ class AppCache;
 class CachePopulator;
 class CommService;
 class ServiceEventBus;
+class SyncService;
 class UserService;
 
 /**
@@ -46,7 +47,8 @@ class OnboardingSessionManager final : public QObject {
 
     public:
         explicit OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
-                                          UserService &userService, ServiceEventBus &serviceEventBus, QObject *parent = nullptr);
+                                          UserService &userService, SyncService &syncService, ServiceEventBus &serviceEventBus,
+                                          QObject *parent = nullptr);
 
         [[nodiscard]] OnboardingSession *activeSession() const { return _activeSession; }
 
@@ -92,6 +94,7 @@ class OnboardingSessionManager final : public QObject {
         AppCache &_appCache;
         CommService &_commService;
         UserService &_userService;
+        SyncService &_syncService;
         ServiceEventBus &_serviceEventBus;
         OnboardingSession *_activeSession = nullptr;
         LifecycleState _state{LifecycleState::Determining};

@@ -141,8 +141,10 @@ Rectangle {
 
                 delegate: UserDriveRow {
                     width: contentColumn.width
-                    actionBusy: !isSynchronized && root.activationController.targets(userDbId, accountId, driveId)
-                                && (root.activationController.preparing || root.activationController.busy)
+                    actionBusy: !isSynchronized
+                                && (syncCreationPending
+                                    || (root.activationController.targets(userDbId, accountId, driveId)
+                                        && (root.activationController.preparing || root.activationController.busy)))
                     onActivateRequested: (trigger, requestedAccountId, requestedDriveId) =>
                                          root.activateRequested(trigger, root.userDbId, requestedAccountId, requestedDriveId)
                 }
