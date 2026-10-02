@@ -117,6 +117,8 @@ class HomeController final : public QObject {
         AppRouter &_appRouter;
         SystemTrayController &_systemTrayController;
         NetworkStatusObserver &_networkStatusObserver;
-};
+        // Last status shown for `_settledStatusSyncDbId` outside a transition, kept while a pause, resume or start is in
+        // progress so Home does not flash its loading state. Updated from the `status()` getter, hence `mutable`.
+        mutable qint64 _settledStatusSyncDbId{0};
 
 } // namespace KDC

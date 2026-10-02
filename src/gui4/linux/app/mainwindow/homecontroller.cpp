@@ -73,13 +73,29 @@ HomeController::HomeController(AppCache &appCache, MainSelectionStore &mainSelec
     (void) connect(&_networkStatusObserver, &NetworkStatusObserver::offlineChanged, this, &HomeController::homeChanged);
 }
 
+/**
+ * A transition (pause, resume or start requested, or reported as in progress by the server) keeps the last settled status
+ * of the same synchronization until the server reports the next settled one, so Home does not flash its loading state.
+ * The loading state is shown only when no settled status is known yet for the displayed synchronization.
+ */
 HomeController::HomeStatus HomeController::status() const {
-    if (syncActionPending()) {
-        return HomeStatus::Loading;
+    const auto context = _mainSelectionStore.currentSyncContext();
+    const HomeStatus resolvedStatus =
+            syncActionPending()
+                    ? HomeStatus::Loading
+                    : resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
+    const qint64 syncDbId = currentSyncDbId();
+    if (resolvedStatus != HomeStatus::Loading) {
+        _settledStatusSyncDbId = syncDbId;
+        _settledStatus = resolvedStatus;
+        return resolvedStatus;
     }
 
-    const auto context = _mainSelectionStore.currentSyncContext();
-    return resolveHomeStatus(context.has_value(), _networkStatusObserver.offline(), currentRuntimeStatus());
+    if (syncDbId != 0 && syncDbId == _settledStatusSyncDbId) {
+        return _settledStatus;
+    }
+
+    return HomeStatus::Loading;
 }
 
 HomeController::PrimaryAction HomeController::primaryAction() const {
