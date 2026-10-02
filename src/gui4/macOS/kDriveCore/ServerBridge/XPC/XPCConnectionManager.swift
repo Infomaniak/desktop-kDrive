@@ -288,7 +288,7 @@ import InfomaniakDI
 
         IKLogger.xpc.log("[KD] Setup connection handlers for connection with app")
         newConnection.interruptionHandler = { [weak self] in
-            IKLogger.xpc.warning("[KD] Server connection interrupted")
+            IKLogger.xpc.warning("[KD] Server connection interrupted (possible server crash)")
             guard let self else { return }
             appConnection?.invalidate()
             appConnection = nil
@@ -299,7 +299,7 @@ import InfomaniakDI
         }
 
         newConnection.invalidationHandler = { [weak self] in
-            IKLogger.xpc.warning("[KD] Server connection invalidated; scheduling reconnection")
+            IKLogger.xpc.warning("[KD] Server connection invalidated (possible server crash); scheduling reconnection")
             guard let self else { return }
             appConnection?.invalidate()
             appConnection = nil
