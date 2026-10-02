@@ -197,7 +197,7 @@ QString RemoteFolderPickerModel::folderCreationParentPath() const {
 }
 
 void RemoteFolderPickerModel::configure(const UserDbId userDbId, const DriveId driveId, const QString &driveName,
-                                        const std::unordered_set<NodeId> &unavailableNodeIds) {
+                                        const NodeSet &unavailableNodeIds) {
     beginResetModel();
     clearTree();
     _userDbId = userDbId;
