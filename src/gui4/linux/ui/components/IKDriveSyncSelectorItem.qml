@@ -89,7 +89,7 @@ Button {
         return point.x >= 0 && point.x <= textItem.width && point.y >= 0 && point.y <= textItem.height
     }
 
-    implicitHeight: hasSubtitle ? IKMainWindow.syncSelectorAdvancedHeight : IKMainWindow.syncSelectorHeight
+    implicitHeight: IKMainWindow.syncSelectorItemHeight(hasSubtitle)
     padding: 0
     enabled: interactive
     focusPolicy: interactive ? Qt.StrongFocus : Qt.NoFocus
