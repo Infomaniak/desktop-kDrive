@@ -306,6 +306,9 @@
 - `app/cache/appcache.*`: graph-backed cache (`AppCache` QObject) - owns configured users/accounts/drives/syncs, the
   single volatile runtime snapshot for each sync, split sync/server errors, per-user available drives, cascade removals,
   and derived read models. Sync snapshot replacement preserves runtime data for retained sync database ids.
+    - Exception to the server-mirror rule: `isSyncCreationPending`/`setSyncCreationPending` hold the drives whose
+      classic (drive-root) `SYNC_ADD` is in flight. Only `SyncService` writes them; `clearAll()` keeps them. Onboarding shows a reserved drive like an
+      already synchronized one, Settings shows its Enable button as busy; pre-send checks treat it as unavailable.
 - `app/cache/activitystore.*`: process-local, per-sync file-activity history. It retains server status and direction,
   updates valid operation ids in place, removes failed entries superseded by a successful or in-progress activity for
   the same node, clears interrupted in-progress entries when a synchronization becomes inactive, preserves distinct
@@ -435,7 +438,10 @@
   publishes normalized Linux/Qt runtime tags after the GUI application exists, and refreshes the distribution channel
   from the confirmed `ParametersStore` snapshot.
 - `app/services/syncservice.*`: targeted sync use-case facade driven by `ServiceActionTracker` + `ServiceEventBus`;
-  durable cache mutations stay signal-driven through `CachePipeline`.
+  durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
+  onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
+  classic syncs for the same drive while the first `SYNC_ADDED` push is still in flight. Advanced syncs (non-empty
+  `serverFolderNodeId`) bypass the check and the reservation.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
     - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main

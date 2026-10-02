@@ -373,18 +373,24 @@ std::vector<AvailableDriveContext> AppCache::availableDriveContexts(const UserDb
         AvailableDriveContext context;
         context.userDisplayInfo = _usersByDbId.at(userDbId).info;
         context.availableDrive = availableDrive;
+        const AvailableDriveKey key{
+                .userDbId = userDbId,
+                .accountId = availableDrive.accountId(),
+                .driveId = availableDrive.driveId(),
+        };
         context.accountInfo = accountForAvailableDrive(userDbId, availableDrive.accountId());
+        context.syncCreationPending = isSyncCreationPending(key);
         if (context.accountInfo) {
             context.configuredDrive = configuredDriveForAvailableDrive(context.accountInfo->dbId(), availableDrive.driveId());
-            context.alreadyConfigured = isAvailableDriveConfigured(AvailableDriveKey{
-                    .userDbId = userDbId,
-                    .accountId = availableDrive.accountId(),
-                    .driveId = availableDrive.driveId(),
-            });
+            context.alreadyConfigured = isAvailableDriveConfigured(key);
         }
         contexts.push_back(context);
     }
     return contexts;
+}
+
+bool AppCache::isSyncCreationPending(const AvailableDriveKey &key) const {
+    return _pendingSyncCreationKeys.contains(key);
 }
 
 std::vector<AvailableDriveContext> AppCache::availableDriveContexts() const {

@@ -98,6 +98,7 @@ struct AvailableDriveContext {
         std::optional<Account> accountInfo;
         DriveAvailable availableDrive;
         bool alreadyConfigured{false};
+        bool syncCreationPending{false};
         std::optional<Drive> configuredDrive;
 
         friend bool operator==(const AvailableDriveContext &lhs, const AvailableDriveContext &rhs) = default;
