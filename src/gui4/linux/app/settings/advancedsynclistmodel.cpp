@@ -74,7 +74,7 @@ QHash<int, QByteArray> AdvancedSyncListModel::roleNames() const {
 
 const AdvancedSyncListModel::Row *AdvancedSyncListModel::row(const SyncDbId syncDbId) const {
     const auto rowIndex = indexOf(syncDbId);
-    return rowIndex ? &_rows[*rowIndex] : nullptr;
+    return rowIndex.has_value() ? &_rows[*rowIndex] : nullptr;
 }
 
 /**
@@ -102,7 +102,7 @@ std::vector<SyncDbId> AdvancedSyncListModel::replaceRows(std::vector<Row> rows) 
     for (std::size_t position = 0; position < rows.size(); ++position) {
         Row &incoming = rows[position];
         const auto existingIndex = indexOf(incoming.syncDbId);
-        if (!existingIndex) {
+        if (!existingIndex.has_value()) {
             beginInsertRows({}, toModelRow(position), toModelRow(position));
             (void) _rows.insert(_rows.begin() + static_cast<std::ptrdiff_t>(position), std::move(incoming));
             endInsertRows();
@@ -137,7 +137,7 @@ std::vector<SyncDbId> AdvancedSyncListModel::replaceRows(std::vector<Row> rows) 
 
 void AdvancedSyncListModel::setBlackListState(const SyncDbId syncDbId, const BlackListState state) {
     const auto rowIndex = indexOf(syncDbId);
-    if (!rowIndex || _rows[*rowIndex].blackListState == state) {
+    if (!rowIndex.has_value() || _rows[*rowIndex].blackListState == state) {
         return;
     }
 
@@ -147,7 +147,7 @@ void AdvancedSyncListModel::setBlackListState(const SyncDbId syncDbId, const Bla
 
 void AdvancedSyncListModel::setCustomSelection(const SyncDbId syncDbId, const bool customSelection) {
     const auto rowIndex = indexOf(syncDbId);
-    if (!rowIndex || _rows[*rowIndex].customSelection == customSelection) {
+    if (!rowIndex.has_value() || _rows[*rowIndex].customSelection == customSelection) {
         return;
     }
 
@@ -157,7 +157,7 @@ void AdvancedSyncListModel::setCustomSelection(const SyncDbId syncDbId, const bo
 
 void AdvancedSyncListModel::setDeletePending(const SyncDbId syncDbId, const bool deletePending) {
     const auto rowIndex = indexOf(syncDbId);
-    if (!rowIndex || _rows[*rowIndex].deletePending == deletePending) {
+    if (!rowIndex.has_value() || _rows[*rowIndex].deletePending == deletePending) {
         return;
     }
 
