@@ -34,13 +34,14 @@ Q_LOGGING_CATEGORY(lcOnboardingSessionManager, "gui.v4.onboardingsessionmanager"
 } // namespace
 
 OnboardingSessionManager::OnboardingSessionManager(CachePopulator &cachePopulator, AppCache &appCache, CommService &commService,
-                                                   UserService &userService, ServiceEventBus &serviceEventBus,
-                                                   QObject *const parent) :
+                                                   UserService &userService, SyncService &syncService,
+                                                   ServiceEventBus &serviceEventBus, QObject *const parent) :
     QObject(parent),
     _cachePopulator(cachePopulator),
     _appCache(appCache),
     _commService(commService),
     _userService(userService),
+    _syncService(syncService),
     _serviceEventBus(serviceEventBus) {}
 
 void OnboardingSessionManager::completeBootstrap() {
@@ -154,8 +155,8 @@ void OnboardingSessionManager::startSession(const OnboardingSession::EntryPoint 
     }
 
     const auto generation = _nextGeneration++;
-    auto *const session = new OnboardingSession(_appCache, _commService, _userService, _cachePopulator, _serviceEventBus,
-                                                entryPoint, selectedUserDbId, generation, this);
+    auto *const session = new OnboardingSession(_appCache, _commService, _userService, _syncService, _cachePopulator,
+                                                _serviceEventBus, entryPoint, selectedUserDbId, generation, this);
     _activeSession = session;
     _state = LifecycleState::Active;
 
