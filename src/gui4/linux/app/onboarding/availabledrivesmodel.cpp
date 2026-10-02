@@ -77,6 +77,7 @@ AvailableDrivesModel::AvailableDrivesModel(const AppCache &cache, OnboardingStat
     (void) connect(&_cache, &AppCache::accountsChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_cache, &AppCache::drivesChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_cache, &AppCache::syncsChanged, this, &AvailableDrivesModel::rebuild);
+    (void) connect(&_cache, &AppCache::syncCreationPendingChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_onboardingState, &OnboardingState::selectedUserDbIdChanged, this, &AvailableDrivesModel::rebuild);
     (void) connect(&_onboardingState, &OnboardingState::selectedAvailableDrivesChanged, this, [this] {
         if (!_contexts.empty()) {
@@ -198,6 +199,10 @@ void AvailableDrivesModel::rebuild() {
     const auto userDbId = selectedUserDbId();
     auto contexts = userDbId == 0 ? std::vector<AvailableDriveContext>{} : _cache.availableDriveContexts(userDbId);
     (void) std::ranges::sort(contexts, driveContextLessThan);
+    // A drive whose sync creation is in flight elsewhere is shown and blocked like an already synchronized one.
+    for (auto &context: contexts) {
+        context.alreadyConfigured = context.alreadyConfigured || context.syncCreationPending;
+    }
 
     beginResetModel();
     _contexts = std::move(contexts);
