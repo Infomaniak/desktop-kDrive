@@ -715,7 +715,11 @@ ExitInfo RemoteFileSystemObserverWorker::parseCsvReply(const CursorPersistence c
             return exitInfo;
 
         if (iterationState.eof) break;
-        if (stopAsked()) return ExitCode::Ok;
+        if (stopAsked()) {
+            invalidateSnapshot();
+
+            return ExitCode::Ok;
+        }
     }
 
     if (!iterationState.eof) {
