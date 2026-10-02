@@ -160,8 +160,7 @@ class AppClientLinux : public QApplication {
         WindowDecorationController _windowDecorationController{this};
         SystemTrayController _systemTrayController{this};
         NetworkStatusObserver _networkStatusObserver{this};
-        HomeController _homeController{
-                _appCache, _mainSelectionStore, _syncService, _appRouter, _systemTrayController, _networkStatusObserver, this};
+        HomeController _homeController{_appCache, _mainSelectionStore, _syncService, _appRouter, _networkStatusObserver, this};
         ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
                                                    _networkStatusObserver, _activityService, this};
         StorageController _storageController{_mainSelectionStore, this};
