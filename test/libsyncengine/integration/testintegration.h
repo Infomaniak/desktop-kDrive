@@ -49,6 +49,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testNestedRemoteOperations);
         CPPUNIT_TEST(testRemoteMoveDirectoryDescendantRekey);
         CPPUNIT_TEST(testExecuteSyncUpToStep);
+        CPPUNIT_TEST(testSyncRestartWithLocalChanges);
+        CPPUNIT_TEST(testSyncRestartWithRemoteChanges);
+        CPPUNIT_TEST(testSyncRestartWithLocalThenRemoteChanges);
 #if defined(KD_LINUX)
         CPPUNIT_TEST(testNodeIdReuseFile2DirAndDir2File);
         CPPUNIT_TEST(testNodeIdReuseFile2File);
@@ -75,6 +78,9 @@ class TestIntegration : public CppUnit::TestFixture, public TestBase {
         void testNestedRemoteOperations();
         void testRemoteMoveDirectoryDescendantRekey();
         void testExecuteSyncUpToStep();
+        void testSyncRestartWithLocalChanges();
+        void testSyncRestartWithRemoteChanges();
+        void testSyncRestartWithLocalThenRemoteChanges();
 
         void inconsistencyTests();
 
