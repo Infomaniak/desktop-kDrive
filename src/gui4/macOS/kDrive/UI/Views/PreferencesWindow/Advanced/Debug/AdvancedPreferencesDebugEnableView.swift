@@ -26,7 +26,7 @@ struct AdvancedPreferencesDebugEnableView: View {
     @State private var enableDebugLogs = false
     @State private var isShowingOpenURLError = false
 
-    let repository: PreferencesRepository
+    @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
         Section {
@@ -48,6 +48,9 @@ struct AdvancedPreferencesDebugEnableView: View {
         }
         .onAppear {
             enableDebugLogs = repository.parametersInfo.shouldUseLog
+        }
+        .onChange(of: repository.parametersInfo.shouldUseLog) { newValue in
+            enableDebugLogs = newValue
         }
         .onChange(of: enableDebugLogs) { newValue in
             updateRepositoryValue(\.$enableDebugLogs, \.shouldUseLog, newValue: newValue, repository: repository)

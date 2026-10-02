@@ -95,6 +95,67 @@ struct LogServiceTests {
         #expect(sentryReporter.breadcrumbs.map(\.level) == [.debug, .info, .warning, .error])
     }
 
+    @Test("Updating the minimum file level at runtime changes which events are written")
+    func configureFileLoggingUpdatesFiltering() throws {
+        let writer = InMemoryLogFileWriter()
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
+        let service = LogService(
+            formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
+            fileWriter: writer,
+            sentryReporter: SpySentryLogReporter(),
+            dateProvider: { date },
+            threadIDProvider: { "227895" },
+            minimumFileLevel: .debug
+        )
+
+        service.log(level: .debug, category: "general", message: "before", file: "File.swift", line: 1)
+        service.flush()
+
+        service.configureFileLogging(enabled: true, minimumLevel: .error)
+        service.log(level: .warning, category: "general", message: "filtered out", file: "File.swift", line: 2)
+        service.log(level: .error, category: "general", message: "still written", file: "File.swift", line: 3)
+        service.flush()
+
+        // The runtime change itself is traced, so ignore it when checking the filtered writes.
+        let changeMarker = "File logging changed"
+        let writtenLogs = writer.lines.filter { !$0.contains(changeMarker) }
+        #expect(writtenLogs == [
+            "2026-06-09 12:00:46:529 [D] (227895) File.swift:1 - before",
+            "2026-06-09 12:00:46:529 [C] (227895) File.swift:3 - still written"
+        ])
+
+        let changeLines = writer.lines.filter { $0.contains(changeMarker) }
+        #expect(changeLines.count == 1)
+        #expect(changeLines.first?.contains("[I]") == true)
+        #expect(changeLines.first?.contains("from enabled=true, minimumLevel=debug to enabled=true, minimumLevel=error") == true)
+    }
+
+    @Test("Changing the minimum file level is logged once, and not when the value is unchanged")
+    func configureFileLoggingLogsOnlyOnChange() throws {
+        let writer = InMemoryLogFileWriter()
+        let date = try Self.date(year: 2026, month: 6, day: 9, hour: 12, minute: 0, second: 46, millisecond: 529)
+        let service = LogService(
+            formatter: LogLineFormatter(timeZone: Self.utcTimeZone),
+            fileWriter: writer,
+            sentryReporter: SpySentryLogReporter(),
+            dateProvider: { date },
+            threadIDProvider: { "227895" },
+            minimumFileLevel: .info
+        )
+
+        // Same value: no change, nothing logged.
+        service.configureFileLogging(enabled: true, minimumLevel: .info)
+        service.flush()
+        #expect(writer.lines.isEmpty)
+
+        // Different value: the change is logged exactly once.
+        service.configureFileLogging(enabled: true, minimumLevel: .warning)
+        service.flush()
+        #expect(writer.lines.count == 1)
+        #expect(writer.lines.first?
+            .contains("from enabled=true, minimumLevel=info to enabled=true, minimumLevel=warning") == true)
+    }
+
     @Test("Service captures only error and fatal events")
     func serviceCapturesOnlyErrorAndFatalEvents() {
         let sentryReporter = SpySentryLogReporter()
@@ -114,6 +175,47 @@ struct LogServiceTests {
 
         #expect(sentryReporter.breadcrumbs.map(\.level) == [.debug, .warning, .error, .fatal])
         #expect(sentryReporter.capturedEvents.map(\.level) == [.error, .fatal])
+    }
+
+    @Test("Disabled file logging suppresses all severities while preserving Sentry reporting")
+    func disabledFileLoggingPreservesSentry() {
+        let writer = InMemoryLogFileWriter()
+        let reporter = SpySentryLogReporter()
+        let service = LogService(fileWriter: writer, sentryReporter: reporter, fileLoggingEnabled: false)
+
+        for level in LogLevel.allCases {
+            service.log(level: level, category: "general", message: "disabled")
+        }
+        service.flush()
+
+        #expect(writer.lines.isEmpty)
+        #expect(reporter.breadcrumbs.map(\.level) == LogLevel.allCases)
+        #expect(reporter.capturedEvents.map(\.level) == [.error, .fatal])
+    }
+
+    @Test("File logging toggles in queue order and restores the latest threshold")
+    func disablingAndReenablingFileLogging() {
+        let writer = InMemoryLogFileWriter()
+        let service = LogService(fileWriter: writer, sentryReporter: SpySentryLogReporter())
+
+        service.log(level: .debug, category: "general", message: "before disabling")
+        service.configureFileLogging(enabled: false, minimumLevel: .debug)
+        service.log(level: .fatal, category: "general", message: "disabled fatal")
+        service.configureFileLogging(enabled: false, minimumLevel: .error)
+        service.flush()
+
+        #expect(writer.lines.count == 1)
+        #expect(writer.lines.first?.contains("before disabling") == true)
+
+        service.configureFileLogging(enabled: true, minimumLevel: .error)
+        service.log(level: .warning, category: "general", message: "filtered warning")
+        service.log(level: .error, category: "general", message: "after reenabling")
+        service.configureFileLogging(enabled: true, minimumLevel: .error)
+        service.flush()
+
+        #expect(writer.lines.count == 3)
+        #expect(writer.lines[1].contains("from enabled=false, minimumLevel=error to enabled=true, minimumLevel=error"))
+        #expect(writer.lines[2].contains("after reenabling"))
     }
 
     @Test("File writer appends to a date-stamped rolling client log file")
@@ -309,7 +411,7 @@ struct LogServiceTests {
     }
 }
 
-private final class InMemoryLogFileWriter: LogFileWriting {
+final class InMemoryLogFileWriter: LogFileWriting {
     private(set) var lines = [String]()
 
     func append(_ line: String) throws {
@@ -317,7 +419,7 @@ private final class InMemoryLogFileWriter: LogFileWriting {
     }
 }
 
-private final class SpySentryLogReporter: SentryLogReporting {
+final class SpySentryLogReporter: SentryLogReporting {
     private(set) var breadcrumbs = [LogEvent]()
     private(set) var capturedEvents = [LogEvent]()
 

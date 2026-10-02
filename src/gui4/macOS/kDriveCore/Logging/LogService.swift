@@ -28,10 +28,14 @@ public final class LogService: @unchecked Sendable {
     private let sentryReporter: SentryLogReporting
     private let dateProvider: () -> Date
     private let threadIDProvider: () -> String
-    private let minimumFileLevel: LogLevel
+
+    private var minimumFileLevel: LogLevel
+    private var fileLoggingEnabled: Bool
 
     convenience init() {
-        self.init(fileWriter: try? LogFileWriter())
+        self.init(fileWriter: try? LogFileWriter(),
+                  minimumFileLevel: UserDefaults.standard.lastKnownFileLogLevel,
+                  fileLoggingEnabled: UserDefaults.standard.lastKnownFileLoggingEnabled)
     }
 
     init(
@@ -40,8 +44,8 @@ public final class LogService: @unchecked Sendable {
         sentryReporter: SentryLogReporting = SentryLogReporter(),
         dateProvider: @escaping () -> Date = Date.init,
         threadIDProvider: @escaping () -> String = LogService.currentThreadID,
-        // Beta: everything → file. Raise this for the big release (e.g. `.info`) to reduce what is written to disk.
-        minimumFileLevel: LogLevel = .debug
+        minimumFileLevel: LogLevel = .debug,
+        fileLoggingEnabled: Bool = true
     ) {
         self.formatter = formatter
         self.fileWriter = fileWriter
@@ -49,6 +53,7 @@ public final class LogService: @unchecked Sendable {
         self.dateProvider = dateProvider
         self.threadIDProvider = threadIDProvider
         self.minimumFileLevel = minimumFileLevel
+        self.fileLoggingEnabled = fileLoggingEnabled
 
         queue.setSpecific(key: queueKey, value: ())
     }
@@ -75,21 +80,43 @@ public final class LogService: @unchecked Sendable {
             sentryReporter.capture(event)
         }
 
-        if event.level >= minimumFileLevel {
-            queue.async { [weak self] in
-                self?.write(event)
-            }
+        queue.async { [weak self] in
+            guard let self, event.level >= minimumFileLevel else { return }
+            write(event)
         }
     }
 
-    // periphery:ignore - Public API to flush pending log writes, e.g. before exit.
+    public func configureFileLogging(enabled: Bool, minimumLevel: LogLevel) {
+        queue.async { [weak self] in
+            guard let self, fileLoggingEnabled != enabled || minimumFileLevel != minimumLevel else { return }
+
+            let previousLevel = minimumFileLevel
+            let wasEnabled = fileLoggingEnabled
+            minimumFileLevel = minimumLevel
+            fileLoggingEnabled = enabled
+
+            // Bypass the severity threshold for configuration changes, but honor disabled file logging.
+            let event = LogEvent(
+                date: dateProvider(),
+                level: .info,
+                category: "general",
+                threadID: threadIDProvider(),
+                file: "LogService.swift",
+                line: #line,
+                message: "File logging changed from enabled=\(wasEnabled), minimumLevel=\(previousLevel) "
+                    + "to enabled=\(enabled), minimumLevel=\(minimumLevel)"
+            )
+            write(event)
+        }
+    }
+
     func flush() {
         guard DispatchQueue.getSpecific(key: queueKey) == nil else { return }
         queue.sync {}
     }
 
     private func write(_ event: LogEvent) {
-        guard let fileWriter else { return }
+        guard fileLoggingEnabled, let fileWriter else { return }
 
         do {
             try fileWriter.append(formatter.format(event))

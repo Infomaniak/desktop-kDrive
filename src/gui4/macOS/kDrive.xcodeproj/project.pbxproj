@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */; };
 		37A1C4452E546A9600596DBB /* kDriveCoreUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; };
 		37A1C4462E546A9600596DBB /* kDriveCoreUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		37A1C4602E546CB700596DBB /* kDriveCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37A1C45A2E546CB600596DBB /* kDriveCore.framework */; };
@@ -106,6 +107,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B6DDA4E130CE010000000002 /* PreferencesRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kDriveTests/UI/PreferencesRepositoryTests.swift; sourceTree = SOURCE_ROOT; };
 		37A1C4262E546A5200596DBB /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C43F2E546A9600596DBB /* kDriveCoreUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCoreUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		37A1C45A2E546CB600596DBB /* kDriveCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = kDriveCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -728,6 +730,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B6DDA4E130CE010000000001 /* PreferencesRepositoryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
