@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+@testable import InfomaniakDI
 @testable import kDriveCore
 import Testing
 
@@ -32,9 +33,35 @@ extension SettingsCache {
     }
 }
 
-@MainActor
-@Suite("SettingsCache Test")
-struct SettingsCacheTests {
+extension SharedDITests {
+    @MainActor
+    @Suite("SettingsCache Test")
+    struct SettingsCacheTests {
+        private let defaultsRestoration = SettingsDefaultsRestoration()
+    }
+}
+
+private final class SettingsDefaultsRestoration {
+    private let keys = [UserDefaults.Key.lastKnownFileLoggingEnabled, UserDefaults.Key.lastKnownFileLogLevel,
+                        UserDefaults.Key.lastKnownSentryEnabled, UserDefaults.Key.lastKnownMatomoEnabled]
+    private let values: [Any?]
+
+    init() {
+        values = keys.map { UserDefaults.standard.object(forKey: $0) }
+    }
+
+    deinit {
+        for (key, value) in zip(keys, values) {
+            if let value {
+                UserDefaults.standard.set(value, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+    }
+}
+
+extension SharedDITests.SettingsCacheTests {
     // MARK: - Test Data
 
     private static func decodedResponse() throws -> CallbackMessage<ParametersInfoResponse> {
@@ -119,5 +146,51 @@ struct SettingsCacheTests {
             UserDefaults.standard.lastKnownFileLogLevel == .debug,
             "Should persist the log level coming from the settings"
         )
+    }
+
+    @Test("Server settings disable file logging, persist it for startup, and restore the selected threshold")
+    func appliesFileLoggingConfiguration() async throws {
+        let defaults = UserDefaults.standard
+        let resolver = SimpleResolver.sharedResolver
+        let identifier = resolver.buildIdentifier(type: LogService.self)
+        let previousFactory = resolver.factories[identifier]
+        let previousService = resolver.store[identifier]
+        defer {
+            resolver.factories[identifier] = previousFactory
+            resolver.store[identifier] = previousService
+        }
+
+        let writer = InMemoryLogFileWriter()
+        let service = LogService(fileWriter: writer, sentryReporter: SpySentryLogReporter())
+        resolver.store.removeValue(forKey: identifier)
+        resolver.store(factory: Factory(type: LogService.self) { _, _ in service })
+
+        let fixture = try Self.decodedResponse().body.parametersInfo
+        var payload = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(fixture)) as? [String: Any])
+        payload["useLog"] = false
+        payload["logLevel"] = KDC.LogLevel.Error.rawValue
+        let disabledSettings = try JSONDecoder().decode(
+            ParametersInfo.self,
+            from: JSONSerialization.data(withJSONObject: payload)
+        )
+        let cache = SettingsCache()
+        await cache.setSettings(disabledSettings)
+        service.log(level: .fatal, category: "general", message: "disabled by server")
+        service.flush()
+
+        #expect(!defaults.lastKnownFileLoggingEnabled)
+        #expect(defaults.lastKnownFileLogLevel == .error)
+        #expect(writer.lines.isEmpty)
+
+        payload["useLog"] = true
+        let enabledSettings = try JSONDecoder().decode(ParametersInfo.self, from: JSONSerialization.data(withJSONObject: payload))
+        await cache.setSettings(enabledSettings)
+        service.log(level: .warning, category: "general", message: "below server threshold")
+        service.log(level: .error, category: "general", message: "enabled by server")
+        service.flush()
+
+        #expect(defaults.lastKnownFileLoggingEnabled)
+        #expect(writer.lines.count == 2)
+        #expect(writer.lines.last?.contains("enabled by server") == true)
     }
 }

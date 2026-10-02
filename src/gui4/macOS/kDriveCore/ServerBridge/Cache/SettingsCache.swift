@@ -67,8 +67,9 @@ public actor SettingsCache: SettingsCaching, SettingsCacheObservable {
 
         let fileLogLevel = LogLevel(kdcLogLevel: settings.logLevel)
         UserDefaults.standard.lastKnownFileLogLevel = fileLogLevel
+        UserDefaults.standard.lastKnownFileLoggingEnabled = settings.useLog
         @InjectService var logService: LogService
-        logService.setMinimumFileLevel(fileLogLevel)
+        logService.configureFileLogging(enabled: settings.useLog, minimumLevel: fileLogLevel)
 
         settingsSubject.send(settings)
     }

@@ -26,6 +26,7 @@ public extension UserDefaults {
         public static let lastKnownSentryEnabled = "lastKnownSentryEnabled"
         public static let lastKnownMatomoEnabled = "lastKnownMatomoEnabled"
         public static let lastKnownFileLogLevel = "lastKnownFileLogLevel"
+        public static let lastKnownFileLoggingEnabled = "lastKnownFileLoggingEnabled"
     }
 }
 
@@ -67,6 +68,15 @@ public extension UserDefaults {
         }
         set {
             set(newValue.rawValue, forKey: Key.lastKnownFileLogLevel)
+        }
+    }
+
+    var lastKnownFileLoggingEnabled: Bool {
+        get {
+            object(forKey: Key.lastKnownFileLoggingEnabled) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Key.lastKnownFileLoggingEnabled)
         }
     }
 }

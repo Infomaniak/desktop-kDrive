@@ -30,9 +30,12 @@ public final class LogService: @unchecked Sendable {
     private let threadIDProvider: () -> String
 
     private var minimumFileLevel: LogLevel
+    private var fileLoggingEnabled: Bool
 
     convenience init() {
-        self.init(fileWriter: try? LogFileWriter(), minimumFileLevel: UserDefaults.standard.lastKnownFileLogLevel)
+        self.init(fileWriter: try? LogFileWriter(),
+                  minimumFileLevel: UserDefaults.standard.lastKnownFileLogLevel,
+                  fileLoggingEnabled: UserDefaults.standard.lastKnownFileLoggingEnabled)
     }
 
     init(
@@ -41,7 +44,8 @@ public final class LogService: @unchecked Sendable {
         sentryReporter: SentryLogReporting = SentryLogReporter(),
         dateProvider: @escaping () -> Date = Date.init,
         threadIDProvider: @escaping () -> String = LogService.currentThreadID,
-        minimumFileLevel: LogLevel = .debug
+        minimumFileLevel: LogLevel = .debug,
+        fileLoggingEnabled: Bool = true
     ) {
         self.formatter = formatter
         self.fileWriter = fileWriter
@@ -49,6 +53,7 @@ public final class LogService: @unchecked Sendable {
         self.dateProvider = dateProvider
         self.threadIDProvider = threadIDProvider
         self.minimumFileLevel = minimumFileLevel
+        self.fileLoggingEnabled = fileLoggingEnabled
 
         queue.setSpecific(key: queueKey, value: ())
     }
@@ -81,14 +86,16 @@ public final class LogService: @unchecked Sendable {
         }
     }
 
-    public func setMinimumFileLevel(_ level: LogLevel) {
+    public func configureFileLogging(enabled: Bool, minimumLevel: LogLevel) {
         queue.async { [weak self] in
-            guard let self, minimumFileLevel != level else { return }
+            guard let self, fileLoggingEnabled != enabled || minimumFileLevel != minimumLevel else { return }
 
             let previousLevel = minimumFileLevel
-            minimumFileLevel = level
+            let wasEnabled = fileLoggingEnabled
+            minimumFileLevel = minimumLevel
+            fileLoggingEnabled = enabled
 
-            // Written unconditionally so the change is traced even when the new level would filter it out.
+            // Bypass the severity threshold for configuration changes, but honor disabled file logging.
             let event = LogEvent(
                 date: dateProvider(),
                 level: .info,
@@ -96,7 +103,8 @@ public final class LogService: @unchecked Sendable {
                 threadID: threadIDProvider(),
                 file: "LogService.swift",
                 line: #line,
-                message: "Minimum file log level changed from \(previousLevel) to \(level)"
+                message: "File logging changed from enabled=\(wasEnabled), minimumLevel=\(previousLevel) "
+                    + "to enabled=\(enabled), minimumLevel=\(minimumLevel)"
             )
             write(event)
         }
@@ -108,7 +116,7 @@ public final class LogService: @unchecked Sendable {
     }
 
     private func write(_ event: LogEvent) {
-        guard let fileWriter else { return }
+        guard fileLoggingEnabled, let fileWriter else { return }
 
         do {
             try fileWriter.append(formatter.format(event))
