@@ -64,6 +64,7 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
+- Add only tests that provide meaningful value; avoid trivial checks that merely mirror the implementation. Simple test code is welcome when it protects meaningful behavior or catches regressions.
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
 - For dependency builds, use `infomaniak-build-tools/conan/build_dependencies.sh <Debug|Release|RelWithDebInfo>` rather than direct `conan install` so the project-specific environment is set correctly.

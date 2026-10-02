@@ -21,17 +21,6 @@ import Testing
 
 @Suite("LogLevel KDC Mapping Test")
 struct LogLevelKDCMappingTests {
-    @Test("Maps every server log level to its file logger counterpart", arguments: [
-        (KDC.LogLevel.Debug, LogLevel.debug),
-        (KDC.LogLevel.Info, LogLevel.info),
-        (KDC.LogLevel.Warning, LogLevel.warning),
-        (KDC.LogLevel.Error, LogLevel.error),
-        (KDC.LogLevel.Fatal, LogLevel.fatal)
-    ])
-    func mapsKnownLevels(kdcLevel: KDC.LogLevel, expected: LogLevel) {
-        #expect(LogLevel(kdcLogLevel: kdcLevel) == expected)
-    }
-
     @Test("Falls back to info for the sentinel EnumEnd case")
     func mapsSentinelToInfo() {
         #expect(LogLevel(kdcLogLevel: .EnumEnd) == .info)
