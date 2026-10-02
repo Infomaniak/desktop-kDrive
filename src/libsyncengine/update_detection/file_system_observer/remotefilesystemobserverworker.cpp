@@ -295,6 +295,7 @@ ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
 
     _liveSnapshot.restoreFromBackup(*_syncPal->remoteLiveSnapshotBackup());
     _liveSnapshot.setValid(true);
+    _syncPal->clearRemoteLiveSnapshotBackup();
 
     return ExitCode::Ok;
 }
