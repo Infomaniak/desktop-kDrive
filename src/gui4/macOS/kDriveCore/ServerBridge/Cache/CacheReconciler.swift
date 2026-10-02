@@ -58,9 +58,12 @@ public actor CacheReconciler: CacheReconciling {
     }
 
     private func performRefresh() async {
+        let start = DispatchTime.now()
+        IKLogger.cache.info("[KD] Cache reconciliation started reason=signalInconsistency")
         do {
-            IKLogger.xpc.log("[KD] cache reconcile: refreshing after signal inconsistency")
             try await coherentCache.refresh()
+            let elapsed = (DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000
+            IKLogger.cache.info("[KD] Cache reconciliation refresh completed durationMs=\(elapsed)")
         } catch {
             IKLogger.xpc.error("[KD] cache reconcile refresh failed: \(error)")
         }

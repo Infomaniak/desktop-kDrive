@@ -140,7 +140,7 @@ final class MainWindowController: NSWindowController {
         case .error:
             router.navigate(to: .preloading(isShowingError: true))
         case .serverCrashed:
-            IKLogger.general.error("[KD] Server crashed, terminating the app")
+            IKLogger.general.error("[KD] Server connection interrupted (possible server crash), terminating the app")
             NSApp.terminate(nil)
         case .connected:
             Task {

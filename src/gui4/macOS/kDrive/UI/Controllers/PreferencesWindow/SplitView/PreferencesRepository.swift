@@ -38,6 +38,17 @@ public final class PreferencesRepository: ObservableObject {
     }
 
     public func update<T>(_ keyPath: WritableKeyPath<UIParametersInfo, T>, value: T) async throws {
+        let setting = Self.settingName(for: keyPath)
+        IKLogger.general.info("[KD] Preference update requested setting=\(setting)")
+        do {
+            try await persist(keyPath, value: value)
+        } catch {
+            IKLogger.general.warning("[KD] Preference update failed setting=\(setting) retainingPreviousUIValue=true")
+            throw error
+        }
+    }
+
+    private func persist<T>(_ keyPath: WritableKeyPath<UIParametersInfo, T>, value: T) async throws {
         var updatedParameters = parametersInfo
         updatedParameters[keyPath: keyPath] = value
         if keyPath == \UIParametersInfo.isExtendedLogEnabled, updatedParameters.isExtendedLogEnabled {
@@ -47,13 +58,41 @@ public final class PreferencesRepository: ObservableObject {
         if await settingsCache.getSettings() == nil {
             try await settingsCache.refresh()
         }
-        guard let currentData = await settingsCache.getSettings() else { return }
+        guard let currentData = await settingsCache.getSettings() else {
+            IKLogger.general.warning(
+                "[KD] Preference update skipped setting=\(Self.settingName(for: keyPath)) reason=settingsUnavailable"
+            )
+            return
+        }
 
         let payload = updatedParameters.copyToParametersInfo(from: currentData)
         try await settingsCache.update(payload)
 
         if let refreshedData = await settingsCache.getSettings() {
             parametersInfo = UIParametersInfo(parametersInfo: refreshedData)
+            IKLogger.general.info("[KD] Preference update completed setting=\(Self.settingName(for: keyPath))")
+        } else {
+            IKLogger.general.warning(
+                "[KD] Preference update sent but refreshed settings unavailable setting=\(Self.settingName(for: keyPath))"
+            )
+        }
+    }
+
+    private static func settingName(for keyPath: AnyKeyPath) -> String {
+        switch keyPath {
+        case \UIParametersInfo.language: return "language"
+        case \UIParametersInfo.launchOnStartup: return "launchOnStartup"
+        case \UIParametersInfo.moveDeletedFilesToTrash: return "moveDeletedFilesToTrash"
+        case \UIParametersInfo.notificationsState: return "notificationsState"
+        case \UIParametersInfo.shouldUseLog: return "shouldUseLog"
+        case \UIParametersInfo.logLevel: return "logLevel"
+        case \UIParametersInfo.isExtendedLogEnabled: return "isExtendedLogEnabled"
+        case \UIParametersInfo.shouldPurgeOldLogs: return "shouldPurgeOldLogs"
+        case \UIParametersInfo.proxyConfiguration: return "proxyConfiguration"
+        case \UIParametersInfo.distributionChannel: return "distributionChannel"
+        case \UIParametersInfo.isSentryEnabled: return "isSentryEnabled"
+        case \UIParametersInfo.isMatomoEnabled: return "isMatomoEnabled"
+        default: return "unknown"
         }
     }
 }

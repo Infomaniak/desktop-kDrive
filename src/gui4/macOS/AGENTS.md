@@ -191,6 +191,9 @@ rg -n "RequestNum\." src/gui4/macOS/kDriveCore/
 rg -n "NSLocalizedString" src/gui4/macOS/kDrive/
 ```
 
+## Local norms
+- Keep the possible server-crash notion in server connection-loss diagnostics; connection loss is a useful crash indicator.
+
 ## Common Gotchas
 - `@MainActor` is required on all ViewModels — missing it causes runtime warnings in Swift 6 strict concurrency.
 - Signal handlers update the cache; the cache then publishes via Combine. Never update UI directly from a signal handler.
