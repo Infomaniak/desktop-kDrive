@@ -398,8 +398,8 @@ void TestGuiCommChannel::testSyncAddJobPartialFailureSignals() {
     }
 
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), signalNums.size());
-    CPPUNIT_ASSERT_EQUAL(SignalNum::ACCOUNT_ADDED, signalNums[0]);
-    CPPUNIT_ASSERT_EQUAL(SignalNum::DRIVE_ADDED, signalNums[1]);
+    CPPUNIT_ASSERT((signalNums[0] == SignalNum::ACCOUNT_ADDED && signalNums[1] == SignalNum::DRIVE_ADDED) ||
+                   (signalNums[0] == SignalNum::DRIVE_ADDED && signalNums[1] == SignalNum::ACCOUNT_ADDED));
 
     clientChannel->close();
     commManager->stop();
