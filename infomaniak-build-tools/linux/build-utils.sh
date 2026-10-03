@@ -18,6 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+script_directory_path="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+source "$script_directory_path/../version-helpers.sh"
+
 function get_host_arch() {
     case "$(uname -m)" in
     x86_64) architecture="amd64" ;;
@@ -36,5 +39,36 @@ function get_default_src_dir() {
      echo "$HOME/Projects/desktop-kDrive"
   else
      echo "$PWD"
+    fi
+}
+
+function get_linux_major_version() {
+    local version
+    version="$(GetVersionFromJson "$1" false "Linux")" || return 1
+    echo "${version%%.*}"
+}
+
+function get_linux_release_flavor() {
+    local major
+    major="$(get_linux_major_version "$1")" || return 1
+
+    if (( major >= 4 )); then
+        echo "v4"
+    elif (( major == 3 )); then
+        echo "legacy"
+    else
+        echo "Unsupported Linux major version '$major' in '$1/version.json'" >&2
+        return 1
+    fi
+}
+
+function get_linux_client_executable() {
+    local flavor
+    flavor="$(get_linux_release_flavor "$1")" || return 1
+
+    if [[ "$flavor" == "v4" ]]; then
+        echo "kdrive_qml"
+    else
+        echo "kDrive_client"
     fi
 }

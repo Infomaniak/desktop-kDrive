@@ -306,3 +306,48 @@ The architecture (`amd64` or `arm64`) used for building is the host architecture
 If you do not want to build through podman, use the `build-release-appimage.sh` script directly.
 
 The generated AppImage file will be located in the `build-linux-[arch]/install` directory.
+
+## Release packaging
+
+The existing AMD64 and ARM64 release entry points select their packaging path from
+`Versions.Linux.major` in `version.json`:
+
+| Linux version | Client | Packaging |
+| --- | --- | --- |
+| 3.x | `kDrive_client` | Legacy bulk copy followed by `linuxdeploy-plugin-qt` |
+| 4.x and newer | `kdrive_qml` | Qt deployment script followed by dependency-only `linuxdeploy` passes |
+
+Any other major version is rejected. The Linux 4.x path configures CMake with
+`KDRIVE_DEPLOY_QT_RUNTIME=ON`. During installation, Qt's deployment API scans the application's
+actual QML imports and runtime dependencies, then installs the required libraries, plugins, QML
+modules, translations, and `qt.conf`. `linuxdeploy` subsequently deploys the system dependencies of
+the installed plugins, verifies the bundle, fixes RPATHs, and creates the AppImage. The main
+AppImage contains `kDrive` and the selected client; `kDriveRecoveryUpdater` remains a separate
+AppImage.
+
+Both release flavors keep staging and artifacts separate. The native AMD64 build stages files in
+`build-linux/AppDir` and writes final AppImages to `build-linux/install`. The container AMD64/ARM64
+build uses `/app` as its AppDir and `/install` for final AppImages. For both flavors and entry
+points, the recovery updater AppImage is built first from a copy of its executable. After that
+succeeds, `kDriveRecoveryUpdater` is removed from the main AppDir and a blocking check ensures that
+neither its executable nor its AppImage can be included in the main kDrive bundle. If the updater
+was not built, the scripts report that fact and continue packaging the main application.
+
+The v4 recovery updater AppDir reuses the generated `qt.conf` with `Prefix = ..` and contains only
+the required Qt platform runtime: `libqxcb.so`, `libqwayland.so`, `libxdg-shell.so`, and
+`libqt-plugin-wayland-egl.so`. The shared staging helper resolves the updater and every plugin's
+runtime dependencies, asks `linuxdeploy` to process each plugin directory, and rejects the bundle
+when `qt.conf`, a required plugin, or a dependency is missing.
+
+The Linux 4.x packaging path requires a `linuxdeploy` version that supports
+`--deploy-deps-only`, plus the `linuxdeploy-plugin-appimage` plugin. File and folder dialogs use the
+XDG desktop portal by default. An explicit `QT_QPA_PLATFORMTHEME` value remains authoritative; when
+the portal FileChooser is unavailable, Qt falls back to the desktop theme and then Qt Quick's own
+dialog.
+
+To validate the CMake deployment without producing an AppImage, configure a release build with
+`-DKDRIVE_DEPLOY_QT_RUNTIME=ON -DQT_ENABLE_VERBOSE_DEPLOYMENT=ON`, build it, and install it into an
+AppDir with `DESTDIR=<app-dir> cmake --install <build-dir> --prefix /usr`. Then source
+`infomaniak-build-tools/linux/appimage-v4.sh` and run `v4_prepare_appdir`, `v4_check_appdir`, and
+`v4_verify_bundle` on that AppDir. Never set `LD_LIBRARY_PATH` when launching the resulting
+AppImage; it must resolve its bundled runtime on its own.
