@@ -252,7 +252,10 @@ void RemoteFolderTreeModel::setNodeVisible(const QString &nodeId, const bool vis
 
     if (node->sizeState == SizeState::NotRequested || node->childrenState == LoadState::NotLoaded) {
         (void) _visibleNodeCandidates.insert(nodeId);
-        // Restarted on every change, so it only fires once scrolling stops.
+    }
+
+    // Restarted on every change, even for a loaded row, so it only fires once scrolling stops.
+    if (!_visibleNodeCandidates.isEmpty()) {
         _visibleNodeTimer.start();
     }
 }
