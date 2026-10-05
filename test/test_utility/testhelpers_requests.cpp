@@ -63,7 +63,7 @@ void renameRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, con
 }
 
 NodeId duplicateRemoteItem(const DriveDbId driveDbId, const NodeId &id, const SyncName &newName) {
-    DuplicateJob job(nullptr, driveDbId, id, newName);
+    DuplicateJob job(driveDbId, id, newName);
     (void) job.runSynchronously();
     return job.nodeId();
 }

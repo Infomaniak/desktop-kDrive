@@ -1102,7 +1102,7 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, copyFileJobExitCode);
 
     // Duplicate the uploaded file
-    DuplicateJob dupJob(nullptr, _driveDbId, copyFileJob.nodeId(), Str("test_duplicate.txt"));
+    DuplicateJob dupJob(_driveDbId, copyFileJob.nodeId(), Str("test_duplicate.txt"));
     const ExitCode duplicateJobExitCode = dupJob.runSynchronously();
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, duplicateJobExitCode);
 
@@ -1852,8 +1852,8 @@ void TestNetworkJobs::testGetAllFilesInDirectory() {
         IoHelper::getFileStat(localFilePath, &fileStat, exists, IoHelper::PathCheckOption::Insensitive);
 
         testFileSizes.push_back(fileStat.size);
-        UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
-                      creationTimeIn.count(), modificationTimeIn.count());
+        UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), creationTimeIn.count(),
+                      modificationTimeIn.count());
         const ExitInfo exitInfo = job.runSynchronously();
         CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
     }
