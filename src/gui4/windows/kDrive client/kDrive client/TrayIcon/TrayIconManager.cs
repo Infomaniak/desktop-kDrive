@@ -272,7 +272,7 @@ namespace Infomaniak.kDrive.TrayIcon
             }
             catch (Exception ex)
             {
-                Logger.Log(Logger.Level.Warning, $"Failed to read system theme from registry, falling back to app theme: {ex.Message}");
+                Logger.LogWarning($"Failed to read system theme from registry, falling back to app theme: {ex.Message}");
             }
 
             // Value not available: fall back to the app theme.

@@ -153,28 +153,25 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                Logger.Log(Logger.Level.Info, $"Job cancelled at {callerName}.");
+                Logger.LogInfo($"Job cancelled at {callerName}.");
                 return false;
             }
 
             if (data is null)
             {
-                Logger.LogError($"Job result check failed at {callerName} with input {jobInput}, CommData is null.",
-                    "ServerCommService: Job result is null");
+                Logger.LogError($"Job result check failed at {callerName}, CommData is null.");
                 return false;
             }
 
             if (data.Params is null)
             {
-                Logger.LogError($"Job result check failed at {callerName} with input {jobInput}, Params is null.",
-                    "ServerCommService: Job result parameters are null");
+                Logger.LogError($"Job result check failed at {callerName}, Params is null.");
                 return false;
             }
 
             if (data.Code != ExitCode.Ok)
             {
-                Logger.LogError($"Job result check failed at {callerName} with input {jobInput}, exit code: {data.Code}, exit cause: {data.Cause}.",
-                    "ServerCommService: Job result check failed");
+                Logger.LogError($"Job result check failed at {callerName}, exit code: {data.Code}, exit cause: {data.Cause}.");
                 return false;
             }
             return true;
@@ -1329,40 +1326,6 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             return value;
         }
 
-        public async Task<bool> SetAppState(AppStateKey key, string value, CancellationToken cancellationToken)
-        {
-            var parms = new JsonObject
-            {
-                [JsonKeys.Key] = (int)key,
-                [JsonKeys.Value] = Utility.ToBase64String(value)
-            };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_SET_APPSTATE, parms, cancellationToken);
-            return CheckJobResultAndLogIfError(data, parms);
-        }
-
-        public async Task<string?> GetAppState(AppStateKey key, CancellationToken cancellationToken)
-        {
-            var parms = new JsonObject
-            {
-                [JsonKeys.Key] = (int)key
-            };
-            CommData data = await _commClient.SendRequestAsync(RequestNum.UTILITY_GET_APPSTATE, parms, cancellationToken);
-            if (!CheckJobResultAndLogIfError(data, parms))
-                return null;
-
-            if (!HasRequiredParam(data, JsonKeys.Value))
-                return null;
-
-            var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-            options.Converters.Add(new Base64StringJsonConverter());
-
-            string? value = data.Params[JsonKeys.Value].Deserialize<string>(options);
-            return value;
-        }
-
         public async Task Exit()
         {
             // Try and forget, no need to wait for response on exit
@@ -1503,7 +1466,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                         }
                         else
                         {
-                            Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, {errorInfo}");
+                            Logger.LogError($"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, {errorInfo}");
                         }
                     }
                     else
@@ -1512,12 +1475,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                             "ServerCommService: Error references missing sync");
                     }
                 }
-                else
-                {
-                    Logger.LogError($"Error with DbId {errorInfo.DbId} has invalid SyncDbId {errorInfo.SyncDbId}.",
-                        "ServerCommService: Error has invalid sync database ID");
-                }
-            }
+            });
             return true;
         }
 
@@ -1576,7 +1534,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 [JsonKeys.UserChoice] = (int)userChoice
             };
             CommData data = await _commClient.SendRequestAsync(RequestNum.SYNC_ACKNOWLEDGE_MANY_DELETES, parms, cancellationToken).ConfigureAwait(false);
-            return CheckJobResultAndLogIfError(data, parms);
+            return CheckJobResultAndLogIfError(data, cancellationToken);
         }
 
         // Signals
@@ -1732,7 +1690,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Account? deletedAccount = _viewModel.Users.SelectMany(u => u.Accounts).FirstOrDefault(a => a.DbId == accountDbId);
                 if (deletedAccount == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Account with dbID {accountDbId} not found in the model.");
+                    Logger.LogError($"Account with dbID {accountDbId} not found in the model.");
                     return;
                 }
                 deletedAccount.User.Accounts.Remove(deletedAccount);
@@ -1788,7 +1746,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Drive? deletedDrive = _viewModel.AllDrives.FirstOrDefault(d => d.DbId == driveDbId);
                 if (deletedDrive == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Drive with dbID {driveDbId} not found in the model.");
+                    Logger.LogError($"Drive with dbID {driveDbId} not found in the model.");
                     return;
                 }
                 deletedDrive.Account.Drives.Remove(deletedDrive);
@@ -1848,7 +1806,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Sync? deletedSync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
                 if (deletedSync == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
+                    Logger.LogError($"Sync with dbID {syncDbID} not found in the model.");
                     return;
                 }
                 deletedSync.Drive.Syncs.Remove(deletedSync);
@@ -1863,13 +1821,13 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Logger.LogError($"{JsonKeys.SyncDbId} not found in parameters.",
                     "ServerCommService: Sync database ID missing from signal");
-                return Task.CompletedTask;
+                return;
             }
             if (signalData == null || !signalData.ContainsKey(JsonKeys.SyncStatus))
             {
                 Logger.LogError($"{JsonKeys.SyncStatus} not found in parameters.",
                     "ServerCommService: Sync status missing from signal");
-                return Task.CompletedTask;
+                return;
             }
 
             DbId? syncDbID = signalData[JsonKeys.SyncDbId]?.AsValue().GetValue<DbId>();
@@ -1878,12 +1836,12 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             if (syncDbID is null)
             {
                 Logger.LogError("syncDbID is null.");
-                return Task.CompletedTask;
+                return;
             }
             if (syncStatus is null)
             {
                 Logger.LogError("syncStatus is null.");
-                return Task.CompletedTask;
+                return;
             }
 
             Sync? updatedSync = null;
@@ -1892,7 +1850,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
             {
                 Logger.LogError($"Sync with dbID {syncDbID} not found in the model.",
                     "ServerCommService: Sync not found in model");
-                return Task.CompletedTask;
+                return;
             }
             updatedSync.SyncStatus = syncStatus ?? SyncStatus.Undefined;
             return;
@@ -1938,7 +1896,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 Sync? sync = _viewModel.AllSyncs.FirstOrDefault(s => s.DbId == syncDbID);
                 if (sync == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"Sync with dbID {syncDbID} not found in the model.");
+                    Logger.LogError($"Sync with dbID {syncDbID} not found in the model.");
                     return;
                 }
 
@@ -2077,7 +2035,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 User? user = _viewModel.Users.FirstOrDefault(u => u.DbId == dbId);
                 if (user == null)
                 {
-                    Logger.Log(Logger.Level.Error, $"User with dbId {dbId} not found");
+                    Logger.LogError($"User with dbId {dbId} not found");
                     return;
                 }
                 _viewModel.Users.Remove(user);
@@ -2136,7 +2094,7 @@ namespace Infomaniak.kDrive.ServerCommunication.Services
                 }
                 else
                 {
-                    Logger.Log(Logger.Level.Error, $"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
+                    Logger.LogError($"Error with DbId {errorInfo.DbId} references Sync with DbId {errorInfo.SyncDbId}, but it was not found among all Syncs, ErrorInfo: {signalData[JsonKeys.ErrorInfo] ?? "null"}");
                 }
             });
         }

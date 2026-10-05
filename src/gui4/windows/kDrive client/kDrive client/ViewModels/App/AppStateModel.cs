@@ -41,7 +41,7 @@ namespace Infomaniak.kDrive.ViewModels
             string? value = await _serverCommService.GetAppState(AppStateKey.ShowV4Onboarding, cancellationToken);
             if (value is null)
             {
-                Logger.Log(Logger.Level.Warning, "Failed to get ShowV4Onboarding state from the server.");
+                Logger.LogWarning("Failed to get ShowV4Onboarding state from the server.");
                 return null;
             }
             _showV4OnboardingCachedValue = value == "1";
@@ -59,7 +59,7 @@ namespace Infomaniak.kDrive.ViewModels
                 return true;
             }
 
-            Logger.Log(Logger.Level.Warning, "Failed to set ShowV4Onboarding state on the server.");
+            Logger.LogWarning("Failed to set ShowV4Onboarding state on the server.");
             return false;
         }
     }

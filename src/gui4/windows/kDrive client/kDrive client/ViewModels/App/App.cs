@@ -364,7 +364,7 @@ namespace Infomaniak.kDrive.ViewModels
 
                 if (sync is null || syncError is null)
                 {
-                    Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove, Sync: {sync?.DbId ?? -1}, SyncError: {syncError?.DbId ?? -1}");
+                    Logger.LogWarning($"AppModel: Could not find error with DbId {errorDbId} to remove, Sync: {sync?.DbId ?? -1}, SyncError: {syncError?.DbId ?? -1}");
                     return;
                 }
 

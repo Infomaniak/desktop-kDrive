@@ -146,7 +146,7 @@ namespace Infomaniak.kDrive.Pages.AdvancedSyncSetupContentDialog
             var window = ((App)Application.Current)?.CurrentWindow;
             if (window is null)
             {
-                Logger.Log(Logger.Level.Error, "No CurrentWindow available to attach the folder picker to");
+                Logger.LogError("No CurrentWindow available to attach the folder picker to");
                 control.IsEnabled = true;
                 return;
             }
