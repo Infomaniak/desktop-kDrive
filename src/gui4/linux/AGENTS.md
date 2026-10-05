@@ -147,6 +147,8 @@
   classic root synchronization and must retain its local-folder action; do not model it as a drive-only entry.
 - Use white source fills for monochrome SVGs tinted through `MultiEffect.colorization`; black source fills retain too
   little luminance and remain dark when the theme color changes.
+- When the main-sidebar synchronization selector popup overflows its maximum height, cut it in the middle of a row so the
+  half-visible row shows that the list scrolls; never stop exactly between two rows.
 - Keep main-sidebar item states composable: selection, disabled state, notification count or dot, and a trailing
   accessory must remain independent presentation inputs rather than a screen-specific state enum.
 - Route orange error dots progressively in the main sidebar: selected-sync errors appear on Activities, unselected-sync
@@ -370,9 +372,13 @@
   transient feedback independent from projected row lifetime.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
-  construction, and delegates pause/resume to `SyncService`.
+  construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
+  a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
-  independent Home banner instead of replacing the central state.
+  independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
+  `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
+  server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
+  as on macOS, instead of an empty loading state.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
 - `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
@@ -595,6 +601,10 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   structured backend error information in request handlers/logs.
 - `DriveService` and `SyncService` use `ServiceActionTracker` for loading/pending state and `ServiceEventBus` for
   transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
+- `SyncService::startSync`/`stopSync` set the cached runtime status to `Starting`/`StopAsked` as soon as the request is
+  sent, as macOS does, because the server reports the new status only on its next progress tick after its reply. A
+  failed request restores the previous status unless the server has reported one since. A start or stop is ignored while
+  another one is pending for the same synchronization, so a rollback never restores the other request's status.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and

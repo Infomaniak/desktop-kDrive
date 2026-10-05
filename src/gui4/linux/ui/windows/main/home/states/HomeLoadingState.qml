@@ -24,5 +24,7 @@ Item {
 
     IKLoadingSpinner {
         anchors.centerIn: parent
+        width: IKMainWindow.homeLoadingSpinnerSize
+        height: IKMainWindow.homeLoadingSpinnerSize
     }
 }
