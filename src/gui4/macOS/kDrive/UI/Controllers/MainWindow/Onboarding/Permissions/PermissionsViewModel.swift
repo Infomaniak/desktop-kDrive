@@ -77,6 +77,7 @@ final class PermissionsViewModel: ObservableObject {
                 try await UtilityJobs().installLiteSyncExtension()
             } catch {
                 IKLogger.general.error("Failed to install Lite Sync extension: \(error)")
+                didRequestExtensionInstall = false
             }
         }
     }
