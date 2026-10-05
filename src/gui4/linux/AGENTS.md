@@ -603,7 +603,8 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
 - `SyncService::startSync`/`stopSync` set the cached runtime status to `Starting`/`StopAsked` as soon as the request is
   sent, as macOS does, because the server reports the new status only on its next progress tick after its reply. A
-  failed request restores the previous status unless the server has reported one since.
+  failed request restores the previous status unless the server has reported one since. A start or stop is ignored while
+  another one is pending for the same synchronization, so a rollback never restores the other request's status.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and
