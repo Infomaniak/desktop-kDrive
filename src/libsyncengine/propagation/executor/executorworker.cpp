@@ -911,7 +911,7 @@ ExitInfo ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<SyncJ
             vfsStatus.isHydrated = true;
         }
         vfsStatus.isSyncing = true;
-        vfsStatus.progress = 0
+        vfsStatus.progress = 0;
         if (ExitInfo exitInfoForceStatus = _syncPal->vfs()->forceStatus(absoluteLocalFilePath, vfsStatus); !exitInfoForceStatus) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(absoluteLocalFilePath) << L": "
                                                                      << exitInfoForceStatus);
