@@ -35,6 +35,7 @@ constexpr char actionDeleteSync[] = "deleteSync";
 constexpr char actionQuerySyncStatus[] = "querySyncStatus";
 constexpr char actionFindGoodPathForNewSync[] = "findGoodPathForNewSync";
 constexpr char actionIsPathValidForNewSync[] = "isPathValidForNewSync";
+constexpr char actionCreateRemoteFolder[] = "createRemoteFolder";
 
 Q_LOGGING_CATEGORY(lcSyncService, "gui.v4.syncservice", QtInfoMsg)
 } // namespace
@@ -97,6 +98,21 @@ bool SyncService::addDriveSync(const SyncAddRequest &request, const CommService:
         callback(exitInfo, syncInfo);
     });
     return true;
+}
+
+void SyncService::createRemoteFolder(const UserDbId userDbId, const DriveId driveId, const NodeId &parentNodeId,
+                                     const QString &name, const CommService::NodeIdCallback &callback) {
+    beginAction(actionCreateRemoteFolder);
+
+    _commService.requestNodeCreateMissingFolders(userDbId, driveId, parentNodeId, QStr2Path(name),
+                                                 [this, callback](const ExitInfo &exitInfo, const NodeId &nodeId) {
+                                                     endAction(actionCreateRemoteFolder);
+                                                     if (!exitInfo) {
+                                                         notifyRequestFailure(exitInfo, RequestNum::NODE_CREATEMISSINGFOLDERS);
+                                                     }
+
+                                                     callback(exitInfo, nodeId);
+                                                 });
 }
 
 void SyncService::startSync(const qint64 syncDbId) {

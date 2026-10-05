@@ -92,6 +92,8 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/syncconfiguration/localpaths.h
         app/syncconfiguration/remotefoldertreemodel.cpp
         app/syncconfiguration/remotefoldertreemodel.h
+        app/syncconfiguration/remotefolderpickermodel.cpp
+        app/syncconfiguration/remotefolderpickermodel.h
         app/syncconfiguration/remotefolderprovider.cpp
         app/syncconfiguration/remotefolderprovider.h
         communicationlayer/ipcclient.cpp
