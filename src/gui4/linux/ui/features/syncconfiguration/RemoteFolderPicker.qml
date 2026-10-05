@@ -228,6 +228,7 @@ Rectangle {
             Accessible.selectable: folderRow.selectable
             Accessible.selected: folderRow.folderSelected
             Accessible.readOnly: !folderRow.selectable
+            Accessible.onPressAction: folderRow.requestSelection()
 
             Component.onCompleted: folderRow.registerVisibleNode()
             Component.onDestruction: folderRow.unregisterVisibleNode()
