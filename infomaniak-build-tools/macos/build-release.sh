@@ -35,6 +35,19 @@ export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
 
+# Use the repository's Python environment and the operator-selected Xcode.
+if [ ! -f "$src_dir/.venv/bin/activate" ]; then
+	echo "Missing Python environment: $src_dir/.venv/bin/activate" >&2
+	exit 1
+fi
+source "$src_dir/.venv/bin/activate"
+export CC="$(xcrun --find clang)"
+export CXX="$(xcrun --find clang++)"
+export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+xcodebuild -version
+"$CC" --version
+conan --version
+
 # Set Infomaniak Theme
 kdrive_dir="$src_dir/infomaniak"
 
@@ -88,6 +101,7 @@ source "$conan_build_folder/conanbuild.sh"
 pushd "$build_dir"
 
 cmake \
+	--fresh \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$install_dir" \
 	-DCMAKE_BUILD_TYPE=Release \
