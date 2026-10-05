@@ -19,6 +19,7 @@
 #include "testguicommchannel.h"
 
 #include "../testcommhelpers.h"
+#include "../testsocketcomm.h"
 #include "comm/guijobs/signalsyncnotifymanydeletesjob.h"
 #include "comm/guijobs/syncacknowledgemanydeletesjob.h"
 
@@ -31,7 +32,17 @@
 #include "comm/guijobs/syncgetprivatelinkurljob.h"
 #include "comm/guijobs/synctriggerprogressupdatejob.h"
 #include "comm/guijobs/syncsetsupportsvirtualfilesjob.h"
+#include "appserver.h"
+#include "comm/guijobmanager.h"
+#include "libcommonserver/keychainmanager/keychainmanager.h"
+#include "libcommonserver/keychainmanager/apitoken.h"
+#include "mocks/mockkeychainstorage.h"
+#include "test_utility/testhelpers.h"
 #include "utility/jsonparserutility.h"
+
+#include <chrono>
+#include <fstream>
+#include <thread>
 
 namespace KDC {
 
@@ -665,7 +676,7 @@ void TestGuiCommChannel::testSignalSyncNotifyManyDeletes() {
                          static_cast<TooManyDeletesNotificationType>(notificationTypeOut));
     auto nbFilesOut = 0;
     (void) JsonParserUtility::extractValue(paramsObj, "nbFiles", nbFilesOut);
-    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);  
+    CPPUNIT_ASSERT_EQUAL(nbFiles, nbFilesOut);
     std::vector<CommString> filesPathsOut;
     const auto filesPathsArray = JsonParserUtility::extractArrayObject(paramsObj, "filesPaths");
     CPPUNIT_ASSERT(filesPathsArray);
