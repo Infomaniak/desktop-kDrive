@@ -257,28 +257,6 @@ void AppServer::init() {
         KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
     }
 
-#if defined(KD_LINUX)
-    // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
-    // planned removal of QtSingleApplication will de facto remove this small Qt addition along with it.
-    // The removal of QtSingleApplication will be done before Qt is fully removed from the server.
-    _fallbackLocalPeer = std::make_unique<SharedTools::QtLocalPeer>(
-            this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
-    (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
-                   &AppServer::onMessageReceivedFromAnotherProcess);
-    // isClient() starts the fallback server when possible; true means this process is only a client.
-    if (_fallbackLocalPeer->isClient()) {
-        _fallbackLocalPeer.reset();
-    } else {
-        LOG_INFO(_logger, "Started Linux fallback single-application peer");
-    }
-#endif
-
-    if (!Utility::registerLoginRedirection()) {
-        std::string errorMsg = "Failed to register login redirection";
-        LOG_ERROR(_logger, errorMsg);
-        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
-    }
-
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
     CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
