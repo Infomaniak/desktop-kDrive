@@ -51,7 +51,8 @@ Item {
             rowTop += rowHeight + selectorList.spacing
         }
 
-        return contentHeight + verticalPadding
+        // Exact height of the rows: `contentHeight` is only an estimate until every delegate exists.
+        return Math.max(0, rowTop - selectorList.spacing) + verticalPadding
     }
 
     IKDriveSyncSelectorItem {
