@@ -48,6 +48,7 @@ QtObject {
     readonly property real homeStatusVisualHeight: 131
     readonly property real homeStatusAnimationWidth: 178
     readonly property real homeStatusAnimationHeight: 131
+    readonly property real homeLoadingSpinnerSize: 32
     readonly property real homeStatusOfflineAnimationWidth: 227
     readonly property real homeStatusOfflineAnimationHeight: 90
     readonly property real homeStatusSetupImageWidth: 126
