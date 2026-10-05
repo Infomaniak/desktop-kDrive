@@ -24,6 +24,7 @@
 
 #include <QLoggingCategory>
 
+#include <optional>
 #include <utility>
 
 namespace {
@@ -100,10 +101,12 @@ bool SyncService::addDriveSync(const SyncAddRequest &request, const CommService:
 
 void SyncService::startSync(const qint64 syncDbId) {
     beginAction(actionStartSync, syncDbId);
+    const auto previousStatus = setSyncStatusOptimistically(syncDbId, SyncStatus::Starting);
 
-    _commService.requestSyncStart(syncDbId, [this, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestSyncStart(syncDbId, [this, syncDbId, previousStatus](const ExitInfo &exitInfo) {
         endAction(actionStartSync, syncDbId);
         if (!exitInfo) {
+            revertOptimisticSyncStatus(syncDbId, SyncStatus::Starting, previousStatus);
             notifyRequestFailure(exitInfo, RequestNum::SYNC_START);
         }
     });
@@ -111,10 +114,12 @@ void SyncService::startSync(const qint64 syncDbId) {
 
 void SyncService::stopSync(const qint64 syncDbId) {
     beginAction(actionStopSync, syncDbId);
+    const auto previousStatus = setSyncStatusOptimistically(syncDbId, SyncStatus::StopAsked);
 
-    _commService.requestSyncStop(syncDbId, [this, syncDbId](const ExitInfo &exitInfo) {
+    _commService.requestSyncStop(syncDbId, [this, syncDbId, previousStatus](const ExitInfo &exitInfo) {
         endAction(actionStopSync, syncDbId);
         if (!exitInfo) {
+            revertOptimisticSyncStatus(syncDbId, SyncStatus::StopAsked, previousStatus);
             notifyRequestFailure(exitInfo, RequestNum::SYNC_STOP);
         }
     });
@@ -236,6 +241,40 @@ void SyncService::endAction(const ServiceActionTracker::ActionKey &actionKey, co
 bool SyncService::isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                   const ServiceActionTracker::ScopeId scopeId) const {
     return _serviceActionTracker.isActionPending(serviceKeySync, actionKey, scopeId);
+}
+
+/**
+ * Shows the transition requested by the user before the server reports it: the server only pushes the new status on its
+ * next progress tick, after its reply. Returns the replaced status, or nothing when the sync is not in the cache.
+ */
+std::optional<SyncStatus> SyncService::setSyncStatusOptimistically(const SyncDbId syncDbId, const SyncStatus status) {
+    auto runtimeInfo = _appCache.syncRuntimeInfo(syncDbId);
+    if (!runtimeInfo.has_value()) {
+        return std::nullopt;
+    }
+
+    const SyncStatus previousStatus = runtimeInfo->status;
+    runtimeInfo->status = status;
+    _appCache.updateSyncRuntimeInfo(syncDbId, *runtimeInfo);
+    return previousStatus;
+}
+
+/**
+ * Restores the status replaced by a failed request, unless the server has reported a status since.
+ */
+void SyncService::revertOptimisticSyncStatus(const SyncDbId syncDbId, const SyncStatus optimisticStatus,
+                                             const std::optional<SyncStatus> previousStatus) {
+    if (!previousStatus.has_value()) {
+        return;
+    }
+
+    auto runtimeInfo = _appCache.syncRuntimeInfo(syncDbId);
+    if (!runtimeInfo.has_value() || runtimeInfo->status != optimisticStatus) {
+        return;
+    }
+
+    runtimeInfo->status = *previousStatus;
+    _appCache.updateSyncRuntimeInfo(syncDbId, *runtimeInfo);
 }
 
 bool SyncService::isValidSyncConfigurationValue(const int32_t syncConfiguration) const {
