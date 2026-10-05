@@ -536,7 +536,7 @@ function Prepare-Archive {
         Copy-Item -Path "$dllPath" -Destination "$archivePath"
     }
 
-    $find_dep_script = "$path/infomaniak-build-tools/conan/find_conan_dep.ps1"
+    $find_dep_script = "$repositoryRootPath/infomaniak-build-tools/conan/find_conan_dep.ps1"
     $packages = @( # Qt dependencies are handled by windeployqt
         @{ Name = "xxhash";    Dlls = @("xxhash") },
         @{ Name = "log4cplus"; Dlls = @("log4cplus") },
