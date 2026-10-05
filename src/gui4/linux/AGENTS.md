@@ -77,7 +77,8 @@
   row belongs to one account of one user, and the server reuses it for every synchronization of that user drive, so
   `AppCache::syncsForDrive` and `mainSync` never mix in another user's synchronizations. Keep `AvailableDriveKey` for
   drives that are available or being activated. The main synchronization is the classic one with the lowest database id;
-  other classic synchronizations, which only a legacy migration can produce, are presented as advanced ones.
+  other classic synchronizations, which only a legacy migration can produce, are presented as advanced ones and are
+  returned, with the remote-folder ones, by `AppCache::advancedSyncs`.
 - Expose a process-long Settings feature service directly to QML when an intermediate controller would only forward its
   properties and calls one-for-one; add a controller only when it owns view-specific state or orchestration. For example,
   `SettingsUserService` is passed to `SettingsWindow` as its own `users` initial property, not through
@@ -463,6 +464,14 @@
   initial blacklist whose paths cannot be resolved fails the page instead of displaying ancestors as fully selected;
   a node the server no longer knows is dropped from the blacklist rather than treated as a failure. The root listing is
   requested alongside that path resolution and kept aside until every path is known. Paths are compared in NFC.
+- `app/syncconfiguration/remotefolderpickermodel.*`: lazy single-selection remote-folder tree used to choose the remote
+  destination of an advanced synchronization. The drive root is its only top-level row (node id
+  `AppConstants::SyncConfiguration::driveRootNodeId`, listed through the root listing request) and cannot be selected,
+  like folders the user cannot open and folders the caller marks as unavailable, such as the targets of the drive's
+  existing synchronizations; those cannot host a new folder either. It hosts the editing row of an inline folder
+  creation but never sends the request: its owner calls `SyncService::createRemoteFolder`, reports the pending state,
+  then inserts the created folder, which becomes the selection. Visible folders list their children after the same
+  150 ms quiet period as `RemoteFolderTreeModel`. Rows are tracked by node id, never by a kept index.
 - `app/services/cachepopulator.*`: two-branch snapshot loader for application parameters and user data. The user-data
   branch remains sequential and parent-first (users, accounts, drives, syncs, then sync errors); completion is emitted
   only after both branches succeed. A new run supersedes the previous one, whose late responses are ignored and which
@@ -484,7 +493,11 @@
   durable cache mutations stay signal-driven through `CachePipeline`. `addDriveSync` is the only sender of `SYNC_ADD`:
   onboarding and Settings must never call `CommService::requestSyncAdd` directly, otherwise two windows can create two
   classic syncs for the same drive while the first `SYNC_ADDED` push is still in flight. Advanced syncs (non-empty
-  `serverFolderNodeId`) bypass the check and the reservation.
+  `serverFolderNodeId`) bypass the check and the reservation; they must also set `serverFolderPath`, which the server
+  uses to validate them as advanced. `createRemoteFolder` sends `NODE_CREATEMISSINGFOLDERS` (`userDbId` + `driveId`);
+  the server adds the new folder to the blacklist of every synchronization of the backend drive. It matches them by
+  `DriveId` only, so another user who configured the same drive gets it blacklisted too; this is a known server
+  limitation, not handled on the client.
 - `ui/`: QML shell, product windows, design tokens, reusable components, and bundled UI assets such as tray icons and
   onboarding Lottie animations.
     - `ui/dialogs/`: app-global dialog composition. `GlobalModalHost` stays alive across waiting, onboarding, and main
