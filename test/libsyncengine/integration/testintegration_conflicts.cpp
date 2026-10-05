@@ -155,7 +155,7 @@ void TestIntegration::testMoveCreateConflict() {
     // 1 - If the remote file has been moved, rename local file
     {
         // Rename file on remote replica.
-        (void) RenameJob(nullptr, _driveDbId, _testFileRemoteId, filename).runSynchronously();
+        (void) RenameJob(_driveDbId, _testFileRemoteId, filename).runSynchronously();
 
         // Create a file a local replica.
         testhelpers::generateOrEditTestFile(localFilePath);
@@ -281,7 +281,7 @@ NodeId createRemoteFile(const DriveDbId driveDbId, const SyncName &name, const N
 
     const auto timestamp = duration_cast<std::chrono::seconds>(
             time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch());
-    UploadJob job(nullptr, driveDbId, tmpFilePath, name, remoteParentFileId, timestamp.count(), timestamp.count());
+    UploadJob job(driveDbId, tmpFilePath, name, remoteParentFileId, timestamp.count(), timestamp.count());
     (void) job.runSynchronously();
     if (creationTime) {
         *creationTime = job.creationTime();
@@ -308,17 +308,17 @@ void generateInitialTestSituation(const DriveDbId driveDbId, const NodeId &paren
     //     |   `-- AAA
     //     `-- AB
     {
-        CreateDirJob jobA(nullptr, driveDbId, parentId, Str("A"));
+        CreateDirJob jobA(driveDbId, parentId, Str("A"));
         (void) jobA.runSynchronously();
         info.remoteNodeIdA = jobA.nodeId();
     }
     {
-        CreateDirJob jobAA(nullptr, driveDbId, info.remoteNodeIdA, Str("AA"));
+        CreateDirJob jobAA(driveDbId, info.remoteNodeIdA, Str("AA"));
         (void) jobAA.runSynchronously();
         info.remoteNodeIdAA = jobAA.nodeId();
     }
     {
-        CreateDirJob jobAB(nullptr, driveDbId, info.remoteNodeIdA, Str("AB"));
+        CreateDirJob jobAB(driveDbId, info.remoteNodeIdA, Str("AB"));
         (void) jobAB.runSynchronously();
         info.remoteNodeIdAB = jobAB.nodeId();
     }
@@ -517,7 +517,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         waitForSyncToBeIdle(std::source_location::current());
 
         // Rename A to A2 on remote replica
-        (void) RenameJob(nullptr, _driveDbId, info.remoteNodeIdA, Str("A2")).runSynchronously();
+        (void) RenameJob(_driveDbId, info.remoteNodeIdA, Str("A2")).runSynchronously();
 
         // Delete A/AB on remote replica
         testhelpers::deleteRemoteItem(_driveDbId, info.remoteNodeIdAB);
@@ -552,7 +552,7 @@ void TestIntegration::testMoveParentDeleteConflict() {
         const RemoteTemporaryDirectory tmpRemoteDir(_driveDbId, _remoteSyncDir.id());
         RemoteNodeInfo info;
         generateInitialTestSituation(_driveDbId, tmpRemoteDir.id(), info);
-        (void) CreateDirJob(nullptr, _driveDbId, info.remoteNodeIdAB, Str("ABA")).runSynchronously();
+        (void) CreateDirJob(_driveDbId, info.remoteNodeIdAB, Str("ABA")).runSynchronously();
         (void) createRemoteFile(_driveDbId, Str("ABB"), info.remoteNodeIdAB);
         _syncPal->_remoteFSObserverWorker->forceUpdate(); // Make sure that the remote change is detected immediately
         _syncPal->unpause();
@@ -669,7 +669,7 @@ void TestIntegration::testMoveMoveDestConflict() {
     waitForSyncToBeIdle(std::source_location::current());
 
     // Rename test file 2 on remote replica
-    (void) RenameJob(nullptr, _driveDbId, remoteId2, "testMoveMoveDestConflict").runSynchronously();
+    (void) RenameJob(_driveDbId, remoteId2, "testMoveMoveDestConflict").runSynchronously();
 
     // Rename test file 1 on local replica
     const SyncPath originLocalPath = _syncPal->localPath() / "testMoveMoveDestConflict1";

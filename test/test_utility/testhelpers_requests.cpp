@@ -23,7 +23,7 @@
 namespace KDC::testhelpers {
 
 NodeId createRemoteDir(const DriveDbId driveDbId, const NodeId &remoteParentId, const SyncName &name) {
-    CreateDirJob job(nullptr, driveDbId, remoteParentId, name);
+    CreateDirJob job(driveDbId, remoteParentId, name);
     (void) job.runSynchronously();
     return job.nodeId();
 }
@@ -36,7 +36,7 @@ void editRemoteFile(const DriveDbId driveDbId, const NodeId &remoteFileId, SyncT
 
     const auto timestamp = duration_cast<std::chrono::seconds>(
             time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch());
-    UploadJob job(nullptr, driveDbId, tmpFilePath, remoteFileId, timestamp.count());
+    UploadJob job(driveDbId, tmpFilePath, remoteFileId, timestamp.count());
     (void) job.runSynchronously();
     if (creationTime) {
         *creationTime = job.creationTime();
@@ -51,13 +51,13 @@ void editRemoteFile(const DriveDbId driveDbId, const NodeId &remoteFileId, SyncT
 
 void moveRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const NodeId &destinationRemoteParentId,
                     const SyncName &name /*= {}*/) {
-    MoveJob job(nullptr, driveDbId, {}, remoteFileId, destinationRemoteParentId, name);
+    MoveJob job(driveDbId, {}, remoteFileId, destinationRemoteParentId, name);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
 }
 
 void renameRemoteItem(const DriveDbId driveDbId, const NodeId &remoteFileId, const SyncName &name) {
-    RenameJob job(nullptr, driveDbId, remoteFileId, name);
+    RenameJob job(driveDbId, remoteFileId, name);
     job.setBypassCheck(true);
     (void) job.runSynchronously();
 }
