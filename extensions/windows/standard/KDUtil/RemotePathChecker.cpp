@@ -211,7 +211,7 @@ bool RemotePathChecker::IsMonitoredPath(const wchar_t* filePath, int* state) {
 RemotePathChecker::FileState RemotePathChecker::_StrToFileState(const std::wstring& str) {
     if (str == L"NOP" || str == L"NONE") {
         return StateNone;
-    } else if (str == L"SYNC" || str == L"NEW") {
+    } else if (str.starts_with(L"SYNC") || str == L"NEW") {
         return StateSync;
     } else if (str == L"SYNC+SWM" || str == L"NEW+SWM") {
         return StateSync;
