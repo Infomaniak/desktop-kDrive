@@ -28,8 +28,8 @@
 
 namespace KDC {
 
-CreateDirJob::CreateDirJob(const DriveDbId driveDbId, SyncPath filepath, RemoteNodeId parentId,
-                           SyncName name, std::string color /*= ""*/) :
+CreateDirJob::CreateDirJob(const DriveDbId driveDbId, SyncPath filepath, RemoteNodeId parentId, SyncName name,
+                           std::string color /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _filePath(std::move(filepath)),
     _parentDirId(std::move(parentId)),
@@ -44,10 +44,9 @@ CreateDirJob::CreateDirJob(const DriveDbId driveDbId, SyncPath filepath, RemoteN
 }
 
 CreateDirJob::CreateDirJob(const DriveDbId driveDbId, RemoteNodeId parentId, SyncName name) :
-    CreateDirJob(vfs, driveDbId, SyncPath{}, std::move(parentId), std::move(name)) {}
+    CreateDirJob(driveDbId, SyncPath{}, std::move(parentId), std::move(name)) {}
 
-CreateDirJob::CreateDirJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId parentId,
-                           SyncName name) :
+CreateDirJob::CreateDirJob(const UserDbId userDbId, const DriveId driveId, RemoteNodeId parentId, SyncName name) :
     AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, driveId),
     _parentDirId(std::move(parentId)),
     _name(std::move(name)) {
