@@ -1415,15 +1415,4 @@ IoError IoHelper::getWeakCanonicalPath(const SyncPath &path, SyncPath &canonical
     return IoError::Success;
 }
 
-IoError IoHelper::getWeakCanonicalPath(const SyncPath &path, SyncPath &canonicalPath) noexcept {
-    std::error_code ec;
-    canonicalPath = std::filesystem::weakly_canonical(path, ec);
-    if (ec) {
-        LOGW_WARN(logger(), L"Failed to get canonical: " << Utility::formatStdError(path, ec));
-        return stdError2ioError(ec);
-    }
-
-    return IoError::Success;
-}
-
 } // namespace KDC
