@@ -17,11 +17,17 @@
  */
 
 import Cocoa
+import InfomaniakDI
 import kDriveCoreUI
 import SwiftUI
 
 final class HomeViewController: TitledViewController<HomeView> {
     init(mainViewModel: MainViewModel) {
-        super.init(toolbarTitle: SidebarItem.home.title, contentView: HomeView(mainViewModel: mainViewModel))
+        @InjectService var router: MainViewRouter
+        super.init(
+            toolbarTitle: SidebarItem.home.title,
+            navigableRouter: router,
+            contentView: HomeView(mainViewModel: mainViewModel)
+        )
     }
 }

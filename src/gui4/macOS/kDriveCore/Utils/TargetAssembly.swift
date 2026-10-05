@@ -18,7 +18,6 @@
 
 import Foundation
 import InfomaniakDI
-import OSLog
 
 public extension [Factory] {
     func registerFactoriesInDI() {
@@ -34,6 +33,15 @@ open class TargetAssembly {
 
     open class func getCommonServices(testing: Bool) -> [Factory] {
         return [
+            Factory(type: VFSConversionCaching.self) { _, _ in
+                VFSConversionCache()
+            },
+            Factory(type: VFSConversionCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: VFSConversionCaching.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: CoherentCache.self) { _, _ in
                 ServerCoherentCache()
             },
@@ -52,6 +60,15 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
+            Factory(type: ManyDeletesCache.self) { _, _ in
+                ManyDeletesStateCache()
+            },
+            Factory(type: ManyDeletesCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: ManyDeletesCache.self,
+                                     forCustomTypeIdentifier: nil,
+                                     factoryParameters: nil,
+                                     resolver: resolver)
+            },
             Factory(type: LogUploadStatusCaching.self) { _, _ in
                 LogUploadStatusCache()
             },
@@ -61,11 +78,11 @@ open class TargetAssembly {
                                      factoryParameters: nil,
                                      resolver: resolver)
             },
-            Factory(type: VFSConversionStoring.self) { _, _ in
-                VFSConversionStore()
+            Factory(type: SettingsCaching.self) { _, _ in
+                SettingsCache()
             },
-            Factory(type: VFSConversionStoreObservable.self) { _, resolver in
-                try resolver.resolve(type: VFSConversionStoring.self,
+            Factory(type: SettingsCacheObservable.self) { _, resolver in
+                try resolver.resolve(type: SettingsCaching.self,
                                      forCustomTypeIdentifier: nil,
                                      factoryParameters: nil,
                                      resolver: resolver)
@@ -83,11 +100,24 @@ open class TargetAssembly {
             Factory(type: XPCSignalHandlerProtocol.self) { _, _ in
                 XPCSignalHandler()
             },
+            Factory(type: SignalProcessing.self) { _, resolver in
+                let handler = try resolver.resolve(type: XPCSignalHandlerProtocol.self,
+                                                   forCustomTypeIdentifier: nil,
+                                                   factoryParameters: nil,
+                                                   resolver: resolver)
+                return SignalProcessor(handler: handler)
+            },
+            Factory(type: CacheReconciling.self) { _, _ in
+                CacheReconciler()
+            },
             Factory(type: AutoIncrementIDGenerator.self) { _, _ in
                 AutoIncrementIDGenerator()
             },
             Factory(type: SyncCreator.self) { _, _ in
                 SyncCreationService()
+            },
+            Factory(type: MacOSPermissionsProviding.self) { _, _ in
+                SingleFlightMacOSPermissionsProvider()
             },
             Factory(type: MacOSPermissionHandling.self) { _, _ in
                 MacOSPermissionHandler()
@@ -97,6 +127,9 @@ open class TargetAssembly {
             },
             Factory(type: StorageDataProviding.self) { _, _ in
                 StorageDataService()
+            },
+            Factory(type: LogService.self) { _, _ in
+                LogService()
             }
         ]
     }

@@ -43,7 +43,7 @@ public struct UserAndDriveView: View {
                 .fill(Color(nsColor: .windowBackgroundColor))
                 .frame(width: 20, height: 20)
                 .overlay {
-                    KDriveResources.kdriveFoldersStacked.swiftUIImage
+                    KDriveResources.kdriveFoldersStackedFilled.swiftUIImage
                         .resizable()
                         .scaledToFit()
                         .frame(width: 12, height: 12)

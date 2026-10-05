@@ -69,17 +69,27 @@ open class TitledViewController<Content: View>: NSHostingController<ResizableCon
     }
 
     private func enableNavigationToolbarItemIfNecessary() {
-        guard let goBackItem = view.window?.toolbar?.items.first(where: { $0.itemIdentifier == .goBack }) else {
+        guard let toolbar = view.window?.toolbar else { return }
+
+        let shouldShowBack = navigableRouter?.hasDeepNavigated == true
+        let currentIndex = toolbar.items.firstIndex { $0.itemIdentifier == .goBack }
+
+        guard shouldShowBack else {
+            if let currentIndex {
+                toolbar.removeItem(at: currentIndex)
+            }
             return
         }
 
-        let shouldBeEnabled = navigableRouter?.hasDeepNavigated == true
-        if shouldBeEnabled {
-            goBackItem.target = self
-            goBackItem.action = #selector(goBackInHistory)
-        } else {
-            goBackItem.isEnabled = false
+        if currentIndex == nil {
+            let titleLabelIndex = toolbar.items.firstIndex { $0.itemIdentifier == .titleLabel }
+            toolbar.insertItem(withItemIdentifier: .goBack, at: titleLabelIndex ?? toolbar.items.count)
         }
+
+        guard let goBackItem = toolbar.items.first(where: { $0.itemIdentifier == .goBack }) else { return }
+        goBackItem.target = self
+        goBackItem.action = #selector(goBackInHistory)
+        goBackItem.isEnabled = true
     }
 
     @objc private func goBackInHistory() {

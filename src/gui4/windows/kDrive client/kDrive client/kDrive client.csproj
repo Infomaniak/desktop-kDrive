@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyVersion>4.0.0.9</AssemblyVersion>
+    <AssemblyVersion>4.0.0.14</AssemblyVersion>
     <OutputType>WinExe</OutputType>
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Version>$(AssemblyVersion)</Version>
@@ -20,6 +20,7 @@
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <TrimMode>None</TrimMode>
     <PublishTrimmed>false</PublishTrimmed>
+    <CetCompat>false</CetCompat>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Assets\Custom\Animations\Readme.md" />
@@ -137,6 +138,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\ErrorBar.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="CustomControls\Errors\Templates\Node\InvalidLinkTarget.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="CustomControls\Errors\Templates\Node\ConflictError.xaml">

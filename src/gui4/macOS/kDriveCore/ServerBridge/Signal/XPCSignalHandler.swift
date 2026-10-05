@@ -28,7 +28,6 @@ public protocol XPCSignalHandlerProtocol {
 enum SignalError: Error {
     case nilData
     case unableToParseMetadata(_ signal: String)
-    case serverError(_ code: KDC.ExitCode?, _ cause: KDC.ExitCause?)
     case unableToGetUserFromSignal
     case unableToGetUserDbIdFromSignal
     case unableToGetAccountFromSignal
@@ -39,7 +38,7 @@ enum SignalError: Error {
     case unableToGetSyncDbIdFromSignal
     case unableToGetSyncProgressFromSignal
     case unableToGetSyncFileItemFromSignal
-    case unableToGetVfsConversionCompletedFromSignal
+    case unableToGetManyDeletesFromSignal
     case unableToGetNotificationFromSignal
     case unableToGetErrorInfoFromSignal
     case unableToGetErrorRemovedFromSignal
@@ -58,11 +57,17 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
     private let utilitySignalHandler = UtilitySignalHandler()
     private let updaterSignalHandler = UpdaterSignalHandler()
 
+    @LazyInjectService private var cacheReconciler: CacheReconciling
+
     func handleServerSignal(_ signal: Data?) async {
         do {
             try await decodeAndUseServerSignal(signal)
         } catch {
             IKLogger.xpc.error("[KD] signal error :\(error)")
+
+            if error.indicatesCacheInconsistency {
+                await cacheReconciler.scheduleRefresh()
+            }
 
             SentrySDK.capture(message: "Error processing Signal") { scope in
                 scope.setLevel(.error)
@@ -84,12 +89,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
             throw SignalError.unableToParseMetadata(output)
         }
 
-        guard signalMetadata.code == nil, signalMetadata.cause == nil else {
-            throw SignalError.serverError(signalMetadata.code, signalMetadata.cause)
-        }
-
         let signalNum = signalMetadata.num
-        IKLogger.xpc.log("[KD] recv signal: \(signalNum)")
+        IKLogger.xpc.debug("[KD] [Signal ←] #\(signalMetadata.id) \(signalNum)")
         // IKLogger.xpc.log("[KD] recv signal raw: \(String(data: signal, encoding: .utf8))")
 
         switch signalNum {
@@ -123,8 +124,8 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .SYNC_COMPLETEDITEM:
             try await synchroHandler.handleSyncCompleted(signal)
 
-        case .SYNC_VFS_CONVERSION_COMPLETED:
-            try await synchroHandler.handleVfsConversionCompleted(signal)
+        case .SYNC_NOTIFY_MANY_DELETES:
+            try await synchroHandler.handleNotifyManyDeletes(signal)
 
         case .UTILITY_SHOW_NOTIFICATION:
             try await utilitySignalHandler.handleShowNotification(signal)
@@ -147,8 +148,26 @@ struct XPCSignalHandler: XPCSignalHandlerProtocol {
         case .UPDATER_STATE_CHANGED:
             try await updaterSignalHandler.handleStateChanged(signal)
 
+        case .UTILITY_SHOW_SYNTHESIS:
+            try await utilitySignalHandler.handleShowSynthesis()
+
+        case .UTILITY_SHOW_SETTINGS:
+            try await utilitySignalHandler.handleShowSettings()
+
         default:
             throw SignalError.unsupported(signalNum)
+        }
+    }
+}
+
+private extension Error {
+    var indicatesCacheInconsistency: Bool {
+        guard let cacheError = self as? ServerCoherentCache.CacheError else { return false }
+        switch cacheError {
+        case .userNotFound, .accountNotFound, .driveNotFound, .synchroNotFound:
+            return true
+        case .errorNotFound, .notAServerError:
+            return false
         }
     }
 }

@@ -110,6 +110,7 @@ class PermissionInstructionCell: NSView {
         labelsStack.orientation = .vertical
         labelsStack.alignment = .leading
         labelsStack.spacing = AppPadding.padding2
+        labelsStack.setHuggingPriority(.required, for: .vertical)
 
         let stackView = NSStackView(views: [stepCircleView, iconCircleView, labelsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false

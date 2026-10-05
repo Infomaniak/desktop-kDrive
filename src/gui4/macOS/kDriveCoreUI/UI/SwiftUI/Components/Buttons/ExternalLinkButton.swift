@@ -49,7 +49,7 @@ public struct ExternalLinkButton: View {
                 icon
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 12, height: 12)
+                    .frame(width: 16, height: 16)
                     .foregroundStyle(ColorToken.Action.primary.asColor)
 
                 Text(title)
@@ -58,7 +58,7 @@ public struct ExternalLinkButton: View {
                 KDriveResources.squareArrowDiagonalUp.swiftUIImage
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 8, height: 8)
+                    .frame(width: 12, height: 12)
                     .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
         }

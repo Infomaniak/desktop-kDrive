@@ -37,6 +37,7 @@ clang-format -i <file>
 - **Style:** Google-based clang-format, 4-space indent, 130-char line limit. Enforced by `.githooks/pre-commit`.
 - **Includes:** Relative to `src/` root — e.g., `#include "libcommon/utility/types.h"`.
 - **Platform files:** Use suffixes `_mac.mm` / `_win.cpp` / `_linux.cpp` for platform-specific code.
+- **Platform macros:** use project-defined `KD_MACOS`, `KD_WINDOWS`, and `KD_LINUX` instead of standard macros such as `__APPLE__`, `_WIN32`, or `__linux__`.
 - **Logging:** `LOG_INFO`, `LOG_DEBUG`, `LOG_WARN`, `LOG_ERROR` from log4cplus. Never `std::cout`.
 - **Commits:** Conventional commits format (`feat(scope):`, `fix(scope):`, `refactor(scope):`), validated by `.githooks/commit-msg`.
 - **Branch naming:** No enforced convention currently.
@@ -57,12 +58,14 @@ clang-format -i <file>
 - Sentry DSN and signing secrets are injected by CI only.
 
 ## AGENTS.md Maintenance
-> **Important:** When making significant changes to a directory that contains an AGENTS.md file (new patterns, new architecture, new commands), update that AGENTS.md to reflect the changes. Keep documentation in sync with code.
+Update the nearest `AGENTS.md` when conventions or workflows change; keep guidance scoped to its component.
 
 ## User Preferences & Auto-Correction
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
+- Start the description after the Conventional Commit prefix with an uppercase letter, e.g. `fix(scope): Correct log level handling`.
+- Add only tests that provide meaningful value; avoid trivial checks that merely mirror the implementation. Simple test code is welcome when it protects meaningful behavior or catches regressions.
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For project crash lookups, use the self-hosted Sentry instance at `https://sentry-desktop.infomaniak.com`, not Sentry SaaS.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
@@ -70,6 +73,7 @@ clang-format -i <file>
 - Never rewrite commit history (amend, rebase, force-push) unless explicitly asked by the user.
 - Only commit and push when explicitly asked by the user.
 <!-- Add project-specific user corrections here -->
+- Keep `AGENTS.md` short and focused on user preferences and non-obvious guidance; do not repeat what can be derived from source code.
 
 ## JIT Index
 

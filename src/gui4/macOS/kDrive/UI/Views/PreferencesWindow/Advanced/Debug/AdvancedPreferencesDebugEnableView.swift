@@ -24,8 +24,9 @@ import SwiftUI
 
 struct AdvancedPreferencesDebugEnableView: View {
     @State private var enableDebugLogs = false
+    @State private var isShowingOpenURLError = false
 
-    let repository: PreferencesRepository
+    @ObservedObject var repository: PreferencesRepository
 
     var body: some View {
         Section {
@@ -35,6 +36,11 @@ struct AdvancedPreferencesDebugEnableView: View {
                 helperText: nil,
                 isOn: $enableDebugLogs
             )
+            .onChange(of: enableDebugLogs) { newValue in
+                guard newValue != repository.parametersInfo.shouldUseLog else { return }
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .advancedSettingsPage, name: "changeLogIsOn", value: newValue)
+            }
         } header: {
             AdvancedPreferencesDebugHeaderView()
         } footer: {
@@ -43,18 +49,34 @@ struct AdvancedPreferencesDebugEnableView: View {
         .onAppear {
             enableDebugLogs = repository.parametersInfo.shouldUseLog
         }
+        .onChange(of: repository.parametersInfo.shouldUseLog) { newValue in
+            enableDebugLogs = newValue
+        }
         .onChange(of: enableDebugLogs) { newValue in
             updateRepositoryValue(\.$enableDebugLogs, \.shouldUseLog, newValue: newValue, repository: repository)
         }
+        .alert(KDriveLocalizable.unexpectedErrorTeachingTipTitle, isPresented: $isShowingOpenURLError) {} message: {
+            Text(KDriveLocalizable.errorOpeningLocalURL(generateDebugFolderURL()))
+        }
+    }
+
+    private func generateDebugFolderURL() -> URL {
+        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(
+            "Library/Logs/kDrive",
+            isDirectory: true
+        )
     }
 
     private func openDebugFolder() {
-        @InjectService var nodeURLGenerator: NodeURLGenerator
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(
-            "/kdrive-logdir",
-            isDirectory: true
-        )
-        NSWorkspace.shared.open(directory)
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .advancedSettingsPage, name: "openLogFolder")
+        let debugURL = generateDebugFolderURL()
+        guard FileManager.default.fileExists(atPath: debugURL.path) else {
+            isShowingOpenURLError = true
+            return
+        }
+
+        NSWorkspace.shared.open(debugURL)
     }
 }
 

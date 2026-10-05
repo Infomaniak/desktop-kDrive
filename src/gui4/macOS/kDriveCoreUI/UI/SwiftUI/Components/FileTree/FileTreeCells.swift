@@ -19,8 +19,26 @@
 import AppKit
 import kDriveResources
 
+private func configureLoadingIndicator(_ indicator: NSProgressIndicator) {
+    indicator.isIndeterminate = true
+    indicator.style = .spinning
+    indicator.controlSize = .small
+    indicator.isDisplayedWhenStopped = false
+    indicator.isHidden = true
+}
+
+private func setLoading(_ indicator: NSProgressIndicator, isLoading: Bool) {
+    indicator.isHidden = !isLoading
+    if isLoading {
+        indicator.startAnimation(nil)
+    } else {
+        indicator.stopAnimation(nil)
+    }
+}
+
 final class FileTreeHeaderView: NSTableHeaderView {
     let checkbox = NSButton()
+    private let loadingIndicator = NSProgressIndicator()
 
     var checkboxColumnIndex = 0
 
@@ -30,6 +48,9 @@ final class FileTreeHeaderView: NSTableHeaderView {
         checkbox.allowsMixedState = true
         checkbox.title = ""
         addSubview(checkbox)
+
+        configureLoadingIndicator(loadingIndicator)
+        addSubview(loadingIndicator)
     }
 
     @available(*, unavailable)
@@ -49,11 +70,26 @@ final class FileTreeHeaderView: NSTableHeaderView {
             width: size.width,
             height: size.height
         )
+
+        let indicatorSide = AppIconSize.iconSize16.width
+        loadingIndicator.frame = NSRect(
+            x: columnRect.midX - indicatorSide / 2,
+            y: columnRect.midY - indicatorSide / 2,
+            width: indicatorSide,
+            height: indicatorSide
+        )
+    }
+
+    /// Replaces the checkbox with a small loader while the checkbox state of the tree is unknown.
+    func setCheckboxLoading(_ isLoading: Bool) {
+        checkbox.isHidden = isLoading
+        setLoading(loadingIndicator, isLoading: isLoading)
     }
 }
 
 final class FileTreeCheckboxCell: NSTableCellView {
     private let checkbox = NSButton()
+    private let loadingIndicator = NSProgressIndicator()
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -63,9 +99,17 @@ final class FileTreeCheckboxCell: NSTableCellView {
         checkbox.translatesAutoresizingMaskIntoConstraints = false
         addSubview(checkbox)
 
+        configureLoadingIndicator(loadingIndicator)
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(loadingIndicator)
+
         NSLayoutConstraint.activate([
             checkbox.centerXAnchor.constraint(equalTo: centerXAnchor),
-            checkbox.centerYAnchor.constraint(equalTo: centerYAnchor)
+            checkbox.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.centerXAnchor.constraint(equalTo: centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: centerYAnchor),
+            loadingIndicator.widthAnchor.constraint(equalToConstant: AppIconSize.iconSize16.width),
+            loadingIndicator.heightAnchor.constraint(equalToConstant: AppIconSize.iconSize16.height)
         ])
     }
 
@@ -74,11 +118,14 @@ final class FileTreeCheckboxCell: NSTableCellView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(state: NSControl.StateValue, isEnabled: Bool, target: AnyObject, action: Selector) {
+    func configure(state: NSControl.StateValue, isLoading: Bool, isEnabled: Bool, target: AnyObject, action: Selector) {
         checkbox.state = state
         checkbox.isEnabled = isEnabled
         checkbox.target = target
         checkbox.action = action
+
+        checkbox.isHidden = isLoading
+        setLoading(loadingIndicator, isLoading: isLoading)
     }
 }
 

@@ -73,6 +73,10 @@ struct AdvancedPreferencesView: View {
     }
 
     private func navigate(to item: AdvancedPreferencesItem) {
+        if item == .synchroRules {
+            @InjectService var matomo: MatomoUtils
+            matomo.track(eventWithCategory: .advancedSettingsPage, name: "openExclusionRules")
+        }
         @InjectService var preferencesViewRouter: PreferencesViewRouter
         preferencesViewRouter.append(item.preferencesViewDetail)
     }

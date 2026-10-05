@@ -5,6 +5,7 @@
   "params": {
     "parametersInfo": {
       "autoStart": true,
+      "askBeforeDelete": true,
       "darkTheme": false,
       "dialogGeometry": {
         "": "AdnQywADAAAAAAH/AAAAngAABK0AAANRAAAB/wAAAJ4AAAStAAADUQAAAAAAAAAABsAAAAH/AAAAngAABK0AAANR",

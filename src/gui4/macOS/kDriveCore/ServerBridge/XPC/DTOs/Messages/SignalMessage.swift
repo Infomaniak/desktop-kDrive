@@ -20,8 +20,6 @@ import CppInterop
 import Foundation
 
 public struct SignalMetadata: Decodable {
-    public let cause: KDC.ExitCause?
-    public let code: KDC.ExitCode?
     public let id: Int32
     public let num: SignalNum
 }

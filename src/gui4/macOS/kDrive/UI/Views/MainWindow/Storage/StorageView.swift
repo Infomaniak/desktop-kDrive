@@ -84,6 +84,7 @@ struct StorageView: View {
             if isShowingVolumeNotFound {
                 IKContentUnavailableView(
                     image: KDriveResources.volumeStrokeDots.swiftUIImage,
+                    imageMaxWidth: 100,
                     title: KDriveLocalizable.storageMissingDiskMacOSTitle,
                     subtitle: KDriveLocalizable.storageMissingDiskMacOSDescription,
                     action: .init(title: KDriveLocalizable.buttonRetry) {
@@ -121,8 +122,8 @@ struct StorageView: View {
 
         @InjectService var router: PreferencesViewRouter
         router.setCurrentTab(.accounts)
-        if let currentDrive = mainViewModel.currentDrive {
-            router.append(.syncedKDrive(currentDrive))
+        if let currentDrive = mainViewModel.currentDrive, let userDbId = mainViewModel.currentUser?.dbId {
+            router.append(.syncedKDrive(currentDrive, userDbId: userDbId))
         }
     }
 

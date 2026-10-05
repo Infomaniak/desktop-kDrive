@@ -29,6 +29,8 @@ enum OnboardingLinks {
 }
 
 final class DriveSelectionViewController: OnboardingStepViewController {
+    @LazyInjectService private var matomo: MatomoUtils
+
     private let viewModel: DriveSelectionViewModel
     private let flowCoordinator: OnboardingFlowCoordinator
 
@@ -179,7 +181,8 @@ extension DriveSelectionViewController {
             if !isSynchronized {
                 drivesListView.cells[singleDrive.id]?.state = .on
                 drivesListView.cells[singleDrive.id]?.isEnabled = false
-                viewModel.toggleDriveSelection(singleDrive)
+                drivesListView.cells[singleDrive.id]?.showsDisabledAppearance = false
+                viewModel.selectDrive(singleDrive)
             }
         }
 
@@ -190,11 +193,14 @@ extension DriveSelectionViewController {
     }
 
     @objc private func didTapContinue() {
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "confirm")
+
         viewModel.startSynchronization()
     }
 
     @objc private func didTapAdvancedSettings() {
         guard let currentUser = flowCoordinator.currentUser else { return }
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "openAdvancedSettings")
 
         let viewController = SynchroConfigurationFlowViewController(
             userDbId: Int(currentUser.dbId),
@@ -271,15 +277,19 @@ extension DriveSelectionViewController {
 
         primaryButton.title = KDriveLocalizable.buttonStartForFree
         primaryButton.action = #selector(didTapStartForFree)
+        primaryButton.isEnabled = true
         secondaryButton.title = KDriveLocalizable.buttonShowOffers
         secondaryButton.action = #selector(didTapShowOffers)
+        secondaryButton.isEnabled = true
     }
 
     @objc private func didTapStartForFree() {
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "openStartFreeWeb")
         NSWorkspace.shared.open(OnboardingLinks.shopDriveSelection)
     }
 
     @objc private func didTapShowOffers() {
+        matomo.track(eventWithCategory: .onboardingSyncConfigurationPage, name: "openOffersWeb")
         NSWorkspace.shared.open(OnboardingLinks.myKSuiteOffers)
     }
 }

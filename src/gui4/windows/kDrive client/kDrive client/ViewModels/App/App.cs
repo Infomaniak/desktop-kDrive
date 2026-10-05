@@ -357,18 +357,19 @@ namespace Infomaniak.kDrive.ViewModels
                 return;
             }
 
-            foreach (var sync in AllSyncs)
+            await Utility.RunOnUIThread(async () =>
             {
-                var syncError = sync.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
-                if (syncError != null)
+                Sync? sync = AllSyncs.FirstOrDefault(s => s.SyncErrors.Any(e => e.DbId == errorDbId));
+                Error? syncError = sync?.SyncErrors.FirstOrDefault(e => e.DbId == errorDbId);
+
+                if (sync is null || syncError is null)
                 {
-                    await sync.RemoveErrorAsync(syncError);
+                    Logger.Log(Logger.Level.Warning, $"AppModel: Could not find error with DbId {errorDbId} to remove, Sync: {sync?.DbId ?? -1}, SyncError: {syncError?.DbId ?? -1}");
                     return;
                 }
-            }
 
-            Logger.LogWarning($"AppModel: Could not find error with DbId {errorDbId} to remove.",
-                "AppModel: Error to remove not found");
+                await sync.RemoveErrorAsync(syncError);
+            });
         }
 
         public async Task ClearAllErrorsAsync()

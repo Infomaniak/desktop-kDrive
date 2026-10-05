@@ -62,6 +62,9 @@ struct AdvancedSynchroView: View {
 
             Section {} header: {
                 Button(KDriveLocalizable.buttonAddAdvancedSync) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "create")
+
                     isShowingAddSynchroSheet = true
                 }
                 .buttonStyle(.borderedProminent)

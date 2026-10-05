@@ -79,9 +79,12 @@ final class SearchViewModel: ObservableObject {
     }
 
     func openFile(_ file: UISearchResponse) {
+        @InjectService var matomo: MatomoUtils
         if file.isAvailableLocally {
+            matomo.track(eventWithCategory: .search, name: "openItem")
             openInFinder(file: file)
         } else {
+            matomo.track(eventWithCategory: .search, name: "openItemWeb")
             openInBrowser(file: file)
         }
     }

@@ -20,7 +20,11 @@ import InfomaniakDI
 import kDriveCore
 import Testing
 
-struct LoginJobTests {
+extension SharedDITests {
+    struct LoginJobTests {}
+}
+
+extension SharedDITests.LoginJobTests {
     @Test func loginJobSuccess() async throws {
         // WHEN
         let userDbId = try await LoginJob().login(code: "123", verifier: "456")

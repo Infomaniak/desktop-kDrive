@@ -40,6 +40,7 @@ extension KDC.LogUploadState: Hashable {}
 extension KDC.UpdateState: Hashable {}
 extension KDC.SyncConfiguration: Hashable {}
 extension KDC.ConflictResolutionStrategy: Hashable {}
+extension KDC.AppStateKey: Hashable {}
 extension MsgType: @retroactive Hashable {}
 extension SignalNum: @retroactive Hashable {}
 extension RequestNum: @retroactive Hashable {}

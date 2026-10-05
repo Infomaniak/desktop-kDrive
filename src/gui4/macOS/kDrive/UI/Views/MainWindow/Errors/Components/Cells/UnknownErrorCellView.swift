@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -40,12 +41,49 @@ struct UnknownErrorCellView: View {
     let error: SynchroError
     let manager: SynchroErrorManager
 
+    private struct MetadataItem: Identifiable {
+        var id: String { label }
+
+        let label: String
+        let value: String
+
+        init?(label: String, value: String?) {
+            guard let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, value != "Unknown" else {
+                return nil
+            }
+
+            self.label = label
+            self.value = value
+        }
+    }
+
+    private var metadataItems: [MetadataItem] {
+        let metadata = error.metadata
+
+        return [
+            MetadataItem(label: "ID", value: "\(metadata.dbId)"),
+            MetadataItem(label: "Date", value: "\(metadata.date)"),
+            MetadataItem(label: "Path", value: metadata.path),
+            MetadataItem(label: "Destination Path", value: metadata.destinationPath),
+            MetadataItem(label: "Synchro DB ID", value: "\(metadata.synchroDbId)"),
+            MetadataItem(label: "Node Type", value: metadata.nodeType.map { "\($0)" }),
+            MetadataItem(label: "Local Node ID", value: metadata.nodeId.local),
+            MetadataItem(label: "Remote Node ID", value: metadata.nodeId.remote),
+            MetadataItem(label: "Auto-resolved", value: "\(metadata.isAutoResolved)"),
+            MetadataItem(label: "Level", value: "\(metadata.level)"),
+            MetadataItem(label: "Exit Code", value: "\(metadata.exitCode)"),
+            MetadataItem(label: "Exit Cause", value: "\(metadata.exitCause)")
+        ].compactMap { $0 }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppPadding.padding8) {
             ErrorCellView(
                 title: KDriveLocalizable.defaultErrorTitle,
                 description: KDriveLocalizable.unexpectedErrorTeachingTipContent,
                 action: .init(title: KDriveLocalizable.buttonContactSupport) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .errors, name: "manageUnexpectedError")
                     manager.openSupportURL()
                 }
             )
@@ -55,12 +93,9 @@ struct UnknownErrorCellView: View {
                     .font(.Tokens.subheadlineEmphasized)
                     .foregroundStyle(.secondary)
 
-                MetadataItemView(label: "ID", value: "\(error.metadata.dbId)")
-                MetadataItemView(label: "Date", value: "\(error.metadata.date)")
-                MetadataItemView(label: "Level", value: "\(error.metadata.level)")
-                MetadataItemView(label: "Exit Code", value: "\(error.metadata.exitCode)")
-                MetadataItemView(label: "Exit Cause", value: "\(error.metadata.exitCause)")
-                MetadataItemView(label: "Auto-resolved", value: "\(error.metadata.isAutoResolved)")
+                ForEach(metadataItems) { item in
+                    MetadataItemView(label: item.label, value: item.value)
+                }
             }
         }
     }

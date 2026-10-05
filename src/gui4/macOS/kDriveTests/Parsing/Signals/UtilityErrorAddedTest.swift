@@ -26,14 +26,14 @@ struct UtilityErrorAddedTest {
 
     // MARK: - Test Data
 
-    var validSignalData: Data {
+    func validSignalData() throws -> Data {
         let bundle = Bundle(for: TestBundleMarker.self)
 
         guard let url = bundle.url(forResource: "UTILITY_ERROR_ADDED", withExtension: "json") else {
             fatalError("Unable to find specified JSON file")
         }
 
-        return try! Data(contentsOf: url)
+        return try Data(contentsOf: url)
     }
 
     // MARK: - Parsing Test
@@ -41,7 +41,7 @@ struct UtilityErrorAddedTest {
     @Test("Successfully parses a valid UTILITY_ERROR_ADDED.json")
     func parseValidSignal() async throws {
         // GIVEN
-        let signalData = validSignalData
+        let signalData = try validSignalData()
 
         // WHEN
         let errorInfo = try decoder.decode(SignalMessage<ErrorInfoSignal>.self, from: signalData).body.errorInfo
@@ -50,5 +50,33 @@ struct UtilityErrorAddedTest {
         #expect(errorInfo.dbId == 2)
         #expect(errorInfo.time == 1_768_922_467)
         #expect(errorInfo.path == "/dev/null")
+    }
+
+    @Test("Rejects a malformed UTILITY_ERROR_ADDED signal")
+    func rejectMalformedSignal() async {
+        // GIVEN
+        let signalData = Data("""
+        {
+          "id": 10,
+          "num": 26,
+          "params": {
+            "errorInfo": {
+              "path": "not-base64"
+            }
+          }
+        }
+        """.utf8)
+
+        // WHEN
+        do {
+            try await UtilitySignalHandler().handleError(signalData)
+            Issue.record("Expected the malformed signal to be rejected")
+        } catch {
+            // THEN
+            guard case SignalError.unableToGetErrorInfoFromSignal = error else {
+                Issue.record("Unexpected error: \(error)")
+                return
+            }
+        }
     }
 }

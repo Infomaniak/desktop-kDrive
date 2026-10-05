@@ -22,6 +22,9 @@ import OSLog
 class DialogController {
     
     let kDriveBundleId = "com.infomaniak.drive.desktopclient"
+    // The redesigned (gui4) macOS GUI ships under its own bundle identifier and must be stopped too.
+    let kDriveGuiBundleId = "com.infomaniak.drive.desktopclient.gui"
+    lazy var kDriveBundleIds: [String] = [kDriveBundleId, kDriveGuiBundleId]
     lazy var kDriveAppPath: URL? = NSWorkspace.shared.urlForApplication(withBundleIdentifier: kDriveBundleId)?.appendingPathComponent("Contents").appendingPathComponent("MacOS").appendingPathComponent("kDrive")
     let appSupportOpt = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("kDrive")
     
@@ -43,10 +46,10 @@ class DialogController {
     }
     
     func forceQuitApp() {
+        // Terminate every running kDrive process (legacy server/GUI and the redesigned gui4 app).
+        // Not stopping the gui4 app before removing files leaves it in an undefined state.
         let runningApplications = NSWorkspace.shared.runningApplications
-        if let kdriveApp = runningApplications.first(where: { (application) in
-            return application.bundleIdentifier == kDriveBundleId
-        }) {
+        for kdriveApp in runningApplications where kDriveBundleIds.contains(kdriveApp.bundleIdentifier ?? "") {
             kill(kdriveApp.processIdentifier, SIGTERM)
         }
     }

@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -56,6 +57,8 @@ struct ErrorsHeaderView: View {
 
     private func refreshList() async {
         guard let synchroDbId else { return }
+        @InjectService var matomo: MatomoUtils
+        matomo.track(eventWithCategory: .errorPage, name: "refreshErrors")
         do {
             isLoading = true
             _ = try await ErrorJobs().refreshSyncErrors(syncDbId: Int32(synchroDbId))

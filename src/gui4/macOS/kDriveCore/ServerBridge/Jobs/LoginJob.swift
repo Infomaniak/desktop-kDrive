@@ -26,7 +26,6 @@ public struct LoginJob: Sendable {
     public init() {}
 
     public func login(code: String, verifier: String) async throws -> Int32 {
-        IKLogger.data.log("Query for login token")
         let userQuery = LoginQuery(code: code, codeVerifier: verifier)
         let request = await RequestMessage<LoginQuery>(num: RequestNum.LOGIN_REQUESTTOKEN, body: userQuery)
 

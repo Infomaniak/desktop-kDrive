@@ -23,6 +23,10 @@ public extension UserDefaults {
         public static let isFirstLaunch = "isFirstLaunch"
         public static let shouldPresentOnboarding = "shouldPresentOnboarding"
         public static let selectedSynchroDbId = "selectedSynchroDbId"
+        public static let lastKnownSentryEnabled = "lastKnownSentryEnabled"
+        public static let lastKnownMatomoEnabled = "lastKnownMatomoEnabled"
+        public static let lastKnownFileLogLevel = "lastKnownFileLogLevel"
+        public static let lastKnownFileLoggingEnabled = "lastKnownFileLoggingEnabled"
     }
 }
 
@@ -33,6 +37,46 @@ public extension UserDefaults {
         }
         set {
             set(newValue, forKey: Key.selectedSynchroDbId)
+        }
+    }
+
+    var lastKnownSentryEnabled: Bool {
+        get {
+            object(forKey: Key.lastKnownSentryEnabled) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Key.lastKnownSentryEnabled)
+        }
+    }
+
+    var lastKnownMatomoEnabled: Bool {
+        get {
+            object(forKey: Key.lastKnownMatomoEnabled) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Key.lastKnownMatomoEnabled)
+        }
+    }
+
+    var lastKnownFileLogLevel: LogLevel {
+        get {
+            guard let rawValue = object(forKey: Key.lastKnownFileLogLevel) as? Int,
+                  let level = LogLevel(rawValue: rawValue) else {
+                return .debug
+            }
+            return level
+        }
+        set {
+            set(newValue.rawValue, forKey: Key.lastKnownFileLogLevel)
+        }
+    }
+
+    var lastKnownFileLoggingEnabled: Bool {
+        get {
+            object(forKey: Key.lastKnownFileLoggingEnabled) as? Bool ?? true
+        }
+        set {
+            set(newValue, forKey: Key.lastKnownFileLoggingEnabled)
         }
     }
 }

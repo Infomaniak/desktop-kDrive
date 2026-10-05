@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import OrderedCollections
@@ -23,6 +24,7 @@ import SwiftUI
 
 struct SynchroConfigurationPickerView: View {
     @EnvironmentObject private var viewModel: SynchroConfigurationFlowViewModel
+    @InjectService private var matomo: MatomoUtils
 
     @State private var isLoading = false
 
@@ -49,6 +51,7 @@ struct SynchroConfigurationPickerView: View {
             ToolbarItem(placement: .confirmationAction) {
                 LoadingButton(isLoading: $isLoading) {
                     await viewModel.onConfirm?(Array(viewModel.configurations.values))
+                    matomo.track(eventWithCategory: .driveSetupDialog, name: "confirm")
                 } label: {
                     Text(KDriveLocalizable.buttonValidate)
                 }
@@ -58,6 +61,7 @@ struct SynchroConfigurationPickerView: View {
             ToolbarItem(placement: .cancellationAction) {
                 Button(KDriveLocalizable.buttonCancel, role: .cancel) {
                     viewModel.onCancel?()
+                    matomo.track(eventWithCategory: .driveSetupDialog, name: "cancel")
                 }
                 .keyboardShortcut(.cancelAction)
                 .disabled(isLoading)
@@ -69,8 +73,8 @@ struct SynchroConfigurationPickerView: View {
 #Preview {
     let viewModel = SynchroConfigurationFlowViewModel(onConfirm: nil, onCancel: nil)
     viewModel.setupInitialConfigurations([
-        SynchroConfiguration(drive: PreviewHelper.drive1, blackList: []),
-        SynchroConfiguration(drive: PreviewHelper.drive2, blackList: ["hey"])
+        SynchroConfiguration(drive: PreviewHelper.drive1, blackList: [], useLightSync: true),
+        SynchroConfiguration(drive: PreviewHelper.drive2, blackList: ["hey"], useLightSync: false)
     ])
 
     return SynchroConfigurationPickerView()

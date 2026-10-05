@@ -23,12 +23,12 @@ import kDriveResources
 import SwiftUI
 
 final class SyncedKDrivePreferencesViewController: TitledViewController<SyncedKDriveView> {
-    convenience init(drive: UIDrive) {
+    convenience init(drive: UIDrive, userDbId: Int) {
         @InjectService var router: PreferencesViewRouter
         self.init(
             toolbarTitle: KDriveLocalizable.labelkDriveManagement,
             navigableRouter: router,
-            contentView: SyncedKDriveView(drive: drive)
+            contentView: SyncedKDriveView(drive: drive, userDbId: userDbId)
         )
     }
 }

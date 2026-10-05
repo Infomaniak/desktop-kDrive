@@ -85,16 +85,16 @@ extension HomeState {
 }
 
 struct SynchroStatusView: View {
-    @State private var isConvertingSynchro = false
     @State private var isShowingGenericError = false
 
     let state: HomeState
     let synchroDbId: UISynchro.ID?
+    let isConverting: Bool
 
     private var buttonIsEnabled: Bool {
         switch state {
         case .synchroIsPaused:
-            return !isConvertingSynchro
+            return !isConverting
         default:
             return true
         }
@@ -130,11 +130,10 @@ struct SynchroStatusView: View {
             }
             .foregroundStyle(ColorToken.Text.primary.asColor)
             .multilineTextAlignment(.center)
-            .frame(maxWidth: 300)
         }
         .redacted(reason: state.isRedacted ? .placeholder : [])
         .id(state)
-        .padding(AppPadding.padding16)
+        .padding(AppPadding.padding8)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
             GeometryReader { proxy in
@@ -150,7 +149,6 @@ struct SynchroStatusView: View {
             }
         }
         .clipShape(.rect(cornerRadius: AppRadius.radius16))
-        .observingSynchroConversion(synchroDbId: synchroDbId, isConverting: $isConvertingSynchro)
         .genericErrorAlert(isPresented: $isShowingGenericError)
     }
 
@@ -162,11 +160,14 @@ struct SynchroStatusView: View {
     }
 
     private func didTapStateButton(for state: HomeState) {
+        @InjectService var matomo: MatomoUtils
         switch state {
         case .synchroIsRunning:
             @InjectService var router: MainViewRouter
+            matomo.track(eventWithCategory: .homePage, name: "openActivity")
             router.setCurrentTab(.activities)
         case .synchroIsPaused:
+            matomo.track(eventWithCategory: .homePage, name: "startSync")
             resumeSynchro()
         default:
             break
@@ -188,21 +189,21 @@ struct SynchroStatusView: View {
 }
 
 #Preview("Up To Date") {
-    SynchroStatusView(state: .synchroIsUpToDate, synchroDbId: nil)
+    SynchroStatusView(state: .synchroIsUpToDate, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Running") {
-    SynchroStatusView(state: .synchroIsRunning, synchroDbId: nil)
+    SynchroStatusView(state: .synchroIsRunning, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Paused") {
-    SynchroStatusView(state: .synchroIsPaused, synchroDbId: nil)
+    SynchroStatusView(state: .synchroIsPaused, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Offline") {
-    SynchroStatusView(state: .offline, synchroDbId: nil)
+    SynchroStatusView(state: .offline, synchroDbId: nil, isConverting: false)
 }
 
 #Preview("Loading") {
-    SynchroStatusView(state: .loading, synchroDbId: nil)
+    SynchroStatusView(state: .loading, synchroDbId: nil, isConverting: false)
 }

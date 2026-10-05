@@ -24,6 +24,8 @@ struct SearchBarView: View {
     @Binding var searchText: String
     var focusState: FocusState<Bool>.Binding
 
+    static let height: CGFloat = 36
+
     var body: some View {
         HStack(spacing: AppPadding.padding8) {
             Image(systemName: "magnifyingglass")
@@ -48,9 +50,8 @@ struct SearchBarView: View {
             }
         }
         .padding(.horizontal, AppPadding.padding12)
-        .frame(height: 36)
-        .background(ColorToken.Surface.secondary.asColor)
-        .clipShape(RoundedRectangle(cornerRadius: AppRadius.radius16))
+        .frame(height: Self.height)
+        .background(.regularMaterial, in: .rect(cornerRadius: AppRadius.radius16))
         .padding(AppPadding.padding16)
     }
 }

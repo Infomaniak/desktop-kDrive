@@ -219,7 +219,8 @@ public extension UIParametersInfo {
             maxAllowedCpu: parametersInfo.maxAllowedCpu,
             distributionChannel: distributionChannel.toKDCDistributionChannel(),
             sentryEnabled: isSentryEnabled,
-            matomoEnabled: isMatomoEnabled
+            matomoEnabled: isMatomoEnabled,
+            askBeforeDelete: parametersInfo.askBeforeDelete
         )
     }
 }

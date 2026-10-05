@@ -194,9 +194,10 @@ struct ObservedUpdaterTests {
             channel: .Internal,
             tag: "4.0.0",
             buildVersion: 10,
-            buildMinOsVersion: "12.0",
             downloadUrl: "https://example.com/update.xml",
-            checksum: "abc123"
+            checksum: "abc123",
+            minOsVersion: "12.0",
+            minAppVersion: "3.8.6"
         )
 
         var receivedVersionInfo: VersionInfo?

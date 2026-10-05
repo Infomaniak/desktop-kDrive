@@ -228,6 +228,34 @@ void AppServer::init() {
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+#if defined(KD_MACOS)
+    // Qt emits ApplicationActive when macOS asks an already running application to reopen.
+    connect(this, &QGuiApplication::applicationStateChanged, this, [this](Qt::ApplicationState state) {
+        if (state == Qt::ApplicationActive && (!_updateManager || !_updateManager->isUpdateSessionInProgress())) showSynthesis();
+    });
+#endif
+
+#if defined(KD_LINUX)
+    // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
+    // planned removal of QtSingleApplication will de facto remove this small Qt addition along with it.
+    // The removal of QtSingleApplication will be done before Qt is fully removed from the server.
+    _fallbackLocalPeer = std::make_unique<SharedTools::QtLocalPeer>(
+            this, applicationId() + QLatin1Char('-') + QString::number(QCoreApplication::applicationPid()));
+    (void) connect(_fallbackLocalPeer.get(), &SharedTools::QtLocalPeer::messageReceived, this,
+                   &AppServer::onMessageReceivedFromAnotherProcess);
+    // isClient() starts the fallback server when possible; true means this process is only a client.
+    if (_fallbackLocalPeer->isClient()) {
+        _fallbackLocalPeer.reset();
+    } else {
+        LOG_INFO(_logger, "Started Linux fallback single-application peer");
+    }
+#endif
+
+    if (!Utility::registerLoginRedirection()) {
+        std::string errorMsg = "Failed to register login redirection";
+        LOG_ERROR(_logger, errorMsg);
+        KDC::sentry::Handler::captureMessage(KDC::sentry::Level::Error, "Login redirection registration error", errorMsg);
+    }
 
 #if defined(KD_LINUX)
     // This adds a bit of Qt to the server, which is deliberate: it temporarily makes the OAuth callback reliable, and the
@@ -490,7 +518,6 @@ void AppServer::init() {
         LOG_INFO(_logger, "Updater disabled by app_state table");
     }
 
-
     if (!_noUpdate) {
         // Update checks
         _updateManager = std::make_unique<UpdateManager>();
@@ -643,8 +670,15 @@ void AppServer::reset() {
 
 // Schedule the quit on the Qt application thread. Most callers only need the default zero-delay queued execution, while
 // asynchronous operations can request enough time to finish before aboutToQuit starts cleanup.
+// Note: this function is intentionally thread-safe — it may be called from non-Qt threads (e.g. Poco thread pool).
+// QTimer::singleShot called directly from a non-Qt thread cannot reliably transfer the timer to the main thread
+// in release builds. Instead, we use QMetaObject::invokeMethod (Qt::QueuedConnection) to first post the
+// timer creation to the main thread's event loop, then start the timer there.
 void AppServer::quitLater(const int32_t delayMs) {
-    QTimer::singleShot(delayMs, QCoreApplication::instance(), [] { AppServer::quit(); });
+    auto *app = QCoreApplication::instance();
+    if (!app) return;
+    QMetaObject::invokeMethod(
+            app, [delayMs] { QTimer::singleShot(delayMs, [] { QCoreApplication::quit(); }); }, Qt::QueuedConnection);
 }
 
 // This task can be long and block the GUI
@@ -2931,11 +2965,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4032,6 +4066,9 @@ bool AppServer::startClient() {
             LOG_WARN(_logger, "Failed to start kDrive client");
             return false;
         }
+
+        _synthesisAsked = false;
+        _settingsAsked = false;
     }
 
     return true;
@@ -4153,6 +4190,38 @@ ExitInfo AppServer::initSyncPal(const Sync &sync, const QSet<QString> &blackList
 
     return ExitCode::Ok;
 }
+
+#if defined(KD_MACOS)
+ExitInfo AppServer::installVfs() {
+    VfsSetupParams vfsSetupParams;
+    vfsSetupParams.logger = _logger;
+    vfsSetupParams.sentryHandler = sentry::Handler::instance();
+    vfsSetupParams.executeCommand = []([[maybe_unused]] const CommString &command, [[maybe_unused]] bool broadcast) {
+        if (useCommManager()) {
+            _commManager->executeCommandDirect(command, broadcast);
+        }
+    };
+
+    QString error;
+    std::shared_ptr vfs = KDC::createVfsFromPlugin(KDC::VirtualFileMode::Mac, vfsSetupParams, error);
+    if (!vfs) {
+        LOG_WARN(_logger,
+                 "Error in Vfs::createVfsFromPlugin for mode " << KDC::VirtualFileMode::Mac << " : " << error.toStdString());
+        return {ExitCode::SystemError, ExitCause::UnableToStartVfs};
+    }
+
+    // Set callbacks
+    vfs->setExclusionAppListCallback(std::bind_front(&AppServer::exclusionAppList, this));
+
+    // Start VFS
+    if (ExitInfo exitInfo = vfs->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone); !exitInfo) {
+        LOG_WARN(_logger, "Error in Vfs::start: " << exitInfo);
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+#endif
 
 ExitInfo AppServer::stopSyncPal(const SyncDbId syncDbId, const SyncPal::PauseCaller caller,
                                 const SyncPal::DbBehaviorAfterStop behavior) {

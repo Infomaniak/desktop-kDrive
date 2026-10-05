@@ -106,6 +106,8 @@ namespace Infomaniak.kDrive.CustomControls
                 Mode = BindingMode.OneWay
             });
 
+            ApplyTemplate(); // Ensure the template is applied before accessing the SettingsItem
+
             NavigationViewItem? settingItem = SettingsItem as NavigationViewItem;
             if (settingItem is null)
             {

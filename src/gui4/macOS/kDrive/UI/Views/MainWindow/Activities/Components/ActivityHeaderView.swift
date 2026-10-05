@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -33,9 +34,18 @@ extension VisibleActivities {
     var title: String {
         switch self {
         case .myActivityOnly:
-            return KDriveLocalizable.activitiesTypeMyActivity
+            return KDriveLocalizable.activitiesTypeThisComputer
         case .allActivities:
             return KDriveLocalizable.activitiesTypeAllActivities
+        }
+    }
+
+    var matomoName: String {
+        switch self {
+        case .myActivityOnly:
+            return "showMyActivities"
+        case .allActivities:
+            return "showAllActivities"
         }
     }
 }
@@ -94,6 +104,10 @@ struct ActivityHeaderView: View {
             }
             .pickerStyle(.menu)
             .labelsHidden()
+            .onChange(of: visibleActivities) { newValue in
+                @InjectService var matomo: MatomoUtils
+                matomo.track(eventWithCategory: .activityPage, name: newValue.matomoName)
+            }
         }
     }
 }

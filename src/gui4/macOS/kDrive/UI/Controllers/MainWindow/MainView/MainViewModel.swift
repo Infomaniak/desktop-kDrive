@@ -28,12 +28,21 @@ import OrderedCollections
 final class MainViewModel: ObservableObject {
     @LazyInjectService private var coherentCache: CoherentCache
     @LazyInjectService private var cacheObservable: CoherentCacheObservable
+    @LazyInjectService private var vfsConversionCache: VFSConversionCacheObservable
 
     @LazyInjectService private var router: MainViewRouter
 
     @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
     @LazyInjectService private var synchroNodesObserver: UISynchroNodesObserving
     @LazyInjectService private var synchroErrorsObserver: SynchroErrorsObserving
+
+    @Published private(set) var showOnboarding = false
+    @Published private(set) var convertingSynchroIds: Set<Int32> = []
+
+    var isCurrentSynchroConverting: Bool {
+        guard let currentSynchro else { return false }
+        return convertingSynchroIds.contains(Int32(currentSynchro.dbId))
+    }
 
     @Published private(set) var currentSynchroContext: UISynchroContext? {
         didSet {
@@ -70,6 +79,11 @@ final class MainViewModel: ObservableObject {
     private var bindStore = Set<AnyCancellable>()
 
     init() {
+        vfsConversionCache.convertingSynchroIdsPublisher
+            .receiveOnMain(store: &bindStore) { [weak self] in
+                self?.convertingSynchroIds = $0
+            }
+
         Task {
             let synchroContexts = await coherentCache.getSynchroContexts()
             handleUpdatedSynchroContexts(UIIndexedSynchroContext(indexedSynchro: synchroContexts))
@@ -92,12 +106,30 @@ final class MainViewModel: ObservableObject {
 
             currentSynchroContext = UISynchroContext(synchroContext: synchroContext)
             UserDefaults.standard.selectedSynchroDbId = synchro.dbId
+            updateRouterTabForCurrentSynchro()
+        }
+    }
+
+    func loadShowOnboarding() {
+        Task {
+            let appState = try? await UtilityJobs().getAppState(key: KDC.AppStateKey.ShowV4Onboarding)
+            showOnboarding = appState == "1"
+        }
+    }
+
+    func dismissOnboarding() {
+        Task {
+            try? await UtilityJobs().setAppState(key: KDC.AppStateKey.ShowV4Onboarding, value: "0")
+            loadShowOnboarding()
         }
     }
 
     private func handleUpdatedSynchroContexts(_ context: UIIndexedSynchroContext) {
         updateCurrentSynchro(context)
+        updateRouterTabForCurrentSynchro()
+    }
 
+    private func updateRouterTabForCurrentSynchro() {
         if currentBlockingError != nil {
             router.setCurrentTab(.blockingError)
         } else if router.currentPath.mainTab == .blockingError {

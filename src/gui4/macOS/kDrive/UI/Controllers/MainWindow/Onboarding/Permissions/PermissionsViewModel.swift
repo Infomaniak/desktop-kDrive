@@ -39,6 +39,7 @@ final class PermissionsViewModel: ObservableObject {
     private let flowCoordinator: OnboardingFlowCoordinator
 
     private var bindStore = Set<AnyCancellable>()
+    private var didRequestExtensionInstall = false
 
     init(flowCoordinator: OnboardingFlowCoordinator) {
         self.flowCoordinator = flowCoordinator
@@ -62,6 +63,20 @@ final class PermissionsViewModel: ObservableObject {
                 currentState = .done
             } else {
                 currentState = .warning
+            }
+        }
+    }
+
+    func installLiteSyncExtensionIfNeeded() {
+        guard case .endpointSecurityExtension = currentPermission else { return }
+        guard !didRequestExtensionInstall else { return }
+        didRequestExtensionInstall = true
+
+        Task {
+            do {
+                try await UtilityJobs().installLiteSyncExtension()
+            } catch {
+                IKLogger.general.error("Failed to install Lite Sync extension: \(error)")
             }
         }
     }

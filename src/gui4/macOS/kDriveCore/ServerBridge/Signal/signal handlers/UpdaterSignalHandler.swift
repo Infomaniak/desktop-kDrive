@@ -28,9 +28,9 @@ struct UpdaterSignalHandler {
             throw SignalError.unableToGetVersionInfoFromSignal
         }
 
-        let versionInfo = showDialogSignal.body.versionInfo
+        let versionInfo = showDialogSignal.body.versionInfo.asVersionInfo
 
-        IKLogger.xpc.log("[KD] Update available: \(versionInfo.tag) (build: \(versionInfo.buildVersion))")
+        IKLogger.xpc.info("[KD] Update available: \(versionInfo.tag) (build: \(versionInfo.buildVersion))")
 
         await updaterCache.requestShowUpdateDialog(versionInfo: versionInfo)
     }
@@ -42,7 +42,14 @@ struct UpdaterSignalHandler {
 
         let updateState = stateChangedSignal.body.updateState
 
-        IKLogger.xpc.log("[KD] Updater state changed: \(updateState)")
+        switch updateState {
+        case .CheckError:
+            IKLogger.xpc.warning("[KD] Updater state changed: \(updateState)")
+        case .DownloadError, .UpdateError:
+            IKLogger.xpc.error("[KD] Updater state changed: \(updateState)")
+        default:
+            IKLogger.xpc.info("[KD] Updater state changed: \(updateState)")
+        }
 
         await updaterCache.setUpdateState(updateState)
     }

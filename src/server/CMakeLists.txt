@@ -172,6 +172,8 @@ if(APPLE)
     list(APPEND server_SRCS comm/guijobs/exclappgetlistjob.h comm/guijobs/exclappgetlistjob.cpp)
     list(APPEND server_SRCS comm/guijobs/exclappsetlistjob.h comm/guijobs/exclappsetlistjob.cpp)
     list(APPEND server_SRCS comm/guijobs/exclappgetfetchingapplistjob.h comm/guijobs/exclappgetfetchingapplistjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/utilityinstallmaclitesyncextjob.h comm/guijobs/utilityinstallmaclitesyncextjob.cpp)
+    list(APPEND server_SRCS comm/guijobs/utilitycheckmacospermissionsjob.h comm/guijobs/utilitycheckmacospermissionsjob.cpp)
 
     set_property(SOURCE comm/abstractcommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
     set_property(SOURCE comm/xpccommserver_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")

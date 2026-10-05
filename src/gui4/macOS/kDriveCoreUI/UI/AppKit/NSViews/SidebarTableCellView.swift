@@ -56,6 +56,7 @@ public final class SidebarTableCellView: NSTableCellView {
 
     public func setupForItem(_ sidebarItem: SidebarItem, enabled: Bool = true) {
         imageView?.image = sidebarItem.icon
+        imageView?.image?.size = .init(width: 20, height: 20)
         textField?.stringValue = sidebarItem.title
 
         imageView?.contentTintColor = enabled ? nil : ColorToken.Action.Disabled.dimQuaternary.asNSColor

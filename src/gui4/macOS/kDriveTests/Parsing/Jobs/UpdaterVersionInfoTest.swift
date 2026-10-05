@@ -27,13 +27,15 @@ struct UpdaterVersionInfoTest {
     // MARK: - Test Data
 
     var validJobCallbackData: Data {
-        let bundle = Bundle(for: TestBundleMarker.self)
+        get throws {
+            let bundle = Bundle(for: TestBundleMarker.self)
 
-        guard let url = bundle.url(forResource: "UPDATER_VERSION_INFO", withExtension: "json") else {
-            fatalError("Unable to find specified JSON file")
+            guard let url = bundle.url(forResource: "UPDATER_VERSION_INFO", withExtension: "json") else {
+                fatalError("Unable to find specified JSON file")
+            }
+
+            return try Data(contentsOf: url)
         }
-
-        return try! Data(contentsOf: url)
     }
 
     // MARK: - Parsing Test
@@ -41,7 +43,7 @@ struct UpdaterVersionInfoTest {
     @Test("Successfully parses a valid UPDATER_VERSION_INFO.json")
     func parseValidJobCallback() throws {
         // GIVEN
-        let callbackData = validJobCallbackData
+        let callbackData = try validJobCallbackData
 
         // WHEN
         let response = try decoder.decode(CallbackMessage<UpdaterVersionInfoResponse>.self, from: callbackData)
@@ -55,7 +57,8 @@ struct UpdaterVersionInfoTest {
         #expect(response.body.versionInfo.channel == .Internal)
         #expect(response.body.versionInfo.tag == "3.8.2")
         #expect(response.body.versionInfo.buildVersion == 5)
-        #expect(response.body.versionInfo.buildMinOsVersion == "10.15")
+        #expect(response.body.versionInfo.minOsVersion == "10.15")
+        #expect(response.body.versionInfo.minAppVersion == "3.6.2.1")
         #expect(response.body.versionInfo
             .downloadUrl == "https://download.storage.infomaniak.com/drive/desktopclient/update-macos-3.8.2.5.xml")
     }

@@ -1,3 +1,5 @@
 platform: macos
 
 localizable_path: kDriveResources/Localizable
+
+languages: [ da, de, el, en, es, fi, fr, it, nb, nl, pl, pt, sv ]

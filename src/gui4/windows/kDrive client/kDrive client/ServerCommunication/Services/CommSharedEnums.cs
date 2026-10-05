@@ -316,7 +316,9 @@ namespace Infomaniak.kDrive.Types
         TmpDirAccessError,
         UpdateTreeIntegrityCheckFailed,
         MissingReplyData,
-        BlackListPropagationError
+        BlackListPropagationError,
+        FileSystemNotSupported,
+        SyncDeletionFailed
     };
 
 
@@ -346,7 +348,8 @@ namespace Infomaniak.kDrive.Types
         TmpBlacklisted,
         ExcludedByTemplate,
         Hardlink,
-        FileRescued
+        FileRescued,
+        InvalidLinkTarget
     };
 
     public enum InconsistencyType

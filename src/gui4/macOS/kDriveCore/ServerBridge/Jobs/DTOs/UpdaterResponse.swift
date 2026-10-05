@@ -23,9 +23,24 @@ struct VersionInfoResponse: Codable, Sendable {
     let channel: KDC.DistributionChannel
     @Base64CodedString var tag: String
     let buildVersion: UInt64
-    @Base64CodedString var buildMinOsVersion: String
     @Base64CodedString var downloadUrl: String
     @Base64CodedString var checksum: String
+    @Base64CodedString var minOsVersion: String
+    @Base64CodedString var minAppVersion: String
+}
+
+extension VersionInfoResponse {
+    var asVersionInfo: VersionInfo {
+        VersionInfo(
+            channel: channel,
+            tag: tag,
+            buildVersion: buildVersion,
+            downloadUrl: downloadUrl,
+            checksum: checksum,
+            minOsVersion: minOsVersion,
+            minAppVersion: minAppVersion
+        )
+    }
 }
 
 struct UpdaterVersionInfoResponse: Codable, Sendable {

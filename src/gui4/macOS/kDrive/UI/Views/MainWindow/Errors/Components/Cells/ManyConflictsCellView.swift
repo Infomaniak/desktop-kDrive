@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCore
 import kDriveCoreUI
 import kDriveResources
@@ -31,6 +32,8 @@ struct ManyConflictsCellView: View {
                 title: KDriveLocalizable.manyConflictErrorTitle(errors.count),
                 description: KDriveLocalizable.manyConflictErrorDescription,
                 action: .init(title: KDriveLocalizable.buttonManage) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .errors, name: "manageMultipleConflicts")
                     manager.handleConflicts(errors)
                 }
             )

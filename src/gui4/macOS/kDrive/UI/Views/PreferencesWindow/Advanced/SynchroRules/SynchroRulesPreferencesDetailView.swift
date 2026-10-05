@@ -29,6 +29,15 @@ struct SynchroRulesPreferencesDetailView: View {
 
     let item: SynchroRulesItem
 
+    private var userHasExclusionRules: Bool {
+        switch item {
+        case .files:
+            return !repository.exclusionInfo.userExcludedTemplates.isEmpty
+        case .apps:
+            return !repository.exclusionInfo.userExcludedApps.isEmpty
+        }
+    }
+
     private var isButtonDisabled: Bool {
         return item == .apps && appList.isEmpty
     }
@@ -70,16 +79,18 @@ struct SynchroRulesPreferencesDetailView: View {
                     .disabled(isButtonDisabled)
                 }
 
-                if item == .apps {
-                    SynchroRulesPreferencesUserAppList(
-                        userExcludedApps: $repository.exclusionInfo.userExcludedApps,
-                        repository: repository
-                    )
-                } else {
-                    SynchroRulesPreferencesUserTemplateList(
-                        userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates,
-                        repository: repository
-                    )
+                if userHasExclusionRules {
+                    if item == .apps {
+                        SynchroRulesPreferencesUserAppList(
+                            userExcludedApps: $repository.exclusionInfo.userExcludedApps,
+                            repository: repository
+                        )
+                    } else {
+                        SynchroRulesPreferencesUserTemplateList(
+                            userExcludedTemplates: $repository.exclusionInfo.userExcludedTemplates,
+                            repository: repository
+                        )
+                    }
                 }
             }
             .sheet(isPresented: $isShowingSheet) {

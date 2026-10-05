@@ -32,7 +32,6 @@ public struct ErrorJobs: Sendable {
 
     @discardableResult
     public func errorInfoList() async throws -> [ErrorInfo] {
-        IKLogger.data.log("Query for errorInfo list")
         let query = ErrorInfoListQuery(limit: Self.maxErrorInfoListLimit)
         let request = await RequestMessage<ErrorInfoListQuery>(num: RequestNum.ERROR_INFOLIST, body: query)
 
@@ -48,7 +47,6 @@ public struct ErrorJobs: Sendable {
     }
 
     public func refreshSyncErrors(syncDbId: Int32) async throws {
-        IKLogger.data.log("Query to refresh sync errors")
         let query = SyncQuery(syncDbId: syncDbId)
         let request = await RequestMessage<SyncQuery>(num: RequestNum.ERROR_SYNC_REFRESH, body: query)
 
@@ -56,7 +54,6 @@ public struct ErrorJobs: Sendable {
     }
 
     public func resolveConflicts(keepLocalErrorDbIds: [Int32], keepRemoteErrorDbIds: [Int32]) async throws {
-        IKLogger.data.log("Query to resolve conflicts")
         let query = ErrorResolveConflictsQuery(
             keepLocalErrorDbIdList: keepLocalErrorDbIds,
             keepRemoteErrorDbIdList: keepRemoteErrorDbIds
@@ -67,7 +64,6 @@ public struct ErrorJobs: Sendable {
     }
 
     public func resolveConflictsQuick(errorDbIds: [Int32], strategy: KDC.ConflictResolutionStrategy) async throws {
-        IKLogger.data.log("Query to resolve conflicts quickly")
         let query = ErrorResolveConflictsQuickQuery(errorDbIdList: errorDbIds, strategy: strategy)
         let request = await RequestMessage<ErrorResolveConflictsQuickQuery>(
             num: RequestNum.ERROR_RESOLVE_CONFLICTS_QUICK,

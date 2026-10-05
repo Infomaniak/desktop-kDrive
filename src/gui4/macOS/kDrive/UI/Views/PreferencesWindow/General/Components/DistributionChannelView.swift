@@ -16,6 +16,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import InfomaniakDI
 import kDriveCoreUI
 import kDriveResources
 import SwiftUI
@@ -30,11 +31,7 @@ struct DistributionChannelView: View {
     let containsStaffUser: Bool
 
     private var availableOptions: [BetaOption] {
-        var minimumOptions: [BetaOption] = [.doNotJoin, .beta]
-        if containsStaffUser {
-            minimumOptions.append(.internal)
-        }
-        return minimumOptions
+        BetaOption.availableOptions(containsStaffUser: containsStaffUser)
     }
 
     var body: some View {
@@ -58,6 +55,8 @@ struct DistributionChannelView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(KDriveLocalizable.buttonValidate) {
+                    @InjectService var matomo: MatomoUtils
+                    matomo.track(eventWithCategory: .generalSettingsPage, name: "changeReleaseChannel")
                     updateDistributionChannel()
                     dismiss()
                 }
@@ -85,6 +84,9 @@ struct DistributionChannelView: View {
             case .internal:
                 guard currentValue != .internal else { return }
                 newValue = .internal
+            case .test:
+                guard currentValue != .test else { return }
+                newValue = .test
             }
 
             try? await repository.update(\.distributionChannel, value: newValue)

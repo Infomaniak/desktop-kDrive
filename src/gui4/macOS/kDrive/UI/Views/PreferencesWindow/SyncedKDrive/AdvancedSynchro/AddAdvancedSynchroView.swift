@@ -42,6 +42,7 @@ struct FolderChipView: View {
 }
 
 struct AddAdvancedSynchroView: View {
+    @InjectService private var matomo: MatomoUtils
     @Environment(\.dismiss) private var dismiss
 
     @EnvironmentObject private var viewModel: AddAdvancedSynchroFlowViewModel
@@ -82,6 +83,10 @@ struct AddAdvancedSynchroView: View {
                             allowedContentTypes: [.directory],
                             onCompletion: handleSelectedDirectory
                         )
+                        .onChange(of: isShowingFileImporter) { isPresented in
+                            guard isPresented else { return }
+                            matomo.track(eventWithCategory: .driveAdvancedSyncsPage, name: "openSyncDir")
+                        }
 
                         if let localFolder = viewModel.localFolder {
                             FolderChipView(folderName: localFolder.lastPathComponent)
@@ -183,7 +188,8 @@ struct AddAdvancedSynchroView: View {
                 origin: .storedDrive(cachedDrive),
                 remoteFolder: remoteFolder,
                 localFolder: localFolder,
-                blackList: []
+                blackList: [],
+                useLightSync: true
             )
             try await SyncCreationService().create(from: syncCandidate)
 

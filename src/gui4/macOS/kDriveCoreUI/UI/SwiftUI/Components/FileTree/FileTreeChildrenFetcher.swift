@@ -17,10 +17,13 @@
  */
 
 import Foundation
+import InfomaniakConcurrency
 import kDriveCore
 
 @MainActor
 public final class FileTreeChildrenFetcher {
+    private static let maxNetworkingParallelism = 4
+
     private let userDbId: Int32
     private let driveDbId: Int32
     private let rootNodeId: String?
@@ -40,18 +43,62 @@ public final class FileTreeChildrenFetcher {
                 driveId: driveDbId,
                 nodeId: nodeId
             )
-            return nodes.map {
-                let size = $0.size == -1 ? nil : $0.size
+
+            return nodes.map { item in
                 return FileTreeItem(
-                    id: $0.nodeId,
-                    name: $0.name,
-                    size: size,
+                    id: item.nodeId,
+                    name: item.name,
+                    path: item.path,
+                    size: nil,
                     isFolder: true,
-                    isEnabled: !$0.accessDenied
+                    isEnabled: !item.accessDenied
                 )
             }
         } catch {
+            if !(error is CancellationError), !Task.isCancelled {
+                IKLogger.data.warning(
+                    "[KD] Folder children fetch failed userDbId=\(userDbId) driveDbId=\(driveDbId) nodeId=\(nodeId) fallback=empty"
+                )
+            }
             return []
         }
+    }
+
+    /// Resolves the remote path of each node in `nodeIds`, e.g. to derive the checkbox state of folders
+    /// whose children have not been loaded yet. Nodes that cannot be resolved (e.g. stale blacklist
+    /// entries pointing to folders deleted on the server) are silently skipped.
+    public func fetchPaths(for nodeIds: Set<String>) async -> [String: String] {
+        guard !nodeIds.isEmpty else { return [:] }
+
+        let resolvedPaths = await nodeIds.concurrentMap(customConcurrency: Self.maxNetworkingParallelism) { nodeId in
+            await self.remotePath(for: nodeId)
+        }
+
+        let paths = Dictionary(uniqueKeysWithValues: resolvedPaths.compactMap { $0 })
+        if paths.count != nodeIds.count, !Task.isCancelled {
+            IKLogger.data.warning(
+                "[KD] Exclusion paths partially resolved driveDbId=\(driveDbId) requested=\(nodeIds.count) resolved=\(paths.count)"
+            )
+        }
+        return paths
+    }
+
+    private func remotePath(for nodeId: String) async -> (String, String)? {
+        guard let path = try? await NodeJobs().getNodeInfo(
+            userDbId: userDbId,
+            driveId: driveDbId,
+            nodeId: nodeId,
+            withPath: true
+        ).path, !path.isEmpty else { return nil }
+
+        return (nodeId, path)
+    }
+
+    public func fetchSize(for item: FileTreeItem) async -> Int64? {
+        try? await NodeJobs().getFolderSize(
+            userDbId: userDbId,
+            driveId: driveDbId,
+            nodeId: item.id
+        )
     }
 }
