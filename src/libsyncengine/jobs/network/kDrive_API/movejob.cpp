@@ -29,8 +29,8 @@
 
 namespace KDC {
 
-MoveJob::MoveJob(cconst DriveDbId driveDbId, SyncPath destFilepath, RemoteNodeId fileId,
-                 RemoteNodeId destDirId, SyncName name /*= ""*/) :
+MoveJob::MoveJob(const DriveDbId driveDbId, SyncPath destFilepath, RemoteNodeId fileId, RemoteNodeId destDirId,
+                 SyncName name /*= ""*/) :
     AbstractTokenNetworkJob(ApiType::Drive, 0, driveDbId, 0),
     _destFilepath(std::move(destFilepath)),
     _fileId(std::move(fileId)),
