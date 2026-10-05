@@ -107,18 +107,12 @@ class HomeController final : public QObject {
         [[nodiscard]] std::optional<SyncStatus> currentRuntimeStatus() const;
         [[nodiscard]] qint64 currentSyncDbId() const;
         [[nodiscard]] bool syncActionPending() const;
-        [[nodiscard]] HomeStatus resolvedStatus() const;
-        void updateSettledStatus();
 
         AppCache &_appCache;
         MainSelectionStore &_mainSelectionStore;
         SyncService &_syncService;
         AppRouter &_appRouter;
         NetworkStatusObserver &_networkStatusObserver;
-        // Last status resolved for `_settledStatusSyncDbId` outside a transition, shown during the next transition so Home
-        // does not flash its loading state.
-        qint64 _settledStatusSyncDbId{0};
-        HomeStatus _settledStatus{HomeStatus::Loading};
 };
 
 } // namespace KDC
