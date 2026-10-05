@@ -19,6 +19,7 @@
 #include "testincludes.h"
 #include "server/comm/guicommserver.h"
 #include "server/comm/guijobs/guijobfactory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include <log4cplus/logger.h>
 
@@ -229,6 +230,7 @@ class TestGuiCommChannel : public CppUnit::TestFixture, public TestBase {
 
     private:
         GuiJobFactory _guiJobFactory;
+        LocalTemporaryDirectory _localTempDir{"testGuiCommChannel"};
 
         void testGenericJob(const CommString &query, const CommString &answer, const CommString &cbkAnswer,
                             const std::function<void(std::shared_ptr<AbstractGuiJob>)> &processFct);
