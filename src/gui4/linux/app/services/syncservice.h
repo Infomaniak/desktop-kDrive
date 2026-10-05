@@ -27,6 +27,7 @@
 #include <QString>
 
 #include <cstdint>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -40,7 +41,8 @@ class CachePopulator;
  *
  * Role:
  * - orchestrates sync lifecycle requests through CommService;
- * - keeps durable cache mutations signal-driven through CachePipeline;
+ * - keeps durable cache mutations signal-driven through CachePipeline; only the status of a sync being started or paused
+ *   is set optimistically, until the server reports it;
  * - reports transient failures through ServiceEventBus;
  * - registers durable pending state in ServiceActionTracker;
  * - is the only sender of SYNC_ADD, so that AppCache can reserve each drive while its creation is in flight.
@@ -90,6 +92,9 @@ class SyncService : public QObject {
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                            ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
+        [[nodiscard]] bool isStartOrStopSyncPending(qint64 syncDbId) const;
+        [[nodiscard]] std::optional<SyncStatus> setSyncStatusOptimistically(SyncDbId syncDbId, SyncStatus status);
+        void revertOptimisticSyncStatus(SyncDbId syncDbId, SyncStatus optimisticStatus, std::optional<SyncStatus> previousStatus);
         [[nodiscard]] bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
         void releaseSyncedReservations();
         void releaseReconciledReservations();
