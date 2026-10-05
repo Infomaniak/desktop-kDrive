@@ -92,6 +92,7 @@ class SyncService : public QObject {
         [[nodiscard]] bool isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                            ServiceActionTracker::ScopeId scopeId = 0) const;
         void notifyRequestFailure(const ExitInfo &exitInfo, RequestNum requestNum);
+        [[nodiscard]] bool isStartOrStopSyncPending(qint64 syncDbId) const;
         [[nodiscard]] std::optional<SyncStatus> setSyncStatusOptimistically(SyncDbId syncDbId, SyncStatus status);
         void revertOptimisticSyncStatus(SyncDbId syncDbId, SyncStatus optimisticStatus, std::optional<SyncStatus> previousStatus);
         [[nodiscard]] bool isValidSyncConfigurationValue(int32_t syncConfiguration) const;
