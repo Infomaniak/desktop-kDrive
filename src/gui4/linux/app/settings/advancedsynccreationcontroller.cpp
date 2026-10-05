@@ -231,6 +231,8 @@ void AdvancedSyncCreationController::submit() {
                             << "/ cause:" << exitInfo.cause();
                     self->_submitFailed = true;
                     self->setState(State::Editing);
+                    // Target changes are ignored while the request is in flight: the drive may be gone by now.
+                    self->handleTargetStateChanged();
                     return;
                 }
 
