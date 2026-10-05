@@ -149,6 +149,7 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 ## Common Gotchas
 
+- macOS CI and release builds use `compiler.version` from the existing `infomaniak_release` profile; set it to the Apple Clang version (21 for Xcode 26.5), not the Xcode version. Do not add a compiler-version command-line override.
 - **Qt login**: The Qt installer requires authentication. Three modes: `ini` (default, reads `qtaccount.ini`), `envvars` (`QT_EMAIL`/`QT_PW`), `cli` (interactive)
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated

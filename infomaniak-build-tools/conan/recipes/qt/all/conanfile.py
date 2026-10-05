@@ -410,13 +410,14 @@ class QtConan(ConanFile):
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
             self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
-            if self.version == "6.5.3":
+            if self.version in ("6.2.3", "6.5.3"):
+                # AGL is unused by Qt 6 and is absent from recent macOS SDKs.
                 replace_in_file(
                     self, find_wrap_open_gl,
                     'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
                     ''
                 )
-            elif self.version == "6.2.3":
+            if self.version == "6.2.3":
                 """
                 Fixes spam of this kind of CMake warning on macOS:            
                 
