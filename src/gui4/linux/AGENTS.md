@@ -372,13 +372,11 @@
   transient feedback independent from projected row lifetime.
 - `app/mainwindow/homecontroller.*`: cache-backed QML adapter for the modular Home and toolbar sync controls. It
   resolves the selected sync into one central presentation state, exposes user/drive/error data, owns web-link
-  construction, and delegates pause/resume to `SyncService`. During a transition reported by the server (`Starting`,
-  `PauseAsked`, `StopAsked`), Home keeps the last settled status of the displayed synchronization instead of flashing
-  its loading state; loading is shown only while no settled status is known for that synchronization. The settled
-  status is recorded on every `homeChanged`, even while Home is not instantiated. A pending pause or resume request only
-  drives the toolbar control (`SyncControlState::Pending`), never the central status.
+  construction, and delegates pause/resume to `SyncService`. The central status follows the cached runtime status only;
+  a pending pause or resume request drives the toolbar control (`SyncControlState::Pending`), never the central status.
 - `app/mainwindow/homestateresolver.*`: pure status matrix used by `HomeController`. Structured sync errors remain an
-  independent Home banner instead of replacing the central state. An undefined runtime status, reported until the
+  independent Home banner instead of replacing the central state. `Starting` is presented as syncing and `PauseAsked`/
+  `StopAsked` as paused, so a resume or pause is acknowledged at once. An undefined runtime status, reported until the
   server starts its synchronizations a few seconds after launch, is presented as up to date (offline without network),
   as on macOS, instead of an empty loading state.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
@@ -603,6 +601,9 @@ cmake --build build-linux/build/build/Debug --target kDrive kDrive_client kdrive
   structured backend error information in request handlers/logs.
 - `DriveService` and `SyncService` use `ServiceActionTracker` for loading/pending state and `ServiceEventBus` for
   transient failure notification; avoid reintroducing local `lastError` / ad hoc pending counters there.
+- `SyncService::startSync`/`stopSync` set the cached runtime status to `Starting`/`StopAsked` as soon as the request is
+  sent, as macOS does, because the server reports the new status only on its next progress tick after its reply. A
+  failed request restores the previous status unless the server has reported one since.
 - `AppCache`, `MainSelectionStore`, and `OnboardingState` mutations must run on the Qt main thread.
 - `AppCache` must not own mutable main selection; derive main context through `MainSelectionStore.currentSyncDbId`.
 - Main-sidebar drive/sync rows belong in `SyncSelectorModel`. Keep window state, tab navigation, desktop actions, and
