@@ -1378,7 +1378,7 @@ bool ParmsDb::upgradeTables() {
         return false;
     }
 
-    for (const auto &name: {"sentryEnabled", "matomoEnabled", "notifyBeforeDelete"}) {
+    for (const auto &name: {"sentryEnabled", "matomoEnabled"}) {
         if (!addIntegerColumnIfMissing(tableName, name, 1)) {
             return false;
         }
