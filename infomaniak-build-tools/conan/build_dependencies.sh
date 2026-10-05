@@ -200,8 +200,8 @@ if [[ $use_release_profile == true ]]; then
     if [[ "$build_type" == "Debug" ]]; then
       error "Cannot use --make-release with Debug build_type. Use Release or RelWithDebInfo."
     fi
-    if grep -q 'os=Macos' "$profile_path" && ! grep -q 'os.version=10.15' "$profile_path"; then
-      error "Profile '$release_profile' must set os.version=10.15 for MacOS"
+    if grep -qE '^os=Macos$' "$profile_path" && ! grep -qE '^os\.version=12\.4$' "$profile_path"; then
+      error "Profile '$release_profile' must set os.version=12.4 for MacOS"
     fi
 
     conan_profile="$release_profile"

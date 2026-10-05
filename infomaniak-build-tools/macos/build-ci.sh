@@ -27,7 +27,7 @@ export SIGN_IDENTITY="Developer ID Application: Infomaniak Network SA (864VDCS2Q
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
 
-export MACOSX_DEPLOYMENT_TARGET="10.15"
+export MACOSX_DEPLOYMENT_TARGET="12.4"
 export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 src_dir="${1-$PWD}"
 app_name="kDrive"
