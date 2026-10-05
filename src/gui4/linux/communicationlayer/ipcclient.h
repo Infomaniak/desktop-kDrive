@@ -67,6 +67,8 @@ class IpcClient : public QObject {
          * @param params Deserialized JSON parameters associated with the signal
          */
         void serverSignalReceived(SignalNum num, const Poco::DynamicStruct &params);
+        // Some server signals were lost, skipped after a timeout or dropped as stale: the state they carried must be reloaded.
+        void serverSignalsLost();
 
     private slots:
         void attemptInitialConnection();
