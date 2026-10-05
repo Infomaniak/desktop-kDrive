@@ -48,6 +48,8 @@ constexpr size_t largeReadBufferCapacity = 8 * 1024 * 1024; // 8 MiB
 
 namespace KDC {
 
+using namespace Qt::StringLiterals;
+
 IpcClient::IpcClient(QObject *parent) :
     QObject(parent),
     _socket(new QSslSocket(this)),
@@ -63,6 +65,21 @@ IpcClient::IpcClient(QObject *parent) :
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::signalReady, this, &IpcClient::serverSignalReceived);
     (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::protocolError, this,
                    [](const QString &message, const QString &details) { SentryService::reportFatalAndExit(message, details); });
+    (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::signalsSkipped, this,
+                   [this](const int32_t firstSkippedId, const int32_t lastSkippedId) {
+                       SentryService::reportError(
+                               u"Server signals skipped after a timeout"_s,
+                               u"first skipped id: %1 | last skipped id: %2"_s.arg(firstSkippedId).arg(lastSkippedId));
+                       emit serverSignalsLost();
+                   });
+    (void) connect(&_serverSignalSequencer, &ServerSignalSequencer::staleSignalDropped, this,
+                   [this](const int32_t signalId, const int32_t lastForwardedId, const SignalNum num) {
+                       SentryService::reportError(u"Stale server signal dropped"_s,
+                                                  u"received id: %1 | last forwarded id: %2 | SignalNum: %3"_s.arg(signalId)
+                                                          .arg(lastForwardedId)
+                                                          .arg(toInt(num)));
+                       emit serverSignalsLost();
+                   });
 }
 
 
