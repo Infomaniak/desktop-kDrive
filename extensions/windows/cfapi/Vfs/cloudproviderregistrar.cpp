@@ -242,8 +242,15 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
 // Returns true if the two folders are related
 // (i.e. one is a subfolder of the other or they are the same folder).
 bool CloudProviderRegistrar::areRelatedFolders(const std::wstring &folderPath1, const std::wstring &folderPath2) {
-    const std::filesystem::path path1 = std::filesystem::path(folderPath1).lexically_normal();
-    const std::filesystem::path path2 = std::filesystem::path(folderPath2).lexically_normal();
+    std::filesystem::path path1 = std::filesystem::path(folderPath1).lexically_normal();
+    std::filesystem::path path2 = std::filesystem::path(folderPath2).lexically_normal();
+
+    if (path1.has_relative_path() && path1.filename().empty()) {
+        path1 = path1.parent_path();
+    }
+    if (path2.has_relative_path() && path2.filename().empty()) {
+        path2 = path2.parent_path();
+    }
 
     if (path1.empty() || path2.empty()) {
         return false;
