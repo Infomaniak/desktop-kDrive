@@ -364,6 +364,17 @@ std::optional<BaseSync> AppCache::mainSync(const DriveDbId driveDbId) const {
     return classicSyncs.front();
 }
 
+std::vector<BaseSync> AppCache::advancedSyncs(const DriveDbId driveDbId) const {
+    std::vector<BaseSync> syncs = syncsForDrive(driveDbId);
+    const auto main = mainSync(driveDbId);
+    if (!main) {
+        return syncs;
+    }
+
+    (void) std::erase_if(syncs, [&main](const BaseSync &syncInfo) { return syncInfo.dbId() == main->dbId(); });
+    return syncs;
+}
+
 bool AppCache::isAvailableDriveConfigured(const AvailableDriveKey &key) const {
     const auto accountInfo = accountForAvailableDrive(key.userDbId, key.accountId);
     if (!accountInfo) {
