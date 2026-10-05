@@ -48,6 +48,7 @@ QtObject {
     readonly property real homeStatusVisualHeight: 131
     readonly property real homeStatusAnimationWidth: 178
     readonly property real homeStatusAnimationHeight: 131
+    readonly property real homeLoadingSpinnerSize: 32
     readonly property real homeStatusOfflineAnimationWidth: 227
     readonly property real homeStatusOfflineAnimationHeight: 90
     readonly property real homeStatusSetupImageWidth: 126
@@ -60,4 +61,9 @@ QtObject {
     readonly property real toolbarActionGroupSpacing: 4
     readonly property real toolbarActionGroupWidth: toolbarActionGroupButtonSize * 2 + toolbarActionGroupSpacing
                                                      + toolbarActionGroupPadding * 2
+
+    // Single source of the selector row height, shared by the row and the popup that sizes itself on its rows.
+    function syncSelectorItemHeight(hasSubtitle: bool): real {
+        return hasSubtitle ? syncSelectorAdvancedHeight : syncSelectorHeight
+    }
 }
