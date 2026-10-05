@@ -31,19 +31,23 @@ HomeStatus resolveHomeStatus(const bool hasSync, const bool offline, const std::
     }
 
     switch (*runtimeStatus) {
+        // As on macOS, a starting synchronization is presented as syncing, so a resume is acknowledged at once.
+        case SyncStatus::Starting:
         case SyncStatus::Running:
             return HomeStatus::Syncing;
+        // An undefined status means the server has not reported the synchronization yet: it only starts its synchronizations
+        // a few seconds after launch. As on macOS, Home presents it as up to date rather than as an empty loading state.
+        case SyncStatus::Undefined:
         case SyncStatus::Idle:
             return offline ? HomeStatus::Offline : HomeStatus::UpToDate;
         case SyncStatus::Paused:
             return offline ? HomeStatus::Offline : HomeStatus::Paused;
+        // A pause request is presented as paused at once, as `Starting` is presented as syncing.
+        case SyncStatus::PauseAsked:
+        case SyncStatus::StopAsked:
         case SyncStatus::Stopped:
         case SyncStatus::Error:
             return HomeStatus::Paused;
-        case SyncStatus::Starting:
-        case SyncStatus::PauseAsked:
-        case SyncStatus::StopAsked:
-        case SyncStatus::Undefined:
         case SyncStatus::EnumEnd:
             return HomeStatus::Loading;
     }
