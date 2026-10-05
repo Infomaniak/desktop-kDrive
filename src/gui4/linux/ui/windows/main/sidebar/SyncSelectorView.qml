@@ -30,6 +30,31 @@ Item {
     visible: controller.entryCount > 0
     implicitHeight: visible ? currentSelectorItem.implicitHeight : 0
 
+    // Height of the popup. When the rows do not all fit below the maximum height, the list stops in the middle of the
+    // first row that does not fit (or of the previous one when that middle is still too low), so the half-visible row
+    // shows that the list continues. `rowCount` and `contentHeight` are only passed so the binding follows the model.
+    function popupHeight(rowCount: int, contentHeight: real): real {
+        const model = root.controller.selectorModel
+        const verticalPadding = selectorPopup.topPadding + selectorPopup.bottomPadding
+        const maxHeight = IKMainWindow.syncSelectorPopupMaxHeight - verticalPadding
+        let rowTop = 0
+        let previousRowMiddle = 0
+        for (let row = 0; row < rowCount; ++row) {
+            const subtitle = model.data(model.index(row, 0), SyncSelectorModel.SubtitleRole)
+            const rowHeight = IKMainWindow.syncSelectorItemHeight(!!subtitle && subtitle.length > 0)
+            if (rowTop + rowHeight > maxHeight) {
+                const rowMiddle = rowTop + rowHeight / 2
+                return (rowMiddle <= maxHeight || row === 0 ? rowMiddle : previousRowMiddle) + verticalPadding
+            }
+
+            previousRowMiddle = rowTop + rowHeight / 2
+            rowTop += rowHeight + selectorList.spacing
+        }
+
+        // Exact height of the rows: `contentHeight` is only an estimate until every delegate exists.
+        return Math.max(0, rowTop - selectorList.spacing) + verticalPadding
+    }
+
     IKDriveSyncSelectorItem {
         id: currentSelectorItem
 
@@ -55,7 +80,7 @@ Item {
         x: 0
         y: root.height + IKSpacing.s4
         width: root.width
-        height: Math.min(selectorList.contentHeight + IKSpacing.s8 * 2, IKMainWindow.syncSelectorPopupMaxHeight)
+        height: root.popupHeight(selectorList.count, selectorList.contentHeight)
         padding: IKSpacing.s8
         focus: true
         modal: true
