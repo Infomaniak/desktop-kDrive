@@ -4007,7 +4007,7 @@ bool AppServer::startClient() {
         // Start the client
         QString pathToExecutable;
 
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
         pathToExecutable =
                 QCoreApplication::applicationDirPath() +
                 QString("/%1.app/Contents/MacOS/%2").arg(APPLICATION_CLIENTV4_APP_EXECUTABLE, APPLICATION_CLIENTV4_EXECUTABLE);
@@ -5279,7 +5279,7 @@ void AppServer::onRestartSyncs() {
         if ((syncPal->isPaused() || syncPal->pauseAsked()) &&
             syncPal->pauseTime() + std::chrono::milliseconds(syncPal->pauseDuration()) < std::chrono::steady_clock::now()) {
             syncPal->unpause();
-#if defined(__APPLE__)
+#if defined(KD_MACOS)
             Utility::restartFinderExtension();
 #endif
         }
