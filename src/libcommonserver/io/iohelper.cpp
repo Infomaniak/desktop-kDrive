@@ -703,9 +703,7 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *const buf, bool &exis
     exists = true;
     auto ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError, option)) {
-        std::string message = ioError2StdString(ioError);
-
-        throw std::runtime_error("IoHelper::getFileStat error: " + message);
+        throw std::runtime_error("IoHelper::getFileStat error: " + toString(ioError));
     }
 
     exists = (ioError != IoError::NoSuchFileOrDirectory) && (ioError != IoError::FileNameTooLong);
