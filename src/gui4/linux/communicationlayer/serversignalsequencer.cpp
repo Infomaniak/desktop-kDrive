@@ -20,6 +20,8 @@
 
 #include <QLoggingCategory>
 
+#include <algorithm>
+#include <cstdint>
 #include <limits>
 
 
@@ -53,8 +55,16 @@ void ServerSignalSequencer::enqueue(const int32_t signalId, const SignalNum num,
     }
 
     if (signalId <= _lastForwardedId) {
-        fail(QStringLiteral("Stale server signal id"),
-             QStringLiteral("received id: %1 | last forwarded id: %2").arg(signalId).arg(_lastForwardedId));
+        if (_skippedIds.erase(signalId) > 0) {
+            qCWarning(lcServerSignalSequencer)
+                    << "Late server signal dropped after being skipped | SignalNum:" << static_cast<int32_t>(num)
+                    << "/ id:" << signalId;
+            return;
+        }
+
+        qCWarning(lcServerSignalSequencer) << "Stale server signal dropped | SignalNum:" << static_cast<int32_t>(num)
+                                           << "/ id:" << signalId << "/ last forwarded id:" << _lastForwardedId;
+        emit staleSignalDropped(signalId, _lastForwardedId, num);
         return;
     }
 
@@ -144,18 +154,36 @@ void ServerSignalSequencer::fail(const QString &message, const QString &details)
     emit protocolError(message, details);
 }
 
+/**
+ * Skips the ids missing before the first buffered signal, then delivers the buffered signals that became contiguous. A
+ * further gap among them starts a new wait.
+ */
 void ServerSignalSequencer::handleMissingSignalTimeout() {
-    if (_pendingSignals.empty()) {
+    if (_failed || _pendingSignals.empty()) {
         return;
     }
 
-    const int32_t expectedId = _lastForwardedId + 1;
-    fail(QStringLiteral("Timed out waiting for server signal"),
-         QStringLiteral("expected id: %1 | first buffered id: %2 | last buffered id: %3 | buffered signals: %4")
-                 .arg(expectedId)
-                 .arg(_pendingSignals.begin()->first)
-                 .arg(_pendingSignals.rbegin()->first)
-                 .arg(static_cast<qulonglong>(_pendingSignals.size())));
+    const int32_t firstSkippedId = _lastForwardedId + 1;
+    const int32_t lastSkippedId = _pendingSignals.begin()->first - 1;
+    qCWarning(lcServerSignalSequencer) << "Timed out waiting for server signals, skipping them | first skipped id:"
+                                       << firstSkippedId << "/ last skipped id:" << lastSkippedId
+                                       << "/ buffered signals:" << _pendingSignals.size();
+
+    // Only the newest ids are remembered: bounding the range before inserting keeps an aberrant buffered id from turning
+    // this loop into billions of insertions.
+    const int64_t firstRememberedId =
+            std::max<int64_t>(firstSkippedId, int64_t{lastSkippedId} - static_cast<int64_t>(_maxPendingSignals) + 1);
+    for (int64_t skippedId = firstRememberedId; skippedId <= lastSkippedId; ++skippedId) {
+        (void) _skippedIds.insert(static_cast<int32_t>(skippedId));
+    }
+
+    while (_skippedIds.size() > _maxPendingSignals) {
+        (void) _skippedIds.erase(_skippedIds.begin());
+    }
+
+    _lastForwardedId = lastSkippedId;
+    emit signalsSkipped(firstSkippedId, lastSkippedId);
+    drainContiguousSignals();
 }
 
 } // namespace KDC
