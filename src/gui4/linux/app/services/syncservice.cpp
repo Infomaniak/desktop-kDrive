@@ -100,6 +100,11 @@ bool SyncService::addDriveSync(const SyncAddRequest &request, const CommService:
 }
 
 void SyncService::startSync(const qint64 syncDbId) {
+    if (isStartOrStopSyncPending(syncDbId)) {
+        qCWarning(lcSyncService) << "Sync start ignored: a start or stop is already pending | syncDbId:" << syncDbId;
+        return;
+    }
+
     beginAction(actionStartSync, syncDbId);
     const auto previousStatus = setSyncStatusOptimistically(syncDbId, SyncStatus::Starting);
 
@@ -113,6 +118,11 @@ void SyncService::startSync(const qint64 syncDbId) {
 }
 
 void SyncService::stopSync(const qint64 syncDbId) {
+    if (isStartOrStopSyncPending(syncDbId)) {
+        qCWarning(lcSyncService) << "Sync stop ignored: a start or stop is already pending | syncDbId:" << syncDbId;
+        return;
+    }
+
     beginAction(actionStopSync, syncDbId);
     const auto previousStatus = setSyncStatusOptimistically(syncDbId, SyncStatus::StopAsked);
 
@@ -241,6 +251,14 @@ void SyncService::endAction(const ServiceActionTracker::ActionKey &actionKey, co
 bool SyncService::isActionPending(const ServiceActionTracker::ActionKey &actionKey,
                                   const ServiceActionTracker::ScopeId scopeId) const {
     return _serviceActionTracker.isActionPending(serviceKeySync, actionKey, scopeId);
+}
+
+/**
+ * A start and a stop never overlap for one synchronization: a failed request restores the status it replaced, which would
+ * otherwise be the optimistic status of the other request.
+ */
+bool SyncService::isStartOrStopSyncPending(const qint64 syncDbId) const {
+    return isStartSyncPending(syncDbId) || isStopSyncPending(syncDbId);
 }
 
 /**
