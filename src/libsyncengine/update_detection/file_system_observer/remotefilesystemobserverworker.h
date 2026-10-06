@@ -124,6 +124,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         using CursorMap = std::unordered_map<RemoteNodeId, CursorData, StringHashFunction, std::equal_to<>>;
         // Cache map tracking the cursors of the listing requests made for folders specified by their remote IDs.
         mutable CursorMap _listingCursorCache;
+        mutable std::recursive_mutex _listingCursorCacheMutex;
         [[nodiscard]] ExitInfo getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData) const;
         [[nodiscard]] ExitInfo saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData);
         [[nodiscard]] ExitInfo clearListingCursor(const RemoteNodeId &remoteDirId);
