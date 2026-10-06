@@ -152,7 +152,7 @@ void TestAppServer::testStartAndStopSync() {
     const auto syncDbPath = _appPtr->syncPalMap[syncDbId]->syncDb()->dbPath();
 
     // Stop sync & clear maps
-    _appPtr->stopSyncTask(syncDbId);
+    CPPUNIT_ASSERT(_appPtr->stopSyncTask(syncDbId));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 

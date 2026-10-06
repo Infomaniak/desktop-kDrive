@@ -814,6 +814,7 @@ void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
             !exitInfo) // This task can be long, hence blocking, on Windows.
         {
             LOG_WARN(_logger, "Error in stopSyncTask for syncDbId=" << syncDbId << " : " << exitInfo);
+            return;
         }
 
         // Delete sync from DB
