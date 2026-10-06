@@ -146,7 +146,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void stopAllSyncPals();
         void stopAllVfs();
 
-        void stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
+        ExitInfo stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
                               const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
 
         void addError(const Error &error) const;

@@ -715,11 +715,15 @@ void AppServer::stopAllVfs() {
     LOG_DEBUG(_logger, "Vfs(s) stopped");
 }
 
-void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
-                                 const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+ExitInfo AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
+                                     const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     for (const auto syncDbId: syncDbIdList) {
-        (void) stopSyncTask(syncDbId, behavior);
+        if (ExitInfo exitInfo = stopSyncTask(syncDbId, behavior); !exitInfo) {
+            LOG_WARN(_logger, "Error in stopSyncTask for syncDbId=" << syncDbId << " : " << exitInfo);
+            return exitInfo;
+        }
     }
+    return ExitCode::Ok;
 }
 
 ExitInfo AppServer::deleteAccount(const AccountDbId accountDbId) {
@@ -750,8 +754,7 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
     }
 
     // Delete the drive
-    const ExitInfo exitInfo = ServerRequests::deleteDrive(driveDbId);
-    if (!exitInfo) {
+    if (const ExitInfo exitInfo = ServerRequests::deleteDrive(driveDbId); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitInfo);
         if (useOldCommServer()) sendDriveDeletionFailed(driveDbId);
         return exitInfo;
@@ -780,7 +783,7 @@ ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     // Delete the sync
@@ -1198,15 +1201,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Stop syncs for this user and remove them from syncPalMap.
             QTimer::singleShot(100, [this, userDbId, syncDbIdList]() {
-                AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+                if (ExitInfo exitInfo = AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+                    !exitInfo) {
+                    LOG_WARN(_logger, "Error in stopAllSyncsTask for userDbId=" << userDbId << " : " << exitInfo);
+                    addError(Error(ERR_ID, exitInfo));
+                    return;
+                }
 
                 // Delete user from DB
-                const ExitCode exitCode = ServerRequests::deleteUser(userDbId);
-                if (exitCode == ExitCode::Ok) {
+                const ExitInfo exitInfo = ServerRequests::deleteUser(userDbId);
+                if (exitInfo) {
                     sendUserRemoved(userDbId);
                 } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteUser: code=" << exitCode);
-                    addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
+                    LOG_WARN(_logger, "Error in Requests::deleteUser: " << exitInfo);
+                    addError(Error(ERR_ID, exitInfo));
                 }
             });
 
@@ -1451,7 +1459,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // Stop syncs for this drive and remove them from syncPalMap
             QTimer::singleShot(100, [this, driveDbId, syncDbIdList]() {
-                AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+                if (ExitInfo exitinfo = AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
+                    !exitinfo) {
+                    LOG_WARN(_logger, "Error in stopAllSyncsTask for driveDbId=" << driveDbId << " : " << exitinfo);
+                    addError(Error(ERR_ID, exitinfo));
+                    return;
+                }
                 if (const ExitInfo exitInfo = AppServer::deleteDrive(driveDbId); !exitInfo) {
                     LOG_WARN(_logger, "Error in deleteDrive for driveDbId=" << driveDbId << " : " << exitInfo);
                     addError(Error(ERR_ID, exitInfo));
@@ -2983,7 +2996,7 @@ ExitInfo AppServer::updateUserInfo(User &user) {
         }
 
         if (drives.empty()) {
-            if(const ExitInfo exitInfo = deleteAccount(account.dbId()); !exitInfo) {
+            if (const ExitInfo exitInfo = deleteAccount(account.dbId()); !exitInfo) {
                 LOG_WARN(_logger, "Error in deleteAccount for accountDbId=" << account.dbId() << ": " << exitInfo);
             }
             continue;

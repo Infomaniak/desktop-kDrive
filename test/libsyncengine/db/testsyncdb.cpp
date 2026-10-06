@@ -407,7 +407,7 @@ void TestSyncDb::testCorrespondingNodeIdWithCacheFailure() {
 void TestSyncDb::testTryToFixDbNodeIdsAfterSyncDirChange() {
     _testObj->enablePrepare(true);
     _testObj->prepare();
-    LocalTemporaryDirectory localTmpDir("testCorrespondingNodeIdWithCachefailure");
+    LocalTemporaryDirectory localTmpDir("testTryToFixDbNodeIdsAfterSyncDirChange");
     SyncPath localSyncDirPath = localTmpDir.path() / "sync_dir";
     std::error_code ec;
     std::filesystem::create_directories(localSyncDirPath, ec);
