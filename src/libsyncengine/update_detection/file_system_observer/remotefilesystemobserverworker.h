@@ -147,7 +147,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
         [[nodiscard]] RemoteNodeId rootFolderRemoteId() const;
         [[nodiscard]] ExitInfo updateSpecialFolderItem(const RemoteNodeId &remoteNodeId);
-        [[nodiscard]] ExitInfo getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName);
+        [[nodiscard]] ExitInfo getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) const;
 
         [[nodiscard]] ExitInfo parseCsvReply(CursorPersistence cursorPersistence,
                                              std::shared_ptr<CsvFullFileListWithCursorJob> csvFullListingJob);

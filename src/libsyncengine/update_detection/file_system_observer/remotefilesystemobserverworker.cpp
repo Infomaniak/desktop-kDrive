@@ -1504,7 +1504,7 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &r
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) {
+ExitInfo RemoteFileSystemObserverWorker::getSpecialRemoteFolderName(const RemoteNodeId &remoteDirId, SyncName &folderName) const {
     folderName = SyncName{};
 
     RemoteNodeId userPrivateFolderRemoteId;
