@@ -212,6 +212,11 @@ ExitInfo SearchJob::handleResponse(std::istream &is) {
         if (!itemExitInfo) exitInfo = itemExitInfo; // Stores only the last error for the final return value.
     }
 
+    // Only a local metadata failure reaches this point: sending the request again would fail the same way.
+    if (!exitInfo) {
+        disableRetry();
+    }
+
     return exitInfo;
 }
 } // namespace KDC
