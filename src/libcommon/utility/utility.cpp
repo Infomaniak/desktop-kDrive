@@ -674,28 +674,29 @@ Language CommonUtility::strToLanguage(const QString &lang) {
 }
 
 QString applicationTrPath() {
-#if defined(KD_MACOS)
-    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
-    const QString gui4DevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/");
-#else
-    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
-    const QString gui4DevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/");
-#endif
     const auto hasClientQmFiles = [](const QString &path) {
         const QDir dir(path);
         return dir.exists() && !dir.entryList(QStringList() << "client_*.qm", QDir::Files).isEmpty();
     };
+
+#if defined(KD_MACOS)
+    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/gui/");
+    if (const QString gui4DevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../../../../src/");
+        hasClientQmFiles(gui4DevTrPath)) {
+        // might miss Qt etc.
+        qWarning() << "Running from build location! Translations may be incomplete!";
+        return gui4DevTrPath;
+    }
+#else
+    const QString legacyDevTrPath = QCoreApplication::applicationDirPath() + QString::fromLatin1("/../src/gui/");
+#endif
 
     if (hasClientQmFiles(legacyDevTrPath)) {
         // might miss Qt etc.
         qWarning() << "Running from build location! Translations may be incomplete!";
         return legacyDevTrPath;
     }
-    if (hasClientQmFiles(gui4DevTrPath)) {
-        // might miss Qt etc.
-        qWarning() << "Running from build location! Translations may be incomplete!";
-        return gui4DevTrPath;
-    }
+
 #if defined(KD_WINDOWS)
     return QCoreApplication::applicationDirPath() + QLatin1String("/i18n/");
 #elif defined(KD_MACOS)
