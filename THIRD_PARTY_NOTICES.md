@@ -33,33 +33,34 @@ The exact set of redistributed binaries can vary by platform:
 
 ### zlib
 
-- **Version:** [>=1.2.11 <2]
+- **Version:** 1.3.2 (declared as `[>=1.2.11 <2]` in `conanfile.py`)
 - **License:** Zlib
-- **Copyright:** Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
+- **Copyright:** Copyright (C) 1995-2026 Jean-loup Gailly and Mark Adler
 - **Repository:** https://zlib.net/
 - **Note:** Declared in `conanfile.py`; also required by OpenSSL and some platform libzip builds.
 
 ### OpenSSL
 
-- **Version:** 3.6.3
+- **Version:** 3.6.5
 - **License:** Apache-2.0
-- **Copyright:** Copyright (c) 1998-2024 The OpenSSL Project Authors
+- **Copyright:** Copyright (c) 1998-2026 The OpenSSL Project Authors
 - **Repository:** https://www.openssl.org/
-- **Note:** Declared in `conanfile.py`. macOS uses the local `openssl-macos/3.6.3` recipe, other platforms use
-  `openssl/3.6.3`.
+- **Note:** Declared in `conanfile.py`. macOS uses the local `openssl-macos/3.6.5` recipe, other platforms use
+  `openssl/3.6.5`.
 
 ### Qt 6
 
-- **Version:** 6.8.3
+- **Version:** 6.2.3 (macOS) / 6.12.0 (Linux & Windows)
 - **License:** LGPL-3.0 / GPL-2.0 / GPL-3.0 / Commercial
 - **Copyright:** Copyright (C) The Qt Company Ltd. and other contributors
 - **Repository:** https://www.qt.io/
-- **Note:** Declared in `conanfile.py`. This application is built against Qt 6.8.3. Qt is deployed with the application
-  on supported platforms. Qt source packages are available from https://download.qt.io/
+- **Note:** Declared in `conanfile.py`. The application is built against Qt 6.2.3 on macOS and Qt 6.12.0 on Linux and
+  Windows. Qt is deployed with the application on supported platforms. Qt source packages are available from
+  https://download.qt.io/
 
 ### Poco
 
-- **Version:** 1.15.3
+- **Version:** 1.15.4
 - **License:** BSL-1.0
 - **Copyright:** Copyright (c) 2006-2024, Applied Informatics Software Engineering GmbH and Contributors
 - **Repository:** https://github.com/pocoproject/poco
@@ -68,13 +69,12 @@ The exact set of redistributed binaries can vary by platform:
 
 ### Sentry Native
 
-- **Version:** Build-environment dependent
+- **Version:** 0.7.10
 - **License:** MIT
 - **Copyright:** Copyright (c) 2019 Sentry
 - **Repository:** https://github.com/getsentry/sentry-native
-- **Note:** Declared in `conanfile.py`. Installed outside Conan according to `infomaniak-build-tools/*/Readme.md` and
-  redistributed with the application. The repository does not pin one single version across all platforms; the Linux
-  setup documentation currently references `0.7.9`.
+- **Note:** Declared in `conanfile.py` as `sentry/0.7.10` (local recipe) and managed via the Conan-based workflow on
+  all platforms (see `infomaniak-build-tools/*/Readme.md`). Redistributed with the application.
 
 ### Crashpad
 
