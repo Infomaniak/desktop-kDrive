@@ -20,6 +20,7 @@
 
 #include "info/searchinfo.h"
 #include "jobs/network/abstracttokennetworkjob.h"
+#include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/jobexceptions.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
@@ -29,8 +30,6 @@ namespace KDC {
 
 // Results per page. The API returns 10 without it; the iOS app requests 200 on the same endpoint.
 static constexpr auto searchPageSize = "50";
-static constexpr auto privateFolder = Str("/Private/");
-static constexpr auto sharedFolder = Str("/Shared/");
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const std::string &searchString,
                      const std::string &cursorInput /*= {}*/) :
@@ -101,17 +100,10 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 
     if (_syncRootPath.empty()) return ExitCode::Ok; // If sync root path is not set, skip local properties check.
 
-    if (localProperties.path.native().starts_with(privateFolder)) {
-        localProperties.path = localProperties.path.native().substr(
-                std::char_traits<std::remove_cvref_t<decltype(*privateFolder)>>::length(privateFolder));
-    } else if (localProperties.path.native().starts_with(sharedFolder)) {
-        localProperties.path = localProperties.path.native().substr(
-                std::char_traits<std::remove_cvref_t<decltype(*sharedFolder)>>::length(sharedFolder));
-    }
-
-    if (localProperties.path.native().starts_with(Str("/")) || localProperties.path.native().starts_with(Str("\\"))) {
-        localProperties.path = localProperties.path.relative_path();
-    }
+    // The API returns paths of the v3 drive tree ("/Private/...", "/Common documents/...", "/Shared/..."): translate them to
+    // the synchronized tree, where the private space is the root while "Common documents" and "Shared" stay folders.
+    localProperties.path = localProperties.path.relative_path();
+    ApiTranslator::translateV3ToV2(localProperties.path);
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
 

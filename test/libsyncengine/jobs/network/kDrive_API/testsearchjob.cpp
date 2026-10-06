@@ -119,8 +119,8 @@ void TestSearchJob::testHandleResponsePrivatePath() {
 }
 
 void TestSearchJob::testHandleResponseSharedPath() {
-    // Paths returned by the API for "Shared" files are prefixed with "/Shared/".
-    // handleResponse() should strip this prefix so SearchInfo::path() is relative.
+    // Paths returned by the API for files shared with the user are prefixed with "/Shared/". Unlike "Private", "Shared" is
+    // a folder of the synchronized tree, so handleResponse() keeps it in SearchInfo::path().
     SearchJob job(_driveDbId, "doc");
     job._syncRootPath = _localTempDir.path();
 
@@ -131,7 +131,18 @@ void TestSearchJob::testHandleResponseSharedPath() {
     CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), exitInfo);
     const auto results = job.searchResults();
     CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
-    CPPUNIT_ASSERT_EQUAL(SyncPath(Str("testdir")), results.front().path());
+    CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Shared/testdir")), results.front().path());
+
+    // A shared item synchronized under the local "Shared" folder is available locally.
+    std::error_code ec;
+    std::filesystem::create_directories(_localTempDir.path() / "Shared" / "testdir", ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create test directory", !ec);
+
+    SearchJob availableJob(_driveDbId, "doc");
+    availableJob._syncRootPath = _localTempDir.path();
+    std::istringstream availableIs(json);
+    CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), availableJob.handleResponse(availableIs));
+    CPPUNIT_ASSERT(availableJob.searchResults().front().isAvailableLocally());
 }
 
 void TestSearchJob::testHandleResponseLeadingSlash() {
