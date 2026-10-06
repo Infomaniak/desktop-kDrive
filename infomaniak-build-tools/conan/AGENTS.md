@@ -159,6 +159,10 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   the GitHub Qt JWT secret is no longer injected and actions do not duplicate this cleanup. Never print authentication tokens.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
+- **Qt recipe CI**: `.github/workflows/qt-recipe-ci.yml` validates recipe changes on the Windows, macOS and Linux build
+  runners through `validate_qt_recipe.py`. It keeps the runner's Conan configuration and profiles, creates Qt under
+  `qt/<version>@ci/run-<run_id>-<attempt>`, and removes only that exact reference afterwards. Ordinary `qt/<version>`
+  cache entries are not refreshed or removed. The workflow performs real installer/package builds, not Python unit tests.
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 
