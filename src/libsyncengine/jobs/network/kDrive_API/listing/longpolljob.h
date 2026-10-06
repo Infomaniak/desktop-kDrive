@@ -25,6 +25,10 @@ namespace KDC {
 class LongPollJob final : public AbstractListingJob {
     public:
         LongPollJob(DriveDbId driveDbId, Cursor cursor, const NodeSet &blacklist = {});
+        Cursor cursor() const { return _cursor; }
+
+    protected:
+        [[nodiscard]] ExitInfo handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &uri) override;
 
     private:
         std::string getSpecificUrl() override;
