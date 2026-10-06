@@ -171,6 +171,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                                                      std::shared_ptr<ContinueFileListWithCursorJob> &job,
                                                      const CursorData &cursorData);
 
+        [[nodiscard]] ExitInfo handleSnapshotBackup(bool &validSnapshotBackupExists);
+
         void abortAndClearLongPollJobs(LongPollJobMap &longPollJobs);
 
         friend class TestRemoteFileSystemObserverWorker;
