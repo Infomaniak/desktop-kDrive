@@ -320,7 +320,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
-                                                                                                 << _syncPal->syncDbId());
+                                                                                                 << _syncPal->syncDbId() << ".");
     bool validSnapshotBackupExists = false;
     if (const auto validBackupExitInfo = checkIfValidRemoteSnapshotBackupExists(validSnapshotBackupExists);
         !validBackupExitInfo) {
@@ -332,7 +332,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     setUpdateFlagValue(true);
 
     if (validSnapshotBackupExists) {
-        LOG_SYNCPAL_DEBUG(_logger, "Valid remote snapshot backup exists. Restoring it.");
+        LOG_SYNCPAL_DEBUG(_logger, "A valid remote snapshot backup exists. Restoring it.");
         const auto exitInfo = restoreRemoteSnapshotBackup();
         if (!exitInfo) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup: " << exitInfo);
