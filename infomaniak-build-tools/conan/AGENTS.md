@@ -164,14 +164,10 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   GitHub secret `QT_ACCOUNT_INI`, passed through an environment variable of the same name. The secret must contain
   actual newlines, not base64 or literal `\n`; an empty or malformed secret fails before writing the account file.
   The script logs the account file path, never credential values. CI, release and
-  extended-test Windows builds use this bootstrap; `-PrepareQtAccountOnly` also prepares the recipe validation job
+  extended-test Windows builds use this bootstrap; `-PrepareQtAccountOnly` prepares only the account file
   without changing Conan profiles, remotes or packages. Never interpolate the secret into shell commands or log its contents.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
-- **Qt recipe CI**: `.github/workflows/qt-recipe-ci.yml` validates recipe changes on the Windows, macOS and Linux build
-  runners through `validate_qt_recipe.py`. It keeps the runner's Conan configuration and profiles, creates Qt under
-  `qt/<version>@ci/run-<run_id>-<attempt>`, and removes only that exact reference afterwards. Ordinary `qt/<version>`
-  cache entries are not refreshed or removed. The workflow performs real installer/package builds, not Python unit tests.
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 
