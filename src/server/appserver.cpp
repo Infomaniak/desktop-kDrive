@@ -750,7 +750,7 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Drive not found for driveDbId=" << driveDbId);
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     // Delete the drive

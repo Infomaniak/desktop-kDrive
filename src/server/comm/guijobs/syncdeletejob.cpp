@@ -65,13 +65,14 @@ ExitInfo SyncDeleteJob::process() {
         return ExitCode::OperationCanceled;
     }
 
-   if (const ExitInfo exitInfo = _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove); !exitInfo) {
+    if (const ExitInfo exitInfo = _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
+        !exitInfo) {
         LOG_WARN(_logger, "Error in AppServer::stopSyncTask for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
-   }
+    }
 
     // Delete sync from DB
-    
+
     if (const ExitInfo exitInfo = _commManager->appServer().deleteSync(_syncDbId); !exitInfo) {
         LOG_WARN(_logger, "Error in AppServer::deleteSync for syncDbId=" << _syncDbId << " : " << exitInfo);
         return exitInfo;
