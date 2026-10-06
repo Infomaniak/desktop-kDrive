@@ -459,6 +459,20 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                 _responseHandlingCanceled = isAborted() || writeError;
 
                 if (!_responseHandlingCanceled) {
+                    auto handleIoError = [this](IoError ioError, const SyncPath &path) -> std::optional<ExitInfo> {
+                        if (ioError == IoError::NoSuchFileOrDirectory) {
+                            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(path));
+                            return ExitInfo{ExitCode::SystemError, ExitCause::NotFound};
+                        }
+
+                        if (ioError == IoError::AccessDenied) {
+                            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(path));
+                            return ExitInfo{ExitCode::SystemError, ExitCause::FileAccessError};
+                        }
+
+                        return std::nullopt;
+                    };
+
                     std::string data2;
                     SyncPath targetPath;
                     if (!IoHelper::readAlias(_tmpPath, data2, targetPath, ioError)) {
@@ -466,12 +480,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                         return {ExitCode::SystemError, ExitCause::OperationCanceled};
                     }
 
-                    if (ioError == IoError::NoSuchFileOrDirectory) {
-                        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_tmpPath));
-                        return {ExitCode::SystemError, ExitCause::NotFound};
-                    } else if (ioError == IoError::AccessDenied) {
-                        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_tmpPath));
-                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    if (auto exitInfo = handleIoError(ioError, _tmpPath)) {
+                        return *exitInfo;
                     }
 
                     assert(ioError == IoError::Success); // For every other error type, an error should have been returned.
@@ -482,14 +492,8 @@ ExitInfo DownloadJob::createLink(const std::string &mimeType, const std::string 
                         return {ExitCode::SystemError, ExitCause::OperationCanceled};
                     }
 
-                    if (ioError == IoError::NoSuchFileOrDirectory) {
-                        LOGW_WARN(_logger,
-                                  L"Item does not exist anymore: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                        return {ExitCode::SystemError, ExitCause::NotFound};
-                    } else if (ioError == IoError::AccessDenied) {
-                        LOGW_WARN(_logger,
-                                  L"Item misses search permission: " << Utility::formatSyncPath(_fileDownloadInfo.localpath));
-                        return {ExitCode::SystemError, ExitCause::FileAccessError};
+                    if (auto exitInfo = handleIoError(ioError, _fileDownloadInfo.localpath)) {
+                        return *exitInfo;
                     }
 
                     assert(ioError == IoError::Success); // For every other error type, an error should have been returned.

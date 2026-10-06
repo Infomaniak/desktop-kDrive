@@ -76,8 +76,8 @@ std::wstring formatCFError(const SyncPath &path, CFErrorRef error) {
     return ss.str();
 }
 
-bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept {
-    isAlias = false;
+bool IoHelper::_checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, IoError &ioError) noexcept {
+    isLink = false;
     ioError = IoError::Success;
 
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
@@ -109,7 +109,7 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
         return false;
     }
 
-    isAlias = [isAliasNumber boolValue];
+    isLink = [isAliasNumber boolValue];
     return true;
 }
 

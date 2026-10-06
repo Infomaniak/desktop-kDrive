@@ -648,11 +648,11 @@ struct IoHelper {
          * @brief Check if a file with a given path is a symlink or an alias. Relies on the file's metadata; does not check if the
          * alias is valid. To distinguish between the two cases, first test whether the file is a symbolic link.
          * @param path The absolute path to the file.
-         * @param isAlias A boolean value indicating whether the file is a symbolic link or a Finder alias.
+         * @param isLink A boolean value indicating whether the file is a symbolic link or a Finder alias.
          * @param ioError holds the error returned when an underlying OS API call fails.
          * @return true if the process succeeds, false otherwise.
          */
-        static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
+        static bool _checkIfItemIsSymLinkOrAlias(const SyncPath &path, bool &isLink, IoError &ioError) noexcept;
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
