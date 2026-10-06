@@ -62,9 +62,10 @@ Setup:
    import_loco -r strings      # macOS only: just Localizable.strings
    import_loco --check         # validate the local files, import nothing
    ```
-   `import_loco` rewrites the exported files wholesale, preserving the Loco export header and the `loco:<id>` comment
-   above each entry. Never hand-edit these files: every entry is anchored to a Loco asset ID that only Loco provides,
-   and the next import would overwrite local edits. Never rename, reorder or delete existing loco IDs.
+   `import_loco` rewrites the exported files wholesale: each entry keeps its `loco:<id>` comment and `.resw` files
+   get a fresh export header. The manual web-export header and the extended asset notes are not carried over. Never
+   hand-edit these files: every entry is anchored to a Loco asset ID that only Loco provides, and the next import
+   would overwrite local edits. Never rename, reorder or delete existing loco IDs.
 2. The **mcp-loco MCP server remains available if needed**; it is the only way this skill can inspect or change Loco
    itself, and writing requires a full-access key (a read-only key answers 403 on any write):
     - Inspect: `list_locales` shows per-locale `untranslated` counts; `list_assets` and `get_translations` identify
@@ -117,7 +118,9 @@ Setup:
 - Check `git diff --stat`: only `translations/*.ts`, Loco export files under `src/gui4/`, and the relevant
   `.import_loco.yml` files when changing language coverage may change.
 - After a GUI import, run `import_loco --check` in each GUI directory: it catches straight apostrophes, `...`
-  ellipses, trailing spaces and language-specific punctuation before they ship.
+  ellipses, trailing spaces and language-specific punctuation before they ship. It can produce false positives on
+  strings that contain file paths with colons (e.g. `D:/`), which the French space-before-colon rule flags; verify
+  the string before reporting a real error.
 - Verify the `.ts` files are still well-formed XML:
   ```bash
   python3 -c "import glob, xml.dom.minidom; [xml.dom.minidom.parse(f) for f in glob.glob('translations/client_*.ts')]"
