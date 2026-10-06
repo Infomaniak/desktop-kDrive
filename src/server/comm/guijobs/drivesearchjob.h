@@ -32,10 +32,12 @@ class DriveSearchJob : public AbstractGuiJob {
         // Input parameters
         int _syncDbId = 0;
         CommString _searchString;
+        CommString _cursor; // Empty for the first page
 
         // Output parameters
         std::vector<SearchInfo> _searchInfoList;
         bool _hasMore = false;
+        CommString _nextCursor;
 
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;

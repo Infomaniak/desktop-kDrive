@@ -27,10 +27,12 @@
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
 static const auto inParamsSearchString = "searchString";
+static const auto inParamsCursor = "cursor"; // Optional: absent for the first page
 
 // Output parameters keys
 static const auto outParamsSearchInfoList = "searchInfoList";
 static const auto outParamsHasMore = "hasMore";
+static const auto outParamsCursor = "cursor";
 
 namespace KDC {
 
@@ -44,6 +46,9 @@ ExitInfo DriveSearchJob::deserializeInputParms() {
     try {
         readParamValue(inParamsSyncDbId, _syncDbId);
         readParamValue(inParamsSearchString, _searchString);
+        if (_inParams.contains(inParamsCursor)) {
+            readParamValue(inParamsCursor, _cursor);
+        }
     } catch (const std::exception &e) {
         LOG_WARN(_logger, "Exception in DriveSearchJob::readParamValue: error=" << e.what());
         return ExitCode::LogicError;
@@ -55,6 +60,7 @@ ExitInfo DriveSearchJob::deserializeInputParms() {
 ExitInfo DriveSearchJob::serializeOutputParms() {
     writeParamValues(outParamsSearchInfoList, _searchInfoList, info2DynamicVar<SearchInfo>);
     writeParamValue(outParamsHasMore, _hasMore);
+    writeParamValue(outParamsCursor, _nextCursor);
 
     return ExitCode::Ok;
 }
@@ -83,12 +89,22 @@ ExitInfo DriveSearchJob::process() {
     }
 
     // Send search request (synchronously for now)
-    SearchJob searchJob(sync.driveDbId(), _syncDbId, CommonUtility::commString2Str(_searchString));
-    (void) searchJob.runSynchronously();
-    _hasMore = searchJob.hasMore();
+    SearchJob searchJob(sync.driveDbId(), _syncDbId, CommonUtility::commString2Str(_searchString),
+                        CommonUtility::commString2Str(_cursor));
+    const ExitInfo searchExitInfo = searchJob.runSynchronously();
     for (const auto &searchInfo: searchJob.searchResults()) {
         _searchInfoList.push_back(searchInfo);
     }
+
+    // SearchJob keeps the results parsed before a failure: an item whose local state cannot be read is returned as not
+    // available locally, and a malformed item ends the page early. Only a search without any result reports the failure.
+    if (!searchExitInfo && _searchInfoList.empty()) {
+        LOG_WARN(_logger, "Error in SearchJob::runSynchronously: " << searchExitInfo);
+        return searchExitInfo;
+    }
+
+    _hasMore = searchJob.hasMore();
+    _nextCursor = CommonUtility::str2CommString(searchJob.cursor());
 
     return ExitCode::Ok;
 }

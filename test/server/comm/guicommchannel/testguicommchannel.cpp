@@ -36,6 +36,8 @@
 #include "test_utility/testhelpers.h"
 
 #include <memory>
+#include <optional>
+#include <vector>
 #include <qbytearray.h>
 
 namespace KDC {
@@ -44,7 +46,7 @@ using namespace testcommhelpers;
 
 uint64_t GuiCommChannelTest::readData(CommChar *data, uint64_t maxlen) {
     std::scoped_lock lock(_bufferMutex);
-    uint64_t toRead = (std::min)(maxlen, static_cast<uint64_t>(_buffer.size()));
+    uint64_t toRead = (std::min) (maxlen, static_cast<uint64_t>(_buffer.size()));
     if (toRead > 0) {
         std::memcpy(data, _buffer.data(), toRead * sizeof(CommChar));
         _buffer.erase(0, toRead);
@@ -743,80 +745,97 @@ void TestGuiCommChannel::testDriveSearchJob() {
     // "2000" <=> "MjAwMA=="
     // "toto" <=> "dG90bw=="
     // "titi" <=> "dGl0aQ=="
+    // "cursor1" <=> "Y3Vyc29yMQ=="
+    // "cursor2" <=> "Y3Vyc29yMg=="
 
-    // Query
-    Poco::JSON::Object queryObj;
-#if defined(KD_WINDOWS) || defined(KD_LINUX)
-    (void) queryObj.set("id", 1);
-#endif
-    (void) queryObj.set("num", toInt(RequestNum::DRIVE_SEARCH));
-
-    Poco::JSON::Object queryParamsObj;
-    (void) queryParamsObj.set("syncDbId", 1);
-    (void) queryParamsObj.set("searchString", "aW5mbyo=");
-
-    (void) queryObj.set("params", queryParamsObj);
-    const auto queryStr = stringifyQueryObj(queryObj);
-
-    // Answer
-    Poco::JSON::Object answerObj;
-    (void) answerObj.set("cause", 0);
-    (void) answerObj.set("code", 0);
-    (void) answerObj.set("id", 1);
-
-    Poco::JSON::Object paramsObj;
-    (void) paramsObj.set("hasMore", false);
-    Poco::JSON::Array searchInfoListObj;
-    Poco::JSON::Object searchInfoObj1;
-    (void) searchInfoObj1.set("id", "MTAwMA==");
-    (void) searchInfoObj1.set("isAvailableLocally", true);
-    (void) searchInfoObj1.set("isHydrated", true);
-    (void) searchInfoObj1.set("modifiedTime", 10);
-    (void) searchInfoObj1.set("name", "dG90bw==");
-    (void) searchInfoObj1.set("path", "dG90bw==");
-    (void) searchInfoObj1.set("size", 10);
-    (void) searchInfoObj1.set("type", 1);
-    Poco::JSON::Object searchInfoObj2;
-    (void) searchInfoObj2.set("id", "MjAwMA==");
-    (void) searchInfoObj2.set("isAvailableLocally", false);
-    (void) searchInfoObj2.set("isHydrated", false);
-    (void) searchInfoObj2.set("modifiedTime", 100);
-    (void) searchInfoObj2.set("name", "dGl0aQ==");
-    (void) searchInfoObj2.set("path", "dGl0aQ==");
-    (void) searchInfoObj2.set("size", 100);
-    (void) searchInfoObj2.set("type", 2);
-    (void) searchInfoListObj.add(searchInfoObj1);
-    (void) searchInfoListObj.add(searchInfoObj2);
-    (void) paramsObj.set("searchInfoList", searchInfoListObj);
-    (void) answerObj.set("params", paramsObj);
-
-
-    Poco::JSON::Object answerObjWithNumAndType = answerObj;
-    (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_SEARCH));
-    (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
-
-    // Job expected answers
-    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
-
-    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
-        auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
-        CPPUNIT_ASSERT(driveSearchJob);
-
-
-        const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true, true);
-        const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false, false);
-
-        driveSearchJob->_searchInfoList = {si1, si2};
-        driveSearchJob->_hasMore = false;
+    // The first page is requested without cursor, the next ones with the cursor returned by the previous page.
+    struct PageCase {
+            std::optional<std::string> base64InputCursor;
+            std::string expectedInputCursor;
     };
+    const std::vector<PageCase> pageCases{{std::nullopt, ""}, {"Y3Vyc29yMQ==", "cursor1"}};
+
+    for (const auto &pageCase: pageCases) {
+        // Query
+        Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+        (void) queryObj.set("id", 1);
+#endif
+        (void) queryObj.set("num", toInt(RequestNum::DRIVE_SEARCH));
+
+        Poco::JSON::Object queryParamsObj;
+        (void) queryParamsObj.set("syncDbId", 1);
+        (void) queryParamsObj.set("searchString", "aW5mbyo=");
+        if (pageCase.base64InputCursor) {
+            (void) queryParamsObj.set("cursor", *pageCase.base64InputCursor);
+        }
+
+        (void) queryObj.set("params", queryParamsObj);
+        const auto queryStr = stringifyQueryObj(queryObj);
+
+        // Answer
+        Poco::JSON::Object answerObj;
+        (void) answerObj.set("cause", 0);
+        (void) answerObj.set("code", 0);
+        (void) answerObj.set("id", 1);
+
+        Poco::JSON::Object paramsObj;
+        (void) paramsObj.set("cursor", "Y3Vyc29yMg==");
+        (void) paramsObj.set("hasMore", true);
+        Poco::JSON::Array searchInfoListObj;
+        Poco::JSON::Object searchInfoObj1;
+        (void) searchInfoObj1.set("id", "MTAwMA==");
+        (void) searchInfoObj1.set("isAvailableLocally", true);
+        (void) searchInfoObj1.set("isHydrated", true);
+        (void) searchInfoObj1.set("modifiedTime", 10);
+        (void) searchInfoObj1.set("name", "dG90bw==");
+        (void) searchInfoObj1.set("path", "dG90bw==");
+        (void) searchInfoObj1.set("size", 10);
+        (void) searchInfoObj1.set("type", 1);
+        Poco::JSON::Object searchInfoObj2;
+        (void) searchInfoObj2.set("id", "MjAwMA==");
+        (void) searchInfoObj2.set("isAvailableLocally", false);
+        (void) searchInfoObj2.set("isHydrated", false);
+        (void) searchInfoObj2.set("modifiedTime", 100);
+        (void) searchInfoObj2.set("name", "dGl0aQ==");
+        (void) searchInfoObj2.set("path", "dGl0aQ==");
+        (void) searchInfoObj2.set("size", 100);
+        (void) searchInfoObj2.set("type", 2);
+        (void) searchInfoListObj.add(searchInfoObj1);
+        (void) searchInfoListObj.add(searchInfoObj2);
+        (void) paramsObj.set("searchInfoList", searchInfoListObj);
+        (void) answerObj.set("params", paramsObj);
+
+
+        Poco::JSON::Object answerObjWithNumAndType = answerObj;
+        (void) answerObjWithNumAndType.set("num", toInt(RequestNum::DRIVE_SEARCH));
+        (void) answerObjWithNumAndType.set("type", toInt(GuiJobType::Query));
+
+        // Job expected answers
+        const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+        auto processFct = [&pageCase](std::shared_ptr<AbstractGuiJob> job) {
+            auto driveSearchJob = std::dynamic_pointer_cast<DriveSearchJob>(job);
+            CPPUNIT_ASSERT(driveSearchJob);
+            CPPUNIT_ASSERT_EQUAL(pageCase.expectedInputCursor, CommonUtility::commString2Str(driveSearchJob->_cursor));
+
+
+            const SearchInfo si1("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true, true);
+            const SearchInfo si2("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false, false);
+
+            driveSearchJob->_searchInfoList = {si1, si2};
+            driveSearchJob->_hasMore = true;
+            driveSearchJob->_nextCursor = CommonUtility::str2CommString("cursor2");
+        };
 
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
-    testGenericJob(queryStr, answerStr, {}, processFct);
+        testGenericJob(queryStr, answerStr, {}, processFct);
 #else
-    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
-    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+        const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+        testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
 #endif
+    }
 }
 
 } // namespace KDC
