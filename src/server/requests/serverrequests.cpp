@@ -477,8 +477,7 @@ ExitInfo ServerRequests::findUnoccupiedPathForNewSync(const SyncPath &homeFolder
         bool alreadyExists = false;
         if (!IoHelper::checkIfPathExists(path, alreadyExists, ioError, pathCheckOption) || ioError != IoError::Success) {
             errorMessage = QString::fromStdWString(Utility::formatIoError(path, ioError));
-            LOGW_WARN(Log::instance()->getLogger(),
-                      L"Error in IoHelper::checkIfPathExists: " << QStr2WStr(errorMessage));
+            LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: " << QStr2WStr(errorMessage));
             return ExitCode::SystemError;
         }
 
@@ -534,6 +533,7 @@ ExitInfo ServerRequests::findGoodPathForNewSync(const SyncName &driveName, SyncP
 
 ExitCode ServerRequests::requestToken(const std::string &code, const std::string &codeVerifier, User &user, bool &userCreated,
                                       std::string &error, std::string &errorDescr) {
+    userCreated = false;
     // Generate keychainKey
     std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
 
@@ -708,12 +708,11 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
         account.setDbId(accountDbId);
         account.setAccountId(accountId);
         account.setUserDbId(userDbId);
-        if (const auto exitCode = createAccount(account); exitCode != ExitCode::Ok) {
+        if (const auto exitCode = createAccount(account, accountCreated); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createAccount");
             return exitCode;
         }
 
-        accountCreated = true;
         LOG_INFO(Log::instance()->getLogger(),
                  "New account created in DB - accountDbId=" << accountDbId << " accountId= " << accountId
                                                             << " accountName= " << account.name() << " userDbId= " << userDbId);
@@ -735,12 +734,11 @@ ExitInfo ServerRequests::addSync(const UserDbId userDbId, const AccountId accoun
         drive.setDbId(driveDbId);
         drive.setDriveId(driveId);
         drive.setAccountDbId(account.dbId());
-        if (const auto exitCode = createDrive(drive); exitCode != ExitCode::Ok) {
+        if (const auto exitCode = createDrive(drive, driveCreated); exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createDrive");
             return exitCode;
         }
 
-        driveCreated = true;
         LOGW_INFO(Log::instance()->getLogger(), L"New drive created in DB - driveDbId=" << driveDbId << L" driveId=" << driveId
                                                                                         << L" accountDbId=" << account.dbId());
     }
@@ -1085,11 +1083,14 @@ ExitInfo ServerRequests::getPathByNodeId(const UserDbId userDbId, const DriveId 
     return ExitCode::Ok;
 }
 
-ExitInfo ServerRequests::createUser(User &user) {
+ExitInfo ServerRequests::createUser(User &user, bool &inserted) {
+    inserted = false;
     if (!ParmsDb::instance()->insertUser(user)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertUser");
         return ExitCode::DbError;
     }
+
+    inserted = true;
 
     // Load User info
     bool updated = false;
@@ -1140,7 +1141,8 @@ ExitInfo ServerRequests::updateUser(User &user) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createAccount(Account &account) {
+ExitCode ServerRequests::createAccount(Account &account, bool &inserted) {
+    inserted = false;
     // Load account info
     bool updated = false;
     if (const auto exitInfo = loadAccountInfo(account, updated); !exitInfo) {
@@ -1152,15 +1154,17 @@ ExitCode ServerRequests::createAccount(Account &account) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertAccount");
         return ExitCode::DbError;
     }
-
+    inserted = true;
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::createDrive(Drive &drive) {
+ExitCode ServerRequests::createDrive(Drive &drive, bool &inserted) {
+    inserted = false;
     if (!ParmsDb::instance()->insertDrive(drive)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertDrive");
         return ExitCode::DbError;
     }
+    inserted = true;
 
     // Load Drive info
     Account account;
@@ -1319,7 +1323,7 @@ namespace {
 ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const DriveDbId driveDbId, const NodeId &parentNodeId,
                               const CommString &dirName) {
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, driveDbId, dirName, parentNodeId, dirName);
+        job = std::make_shared<CreateDirJob>(driveDbId, dirName, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveDbId=" << driveDbId << " error=" << e.what());
@@ -1331,7 +1335,7 @@ ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const DriveDbI
 ExitInfo generateCreateDirJob(std::shared_ptr<CreateDirJob> &job, const UserDbId userDbId, const DriveId driveId,
                               const NodeId &parentNodeId, const SyncName &dirName) {
     try {
-        job = std::make_shared<CreateDirJob>(nullptr, userDbId, driveId, parentNodeId, dirName);
+        job = std::make_shared<CreateDirJob>(userDbId, driveId, parentNodeId, dirName);
     } catch (const std::exception &e) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in CreateDirJob::CreateDirJob for driveId=" << driveId << " error=" << e.what());
@@ -2064,13 +2068,11 @@ ExitCode ServerRequests::processRequestTokenFinished(const Login &login, User &u
         user.setDbId(dbId);
         user.setUserId(login.apiToken().userId());
         user.setKeychainKey(login.keychainKey());
-        ExitCode exitCode = createUser(user);
+        ExitCode exitCode = createUser(user, userCreated);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(), "Error in createUser");
             return exitCode;
         }
-
-        userCreated = true;
     }
 
     return ExitCode::Ok;
