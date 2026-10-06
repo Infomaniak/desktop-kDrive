@@ -166,8 +166,10 @@ void CloudProviderRegistrar::updateSyncRootRegistryEntries(const std::wstring &s
     }
 
     TRACE_DEBUG(L"Opened key %s", subKey.c_str());
-    if (namespaceCLSID) {
+    if (namespaceCLSID && namespaceCLSIDSize) {
         getCLSID(hKey, namespaceCLSID, namespaceCLSIDSize);
+    } else if (namespaceCLSID || namespaceCLSIDSize) {
+        TRACE_ERROR(L"Invalid NamespaceCLSID arguments: buffer and size must both be provided");
     }
 
     TRACE_DEBUG(L"Setting registry values");
