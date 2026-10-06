@@ -74,7 +74,7 @@ int32_t Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
 
     if (!exists) {
         TRACE_WARNING(L"File or directory does not exist anymore: '%ls'.", filePath);
-        return ERROR_PATH_NOT_FOUND;
+        return S_OK;
     }
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
