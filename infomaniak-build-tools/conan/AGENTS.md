@@ -157,6 +157,11 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   selection as macOS/Linux. Paths respect the current home directory, `APPDATA` on Windows, and `XDG_DATA_HOME` on Linux.
   The recipe centrally clears competing environment credentials for CI, release, and extended-test builds;
   the GitHub Qt JWT secret is no longer injected and actions do not duplicate this cleanup. Never print authentication tokens.
+- **Windows Qt account provisioning**: `build_dependencies.ps1` preserves an existing `%APPDATA%/Qt/qtaccount.ini`.
+  In CI, a missing file is created from the complete INI contents in the GitHub secret `QT_ACCOUNT_INI`, passed through
+  an environment variable of the same name. An empty secret fails clearly when the file is missing. CI, release and
+  extended-test Windows builds use this bootstrap; `-PrepareQtAccountOnly` also prepares the recipe validation job
+  without changing Conan profiles, remotes or packages. Never interpolate the secret into shell commands or log its contents.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
 - **Qt recipe CI**: `.github/workflows/qt-recipe-ci.yml` validates recipe changes on the Windows, macOS and Linux build

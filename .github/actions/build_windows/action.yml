@@ -2,6 +2,9 @@ name: Build Windows
 description: 'Build windows app'
 
 inputs:
+  qt_account_ini:
+    description: 'Complete qtaccount.ini contents, used only when the runner account file is missing'
+    required: false
   debug_cert:
     description: 'The debug certificate, mandatory for non-release builds'
     required: false
@@ -109,6 +112,8 @@ runs:
       - name: Build kDrive desktop
         id: build
         shell: powershell
+        env:
+          QT_ACCOUNT_INI: ${{ inputs.qt_account_ini }}
         run: |
           & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
             -Arch amd64 `

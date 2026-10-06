@@ -37,6 +37,7 @@ jobs:
       - name: Build Windows
         uses: ./.github/actions/build_windows
         with:
+          qt_account_ini: ${{ secrets.QT_ACCOUNT_INI }}
           debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
           debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}

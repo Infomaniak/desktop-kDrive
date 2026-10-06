@@ -25,7 +25,7 @@
     Infomaniak kDrive Desktop – build dependencies via Conan (Windows only)
 
 .DESCRIPTION
-    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]
+    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update] [-PrepareQtAccountOnly]
 
 .PARAMETER BuildType
     Build configuration: Debug (default), Release or RelWithDebInfo.
@@ -45,6 +45,9 @@
 .PARAMETER Update
     Ask Conan to check remotes for newer versions/revisions.
     Disabled by default to keep CI deterministic and avoid local recipe revision/timestamp conflicts.
+
+.PARAMETER PrepareQtAccountOnly
+    Create a missing Qt account file from QT_ACCOUNT_INI, then return without installing dependencies.
 #>
 
 param(
@@ -71,12 +74,15 @@ param(
     [switch]$CleanCache,
 
     [Parameter(Mandatory = $false, HelpMessage = "Ask Conan to check remotes for newer versions/revisions.")]
-    [switch]$Update
+    [switch]$Update,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Prepare the Qt account file without installing dependencies.")]
+    [switch]$PrepareQtAccountOnly
 )
 
 function Show-Help
 {
-    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]"; exit 0
+    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update] [-PrepareQtAccountOnly]"; exit 0
 }
 if ($Help)
 {
@@ -93,6 +99,48 @@ function Err
 {
     Write-Error "[ERROR] $( $args -join ' ' )"; exit 1
 }
+
+function Initialize-QtAccount
+{
+    $appData = $env:APPDATA
+    if ([string]::IsNullOrWhiteSpace($appData))
+    {
+        $appData = Join-Path ([Environment]::GetFolderPath("UserProfile")) "AppData\Roaming"
+    }
+    $accountDirectory = Join-Path $appData "Qt"
+    $accountFile = Join-Path $accountDirectory "qtaccount.ini"
+    if (Test-Path -LiteralPath $accountFile -PathType Leaf)
+    {
+        Log "Using the existing Qt account file."
+        return
+    }
+    if ([string]::IsNullOrWhiteSpace($env:QT_ACCOUNT_INI))
+    {
+        throw "Qt account file is missing. Configure the GitHub secret QT_ACCOUNT_INI with the complete qtaccount.ini contents."
+    }
+
+    New-Item -ItemType Directory -Path $accountDirectory -Force | Out-Null
+    # CreateNew prevents overwriting a file created by another process in the meantime.
+    $accountStream = $null
+    try
+    {
+        $accountStream = [IO.File]::Open($accountFile, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+        $bytes = [Text.UTF8Encoding]::new($false).GetBytes($env:QT_ACCOUNT_INI)
+        $accountStream.Write($bytes, 0, $bytes.Length)
+    }
+    finally
+    {
+        if ($null -ne $accountStream) { $accountStream.Dispose() }
+    }
+    Log "Created the Qt account file from QT_ACCOUNT_INI."
+}
+
+if ($CI -or $PrepareQtAccountOnly -or -not [string]::IsNullOrWhiteSpace($env:QT_ACCOUNT_INI))
+{
+    Initialize-QtAccount
+    Remove-Item Env:QT_ACCOUNT_INI -ErrorAction SilentlyContinue
+}
+if ($PrepareQtAccountOnly) { return }
 
 # Determine repository root and default output directory
 $CurrentDir = (Get-Location).Path

@@ -69,6 +69,7 @@ jobs:
 
       - name: Build kDrive desktop
         env:
+          QT_ACCOUNT_INI: ${{ secrets.QT_ACCOUNT_INI }}
           WINDOWS_DEBUG_CERT_THUMBPRINT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
             & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `

@@ -206,6 +206,7 @@ jobs:
         id: build-windows-step
         uses: ./.github/actions/build_windows
         with:
+          qt_account_ini: ${{ secrets.QT_ACCOUNT_INI }}
           ksp_host: ${{ secrets.WINDOWS_KSP_HOST }}
           ksp_api_key: ${{ secrets.WINDOWS_KSP_API_KEY }}
           ksp_client_cert: ${{ secrets.WINDOWS_KSP_CLIENT_CERT_FILE_B64 }}
