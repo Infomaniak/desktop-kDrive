@@ -27,6 +27,8 @@
 
 namespace KDC {
 
+// Results per page. The API returns 10 without it; the iOS app requests 200 on the same endpoint.
+static constexpr auto searchPageSize = "50";
 static constexpr auto privateFolder = Str("/Private/");
 static constexpr auto sharedFolder = Str("/Shared/");
 
@@ -84,11 +86,13 @@ void SearchJob::setQueryParameters(Poco::URI &uri) {
         uri.addQueryParameter("name", _searchString);
     }
     uri.addQueryParameter("order_by", "relevance");
+    uri.addQueryParameter("limit", searchPageSize);
     if (!_cursorInput.empty()) {
         uri.addQueryParameter("cursor", _cursorInput);
     }
 
     uri.addQueryParameter("with", "path");
+    uri.addQueryParameter("order", "desc");
 }
 
 
