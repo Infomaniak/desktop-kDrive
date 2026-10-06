@@ -3,7 +3,7 @@ description: 'Build windows app'
 
 inputs:
   qt_account_ini:
-    description: 'Complete qtaccount.ini contents, used only when the runner account file is missing'
+    description: 'Complete qtaccount.ini contents, used when the runner account file is missing, unreadable or lacks email/JWT'
     required: false
   debug_cert:
     description: 'The debug certificate, mandatory for non-release builds'
