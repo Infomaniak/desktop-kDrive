@@ -1,0 +1,75 @@
+name: Validate Qt credential authentication
+
+# Temporary migration check. Remove this workflow, its helper and the desktop CI
+# dependency after email/password authentication has passed on all three platforms.
+on:
+  workflow_call:
+    secrets:
+      QT_ACCOUNT_EMAIL:
+        required: true
+      QT_ACCOUNT_PASSWORD:
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  KDRIVE_TEST_CI_RUNNING_ON_CI: true
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  validate-qt:
+    name: Qt credentials (${{ matrix.platform }})
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows
+            runner: [self-hosted, Windows, vs2026]
+            qt_version: '6.11.1'
+            profile: infomaniak_release
+          - platform: macOS
+            runner: [self-hosted, macOS, desktop-kdrive]
+            qt_version: '6.2.3'
+            profile: default
+          - platform: Linux
+            runner: [self-hosted, Linux, X64, desktop-kdrive]
+            qt_version: '6.2.3'
+            profile: default
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v6.0.2
+
+      - name: Build the Qt recipe on Windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
+        run: |
+          & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
+            -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
+          $env:SSL_CERT_FILE = (& python -m certifi).Trim()
+          python infomaniak-build-tools/conan/validate_qt_recipe.py --version '${{ matrix.qt_version }}' --profile '${{ matrix.profile }}'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build the Qt recipe on macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
+        run: |
+          python3 infomaniak-build-tools/conan/validate_qt_recipe.py --version '${{ matrix.qt_version }}' --profile '${{ matrix.profile }}' --host-arch 'armv8|x86_64'
+
+      - name: Build the Qt recipe on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
+        run: |
+          python3 infomaniak-build-tools/conan/validate_qt_recipe.py --version '${{ matrix.qt_version }}' --profile '${{ matrix.profile }}'
