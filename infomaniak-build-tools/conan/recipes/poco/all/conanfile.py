@@ -131,9 +131,9 @@ class PocoConan(ConanFile):
             self.requires("expat/[>=2.8.1 <3]", transitive_headers=True)
         if self.options.enable_netssl or self.options.enable_crypto:
             if self.settings.os == "Macos":
-                self.requires("openssl-macos/3.6.3", options={ "shared": True })
+                self.requires("openssl-macos/3.6.5", options={ "shared": True })
             else:
-                self.requires("openssl/3.6.3", options={ "shared": True })
+                self.requires("openssl/3.6.5", options={ "shared": True })
 
     def package_id(self):
         del self.info.options.enable_active_record
