@@ -131,12 +131,15 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const Remote
     if (!SyncJobManagerSingleton::instance()->isJobFinished(longPollJob->jobId())) return ExitCode::Ok;
 
     const std::string dataMessage = "for driveDbId=" + std::to_string(_driveDbId) + ", remoteDirId=" + remoteDirId +
-                                    " and cursor=" + _listingCursorMap.at(remoteDirId).cursor;
+                                    " and cursor=" + longPollJob->cursor();
     if (!longPollJob->exitInfo()) {
         LOG_SYNCPAL_WARN(_logger, "Error in LongPollJob: " << longPollJob->exitInfo() << dataMessage);
 
-        if (longPollJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout)) {
+        if (longPollJob->exitInfo() == ExitInfo(ExitCode::NetworkError, ExitCause::NetworkTimeout))
             _syncPal->addError(Error(_syncPal->syncDbId(), ERR_ID, longPollJob->exitInfo()));
+
+        if (longPollJob->exitInfo() == ExitInfo(ExitCode::BackError, ExitCause::HttpErr)) {
+            (void) clearListingCursor(remoteDirId);
         }
 
         return longPollJob->exitInfo();
@@ -189,7 +192,7 @@ void RemoteFileSystemObserverWorker::execute() {
 
     ExitInfo exitInfo = ExitCode::Ok;
     ApiTranslator::clearSharedCache(_syncPal->driveId());
-    _listingCursorMap.clear();
+    _listingCursorCache.clear();
     LongPollJobMap longPollJobs;
 
     // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
@@ -238,7 +241,7 @@ void RemoteFileSystemObserverWorker::execute() {
     setDone(exitInfo.code());
 }
 
-ExitInfo RemoteFileSystemObserverWorker::loadListingCursors() {
+ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
     if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in getSpecialFoldersRemoteIds: " << exitInfo);
@@ -246,15 +249,19 @@ ExitInfo RemoteFileSystemObserverWorker::loadListingCursors() {
         return exitInfo;
     }
 
+    ExitInfo clearCursorExitInfo = ExitCode::Ok;
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        // Get the most recently used listing cursor.
-        if (const auto exitInfo = getListingCursor(specialFolderRemoteId, _listingCursorMap[specialFolderRemoteId]); !exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
-            return exitInfo;
+        if (!_listingCursorCache.contains(specialFolderRemoteId) || _listingCursorCache.at(specialFolderRemoteId).cursor.empty())
+            continue;
+        clearCursorExitInfo = clearListingCursor(specialFolderRemoteId);
+        if (!clearCursorExitInfo) {
+            LOG_WARN(_logger, "Error in RemoteFileSystemObserverWorker::clearListingCursor: " << clearCursorExitInfo);
         }
     }
 
-    return ExitCode::Ok;
+    _listingCursorCache.clear();
+
+    return clearCursorExitInfo;
 }
 
 ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
@@ -270,17 +277,23 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
     }
 
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
-        if (!_listingCursorMap.contains(specialFolderRemoteId) || _listingCursorMap.at(specialFolderRemoteId).cursor.empty()) {
-            LOG_SYNCPAL_DEBUG(_logger, "No listing cursor for special folder remote ID: " << specialFolderRemoteId);
+        CursorData cursorData;
+        if (const auto exitInfo = getListingCursor(specialFolderRemoteId, cursorData); !exitInfo) {
+            LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+            return exitInfo;
+        }
+        if (cursorData == CursorData{}) {
+            LOG_SYNCPAL_DEBUG(_logger, "No valid listing cursor for special folder remote ID: " << specialFolderRemoteId);
             return ExitCode::Ok;
         }
 
-        const auto timeStamp = _listingCursorMap.at(specialFolderRemoteId).timestamp;
+        const auto timeStamp = cursorData.timestamp;
         const auto days = std::chrono::days(3);
         const SyncTime offset = std::chrono::duration_cast<std::chrono::seconds>(days).count();
         if (CommonUtility::getCurrentSyncTime() > timeStamp + offset) {
             LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for special folder remote ID: "
                                                << specialFolderRemoteId << " is too old. Timestamp: " << timeStamp);
+
             return ExitCode::Ok;
         }
     }
@@ -306,11 +319,6 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     // Retrieve the list of blacklisted folders.
     (void) SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, _blackList);
 
-    if (const auto exitInfo = loadListingCursors(); !exitInfo) {
-        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::loadListingCursors: " << exitInfo);
-        return exitInfo;
-    }
-
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
                                                                                                  << _syncPal->syncDbId());
     bool validSnapshotBackupExists = false;
@@ -334,8 +342,11 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         return exitInfo;
     }
 
-    LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Generating a new one.");
-    LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation");
+    LOG_SYNCPAL_DEBUG(_logger, "No valid remote snapshot backup exists. Clearing all listing cursors from database.");
+
+    (void) clearListingCursors();
+
+    LOG_SYNCPAL_INFO(_logger, "Starting remote snapshot generation.");
     const auto start = std::chrono::steady_clock::now();
     sentry::pTraces::scoped::RFSOGenerateInitialSnapshot perfMonitor(syncDbId());
 
@@ -373,17 +384,83 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     return exitInfo;
 }
 
+ExitInfo RemoteFileSystemObserverWorker::processListingContinueResponse(const RemoteNodeId &remoteDirId,
+                                                                        std::shared_ptr<ContinueFileListWithCursorJob> &job,
+                                                                        CursorData &cursorData, bool &hasMore) {
+    Poco::JSON::Object::Ptr resObj = job->jsonRes();
+    if (!resObj) {
+        LOG_SYNCPAL_WARN(_logger, "Continue cursor listing request failed for drive: " << std::to_string(_driveDbId).c_str()
+                                                                                       << " and cursor: " << cursorData.cursor);
+        return ExitCode::BackError;
+    }
+
+    Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
+    if (!dataObj) return ExitCode::Ok;
+
+    Cursor cursor;
+    if (!JsonParserUtility::extractValue(resObj, cursorKey, cursor)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    if (cursor != cursorData.cursor) {
+        cursorData = CursorData{cursor, CommonUtility::now()};
+        LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for remoteDirId=" << remoteDirId << " updated: " << cursorData.cursor);
+    }
+
+    if (!JsonParserUtility::extractValue(resObj, hasMoreKey, hasMore)) return {ExitCode::BackError, ExitCause::MissingReplyData};
+
+    // Look for new actions
+    if (const auto exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionsFilesKey)); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger,
+                         "Error in "
+                         "RemoteFileSystemObserverWorker::processActions: "
+                                 << exitInfo);
+        tryToInvalidateSnapshot();
+
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo RemoteFileSystemObserverWorker::runListingContinueJob(const RemoteNodeId &remoteDirId,
+                                                               std::shared_ptr<ContinueFileListWithCursorJob> &job,
+                                                               const CursorData &cursorData) {
+    if (cursorData.cursor.empty()) {
+        LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << " and remoteDirId=" << remoteDirId
+                                                                   << ", invalidating remote snapshot.");
+        tryToInvalidateSnapshot();
+
+        return ExitCode::DataError;
+    }
+
+    try {
+        job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, cursorData.cursor, _blackList);
+    } catch (const JobException &e) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
+                                          << _driveDbId << ", error=" << e.what());
+        return exception2ExitCode(e);
+    }
+
+    job->setScope(Scope::Sync);
+
+    if (const auto exitInfo = job->runSynchronously(); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously: " << exitInfo);
+
+        return exitInfo;
+    }
+
+    return ExitCode::Ok;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remoteDirId) {
     assert(!remoteDirId.empty() && "Unexpected empty remote node ID.");
 
     if (stopAsked()) return ExitCode::Ok;
 
     // Get the most recently used listing cursor.
-    if (const auto exitInfo = getListingCursor(remoteDirId, _listingCursorMap[remoteDirId]); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Error in "
-                         "RemoteFileSystemObserverWorker::listingCursor: "
-                                 << exitInfo);
+    CursorData cursorData;
+    if (const auto exitInfo = getListingCursor(remoteDirId, cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::listingCursor: " << exitInfo);
+
         return exitInfo;
     }
 
@@ -392,7 +469,9 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
 
     ExitInfo exitInfo = ExitCode::Ok;
     bool hasMore = true;
-    while (hasMore) {
+    constexpr Count maxListingPageCount = 100000; // To detect and avoid potential infinite loop.
+    Count pageCount = 1;
+    while (hasMore && pageCount < maxListingPageCount) {
         hasMore = false;
 
         if (stopAsked()) {
@@ -401,98 +480,37 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
         }
 
         std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
-        if (_listingCursorMap.at(remoteDirId).cursor.empty()) {
-            LOG_SYNCPAL_WARN(_logger, "Cursor is empty for driveDbId=" << _driveDbId << " and remoteDirId=" << remoteDirId
-                                                                       << ", invalidating remote snapshot.");
-            tryToInvalidateSnapshot();
-            exitInfo = ExitCode::DataError;
-            break;
-        }
-
-        try {
-            job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, _listingCursorMap[remoteDirId].cursor,
-                                                                  _blackList);
-        } catch (const JobException &e) {
-            LOG_SYNCPAL_WARN(_logger,
-                             "Error in "
-                             "ContinueFileListWithCursorJob::"
-                             "ContinueFileListWithCursorJob for driveDbId="
-                                     << _driveDbId << " error=" << e.what());
-            exitInfo = exception2ExitCode(e);
-            break;
-        }
-        job->setScope(Scope::Sync);
-
-        exitInfo = job->runSynchronously();
+        exitInfo = runListingContinueJob(remoteDirId, job, cursorData);
         if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob: " << exitInfo);
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::runListingContinueJob: " << exitInfo);
+
             break;
         }
 
-        Poco::JSON::Object::Ptr resObj = job->jsonRes();
-        if (!resObj) {
-            LOG_SYNCPAL_WARN(_logger,
-                             "Continue cursor listing request failed for "
-                             "drive: "
-                                     << std::to_string(_driveDbId).c_str()
-                                     << " and cursor: " << _listingCursorMap[remoteDirId].cursor);
-            exitInfo = ExitCode::BackError;
-            break;
-        }
-
-        if (job->hasErrorApi()) {
-            if (getNetworkErrorCode(job->backError().code()) == NetworkErrorCode::ForbiddenError) {
-                LOG_SYNCPAL_WARN(_logger, "Access forbidden");
-                exitInfo = ExitCode::Ok;
-                break;
-            } else {
-                std::ostringstream os;
-                resObj->stringify(os);
-                LOGW_SYNCPAL_WARN(_logger, L"Continue cursor listing request failed: " << CommonUtility::s2ws(os.str()));
-                exitInfo = ExitCode::BackError;
-                break;
-            }
-        }
-
-        Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
-        if (!dataObj) continue;
-
-        Cursor cursor;
-        if (!JsonParserUtility::extractValue(resObj, cursorKey, cursor)) {
-            exitInfo = {ExitCode::BackError, ExitCause::MissingReplyData};
-            break;
-        }
-
-        if (cursor != _listingCursorMap[remoteDirId].cursor) {
-            _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
-            LOG_SYNCPAL_DEBUG(_logger, "Listing cursor for remoteDirId=" << remoteDirId << " updated: "
-                                                                         << _listingCursorMap[remoteDirId].cursor);
-        }
-
-        if (!JsonParserUtility::extractValue(resObj, hasMoreKey, hasMore)) {
-            exitInfo = {ExitCode::BackError, ExitCause::MissingReplyData};
-            break;
-        }
-
-        // Look for new actions
-        exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionsFilesKey));
+        exitInfo = processListingContinueResponse(remoteDirId, job, cursorData, hasMore);
         if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger,
-                             "Error in "
-                             "RemoteFileSystemObserverWorker::processActions: "
-                                     << exitInfo);
-            tryToInvalidateSnapshot();
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processListingContinueResponse: " << exitInfo);
+
             break;
         }
+
+        ++pageCount;
     }
 
     setUpdateFlagValue(false);
 
-    if (!exitInfo) return exitInfo;
-
-    exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId));
     if (!exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor:" << exitInfo);
+        // Clear the cursor if the listing request failed on the first page, to avoid being stuck with a broken cursor.
+        if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr} && pageCount == 1) {
+            (void) clearListingCursor(remoteDirId);
+        }
+        return exitInfo;
+    }
+
+    // Save the most recently used listing cursor now that the `listing/continue` response has been fully processed.
+    exitInfo = saveListingCursor(remoteDirId, cursorData);
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
     }
 
     return exitInfo;
@@ -771,12 +789,18 @@ ExitInfo RemoteFileSystemObserverWorker::handleCsvReplyCursor(
         std::shared_ptr<CsvFullFileListWithCursorJob> csvFullFileListWithCursorJob) {
     if (cursorPersistence != CursorPersistence::Save) return ExitCode::Ok;
 
-    if (const auto &cursor = csvFullFileListWithCursorJob->getCursor();
-        !_listingCursorMap.contains(remoteDirId) || cursor != _listingCursorMap[remoteDirId].cursor) {
-        _listingCursorMap[remoteDirId] = CursorData{cursor, CommonUtility::now()};
-        LOG_SYNCPAL_DEBUG(_logger,
-                          "Cursor for remoteDirId=" << remoteDirId << " updated: " << _listingCursorMap[remoteDirId].cursor);
-        if (const auto exitInfo = saveListingCursor(remoteDirId, _listingCursorMap.at(remoteDirId)); !exitInfo) {
+    const auto &cursor = csvFullFileListWithCursorJob->getCursor();
+
+    CursorData cursorData;
+    if (const auto exitInfo = getListingCursor(remoteDirId, cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+        return exitInfo;
+    }
+
+    if (cursorData.cursor != cursor) {
+        cursorData = CursorData{cursor, CommonUtility::now()};
+        LOG_SYNCPAL_DEBUG(_logger, "Cursor for remoteDirId=" << remoteDirId << " updated: " << cursorData.cursor);
+        if (const auto exitInfo = saveListingCursor(remoteDirId, cursorData); !exitInfo) {
             LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor");
 
             return exitInfo;
@@ -819,13 +843,17 @@ ExitInfo RemoteFileSystemObserverWorker::getItemsInRemoteDir(const RemoteNodeId 
 ExitInfo RemoteFileSystemObserverWorker::createLongPollJob(const RemoteNodeId &remoteDirId,
                                                            std::shared_ptr<LongPollJob> &longPollJob) {
     longPollJob = nullptr;
+    CursorData cursorData;
+    if (const auto exitInfo = getListingCursor(remoteDirId, cursorData); !exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::getListingCursor: " << exitInfo);
+        return exitInfo;
+    }
+
     try {
-        longPollJob = std::make_shared<LongPollJob>(_driveDbId, _listingCursorMap.at(remoteDirId).cursor);
+        longPollJob = std::make_shared<LongPollJob>(_driveDbId, cursorData.cursor);
     } catch (const JobException &e) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Exception thrown in "
-                         "LongPollJob::LongPollJob for driveDbId="
-                                 << _driveDbId << " and remoteDirId=" << remoteDirId << ", error=" << e.what());
+        LOG_SYNCPAL_WARN(_logger, "Exception thrown in LongPollJob::LongPollJob for driveDbId="
+                                          << _driveDbId << " and remoteDirId=" << remoteDirId << ", error=" << e.what());
         return exception2ExitCode(e);
     }
 
@@ -839,8 +867,8 @@ bool shouldContainPath(const ActionCode actionCode) {
     // However, we still want to process the `ActionInfo` if it is
     // - a trash action,
     // - a user access right removal action,
-    // as the path is superfluous in this case and is actually dropped for the deleted or unauthorized remote folders located at
-    // the root of `Common documents`.
+    // as the path is superfluous in this case and is actually dropped for the deleted or unauthorized remote folders located
+    // at the root of `Common documents`.
 
     switch (actionCode) {
         case ActionCode::ActionCodeAccessRightUserRemove:
@@ -1315,9 +1343,7 @@ ExitInfo RemoteFileSystemObserverWorker::checkForUnsupportedCharacters([[maybe_u
         _syncPal->addError(Error(ERR_ID, exitInfo.code(), exitInfo.cause()));
     } else if (!exitInfo) {
         LOGW_SYNCPAL_DEBUG(_logger,
-                           L"The file name or directory name "
-                           L"contains a character not yet supported "
-                           L"by the filesystem: exitInfo="
+                           L"The file name or directory name contains a character not yet supported by the filesystem: exitInfo="
                                    << exitInfo << L", " << Utility::formatSyncName(name) << L". Item is ignored.");
         _syncPal->addError(Error(_syncPal->syncDbId(), "", remoteNodeId, type, name, ConflictType::None,
                                  InconsistencyType::NotYetSupportedChar));
@@ -1335,9 +1361,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     if (_listingFullCounter > 60) {
         // If there is more than 1 listing/full request per minute for
         // an hour -> send a sentry
-        sentry::Handler::captureMessage(sentry::Level::Warning,
-                                        "RemoteFileSystemObserverWorker::"
-                                        "countListingRequests",
+        sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::countListingRequests",
                                         "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
@@ -1394,8 +1418,28 @@ ExitInfo RemoteFileSystemObserverWorker::getSpecialFoldersRemoteIds(std::vector<
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData) {
-    if (syncIsAdvancedWithNonRootFolder()) return _syncPal->getFolderCursor(SpecialRemoteFolder::CustomTarget, cursorData);
+ExitInfo RemoteFileSystemObserverWorker::getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData) const {
+    if (_listingCursorCache.contains(remoteDirId)) {
+        cursorData = _listingCursorCache.at(remoteDirId);
+
+        return ExitCode::Ok;
+    }
+
+    auto getSyncPalFolderCursor = [this](const RemoteNodeId &remoteDirId_, const SpecialRemoteFolder specialFolder_,
+                                         CursorData &cursorData_) {
+        const auto getCursorExitInfo = _syncPal->getFolderCursor(specialFolder_, cursorData_);
+        if (!getCursorExitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in getFolderCursor for remoteDirId=" << remoteDirId_);
+
+        } else
+            _listingCursorCache[remoteDirId_] = cursorData_;
+
+        return getCursorExitInfo;
+    };
+
+    if (syncIsAdvancedWithNonRootFolder())
+        return getSyncPalFolderCursor(remoteDirId, SpecialRemoteFolder::CustomTarget, cursorData);
+
 
     for (const auto specialFolder:
          {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments, SpecialRemoteFolder::Shared}) {
@@ -1405,16 +1449,39 @@ ExitInfo RemoteFileSystemObserverWorker::getListingCursor(const RemoteNodeId &re
             !exitInfo)
             return exitInfo;
 
-        if (remoteDirId == specialFolderRemoteId) {
-            return _syncPal->getFolderCursor(specialFolder, cursorData);
-        }
+        if (remoteDirId == specialFolderRemoteId) return getSyncPalFolderCursor(remoteDirId, specialFolder, cursorData);
     }
 
     return {ExitCode::LogicError, ExitCause::InvalidArgument};
 }
 
+ExitInfo RemoteFileSystemObserverWorker::clearListingCursor(const RemoteNodeId &remoteDirId) {
+    const auto exitInfo = saveListingCursor(remoteDirId, CursorData{});
+    if (!exitInfo) {
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: "
+                                          << exitInfo << " for remoteDirId=" << remoteDirId
+                                          << ". Failed to clear listing cursor.");
+    }
+
+    return exitInfo;
+}
+
 ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &remoteDirId, const CursorData &cursorData) {
-    if (syncIsAdvancedWithNonRootFolder()) return _syncPal->setFolderCursor(SpecialRemoteFolder::CustomTarget, cursorData);
+    auto setSyncPalFolderCursor = [this](const RemoteNodeId &remoteDirId_, const SpecialRemoteFolder specialFolder_,
+                                         const CursorData &cursorData_) {
+        const auto setCursorExitInfo = _syncPal->setFolderCursor(specialFolder_, cursorData_);
+        if (!setCursorExitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in setFolderCursor for remoteDirId=" << remoteDirId_);
+
+        } else
+            _listingCursorCache[remoteDirId_] = cursorData_;
+
+        return setCursorExitInfo;
+    };
+
+    if (syncIsAdvancedWithNonRootFolder())
+        return setSyncPalFolderCursor(remoteDirId, SpecialRemoteFolder::CustomTarget, cursorData);
+
 
     for (const auto specialFolder:
          {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments, SpecialRemoteFolder::Shared}) {
@@ -1424,9 +1491,7 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &r
             !exitInfo)
             return exitInfo;
 
-        if (remoteDirId == specialFolderRemoteId) {
-            return _syncPal->setFolderCursor(specialFolder, cursorData);
-        }
+        if (remoteDirId == specialFolderRemoteId) return setSyncPalFolderCursor(remoteDirId, specialFolder, cursorData);
     }
 
     return {ExitCode::LogicError, ExitCause::InvalidArgument};

@@ -49,4 +49,14 @@ void LongPollJob::setQueryParameters(Poco::URI &uri) {
     uri.addQueryParameter("timeout", std::to_string(apiTimout) + "s");
 }
 
+ExitInfo LongPollJob::handleUnprocessableEntity(std::istream &inputStream, const Poco::URI &) {
+    disableRetry();
+    std::string replyBody;
+    getStringFromStream(inputStream, replyBody);
+    LOG_WARN(_logger, "Reply " << jobId() << ": " << replyBody);
+    _backError = BackError(replyBody);
+
+    return {ExitCode::BackError, ExitCause::HttpErr};
+}
+
 } // namespace KDC
