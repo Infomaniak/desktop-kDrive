@@ -138,7 +138,7 @@ class QtConan(ConanFile):
                 return "linux_gcc_arm64"
             else:
                 # Qt 6.2.3 uses 'gcc_64', but newer versions (6.7.3+) use 'linux_gcc_64'
-                if self.version == "6.2.3":
+                if self.version in ("6.2.3", "6.5.3"):
                     return "gcc_64"
                 else:
                     return "linux_gcc_64"
@@ -154,7 +154,16 @@ class QtConan(ConanFile):
         """
         compiler = str(self.settings.compiler)
 
-        if self.version == "6.12.0":
+        # Qt 6.2.3 always uses MSVC 2019
+        if self.version == "6.2.3":
+            return "win64_msvc2019_64"
+
+        # Qt 6.5.3 supports both MinGW and MSVC 2019
+        elif self.version == "6.5.3":
+            return "win64_mingw" if compiler == "gcc" else "win64_msvc2019_64"
+
+        # Qt 6.8.3+ and 6.10.1+ supports both MinGW and MSVC 2022 (2019 is no longer compatible)
+        elif self.version in ("6.8.3", "6.10.1"):
             return "win64_mingw" if compiler == "gcc" else "win64_msvc2022_64"
         else:
             return "win64_msvc2019_64"  # May fail, if an error occurs, verify with a manual run of the Qt Online Installer.
@@ -175,7 +184,7 @@ class QtConan(ConanFile):
             f"qt.qt{major}.{compact}.addons.qtpositioning"
         ]
 
-        if version == "6.12.0":
+        if version in ("6.8.3", "6.10.1"):
             modules.append(f"qt.qt{major}.{compact}.addons.qt5compat")
         else:
             modules.append(f"qt.qt{major}.{compact}.qt5compat")
@@ -401,14 +410,14 @@ class QtConan(ConanFile):
         if os.path.exists(find_wrap_open_gl) and self.settings.os == "Macos":
             self.output.highlight("Patching Qt installation...")
             from conan.tools.files import replace_in_file
-            if self.version == "6.2.3":
+            if self.version in ("6.2.3", "6.5.3"):
                 # AGL is unused by Qt 6 and is absent from recent macOS SDKs.
                 replace_in_file(
                     self, find_wrap_open_gl,
                     'target_link_libraries(WrapOpenGL::WrapOpenGL INTERFACE ${__opengl_agl_fw_path})',
                     ''
                 )
-
+            if self.version == "6.2.3":
                 """
                 Fixes spam of this kind of CMake warning on macOS:            
                 
@@ -450,11 +459,14 @@ class QtConan(ConanFile):
             # Determine Windows subfolder based on compiler and version
             if self.version == "6.2.3":
                 return "msvc2019_64"
-            else:
+            elif self.version in ["6.8.3", "6.10.1"]:
                 if str(self.settings.compiler) == "gcc":  # MinGW
                     return "mingw_64"
                 else:  # MSVC 2022
                     return "msvc2022_64"
+            else:
+                # Default for other versions (6.2.3, 6.5.3, etc.)
+                return "msvc2019_64"
         else:
             raise ConanInvalidConfiguration(f"Unsupported OS: {self.settings.os}")
 
