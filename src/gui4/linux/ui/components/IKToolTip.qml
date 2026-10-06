@@ -41,6 +41,8 @@ ToolTip {
     contentItem: Text {
         width: Math.min(implicitWidth, root.maximumTextWidth)
         text: root.text
+        // Tooltips mostly show folder, file, and drive names: never interpret them as markup.
+        textFormat: Text.PlainText
         color: root.foregroundColor
         font.pixelSize: IKFonts.bodySize
         lineHeightMode: root.textLineHeight > 0 ? Text.FixedHeight : Text.ProportionalHeight
