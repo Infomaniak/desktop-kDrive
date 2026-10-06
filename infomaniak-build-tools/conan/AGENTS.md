@@ -11,6 +11,7 @@ Contains custom recipes (Qt, OpenSSL, Sentry, Poco, xxHash) and cross-platform b
 conan/
 ├── build_dependencies.sh       # Main build script (Linux/macOS)
 ├── build_dependencies.ps1      # Main build script (Windows)
+├── qt-account.ps1              # Windows Qt account validation and provisioning helper
 ├── common-utils.sh             # Shared shell utilities (find_conan_dependency_path, find_qt_conan_path)
 ├── find_conan_dep.ps1          # PowerShell equivalent of common-utils.sh
 ├── LegacyReadme.md             # Historical pre-Conan build instructions
@@ -157,7 +158,10 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   selection as macOS/Linux. Paths respect the current home directory, `APPDATA` on Windows, and `XDG_DATA_HOME` on Linux.
   The recipe centrally clears competing environment credentials for CI, release, and extended-test builds;
   the GitHub Qt JWT secret is no longer injected and actions do not duplicate this cleanup. Never print authentication tokens.
-- **Windows Qt account provisioning**: `build_dependencies.ps1` preserves an existing `%APPDATA%/Qt/qtaccount.ini`
+- **Windows Qt account provisioning**: `build_dependencies.ps1` dot-sources `qt-account.ps1` relative to
+  `$PSScriptRoot`, after defining its `Log` function. The helper only defines the account validation and provisioning
+  functions; the main script controls when to call them and clears `QT_ACCOUNT_INI` afterwards.
+  The helper preserves an existing `%APPDATA%/Qt/qtaccount.ini`
   encoded as UTF-8 with non-empty `email` and `jwt` values in `[QtAccount]`. This checks the structure and encoding,
   not server-side token validity. UTF-16 account files are not readable by Qt 6 and must be reprovisioned.
   In CI, a missing or unreadable file, or one lacking these credentials, is prepared atomically from the complete INI contents in the
