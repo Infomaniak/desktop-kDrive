@@ -168,6 +168,12 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   without changing Conan profiles, remotes or packages. Never interpolate the secret into shell commands or log its contents.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
+- **CI recipe updates**: Both dependency scripts enable global `conan install --update` in GitHub Actions or when
+  `KDRIVE_TEST_CI_RUNNING_ON_CI=true`; PowerShell also enables it with `-CI`. The Linux Podman wrapper forwards
+  both CI environment variables into the build container. Local builds opt in with `--update` or `-Update`.
+  Keep `--build=missing`: unchanged recipes reuse available binaries, while missing binaries for new revisions or
+  configurations are built. Updates can also advance dependencies using version ranges and recipes from ConanCenter.
+  Volatile runners need a persistent/restored cache or a binary remote to reuse newly built packages across runs.
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 

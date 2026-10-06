@@ -44,7 +44,7 @@
 
 .PARAMETER Update
     Ask Conan to check remotes for newer versions/revisions.
-    Disabled by default to keep CI deterministic and avoid local recipe revision/timestamp conflicts.
+    Enabled automatically with -CI, in GitHub Actions or when KDRIVE_TEST_CI_RUNNING_ON_CI=true; opt-in for local builds.
 
 .PARAMETER PrepareQtAccountOnly
     Prepare a usable Qt account file from QT_ACCOUNT_INI, then return without installing dependencies.
@@ -426,7 +426,9 @@ $conanInstallArgs = @(
     "-c", "tools.cmake.cmaketoolchain:generator=Ninja",
     "-c", "tools.env.virtualenv:powershell=powershell"
 )
-if ($Update)
+$enableUpdate = $Update -or $CI -or $env:GITHUB_ACTIONS -eq "true" -or $env:KDRIVE_TEST_CI_RUNNING_ON_CI -eq "true"
+Log "Conan update enabled: $enableUpdate"
+if ($enableUpdate)
 {
     $conanInstallArgs += "--update"
 }

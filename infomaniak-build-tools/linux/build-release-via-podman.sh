@@ -108,6 +108,8 @@ podman run --rm -it \
 	--volume "$conan_persistent_folder/.local/share/Qt:/root/.local/share/Qt" \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
+	--env GITHUB_ACTIONS="${GITHUB_ACTIONS:-}" \
+	--env KDRIVE_TEST_CI_RUNNING_ON_CI="${KDRIVE_TEST_CI_RUNNING_ON_CI:-}" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--platform "linux/${architecture}" \
 	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
