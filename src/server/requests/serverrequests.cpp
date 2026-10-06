@@ -160,7 +160,7 @@ ExitInfo ServerRequests::deleteAccount(const AccountDbId accountDbId) {
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteDrive(const DriveDbId driveDbId) {
+ExitInfo ServerRequests::deleteDrive(const DriveDbId driveDbId) {
     // Delete drive (and linked syncs by cascade)
     bool found;
     if (!ParmsDb::instance()->deleteDrive(driveDbId, found)) {
@@ -169,14 +169,14 @@ ExitCode ServerRequests::deleteDrive(const DriveDbId driveDbId) {
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Drive with id=" << driveDbId << " not found");
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
     AbstractTokenNetworkJob::clearCache();
 
     return ExitCode::Ok;
 }
 
-ExitCode ServerRequests::deleteSync(const SyncDbId syncDbId) {
+ExitInfo ServerRequests::deleteSync(const SyncDbId syncDbId) {
     // Delete Sync in DB
     bool found = false;
     if (!ParmsDb::instance()->deleteSync(syncDbId, found)) {
@@ -186,7 +186,7 @@ ExitCode ServerRequests::deleteSync(const SyncDbId syncDbId) {
 
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found for syncDbId=" << syncDbId);
-        return ExitCode::DataError;
+        return {ExitCode::DataError, ExitCause::DbEntryNotFound};
     }
 
     return ExitCode::Ok;

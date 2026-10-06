@@ -71,12 +71,16 @@ ExitInfo DriveDeleteJob::process() {
 
     // Stop syncs for this user and remove them from syncPalMap.
     _commManager->appServer().stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
-    _commManager->appServer().deleteDrive(_driveDbId);
+    const ExitInfo exitInfo = _commManager->appServer().deleteDrive(_driveDbId);
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in AppServer::deleteDrive for driveDbId=" << _driveDbId << " : " << exitInfo);
+        addError(Error(ERR_ID, exitInfo));
+    }
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();
 #endif
 
-    return ExitCode::Ok;
+    return exitInfo;
 }
 
 } // namespace KDC

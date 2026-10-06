@@ -65,10 +65,17 @@ ExitInfo SyncDeleteJob::process() {
         return ExitCode::OperationCanceled;
     }
 
-    _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove);
+   if (const ExitInfo exitInfo = _commManager->appServer().stopSyncTask(_syncDbId, SyncPal::DbBehaviorAfterStop::Remove); !exitInfo) {
+        LOG_WARN(_logger, "Error in AppServer::stopSyncTask for syncDbId=" << _syncDbId << " : " << exitInfo);
+        return exitInfo;
+   }
 
     // Delete sync from DB
-    _commManager->appServer().deleteSync(_syncDbId);
+    
+    if (const ExitInfo exitInfo = _commManager->appServer().deleteSync(_syncDbId); !exitInfo) {
+        LOG_WARN(_logger, "Error in AppServer::deleteSync for syncDbId=" << _syncDbId << " : " << exitInfo);
+        return exitInfo;
+    }
 
 #if defined(KD_MACOS)
     Utility::restartFinderExtension();

@@ -161,8 +161,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void resolveSyncErrorsByExitCause(SyncDbId syncDbId, ExitCause cause) const;
 
         void updateSentryUser();
-        void deleteDrive(DriveDbId driveDbId);
-        void deleteSync(SyncDbId syncDbId);
+        ExitInfo deleteDrive(DriveDbId driveDbId);
+        ExitInfo deleteSync(SyncDbId syncDbId);
         void deleteSyncAsBackgroundTask(SyncDbId syncDbId);
         ExitCode clearErrors(SyncDbId syncDbId, bool autoResolved = false);
         // Check if the synchronization `sync` is registered in the sync database and
@@ -190,7 +190,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         [[nodiscard]] ExitInfo startSyncs(User &user);
         [[nodiscard]] ExitInfo startSyncs(User &user, std::unordered_set<SyncDbId> toIgnoreSyncDbIds,
                                           std::unordered_set<SyncDbId> &startedSyncDbIds);
-        void stopSyncTask(SyncDbId syncDbId, const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
+        [[nodiscard]] ExitInfo stopSyncTask(SyncDbId syncDbId,
+                                            const SyncPal::DbBehaviorAfterStop behavior = SyncPal::DbBehaviorAfterStop::Keep);
         [[nodiscard]] ExitInfo setSupportsVirtualFilesAsync(SyncDbId syncDbId, bool value);
         [[nodiscard]] ExitInfo setSupportsVirtualFiles(SyncDbId syncDbId, bool value);
         void setDistributionChannel(DistributionChannel versionChannel);
@@ -365,7 +366,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         virtual void sendLogUploadStatusUpdated(LogUploadState status, int percent) const;
         virtual void sendNodeFixConflictedFilesCompleted(SyncDbId syncDbId, qint64 nbErrors) const;
 
-        void deleteAccount(AccountDbId accountDbId);
+        ExitInfo deleteAccount(AccountDbId accountDbId);
         void sendErrorAdded(const Error &error) const;
         void sendErrorRemoved(int64_t dbId) const;
         void addCompletedItem(SyncDbId syncDbId, const SyncFileItem &item, bool notify);

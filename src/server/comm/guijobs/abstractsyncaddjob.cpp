@@ -93,7 +93,7 @@ ExitInfo AbstractSyncAddJob::process(const Sync &sync) {
     if (const auto exitInfo =
                 _commManager->appServer().initSyncPal(sync, blackList, !startPostponed, std::chrono::seconds(0), false, true);
         !exitInfo) {
-        _commManager->appServer().stopSyncTask(sync.dbId());
+        (void) _commManager->appServer().stopSyncTask(sync.dbId());
 
         // Delete sync from DB
         if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(sync.dbId()); !exitInfo2) {

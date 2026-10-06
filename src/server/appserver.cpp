@@ -648,16 +648,14 @@ void AppServer::quitLater(const int32_t delayMs) {
 }
 
 // This task can be long and block the GUI
-void AppServer::stopSyncTask(const SyncDbId syncDbId,
-                             const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
+ExitInfo AppServer::stopSyncTask(const SyncDbId syncDbId,
+                                 const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     if (behavior == SyncPal::DbBehaviorAfterStop::Remove) {
         // Mark the sync for deletion in the parameters DB.
         if (bool found = false; !ParmsDb::instance()->setSyncToDelete(syncDbId, true, found)) {
             LOG_WARN(_logger, "Error in setSyncToDelete for syncDbId=" << syncDbId);
-            addError(Error(syncDbId, ERR_ID, ExitCode::DbError, ExitCause::Unknown));
-
-            return; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on Windows only) could
-                    // delete dehydrated placeholders whereas the sync is still in the DB.
+            return ExitCode::DbError; // We cannot continue if we cannot mark the sync for deletion in the DB as stopVfs (on
+                                      // Windows only) could delete dehydrated placeholders whereas the sync is still in the DB.
         } else if (!found) {
             LOG_WARN(_logger, "Sync not found in DB for syncDbId=" << syncDbId);
         }
@@ -666,8 +664,6 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
     // Stop sync and remove it from syncPalMap
     if (const auto exitInfo = stopSyncPal(syncDbId, SyncPal::PauseCaller::Sync, behavior); !exitInfo) {
         LOG_WARN(_logger, "Error in stopSyncPal for syncDbId=" << syncDbId << " : " << exitInfo);
-
-        return;
     }
 
     // Stop Vfs
@@ -687,6 +683,7 @@ void AppServer::stopSyncTask(const SyncDbId syncDbId,
                     vfsMap[syncDbId].use_count() <= 1) // `use_count` can be zero when the local drive has been removed.
         (void) vfsMap.erase(syncDbId);
     }
+    return ExitCode::Ok;
 }
 
 ExitInfo AppServer::setSupportsVirtualFilesAsync(const SyncDbId syncDbId, bool value) {
@@ -721,91 +718,90 @@ void AppServer::stopAllVfs() {
 void AppServer::stopAllSyncsTask(const std::vector<SyncDbId> &syncDbIdList,
                                  const SyncPal::DbBehaviorAfterStop behavior /*= SyncPal::DbBehaviorAfterStop::Keep*/) {
     for (const auto syncDbId: syncDbIdList) {
-        stopSyncTask(syncDbId, behavior);
+        (void) stopSyncTask(syncDbId, behavior);
     }
 }
 
-void AppServer::deleteAccount(const AccountDbId accountDbId) {
+ExitInfo AppServer::deleteAccount(const AccountDbId accountDbId) {
     // Delete the account
-    const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
-    if (exitCode == ExitCode::Ok) {
+    const ExitInfo exitInfo = ServerRequests::deleteAccount(accountDbId);
+    if (exitInfo) {
         sendAccountRemoved(accountDbId);
     } else {
-        LOG_WARN(_logger, "Error in Requests::deleteAccount: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        return;
+        LOG_WARN(_logger, "Error in Requests::deleteAccount: " << exitInfo);
+        addError(Error(ERR_ID, exitInfo, ExitCause::Unknown));
+        return exitInfo;
     }
+
+    return ExitCode::Ok;
 }
 
-void AppServer::deleteDrive(const DriveDbId driveDbId) {
+ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
     // Get the drive in DB
     bool found = false;
     Drive drive;
     if (!ParmsDb::instance()->selectDrive(driveDbId, drive, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectDrive");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        return ExitCode::DbError;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Drive not found for driveDbId=" << driveDbId);
-        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
+        return ExitCode::DataError;
     }
 
     // Delete the drive
-    const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        sendDriveDeletionFailed(driveDbId);
-        return;
+    const ExitInfo exitInfo = ServerRequests::deleteDrive(driveDbId);
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitInfo);
+        if (useOldCommServer()) sendDriveDeletionFailed(driveDbId);
+        return exitInfo;
     }
 
-    // Delete the account if there is no remaining drive
+    // Try to delete the account if there is no remaining drive, any faillure in this step is not critical, the account will be
+    // deleted later.
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(drive.accountDbId(), driveList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
-    } else if (driveList.empty()) {
-        deleteAccount(drive.accountDbId());
-    } else {
-        sendDriveRemoved(driveDbId); // Useless if deleteAccount is called, sendAccountRemoved already updates the drive list.
+    } else if (!driveList.empty() || !deleteAccount(drive.accountDbId())) {
+        sendDriveRemoved(driveDbId); // Useless if deleteAccount succeed, sendAccountRemoved already updates the drive list.
                                      // May even cause a crash if both are processed concurrently on the GUI side.
     }
+
+    return ExitCode::Ok;
 }
 
-void AppServer::deleteSync(const SyncDbId syncDbId) {
+ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
     // Get the sync in DB
     bool found = false;
     Sync sync;
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
+        return ExitCode::DbError;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found for syncDbId=" << syncDbId);
-        addError(Error(ERR_ID, ExitCode::DataError, ExitCause::Unknown));
+        return ExitCode::DataError;
     }
 
     // Delete the sync
     const ExitCode exitCode = ServerRequests::deleteSync(syncDbId);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::deleteSync: code=" << exitCode);
-        addError(Error(ERR_ID, exitCode, ExitCause::Unknown));
-        sendSyncDeletionFailed(syncDbId);
-        return;
+        LOG_WARN(_logger, "Error in Requests::deleteSync: " << exitCode);
+        if (useOldCommServer()) sendSyncDeletionFailed(syncDbId);
+        return exitCode;
     }
 
-    // Delete the drive if there is no remaining sync
+    // Delete the drive if there is no remaining sync, any faillure in this step is not critical, the drive will be deleted later.
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(sync.driveDbId(), syncList)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
-        addError(Error(ERR_ID, ExitCode::DbError, ExitCause::Unknown));
-    } else if (syncList.empty()) {
-        deleteDrive(sync.driveDbId());
-    } else {
+        LOG_WARN(_logger,
+                 "Error in ParmsDb::selectAllSyncs, unable to check if the drive has remaining syncs, keep the drive for safety");
+    } else if (!syncList.empty() || !deleteDrive(sync.driveDbId())) {
         sendSyncRemoved(syncDbId); // Useless if deleteDrive is called, sendDriveRemoved already updates the sync list.
                                    // May even cause a crash if both sendDriveRemoved and sendSyncRemoved are processed
                                    // concurrently on the GUI side.
     }
+    return ExitCode::Ok;
 }
 
 void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
@@ -814,7 +810,11 @@ void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
                                 SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
 
         // Delete sync from DB
-        deleteSync(syncDbId);
+        if (ExitInfo exitInfo = deleteSync(syncDbId); !exitInfo) {
+            LOG_WARN(_logger, "Error in deleteSync for syncDbId=" << syncDbId << " : " << exitInfo);
+            addError(Error(ERR_ID, exitInfo));
+            sendSyncDeletionFailed(syncDbId);
+        }
 #if defined(KD_MACOS)
         Utility::restartFinderExtension();
 #endif
@@ -1448,7 +1448,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // Stop syncs for this drive and remove them from syncPalMap
             QTimer::singleShot(100, [this, driveDbId, syncDbIdList]() {
                 AppServer::stopAllSyncsTask(syncDbIdList, SyncPal::DbBehaviorAfterStop::Remove);
-                AppServer::deleteDrive(driveDbId);
+                if (const ExitInfo exitInfo = AppServer::deleteDrive(driveDbId); !exitInfo) {
+                    LOG_WARN(_logger, "Error in deleteDrive for driveDbId=" << driveDbId << " : " << exitInfo);
+                    addError(Error(ERR_ID, exitInfo));
+                    sendDriveDeletionFailed(driveDbId);
+                }
             });
 #if defined(KD_MACOS)
             Utility::restartFinderExtension();
@@ -1703,7 +1707,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 if (const auto exitInfo = initSyncPal(syncInfo, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
+                    (void) stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
@@ -2931,11 +2935,11 @@ ExitCode AppServer::migrateConfiguration(bool &proxyNotSupported) {
 
     MigrationParams mp = MigrationParams();
     std::vector<std::pair<migrateptr, std::string>> migrateArr = {
-        {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
-        {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
-        {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
+            {&MigrationParams::migrateGeneralParams, "migrateGeneralParams"},
+            {&MigrationParams::migrateAccountsParams, "migrateAccountsParams"},
+            {&MigrationParams::migrateTemplateExclusion, "migrateFileExclusion"},
 #if defined(KD_MACOS)
-        {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
+            {&MigrationParams::migrateAppExclusion, "migrateAppExclusion"},
 #endif
     };
 
@@ -4952,9 +4956,6 @@ void AppServer::sendSyncDeletionFailed(const SyncDbId syncDbId) const {
         const auto params = QByteArray(ArgsReader(static_cast<qint64>(syncDbId)));
 
         (void) OldCommServer::instance()->sendSignal(SignalNum::SYNC_DELETE_FAILED, params, id);
-    }
-    if (useCommManager()) {
-        // TODO
     }
 }
 
