@@ -19,10 +19,11 @@ class QtConan(ConanFile):
     _qt_online_installers_base_url = "https://download.qt.io/official_releases/online_installers"
 
     options = {
-        # ini: Prefer qtaccount.ini and ignore environment credentials. Fall back to envvars only outside CI.
+        # ini: Prefer qtaccount.ini locally. Fall back to envvars only outside CI.
+        # credentials: Use QT_ACCOUNT_EMAIL and QT_ACCOUNT_PASSWORD without saving an account file. Always used in CI.
         # envvars: Use a non-empty QT_INSTALLER_JWT_TOKEN, including when explicitly selected by the caller.
         # cli: Use qtaccount.ini if available, otherwise prompt for credentials. Not supported in CI.
-        "qt_login_type": ["ini", "envvars", "cli"],
+        "qt_login_type": ["ini", "credentials", "envvars", "cli"],
         "debug_symbols": [True, False],
         "install_vcredist": [True, False],  # Install Visual C++ Redistributable packages (Windows MSVC only)
         "verbose": [True, False]  # Enable verbose mode for installer output
@@ -243,20 +244,27 @@ class QtConan(ConanFile):
         login_type = str(self.options.qt_login_type)
         running_on_ci = any(os.getenv(name, "").lower() == "true" for name in (
             "GITHUB_ACTIONS", "KDRIVE_TEST_CI_RUNNING_ON_CI"))
-        if running_on_ci and login_type != "ini":
-            raise ConanInvalidConfiguration("Qt authentication in CI requires qt_login_type=ini and the runner's qtaccount.ini.")
+        if running_on_ci:
+            return "credentials"
         if login_type != "ini":
             return login_type
         ini_path = self._get_default_login_ini_location()
         if ini_path is not None and os.path.isfile(ini_path):
             return "ini"
-        if running_on_ci:
-            raise ConanInvalidConfiguration(
-                "Qt authentication in CI requires the runner's qtaccount.ini. "
-                f"Account file not found: {ini_path}")
         if self._check_envvars_login_type(check_option=False, raise_error=False):
             return "envvars"
         return "cli"
+
+    def _check_credentials_login_type(self):
+        """Require both environment credentials without exposing their values."""
+        if self._get_login_type() != "credentials":
+            return
+        missing = [name for name in ("QT_ACCOUNT_EMAIL", "QT_ACCOUNT_PASSWORD")
+                   if not os.getenv(name, "").strip()]
+        if missing:
+            raise ConanInvalidConfiguration(
+                "Qt email/password authentication requires non-empty environment variables: "
+                + ", ".join(missing))
 
     def validate(self):
         if not self.version.startswith("6."):
@@ -267,14 +275,21 @@ class QtConan(ConanFile):
             raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation. Supported OS are: {', '.join(valid_operating_systems)}.")
 
         self._check_envvars_login_type(check_option=True, raise_error=True)
+        self._check_credentials_login_type()
 
     def _installer_login_environment(self):
         """Ensure Qt uses the selected login method without changing the caller's environment."""
         environment = Environment()
         # Qt checks email/password before the JWT, and the JWT before qtaccount.ini.
-        environment.unset("QT_ACCOUNT_EMAIL")
-        environment.unset("QT_ACCOUNT_PASSWORD")
-        if self._get_login_type() == "envvars":
+        login_type = self._get_login_type()
+        if login_type == "credentials":
+            self._check_credentials_login_type()
+            environment.define("QT_ACCOUNT_EMAIL", os.environ["QT_ACCOUNT_EMAIL"].strip())
+            environment.define("QT_ACCOUNT_PASSWORD", os.environ["QT_ACCOUNT_PASSWORD"])
+        else:
+            environment.unset("QT_ACCOUNT_EMAIL")
+            environment.unset("QT_ACCOUNT_PASSWORD")
+        if login_type == "envvars":
             self._check_envvars_login_type()
             environment.define("QT_INSTALLER_JWT_TOKEN", os.environ["QT_INSTALLER_JWT_TOKEN"].strip())
         else:
@@ -395,6 +410,10 @@ class QtConan(ConanFile):
             self.output.info("Verbose mode enabled")
 
         args = ["--root", f"{self.build_folder}/install"] + args
+
+        self._check_credentials_login_type()
+        if self._get_login_type() == "credentials":
+            args.append("--no-save-account")
 
         self._check_envvars_login_type(check_option=True, raise_error=True) # If the login type is 'envvars', ensure that the required environment variable is set; otherwise, raise an error.
 

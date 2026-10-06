@@ -2,9 +2,12 @@ name: Build Windows
 description: 'Build windows app'
 
 inputs:
-  qt_account_ini:
-    description: 'Complete qtaccount.ini contents, used when the runner account file is missing, unreadable or lacks email/JWT'
-    required: false
+  qt_account_email:
+    description: 'Qt account email for unattended installation'
+    required: true
+  qt_account_password:
+    description: 'Qt account password for unattended installation'
+    required: true
   debug_cert:
     description: 'The debug certificate, mandatory for non-release builds'
     required: false
@@ -113,7 +116,8 @@ runs:
         id: build
         shell: powershell
         env:
-          QT_ACCOUNT_INI: ${{ inputs.qt_account_ini }}
+          QT_ACCOUNT_EMAIL: ${{ inputs.qt_account_email }}
+          QT_ACCOUNT_PASSWORD: ${{ inputs.qt_account_password }}
         run: |
           & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
             -Arch amd64 `

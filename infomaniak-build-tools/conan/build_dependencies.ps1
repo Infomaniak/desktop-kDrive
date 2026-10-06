@@ -25,7 +25,7 @@
     Infomaniak kDrive Desktop – build dependencies via Conan (Windows only)
 
 .DESCRIPTION
-    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update] [-PrepareQtAccountOnly]
+    Usage: infomaniak-build-tools\conan\build_dependencies.ps1 [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]
 
 .PARAMETER BuildType
     Build configuration: Debug (default), Release or RelWithDebInfo.
@@ -45,9 +45,6 @@
 .PARAMETER Update
     Ask Conan to check remotes for newer versions/revisions.
     Enabled automatically with -CI, in GitHub Actions or when KDRIVE_TEST_CI_RUNNING_ON_CI=true; opt-in for local builds.
-
-.PARAMETER PrepareQtAccountOnly
-    Prepare a usable Qt account file from QT_ACCOUNT_INI, then return without installing dependencies.
 #>
 
 param(
@@ -74,15 +71,12 @@ param(
     [switch]$CleanCache,
 
     [Parameter(Mandatory = $false, HelpMessage = "Ask Conan to check remotes for newer versions/revisions.")]
-    [switch]$Update,
-
-    [Parameter(Mandatory = $false, HelpMessage = "Prepare the Qt account file without installing dependencies.")]
-    [switch]$PrepareQtAccountOnly
+    [switch]$Update
 )
 
 function Show-Help
 {
-    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update] [-PrepareQtAccountOnly]"; exit 0
+    Write-Host "Usage: $( $MyInvocation.MyCommand.Name ) [-Help] [Debug|Release|RelWithDebInfo] [-CI] [-OutputDir <path>] [-MakeRelease] [-CleanCache] [-Update]"; exit 0
 }
 if ($Help)
 {
@@ -99,15 +93,6 @@ function Err
 {
     Write-Error "[ERROR] $( $args -join ' ' )"; exit 1
 }
-
-. (Join-Path $PSScriptRoot "qt-account.ps1")
-
-if ($CI -or $PrepareQtAccountOnly -or -not [string]::IsNullOrWhiteSpace($env:QT_ACCOUNT_INI))
-{
-    Initialize-QtAccount
-    Remove-Item Env:QT_ACCOUNT_INI -ErrorAction SilentlyContinue
-}
-if ($PrepareQtAccountOnly) { return }
 
 # Determine repository root and default output directory
 $CurrentDir = (Get-Location).Path
@@ -188,6 +173,7 @@ print(exe)
 # If we are running in CI mode, we activate the python virtual environment.
 if ($CI)
 {
+    $env:KDRIVE_TEST_CI_RUNNING_ON_CI = "true"
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 

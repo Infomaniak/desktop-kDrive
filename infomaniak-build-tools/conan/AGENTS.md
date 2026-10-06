@@ -11,7 +11,6 @@ Contains custom recipes (Qt, OpenSSL, Sentry, Poco, xxHash) and cross-platform b
 conan/
 ├── build_dependencies.sh       # Main build script (Linux/macOS)
 ├── build_dependencies.ps1      # Main build script (Windows)
-├── qt-account.ps1              # Windows Qt account validation and provisioning helper
 ├── common-utils.sh             # Shared shell utilities (find_conan_dependency_path, find_qt_conan_path)
 ├── find_conan_dep.ps1          # PowerShell equivalent of common-utils.sh
 ├── LegacyReadme.md             # Historical pre-Conan build instructions
@@ -150,26 +149,22 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 ## Common Gotchas
 
-- **Qt login**: `ini` (default) prefers the runner's `qtaccount.ini` and clears environment credentials for the
-  installer process. Outside CI, a missing file falls back to `envvars` only when `QT_INSTALLER_JWT_TOKEN` is non-empty.
-  Explicit `envvars` uses this token and ignores environment email/password credentials. `cli` ignores environment
-  credentials. GitHub Actions and `KDRIVE_TEST_CI_RUNNING_ON_CI=true` require `ini` and an existing account file, rejecting
-  token or interactive login. Windows CI uses the same
-  selection as macOS/Linux. Paths respect the current home directory, `APPDATA` on Windows, and `XDG_DATA_HOME` on Linux.
-  The recipe centrally clears competing environment credentials for CI, release, and extended-test builds;
-  the GitHub Qt JWT secret is no longer injected and actions do not duplicate this cleanup. Never print authentication tokens.
-- **Windows Qt account provisioning**: `build_dependencies.ps1` dot-sources `qt-account.ps1` relative to
-  `$PSScriptRoot`, after defining its `Log` function. The helper only defines the account validation and provisioning
-  functions; the main script controls when to call them and clears `QT_ACCOUNT_INI` afterwards.
-  The helper preserves an existing `%APPDATA%/Qt/qtaccount.ini`
-  encoded as UTF-8 with non-empty `email` and `jwt` values in `[QtAccount]`. This checks the structure and encoding,
-  not server-side token validity. UTF-16 account files are not readable by Qt 6 and must be reprovisioned.
-  In CI, a missing or unreadable file, or one lacking these credentials, is prepared atomically from the complete INI contents in the
-  GitHub secret `QT_ACCOUNT_INI`, passed through an environment variable of the same name. The secret must contain
-  actual newlines, not base64 or literal `\n`; an empty or malformed secret fails before writing the account file.
-  The script logs the account file path, never credential values. CI, release and
-  extended-test Windows builds use this bootstrap; `-PrepareQtAccountOnly` prepares only the account file
-  without changing Conan profiles, remotes or packages. Never interpolate the secret into shell commands or log its contents.
+- **Qt login**: GitHub Actions and `KDRIVE_TEST_CI_RUNNING_ON_CI=true` always select `credentials`,
+  requiring non-empty `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`. The installer ignores inherited JWTs
+  and account files in this mode and receives `--no-save-account`. The password is passed through the
+  process environment, never through installer arguments or generated credential files.
+  Local builds keep `ini` as the default, preferring `qtaccount.ini` and clearing competing environment credentials.
+  A missing local file falls back to `envvars` when `QT_INSTALLER_JWT_TOKEN` is non-empty, otherwise to `cli`.
+  Explicit local `credentials` uses email/password; `envvars` uses only the JWT; `cli` clears environment credentials.
+  Paths respect the current home directory, `APPDATA` on Windows, and `XDG_DATA_HOME` on Linux.
+  The recipe controls the installer environment centrally and restores the caller's variables after execution.
+  Windows `-CI` also sets `KDRIVE_TEST_CI_RUNNING_ON_CI=true`. Never print passwords or authentication tokens.
+- **GitHub Qt credentials**: All four platform build actions accept required `qt_account_email` and
+  `qt_account_password` inputs. CI, release and extended-test workflows inject the matching GitHub secrets
+  only into build steps. The former account-file provisioning helper and prepare-only switch are removed.
+  The Podman wrapper forwards credentials with `--env QT_ACCOUNT_EMAIL` and `--env QT_ACCOUNT_PASSWORD`,
+  without expanding their values in traced commands. It mounts the persistent Qt account directory only
+  outside CI, for local INI authentication.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
 - **CI recipe updates**: Both dependency scripts enable global `conan install --update` in GitHub Actions or when

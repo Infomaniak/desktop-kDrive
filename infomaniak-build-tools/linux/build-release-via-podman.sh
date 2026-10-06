@@ -71,7 +71,11 @@ mkdir -p "$client_dir"
 mkdir -p "$install_dir"
 mkdir -p "$conan_cache_folder"
 mkdir -p "$local_recipes_index"
-mkdir -p "$conan_persistent_folder/.local/share/Qt" # Folder containing the Qt online installer login JWT.
+qt_account_mount=()
+if [[ "${GITHUB_ACTIONS:-}" != "true" && "${KDRIVE_TEST_CI_RUNNING_ON_CI:-}" != "true" ]]; then
+    mkdir -p "$conan_persistent_folder/.local/share/Qt"
+    qt_account_mount=(--volume "$conan_persistent_folder/.local/share/Qt:/root/.local/share/Qt")
+fi
 
 if [ ! -d "$git_dir" ]; then
     echo "Git directory does not exist: '$git_dir'"
@@ -105,11 +109,13 @@ podman run --rm -it \
 	--volume "$install_dir:/install" \
 	--volume "$conan_cache_folder:/root/.conan2/p" \
 	--volume "$local_recipes_index:/root/.conan2/.local_recipes_index/" \
-	--volume "$conan_persistent_folder/.local/share/Qt:/root/.local/share/Qt" \
+	"${qt_account_mount[@]}" \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env GITHUB_ACTIONS="${GITHUB_ACTIONS:-}" \
 	--env KDRIVE_TEST_CI_RUNNING_ON_CI="${KDRIVE_TEST_CI_RUNNING_ON_CI:-}" \
+	--env QT_ACCOUNT_EMAIL \
+	--env QT_ACCOUNT_PASSWORD \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--platform "linux/${architecture}" \
 	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "/src/infomaniak-build-tools/linux/build-release-appimage.sh"
