@@ -32,8 +32,9 @@ adding it to the GUI import configs (see Part 1 for the exact changes).
 
 When the user asks to update all translations or to make sure translations are up to date without naming a specific
 part or language, run both parts and cover **every language** of the enum:
-- Qt: every `client_<code>.ts` must exist and contain no `unfinished` entry; create a missing file by running lupdate
-  on it (it generates the skeleton).
+- Qt: for every non-English language, `client_<code>.ts` must exist and contain no `unfinished` entry; create a missing
+  file by running lupdate on it (it generates the skeleton). English is the source language and must not get a
+  `client_en.ts` file.
 - Loco: every locale of the Loco project must have zero untranslated assets. If a language of the enum is missing from
   `list_locales`, report it: the locale itself must be added in the Loco project, which the MCP server cannot do.
 - GUI imports: each GUI imports the languages of its own `.import_loco.yml` config (see Part 1): the Windows config
