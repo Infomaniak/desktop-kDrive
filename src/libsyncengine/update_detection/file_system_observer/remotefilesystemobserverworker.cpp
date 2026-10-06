@@ -192,7 +192,10 @@ void RemoteFileSystemObserverWorker::execute() {
 
     ExitInfo exitInfo = ExitCode::Ok;
     ApiTranslator::clearSharedCache(_syncPal->driveId());
-    _listingCursorCache.clear();
+    {
+        const std::scoped_lock lock(_listingCursorCacheMutex);
+        _listingCursorCache.clear();
+    }
     LongPollJobMap longPollJobs;
 
     // We never pause this thread, but we stop it as soon as the synchronization leaves its Idle state, or if stop is asked.
@@ -250,6 +253,7 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
     }
 
     ExitInfo clearCursorExitInfo = ExitCode::Ok;
+    const std::scoped_lock lock(_listingCursorCacheMutex);
     for (const auto &specialFolderRemoteId: specialFoldersRemoteIds) {
         if (!_listingCursorCache.contains(specialFolderRemoteId) || _listingCursorCache.at(specialFolderRemoteId).cursor.empty())
             continue;
@@ -1419,6 +1423,8 @@ ExitInfo RemoteFileSystemObserverWorker::getSpecialFoldersRemoteIds(std::vector<
 }
 
 ExitInfo RemoteFileSystemObserverWorker::getListingCursor(const RemoteNodeId &remoteDirId, CursorData &cursorData) const {
+    const std::scoped_lock lock(_listingCursorCacheMutex);
+
     if (_listingCursorCache.contains(remoteDirId)) {
         cursorData = _listingCursorCache.at(remoteDirId);
 
@@ -1479,6 +1485,7 @@ ExitInfo RemoteFileSystemObserverWorker::saveListingCursor(const RemoteNodeId &r
         return setCursorExitInfo;
     };
 
+    const std::scoped_lock lock(_listingCursorCacheMutex);
     if (syncIsAdvancedWithNonRootFolder())
         return setSyncPalFolderCursor(remoteDirId, SpecialRemoteFolder::CustomTarget, cursorData);
 
