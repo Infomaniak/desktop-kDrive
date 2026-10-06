@@ -245,6 +245,18 @@ void TestSearchJob::testHandleResponseAdvancedSync() {
     }
 
     {
+        // The target folder itself is the local sync root, which is available locally.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/Docs");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath{}, results.front().path());
+        CPPUNIT_ASSERT(results.front().isAvailableLocally());
+    }
+
+    {
         // A sibling folder sharing the target name as a prefix is outside of the target folder.
         SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
         const std::string json = makeSearchResponseJson("/Private/Docs2/inside.txt");

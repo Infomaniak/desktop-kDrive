@@ -109,13 +109,16 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     ApiTranslator::translateV3ToV2(localProperties.path);
 
     // An advanced sync only mirrors its target folder: results outside of it are never available locally, and results
-    // inside of it are located relative to the target folder.
+    // inside of it are located relative to the target folder. The target folder itself is the local sync root.
     if (!_syncTargetPath.empty()) {
-        if (!CommonUtility::isStrictDescendant(localProperties.path, _syncTargetPath)) {
+        if (!CommonUtility::isDescendantOrEqual(localProperties.path, _syncTargetPath)) {
             return ExitCode::Ok;
         }
 
         localProperties.path = localProperties.path.lexically_relative(_syncTargetPath);
+        if (localProperties.path == SyncPath(Str("."))) {
+            localProperties.path.clear();
+        }
     }
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
