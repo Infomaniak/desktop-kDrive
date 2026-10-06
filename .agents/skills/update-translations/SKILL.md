@@ -26,9 +26,9 @@ language's code with `CommonUtility::languageCode()` in `src/libcommon/utility/u
 hardcoded list. The current mapping is French `fr`, German `de`, Spanish `es`, Italian `it`, Dutch `nl`, Swedish `sv`,
 Portuguese `pt`, Polish `pl`, Norwegian `nb`, Finnish `fi`, Danish `da`, Greek `el`.
 
-**A language added to the enum is automatically supported by this skill.** It gets the same targets as every other
-language: a `client_<code>.ts` file, a Loco locale and an entry in the GUI import configs (see Part 1 for the exact
-change).
+**A language added to the enum is not automatically supported end-to-end.** Create its `client_<code>.ts` target and
+Loco locale, then verify that the pinned `import_loco` release supports its Windows language-to-country mapping before
+adding it to the GUI import configs (see Part 1 for the exact changes).
 
 When the user asks to update all translations or to make sure translations are up to date without naming a specific
 part or language, run both parts and cover **every language** of the enum:
