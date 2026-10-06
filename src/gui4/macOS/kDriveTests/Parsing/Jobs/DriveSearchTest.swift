@@ -57,6 +57,7 @@ struct DriveSearchTest {
         #expect(firstResult?.name == "picture-1.jpg")
         #expect(firstResult?.path == "Common documents/\u{1F483}/picture-1.jpg")
         #expect(firstResult?.isAvailableLocally == false)
+        #expect(firstResult?.isHydrated == false)
         #expect(firstResult?.modifiedTime == 1_032_584_949)
         #expect(firstResult?.size == 408_278)
         #expect(firstResult?.type == KDC.NodeType.File)

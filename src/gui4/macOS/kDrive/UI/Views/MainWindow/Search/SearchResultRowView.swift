@@ -22,6 +22,7 @@ import SwiftUI
 
 struct SearchResultRowView: View {
     let file: UISearchResponse
+    let opensLocally: Bool
 
     @State private var isHovered = false
 
@@ -48,7 +49,7 @@ struct SearchResultRowView: View {
 
             Spacer()
 
-            if !file.isAvailableLocally {
+            if !opensLocally {
                 Image(systemName: "arrow.up.forward.square")
                     .foregroundStyle(ColorToken.Text.secondary.asColor)
                     .accessibilityHidden(true)
@@ -60,11 +61,11 @@ struct SearchResultRowView: View {
             in: .rect(cornerRadius: 8)
         )
         .contentShape(.rect)
-        .accessibilityHint(file.isAvailableLocally ? KDriveLocalizable.buttonOpenInFinder : KDriveLocalizable.buttonOpenInBrowser)
+        .accessibilityHint(opensLocally ? KDriveLocalizable.buttonOpenInFinder : KDriveLocalizable.buttonOpenInBrowser)
         .onHover { hovering in
             isHovered = hovering
         }
-        .help(file.isAvailableLocally ? "" : openInBrowserTooltip)
+        .help(opensLocally ? "" : openInBrowserTooltip)
     }
 
     private var formattedSubtitle: String {
@@ -82,25 +83,33 @@ struct SearchResultRowView: View {
 }
 
 #Preview("Available locally") {
-    SearchResultRowView(file: UISearchResponse(
-        id: "1",
-        name: "Example.pdf",
-        type: .file,
-        path: "/Documents/Example.pdf",
-        modifiedDate: Date(),
-        size: 1024,
-        isAvailableLocally: true
-    ))
+    SearchResultRowView(
+        file: UISearchResponse(
+            id: "1",
+            name: "Example.pdf",
+            type: .file,
+            path: "/Documents/Example.pdf",
+            modifiedDate: Date(),
+            size: 1024,
+            isAvailableLocally: true,
+            isHydrated: true
+        ),
+        opensLocally: true
+    )
 }
 
 #Preview("Not available locally") {
-    SearchResultRowView(file: UISearchResponse(
-        id: "2",
-        name: "Remote file.docx",
-        type: .file,
-        path: "/Documents/Remote file.docx",
-        modifiedDate: Date(),
-        size: 2048,
-        isAvailableLocally: false
-    ))
+    SearchResultRowView(
+        file: UISearchResponse(
+            id: "2",
+            name: "Remote file.docx",
+            type: .file,
+            path: "/Documents/Remote file.docx",
+            modifiedDate: Date(),
+            size: 2048,
+            isAvailableLocally: false,
+            isHydrated: false
+        ),
+        opensLocally: false
+    )
 }

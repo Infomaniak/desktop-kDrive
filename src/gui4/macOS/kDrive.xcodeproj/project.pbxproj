@@ -242,6 +242,7 @@
 				UI/LogUploadSessionTrackerTests.swift,
 				UI/MainViewModelTests.swift,
 				UI/SynchroErrorManagerTests.swift,
+				UI/UISearchResponseTests.swift,
 				UI/UISynchroNodeTests.swift,
 				Utils/FinderSidebarFavoritesTests.swift,
 				Utils/MacOSPermissionHandlerTests.swift,

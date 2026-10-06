@@ -26,6 +26,9 @@ import kDriveCoreUI
 final class SearchViewModel: ObservableObject {
     @Published var searchText = ""
     @Published private(set) var searchResults: [UISearchResponse] = []
+    @Published private(set) var isSynchroPaused = false
+
+    @LazyInjectService private var synchroStateObserver: UISynchroStateObserving
 
     var isSearching: Bool {
         currentSearchTask != nil
@@ -61,7 +64,8 @@ final class SearchViewModel: ObservableObject {
             path: "/Placeholder/Path",
             modifiedDate: Date(),
             size: 1024,
-            isAvailableLocally: true
+            isAvailableLocally: true,
+            isHydrated: true
         )
     }
 
@@ -76,11 +80,16 @@ final class SearchViewModel: ObservableObject {
         self.driveId = driveId
         self.synchroLocalPath = synchroLocalPath
         setupSearchSubscription()
+        setupSynchroStateSubscription()
+    }
+
+    func opensLocally(_ file: UISearchResponse) -> Bool {
+        file.opensLocally(isSynchroPaused: isSynchroPaused)
     }
 
     func openFile(_ file: UISearchResponse) {
         @InjectService var matomo: MatomoUtils
-        if file.isAvailableLocally {
+        if opensLocally(file) {
             matomo.track(eventWithCategory: .search, name: "openItem")
             openInFinder(file: file)
         } else {
@@ -108,6 +117,17 @@ final class SearchViewModel: ObservableObject {
                 self?.performSearch(query: query)
             }
             .store(in: &bindStore)
+    }
+
+    private func setupSynchroStateSubscription() {
+        isSynchroPaused = synchroStateObserver.synchroState.status.isPaused
+
+        synchroStateObserver.synchroStatePublisher
+            .map(\.status.isPaused)
+            .removeDuplicates()
+            .receiveOnMain(store: &bindStore) { [weak self] isPaused in
+                self?.isSynchroPaused = isPaused
+            }
     }
 
     private func performSearch(query: String) {

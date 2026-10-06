@@ -27,6 +27,7 @@ public struct UISearchResponse: Sendable, Identifiable {
     public let modifiedDate: Date
     public let size: Int64
     public let isAvailableLocally: Bool
+    public let isHydrated: Bool
 
     public init(
         id: String,
@@ -35,7 +36,8 @@ public struct UISearchResponse: Sendable, Identifiable {
         path: String,
         modifiedDate: Date,
         size: Int64,
-        isAvailableLocally: Bool
+        isAvailableLocally: Bool,
+        isHydrated: Bool
     ) {
         self.id = id
         self.name = name
@@ -44,6 +46,12 @@ public struct UISearchResponse: Sendable, Identifiable {
         self.modifiedDate = modifiedDate
         self.size = size
         self.isAvailableLocally = isAvailableLocally
+        self.isHydrated = isHydrated
+    }
+
+    /// A dehydrated item cannot be downloaded while the synchro is paused, so it must be opened remotely.
+    public func opensLocally(isSynchroPaused: Bool) -> Bool {
+        isAvailableLocally && (isHydrated || !isSynchroPaused)
     }
 
     public var parentFolderName: String {
