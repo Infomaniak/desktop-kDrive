@@ -92,6 +92,7 @@ namespace Infomaniak.kDrive.CustomControls
                     sync.RemotePath = initialSync.RemotePath;
                     sync.LocalPath = initialSync.LocalPath;
                     sync.SyncType = initialSync.SyncType;
+                    sync.SupportsLiteSync = initialSync.SupportsLiteSync;
                     sync.RemoteNodeId = initialSync.RemoteNodeId;
                     sync.ExcludedNodeIds.Clear();
                     sync.ExcludedNodeIds.AddRange(initialSync.ExcludedNodeIds);
@@ -113,6 +114,7 @@ namespace Infomaniak.kDrive.CustomControls
                 CurrentSync.RemotePath = PreviousCurrentSyncState.RemotePath;
                 CurrentSync.LocalPath = PreviousCurrentSyncState.LocalPath;
                 CurrentSync.SyncType = PreviousCurrentSyncState.SyncType;
+                CurrentSync.SupportsLiteSync = PreviousCurrentSyncState.SupportsLiteSync;
                 CurrentSync.RemoteNodeId = PreviousCurrentSyncState.RemoteNodeId;
                 CurrentSync.ExcludedNodeIds.Clear();
                 CurrentSync.ExcludedNodeIds.AddRange(PreviousCurrentSyncState.ExcludedNodeIds);

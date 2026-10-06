@@ -51,6 +51,7 @@ namespace Infomaniak.kDrive.ViewModels
             RemotePath = other.RemotePath;
             RemoteNodeId = other.RemoteNodeId;
             SyncType = other.SyncType;
+            SupportsLiteSync = other.SupportsLiteSync;
             _drive = other.Drive;
             ExcludedNodeIds = new ObservableCollection<NodeId>(other.ExcludedNodeIds);
         }
