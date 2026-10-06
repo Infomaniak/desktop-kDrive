@@ -671,6 +671,8 @@ struct IoHelper {
         static std::mutex _initRightsWindowsApiMutex;
         static void initRightsWindowsApi();
 #endif
+
+        friend class TestIo;
 };
 
 } // namespace KDC
