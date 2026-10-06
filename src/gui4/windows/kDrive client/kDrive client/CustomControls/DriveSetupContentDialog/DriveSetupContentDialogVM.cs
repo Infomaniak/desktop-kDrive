@@ -95,7 +95,8 @@ namespace Infomaniak.kDrive.CustomControls
                     sync.RemoteNodeId = initialSync.RemoteNodeId;
                     sync.ExcludedNodeIds.Clear();
                     sync.ExcludedNodeIds.AddRange(initialSync.ExcludedNodeIds);
-                    await sync.SelectBestVfsMode();
+                    if (sync.SyncType == Types.SyncType.Online)
+                        await sync.SelectBestVfsMode();
                 }
                 else
                 {
@@ -115,7 +116,8 @@ namespace Infomaniak.kDrive.CustomControls
                 CurrentSync.RemoteNodeId = PreviousCurrentSyncState.RemoteNodeId;
                 CurrentSync.ExcludedNodeIds.Clear();
                 CurrentSync.ExcludedNodeIds.AddRange(PreviousCurrentSyncState.ExcludedNodeIds);
-                await CurrentSync.SelectBestVfsMode();
+                if (CurrentSync.SyncType == Types.SyncType.Online)
+                    await CurrentSync.SelectBestVfsMode();
             }
             else
             {
