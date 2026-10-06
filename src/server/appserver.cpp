@@ -757,13 +757,13 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
         return exitInfo;
     }
 
-    // Try to delete the account if there is no remaining drive, any faillure in this step is not critical, the account will be
+    // Try to delete the account if there is no remaining drive, any failure in this step is not critical, the account will be
     // deleted later.
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(drive.accountDbId(), driveList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
     } else if (!driveList.empty() || !deleteAccount(drive.accountDbId())) {
-        sendDriveRemoved(driveDbId); // Useless if deleteAccount succeed, sendAccountRemoved already updates the drive list.
+        sendDriveRemoved(driveDbId); // Useless if deleteAccount succeeds, sendAccountRemoved already updates the drive list.
                                      // May even cause a crash if both are processed concurrently on the GUI side.
     }
 
@@ -784,14 +784,14 @@ ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
     }
 
     // Delete the sync
-    const ExitCode exitCode = ServerRequests::deleteSync(syncDbId);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::deleteSync: " << exitCode);
+    const ExitInfo exitInfo = ServerRequests::deleteSync(syncDbId);
+    if (!exitInfo) {
+        LOG_WARN(_logger, "Error in Requests::deleteSync: " << exitInfo);
         if (useOldCommServer()) sendSyncDeletionFailed(syncDbId);
-        return exitCode;
+        return exitInfo;
     }
 
-    // Delete the drive if there is no remaining sync, any faillure in this step is not critical, the drive will be deleted later.
+    // Delete the drive if there is no remaining sync, any failure in this step is not critical, the drive will be deleted later.
     std::vector<Sync> syncList;
     if (!ParmsDb::instance()->selectAllSyncs(sync.driveDbId(), syncList)) {
         LOG_WARN(_logger,
@@ -806,8 +806,12 @@ ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
 
 void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
     QTimer::singleShot(100, [this, syncDbId]() {
-        AppServer::stopSyncTask(syncDbId,
-                                SyncPal::DbBehaviorAfterStop::Remove); // This task can be long, hence blocking, on Windows.
+        if (ExitInfo exitInfo = AppServer::stopSyncTask(syncDbId,
+                                                        SyncPal::DbBehaviorAfterStop::Remove);
+            !exitInfo) // This task can be long, hence blocking, on Windows.
+        {
+            LOG_WARN(_logger, "Error in stopSyncTask for syncDbId=" << syncDbId << " : " << exitInfo);
+        }
 
         // Delete sync from DB
         if (ExitInfo exitInfo = deleteSync(syncDbId); !exitInfo) {
@@ -2979,7 +2983,9 @@ ExitInfo AppServer::updateUserInfo(User &user) {
         }
 
         if (drives.empty()) {
-            deleteAccount(account.dbId());
+            if(const ExitInfo exitInfo = deleteAccount(account.dbId()); !exitInfo) {
+                LOG_WARN(_logger, "Error in deleteAccount for accountDbId=" << account.dbId() << ": " << exitInfo);
+            }
             continue;
         }
 

@@ -40,7 +40,7 @@ enum class Level { // Not defined in types.h as we don't want to include sentry.
 // The final status of a performance trace.
 enum class PTraceStatus {
     Ok = SENTRY_SPAN_STATUS_OK,
-    Cancelled = SENTRY_SPAN_STATUS_CANCELLED, // The operation hasn't terminated but should not be considered as a faillure.
+    Cancelled = SENTRY_SPAN_STATUS_CANCELLED, // The operation hasn't terminated but should not be considered as a failure.
     Aborted = SENTRY_SPAN_STATUS_ABORTED, // The operation failed.
 };
 } // namespace sentry
