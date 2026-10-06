@@ -48,13 +48,24 @@ const NSString *timeoutBlockKey = @"timeoutBlock";
     return self;
 }
 
-- (BOOL)isFileMonitored:(NSString *)filePath {
+- (BOOL)isFileMonitored:(NSString *)filePath syncFolderPath:(NSString **)folderPath {
+    if (folderPath) {
+        *folderPath = nil;
+    }
+    
     for (NSString *path in _registeredFoldersMap) {
         if ([filePath hasPrefix:path]) {
+            if (folderPath) {
+                *folderPath = [path copy];
+            }
             return TRUE;
         }
     }
     return FALSE;
+}
+
+- (BOOL)isFileMonitored:(NSString *)filePath {
+    return [self isFileMonitored:filePath syncFolderPath:nil];
 }
 
 - (void)initOpenWhiteListThumbnailSet {

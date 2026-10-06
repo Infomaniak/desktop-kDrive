@@ -34,6 +34,7 @@
 @property(retain) XPCServiceProxy *_Nullable xpcServiceProxy;
 @property(retain) NSMutableDictionary<NSString *, NSMutableSet<NSString *> *> *_Nullable registeredFoldersMap;
 
+- (BOOL)isFileMonitored:(NSString *_Nullable)filePath syncFolderPath:(NSString **_Nullable)folderPath;
 - (BOOL)isFileMonitored:(NSString *_Nullable)filePath;
 - (void)initOpenWhiteListThumbnailSet;
 - (void)initOpenWhiteListSet;

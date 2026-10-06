@@ -23,8 +23,10 @@
 #import <EndpointSecurity/EndpointSecurity.h>
 #import <bsm/libbsm.h>
 
+#include <SystemConfiguration/SystemConfiguration.h>
 #include <dispatch/queue.h>
 #include <sys/xattr.h>
+#include <pwd.h>
 
 es_client_t *g_client = NULL;
 XPCService *g_xpcService = NULL;
@@ -48,6 +50,58 @@ static void initDispatchQueue(void)
 {
     dispatch_queue_attr_t queue_attrs = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INITIATED, 0);
     g_event_queue = dispatch_queue_create("event_queue", queue_attrs);
+}
+
+uid_t activeConsoleUserUID(void)
+{
+    uid_t uid = 0;
+    gid_t gid = 0;
+
+    CFStringRef username =
+        SCDynamicStoreCopyConsoleUser(NULL, &uid, &gid);
+
+    if (username) {
+        CFRelease(username);
+    }
+
+    return uid;
+}
+
+NSURL *trashURLForFileURL(NSURL *fileURL)
+{
+    if (!fileURL) {
+        return nil;
+    }
+    
+    // Retrieval of the file path volume
+    NSURL *volumeURL = nil;
+    if (![fileURL getResourceValue:&volumeURL forKey:NSURLVolumeURLKey error:nil]) {
+        return nil;
+    }
+
+    // Retrieving the UID of the currently active graphical session
+    uid_t uid = activeConsoleUserUID();
+
+    // Retrieval of the HOME path volume for the UID
+    struct passwd *pw = getpwuid(uid);
+    if (!pw || !pw->pw_dir) {
+        return nil;
+    }
+
+    NSURL *homeURL = [NSURL fileURLWithPath:@(pw->pw_dir) isDirectory:YES];
+    NSURL *homeVolumeURL = nil;
+    if (![homeURL getResourceValue:&homeVolumeURL forKey:NSURLVolumeURLKey error:nil]) {
+        return nil;
+    }
+
+    if ([volumeURL isEqual:homeVolumeURL]) {
+        // Main/home volume
+        return [homeURL URLByAppendingPathComponent:@".Trash" isDirectory:YES];
+    }
+
+    // Other volume
+    NSString *uidStr = [NSString stringWithFormat:@"%u", uid];
+    return [[volumeURL URLByAppendingPathComponent:@".Trashes" isDirectory:YES] URLByAppendingPathComponent:uidStr isDirectory:YES];
 }
 
 // Clean-up before exiting
@@ -206,12 +260,15 @@ static BOOL processAuthRename(const es_message_t *msg)
     // Check that the file is being monitored
     NSString *filePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
     
-    if (!(g_xpcService && [g_xpcService isFileMonitored:filePath])) {
+    NSString *syncFolderPath = nil;
+    if (!(g_xpcService && [g_xpcService isFileMonitored:filePath syncFolderPath:&syncFolderPath])) {
         return FALSE;
     }
     
-    /*NSLog(@"[KD] Move file %s to destination %s",
-          msg->event.rename.source->path.data, msg->event.rename.destination.new_path.dir->path.data);*/
+    if (isExtendedLogEnabled()) {
+        NSLog(@"[KD] Move file %s to destination %s",
+              msg->event.rename.source->path.data, msg->event.rename.destination.new_path.dir->path.data);
+    }
     
     // Check file status
     long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
@@ -231,15 +288,18 @@ static BOOL processAuthRename(const es_message_t *msg)
     }
     
     NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
+    NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
     
-    // Check that the destination is the Trash
-    if ([destinationPath hasSuffix:@".Trash"]) {
+    // Check if the destination is the Trash
+    NSURL *sourceURL = [NSURL fileURLWithPath:filePath];
+    NSURL *trashURL = trashURLForFileURL(sourceURL);
+    if ([destinationURL isEqual:trashURL]) {
         NSLog(@"[KD] Moving monitored file %s to trash.", filePath.UTF8String);
         return FALSE;
     }
     
-    // Check that the destination is not monitored
-    if (!(g_xpcService && [g_xpcService isFileMonitored:destinationPath])) {
+    // Check that the destination is not in the sync folder
+    if (![destinationPath hasPrefix:syncFolderPath]) {
         NSLog(@"[KD] Moving monitored file %s to %s, outside of sync folder.", filePath.UTF8String, destinationPath.UTF8String);
         return TRUE;
     }
