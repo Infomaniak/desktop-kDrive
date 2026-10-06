@@ -317,7 +317,7 @@ ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
     return ExitCode::Ok;
 }
 
-ExitInfo RemoteFileSystemObserverWorker::handleSnapshotBackup(bool &validSnapshotBackupExists) {
+ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validSnapshotBackupExists) {
     // Retrieve the list of blacklisted folders and check if it has changed.
     RemoteNodeIdSet newBlackList;
     if (const ExitInfo exitInfo =
@@ -370,7 +370,7 @@ ExitInfo RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _liveSnapshot.init();
 
     bool validSnapshotBackupExists = false;
-    if (const auto exitInfo = handleSnapshotBackup(validSnapshotBackupExists); !exitInfo || !validSnapshotBackupExists) {
+    if (const auto exitInfo = handleRemoteSnapshotBackup(validSnapshotBackupExists); !exitInfo || validSnapshotBackupExists) {
         return exitInfo;
     }
 
