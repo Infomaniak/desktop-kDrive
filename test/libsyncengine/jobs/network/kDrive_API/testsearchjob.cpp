@@ -86,10 +86,16 @@ void TestSearchJob::setUp() {
 #endif
     syncWithVfsOff.setVirtualFileMode(VirtualFileMode::Off);
 
+    // Advanced sync of the "Docs" folder of the private space, mirrored into the same local root
+    auto advancedSync = Sync(_advancedSyncDbId, drive.dbId(), _localTempDir.path(), NodeId{}, SyncPath(Str("/Docs")));
+    advancedSync.setVirtualFileMode(VirtualFileMode::Off);
+
     syncWithVfsOn.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
     syncWithVfsOff.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
+    advancedSync.setDbPath(_localTempDir.path() / MockDb::makeDbMockFileName());
     (void) ParmsDb::instance()->insertSync(syncWithVfsOn);
     (void) ParmsDb::instance()->insertSync(syncWithVfsOff);
+    (void) ParmsDb::instance()->insertSync(advancedSync);
 }
 
 void TestSearchJob::tearDown() {
@@ -208,6 +214,46 @@ void TestSearchJob::testHandleResponseIsHydratedWithVfsOff() {
     CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
     CPPUNIT_ASSERT(results.front().isAvailableLocally());
     CPPUNIT_ASSERT(results.front().isHydrated());
+}
+
+void TestSearchJob::testHandleResponseAdvancedSync() {
+    // The local root of the advanced sync mirrors the remote "Docs" folder.
+    const SyncPath localFile = _localTempDir.path() / "inside.txt";
+    { std::ofstream ofs(localFile); }
+
+    {
+        // A result below the target folder is located relative to it.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/Docs/inside.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("inside.txt")), results.front().path());
+        CPPUNIT_ASSERT(results.front().isAvailableLocally());
+    }
+
+    {
+        // A result outside of the target folder is never available locally, even if a homonym exists locally.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/inside.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+    }
+
+    {
+        // A sibling folder sharing the target name as a prefix is outside of the target folder.
+        SearchJob job(_driveDbId, _advancedSyncDbId, "doc");
+        const std::string json = makeSearchResponseJson("/Private/Docs2/inside.txt");
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+        const auto results = job.searchResults();
+        CPPUNIT_ASSERT_EQUAL(size_t{1}, results.size());
+        CPPUNIT_ASSERT(!results.front().isAvailableLocally());
+    }
 }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)

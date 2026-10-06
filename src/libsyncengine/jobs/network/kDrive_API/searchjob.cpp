@@ -22,6 +22,7 @@
 #include "jobs/network/abstracttokennetworkjob.h"
 #include "jobs/network/kDrive_API/apitranslator.h"
 #include "jobs/network/jobexceptions.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/jsonparserutility.h"
 
 #include <Poco/Net/HTTPRequest.h>
@@ -59,6 +60,8 @@ SearchJob::SearchJob(const DriveDbId driveDbId, const SyncDbId syncDbId, const s
 
     _syncVfsMode = sync.virtualFileMode();
     _syncRootPath = sync.localPath();
+    // The target path of an advanced sync is already expressed in the synchronized tree, e.g. "/Common documents/Project".
+    _syncTargetPath = sync.targetPath().relative_path();
 }
 
 SearchJob::SearchJob(const DriveDbId driveDbId, const std::string &searchString, const std::string &cursorInput /*= {}*/) :
@@ -104,6 +107,16 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
     // the synchronized tree, where the private space is the root while "Common documents" and "Shared" stay folders.
     localProperties.path = localProperties.path.relative_path();
     ApiTranslator::translateV3ToV2(localProperties.path);
+
+    // An advanced sync only mirrors its target folder: results outside of it are never available locally, and results
+    // inside of it are located relative to the target folder.
+    if (!_syncTargetPath.empty()) {
+        if (!CommonUtility::isStrictDescendant(localProperties.path, _syncTargetPath)) {
+            return ExitCode::Ok;
+        }
+
+        localProperties.path = localProperties.path.lexically_relative(_syncTargetPath);
+    }
 
     const SyncPath absolutePath = _syncRootPath / localProperties.path;
 
