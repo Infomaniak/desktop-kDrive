@@ -1,6 +1,6 @@
 ---
 name: update-translations
-description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) via the Loco platform using the mcp-loco MCP server when available, and server / legacy Qt GUI strings via Qt lupdate from the Conan-managed Qt. The language list comes from the Language enum in src/libcommon/utility/cstypes.h. Every missing translation is filled: unfinished entries in client_*.ts and untranslated Loco assets are translated directly by the agent. Use when asked to update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
+description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt, and every unfinished entry is translated directly by the agent. The language list comes from the Language enum in src/libcommon/utility/cstypes.h. Use when asked to update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
 ---
 
 # Update translations
@@ -10,8 +10,8 @@ both.
 
 | Part | Where | Files | Tool |
 | --- | --- | --- | --- |
-| GUI (macOS v4 redesign) | `src/gui4/macOS/` | `src/gui4/macOS/kDriveResources/Localizable/<lang>.lproj/Localizable.strings` (+ `.stringsdict`) | Loco, via the **mcp-loco** MCP server (only if available) |
-| GUI (Windows WinUI3 redesign) | `src/gui4/windows/` | `src/gui4/windows/kDrive client/kDrive client/Strings/<locale>/Resources.resw` | Loco, via the **mcp-loco** MCP server (only if available) |
+| GUI (macOS v4 redesign) | `src/gui4/macOS/` | `src/gui4/macOS/kDriveResources/Localizable/<lang>.lproj/Localizable.strings` (+ `.stringsdict`) | **import_loco** ([Infomaniak/importloco](https://github.com/Infomaniak/importloco)); mcp-loco MCP server only for Loco-side inspection and fixes |
+| GUI (Windows WinUI3 redesign) | `src/gui4/windows/` | `src/gui4/windows/kDrive client/kDrive client/Strings/<locale>/Resources.resw` | **import_loco**; mcp-loco MCP server only for Loco-side inspection and fixes |
 | Server + legacy Qt GUI | `src/server/`, `src/gui/`, common libs | `translations/client_<lang>.ts` | **lupdate** from the Conan-managed Qt |
 
 Do not mix the pipelines: Loco owns both GUI redesigns, Qt tooling owns the C++ strings. All Loco exports carry a
@@ -26,9 +26,9 @@ language's code with `CommonUtility::languageCode()` in `src/libcommon/utility/u
 hardcoded list. The current mapping is French `fr`, German `de`, Spanish `es`, Italian `it`, Dutch `nl`, Swedish `sv`,
 Portuguese `pt`, Polish `pl`, Norwegian `nb`, Finnish `fi`, Danish `da`, Greek `el`.
 
-**A language added to the enum is automatically supported by this skill.** With no other change to this skill, it gets
-the same targets as every other language: a `client_<code>.ts` file, a Loco locale and a GUI export folder (`.lproj` /
-`Strings/<locale>/`).
+**A language added to the enum is automatically supported by this skill.** It gets the same targets as every other
+language: a `client_<code>.ts` file, a Loco locale and an entry in the GUI import configs (see Part 1 for the exact
+change).
 
 When the user asks to update all translations or to make sure translations are up to date without naming a specific
 part or language, run both parts and cover **every language** of the enum:
@@ -36,39 +36,49 @@ part or language, run both parts and cover **every language** of the enum:
   on it (it generates the skeleton).
 - Loco: every locale of the Loco project must have zero untranslated assets. If a language of the enum is missing from
   `list_locales`, report it: the locale itself must be added in the Loco project, which the MCP server cannot do.
-- GUI exports: the macOS `.lproj` folders and the Windows `Strings/` folders must exist for every language of the
-  enum, like the Qt and Loco targets.
+- GUI imports: each GUI imports the languages of its own `.import_loco.yml` config (see Part 1): the Windows config
+  lists every language of the enum, the macOS config uses the importloco default (today `de, en, es, fr, it`, the
+  locales the macOS app ships). When the enum grows, extend the configs as described in Part 1.
 
-## Part 1 — GUI redesigns: Loco
+## Part 1 — GUI redesigns: Loco via import_loco
 
-**If no mcp-loco MCP tool is available, skip this part entirely** and tell the user. Never hand-edit the exported
-files: every entry is anchored to a Loco asset ID that only Loco can provide, and the next Loco export would
-overwrite local edits.
+GUI strings are **imported from Loco** with [`import_loco`](https://github.com/Infomaniak/importloco), Infomaniak's
+import CLI. One config per GUI is already committed to the repository; run `import_loco` from the config's directory:
 
-1. Discover the loco MCP tools available in the session and use them for every Loco operation (list assets, create
-   assets, read/write translations, export). Adapt to the actual tool names and parameters offered by the server.
-2. Locales — one export per language of the `Language` enum, for both GUIs:
-    - macOS: `<code>.lproj/Localizable.strings` (+ `.stringsdict` for plural assets) in
-      `src/gui4/macOS/kDriveResources/Localizable/`, for every language of the enum, `en` being the source. Create the
-      `.lproj` folder of a language that has none yet, seeded from Loco like the others.
-    - Windows: one `Resources.resw` per `Strings/<locale>/` folder in `src/gui4/windows/kDrive client/kDrive
-      client/Strings/`, for every language of the enum, using the language's common regional variant (e.g. `fr-FR`,
-      `de-DE`, `nb-NO`, `pt-PT`). Create the folder of a language that has none yet.
-3. Workflow:
-    - Collect the new strings: keys referenced in the GUI code but missing from the source-locale files.
-    - Create one Loco asset per new key (English source text), tagged like the existing assets of that platform
-      (`macOS` or `windows`).
-    - Fill missing translations: `list_locales` shows per-locale untranslated counts, `list_assets` finds the assets
-      with `progress.untranslated > 0`, and `get_translations` on each of those assets reveals exactly which locales
-      are missing. For every missing locale, write the translation directly into Loco with `update_translation`,
-      following the translation rules of Part 2. Cover every locale of the Loco project: all languages of the enum
-      plus English.
-    - Send Loco write calls one at a time: Loco rate-limits concurrent requests (HTTP 429), so never batch several
-      write calls in parallel.
-    - Retrieve the per-locale translations from Loco and refresh the exported files for every locale, preserving the
-      Loco export header and the `loco:<id>` comment above each entry.
-    - Never rename, reorder or delete existing loco IDs.
-4. Report which keys were added, which translations were filled, and which locale files were refreshed.
+| GUI | Config directory | Imported files | Languages |
+| --- | --- | --- | --- |
+| macOS | `src/gui4/macOS/` | `kDriveResources/Localizable/<code>.lproj/Localizable.strings` (+ `.stringsdict`) | config default: `de, en, es, fr, it` |
+| Windows | `src/gui4/windows/kDrive client/kDrive client/` | `Strings/<locale>/Resources.resw` | every language of the `Language` enum, listed in the config |
+
+Setup:
+- Install: `pipx install pipx:infomaniak/importloco` (the macOS project pins the version in `src/gui4/macOS/mise.toml`).
+- API key: export `LOCO_API_KEY`, or write the key into a `.import_loco_api` file (gitignored). A read-only key is
+  enough: importing only reads from Loco.
+
+1. Import (quote the Windows path, it contains spaces):
+   ```bash
+   import_loco                 # import every resource type of the platform
+   import_loco -r strings      # macOS only: just Localizable.strings
+   import_loco --check         # validate the local files, import nothing
+   ```
+   `import_loco` rewrites the exported files wholesale, preserving the Loco export header and the `loco:<id>` comment
+   above each entry. Never hand-edit these files: every entry is anchored to a Loco asset ID that only Loco provides,
+   and the next import would overwrite local edits. Never rename, reorder or delete existing loco IDs.
+2. The **mcp-loco MCP server remains available if needed**; it is the only way this skill can inspect or change Loco
+   itself, and writing requires a full-access key (a read-only key answers 403 on any write):
+    - Inspect: `list_locales` shows per-locale `untranslated` counts; `list_assets` and `get_translations` identify
+      exactly which assets are missing in which locale.
+    - Fill missing translations **in Loco**, never in the exported files: write each one with mcp-loco
+      `update_translation`, following the translation rules of Part 2, then re-run `import_loco` to refresh the local
+      files. Send Loco write calls one at a time: Loco rate-limits concurrent requests (HTTP 429).
+    - New keys used by the GUI code but absent from Loco must first be created as Loco assets (Loco dashboard, or
+      mcp-loco `create_asset` when available) with the English source text, tagged like the existing assets of that
+      platform (`macOS` or `windows`), then translated and imported.
+3. When a language is added to the `Language` enum: add its code to the `languages` list of the Windows config, and
+   add a `languages` key to the macOS config if the macOS app is to ship that language; the Loco locale itself must
+   exist (create it in the Loco dashboard, which the MCP server cannot do).
+4. Report, per GUI, what was imported, which translations were still missing in Loco, and what (if anything) was
+   written to Loco.
 
 ## Part 2 — Server + legacy Qt GUI: lupdate
 
@@ -104,6 +114,8 @@ overwrite local edits.
 ## Validation
 
 - Check `git diff --stat`: only `translations/*.ts` and/or Loco export files under `src/gui4/` must change.
+- After a GUI import, run `import_loco --check` in each GUI directory: it catches straight apostrophes, `...`
+  ellipses, trailing spaces and language-specific punctuation before they ship.
 - Verify the `.ts` files are still well-formed XML:
   ```bash
   python3 -c "import glob, xml.dom.minidom; [xml.dom.minidom.parse(f) for f in glob.glob('translations/client_*.ts')]"
@@ -112,19 +124,24 @@ overwrite local edits.
   ```bash
   grep -l 'type="unfinished"' translations/client_*.ts
   ```
-- Loco: re-run `list_locales` and confirm every locale reports `untranslated: 0` when the Loco part ran. Every
-  language of the `Language` enum must be covered.
+- Loco: re-run `list_locales` (needs mcp-loco) and confirm every locale reports `untranslated: 0` when the Loco part
+  ran. Every language of the `Language` enum must be covered.
 - Never commit or push unless the user explicitly asks.
 
 ## Error handling
 
 - `lupdate` not found: say so, offer to run the Conan dependency build; do not fall back to a system Qt that may not
   exist.
-- mcp-loco unavailable: do the Qt part, skip the GUI parts, and report exactly what was skipped and why.
-- Loco writes rejected with 403 `Read-only key disallows POST`: the configured API key is read-only, so no Loco write
-  is possible. Report the missing translations and ask the user for a full-access key; never hand-edit the exported
-  files instead.
+- `import_loco` not installed: install it with pipx (`pipx install pipx:infomaniak/importloco`); report if that
+  fails.
+- API key missing for `import_loco`: set `LOCO_API_KEY` or create the `.import_loco_api` file; never inline the key
+  in a command output or commit it.
+- mcp-loco unavailable: the GUI import still runs (`import_loco` needs no MCP server); only the Loco-side inspection
+  and fixes are skipped. Report exactly what was skipped and why.
+- Loco writes rejected with 403 `Read-only key disallows POST`: the mcp-loco API key is read-only, so nothing can be
+  written to Loco (imports keep working, they only read). Report the missing translations and ask the user for a
+  full-access key; never hand-edit the exported files instead.
 - Loco 429 `Too many simultaneous requests`: write calls were sent in parallel; retry them sequentially.
 - `lupdate` warnings on generated or third-party sources: keep the `.ts` update and list the warnings in the report.
-- `.strings` or `.resw` exports rejected by Loco (asset not found, bad tag): report the failing asset ID, never
+- `import_loco` API errors (asset not found, bad tag, HTTP errors): report the failing asset ID or request, never
   silently drop entries.
