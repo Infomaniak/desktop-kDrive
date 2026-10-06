@@ -144,6 +144,9 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
 }
 
 ExitInfo SearchJob::handleResponse(std::istream &is) {
+    // AbstractNetworkJob::runJob() sends the whole request again after a failed response: start from scratch each time.
+    _searchResults.clear();
+
     if (const auto exitInfo = AbstractTokenNetworkJob::handleResponse(is); !exitInfo) return exitInfo;
 
     if (!jsonRes()) {

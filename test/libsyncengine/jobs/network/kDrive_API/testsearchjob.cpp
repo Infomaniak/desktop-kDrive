@@ -256,6 +256,20 @@ void TestSearchJob::testHandleResponseAdvancedSync() {
     }
 }
 
+void TestSearchJob::testHandleResponseTwice() {
+    // A retried request handles a second response: its results replace those of the first one instead of piling up.
+    SearchJob job(_driveDbId, "doc");
+    job._syncRootPath = _localTempDir.path();
+    const std::string json = makeSearchResponseJson("/Private/testdir");
+
+    for (int32_t attempt = 0; attempt < 2; ++attempt) {
+        std::istringstream is(json);
+        CPPUNIT_ASSERT_EQUAL(ExitInfo(ExitCode::Ok), job.handleResponse(is));
+    }
+
+    CPPUNIT_ASSERT_EQUAL(size_t{1}, job.searchResults().size());
+}
+
 #if defined(KD_MACOS) || defined(KD_WINDOWS)
 void TestSearchJob::testHandleResponseIsHydratedWithVfsOn() {
     // Create an actual file with hydrated status.
