@@ -113,7 +113,8 @@ Setup:
 
 ## Validation
 
-- Check `git diff --stat`: only `translations/*.ts` and/or Loco export files under `src/gui4/` must change.
+- Check `git diff --stat`: only `translations/*.ts`, Loco export files under `src/gui4/`, and the relevant
+  `.import_loco.yml` files when changing language coverage may change.
 - After a GUI import, run `import_loco --check` in each GUI directory: it catches straight apostrophes, `...`
   ellipses, trailing spaces and language-specific punctuation before they ship.
 - Verify the `.ts` files are still well-formed XML:
