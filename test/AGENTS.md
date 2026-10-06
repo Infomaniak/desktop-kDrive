@@ -7,6 +7,10 @@ framework is used.
 
 Each test binary is built only when CMake is configured with `-DBUILD_UNIT_TESTS=ON`.
 
+Conan recipe authentication checks in `test/conan/` use Python's `unittest` with Conan 2 installed.
+Run `python -m unittest discover -s test/conan -v` from the repository root. They require no Qt credentials,
+downloads, or CMake build and do not exercise the Linux v4 GUI.
+
 ## Test Binaries
 
 | Binary | Source directory | Links against |

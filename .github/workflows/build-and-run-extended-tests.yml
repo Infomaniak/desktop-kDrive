@@ -30,7 +30,6 @@ env:
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_EXTENDED_TEST : true
   KDRIVE_SENTRY_ENVIRONMENT: "ci_tests"
-  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
 
 jobs:
   Windows-extended-tests:

@@ -319,11 +319,6 @@ $conanInstallArgs = @(
     "-c", "tools.cmake.cmaketoolchain:generator=Ninja",
     "-c", "tools.env.virtualenv:powershell=powershell"
 )
-if ($CI)
-{
-    $conanInstallArgs += "-o"
-    $conanInstallArgs += "qt/*:qt_login_type=envvars"
-}
 if ($Update)
 {
     $conanInstallArgs += "--update"

@@ -149,7 +149,14 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 ## Common Gotchas
 
-- **Qt login**: The Qt installer requires authentication. Three modes: `ini` (default, reads `qtaccount.ini`), `envvars` (`QT_EMAIL`/`QT_PW`), `cli` (interactive)
+- **Qt login**: `ini` (default) prefers the runner's `qtaccount.ini` and clears environment credentials for the
+  installer process. Outside CI, a missing file falls back to `envvars` only when `QT_INSTALLER_JWT_TOKEN` is non-empty.
+  Explicit `envvars` uses this token and ignores environment email/password credentials. `cli` ignores environment
+  credentials. GitHub Actions and `KDRIVE_TEST_CI_RUNNING_ON_CI=true` require `ini` and an existing account file, rejecting
+  token or interactive login. Windows CI uses the same
+  selection as macOS/Linux. Paths respect the current home directory, `APPDATA` on Windows, and `XDG_DATA_HOME` on Linux.
+  The recipe centrally clears competing environment credentials for CI, release, and extended-test builds;
+  the GitHub Qt JWT secret is no longer injected and actions do not duplicate this cleanup. Never print authentication tokens.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options

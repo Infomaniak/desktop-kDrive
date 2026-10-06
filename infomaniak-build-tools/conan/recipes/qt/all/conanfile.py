@@ -9,6 +9,7 @@ from urllib.request import urlopen
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration, ConanException
+from conan.tools.env import Environment
 from conan.tools.files import copy, rmdir, mkdir, download
 
 
@@ -18,9 +19,9 @@ class QtConan(ConanFile):
     _qt_online_installers_base_url = "https://download.qt.io/official_releases/online_installers"
 
     options = {
-        # ini:       Read the qtaccount.ini file from the user's home directory to get the email and JWT token (default option; if the file does not exist)
-        # envvars:   Use the environment variable QT_INSTALLER_JWT_TOKEN to provide the JWT Token to the installer. You can find this token in an existing Qt installation in the file qtaccount.ini inside the folders described in the _get_default_login_ini_location func.
-        # cli:   If the qtaccount.ini file exists, the online installer will use it; otherwise, it will prompt the user for their Qt account email and password. This cannot be used in CI/CD pipelines.
+        # ini: Prefer qtaccount.ini and ignore environment credentials. Fall back to envvars only outside CI.
+        # envvars: Use a non-empty QT_INSTALLER_JWT_TOKEN, including when explicitly selected by the caller.
+        # cli: Use qtaccount.ini if available, otherwise prompt for credentials. Not supported in CI.
         "qt_login_type": ["ini", "envvars", "cli"],
         "debug_symbols": [True, False],
         "install_vcredist": [True, False],  # Install Visual C++ Redistributable packages (Windows MSVC only)
@@ -211,55 +212,51 @@ class QtConan(ConanFile):
         This file is used to store the Qt account email and JWT token.
         :return: The default location of the 'qtaccount.ini' file, or None if the OS is not supported.
         """
-        from getpass import getuser
-        try:
-            user = getuser()
-        except OSError:
-            return None
-
-        if user == "root":
-            return {
-                "Windows": "C:/Users/root/AppData/Roaming/Qt/qtaccount.ini",
-                "Macos": "/var/root/Library/Application Support/Qt/qtaccount.ini",
-                "Linux": "/root/.local/share/Qt/qtaccount.ini"
-            }.get(str(self.settings.os), None)
-        else:
-            return {
-                "Windows": f"C:/Users/{user}/AppData/Roaming/Qt/qtaccount.ini",
-                "Macos": f"/Users/{user}/Library/Application Support/Qt/qtaccount.ini",
-                "Linux": f"/home/{user}/.local/share/Qt/qtaccount.ini"
-            }.get(str(self.settings.os), None)
+        home = os.path.expanduser("~")
+        if self.settings.os == "Windows":
+            return pjoin(os.getenv("APPDATA") or pjoin(home, "AppData", "Roaming"), "Qt", "qtaccount.ini")
+        if self.settings.os == "Macos":
+            return pjoin(home, "Library", "Application Support", "Qt", "qtaccount.ini")
+        if self.settings.os == "Linux":
+            return pjoin(os.getenv("XDG_DATA_HOME") or pjoin(home, ".local", "share"), "Qt", "qtaccount.ini")
+        return None
 
     def _check_envvars_login_type(self, check_option=True, raise_error=True):
         """
-        Check if the environment variable `QT_INSTALLER_JWT_TOKEN` is set, which is required for the 'envvars' login type.
-        :param check_option: return false if the recipe option `qt_login_type` is not set to 'envvars'.
-        :param raise_error: raise an error if the environment variable is not set and the recipe option `qt_login_type` is set to 'envvars'.
-        :return: True if the environment variable is set and the recipe option `qt_login_type` is set to 'envvars', False otherwise.
+        Check that token login has a non-empty JWT, without exposing its value.
+        :param check_option: Only check the token when the effective login method is 'envvars'.
+        :param raise_error: Raise on a missing or blank token instead of returning False.
         """
-        if check_option and self.options.qt_login_type != "envvars":
+        if check_option and self._get_login_type() != "envvars":
             return False
-        if os.getenv("QT_INSTALLER_JWT_TOKEN") is None:
+        if not os.getenv("QT_INSTALLER_JWT_TOKEN", "").strip():
             if raise_error:
-                raise ConanInvalidConfiguration("To be able to use the 'envvars' login type, you must set the environment variable 'QT_INSTALLER_JWT_TOKEN' with your Qt account JWT token. See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
+                raise ConanInvalidConfiguration(
+                    "The 'envvars' login type requires a non-empty QT_INSTALLER_JWT_TOKEN. "
+                    "See https://doc.qt.io/qt-6/get-and-install-qt-cli.html#providing-login-information")
             else:
                 return False
         return True
 
-    def config_options(self):
-        """
-        Set the right login type based on the options and the existence of the `qtaccount.ini` file.
-        If the `qtaccount.ini` file is not found at the default location and the login type is set to 'ini',
-        it will try to fall back to 'envvars' login type and if that is not possible, it will set the login type to 'cli'.
-        :return: None
-        """
-        if self.options.qt_login_type == "ini" and (self._get_default_login_ini_location() is None or not os.path.isfile(self._get_default_login_ini_location())):
-            self.output.warning("The file 'qtaccount.ini' is not found at the default location and the login method is 'ini'.")
-            if self._check_envvars_login_type(check_option=False, raise_error=False):
-                self.output.warning("Falling back to 'envvars' login type.")
-                self.options.qt_login_type = "envvars"
-            else:
-                self.options.qt_login_type = "cli"
+    def _get_login_type(self):
+        """Resolve authentication without changing Conan's immutable configured options."""
+        login_type = str(self.options.qt_login_type)
+        running_on_ci = any(os.getenv(name, "").lower() == "true" for name in (
+            "GITHUB_ACTIONS", "KDRIVE_TEST_CI_RUNNING_ON_CI"))
+        if running_on_ci and login_type != "ini":
+            raise ConanInvalidConfiguration("Qt authentication in CI requires qt_login_type=ini and the runner's qtaccount.ini.")
+        if login_type != "ini":
+            return login_type
+        ini_path = self._get_default_login_ini_location()
+        if ini_path is not None and os.path.isfile(ini_path):
+            return "ini"
+        if running_on_ci:
+            raise ConanInvalidConfiguration(
+                "Qt authentication in CI requires the runner's qtaccount.ini. "
+                f"Account file not found: {ini_path}")
+        if self._check_envvars_login_type(check_option=False, raise_error=False):
+            return "envvars"
+        return "cli"
 
     def validate(self):
         if not self.version.startswith("6."):
@@ -269,10 +266,20 @@ class QtConan(ConanFile):
         if self.settings.os not in valid_operating_systems:
             raise ConanInvalidConfiguration(f"Unsupported OS for Qt installation. Supported OS are: {', '.join(valid_operating_systems)}.")
 
-        if self.options.qt_login_type == "cli":
-            return
-
         self._check_envvars_login_type(check_option=True, raise_error=True)
+
+    def _installer_login_environment(self):
+        """Ensure Qt uses the selected login method without changing the caller's environment."""
+        environment = Environment()
+        # Qt checks email/password before the JWT, and the JWT before qtaccount.ini.
+        environment.unset("QT_ACCOUNT_EMAIL")
+        environment.unset("QT_ACCOUNT_PASSWORD")
+        if self._get_login_type() == "envvars":
+            self._check_envvars_login_type()
+            environment.define("QT_INSTALLER_JWT_TOKEN", os.environ["QT_INSTALLER_JWT_TOKEN"].strip())
+        else:
+            environment.unset("QT_INSTALLER_JWT_TOKEN")
+        return environment.vars(self)
 
     def _get_executable_path(self, downloaded_file_name: str) -> str:
         """
@@ -397,9 +404,10 @@ class QtConan(ConanFile):
 
         quoted_installer = f"'{installer_path}'" if self.settings.os != "Windows" else installer_path
 
-        self.output.highlight(f"Login method: '{self.options.qt_login_type}'")
+        self.output.highlight(f"Login method: '{self._get_login_type()}'")
 
-        self.run(f"{quoted_installer} {' '.join(args)}")
+        with self._installer_login_environment().apply():
+            self.run(f"{quoted_installer} {' '.join(args)}")
        
         try:
             rmdir(self, cache_path)
