@@ -96,10 +96,13 @@ ExitInfo DriveSearchJob::process() {
         _searchInfoList.push_back(searchInfo);
     }
 
-    // SearchJob keeps the results parsed before a failure: an item whose local state cannot be read is returned as not
-    // available locally, and a malformed item ends the page early. Only a search without any result reports the failure.
-    if (!searchExitInfo && _searchInfoList.empty()) {
+    // An item whose local state cannot be read is still returned, as not available locally: that failure alone keeps the
+    // results. Any other failure (network, HTTP, malformed item ending the page early) reaches the client.
+    const bool onlyLocalStateUnreadable =
+            searchExitInfo.code() == ExitCode::SystemError && searchExitInfo.cause() == ExitCause::FileAccessError;
+    if (!searchExitInfo && !onlyLocalStateUnreadable) {
         LOG_WARN(_logger, "Error in SearchJob::runSynchronously: " << searchExitInfo);
+        _searchInfoList.clear();
         return searchExitInfo;
     }
 
