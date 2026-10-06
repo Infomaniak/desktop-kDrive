@@ -165,11 +165,6 @@ rg -n "qt\." recipes/qt/all/conanfile.py
   The Podman wrapper forwards credentials with `--env QT_ACCOUNT_EMAIL` and `--env QT_ACCOUNT_PASSWORD`,
   without expanding their values in traced commands. It mounts the persistent Qt account directory only
   outside CI, for local INI authentication.
-- **Temporary Qt migration check**: `qt-recipe-ci.yml` is called by desktop CI before its build jobs.
-  Its three native builds use `qt/<version>@ci/run-<run_id>-<attempt>` and remove exactly that reference
-  afterwards. Existing Conan profiles, remotes, `CONAN_HOME`, and ordinary Qt references are preserved.
-  Remove the workflow, `validate_qt_recipe.py`, and the desktop CI dependency after all three platforms pass;
-  they are migration scaffolding and must not remain in the final PR.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
 - **CI recipe updates**: Both dependency scripts enable global `conan install --update` in GitHub Actions or when

@@ -26,16 +26,8 @@ env:
 
 jobs:
 
-  # Temporary gate: validate the new login mode using isolated Qt references first.
-  validate-Qt-authentication:
-    uses: ./.github/workflows/qt-recipe-ci.yml
-    secrets:
-      QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
-      QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
-
 # Build apps
   build-Windows:
-    needs: validate-Qt-authentication
     runs-on: [ self-hosted, Windows, vs2026 ]
     steps:
       - name: Checkout the PR
@@ -52,7 +44,6 @@ jobs:
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
 
   build-Linux:
-    needs: validate-Qt-authentication
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
     steps:
       - name: Checkout the PR
@@ -66,7 +57,6 @@ jobs:
           qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
 
   build-MacOS:
-    needs: validate-Qt-authentication
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     steps:
       - name: Checkout the PR
