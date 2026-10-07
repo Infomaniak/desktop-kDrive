@@ -724,6 +724,41 @@ bool IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::option
     return true;
 }
 
+bool IoHelper::getPathsWithNodeId(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &paths,
+                                  IoError &ioError) noexcept {
+    paths.clear();
+    ioError = IoError::Success;
+
+    try {
+        // The node identifier of an item is the one computed by the sync engine from its file status: the inode on POSIX
+        // systems, the file identifier on Windows. No entry is skipped, as there is no seed path.
+        if (!_forEachLinkCandidate(
+                    SyncPath(), searchRoot,
+                    [&nodeId, &paths](const std::filesystem::directory_entry &entry) -> IoError {
+                        FileStat entryFileStat;
+                        IoError entryIoError = IoError::Success;
+                        if (!getFileStat(entry.path(), &entryFileStat, entryIoError, PathCheckOption::Insensitive)) {
+                            return entryIoError != IoError::Success ? entryIoError : IoError::Unknown;
+                        }
+                        // An entry removed meanwhile does not refer to the item anymore.
+                        if (entryIoError == IoError::NoSuchFileOrDirectory) return IoError::Success;
+                        if (entryIoError != IoError::Success) return entryIoError;
+
+                        if (std::to_string(entryFileStat.inode) == nodeId) paths.push_back(entry.path());
+                        return IoError::Success;
+                    },
+                    ioError)) {
+            return false;
+        }
+    } catch (const std::exception &e) {
+        ioError = IoError::Unknown;
+        LOG_WARN(logger(), "Exception in IoHelper::getPathsWithNodeId: error=" << e.what());
+        return false;
+    }
+
+    return true;
+}
+
 #if !defined(KD_WINDOWS)
 bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
                                 const std::optional<SyncPath> &searchRoot) noexcept {

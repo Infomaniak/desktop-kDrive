@@ -116,9 +116,27 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
         return exitInfo;
     }
 
-    // If the file does not exist anymore, only remove the node from the database so that the file is downloaded again.
+    std::vector<SyncPath> linkPaths;
     if (seedExists) {
-        if (ExitInfo exitInfo = removeLinks(syncPal, dbNode, seedPath); !exitInfo) {
+        if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
+            return exitInfo;
+        }
+    } else {
+        // The reported path does not exist anymore, but the file may still have links under the sync root, e.g. if the reported
+        // link has been removed or if the file has been moved: search them by node id and use one of them as the seed path.
+        if (ExitInfo exitInfo = findLinkPathsByNodeId(syncPal->localPath(), linkPaths); !exitInfo) {
+            return exitInfo;
+        }
+        if (!linkPaths.empty()) {
+            seedPath = linkPaths.front();
+            LOGW_INFO(_logger, L"Link of the reported node found at " << Utility::formatSyncPath(seedPath));
+        }
+    }
+
+    // If the file has no link left under the sync root, only remove the node from the database so that the file is downloaded
+    // again.
+    if (!linkPaths.empty()) {
+        if (ExitInfo exitInfo = removeLinks(syncPal, dbNode, seedPath, linkPaths); !exitInfo) {
             return exitInfo;
         }
     }
@@ -288,14 +306,10 @@ ExitInfo ErrorQuickResolveHardlinkJob::getLocalNodeId(const SyncPath &path, std:
 }
 
 ExitInfo ErrorQuickResolveHardlinkJob::removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode,
-                                                   const SyncPath &seedPath) const {
-    std::vector<SyncPath> linkPaths;
-    if (ExitInfo exitInfo = getLinkPathsUnderSyncRoot(syncPal->localPath(), seedPath, linkPaths); !exitInfo) {
-        return exitInfo;
-    }
-
+                                                   const SyncPath &seedPath, const std::vector<SyncPath> &linkPaths) const {
     // Check whether the local file is in sync with the database. This must be done before removing the node from the database,
-    // as the check requires the node to be present.
+    // as the check requires the node to be present. A seed path found by node id that is not located at the path stored in the
+    // database is considered as not in sync: a copy of the file is then saved into the rescue folder.
     if (!syncPal->isLocalItemInSyncWithDb(seedPath)) {
         // The file content may differ from the remote version: save a copy into the rescue folder before removing the
         // hardlinks, so that the user does not lose any data.
@@ -334,6 +348,20 @@ ExitInfo ErrorQuickResolveHardlinkJob::getLinkPathsUnderSyncRoot(const SyncPath 
         } else {
             LOGW_DEBUG(_logger, L"Link located outside of the sync root, skipping: " << Utility::formatSyncPath(path));
         }
+    }
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ErrorQuickResolveHardlinkJob::findLinkPathsByNodeId(const SyncPath &localPath, std::vector<SyncPath> &linkPaths) const {
+    linkPaths.clear();
+
+    // Any error fails the job, as an incomplete list would leave links behind once the node is removed from the database.
+    IoError ioError = IoError::Success;
+    if (!IoHelper::getPathsWithNodeId(localPath, _nodeId, linkPaths, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getPathsWithNodeId: " << Utility::formatIoError(localPath, ioError));
+        linkPaths.clear();
+        return ExitCode::SystemError;
     }
 
     return ExitCode::Ok;
@@ -389,8 +417,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::rescueFile(const std::shared_ptr<SyncPal>
 
 ExitInfo ErrorQuickResolveHardlinkJob::deleteLinks(const std::shared_ptr<SyncPal> &syncPal,
                                                    const std::vector<SyncPath> &linkPaths, const SyncPath &seedPath) const {
-    // Delete the seed path last: if the deletion of a link fails, the job can be retried and the seed path is then still
-    // available to enumerate the remaining links.
+    // Delete the seed path last: if the deletion of another link fails, the seed path still refers to the file when the job is
+    // retried.
     std::vector<SyncPath> pathsToDelete = linkPaths;
     (void) std::stable_partition(pathsToDelete.begin(), pathsToDelete.end(),
                                  [&seedPath](const SyncPath &path) { return path != seedPath; });

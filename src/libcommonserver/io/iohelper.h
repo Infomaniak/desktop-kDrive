@@ -235,6 +235,25 @@ struct IoHelper {
         static bool getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
                                      const std::optional<SyncPath> &searchRoot = std::nullopt) noexcept;
 
+        //! Get the paths of all the regular files located under searchRoot whose node identifier is nodeId, i.e. the paths of
+        //! all the hardlinks of the item identified by nodeId located under searchRoot.
+        /*!
+          searchRoot is recursively iterated over and the node identifier of each regular file found, as returned by
+          getFileStat, is compared with nodeId. Symbolic links (and junctions on Windows) are neither followed nor selected.
+          Unlike getHardlinkPaths, no existing path of the item is required: the links are found even if the item has been
+          moved or if some of its links have been removed.
+          \param searchRoot is the directory recursively searched.
+          \param nodeId is the node identifier of the searched item.
+          \param paths is set with the absolute paths of the regular files whose node identifier is nodeId. It is empty if
+          there is no such file under searchRoot.
+          \param ioError holds the error returned when an underlying OS API call fails.
+          \return true if no unexpected error occurred, false otherwise. Any error occurring during the search, including an
+         access denied error or a missing searchRoot, fails the search: when false is returned, paths may be incomplete and must
+         not be used.
+         */
+        static bool getPathsWithNodeId(const SyncPath &searchRoot, const NodeId &nodeId, std::vector<SyncPath> &paths,
+                                       IoError &ioError) noexcept;
+
         //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
         //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
         /*!
@@ -655,7 +674,8 @@ struct IoHelper {
         //! Invokes visit for each regular file entry of the directory tree rooted at searchRoot, except the entry indicated
         //! by seedPath. Symbolic links (and junctions on Windows) are neither followed nor visited.
         /*!
-          \param seedPath is the path of the item being processed. The corresponding entry is skipped.
+          \param seedPath is the path of the item being processed. The corresponding entry is skipped. No entry is skipped if
+          seedPath is empty.
           \param searchRoot is the directory recursively searched. When it is not provided, visit is never invoked.
           \param visit is the function invoked for each candidate entry. It returns IoError::Success to continue the
           enumeration, or the error that stops it.
