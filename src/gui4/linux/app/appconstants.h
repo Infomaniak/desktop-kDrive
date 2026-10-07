@@ -110,6 +110,14 @@ Q_ENUM_NS(Destination)
     return QUrl{u"https://kdrive.infomaniak.com/app/drive/%1/%2"_s.arg(static_cast<qulonglong>(driveId)).arg(path)};
 }
 
+// Opens a file or folder in the web app, which resolves its location from its node id (same URL as macOS and Windows).
+[[nodiscard]] inline QUrl itemRedirectUri(const DriveId driveId, const NodeId &nodeId) {
+    using Qt::StringLiterals::operator""_s;
+
+    return QUrl{u"https://kdrive.infomaniak.com/app/drive/%1/redirect/%2"_s.arg(static_cast<qulonglong>(driveId))
+                        .arg(QString::fromStdString(nodeId))};
+}
+
 } // namespace KDC::AppConstants::WebDrive
 
 namespace KDC::AppConstants::Settings {

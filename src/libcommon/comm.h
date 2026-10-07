@@ -132,6 +132,7 @@ inline constexpr char msgParamRelativePath[] = "relativePath";
 inline constexpr char msgParamSearchString[] = "searchString";
 inline constexpr char msgParamSearchInfoList[] = "searchInfoList";
 inline constexpr char msgParamHasMore[] = "hasMore";
+inline constexpr char msgParamCursor[] = "cursor";
 inline constexpr char msgParamNodeConflictInfo[] = "nodeConflictInfo";
 inline constexpr char msgParamKeepLocalErrorDbIdList[] = "keepLocalErrorDbIdList";
 inline constexpr char msgParamKeepRemoteErrorDbIdList[] = "keepRemoteErrorDbIdList";
