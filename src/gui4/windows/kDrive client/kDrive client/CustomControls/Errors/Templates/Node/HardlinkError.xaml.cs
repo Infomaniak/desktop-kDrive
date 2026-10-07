@@ -62,6 +62,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 
             _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageHardlinkError);
 
+            // Prevent sending another request while the server is processing this one.
+            Control? control = sender as Control;
+            if (control is not null)
+                control.IsEnabled = false;
+
             try
             {
                 var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
@@ -79,6 +84,11 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}. Exception: {ex.Message}",
                     "HardlinkError: Failed to quickly resolve the hardlink error");
                 Utility.ShowUnexpectedErrorTeachingTip();
+            }
+            finally
+            {
+                if (control is not null)
+                    control.IsEnabled = true;
             }
         }
     }
