@@ -28,6 +28,7 @@
 #include "app/mainwindow/homecontroller.h"
 #include "app/mainwindow/mainsidebarcontroller.h"
 #include "app/mainwindow/networkstatusobserver.h"
+#include "app/mainwindow/searchcontroller.h"
 #include "app/mainwindow/storagecontroller.h"
 #include "app/navigation/approuter.h"
 #include "app/onboarding/onboardingsessionmanager.h"
@@ -165,6 +166,7 @@ class AppClientLinux : public QApplication {
         ActivitiesController _activitiesController{_activityStore,         _appCache,        _mainSelectionStore,
                                                    _networkStatusObserver, _activityService, this};
         StorageController _storageController{_mainSelectionStore, this};
+        SearchController _searchController{_serverCommService, _mainSelectionStore, this};
         TranslationService _translationService{_parametersStore, this};
         UpdateStatusService _updateStatusService{_serverCommService, _parametersStore, this};
         GeneralSettingsController _generalSettingsController{_parametersStore, _parametersService, _translationService,

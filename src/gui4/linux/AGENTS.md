@@ -404,6 +404,13 @@
   as on macOS, instead of an empty loading state.
 - `app/mainwindow/networkstatusobserver.*`: process-long `QNetworkInformation` adapter. Only explicit disconnected
   reachability is treated as offline; unavailable or unknown backends preserve the cache-derived state.
+- `app/mainwindow/searchcontroller.*`: QML-facing state of the search dialog for the drive of the selected
+  synchronization. It debounces typing, drops every response whose request generation is outdated (an IPC request
+  cannot be cancelled), and pages with the cursor returned by `DRIVE_SEARCH`, repeating the frozen query of the first
+  page. A local result opens with the desktop services after `resolveExistingPathBelowSyncRoot`, or its parent folder
+  with Ctrl (click or Enter); any other result opens the web app redirect URL, Ctrl included.
+- `app/mainwindow/searchresultmodel.*`: search results, page after page. `appendPage` inserts rows without a reset and
+  skips nodes already listed; node ids and paths stay internal.
 - `app/mainwindow/storagecontroller.*`: QML-facing Storage lifecycle and process-local per-sync snapshot cache. It
   starts cancellable local scans only while Storage is visible, keeps the last resolved presentation during refresh, and
   refreshes once an active synchronization leaves `Starting`, `Running`, `PauseAsked`, or `StopAsked` for any non-active
