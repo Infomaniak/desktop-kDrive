@@ -99,6 +99,7 @@ clang-format -i <file>
 - Conan dependencies & recipes: `infomaniak-build-tools/conan/` → [see AGENTS.md](infomaniak-build-tools/conan/AGENTS.md)
 - Sentry crash and log root-cause analysis: `.agents/skills/kdrive-sentry-rca/`
 - Pull request title and bilingual `PR.md` description: `.agents/skills/pr-description-writer/`
+- Translation updates and completion (GUI via Loco/mcp-loco, server via Qt lupdate): `.agents/skills/update-translations/`
 
 ### Legal & Licensing
 - Third-party licenses and attributions: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
