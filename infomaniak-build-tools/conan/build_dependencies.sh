@@ -27,6 +27,9 @@ output_dir=""
 clean_conan_cache=false
 use_release_profile=false
 enable_update=false
+if [[ "${GITHUB_ACTIONS:-}" == "true" || "${KDRIVE_TEST_CI_RUNNING_ON_CI:-}" == "true" ]]; then
+  enable_update=true
+fi
 # Preserve original arguments for output_dir resolution
 all_args=("$@")
 
@@ -59,8 +62,8 @@ Usage: $0 [Debug|RelWithDebInfo|Release] [--output-dir=<output_dir>] [--make-rel
   --make-release       Use the 'infomaniak_release' Conan profile.
   --clean-cache        Clean the Conan cache (packages sources, build folders, ...) after installation to save disk space.
   --update             Ask Conan to check remotes for newer versions/revisions.
-                       Disabled by default to keep CI deterministic and avoid
-                       local-recipes revision/timestamp conflicts.
+                       Enabled automatically in GitHub Actions or when
+                       KDRIVE_TEST_CI_RUNNING_ON_CI=true; opt-in for local builds.
 
 There are three ways to set the output directory (in descending order of priority):
     1. By passing the --output-dir=<dir> parameter.
