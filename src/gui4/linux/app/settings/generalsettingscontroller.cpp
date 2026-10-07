@@ -55,33 +55,33 @@ GeneralSettingsController::GeneralSettingsController(ParametersStore &parameters
     _parametersService(parametersService),
     _translationService(translationService),
     _updateStatusService(updateStatusService) {
-    (void) connect(&parametersStore, &ParametersStore::parametersInfoChanged, this, &GeneralSettingsController::changed);
+    (void) connect(&parametersStore, &ParametersStore::parametersChanged, this, &GeneralSettingsController::changed);
     (void) connect(&translationService, &TranslationService::languageChanged, this, &GeneralSettingsController::changed);
     (void) connect(&updateStatusService, &UpdateStatusService::changed, this, &GeneralSettingsController::changed);
 }
 
 bool GeneralSettingsController::ready() const {
-    return _parametersStore.parametersInfo().has_value();
+    return _parametersStore.parameters().has_value();
 }
 
 bool GeneralSettingsController::autoStart() const {
-    const auto parametersInfo = _parametersStore.parametersInfo();
-    return parametersInfo && parametersInfo->autoStart();
+    const auto parameters = _parametersStore.parameters();
+    return parameters && parameters->autoStart();
 }
 
 bool GeneralSettingsController::notificationsEnabled() const {
-    const auto parametersInfo = _parametersStore.parametersInfo();
-    return parametersInfo && parametersInfo->notificationsDisabled() == NotificationsDisabled::Never;
+    const auto parameters = _parametersStore.parameters();
+    return parameters && parameters->notificationsDisabled() == NotificationsDisabled::Never;
 }
 
 bool GeneralSettingsController::moveToTrash() const {
-    const auto parametersInfo = _parametersStore.parametersInfo();
-    return parametersInfo && parametersInfo->moveToTrash();
+    const auto parameters = _parametersStore.parameters();
+    return parameters && parameters->moveToTrash();
 }
 
 int32_t GeneralSettingsController::language() const {
-    const auto parametersInfo = _parametersStore.parametersInfo();
-    return static_cast<int32_t>(parametersInfo ? parametersInfo->language() : Language::Default);
+    const auto parameters = _parametersStore.parameters();
+    return static_cast<int32_t>(parameters ? parameters->language() : Language::Default);
 }
 
 QVariantList GeneralSettingsController::languages() {
@@ -160,7 +160,7 @@ void GeneralSettingsController::setAutoStart(const bool enabled) {
         return;
     }
 
-    save([enabled](ParametersInfo &parametersInfo) { parametersInfo.setAutoStart(enabled); });
+    save([enabled](Parameters &parameters) { parameters.setAutoStart(enabled); });
 }
 
 void GeneralSettingsController::setNotificationsEnabled(const bool enabled) {
@@ -168,8 +168,8 @@ void GeneralSettingsController::setNotificationsEnabled(const bool enabled) {
         return;
     }
 
-    save([enabled](ParametersInfo &parametersInfo) {
-        parametersInfo.setNotificationsDisabled(enabled ? NotificationsDisabled::Never : NotificationsDisabled::Always);
+    save([enabled](Parameters &parameters) {
+        parameters.setNotificationsDisabled(enabled ? NotificationsDisabled::Never : NotificationsDisabled::Always);
     });
 }
 
@@ -178,7 +178,7 @@ void GeneralSettingsController::setMoveToTrash(const bool enabled) {
         return;
     }
 
-    save([enabled](ParametersInfo &parametersInfo) { parametersInfo.setMoveToTrash(enabled); });
+    save([enabled](Parameters &parameters) { parameters.setMoveToTrash(enabled); });
 }
 
 void GeneralSettingsController::setLanguage(const int32_t languageValue) {
@@ -190,7 +190,7 @@ void GeneralSettingsController::setLanguage(const int32_t languageValue) {
         return;
     }
 
-    save([languageValue](ParametersInfo &parametersInfo) { parametersInfo.setLanguage(static_cast<Language>(languageValue)); });
+    save([languageValue](Parameters &parameters) { parameters.setLanguage(static_cast<Language>(languageValue)); });
 }
 
 void GeneralSettingsController::refreshUpdates() const {

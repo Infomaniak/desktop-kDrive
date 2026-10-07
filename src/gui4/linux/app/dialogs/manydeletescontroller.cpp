@@ -21,8 +21,8 @@
 #include "app/appconstants.h"
 #include "app/cache/appcache.h"
 #include "app/services/commservice.h"
-#include "app/services/parametersservice.h"
 #include "app/services/sentryservice.h"
+#include "libcommon/utility/utility.h"
 
 #include <QDesktopServices>
 #include <QLoggingCategory>
@@ -36,12 +36,10 @@ namespace {
 Q_LOGGING_CATEGORY(lcManyDeletesController, "gui.v4.manydeletescontroller", QtInfoMsg)
 } // namespace
 
-ManyDeletesController::ManyDeletesController(CommService &commService, AppCache &appCache, ParametersService &parametersService,
-                                             QObject *const parent) :
+ManyDeletesController::ManyDeletesController(CommService &commService, AppCache &appCache, QObject *const parent) :
     QObject(parent),
     _commService(commService),
-    _appCache(appCache),
-    _parametersService(parametersService) {
+    _appCache(appCache) {
     (void) connect(&_commService, &CommService::manyDeletesNotification, this, &ManyDeletesController::enqueue);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, [this] {
         if (visible()) {
@@ -220,15 +218,20 @@ void ManyDeletesController::finishCurrent() {
 }
 
 void ManyDeletesController::disableFutureWarnings() const {
-    _parametersService.updateParameters([](ParametersInfo &parametersInfo) { parametersInfo.setNotifyBeforeDelete(false); },
-                                        [](const ExitInfo &exitInfo) {
-                                            if (exitInfo) {
-                                                return;
-                                            }
-                                            qCWarning(lcManyDeletesController)
-                                                    << "Failed to disable future soft mass deletion warnings"
-                                                    << "| code:" << exitInfo.code() << "| cause:" << exitInfo.cause();
-                                        });
+    // The sync engine reads this flag from the AppState table, not from the application parameters.
+    std::string value;
+    if (!CommonUtility::appStateValueToString(AppStateValue{std::in_place_type<bool>, false}, value)) {
+        qCWarning(lcManyDeletesController) << "Failed to serialize the soft mass deletion warnings flag";
+        return;
+    }
+
+    _commService.requestSetAppState(AppStateKey::NotifyBeforeDelete, QString::fromStdString(value), [](const ExitInfo &exitInfo) {
+        if (exitInfo) {
+            return;
+        }
+        qCWarning(lcManyDeletesController) << "Failed to disable future soft mass deletion warnings"
+                                           << "| code:" << exitInfo.code() << "| cause:" << exitInfo.cause();
+    });
 }
 
 void ManyDeletesController::setBusy(const bool busy) {

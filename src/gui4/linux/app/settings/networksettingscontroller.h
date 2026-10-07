@@ -19,7 +19,7 @@
 #pragma once
 
 #include "app/services/parametersservice.h"
-#include "libcommon/info/proxyconfiginfo.h"
+#include "libcommon/data/proxyconfig.h"
 
 #include <QObject>
 #include <QTcpSocket>
@@ -100,14 +100,14 @@ class NetworkSettingsController final : public QObject {
         static ProxyType supportedType(ProxyType type);
         void loadConfirmed(bool preserveManualDraft = false);
         void saveImmediateType(ProxyType type);
-        void saveConfig(const ProxyConfigInfo &config, SaveKind kind);
+        void saveConfig(const ProxyConfig &config, SaveKind kind);
         void finishSave(const ExitInfo &result);
         void finishConnectionCheckFailure();
-        [[nodiscard]] std::optional<ProxyConfigInfo> validatedManualConfig() const;
+        [[nodiscard]] std::optional<ProxyConfig> validatedManualConfig() const;
 
         ParametersStore &_parametersStore;
         ParametersService &_parametersService;
-        ProxyConfigInfo _confirmedConfig;
+        ProxyConfig _confirmedConfig;
         ProxyType _proxyType{ProxyType::None};
         QString _hostName;
         QString _portText;
@@ -119,7 +119,7 @@ class NetworkSettingsController final : public QObject {
         bool _saving{false};
         bool _saveFailed{false};
         SaveKind _saveKind{SaveKind::Manual};
-        std::optional<ProxyConfigInfo> _pendingManualConfig;
+        std::optional<ProxyConfig> _pendingManualConfig;
         QTcpSocket _socket;
         QTimer _timeout;
 };

@@ -49,43 +49,43 @@ AdvancedSettingsController::AdvancedSettingsController(ParametersStore &paramete
     _parametersService(parametersService),
     _sentryService(sentryService),
     _commService(commService) {
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AdvancedSettingsController::changed);
+    (void) connect(&_parametersStore, &ParametersStore::parametersChanged, this, &AdvancedSettingsController::changed);
     (void) connect(&translationService, &TranslationService::languageChanged, this, &AdvancedSettingsController::changed);
     (void) connect(&_commService, &CommService::logUploadStatusUpdated, this,
                    [this](const LogUploadState state, const int32_t percentage) { setUploadStatus(state, percentage); });
 }
 
 bool AdvancedSettingsController::ready() const {
-    return _parametersStore.parametersInfo().has_value();
+    return _parametersStore.parameters().has_value();
 }
 
 bool AdvancedSettingsController::matomoEnabled() const {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     return parameters && parameters->matomoEnabled();
 }
 
 bool AdvancedSettingsController::sentryEnabled() const {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     return parameters && parameters->sentryEnabled();
 }
 
 bool AdvancedSettingsController::useLog() const {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     return parameters && parameters->useLog();
 }
 
 bool AdvancedSettingsController::purgeOldLogs() const {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     return parameters && parameters->purgeOldLogs();
 }
 
 bool AdvancedSettingsController::extendedLog() const {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     return parameters && parameters->extendedLog();
 }
 
 int32_t AdvancedSettingsController::logLevel() const {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     return static_cast<int32_t>(parameters ? parameters->logLevel() : LogLevel::Debug);
 }
 
@@ -163,7 +163,7 @@ void AdvancedSettingsController::setMatomoEnabled(const bool enabled) {
         return;
     }
     beginSave(ErrorContext::Matomo);
-    _parametersService.updateParameters([enabled](ParametersInfo &parameters) { parameters.setMatomoEnabled(enabled); },
+    _parametersService.updateParameters([enabled](Parameters &parameters) { parameters.setMatomoEnabled(enabled); },
                                         [self = QPointer(this)](const ExitInfo &result) {
                                             if (self) {
                                                 self->finishSave(result, ErrorContext::Matomo);
@@ -185,19 +185,19 @@ void AdvancedSettingsController::setSentryEnabled(const bool enabled) {
 
 void AdvancedSettingsController::setUseLog(const bool enabled) {
     if (enabled != useLog()) {
-        save([enabled](ParametersInfo &parameters) { parameters.setUseLog(enabled); }, ErrorContext::Debug);
+        save([enabled](Parameters &parameters) { parameters.setUseLog(enabled); }, ErrorContext::Debug);
     }
 }
 
 void AdvancedSettingsController::setPurgeOldLogs(const bool enabled) {
     if (enabled != purgeOldLogs()) {
-        save([enabled](ParametersInfo &parameters) { parameters.setPurgeOldLogs(enabled); }, ErrorContext::Debug);
+        save([enabled](Parameters &parameters) { parameters.setPurgeOldLogs(enabled); }, ErrorContext::Debug);
     }
 }
 
 void AdvancedSettingsController::setExtendedLog(const bool enabled) {
     if (enabled != extendedLog()) {
-        save([enabled](ParametersInfo &parameters) { parameters.setExtendedLog(enabled); }, ErrorContext::Debug);
+        save([enabled](Parameters &parameters) { parameters.setExtendedLog(enabled); }, ErrorContext::Debug);
     }
 }
 
@@ -206,7 +206,7 @@ void AdvancedSettingsController::setLogLevel(const int32_t level) {
         level == logLevel()) {
         return;
     }
-    save([level](ParametersInfo &parameters) { parameters.setLogLevel(static_cast<LogLevel>(level)); }, ErrorContext::Debug);
+    save([level](Parameters &parameters) { parameters.setLogLevel(static_cast<LogLevel>(level)); }, ErrorContext::Debug);
 }
 
 void AdvancedSettingsController::openSources() {

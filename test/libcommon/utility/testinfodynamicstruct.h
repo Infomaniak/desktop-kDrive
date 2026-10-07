@@ -26,7 +26,8 @@ class TestInfoDynamicStruct : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestInfoDynamicStruct);
         CPPUNIT_TEST(testErrorInfoRoundTrip);
         CPPUNIT_TEST(testNodeInfoRoundTrip);
-        CPPUNIT_TEST(testSyncFileItemInfoRoundTrip);
+        CPPUNIT_TEST(testSyncFileItemRoundTrip);
+        CPPUNIT_TEST(testSyncFileItemRoundTripWithoutOptionalValues);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,7 +37,8 @@ class TestInfoDynamicStruct : public CppUnit::TestFixture, public TestBase {
     protected:
         void testErrorInfoRoundTrip();
         void testNodeInfoRoundTrip();
-        void testSyncFileItemInfoRoundTrip();
+        void testSyncFileItemRoundTrip();
+        void testSyncFileItemRoundTripWithoutOptionalValues();
 };
 
 } // namespace KDC

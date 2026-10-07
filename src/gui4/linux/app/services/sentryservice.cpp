@@ -75,7 +75,7 @@ SentryService::SentryService(ParametersService &parametersService, AppCache &app
     _parametersService(parametersService),
     _appCache(appCache),
     _parametersStore(parametersStore) {
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this,
+    (void) connect(&_parametersStore, &ParametersStore::parametersChanged, this,
                    &SentryService::reconcileConsentWithParametersStore);
     updateLinuxRuntimeTags();
 }
@@ -200,8 +200,8 @@ void SentryService::reportFatalAndExit(const QString &title, const QString &mess
 void SentryService::setConsent(const bool enabled, const ConsentCallback &completionCallback) const {
     qCInfo(lcSentryService) << "Sentry consent update requested | enabled:" << enabled;
 
-    const ParametersService::ParametersMutation mutation = [enabled](ParametersInfo &parametersInfo) {
-        parametersInfo.setSentryEnabled(enabled);
+    const ParametersService::ParametersMutation mutation = [enabled](Parameters &parameters) {
+        parameters.setSentryEnabled(enabled);
     };
 
     const ParametersService::UpdateCallback callback = [enabled, completionCallback](const ExitInfo &exitInfo) {
@@ -271,13 +271,13 @@ void SentryService::applyConsent(const bool enabled) const {
 }
 
 void SentryService::reconcileConsentWithParametersStore() {
-    const auto currentParametersInfo = _parametersStore.parametersInfo();
-    if (!currentParametersInfo.has_value()) {
+    const auto currentParameters = _parametersStore.parameters();
+    if (!currentParameters.has_value()) {
         qCInfo(lcSentryService) << "Sentry consent reconciliation skipped because parameters are not loaded";
         return;
     }
 
-    if (const bool sentryEnabled = currentParametersInfo->sentryEnabled();
+    if (const bool sentryEnabled = currentParameters->sentryEnabled();
         _appliedConsent != sentryEnabled || sentryEnabled != isInitialized()) {
         qCInfo(lcSentryService) << "Sentry consent reconciled with parameters store | enabled:" << sentryEnabled;
         writeCachedConsent(sentryEnabled);
@@ -286,7 +286,7 @@ void SentryService::reconcileConsentWithParametersStore() {
         _appliedDistributionChannel.reset();
     }
 
-    if (const auto distributionChannel = currentParametersInfo->distributionChannel();
+    if (const auto distributionChannel = currentParameters->distributionChannel();
         isInitialized() && _appliedDistributionChannel != distributionChannel) {
         sentry::Handler::instance()->setDistributionChannel(distributionChannel);
         _appliedDistributionChannel = distributionChannel;
