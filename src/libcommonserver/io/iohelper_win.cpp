@@ -1069,7 +1069,7 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
 }
 
 bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-        const std::optional<SyncPath> &searchRoot) noexcept {
+                                const std::optional<SyncPath> &searchRoot) noexcept {
     hardlinkPaths.clear();
     ioError = IoError::Success;
 
@@ -1105,8 +1105,8 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
         const auto seedModificationTime = std::filesystem::last_write_time(seedPath, ec);
         if (ec) {
             ioError = stdError2ioError(ec);
-            LOGW_WARN(logger(), L"Error in std::filesystem::last_write_time for " << Utility::formatSyncPath(seedPath)
-                                                                                  << L": " << Utility::formatStdError(ec));
+            LOGW_WARN(logger(), L"Error in std::filesystem::last_write_time for " << Utility::formatSyncPath(seedPath) << L": "
+                                                                                  << Utility::formatStdError(ec));
             return false;
         }
 
@@ -1116,35 +1116,19 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
         // There is no reliable system API to enumerate the links of an item on Windows: search for the items sharing the
         // same size and modification time (all the links of an item share these properties) while recursively iterating
         // over the search root directory, then check that they actually refer to the same file.
-        std::filesystem::recursive_directory_iterator it(*searchRoot,
-                std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
-                                                               << Utility::formatStdError(ec));
-            return true; // The seed path has already been added to the result.
-        }
+        _forEachLinkCandidate(
+                seedPath, searchRoot,
+                [&seedSize, &seedModificationTime, &seedPath, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
+                    // Skip the entries that cannot be links of the seed item before comparing the file identifiers, which
+                    // requires opening the items.
+                    std::error_code entryEc;
+                    if (entry.file_size(entryEc) != seedSize || entryEc) return;
+                    if (entry.last_write_time(entryEc) != seedModificationTime || entryEc) return;
 
-        for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
-            if (ec) {
-                LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
-                                                                   << Utility::formatStdError(ec));
-                break; // The iterator is the end iterator after a failed increment: stop the enumeration.
-            }
-
-            const SyncPath entryPath = it->path();
-            if (entryPath == seedPath) continue;
-
-            std::error_code entryEc;
-            if (!it->is_regular_file(entryEc) || entryEc) continue;
-            // Skip the entries that cannot be links of the seed item before comparing the file identifiers, which
-            // requires opening the items.
-            if (it->file_size(entryEc) != seedSize || entryEc) continue;
-            if (it->last_write_time(entryEc) != seedModificationTime || entryEc) continue;
-
-            std::error_code equivalentEc;
-            const bool isSameFile = std::filesystem::equivalent(entryPath, seedPath, equivalentEc);
-            if (!equivalentEc && isSameFile) hardlinkPaths.push_back(entryPath);
-        }
+                    std::error_code equivalentEc;
+                    const bool isSameFile = std::filesystem::equivalent(entry.path(), seedPath, equivalentEc);
+                    if (!equivalentEc && isSameFile) hardlinkPaths.push_back(entry.path());
+                });
     } catch (const std::exception &e) {
         ioError = IoError::Unknown;
         LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());

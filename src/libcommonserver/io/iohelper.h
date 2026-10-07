@@ -231,7 +231,7 @@ struct IoHelper {
           ioError is set with IoError::NoSuchFileOrDirectory.
          */
         static bool getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-                const std::optional<SyncPath> &searchRoot = std::nullopt) noexcept;
+                                     const std::optional<SyncPath> &searchRoot = std::nullopt) noexcept;
 
         //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
         //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
@@ -649,6 +649,12 @@ struct IoHelper {
     private:
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
+
+        //! Invokes visit for each regular file entry of the directory tree rooted at searchRoot, except the entry indicated
+        //! by seedPath. Iteration errors are logged and interrupt the enumeration; visit is then only invoked for the entries
+        //! found before the error.
+        static void _forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
+                                          const std::function<void(const std::filesystem::directory_entry &entry)> &visit);
 
 #if defined(KD_MACOS)
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;

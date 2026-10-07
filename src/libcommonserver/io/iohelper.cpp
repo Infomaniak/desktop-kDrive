@@ -683,9 +683,38 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
+void IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
+                                     const std::function<void(const std::filesystem::directory_entry &entry)> &visit) {
+    if (!searchRoot) return;
+
+    std::error_code ec;
+    std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(logger(),
+                  L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": " << Utility::formatStdError(ec));
+        return;
+    }
+
+    for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
+        if (ec) {
+            LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
+                                                               << Utility::formatStdError(ec));
+            break; // The iterator is the end iterator after a failed increment: stop the enumeration.
+        }
+
+        const SyncPath entryPath = it->path();
+        if (entryPath == seedPath) continue;
+
+        std::error_code entryEc;
+        if (!it->is_regular_file(entryEc) || entryEc) continue;
+
+        visit(*it);
+    }
+}
+
 #if !defined(KD_WINDOWS)
 bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-        const std::optional<SyncPath> &searchRoot) noexcept {
+                                const std::optional<SyncPath> &searchRoot) noexcept {
     hardlinkPaths.clear();
     ioError = IoError::Success;
 
@@ -704,34 +733,13 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
 
         // There is no system API to enumerate the links of an item on POSIX systems: search for the items sharing the
         // same inode while recursively iterating over the search root directory.
-        std::error_code ec;
-        std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::skip_permission_denied,
-                                                         ec);
-        if (ec) {
-            LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
-                                                               << Utility::formatStdError(ec));
-            return true; // The seed path has already been added to the result.
-        }
-
-        for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
-            if (ec) {
-                LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
-                                                                   << Utility::formatStdError(ec));
-                break; // The iterator is the end iterator after a failed increment: stop the enumeration.
-            }
-
-            const SyncPath entryPath = it->path();
-            if (entryPath == seedPath) continue;
-
-            std::error_code entryEc;
-            if (!it->is_regular_file(entryEc) || entryEc) continue;
-
+        _forEachLinkCandidate(seedPath, searchRoot, [&info, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
             struct stat entryInfo;
-            if (::stat(entryPath.string().c_str(), &entryInfo) != 0) continue;
+            if (::stat(entry.path().string().c_str(), &entryInfo) != 0) return;
             if (entryInfo.st_dev == info.st_dev && entryInfo.st_ino == info.st_ino) {
-                hardlinkPaths.push_back(entryPath);
+                hardlinkPaths.push_back(entry.path());
             }
-        }
+        });
     } catch (const std::exception &e) {
         ioError = IoError::Unknown;
         LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());
