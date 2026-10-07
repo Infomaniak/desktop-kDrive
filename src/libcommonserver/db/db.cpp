@@ -670,6 +670,24 @@ bool Db::addColumnIfMissing(const std::string &tableName, const std::string &col
     return true;
 }
 
+bool Db::dropColumnIfExists(const std::string &tableName, const std::string &columnName) {
+    bool exist = false;
+    if (!columnExists(tableName, columnName, exist)) return false;
+    if (exist) {
+        LOG_INFO(_logger, "Dropping column " << columnName << " from table " << tableName);
+        const auto requestId = tableName + "drop_column_" + columnName;
+        const auto request = "ALTER TABLE " + tableName + " DROP COLUMN " + columnName + ";";
+        auto scopeGuard = createAndPrepareScopedRequest(requestId.c_str(), request.c_str());
+        if (!scopeGuard) return false;
+        int errId = 0;
+        std::string error;
+        if (!queryExec(requestId, errId, error)) {
+            return sqlFail(requestId, error);
+        }
+    }
+    return true;
+}
+
 bool Db::createAndPrepareRequest(const char *requestId, const char *query) {
     int errId = 0;
     std::string error;

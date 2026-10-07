@@ -50,6 +50,7 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testUpgradeOfShortPathNames);
 #endif
         CPPUNIT_TEST(testAddMissingColumnsDuringUpgrade);
+        CPPUNIT_TEST(testDropOfObsoleteColumnsDuringUpgrade);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -78,11 +79,13 @@ class TestParmsDb : public CppUnit::TestFixture, public TestBase {
         void testUpgradeOfShortPathNames();
 #endif
         void testAddMissingColumnsDuringUpgrade();
+        void testDropOfObsoleteColumnsDuringUpgrade();
 
     private:
         LocalTemporaryDirectory _parmsDbTemporarDirectory;
         bool deleteColumns();
         bool deleteColumn(const std::string &tableName, const std::string &columnName);
+        bool addColumn(const std::string &tableName, const std::string &columnName, const std::string &columnType);
         bool deleteAppState(AppStateKey key);
 };
 
