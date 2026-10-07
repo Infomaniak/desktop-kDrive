@@ -1726,7 +1726,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 if (const auto exitInfo = initSyncPal(syncInfo, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    (void) stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
+                    if (const ExitInfo stopExitInfo =
+                                stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
+                        !stopExitInfo) {
+                        LOG_WARN(_logger, "Error in stopSyncTask for syncDbId=" << syncInfo.dbId() << " : " << stopExitInfo);
+                        addError(Error(ERR_ID, stopExitInfo));
+                        return;
+                    }
 
                     // Delete sync from DB
                     if (const ExitInfo exitInfo2 = ServerRequests::deleteSync(syncInfo.dbId()); !exitInfo2) {
