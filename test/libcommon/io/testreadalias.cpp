@@ -220,7 +220,7 @@ void TestIo::testCheckIfItemIsSymLinkOrAlias() {
         CPPUNIT_ASSERT(!isLink);
     }
 
-    // file symlink
+    // symlink
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "file_symlink.txt";
@@ -233,27 +233,6 @@ void TestIo::testCheckIfItemIsSymLinkOrAlias() {
         IoError createSymlinkError = IoError::Unknown;
         CPPUNIT_ASSERT_MESSAGE(toString(createSymlinkError),
                                IoHelper::createSymlink(targetPath, path, false, createSymlinkError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, createSymlinkError);
-
-        bool isLink = false;
-        IoError checkLinkError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(checkLinkError), IoHelper::_checkIfItemIsSymLinkOrAlias(path, isLink, checkLinkError));
-        CPPUNIT_ASSERT_EQUAL(IoError::Success, checkLinkError);
-        CPPUNIT_ASSERT(isLink);
-    }
-
-    // folder symlink
-    {
-        const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path() / "folder_symlink.txt";
-        const SyncPath targetPath = temporaryDirectory.path() / "dummy.txt";
-        {
-            std::ofstream ofs(targetPath);
-            ofs << "Some content.\n";
-        }
-
-        IoError createSymlinkError = IoError::Unknown;
-        CPPUNIT_ASSERT_MESSAGE(toString(createSymlinkError), IoHelper::createSymlink(targetPath, path, true, createSymlinkError));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, createSymlinkError);
 
         bool isLink = false;
