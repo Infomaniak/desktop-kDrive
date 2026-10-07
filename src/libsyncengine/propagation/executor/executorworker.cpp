@@ -2248,6 +2248,7 @@ ExitInfo ExecutorWorker::handleExecutorError(SyncOpPtr syncOp, const ExitInfo &o
         case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::MoveThroughSymlink)): {
             return handleOpsBlacklistRemoteFile(syncOp, opsExitInfo);
         }
+        case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::InvalidName)):
         case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::FileAccessError)):
         case static_cast<int32_t>(ExitInfo(ExitCode::SystemError, ExitCause::HardlinkNotSupported)): {
             return handleOpsLocalFileAccessError(syncOp, opsExitInfo);
