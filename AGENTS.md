@@ -66,6 +66,10 @@ Update the nearest `AGENTS.md` when conventions or workflows change; keep guidan
 ### Local Norms
 - Start the description after the Conventional Commit prefix with an uppercase letter, e.g. `fix(scope): Correct log level handling`.
 - Add only tests that provide meaningful value; avoid trivial checks that merely mirror the implementation. Simple test code is welcome when it protects meaningful behavior or catches regressions.
+- In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
+- Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
+- Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.
+- For `PR.md`, follow the `pr-description-writer` skill's bilingual format: French in `<details>`, then English. Keep the title in English.
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For project crash lookups, use the self-hosted Sentry instance at `https://sentry-desktop.infomaniak.com`, not Sentry SaaS.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.

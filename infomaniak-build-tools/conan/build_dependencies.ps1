@@ -44,7 +44,7 @@
 
 .PARAMETER Update
     Ask Conan to check remotes for newer versions/revisions.
-    Disabled by default to keep CI deterministic and avoid local recipe revision/timestamp conflicts.
+    Enabled automatically with -CI, in GitHub Actions or when KDRIVE_TEST_CI_RUNNING_ON_CI=true; opt-in for local builds.
 #>
 
 param(
@@ -173,6 +173,7 @@ print(exe)
 # If we are running in CI mode, we activate the python virtual environment.
 if ($CI)
 {
+    $env:KDRIVE_TEST_CI_RUNNING_ON_CI = "true"
     # Activate the python virtual environment.
     & "C:\Program Files\Python313\.venv\Scripts\activate.ps1"
 
@@ -319,12 +320,9 @@ $conanInstallArgs = @(
     "-c", "tools.cmake.cmaketoolchain:generator=Ninja",
     "-c", "tools.env.virtualenv:powershell=powershell"
 )
-if ($CI)
-{
-    $conanInstallArgs += "-o"
-    $conanInstallArgs += "qt/*:qt_login_type=envvars"
-}
-if ($Update)
+$enableUpdate = $Update -or $CI -or $env:GITHUB_ACTIONS -eq "true" -or $env:KDRIVE_TEST_CI_RUNNING_ON_CI -eq "true"
+Log "Conan update enabled: $enableUpdate"
+if ($enableUpdate)
 {
     $conanInstallArgs += "--update"
 }

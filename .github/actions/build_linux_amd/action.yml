@@ -2,6 +2,12 @@ name: Build AMD64 Linux
 description: 'Build AMD64 Version of the Linux app'
 
 inputs:
+  qt_account_email:
+    description: 'Qt account email for unattended installation'
+    required: true
+  qt_account_password:
+    description: 'Qt account password for unattended installation'
+    required: true
   release_build:
     description: 'If true, run the release build script'
     required: false
@@ -16,6 +22,9 @@ runs:
 
       - name: Run the build script
         id: build
+        env:
+          QT_ACCOUNT_EMAIL: ${{ inputs.qt_account_email }}
+          QT_ACCOUNT_PASSWORD: ${{ inputs.qt_account_password }}
         run: |
           if [[ "${{ inputs.release_build }}" == "true" ]]; then
             SCRIPT="${{ github.workspace }}/infomaniak-build-tools/linux/build-release-amd64.sh"
