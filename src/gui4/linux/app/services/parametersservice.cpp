@@ -57,8 +57,8 @@ void ParametersService::startNextUpdate() {
 
     _updating = true;
     const auto update = _updates.front();
-    auto parametersInfo = _parametersStore.parametersInfo();
-    if (!parametersInfo) {
+    auto parameters = _parametersStore.parameters();
+    if (!parameters) {
         _updates.pop_front();
 
         const QPointer self(this);
@@ -75,17 +75,17 @@ void ParametersService::startNextUpdate() {
         return;
     }
 
-    const auto confirmedParametersInfo = *parametersInfo;
-    update.mutation(*parametersInfo);
+    const auto confirmedParameters = *parameters;
+    update.mutation(*parameters);
 
-    const auto finishUpdate = [self = QPointer(this), parametersInfo = *parametersInfo, update](const ExitInfo &result) {
+    const auto finishUpdate = [self = QPointer(this), parameters = *parameters, update](const ExitInfo &result) {
         if (!self) {
             return;
         }
 
         self->_updates.pop_front();
         if (result) {
-            self->_parametersStore.replaceParametersInfo(parametersInfo);
+            self->_parametersStore.replaceParameters(parameters);
         } else {
             qCWarning(lcParametersService) << "Parameters update rejected:" << QString::fromStdString(toString(result));
         }
@@ -106,12 +106,12 @@ void ParametersService::startNextUpdate() {
         self->startNextUpdate();
     };
 
-    if (*parametersInfo == confirmedParametersInfo) {
+    if (*parameters == confirmedParameters) {
         finishUpdate(ExitInfo{ExitCode::Ok});
         return;
     }
 
-    _request(*parametersInfo, finishUpdate);
+    _request(*parameters, finishUpdate);
 }
 
 } // namespace KDC

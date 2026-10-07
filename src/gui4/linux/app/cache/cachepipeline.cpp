@@ -117,7 +117,7 @@ void CachePipeline::markPopulated() {
     qCInfo(lcCachePipeline) << "Cache population completed; live cache push mutations enabled";
 }
 
-void CachePipeline::routeActivity(const SyncDbId syncDbId, const SyncFileItemInfo &item) const {
+void CachePipeline::routeActivity(const SyncDbId syncDbId, const SyncFileItem &item) const {
     if (!_appCache.sync(syncDbId).has_value()) {
         qCWarning(lcCachePipeline) << "Activity dropped for unknown synchronization | syncDbId:" << syncDbId
                                    << "/ operationId:" << item.operationId();

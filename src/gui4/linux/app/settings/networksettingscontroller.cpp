@@ -51,7 +51,7 @@ NetworkSettingsController::NetworkSettingsController(ParametersStore &parameters
     _timeout.setSingleShot(true);
     _timeout.setInterval(connectionTimeoutMs);
 
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
+    (void) connect(&_parametersStore, &ParametersStore::parametersChanged, this, [this] {
         if (_saving) {
             return;
         }
@@ -76,7 +76,7 @@ NetworkSettingsController::NetworkSettingsController(ParametersStore &parameters
 }
 
 bool NetworkSettingsController::ready() const {
-    return _initialized && _parametersStore.parametersInfo().has_value();
+    return _initialized && _parametersStore.parameters().has_value();
 }
 
 bool NetworkSettingsController::dirty() const {
@@ -190,10 +190,10 @@ void NetworkSettingsController::saveManual() {
     emit changed();
 
     const auto &config = *_pendingManualConfig;
-    QNetworkProxy proxy{QNetworkProxy::HttpProxy, config.hostName(), static_cast<quint16>(config.port())};
+    QNetworkProxy proxy{QNetworkProxy::HttpProxy, QString::fromStdString(config.hostName()), config.port()};
     if (config.needsAuth()) {
-        proxy.setUser(config.user());
-        proxy.setPassword(config.pwd());
+        proxy.setUser(QString::fromStdString(config.user()));
+        proxy.setPassword(QString::fromStdString(config.pwd()));
     }
     _socket.setProxy(proxy);
 
@@ -240,14 +240,14 @@ ProxyType NetworkSettingsController::supportedType(const ProxyType type) {
 }
 
 void NetworkSettingsController::loadConfirmed(const bool preserveManualDraft) {
-    const auto parameters = _parametersStore.parametersInfo();
+    const auto parameters = _parametersStore.parameters();
     if (!parameters) {
         _initialized = false;
         emit changed();
         return;
     }
 
-    const auto config = parameters->proxyConfigInfo();
+    const auto config = parameters->proxyConfig();
     const auto type = supportedType(config.type());
     _confirmedConfig = config;
     _confirmedConfig.setType(type);
@@ -256,11 +256,11 @@ void NetworkSettingsController::loadConfirmed(const bool preserveManualDraft) {
 
     if (!preserveManualDraft) {
         _proxyType = type;
-        _hostName = config.hostName();
+        _hostName = QString::fromStdString(config.hostName());
         _portText = config.port() > 0 ? QString::number(config.port()) : QString{};
         _needsAuth = config.needsAuth();
-        _user = config.user();
-        _password = config.pwd();
+        _user = QString::fromStdString(config.user());
+        _password = QString::fromStdString(config.pwd());
     }
     emit changed();
 }
@@ -272,10 +272,10 @@ void NetworkSettingsController::saveImmediateType(const ProxyType type) {
     emit changed();
 
     _parametersService.updateParameters(
-            [type](ParametersInfo &parameters) {
-                auto config = parameters.proxyConfigInfo();
+            [type](Parameters &parameters) {
+                auto config = parameters.proxyConfig();
                 config.setType(type);
-                parameters.setProxyConfigInfo(config);
+                parameters.setProxyConfig(config);
             },
             [self = QPointer(this)](const ExitInfo &result) {
                 if (self) {
@@ -284,13 +284,13 @@ void NetworkSettingsController::saveImmediateType(const ProxyType type) {
             });
 }
 
-void NetworkSettingsController::saveConfig(const ProxyConfigInfo &config, const SaveKind kind) {
+void NetworkSettingsController::saveConfig(const ProxyConfig &config, const SaveKind kind) {
     _saveKind = kind;
     _saving = true;
     _saveFailed = false;
     emit changed();
 
-    _parametersService.updateParameters([config](ParametersInfo &parameters) { parameters.setProxyConfigInfo(config); },
+    _parametersService.updateParameters([config](Parameters &parameters) { parameters.setProxyConfig(config); },
                                         [self = QPointer(this)](const ExitInfo &result) {
                                             if (self) {
                                                 self->finishSave(result);
@@ -327,7 +327,7 @@ void NetworkSettingsController::finishConnectionCheckFailure() {
     emit proxyConnectionFailureRequested();
 }
 
-std::optional<ProxyConfigInfo> NetworkSettingsController::validatedManualConfig() const {
+std::optional<ProxyConfig> NetworkSettingsController::validatedManualConfig() const {
     if (!ready() || !manual()) {
         return std::nullopt;
     }
@@ -347,12 +347,12 @@ std::optional<ProxyConfigInfo> NetworkSettingsController::validatedManualConfig(
         return std::nullopt;
     }
 
-    return ProxyConfigInfo{ProxyType::HTTP,
-                           hostName,
-                           static_cast<int>(port),
-                           _needsAuth,
-                           _needsAuth ? _user : QString{},
-                           _needsAuth ? _password : QString{}};
+    return ProxyConfig{ProxyType::HTTP,
+                       hostName.toStdString(),
+                       static_cast<Port>(port),
+                       _needsAuth,
+                       _needsAuth ? _user.toStdString() : std::string{},
+                       _needsAuth ? _password.toStdString() : std::string{}};
 }
 
 } // namespace KDC

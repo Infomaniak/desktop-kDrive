@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/info/syncfileiteminfo.h"
+#include "libcommon/data/syncfileitem.h"
 
 #include <QDateTime>
 #include <QObject>
@@ -79,7 +79,7 @@ class ActivityStore final : public QObject {
          * @param syncDbId Database identifier of the owning synchronization.
          * @param item Activity DTO received from the server.
          */
-        void ingest(SyncDbId syncDbId, const SyncFileItemInfo &item);
+        void ingest(SyncDbId syncDbId, const SyncFileItem &item);
 
         /**
          * @brief Returns the retained activities for one synchronization.
@@ -117,7 +117,7 @@ class ActivityStore final : public QObject {
         void activitiesChanged(SyncDbId syncDbId);
 
     private:
-        [[nodiscard]] ActivityEntry makeEntry(SyncDbId syncDbId, const SyncFileItemInfo &item, GenericId localId);
+        [[nodiscard]] ActivityEntry makeEntry(SyncDbId syncDbId, const SyncFileItem &item, GenericId localId);
         static void enforceCapacity(std::vector<ActivityEntry> &entries);
 
         std::unordered_map<SyncDbId, std::vector<ActivityEntry>> _activitiesBySyncDbId;

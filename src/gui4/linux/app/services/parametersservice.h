@@ -19,7 +19,7 @@
 #pragma once
 
 #include "app/services/commservice.h"
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 
 #include <QObject>
 
@@ -40,12 +40,12 @@ class ParametersService final : public QObject {
         Q_OBJECT
 
     public:
-        using ParametersMutation = std::function<void(ParametersInfo &)>;
+        using ParametersMutation = std::function<void(Parameters &)>;
         using UpdateCallback = CommService::VoidCallback;
 
         explicit ParametersService(const CommService &commService, ParametersStore &parametersStore, QObject *parent = nullptr);
 
-        using UpdateRequest = std::function<void(const ParametersInfo &, const UpdateCallback &)>;
+        using UpdateRequest = std::function<void(const Parameters &, const UpdateCallback &)>;
         ParametersService(UpdateRequest request, ParametersStore &parametersStore, QObject *parent = nullptr);
 
         void updateParameters(const ParametersMutation &mutation, const UpdateCallback &callback);
