@@ -20,6 +20,7 @@
 #include "../testcommhelpers.h"
 #include "comm/guijobs/errordeletejob.h"
 #include "comm/guijobs/errorlistjob.h"
+#include "comm/guijobs/errorquickresolvehardlinkjob.h"
 #include "comm/guijobs/errorresolveconflictsjob.h"
 #include "comm/guijobs/errorresolveconflictsquickjob.h"
 #include "comm/guijobs/errorsyncrefreshjob.h"
@@ -255,6 +256,46 @@ void TestGuiCommChannel::testErrorDeleteJob() {
         const auto deleteJob = std::dynamic_pointer_cast<ErrorDeleteJob>(job);
         CPPUNIT_ASSERT(deleteJob);
         CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, deleteJob->_errorDbId);
+    };
+
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    testGenericJob(queryStr, answerStr, {}, processFct);
+#else
+    const auto cbkAnswerStr = stringifyCbkAnswerObj(answerObj);
+    testGenericJob(queryStr, answerStr, cbkAnswerStr, processFct);
+#endif
+}
+
+void TestGuiCommChannel::testErrorQuickResolveHardlinkJob() {
+    Poco::JSON::Object queryObj;
+#if defined(KD_WINDOWS) || defined(KD_LINUX)
+    (void) queryObj.set("id", 1);
+#endif
+    (void) queryObj.set("num", toInt(RequestNum::ERROR_QUICK_RESOLVE_HARDLINK));
+
+    Poco::JSON::Object queryParamsObj;
+    (void) queryParamsObj.set("syncDbId", 10);
+    (void) queryParamsObj.set("errorDbId", 42);
+    std::string b64str;
+    CommonUtility::convertToBase64Str("local1", b64str);
+    (void) queryParamsObj.set("nodeId", b64str);
+    CommonUtility::convertToBase64Str("path1", b64str);
+    (void) queryParamsObj.set("path", b64str);
+    (void) queryObj.set("params", queryParamsObj);
+
+    const auto queryStr = stringifyQueryObj(queryObj);
+
+    // Answer (no output parameters)
+    const auto [answerObj, answerObjWithNumAndType] = createSimpleAnswers(RequestNum::ERROR_QUICK_RESOLVE_HARDLINK);
+    const auto answerStr = stringifyAnswerObj(answerObjWithNumAndType);
+
+    auto processFct = [](std::shared_ptr<AbstractGuiJob> job) {
+        const auto quickResolveJob = std::dynamic_pointer_cast<ErrorQuickResolveHardlinkJob>(job);
+        CPPUNIT_ASSERT(quickResolveJob);
+        CPPUNIT_ASSERT_EQUAL(SyncDbId{10}, quickResolveJob->_syncDbId);
+        CPPUNIT_ASSERT_EQUAL(ErrorDbId{42}, quickResolveJob->_errorDbId);
+        CPPUNIT_ASSERT_EQUAL(std::string("local1"), quickResolveJob->_nodeId);
+        CPPUNIT_ASSERT_EQUAL(SyncPath("path1"), quickResolveJob->_relativeLocalPath);
     };
 
 #if defined(KD_WINDOWS) || defined(KD_LINUX)
