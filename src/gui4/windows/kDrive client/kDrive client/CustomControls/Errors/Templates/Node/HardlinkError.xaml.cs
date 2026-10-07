@@ -15,9 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+using Infomaniak.kDrive.Analytics;
+using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using System;
+using System.Threading;
 
 namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
 {
@@ -29,11 +35,49 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
     )]
     public sealed partial class HardlinkError : UserControl
     {
+        private readonly IAnalyticsService _analyticsService = App.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
         private Error Error { get; init; }
         public HardlinkError(Error error)
         {
             this.InitializeComponent();
             Error = error;
+        }
+
+        private async void ErrorCard_ActionClick(object sender, RoutedEventArgs e)
+        {
+            if (Error.Sync is null)
+            {
+                Logger.LogError("Error.Sync is null");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(Error.LocalNodeId))
+            {
+                Logger.LogError("Error.LocalNodeId is null or empty. Cannot quickly resolve the hardlink error.");
+                Utility.ShowUnexpectedErrorTeachingTip();
+                return;
+            }
+
+            _analyticsService.TrackClick(Analytics.Keys.Category.Errors, Analytics.Keys.EventName.ManageHardlinkError);
+
+            try
+            {
+                var commService = App.ServiceProvider.GetRequiredService<IServerCommService>();
+                bool success = await commService.QuickResolveHardlink(Error.Sync.DbId, Error.DbId, Error.LocalNodeId, Error.Path, CancellationToken.None);
+                if (!success)
+                {
+                    Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}");
+                    Utility.ShowUnexpectedErrorTeachingTip();
+                }
+                // On success, the server sends an ErrorRemoved signal that removes the error card from the UI.
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}. Exception: {ex.Message}");
+                Utility.ShowUnexpectedErrorTeachingTip();
+            }
         }
     }
 }

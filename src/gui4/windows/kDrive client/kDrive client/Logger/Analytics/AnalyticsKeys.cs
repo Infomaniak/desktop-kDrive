@@ -160,6 +160,7 @@
         ManageTmpDirError,
         OpenRenewWeb,
         Displayed,
-        Ignore
+        Ignore,
+        ManageHardlinkError
     }
 }

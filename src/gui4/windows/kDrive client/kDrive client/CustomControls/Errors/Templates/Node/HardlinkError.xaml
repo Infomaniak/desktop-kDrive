@@ -28,5 +28,7 @@
     <local:ErrorCard x:Name="ErrorCard"
                      Title="{x:Bind kDrive:Localizer.Instance.GetString('errHardlinkTitle')}"
                      Description="{x:Bind kDrive:Localizer.Instance.GetString('errHardlinkDescription')}"
+                     ActionText="{x:Bind kDrive:Localizer.Instance.GetString('errHardlinkAction')}"
+                     ActionClick="ErrorCard_ActionClick"
                      Error="{x:Bind Error}" />
 </UserControl>

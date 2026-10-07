@@ -150,6 +150,11 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
         Task<bool> ResolveConflicts(List<DbId> keepLocalErrorDbIds, List<DbId> keepRemoteErrorDbIds, CancellationToken cancellationToken);
         Task<bool> ResolveConflictsQuick(List<DbId> errorDbIds, ConflictResolutionStrategy strategy, CancellationToken cancellationToken);
 
+        // Quickly resolves a hardlink error by removing the corresponding node from the sync database and deleting all the
+        // hardlinks located under the sync root. The file is saved into the rescue folder first if it is not in sync with the
+        // database. Returns true on success.
+        Task<bool> QuickResolveHardlink(DbId syncDbId, DbId errorDbId, NodeId localNodeId, string path, CancellationToken cancellationToken);
+
         // Acknowledges the "too many deletes" notification for a sync, telling the server whether to continue or revert.
         Task<bool> AcknowledgeManyDeletes(DbId syncDbId, TooManyDeletesUserChoice userChoice, CancellationToken cancellationToken);
 
