@@ -19,9 +19,12 @@
 #include "xpcService.h"
 #include "fileAttributes.h"
 
+#import "userURLs.h"
+
 #import <Foundation/Foundation.h>
 #import <EndpointSecurity/EndpointSecurity.h>
 #import <bsm/libbsm.h>
+#import <os/lock.h>
 
 #include <SystemConfiguration/SystemConfiguration.h>
 #include <dispatch/queue.h>
@@ -32,23 +35,26 @@ es_client_t *g_client = NULL;
 XPCService *g_xpcService = NULL;
 static dispatch_queue_t g_event_queue = NULL;
 
-// User URLs by UID cache
-@interface UserURLs : NSObject
-@property (nonatomic, strong) NSURL *homeURL;
-@property (nonatomic, strong) NSURL *homeVolumeURL;
-@property (nonatomic, strong) NSURL *mainTrashURL;
-@property (nonatomic, strong) NSMutableDictionary<NSURL *, NSURL *> *volumeTrashURL; // Trash URL by volume cache
-@end
+static NSMutableDictionary<NSNumber *, UserURLs *> *g_userURLsByUID;
+static os_unfair_lock g_userURLsByUIDLock = OS_UNFAIR_LOCK_INIT;
 
-@implementation UserURLs
-- (instancetype)init {
-    self = [super init];
-    _volumeTrashURL = [NSMutableDictionary dictionary];
-    return self;
+// Clean-up before exiting
+void sig_handler(int sig)
+{
+    NSLog(@"[KD] Tidying Up");
+    
+    if (g_client) {
+        if (@available(macOS 10.15, *)) {
+            es_unsubscribe_all(g_client);
+            es_delete_client(g_client);
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+    
+    NSLog(@"[KD] Exiting");
+    exit(EXIT_SUCCESS);
 }
-@end
-
-NSMutableDictionary<NSNumber *, UserURLs *> *g_userURLsByUID;
 
 static BOOL isExtendedLogEnabled(void)
 {
@@ -77,7 +83,9 @@ NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
     }
 
     // Retrieval of the user URLs for the UID
+    os_unfair_lock_lock(&g_userURLsByUIDLock);
     UserURLs *urls = g_userURLsByUID[@(uid)];
+    os_unfair_lock_unlock(&g_userURLsByUIDLock);
     if (urls == nil) {
         struct passwd *pw = getpwuid(uid);
         if (!pw || !pw->pw_dir) {
@@ -93,7 +101,9 @@ NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
         }
         urls.homeVolumeURL = homeVolumeURL;
         
+        os_unfair_lock_lock(&g_userURLsByUIDLock);
         g_userURLsByUID[@(uid)] = urls;
+        os_unfair_lock_unlock(&g_userURLsByUIDLock);
     }
 
     // Retrieval of the file path volume
@@ -111,29 +121,13 @@ NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
     }
 
     // Other volume
-    if (urls.volumeTrashURL[volumeURL] == nil) {
+    NSURL *volumeTrashURL = [urls trashURLForVolume:volumeURL];
+    if (volumeTrashURL == nil) {
         NSString *uidStr = [NSString stringWithFormat:@"%u", uid];
-        urls.volumeTrashURL[volumeURL] = [[volumeURL URLByAppendingPathComponent:@".Trashes" isDirectory:YES] URLByAppendingPathComponent:uidStr isDirectory:YES];
+        volumeTrashURL = [[volumeURL URLByAppendingPathComponent:@".Trashes" isDirectory:YES] URLByAppendingPathComponent:uidStr isDirectory:YES];
+        [urls setTrashURL:volumeTrashURL forVolume:volumeURL];
     }
-    return urls.volumeTrashURL[volumeURL];
-}
-
-// Clean-up before exiting
-void sig_handler(int sig)
-{
-    NSLog(@"[KD] Tidying Up");
-    
-    if (g_client) {
-        if (@available(macOS 10.15, *)) {
-            es_unsubscribe_all(g_client);
-            es_delete_client(g_client);
-        } else {
-            // Fallback on earlier versions
-        }
-    }
-    
-    NSLog(@"[KD] Exiting");
-    exit(EXIT_SUCCESS);
+    return volumeTrashURL;
 }
 
 NSString *fileDefaultOpeningAppId(NSString *path)
@@ -410,6 +404,7 @@ int main(int argc, char *argv[])
     
     initDispatchQueue();
     
+    // Initialize user URLs cache
     g_userURLsByUID = [NSMutableDictionary dictionary];
     
     // Initialize XPC cLient

@@ -10,6 +10,7 @@
 		4685D0D025FF5DC200E3880A /* xpcService.m in Sources */ = {isa = PBXBuildFile; fileRef = 4685D0CC25FF5DC200E3880A /* xpcService.m */; };
 		4685D0D125FF5DC200E3880A /* xpcServiceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4685D0CE25FF5DC200E3880A /* xpcServiceProxy.m */; };
 		468D44DB265D29D100B18C70 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 468D44DA265D29D100B18C70 /* libbsm.tbd */; };
+		46ADDE7A3076711A0026B900 /* userURLs.m in Sources */ = {isa = PBXBuildFile; fileRef = 46ADDE793076711A0026B900 /* userURLs.m */; };
 		46BB2CB125B5998000CCC772 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 46BB2CB025B5998000CCC772 /* libEndpointSecurity.tbd */; };
 		46BB2CB425B5998000CCC772 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 46BB2CB325B5998000CCC772 /* main.m */; };
 		46E2166825B829FB008A6905 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 46E2166725B829FB008A6905 /* main.m */; };
@@ -50,6 +51,8 @@
 		468CB9E6263FF5FB0076FD53 /* fileAttributes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fileAttributes.h; sourceTree = "<group>"; };
 		468D44DA265D29D100B18C70 /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
 		46993C842611D5D200C6F93F /* xpcLiteSyncExtensionRemoteProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcLiteSyncExtensionRemoteProtocol.h; sourceTree = "<group>"; };
+		46ADDE783076711A0026B900 /* userURLs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = userURLs.h; sourceTree = "<group>"; };
+		46ADDE793076711A0026B900 /* userURLs.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = userURLs.m; sourceTree = "<group>"; };
 		46BB2CAE25B5998000CCC772 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
 		46BB2CB025B5998000CCC772 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
 		46BB2CB325B5998000CCC772 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -115,6 +118,8 @@
 		46BB2CB225B5998000CCC772 /* Extension */ = {
 			isa = PBXGroup;
 			children = (
+				46ADDE783076711A0026B900 /* userURLs.h */,
+				46ADDE793076711A0026B900 /* userURLs.m */,
 				46BB2CB325B5998000CCC772 /* main.m */,
 				4685D0CF25FF5DC200E3880A /* xpcService.h */,
 				4685D0CC25FF5DC200E3880A /* xpcService.m */,
@@ -229,6 +234,7 @@
 			files = (
 				4685D0D125FF5DC200E3880A /* xpcServiceProxy.m in Sources */,
 				4685D0D025FF5DC200E3880A /* xpcService.m in Sources */,
+				46ADDE7A3076711A0026B900 /* userURLs.m in Sources */,
 				46BB2CB425B5998000CCC772 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
