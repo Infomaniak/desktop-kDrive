@@ -45,6 +45,9 @@ struct ActivitiesTable: View {
                         .frame(size: AppIconSize.iconSize12)
                 }
                 .foregroundStyle(ColorToken.Text.primary.asColor)
+                
+                Text(context.node.syncDate, format: .friendlyRelative)
+                                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
             }
 
             TableColumn(KDriveLocalizable.labelFolder) { context in
@@ -60,12 +63,6 @@ struct ActivitiesTable: View {
                 .buttonStyle(.borderless)
                 .tint(ColorToken.Text.tertiary.asColor)
             }
-
-            TableColumn(KDriveLocalizable.labelTime) { context in
-                Text(context.node.syncDate, format: .friendlyRelative)
-                    .foregroundStyle(ColorToken.Text.tertiary.asColor)
-            }
-            .width(ideal: 50)
 
             TableColumn(KDriveLocalizable.labelSize) { context in
                 Text(context.node.size, format: .byteCount(style: .file))
