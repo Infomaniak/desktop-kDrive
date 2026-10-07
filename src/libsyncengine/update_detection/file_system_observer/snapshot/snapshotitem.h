@@ -72,6 +72,11 @@ class SnapshotItem {
             _snapshotRevisionHandler = snapshotRevisionHandler;
             _lastChangeRevision = _snapshotRevisionHandler ? _snapshotRevisionHandler->nextVersion() : 0;
         }
+        void setSnapshotRevisionDataFromBackup(const std::shared_ptr<SnapshotRevisionHandler> snapshotRevisionHandler,
+                                               const SnapshotRevision lastChangeRevision) {
+            _snapshotRevisionHandler = snapshotRevisionHandler;
+            _lastChangeRevision = lastChangeRevision;
+        }
         SnapshotItem &operator=(const SnapshotItem &other);
         bool operator==(const SnapshotItem &other) const {
             return _id == other._id && _parentId == other._parentId && _name == other._name &&
