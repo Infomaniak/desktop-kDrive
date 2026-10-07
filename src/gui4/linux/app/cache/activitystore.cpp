@@ -56,15 +56,22 @@ bool isFailed(const SyncFileStatus status) {
     return true;
 }
 
+/** @brief Converts an optional node identifier to the activity representation, where an empty string means absent. */
+QString toActivityNodeId(const std::optional<NodeId> &nodeId) {
+    return nodeId ? QString::fromStdString(*nodeId) : QString{};
+}
+
 /** @brief Returns whether two activities identify the same node through a non-empty local or remote identifier. */
-bool hasMatchingNodeId(const ActivityEntry &entry, const SyncFileItemInfo &item) {
-    const bool sameLocalNode = !item.localNodeId().isEmpty() && item.localNodeId() == entry.localNodeId;
-    const bool sameRemoteNode = !item.remoteNodeId().isEmpty() && item.remoteNodeId() == entry.remoteNodeId;
+bool hasMatchingNodeId(const ActivityEntry &entry, const SyncFileItem &item) {
+    const auto localNodeId = toActivityNodeId(item.localNodeId());
+    const auto remoteNodeId = toActivityNodeId(item.remoteNodeId());
+    const bool sameLocalNode = !localNodeId.isEmpty() && localNodeId == entry.localNodeId;
+    const bool sameRemoteNode = !remoteNodeId.isEmpty() && remoteNodeId == entry.remoteNodeId;
     return sameLocalNode || sameRemoteNode;
 }
 
 /** @brief Removes failed activities superseded by a successful or in-progress activity for the same node. */
-void removeSupersededFailures(std::vector<ActivityEntry> &entries, const SyncFileItemInfo &item) {
+void removeSupersededFailures(std::vector<ActivityEntry> &entries, const SyncFileItem &item) {
     if (isFailed(item.status())) {
         return;
     }
@@ -77,7 +84,7 @@ void removeSupersededFailures(std::vector<ActivityEntry> &entries, const SyncFil
 ActivityStore::ActivityStore(QObject *const parent) :
     QObject(parent) {}
 
-void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItemInfo &item) {
+void ActivityStore::ingest(const SyncDbId syncDbId, const SyncFileItem &item) {
     if (syncDbId <= 0) {
         qCWarning(lcActivityStore) << "Activity ignored for invalid synchronization | syncDbId:" << syncDbId;
         return;
@@ -184,16 +191,16 @@ void ActivityStore::clear() {
  * @param localId Stable process-local identifier assigned to the entry.
  * @return A fully populated activity entry with a fresh receive timestamp and sequence number.
  */
-ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileItemInfo &item, const GenericId localId) {
+ActivityEntry ActivityStore::makeEntry(const SyncDbId syncDbId, const SyncFileItem &item, const GenericId localId) {
     ActivityEntry entry;
     entry.localId = localId;
     entry.syncDbId = syncDbId;
     entry.operationId = item.operationId();
     entry.nodeType = item.type();
-    entry.path = QStr2Path(item.path());
-    entry.newPath = QStr2Path(item.newPath());
-    entry.localNodeId = item.localNodeId();
-    entry.remoteNodeId = item.remoteNodeId();
+    entry.path = item.path();
+    entry.newPath = item.newPath().value_or(SyncPath{});
+    entry.localNodeId = toActivityNodeId(item.localNodeId());
+    entry.remoteNodeId = toActivityNodeId(item.remoteNodeId());
     entry.direction = item.direction();
     entry.instruction = item.instruction();
     entry.status = item.status();
