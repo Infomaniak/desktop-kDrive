@@ -1,6 +1,6 @@
 ---
 name: update-translations
-description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt, and every unfinished entry is translated directly by the agent. The language list comes from the Language enum in src/libcommon/utility/cstypes.h. By default the skill is scoped to the current PR: only the strings the PR adds or changes are extracted, translated and imported, and a full refresh of every file and language runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
+description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt. By default the skill is scoped to the current PR: lupdate runs over every file, but only the strings the PR adds or changes are translated or imported, and out-of-scope unfinished entries are left unfinished; translating every entry runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
 ---
 
 # Update translations
@@ -27,9 +27,10 @@ header comment (`Loco ios export` / `Loco xml export`, project `kDrive Desktop`)
 
 ## Scope: the current PR only
 
-**Default: modify only the translations related to the current PR.** Repo-wide refreshes (full Loco import, lupdate
-loop over all of `src`, global translation pass) produce out-of-scope diffs in every PR, so they run **only when the
-user explicitly asks** for them — e.g. "update all translations", "refresh every language", "make sure all languages
+**Default: modify only the translations related to the current PR.** The Qt `lupdate` pass itself always runs over
+every file (it is a mechanical refresh, see Part 2), but only the strings of the current PR are translated:
+out-of-scope `unfinished` entries stay unfinished. Full Loco imports and full translation passes run **only when the
+user explicitly asks** for them — e.g. "update all translations", "translate everything", "make sure all languages
 are translated". Any request about the PR, its new strings or its changed files means the scoped run.
 
 Determine the scope from the diff against the base branch (usually `develop`):
@@ -47,12 +48,12 @@ git diff --name-only "$BASE...HEAD"   # committed
 | --- | --- |
 | New/changed user-facing keys in GUI code under `src/gui4/macOS/` or `src/gui4/windows/` | Part 1, scoped |
 | `Localizable.strings` / `Resources.resw` export files, `.import_loco.yml` | Part 1, scoped (config changes only if the PR itself changes language coverage) |
-| C++ sources under `src/` with new/changed user-facing strings (`tr()`, …) | Part 2, scoped |
-| `translations/client_*.ts` | Part 2, scoped |
+| C++ sources under `src/` with new/changed user-facing strings (`tr()`, …) | Part 2: full lupdate pass, translation scoped to the PR |
+| `translations/client_*.ts` | Part 2: full lupdate pass, translation scoped to the PR (translation-only PRs included) |
 | Nothing that adds or changes user-facing strings | Nothing: report that there is no translation work for this PR and stop |
 
-In a scoped run: never run the full import over every GUI, never run lupdate over all of `src`, and never translate
-pre-existing `unfinished` entries or Loco gaps unrelated to the PR — report them instead. The language rules below
+In a scoped run: never run the full Loco import over every GUI, and never translate out-of-scope `unfinished` entries
+or Loco gaps unrelated to the PR — report them instead. The language rules below
 still apply to whatever the PR does touch (a new key must exist in every locale, for example).
 
 ## Language list
@@ -153,49 +154,51 @@ find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1
 If the Conan cache is empty, install the dependencies first with
 `infomaniak-build-tools/conan/build_dependencies.sh Debug`, then search again.
 
-### Scoped run (default)
+### lupdate pass (always)
 
-1. Run lupdate on the PR's changed source files only, and **without `-no-obsolete`** — combined with a partial scan it
-   would delete every entry of the files you did not scan:
-   ```bash
-   LUPDATE="$(find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1)"
-   for f in translations/client_*.ts; do "$LUPDATE" <changed .h/.cpp/.mm sources> -ts "$f"; done
-   ```
-   This adds `unfinished` entries for the PR's strings and refreshes `<location>` line numbers only for the scanned
-   files.
-2. Translate only the entries this run added or re-opened, directly in the file (rules below). Pre-existing
-   `unfinished` entries from sources the PR does not touch: leave them in place and report them.
+Update every checked-in Qt translation file (run from the repository root). Do this **whenever the skill runs**,
+whichever files the PR touches, including PRs that only change `translations/client_*.ts`:
+```bash
+LUPDATE="$(find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1)"
+for f in translations/client_*.ts; do "$LUPDATE" src -no-obsolete -ts "$f"; done
+```
+- `src` is scanned recursively and covers the server, the legacy Qt GUI and the common libraries.
+- `-no-obsolete` drops entries for removed strings, matching `translations/updateTool/update-translation-files.sh`.
+- New strings appear as `<translation type="unfinished">`.
+- The pass refreshes the `<location>` line numbers in every file: that mechanical diff is expected and harmless, and
+  is not limited to the PR's files.
 
-### Full run (only when explicitly requested)
+### Translation scope (default: the PR only)
 
-1. Update every checked-in Qt translation file (run from the repository root):
-   ```bash
-   LUPDATE="$(find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1)"
-   for f in translations/client_*.ts; do "$LUPDATE" src -no-obsolete -ts "$f"; done
-   ```
-    - `src` is scanned recursively and covers the server, the legacy Qt GUI and the common libraries.
-    - `-no-obsolete` drops entries for removed strings, matching `translations/updateTool/update-translation-files.sh`.
-    - New strings appear as `<translation type="unfinished">`.
-    - A run with no new string may still refresh the `<location>` line numbers: that diff is expected and harmless.
-2. Translate every `unfinished` entry, in every `client_*.ts`, directly in the file (no DeepL, no external service):
-    - The target language is the file name: `client_da.ts` = Danish, `de` = German, `el` = Greek, `es` = Spanish,
-      `fi` = Finnish, `fr` = French, `it` = Italian, `nb` = Norwegian Bokmål, `nl` = Dutch, `pl` = Polish,
-      `pt` = Portuguese, `sv` = Swedish.
-    - Translate the `<source>` text, write it into the `<translation>` element and remove `type="unfinished"` so the
-      entry is marked as finished.
-    - For plural entries, translate each `<numerusform>` and keep the number of forms lupdate generated.
-    - Keep placeholders exactly as-is (`%1`, `%2`, `%n`, `%Ln`), HTML/XML tags, `&` mnemonics and leading/trailing
-      spaces; never translate format specifiers, paths or identifiers.
-    - Match the tone and terminology of the existing translations in the same file, and keep UI labels concise.
-    - When writing Loco translations for a language, check `client_<code>.ts` first for established terminology and
-      reuse it (for example Dutch uses the formal `uw`, Portuguese uses European Portuguese `ficheiros`).
-    - A later Transifex sync (`tx pull`, see `translations/Makefile`) may supersede these local translations.
+Translate the `unfinished` entries, directly in the file (no DeepL, no external service). By default, translate only
+the entries that belong to the current PR: entries whose `<location>` file is changed by the PR and whose line falls
+inside one of the PR's diff hunks for that file (the string is new, or its English text was changed).
+
+**Leave every other `unfinished` entry exactly as it is** — pre-existing gaps, entries from files the PR does not
+touch, strings from other in-flight work — and list them in the report. Do not clean them up. Translate *every*
+`unfinished` entry, in every `client_*.ts`, only when the user explicitly asks for a full translation pass.
+
+Translation rules (apply to whichever entries are translated):
+- The target language is the file name: `client_da.ts` = Danish, `de` = German, `el` = Greek, `es` = Spanish,
+  `fi` = Finnish, `fr` = French, `it` = Italian, `nb` = Norwegian Bokmål, `nl` = Dutch, `pl` = Polish,
+  `pt` = Portuguese, `sv` = Swedish.
+- Translate the `<source>` text, write it into the `<translation>` element and remove `type="unfinished"` so the
+  entry is marked as finished.
+- For plural entries, translate each `<numerusform>` and keep the number of forms lupdate generated.
+- Keep placeholders exactly as-is (`%1`, `%2`, `%n`, `%Ln`), HTML/XML tags, `&` mnemonics and leading/trailing
+  spaces; never translate format specifiers, paths or identifiers.
+- Match the tone and terminology of the existing translations in the same file, and keep UI labels concise.
+- When writing Loco translations for a language, check `client_<code>.ts` first for established terminology and
+  reuse it (for example Dutch uses the formal `uw`, Portuguese uses European Portuguese `ficheiros`).
+- A later Transifex sync (`tx pull`, see `translations/Makefile`) may supersede these local translations.
 
 ## Validation
 
 - Check `git diff --stat`: only `translations/*.ts`, Loco export files under `src/gui4/`, and the relevant
-  `.import_loco.yml` files when changing language coverage may change. In a scoped run, every hunk must trace back to
-  a string the PR touches: revert anything else and say so.
+  `.import_loco.yml` files when changing language coverage may change. In a scoped run, every *translation* hunk (a
+  translated text, a newly finished entry) must trace back to a string the PR touches; the mechanical `lupdate`
+  churn in other `client_*.ts` (`<location>` line numbers, dropped obsolete entries) is expected from the full pass
+  and is kept. Revert anything else and say so.
 - After a GUI import, run `import_loco --check` in each GUI directory: it catches straight apostrophes, `...`
   ellipses, trailing spaces and language-specific punctuation before they ship. It can produce false positives on
   strings that contain file paths with colons (e.g. `D:/`), which the French space-before-colon rule flags; verify
@@ -204,15 +207,16 @@ If the Conan cache is empty, install the dependencies first with
   ```bash
   python3 -c "import glob, xml.dom.minidom; [xml.dom.minidom.parse(f) for f in glob.glob('translations/client_*.ts')]"
   ```
-- Verify no unfinished entry remains (this must print nothing):
+- Check the remaining `unfinished` entries:
   ```bash
   grep -l 'type="unfinished"' translations/client_*.ts
   ```
-  Scoped run: only the entries created by the scoped lupdate run must be finished. List the sources that still have
-  unfinished entries and check that none belongs to the PR's changed files (the rest is reported, not fixed):
+  Scoped run: entries outside the PR scope are expected to remain unfinished by design. List the sources that still
+  have unfinished entries and check that none belongs to a string of the PR (the rest is reported, not fixed):
   ```bash
   grep -B3 'type="unfinished"' translations/client_*.ts | grep -o 'filename="[^"]*"' | sort -u
   ```
+  Full run (translate everything): this must print nothing.
 - Loco: re-run `list_locales` (needs mcp-loco) and confirm every locale reports `untranslated: 0` when the Loco part
   ran. Every language of the `Language` enum must be covered. Scoped run: check only the PR's assets —
   `get_translations` on each of them must return a text for every locale.
