@@ -168,6 +168,7 @@ void AppClientLinux::setupSignalConnections() {
                    &SentryService::updateAuthenticatedUser);
     (void) connect(&_cachePopulator, &CachePopulator::bootstrapCompleted, this, &AppClientLinux::handleBootstrapCompletion);
     (void) connect(this, &AppClientLinux::ipcConnected, this, [this] { _cachePopulator.bootstrap(); });
+    (void) connect(this, &AppClientLinux::ipcConnected, &_sentryService, &SentryService::fetchAppUid);
     (void) connect(this, &AppClientLinux::ipcConnected, &_updateStatusService, &UpdateStatusService::refresh);
     (void) connect(this, &AppClientLinux::ipcConnected, _settingsWindowController.advancedController(),
                    &AdvancedSettingsController::restoreUploadStatus);
@@ -265,8 +266,7 @@ void AppClientLinux::handleBootstrapCompletion() {
         return;
     }
 
-    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap"
-                             << "| activation pending:" << _mainWindowActivationPending
+    qCInfo(lcAppClientLinux) << "Opening main window after bootstrap" << "| activation pending:" << _mainWindowActivationPending
                              << "| tray fallback active:" << !_systemTrayController.trayModeActive();
     openMainWindow();
 }
@@ -445,8 +445,7 @@ void AppClientLinux::openMainWindow() {
                                         << "/ cause:" << exitInfo.cause();
         }
     });
-    qCInfo(lcAppClientLinux) << "Main window opened"
-                             << "| size of configured drives:" << _appCache.driveContexts().size()
+    qCInfo(lcAppClientLinux) << "Main window opened" << "| size of configured drives:" << _appCache.driveContexts().size()
                              << "| size of configured syncs:" << _appCache.syncContexts().size()
                              << "| current sync DB ID:" << _mainSelectionStore.currentSyncDbId();
 }
