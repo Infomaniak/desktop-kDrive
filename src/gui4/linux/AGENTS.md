@@ -162,6 +162,9 @@
 - Render the future main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
   and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
   so both outer circles remain identical.
+- Render text that comes from the server or the filesystem (file, folder, drive, or user names, paths) with
+  `textFormat: Text.PlainText`: the default `AutoText` interprets a name such as `<b>x</b>` as markup. `IKToolTip`
+  already forces plain text.
 - Use `IKToolTip` for every Linux v4 tooltip so controls share the rounded, theme-aware drive-name tooltip presentation;
   do not use Qt's attached `ToolTip` styling, which falls back to the native yellow tooltip on some desktops.
 - Let `IKToolTip` own `visible`: buttons set `targetButton` for its default hover/keyboard-focus trigger; other items
