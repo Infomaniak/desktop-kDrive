@@ -21,6 +21,8 @@
 #include "syncpal_test_helper/syncpaltesthelper.h"
 #include "test_utility/testhelpers.h"
 
+#include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
+
 namespace KDC {
 
 // Checks that local changes made while the synchronization is stopped are correctly detected and propagated when the
@@ -97,6 +99,10 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
 
     SyncpalTestHelper testHelper(_syncPal);
 
+    const auto getFullListingCount = [this]() {
+        return std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_syncPal->_remoteFSObserverWorker)->listingFullCount();
+    };
+
     // (1) Generate an initial situation and let the synchronization complete.
     const Situation initialSituation{Str2SyncName(R"({
         "content" : [
@@ -120,6 +126,8 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
     // replica.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
+    const auto listingFullCountBeforeRemoteChanges = getFullListingCount();
+
     const Operations remoteOperations{Str2SyncName(R"({
         "operations" : [
             { "type": "Create", "itemType": "Directory", "path": "X", "name": "XD" },
@@ -133,6 +141,10 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
 
     CPPUNIT_ASSERT(testHelper.startSync());
     CPPUNIT_ASSERT(testHelper.executeSyncUntilEnd());
+
+    // Restarting SyncPal should not trigger a full listing, but a continue listing instead, as the changes have already been
+    // detected and processed.
+    CPPUNIT_ASSERT_EQUAL(listingFullCountBeforeRemoteChanges, getFullListingCount());
 
     const Situation expectedSituation{Str2SyncName(R"({
         "content" : [
