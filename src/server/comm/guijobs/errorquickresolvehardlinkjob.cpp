@@ -34,6 +34,7 @@
 #include "signalerrorremovedjob.h"
 
 #include <algorithm>
+#include <limits>
 
 // Input parameters keys
 static const auto inParamsSyncDbId = "syncDbId";
@@ -389,8 +390,10 @@ ExitInfo ErrorQuickResolveHardlinkJob::rescueFile(const std::shared_ptr<SyncPal>
 
     ExitInfo copyExitInfo;
     SyncPath relativeDestinationPath;
-    uint16_t counter = 0;
-    do {
+    // Bound the number of attempts, so that the job fails instead of looping forever if every candidate name is already taken
+    // in the rescue folder.
+    constexpr uint32_t maxCounter = std::numeric_limits<uint16_t>::max();
+    for (uint32_t counter = 0; counter <= maxCounter; counter++) {
         const SyncName suffix =
                 Str(" (") + Str2SyncName(std::to_string(counter)) + Str(")"); // TODO : use format when fully moved to c++20
         const SyncName filename =
@@ -399,8 +402,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::rescueFile(const std::shared_ptr<SyncPal>
         LocalCopyJob copyJob(seedPath, destinationPath);
         copyExitInfo = copyJob.runSynchronously();
         relativeDestinationPath = FileRescuer::rescueFolderName() / filename;
-        counter++;
-    } while (!copyExitInfo && copyExitInfo.cause() == ExitCause::FileExists);
+        if (copyExitInfo || copyExitInfo.cause() != ExitCause::FileExists) break;
+    }
     if (!copyExitInfo) {
         LOGW_WARN(_logger,
                   L"Failed to copy " << Utility::formatSyncPath(seedPath) << L" into the rescue folder: " << copyExitInfo);
