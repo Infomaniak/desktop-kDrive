@@ -337,7 +337,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
                                                                                                  << _syncPal->syncDbId() << ".");
     validSnapshotBackupExists = !blackListHasChanged;
-    if (blackListHasChanged) {
+    if (!blackListHasChanged) {
         if (const auto validBackupExitInfo = checkIfValidRemoteSnapshotBackupExists(validSnapshotBackupExists);
             !validBackupExitInfo) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: "
