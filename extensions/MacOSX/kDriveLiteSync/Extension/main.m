@@ -32,6 +32,24 @@ es_client_t *g_client = NULL;
 XPCService *g_xpcService = NULL;
 static dispatch_queue_t g_event_queue = NULL;
 
+// User URLs by UID cache
+@interface UserURLs : NSObject
+@property (nonatomic, strong) NSURL *homeURL;
+@property (nonatomic, strong) NSURL *homeVolumeURL;
+@property (nonatomic, strong) NSURL *mainTrashURL;
+@property (nonatomic, strong) NSMutableDictionary<NSURL *, NSURL *> *volumeTrashURL; // Trash URL by volume cache
+@end
+
+@implementation UserURLs
+- (instancetype)init {
+    self = [super init];
+    _volumeTrashURL = [NSMutableDictionary dictionary];
+    return self;
+}
+@end
+
+NSMutableDictionary<NSNumber *, UserURLs *> *g_userURLsByUID;
+
 static BOOL isExtendedLogEnabled(void)
 {
     static BOOL extendedLogEnabled = FALSE;
@@ -58,16 +76,24 @@ NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
         return nil;
     }
 
-    // Retrieval of the HOME path volume for the UID
-    struct passwd *pw = getpwuid(uid);
-    if (!pw || !pw->pw_dir) {
-        return nil;
-    }
-
-    NSURL *homeURL = [NSURL fileURLWithPath:@(pw->pw_dir) isDirectory:YES];
-    NSURL *homeVolumeURL = nil;
-    if (![homeURL getResourceValue:&homeVolumeURL forKey:NSURLVolumeURLKey error:nil]) {
-        return nil;
+    // Retrieval of the user URLs for the UID
+    UserURLs *urls = g_userURLsByUID[@(uid)];
+    if (urls == nil) {
+        struct passwd *pw = getpwuid(uid);
+        if (!pw || !pw->pw_dir) {
+            return nil;
+        }
+        
+        urls = [UserURLs new];
+        urls.homeURL = [NSURL fileURLWithPath:@(pw->pw_dir) isDirectory:YES];
+        
+        NSURL *homeVolumeURL = nil;
+        if (![urls.homeURL getResourceValue:&homeVolumeURL forKey:NSURLVolumeURLKey error:nil]) {
+            return nil;
+        }
+        urls.homeVolumeURL = homeVolumeURL;
+        
+        g_userURLsByUID[@(uid)] = urls;
     }
 
     // Retrieval of the file path volume
@@ -76,14 +102,20 @@ NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
         return nil;
     }
 
-    if ([volumeURL isEqual:homeVolumeURL]) {
+    if ([volumeURL isEqual:urls.homeVolumeURL]) {
         // Main/home volume
-        return [homeURL URLByAppendingPathComponent:@".Trash" isDirectory:YES];
+        if (urls.mainTrashURL == nil) {
+            urls.mainTrashURL = [urls.homeURL URLByAppendingPathComponent:@".Trash" isDirectory:YES];
+        }
+        return urls.mainTrashURL;
     }
 
     // Other volume
-    NSString *uidStr = [NSString stringWithFormat:@"%u", uid];
-    return [[volumeURL URLByAppendingPathComponent:@".Trashes" isDirectory:YES] URLByAppendingPathComponent:uidStr isDirectory:YES];
+    if (urls.volumeTrashURL[volumeURL] == nil) {
+        NSString *uidStr = [NSString stringWithFormat:@"%u", uid];
+        urls.volumeTrashURL[volumeURL] = [[volumeURL URLByAppendingPathComponent:@".Trashes" isDirectory:YES] URLByAppendingPathComponent:uidStr isDirectory:YES];
+    }
+    return urls.volumeTrashURL[volumeURL];
 }
 
 // Clean-up before exiting
@@ -377,6 +409,8 @@ int main(int argc, char *argv[])
     signal(SIGSEGV, &sig_handler);
     
     initDispatchQueue();
+    
+    g_userURLsByUID = [NSMutableDictionary dictionary];
     
     // Initialize XPC cLient
     NSLog(@"[KD] Initialize XPC client");
