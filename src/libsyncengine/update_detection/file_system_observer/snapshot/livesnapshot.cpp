@@ -334,7 +334,7 @@ void LiveSnapshot::restoreFromBackup(const ConstSnapshot &backupSnapshot) {
 
     for (const auto &[id, item]: backupSnapshot._items) {
         auto newItemPtr = std::make_shared<SnapshotItem>(*item);
-        newItemPtr->setSnapshotRevisionHandler(_revisionHandlder);
+        newItemPtr->setSnapshotRevisionDataFromBackup(_revisionHandlder, item->lastChangeRevision());
         (void) _items.try_emplace(id, newItemPtr);
     }
 
