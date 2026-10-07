@@ -286,10 +286,10 @@ bool CloudProviderRegistrar::createRegistration(const ProviderInfo *providerInfo
 
 #ifndef NDEBUG
     // Silent WINRT_ASSERT(!is_sta())
-    int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+    const int reportMode = _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 #endif
     TRACE_DEBUG(L"Getting StorageFolder from path");
-    auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
+    const auto folder = winrt::StorageFolder::GetFolderFromPathAsync(providerInfo->folderPath()).get();
 #ifndef NDEBUG
     // Restore old report mode
     _CrtSetReportMode(_CRT_ASSERT, reportMode);
@@ -325,7 +325,7 @@ bool CloudProviderRegistrar::createRegistration(const ProviderInfo *providerInfo
     std::wstring syncRootIdentity(providerInfo->id());
 
     TRACE_DEBUG(L"Converting sync root identity to binary");
-    winrt::IBuffer contextBuffer =
+    const winrt::IBuffer contextBuffer =
             winrt::CryptographicBuffer::ConvertStringToBinary(syncRootIdentity.data(), winrt::BinaryStringEncoding::Utf8);
     info.Context(contextBuffer);
 
