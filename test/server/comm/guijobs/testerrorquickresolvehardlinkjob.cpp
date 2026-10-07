@@ -116,18 +116,41 @@ NodeId TestErrorQuickResolveHardlinkJob::createFileAndDbNode(const SyncName &nam
     return std::to_string(fileStat.inode);
 }
 
-ExitInfo TestErrorQuickResolveHardlinkJob::runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath) {
+void TestErrorQuickResolveHardlinkJob::insertDbNode(const SyncName &name, const NodeId &nodeId, const NodeType type) {
+    bool found = false;
+    DbNodeId rootDbNodeId = 0;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, NodeId("1"), rootDbNodeId, found));
+    CPPUNIT_ASSERT_MESSAGE("Root node not found in the sync database", found);
+
+    DbNode dbNode(0, rootDbNodeId, name, name, nodeId, std::string("r_") + SyncName2Str(name), std::nullopt, 123, 123, type,
+                  type == NodeType::File ? 10 : 0);
+    bool constraintError = false;
+    DbNodeId dbNodeId = 0;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError));
+    CPPUNIT_ASSERT_MESSAGE("Failed to insert the node into the sync database", !constraintError);
+}
+
+ErrorDbId TestErrorQuickResolveHardlinkJob::insertHardlinkError(const NodeId &nodeId, const SyncPath &relativePath) {
+    Error error(_syncPal->syncDbId(), nodeId, std::string("r_") + nodeId, NodeType::File, relativePath, ConflictType::None,
+                InconsistencyType::None, CancelType::None, SyncPath(), ExitCode::SystemError, ExitCause::HardlinkNotSupported);
+    CPPUNIT_ASSERT_MESSAGE("Failed to insert the error into the parameters database", ParmsDb::instance()->insertError(error));
+    return error.dbId();
+}
+
+ExitInfo TestErrorQuickResolveHardlinkJob::runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath,
+                                                                 const ErrorDbId errorDbId) {
     ErrorQuickResolveHardlinkJob job(nullptr, 1, Poco::DynamicStruct(), nullptr);
     job._syncDbId = _syncPal->syncDbId();
-    job._errorDbId = 42;
+    job._errorDbId = errorDbId;
     job._nodeId = nodeId;
     job._relativeLocalPath = relativePath;
 
     return job.quickResolve(_syncPal);
 }
 
-void TestErrorQuickResolveHardlinkJob::runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath) {
-    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, relativePath);
+void TestErrorQuickResolveHardlinkJob::runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath,
+                                                       const ErrorDbId errorDbId) {
+    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, relativePath, errorDbId);
     CPPUNIT_ASSERT_MESSAGE("quickResolve failed: " + std::string(exitInfo), exitInfo.code() == ExitCode::Ok);
 }
 
@@ -138,11 +161,33 @@ bool TestErrorQuickResolveHardlinkJob::nodeExistsInDb(const NodeId &nodeId) cons
     return found;
 }
 
+bool TestErrorQuickResolveHardlinkJob::errorExistsInDb(const ErrorDbId errorDbId) {
+    Error error;
+    bool found = false;
+    CPPUNIT_ASSERT_MESSAGE("Failed to select the error in the parameters database",
+                           ParmsDb::instance()->selectError(errorDbId, error, found));
+    return found;
+}
+
+NodeId TestErrorQuickResolveHardlinkJob::localNodeId(const SyncPath &path) {
+    FileStat fileStat;
+    IoError ioError = IoError::Success;
+    const bool success = IoHelper::getFileStat(path, &fileStat, ioError, IoHelper::PathCheckOption::Insensitive);
+    CPPUNIT_ASSERT_MESSAGE("Failed to get file stat: " + toString(ioError), success && ioError == IoError::Success);
+    return std::to_string(fileStat.inode);
+}
+
 bool TestErrorQuickResolveHardlinkJob::pathExists(const SyncPath &path) {
     bool exists = false;
     IoError ioError = IoError::Success;
     (void) IoHelper::checkIfPathExists(path, exists, ioError, IoHelper::PathCheckOption::Insensitive);
     return exists;
+}
+
+bool TestErrorQuickResolveHardlinkJob::isSymlink(const SyncPath &path) {
+    std::error_code ec;
+    const auto status = std::filesystem::symlink_status(path, ec);
+    return !ec && std::filesystem::is_symlink(status);
 }
 
 void TestErrorQuickResolveHardlinkJob::testInSyncFile() {
@@ -338,6 +383,115 @@ void TestErrorQuickResolveHardlinkJob::testNodeIdMismatch() {
 
     CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
     CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(filePath));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
+    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
+                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
+}
+
+void TestErrorQuickResolveHardlinkJob::testErrorRemoval() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
+
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
+    const ErrorDbId otherErrorDbId = insertHardlinkError(NodeId("999999"), SyncPath(Str("other.txt")));
+    CPPUNIT_ASSERT(errorExistsInDb(errorDbId));
+    CPPUNIT_ASSERT(errorExistsInDb(otherErrorDbId));
+
+    // A rejected request keeps the error.
+    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, _localTempDir.path() / fileName, errorDbId);
+    CPPUNIT_ASSERT_MESSAGE("The job must reject an absolute path", exitInfo.code() == ExitCode::InvalidOperation);
+    CPPUNIT_ASSERT_MESSAGE("The error has been deleted from the parameters database", errorExistsInDb(errorDbId));
+    CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
+
+    // A successful request removes the reported error only.
+    runQuickResolve(nodeId, SyncPath(fileName), errorDbId);
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
+    CPPUNIT_ASSERT_MESSAGE("Another error has been deleted from the parameters database", errorExistsInDb(otherErrorDbId));
+}
+
+void TestErrorQuickResolveHardlinkJob::testDirectoryNode() {
+    // A directory node.
+    const SyncName dirName = Str("dir1");
+    const SyncPath dirPath = _localTempDir.path() / dirName;
+    std::error_code ec;
+    (void) std::filesystem::create_directory(dirPath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the directory: " + ec.message(), !ec);
+    const SyncPath childFilePath = dirPath / Str("child.txt");
+    {
+        std::ofstream file(childFilePath, std::ios::binary);
+        file << "Hello, World!";
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the child file", file.good());
+    }
+    const NodeId dirNodeId = localNodeId(dirPath);
+    insertDbNode(dirName, dirNodeId, NodeType::Directory);
+
+    ExitInfo exitInfo = runQuickResolveExpect(dirNodeId, SyncPath(dirName));
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a directory node", exitInfo.code() == ExitCode::InvalidOperation);
+
+    // A file node whose reported item is a directory.
+    const SyncName otherDirName = Str("dir2");
+    const SyncPath otherDirPath = _localTempDir.path() / otherDirName;
+    (void) std::filesystem::create_directory(otherDirPath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the directory: " + ec.message(), !ec);
+    const NodeId otherDirNodeId = localNodeId(otherDirPath);
+    insertDbNode(otherDirName, otherDirNodeId, NodeType::File);
+
+    exitInfo = runQuickResolveExpect(otherDirNodeId, SyncPath(otherDirName));
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a reported item that is a directory",
+                           exitInfo.code() == ExitCode::InvalidOperation);
+
+    CPPUNIT_ASSERT_MESSAGE("The directory node has been deleted from the database", nodeExistsInDb(dirNodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file node has been deleted from the database", nodeExistsInDb(otherDirNodeId));
+    CPPUNIT_ASSERT_MESSAGE("The directory has been deleted", pathExists(dirPath));
+    CPPUNIT_ASSERT_MESSAGE("The directory content has been deleted", pathExists(childFilePath));
+    CPPUNIT_ASSERT_MESSAGE("The other directory has been deleted", pathExists(otherDirPath));
+}
+
+void TestErrorQuickResolveHardlinkJob::testSymlinkKept() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
+
+    // A symbolic link targeting the file is not a link of the file: it must be kept.
+    const SyncPath symlinkPath = _localTempDir.path() / Str("symlink1.txt");
+    IoError ioError = IoError::Success;
+    const bool created = IoHelper::createSymlink(_localTempDir.path() / fileName, symlinkPath, false, ioError);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the symbolic link: " + toString(ioError), created);
+
+    runQuickResolve(nodeId, SyncPath(fileName));
+
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));
+    CPPUNIT_ASSERT_MESSAGE("The symbolic link has been deleted", isSymlink(symlinkPath));
+    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
+                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
+}
+
+void TestErrorQuickResolveHardlinkJob::testSymlinkSeed() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const SyncName symlinkName = Str("symlink1.txt");
+    const NodeId fileNodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
+
+    // Report the symbolic link itself, with its own node id: its target and the links of the target must not be removed.
+    const SyncPath symlinkPath = _localTempDir.path() / symlinkName;
+    IoError ioError = IoError::Success;
+    const bool created = IoHelper::createSymlink(_localTempDir.path() / fileName, symlinkPath, false, ioError);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the symbolic link: " + toString(ioError), created);
+    const NodeId symlinkNodeId = localNodeId(symlinkPath);
+    CPPUNIT_ASSERT_MESSAGE("The symbolic link must have its own node id", symlinkNodeId != fileNodeId);
+    insertDbNode(symlinkName, symlinkNodeId, NodeType::File);
+
+    const ExitInfo exitInfo = runQuickResolveExpect(symlinkNodeId, SyncPath(symlinkName));
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a symbolic link", exitInfo.code() == ExitCode::InvalidOperation);
+
+    CPPUNIT_ASSERT_MESSAGE("The symbolic link node has been deleted from the database", nodeExistsInDb(symlinkNodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file node has been deleted from the database", nodeExistsInDb(fileNodeId));
+    CPPUNIT_ASSERT_MESSAGE("The symbolic link has been deleted", isSymlink(symlinkPath));
+    CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(_localTempDir.path() / fileName));
     CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
                            !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));

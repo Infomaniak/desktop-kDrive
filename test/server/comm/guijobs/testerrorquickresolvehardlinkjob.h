@@ -39,6 +39,10 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         CPPUNIT_TEST(testUnknownNode);
         CPPUNIT_TEST(testInvalidPath);
         CPPUNIT_TEST(testNodeIdMismatch);
+        CPPUNIT_TEST(testErrorRemoval);
+        CPPUNIT_TEST(testDirectoryNode);
+        CPPUNIT_TEST(testSymlinkKept);
+        CPPUNIT_TEST(testSymlinkSeed);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -76,7 +80,25 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// request without touching the file system.
         void testNodeIdMismatch();
 
+        /// The reported error is removed from the parameters database only when the job succeeds, and the other errors are
+        /// kept.
+        void testErrorRemoval();
+
+        /// A directory node, or a file node whose reported item is a directory: the job must reject the request without
+        /// touching the file system, as the whole content of the directory would be removed.
+        void testDirectoryNode();
+
+        /// A symbolic link targeting a hardlinked file is not a link of the file: it is kept while the hardlinks are removed.
+        void testSymlinkKept();
+
+        /// The reported item is a symbolic link: the job must reject the request without touching the file system, as symbolic
+        /// links are never followed.
+        void testSymlinkSeed();
+
     private:
+        /// An error database id that is not present in the parameters database.
+        static constexpr ErrorDbId unknownErrorDbId = 42;
+
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 
@@ -90,17 +112,33 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         NodeId createFileAndDbNode(const SyncName &name, const std::string &content, const SyncName &linkName = {},
                                    int64_t dbNodeSizeOffset = 0);
 
+        /// Inserts a node with the given name, local node id and type under the root node of the sync database.
+        void insertDbNode(const SyncName &name, const NodeId &nodeId, NodeType type);
+
+        /// Inserts a hardlink error reported for the given node into the parameters database and returns its database id.
+        ErrorDbId insertHardlinkError(const NodeId &nodeId, const SyncPath &relativePath);
+
         /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and returns its exit info.
-        ExitInfo runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath);
+        ExitInfo runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath,
+                                       ErrorDbId errorDbId = unknownErrorDbId);
 
         /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and asserts that it succeeds.
-        void runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath);
+        void runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath, ErrorDbId errorDbId = unknownErrorDbId);
 
         /// Returns true if the node with the given local node id exists in the sync database.
         [[nodiscard]] bool nodeExistsInDb(const NodeId &nodeId) const;
 
+        /// Returns true if the error with the given database id exists in the parameters database.
+        [[nodiscard]] static bool errorExistsInDb(ErrorDbId errorDbId);
+
+        /// Returns the local node id of the item located at the given path. Symbolic links are not followed.
+        [[nodiscard]] static NodeId localNodeId(const SyncPath &path);
+
         /// Returns true if the given path exists in the file system.
         [[nodiscard]] static bool pathExists(const SyncPath &path);
+
+        /// Returns true if the item located at the given path is a symbolic link, whether its target exists or not.
+        [[nodiscard]] static bool isSymlink(const SyncPath &path);
 };
 
 } // namespace KDC
