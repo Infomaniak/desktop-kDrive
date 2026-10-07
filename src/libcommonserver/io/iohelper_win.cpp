@@ -1087,7 +1087,7 @@ static std::wstring getVolumeDevicePath(const SyncPath &path) noexcept {
         }
         return volumeDevicePath;
     } catch (const std::exception &e) {
-        LOG_WARN(IoHelper::logger(), "Exception in getVolumeDevicePath: error=" << e.what());
+        LOG_WARN(Log::instance()->getLogger(), "Exception in getVolumeDevicePath: error=" << e.what());
         return {};
     }
 }
