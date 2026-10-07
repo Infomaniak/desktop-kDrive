@@ -31,7 +31,6 @@
     </XamlUICommand>
     <tb:TaskbarIcon x:Key="TrayIcon"
                     Visibility="Visible"
-                    ToolTipText="kDrive"
                     ContextMenuMode="PopupMenu"
                     LeftClickCommand="{StaticResource ShowWindowCommand}"
                     NoLeftClickDelay="True">

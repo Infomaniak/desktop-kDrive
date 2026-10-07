@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2026 Infomaniak Network SA
  *
@@ -16,19 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using DynamicData;
-using DynamicData.Binding;
-using H.NotifyIcon;
 using Infomaniak.kDrive.CustomControls.Errors;
 using Infomaniak.kDrive.ServerCommunication.Interfaces;
 using Infomaniak.kDrive.Types;
 using Infomaniak.kDrive.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -45,6 +38,11 @@ namespace Infomaniak.kDrive.TrayIcon
         private UISettings? _uiSettings;
         private readonly AppModel _appModel;
         private readonly List<IDisposable> _subscriptions = new List<IDisposable>();
+        private readonly Timer _toolTipCycleTimer;
+        private int _toolTipCycleIndex;
+
+        private const int ToolTipMaxLength = 127;
+        private static readonly TimeSpan ToolTipCycleInterval = TimeSpan.FromSeconds(3);
 
         public void Initialize()
         {
@@ -86,7 +84,6 @@ namespace Infomaniak.kDrive.TrayIcon
             {
                 _trayIcon = trayIcon;
                 _trayIcon.ForceCreate();
-
                 // Set initial icon
                 SetIconNeutral();
             }
@@ -119,15 +116,33 @@ namespace Infomaniak.kDrive.TrayIcon
             _subscriptions.Add(_appModel.ManyDeletesController.WhenPropertyChanged(manyDeletesController => manyDeletesController.CurrentManyDeleteNotification)
                 .Subscribe(_ => UpdateTrayIcon()));
 
+            _appModel.SelectedSyncChanged += AppModel_SelectedSyncChanged;
+
+            _toolTipCycleTimer = new Timer(ToolTipCycleTimer_Tick, null, ToolTipCycleInterval, ToolTipCycleInterval);
+        }
+
+        private void AppModel_SelectedSyncChanged(object? sender, AppModel.SelectedSyncChangedEventArgs e)
+        {
+            _toolTipCycleIndex = 0;
+            _ = Utility.RunOnUIThread(() => UpdateToolTip());
+        }
+
+        private void ToolTipCycleTimer_Tick(object? state)
+        {
+            Interlocked.Increment(ref _toolTipCycleIndex);
+            _ = Utility.RunOnUIThread(() => UpdateToolTip());
         }
 
         private void UpdateTrayIcon()
         {
+            UpdateToolTip();
+
             if (!_appModel.IsInitialized)
             {
                 SetIconNeutral();
                 return;
             }
+
 
             if (_appModel.ManyDeletesController.CurrentManyDeleteNotification is not null)
             {
@@ -160,6 +175,77 @@ namespace Infomaniak.kDrive.TrayIcon
             }
 
             SetIconNeutral();
+        }
+
+
+        private void UpdateToolTip()
+        {
+            if (_trayIcon is null)
+                return;
+
+            if (!_appModel.IsInitialized) return;
+
+            var syncs = _appModel.AllSyncs.ToList();
+            if (syncs.Count == 0)
+            {
+                _trayIcon.ToolTipText = "kDrive";
+                return;
+            }
+
+            var selectedSync = _appModel.SelectedSync is { } selected && syncs.Contains(selected) ? selected : syncs[0];
+            var otherSyncs = syncs.Where(sync => !ReferenceEquals(sync, selectedSync)).ToList();
+
+            GetToolTipTextForSync(selectedSync, out string selectedLine);
+            selectedLine = $"{selectedLine}";
+
+            if (otherSyncs.Count == 0)
+            {
+                _trayIcon.ToolTipText = Truncate(selectedLine, ToolTipMaxLength);
+                return;
+            }
+
+            var index = (int)((uint)Volatile.Read(ref _toolTipCycleIndex) % (uint)otherSyncs.Count);
+            GetToolTipTextForSync(otherSyncs[index], out string otherLine);
+            otherLine = otherSyncs.Count > 1
+                ? $"{otherLine} ({index + 1}/{otherSyncs.Count})"
+                : $"{otherLine}";
+
+            // Keep both lines within the system tooltip limit, giving priority to the selected sync
+            selectedLine = Truncate(selectedLine, ToolTipMaxLength / 2);
+            otherLine = Truncate(otherLine, ToolTipMaxLength - selectedLine.Length - 1);
+
+            _trayIcon.ToolTipText = $"{selectedLine}\n\n{otherLine}";
+        }
+
+        private static string Truncate(string text, int maxLength)
+        {
+            if (text.Length <= maxLength)
+                return text;
+            return string.Concat(text.AsSpan(0, Math.Max(0, maxLength - 1)), "\u2026");
+        }
+
+        private void GetToolTipTextForSync(Sync sync, out string tooltipText)
+        {
+
+            tooltipText = $"{Path.GetFileName(sync.LocalPath)}";
+            switch (sync.SyncStatus)
+            {
+                case SyncStatus.Running:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitleInProgress")}";
+                    break;
+                case SyncStatus.Stopped:
+                case SyncStatus.Paused:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitlePause")}";
+                    break;
+                case SyncStatus.Offline:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitleOffline")}";
+                    break;
+                case SyncStatus.Idle:
+                    tooltipText += $"\n{Localizer.Instance.GetString("activitiesTitleIdle")}";
+                    break;
+                default:
+                    break;
+            }
         }
 
         private async void UISettings_ColorValuesChanged(UISettings sender, object args)
@@ -259,6 +345,8 @@ namespace Infomaniak.kDrive.TrayIcon
 
         public void Dispose()
         {
+            _toolTipCycleTimer.Dispose();
+            _appModel.SelectedSyncChanged -= AppModel_SelectedSyncChanged;
             foreach (var subscription in _subscriptions)
             {
                 subscription.Dispose();
