@@ -218,18 +218,19 @@ struct IoHelper {
 
         //! Get all the existing paths pointing to the item indicated by the seed path, including the seed path itself.
         /*!
-          The hardlinks are searched by recursively iterating over searchRoot and comparing the found items with the seed
-          item: on POSIX systems, the items sharing the same inode are selected; on Windows, the items sharing the same
-          size and modification time are candidates, and the ones referring to the same file are selected. When searchRoot
-          is not provided, only the seed path is returned.
+          The hardlinks are searched by recursively iterating over searchRoot and comparing the identifier of the found regular
+          files with the one of the seed item: the items sharing the same device and inode on POSIX systems, the same file
+          identifier on Windows, are selected. Symbolic links (and junctions on Windows) are never followed: if the seed item
+          is a symbolic link, only the seed path is returned, and the symbolic links found during the search are ignored. When
+          searchRoot is not provided, only the seed path is returned.
           \param seedPath is the file system path of an existing item, used as the starting point of the enumeration.
           \param hardlinkPaths is set with the absolute paths of all the links pointing to the same item, including seedPath.
           \param ioError holds the error returned when an underlying OS API call fails.
           \param searchRoot is the directory recursively searched for additional links. When it is not provided, no search
           is performed.
           \return true if no unexpected error occurred, false otherwise. If the item indicated by seedPath does not exist,
-         ioError is set with IoError::NoSuchFileOrDirectory. When false is returned because the search itself failed,
-         hardlinkPaths may be incomplete and must not be used.
+         ioError is set with IoError::NoSuchFileOrDirectory. Any error occurring during the search, including an access denied
+         error, fails the search: when false is returned, hardlinkPaths may be incomplete and must not be used.
          */
         static bool getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
                                      const std::optional<SyncPath> &searchRoot = std::nullopt) noexcept;
@@ -652,17 +653,18 @@ struct IoHelper {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
         //! Invokes visit for each regular file entry of the directory tree rooted at searchRoot, except the entry indicated
-        //! by seedPath.
+        //! by seedPath. Symbolic links (and junctions on Windows) are neither followed nor visited.
         /*!
           \param seedPath is the path of the item being processed. The corresponding entry is skipped.
           \param searchRoot is the directory recursively searched. When it is not provided, visit is never invoked.
-          \param visit is the function invoked for each candidate entry.
-          \param ioError holds the error returned when the directory iteration fails.
-          \return true if the enumeration completed, false if an iteration error occurred, in which case ioError is set
-          with the error and visit may have been invoked for only part of the entries.
+          \param visit is the function invoked for each candidate entry. It returns IoError::Success to continue the
+          enumeration, or the error that stops it.
+          \param ioError holds the error returned when the directory iteration or visit fails.
+          \return true if the enumeration completed, false if an error occurred, including an access denied error, in which
+          case ioError is set with the error and visit may have been invoked for only part of the entries.
          */
         static bool _forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
-                                          const std::function<void(const std::filesystem::directory_entry &entry)> &visit,
+                                          const std::function<IoError(const std::filesystem::directory_entry &entry)> &visit,
                                           IoError &ioError);
 
 #if defined(KD_MACOS)

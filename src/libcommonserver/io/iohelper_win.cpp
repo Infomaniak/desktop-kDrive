@@ -1073,61 +1073,46 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
     hardlinkPaths.clear();
     ioError = IoError::Success;
 
-    bool exists = false;
-    if (!checkIfPathExists(seedPath, exists, ioError, PathCheckOption::Insensitive)) {
-        return false;
-    }
-    if (!exists) {
-        ioError = IoError::NoSuchFileOrDirectory;
-        return false;
-    }
-
     try {
-        std::error_code ec;
-        // Only regular files can have hardlinks.
-        if (!std::filesystem::is_regular_file(seedPath, ec)) {
-            if (ec) {
-                ioError = stdError2ioError(ec);
-                LOGW_WARN(logger(), L"Error in std::filesystem::is_regular_file for " << Utility::formatSyncPath(seedPath)
-                                                                                      << L": " << Utility::formatStdError(ec));
-                return false;
-            }
-            hardlinkPaths.push_back(seedPath);
-            return true;
-        }
-        const auto seedSize = std::filesystem::file_size(seedPath, ec);
-        if (ec) {
-            ioError = stdError2ioError(ec);
-            LOGW_WARN(logger(), L"Error in std::filesystem::file_size for " << Utility::formatSyncPath(seedPath) << L": "
-                                                                            << Utility::formatStdError(ec));
+        // All the links of an item share its file identifier.
+        FileStat seedFileStat;
+        if (!getFileStat(seedPath, &seedFileStat, ioError, PathCheckOption::Insensitive)) {
+            if (ioError == IoError::Success) ioError = IoError::Unknown;
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(seedPath, ioError));
             return false;
         }
-        const auto seedModificationTime = std::filesystem::last_write_time(seedPath, ec);
+        if (ioError != IoError::Success) return false; // The item does not exist or cannot be accessed.
+
+        // Only regular files can have hardlinks. Symbolic links and junctions are not followed.
+        std::error_code ec;
+        const auto seedStatus = std::filesystem::symlink_status(seedPath, ec);
         if (ec) {
             ioError = stdError2ioError(ec);
-            LOGW_WARN(logger(), L"Error in std::filesystem::last_write_time for " << Utility::formatSyncPath(seedPath) << L": "
-                                                                                  << Utility::formatStdError(ec));
+            LOGW_WARN(logger(), L"Error in std::filesystem::symlink_status: " << Utility::formatStdError(seedPath, ec));
             return false;
         }
 
         hardlinkPaths.push_back(seedPath);
-        if (!searchRoot) return true;
+        if (!std::filesystem::is_regular_file(seedStatus) || !searchRoot) return true;
 
         // There is no reliable system API to enumerate the links of an item on Windows: search for the items sharing the
-        // same size and modification time (all the links of an item share these properties) while recursively iterating
-        // over the search root directory, then check that they actually refer to the same file.
+        // file identifier of the seed item while recursively iterating over the search root directory. The size and the
+        // modification time cached in the directory entries cannot be used to skip candidates, as NTFS only updates them at
+        // the link through which the file has been modified.
         if (!_forEachLinkCandidate(
                     seedPath, searchRoot,
-                    [&seedSize, &seedModificationTime, &seedPath, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
-                        // Skip the entries that cannot be links of the seed item before comparing the file identifiers, which
-                        // requires opening the items.
-                        std::error_code entryEc;
-                        if (entry.file_size(entryEc) != seedSize || entryEc) return;
-                        if (entry.last_write_time(entryEc) != seedModificationTime || entryEc) return;
+                    [&seedFileStat, &hardlinkPaths](const std::filesystem::directory_entry &entry) -> IoError {
+                        FileStat entryFileStat;
+                        IoError entryIoError = IoError::Success;
+                        if (!getFileStat(entry.path(), &entryFileStat, entryIoError, PathCheckOption::Insensitive)) {
+                            return entryIoError != IoError::Success ? entryIoError : IoError::Unknown;
+                        }
+                        // An entry removed meanwhile is not a link of the item anymore.
+                        if (entryIoError == IoError::NoSuchFileOrDirectory) return IoError::Success;
+                        if (entryIoError != IoError::Success) return entryIoError;
 
-                        std::error_code equivalentEc;
-                        const bool isSameFile = std::filesystem::equivalent(entry.path(), seedPath, equivalentEc);
-                        if (!equivalentEc && isSameFile) hardlinkPaths.push_back(entry.path());
+                        if (entryFileStat.inode == seedFileStat.inode) hardlinkPaths.push_back(entry.path());
+                        return IoError::Success;
                     },
                     ioError)) {
             return false;

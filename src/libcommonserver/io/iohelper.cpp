@@ -684,34 +684,41 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 }
 
 bool IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
-                                     const std::function<void(const std::filesystem::directory_entry &entry)> &visit,
+                                     const std::function<IoError(const std::filesystem::directory_entry &entry)> &visit,
                                      IoError &ioError) {
+    ioError = IoError::Success;
     if (!searchRoot) return true;
 
+    // Any error fails the enumeration, including the access denied errors: an incomplete list of links must not be returned.
     std::error_code ec;
-    std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::skip_permission_denied, ec);
+    std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::none, ec);
+    for (const auto end = std::filesystem::recursive_directory_iterator(); !ec && it != end; it.increment(ec)) {
+        const SyncPath entryPath = it->path();
+        if (entryPath == seedPath) continue;
+
+        // Symbolic links (and junctions on Windows) are neither followed nor visited.
+        std::error_code entryEc;
+        const auto entryStatus = it->symlink_status(entryEc);
+        if (entryEc) {
+            if (stdError2ioError(entryEc) == IoError::NoSuchFileOrDirectory) continue; // The entry has been removed meanwhile.
+            ec = entryEc;
+            break;
+        }
+        if (!std::filesystem::is_regular_file(entryStatus)) continue;
+
+        if (const IoError visitIoError = visit(*it); visitIoError != IoError::Success) {
+            ioError = visitIoError;
+            LOGW_WARN(logger(), L"Error while inspecting " << Utility::formatIoError(entryPath, ioError));
+            return false;
+        }
+    }
+
     if (ec) {
+        // The iterator is the end iterator after a failed increment: the enumeration is incomplete.
         ioError = stdError2ioError(ec);
         LOGW_WARN(logger(),
                   L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": " << Utility::formatStdError(ec));
         return false;
-    }
-
-    for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
-        if (ec) {
-            ioError = stdError2ioError(ec);
-            LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
-                                                               << Utility::formatStdError(ec));
-            return false; // The iterator is the end iterator after a failed increment: stop the enumeration.
-        }
-
-        const SyncPath entryPath = it->path();
-        if (entryPath == seedPath) continue;
-
-        std::error_code entryEc;
-        if (!it->is_regular_file(entryEc) || entryEc) continue;
-
-        visit(*it);
     }
 
     return true;
@@ -724,11 +731,12 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
     ioError = IoError::Success;
 
     try {
+        // Symbolic links are not followed.
         struct stat info;
-        if (::stat(seedPath.string().c_str(), &info) != 0) {
+        if (::lstat(seedPath.string().c_str(), &info) != 0) {
             ioError = posixError2ioError(errno);
-            LOGW_WARN(logger(), L"Error in IoHelper::stat for " << Utility::formatSyncPath(seedPath) << L": "
-                                                                << Utility::formatIoError(ioError));
+            LOGW_WARN(logger(), L"Error in IoHelper::lstat for " << Utility::formatSyncPath(seedPath) << L": "
+                                                                 << Utility::formatIoError(ioError));
             return false;
         }
 
@@ -740,12 +748,17 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
         // same inode while recursively iterating over the search root directory.
         if (!_forEachLinkCandidate(
                     seedPath, searchRoot,
-                    [&info, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
+                    [&info, &hardlinkPaths](const std::filesystem::directory_entry &entry) -> IoError {
                         struct stat entryInfo;
-                        if (::stat(entry.path().string().c_str(), &entryInfo) != 0) return;
+                        if (::lstat(entry.path().string().c_str(), &entryInfo) != 0) {
+                            const IoError entryIoError = posixError2ioError(errno);
+                            // An entry removed meanwhile is not a link of the item anymore.
+                            return entryIoError == IoError::NoSuchFileOrDirectory ? IoError::Success : entryIoError;
+                        }
                         if (entryInfo.st_dev == info.st_dev && entryInfo.st_ino == info.st_ino) {
                             hardlinkPaths.push_back(entry.path());
                         }
+                        return IoError::Success;
                     },
                     ioError)) {
             return false;
