@@ -187,6 +187,7 @@ set(GUI_QML_SINGLETON_FILES # QML singletons (tokens, theme, etc.)
         ui/tokens/IKMainWindow.qml
         ui/tokens/IKModalTokens.qml
         ui/tokens/IKSettings.qml
+        ui/tokens/IKSearch.qml
         ui/tokens/IKStorage.qml
         ui/tokens/IKSyncConfiguration.qml
         ui/tokens/IKWaiting.qml
@@ -298,6 +299,11 @@ set(GUI_QML_FILES # .qml files for the app
         ui/windows/main/home/states/HomeStatusVisual.qml
         ui/windows/main/home/states/HomeSyncingState.qml
         ui/windows/main/home/states/HomeUpToDateState.qml
+        ui/windows/main/search/SearchDialog.qml
+        ui/windows/main/search/SearchField.qml
+        ui/windows/main/search/SearchPlaceholderRows.qml
+        ui/windows/main/search/SearchResultRow.qml
+        ui/windows/main/search/SearchStateView.qml
         ui/windows/main/sidebar/SidebarHeaderView.qml
         ui/windows/main/sidebar/SidebarNotification.qml
         ui/windows/main/sidebar/SidebarView.qml
@@ -388,6 +394,8 @@ set(GUI_ASSETS # Assets for the app (e.g. svg, png, lottie.json, etc.)
         ui/assets/main/home/star.svg
         ui/assets/main/home/status-setup-drawer.svg
         ui/assets/main/home/trash.svg
+        ui/assets/main/search/empty.svg
+        ui/assets/main/search/empty-dark.svg
         ui/assets/main/storage.svg
         ui/assets/main/storage/unavailable.svg
         ui/assets/main/triangle-alert.svg
