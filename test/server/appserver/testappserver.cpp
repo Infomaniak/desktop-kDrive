@@ -152,7 +152,7 @@ void TestAppServer::testStartAndStopSync() {
     const auto syncDbPath = _appPtr->syncPalMap[syncDbId]->syncDb()->dbPath();
 
     // Stop sync & clear maps
-    _appPtr->stopSyncTask(syncDbId);
+    CPPUNIT_ASSERT(_appPtr->stopSyncTask(syncDbId));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
 
@@ -166,7 +166,7 @@ void TestAppServer::testStartAndStopSync() {
     CPPUNIT_ASSERT(startedSyncDbIds.contains(syncDbId));
 
     // Stop syncs & clear maps for all users
-    _appPtr->stopAllSyncsTask({syncDbId});
+    CPPUNIT_ASSERT(_appPtr->stopAllSyncsTask({syncDbId}));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     auto exists = false;
@@ -210,7 +210,7 @@ void TestAppServer::testStartAndStopSync() {
 
     // Check that DB file is removed when sync is deleted
     CPPUNIT_ASSERT(_appPtr->startSyncs());
-    _appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove);
+    CPPUNIT_ASSERT(_appPtr->stopAllSyncsTask({syncDbId}, SyncPal::DbBehaviorAfterStop::Remove));
     CPPUNIT_ASSERT(_appPtr->syncPalMap.empty());
     CPPUNIT_ASSERT(_appPtr->vfsMap.empty());
     CPPUNIT_ASSERT(IoHelper::checkIfPathExists(syncDbPath, exists, ioError, IoHelper::PathCheckOption::Insensitive));
