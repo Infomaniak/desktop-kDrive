@@ -218,15 +218,15 @@ struct IoHelper {
 
         //! Get all the existing paths pointing to the item indicated by the seed path, including the seed path itself.
         /*!
-          On Windows, the links are enumerated from the file system using the item file index (inode), so every hardlink
-          pointing to the same item is returned. On the other platforms, the hardlinks are searched by comparing the inode
-          of the items found while recursively iterating over searchRoot. When searchRoot is not provided, only the seed
-          path is returned.
+          The hardlinks are searched by recursively iterating over searchRoot and comparing the found items with the seed
+          item: on POSIX systems, the items sharing the same inode are selected; on Windows, the items sharing the same
+          size and modification time are candidates, and the ones referring to the same file are selected. When searchRoot
+          is not provided, only the seed path is returned.
           \param seedPath is the file system path of an existing item, used as the starting point of the enumeration.
           \param hardlinkPaths is set with the absolute paths of all the links pointing to the same item, including seedPath.
           \param ioError holds the error returned when an underlying OS API call fails.
-          \param searchRoot is the directory recursively searched for additional links on non-Windows platforms. It is
-          ignored on Windows, where the enumeration already covers the whole volume.
+          \param searchRoot is the directory recursively searched for additional links. When it is not provided, no search
+          is performed.
           \return true if no unexpected error occurred, false otherwise. If the item indicated by seedPath does not exist,
           ioError is set with IoError::NoSuchFileOrDirectory.
          */

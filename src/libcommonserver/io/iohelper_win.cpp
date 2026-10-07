@@ -1068,32 +1068,8 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     return true;
 }
 
-// Get the device path (e.g. L"\\Device\\HarddiskVolume3") of the volume containing the item indicated by `path`.
-// Returns an empty string if the volume device path could not be retrieved.
-static std::wstring getVolumeDevicePath(const SyncPath &path) noexcept {
-    try {
-        wchar_t volumeMountPoint[MAX_PATH + 1] = {};
-        if (!GetVolumeNameForVolumeMountPointW(path.root_path().wstring().c_str(), volumeMountPoint, MAX_PATH)) {
-            return {};
-        }
-        std::wstring volumeName(volumeMountPoint); // e.g. L"\\?\Volume{GUID}\"
-        if (volumeName.starts_with(L"\\\\?\\") && volumeName.ends_with(L"\\")) {
-            volumeName = volumeName.substr(4, volumeName.size() - 5);
-        }
-
-        wchar_t volumeDevicePath[MAX_PATH + 1] = {};
-        if (QueryDosDeviceW(volumeName.c_str(), volumeDevicePath, MAX_PATH) == 0) {
-            return {};
-        }
-        return volumeDevicePath;
-    } catch (const std::exception &e) {
-        LOG_WARN(Log::instance()->getLogger(), "Exception in getVolumeDevicePath: error=" << e.what());
-        return {};
-    }
-}
-
 bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
-        const std::optional<SyncPath> &) noexcept {
+        const std::optional<SyncPath> &searchRoot) noexcept {
     hardlinkPaths.clear();
     ioError = IoError::Success;
 
@@ -1107,74 +1083,73 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
     }
 
     try {
-        // All the hardlinks of a given item are located on the same volume as the item itself. The link names returned by
-        // FindFirstFileNameW are device paths (e.g. L"\Device\HarddiskVolume3\dir\file.txt"): replace the device prefix
-        // with the root path of the seed path (e.g. L"C:\") to get regular paths.
-        const std::wstring devicePathPrefix = getVolumeDevicePath(seedPath);
-        if (devicePathPrefix.empty()) {
-            // Could not retrieve the volume device path: only the seed path can be provided.
+        std::error_code ec;
+        // Only regular files can have hardlinks.
+        if (!std::filesystem::is_regular_file(seedPath, ec)) {
+            if (ec) {
+                ioError = stdError2ioError(ec);
+                LOGW_WARN(logger(), L"Error in std::filesystem::is_regular_file for " << Utility::formatSyncPath(seedPath)
+                                                                                      << L": " << Utility::formatStdError(ec));
+                return false;
+            }
             hardlinkPaths.push_back(seedPath);
             return true;
         }
-
-        const std::wstring seedPathStr = seedPath.wstring();
-        std::wstring linkName(MAX_PATH, L'\0');
-        DWORD linkNameLength = static_cast<DWORD>(linkName.size());
-        HANDLE handle = FindFirstFileNameW(seedPathStr.c_str(), 0, &linkNameLength, linkName.data());
-        if (handle == INVALID_HANDLE_VALUE) {
-            if (const DWORD lastError = GetLastError(); lastError != ERROR_MORE_DATA) {
-                ioError = dWordError2ioError(lastError, logger());
-                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(seedPath, ioError));
-                return false;
-            }
-            // The provided buffer was too small: linkNameLength now holds the required buffer size, in WCHARs.
-            linkName.resize(linkNameLength);
-            handle = FindFirstFileNameW(seedPathStr.c_str(), 0, &linkNameLength, linkName.data());
-            if (handle == INVALID_HANDLE_VALUE) {
-                ioError = dWordError2ioError(GetLastError(), logger());
-                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(seedPath, ioError));
-                return false;
-            }
+        const auto seedSize = std::filesystem::file_size(seedPath, ec);
+        if (ec) {
+            ioError = stdError2ioError(ec);
+            LOGW_WARN(logger(), L"Error in std::filesystem::file_size for " << Utility::formatSyncPath(seedPath) << L": "
+                                                                            << Utility::formatStdError(ec));
+            return false;
+        }
+        const auto seedModificationTime = std::filesystem::last_write_time(seedPath, ec);
+        if (ec) {
+            ioError = stdError2ioError(ec);
+            LOGW_WARN(logger(), L"Error in std::filesystem::last_write_time for " << Utility::formatSyncPath(seedPath)
+                                                                                  << L": " << Utility::formatStdError(ec));
+            return false;
         }
 
-        bool enumerationDone = false;
-        while (!enumerationDone) {
-            const std::wstring linkNameStr(linkName.data());
-            if (linkNameStr.starts_with(devicePathPrefix) && linkNameStr.length() > devicePathPrefix.length()) {
-                hardlinkPaths.push_back(SyncPath(seedPath.root_path()) / linkNameStr.substr(devicePathPrefix.length()));
+        hardlinkPaths.push_back(seedPath);
+        if (!searchRoot) return true;
+
+        // There is no reliable system API to enumerate the links of an item on Windows: search for the items sharing the
+        // same size and modification time (all the links of an item share these properties) while recursively iterating
+        // over the search root directory, then check that they actually refer to the same file.
+        std::filesystem::recursive_directory_iterator it(*searchRoot,
+                std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
+                                                               << Utility::formatStdError(ec));
+            return true; // The seed path has already been added to the result.
+        }
+
+        for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
+            if (ec) {
+                LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
+                                                                   << Utility::formatStdError(ec));
+                break; // The iterator is the end iterator after a failed increment: stop the enumeration.
             }
 
-            // Retry loop: grow the buffer and call FindNextFileNameW again when it fails with ERROR_MORE_DATA, without
-            // processing the truncated link name left in the buffer by the failed call.
-            while (true) {
-                linkNameLength = static_cast<DWORD>(linkName.size());
-                if (FindNextFileNameW(handle, &linkNameLength, linkName.data())) break;
-                const DWORD lastError = GetLastError();
-                if (lastError == ERROR_NO_MORE_FILES || lastError == ERROR_HANDLE_EOF) {
-                    // FindNextFileNameW signals the end of the enumeration with ERROR_NO_MORE_FILES or, on some Windows
-                    // versions, with ERROR_HANDLE_EOF.
-                    enumerationDone = true;
-                    break;
-                }
-                if (lastError != ERROR_MORE_DATA) {
-                    ioError = dWordError2ioError(lastError, logger());
-                    (void) FindClose(handle);
-                    LOGW_WARN(logger(), L"Error in FindNextFileNameW: " << Utility::formatIoError(seedPath, ioError));
-                    return false;
-                }
-                // The provided buffer was too small: linkNameLength now holds the required buffer size, in WCHARs.
-                linkName.resize(linkNameLength);
-            }
+            const SyncPath entryPath = it->path();
+            if (entryPath == seedPath) continue;
+
+            std::error_code entryEc;
+            if (!it->is_regular_file(entryEc) || entryEc) continue;
+            // Skip the entries that cannot be links of the seed item before comparing the file identifiers, which
+            // requires opening the items.
+            if (it->file_size(entryEc) != seedSize || entryEc) continue;
+            if (it->last_write_time(entryEc) != seedModificationTime || entryEc) continue;
+
+            std::error_code equivalentEc;
+            const bool isSameFile = std::filesystem::equivalent(entryPath, seedPath, equivalentEc);
+            if (!equivalentEc && isSameFile) hardlinkPaths.push_back(entryPath);
         }
-        (void) FindClose(handle);
     } catch (const std::exception &e) {
         ioError = IoError::Unknown;
         LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());
         return false;
     }
-
-    // Make sure the seed path is part of the result, even if the enumeration did not return it.
-    if (hardlinkPaths.empty()) hardlinkPaths.push_back(seedPath);
 
     return true;
 }
