@@ -1170,7 +1170,6 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
 
     return true;
 }
-}
 
 bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError) {
     shortPathName.clear();
