@@ -37,7 +37,10 @@ Determine the scope from the diff against the base branch (usually `develop`):
 ```bash
 BASE="$(git merge-base HEAD develop)"
 git diff --name-only "$BASE...HEAD"   # committed
-git diff --name-only "$BASE"          # committed + uncommitted
+{
+    git diff --name-only "$BASE"
+    git ls-files --others --exclude-standard
+} | sort -u                           # committed + tracked/untracked worktree changes
 ```
 
 | Diff contains | Work to do |
