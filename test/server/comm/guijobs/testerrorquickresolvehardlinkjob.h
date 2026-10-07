@@ -23,12 +23,15 @@
 
 #include <log4cplus/logger.h>
 
+#include <optional>
+
 namespace KDC {
 
+class Error;
 class SyncPal;
 
-/// Tests the behavior of ErrorQuickResolveHardlinkJob::quickResolve: database cleanup, hardlink removal under the sync root
-/// and rescue copy of items that are not in sync with the database.
+/// Tests the behavior of ErrorQuickResolveHardlinkJob::quickResolve: validation of the reported error, database cleanup,
+/// hardlink removal under the sync root and rescue copy of items that are not in sync with the database.
 class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST_SUITE(TestErrorQuickResolveHardlinkJob);
         CPPUNIT_TEST(testInSyncFile);
@@ -40,6 +43,7 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         CPPUNIT_TEST(testInvalidPath);
         CPPUNIT_TEST(testNodeIdMismatch);
         CPPUNIT_TEST(testErrorRemoval);
+        CPPUNIT_TEST(testErrorMismatch);
         CPPUNIT_TEST(testDirectoryNode);
         CPPUNIT_TEST(testSymlinkKept);
         CPPUNIT_TEST(testSymlinkSeed);
@@ -84,6 +88,10 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// kept.
         void testErrorRemoval();
 
+        /// The reported error does not exist, or is not the hardlink error of the reported sync, node and path: the job must
+        /// reject the request without touching the file system and the databases.
+        void testErrorMismatch();
+
         /// A directory node, or a file node whose reported item is a directory: the job must reject the request without
         /// touching the file system, as the whole content of the directory would be removed.
         void testDirectoryNode();
@@ -115,15 +123,24 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// Inserts a node with the given name, local node id and type under the root node of the sync database.
         void insertDbNode(const SyncName &name, const NodeId &nodeId, NodeType type);
 
+        /// Returns a hardlink error reported for the given node of the current sync.
+        [[nodiscard]] Error makeHardlinkError(const NodeId &nodeId, const SyncPath &relativePath) const;
+
+        /// Inserts the given error into the parameters database and returns its database id.
+        static ErrorDbId insertParmsDbError(Error &error);
+
         /// Inserts a hardlink error reported for the given node into the parameters database and returns its database id.
         ErrorDbId insertHardlinkError(const NodeId &nodeId, const SyncPath &relativePath);
 
-        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and returns its exit info.
+        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and returns its exit info. If errorDbId is not
+        /// set, a hardlink error matching the request is inserted into the parameters database and reported.
         ExitInfo runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath,
-                                       ErrorDbId errorDbId = unknownErrorDbId);
+                                       const std::optional<ErrorDbId> &errorDbId = std::nullopt);
 
-        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and asserts that it succeeds.
-        void runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath, ErrorDbId errorDbId = unknownErrorDbId);
+        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and asserts that it succeeds. If errorDbId is
+        /// not set, a hardlink error matching the request is inserted into the parameters database and reported.
+        void runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath,
+                             const std::optional<ErrorDbId> &errorDbId = std::nullopt);
 
         /// Returns true if the node with the given local node id exists in the sync database.
         [[nodiscard]] bool nodeExistsInDb(const NodeId &nodeId) const;
