@@ -1,9 +1,16 @@
 ---
 name: update-translations
-description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt, and every unfinished entry is translated directly by the agent. The language list comes from the Language enum in src/libcommon/utility/cstypes.h. Use when asked to update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
+description: "Update kDrive app translations: GUI strings (macOS and Windows redesigns) are imported from the Loco platform with Infomaniak's import_loco CLI (one config per GUI is already committed in the repo); the mcp-loco MCP server stays available for Loco-side inspection and fixes. Server / legacy Qt GUI strings are refreshed with Qt lupdate from the Conan-managed Qt, and every unfinished entry is translated directly by the agent. The language list comes from the Language enum in src/libcommon/utility/cstypes.h. By default the skill is scoped to the current PR: only the strings the PR adds or changes are extracted, translated and imported, and a full refresh of every file and language runs only when explicitly requested. This skill is never triggered automatically: invoke it only when the user explicitly asks to use the translation skill (e.g. \"utilise le skill de traduction\" or \"use the update-translations skill\"). Use when the user explicitly requests it: update or refresh translations, extract new translatable strings, complete unfinished or missing translations, ensure all supported languages are translated, sync Localizable.strings, Resources.resw or client_*.ts files, or run lupdate."
 ---
 
 # Update translations
+
+## Invocation: explicit only
+
+**Never trigger this skill automatically.** Run it only when the user explicitly asks to use the translation skill —
+e.g. "utilise le skill de traduction", "use the update-translations skill". A PR that touches translation files, a
+noticed missing or `unfinished` translation, or a generic "update the translations" request is **not** an explicit
+invocation: in those cases, do not run the skill (mention it is available if useful, then stop).
 
 The app has two independent translation pipelines. Determine the scope first: the user may ask for one part only, or
 both.
@@ -18,6 +25,33 @@ Do not mix the pipelines: Loco owns both GUI redesigns, Qt tooling owns the C++ 
 header comment (`Loco ios export` / `Loco xml export`, project `kDrive Desktop`) and per-entry Loco asset IDs
 (`/* loco:<id> */` in `.strings`); macOS strings are tagged `macOS`, Windows strings are tagged `windows`.
 
+## Scope: the current PR only
+
+**Default: modify only the translations related to the current PR.** Repo-wide refreshes (full Loco import, lupdate
+loop over all of `src`, global translation pass) produce out-of-scope diffs in every PR, so they run **only when the
+user explicitly asks** for them — e.g. "update all translations", "refresh every language", "make sure all languages
+are translated". Any request about the PR, its new strings or its changed files means the scoped run.
+
+Determine the scope from the diff against the base branch (usually `develop`):
+
+```bash
+BASE="$(git merge-base HEAD develop)"
+git diff --name-only "$BASE...HEAD"   # committed
+git diff --name-only "$BASE"          # committed + uncommitted
+```
+
+| Diff contains | Work to do |
+| --- | --- |
+| New/changed user-facing keys in GUI code under `src/gui4/macOS/` or `src/gui4/windows/` | Part 1, scoped |
+| `Localizable.strings` / `Resources.resw` export files, `.import_loco.yml` | Part 1, scoped (config changes only if the PR itself changes language coverage) |
+| C++ sources under `src/` with new/changed user-facing strings (`tr()`, …) | Part 2, scoped |
+| `translations/client_*.ts` | Part 2, scoped |
+| Nothing that adds or changes user-facing strings | Nothing: report that there is no translation work for this PR and stop |
+
+In a scoped run: never run the full import over every GUI, never run lupdate over all of `src`, and never translate
+pre-existing `unfinished` entries or Loco gaps unrelated to the PR — report them instead. The language rules below
+still apply to whatever the PR does touch (a new key must exist in every locale, for example).
+
 ## Language list
 
 The authoritative list of supported languages is the `Language` enum in `src/libcommon/utility/cstypes.h` (ignore
@@ -30,8 +64,10 @@ Portuguese `pt`, Polish `pl`, Norwegian `nb`, Finnish `fi`, Danish `da`, Greek `
 Loco locale, then verify that the pinned `import_loco` release supports its Windows language-to-country mapping before
 adding it to the GUI import configs (see Part 1 for the exact changes).
 
-When the user asks to update all translations or to make sure translations are up to date without naming a specific
-part or language, run both parts and cover **every language** of the enum:
+Run the full pass below — both parts, **every language** of the enum — only when the user explicitly asks for a
+global refresh ("update all translations", "make sure every language is translated", or similar). In the default
+PR-scoped run, apply the scoped instructions of Part 1 and Part 2 to the keys and strings the PR touches, across
+every language those pipelines cover:
 - Qt: for every non-English language, `client_<code>.ts` must exist and contain no `unfinished` entry; create a missing
   file by running lupdate on it (it generates the skeleton). English is the source language and must not get a
   `client_en.ts` file.
@@ -55,6 +91,27 @@ Setup:
 - Install: `pipx install pipx:infomaniak/importloco` (the macOS project pins the version in `src/gui4/macOS/mise.toml`).
 - API key: export `LOCO_API_KEY`, or write the key into a `.import_loco_api` file (gitignored). A read-only key is
   enough: importing only reads from Loco.
+
+### Scoped run (default)
+
+Work only on the keys the PR adds or changes:
+
+1. List the user-facing keys from the GUI diff: new string literals, and keys whose English text changed.
+2. Map each key to its Loco asset: reuse the `/* loco:<id> */` comment already present in the export files for
+   existing keys; find or create the asset for new keys (mcp-loco `list_assets` / `create_asset`), tagged like the
+   existing assets of that platform (`macOS` or `windows`).
+3. For each of these assets: write the missing translations **in Loco** with `update_translation`, one call at a time
+   (rules of Part 2). If the PR changed an asset's English source text, update the source text in Loco first
+   (`update_asset` or `update_translation` on the source locale), then refresh the other locales.
+4. Run `import_loco` from the config directory of each GUI the PR touches (quote the Windows path).
+5. Review `git diff` on the imported files: keep only the PR's entries. If the import brought unrelated entries
+   (Loco drift since the last import), revert the files that contain no PR key and report the drift; if a file mixes
+   PR keys with unrelated changes, tell the user before keeping it.
+
+Exception: if the PR itself adds a language to the `Language` enum or changes an `.import_loco.yml`, the config and
+Loco-locale work of full-run step 3 is part of the PR scope.
+
+### Full run (only when explicitly requested)
 
 1. Import (quote the Windows path, it contains spaces):
    ```bash
@@ -84,13 +141,31 @@ Setup:
 
 ## Part 2 — Server + legacy Qt GUI: lupdate
 
-1. Locate `lupdate` from the Conan Qt package (it is usually not in `PATH`):
+Locate `lupdate` from the Conan Qt package (it is usually not in `PATH`):
+
+```bash
+find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1
+```
+
+If the Conan cache is empty, install the dependencies first with
+`infomaniak-build-tools/conan/build_dependencies.sh Debug`, then search again.
+
+### Scoped run (default)
+
+1. Run lupdate on the PR's changed source files only, and **without `-no-obsolete`** — combined with a partial scan it
+   would delete every entry of the files you did not scan:
    ```bash
-   find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1
+   LUPDATE="$(find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1)"
+   for f in translations/client_*.ts; do "$LUPDATE" <changed .h/.cpp/.mm sources> -ts "$f"; done
    ```
-   If the Conan cache is empty, install the dependencies first with
-   `infomaniak-build-tools/conan/build_dependencies.sh Debug`, then search again.
-2. Update every checked-in Qt translation file (run from the repository root):
+   This adds `unfinished` entries for the PR's strings and refreshes `<location>` line numbers only for the scanned
+   files.
+2. Translate only the entries this run added or re-opened, directly in the file (rules below). Pre-existing
+   `unfinished` entries from sources the PR does not touch: leave them in place and report them.
+
+### Full run (only when explicitly requested)
+
+1. Update every checked-in Qt translation file (run from the repository root):
    ```bash
    LUPDATE="$(find ~/.conan2 -path "*/p/bin/lupdate" -type f 2>/dev/null | head -n 1)"
    for f in translations/client_*.ts; do "$LUPDATE" src -no-obsolete -ts "$f"; done
@@ -99,7 +174,7 @@ Setup:
     - `-no-obsolete` drops entries for removed strings, matching `translations/updateTool/update-translation-files.sh`.
     - New strings appear as `<translation type="unfinished">`.
     - A run with no new string may still refresh the `<location>` line numbers: that diff is expected and harmless.
-3. Translate every `unfinished` entry, in every `client_*.ts`, directly in the file (no DeepL, no external service):
+2. Translate every `unfinished` entry, in every `client_*.ts`, directly in the file (no DeepL, no external service):
     - The target language is the file name: `client_da.ts` = Danish, `de` = German, `el` = Greek, `es` = Spanish,
       `fi` = Finnish, `fr` = French, `it` = Italian, `nb` = Norwegian Bokmål, `nl` = Dutch, `pl` = Polish,
       `pt` = Portuguese, `sv` = Swedish.
@@ -116,7 +191,8 @@ Setup:
 ## Validation
 
 - Check `git diff --stat`: only `translations/*.ts`, Loco export files under `src/gui4/`, and the relevant
-  `.import_loco.yml` files when changing language coverage may change.
+  `.import_loco.yml` files when changing language coverage may change. In a scoped run, every hunk must trace back to
+  a string the PR touches: revert anything else and say so.
 - After a GUI import, run `import_loco --check` in each GUI directory: it catches straight apostrophes, `...`
   ellipses, trailing spaces and language-specific punctuation before they ship. It can produce false positives on
   strings that contain file paths with colons (e.g. `D:/`), which the French space-before-colon rule flags; verify
@@ -129,8 +205,14 @@ Setup:
   ```bash
   grep -l 'type="unfinished"' translations/client_*.ts
   ```
+  Scoped run: only the entries created by the scoped lupdate run must be finished. List the sources that still have
+  unfinished entries and check that none belongs to the PR's changed files (the rest is reported, not fixed):
+  ```bash
+  grep -B3 'type="unfinished"' translations/client_*.ts | grep -o 'filename="[^"]*"' | sort -u
+  ```
 - Loco: re-run `list_locales` (needs mcp-loco) and confirm every locale reports `untranslated: 0` when the Loco part
-  ran. Every language of the `Language` enum must be covered.
+  ran. Every language of the `Language` enum must be covered. Scoped run: check only the PR's assets —
+  `get_translations` on each of them must return a text for every locale.
 - Never commit or push unless the user explicitly asks.
 
 ## Error handling
