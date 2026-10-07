@@ -539,10 +539,12 @@ void SyncPal::freeWorkers() {
     _localFSObserverWorker.reset();
 
     if (_remoteFSObserverWorker && _remoteFSObserverWorker->liveSnapshot().isValid()) {
-        _remoteLiveSnapshotBackup = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
-    } else {
-        _remoteLiveSnapshotBackup.reset();
-    }
+        _remoteLiveSnapshotBackup.snapshot = std::make_shared<ConstSnapshot>(_remoteFSObserverWorker->liveSnapshot());
+        _remoteLiveSnapshotBackup.blacklist =
+                std::dynamic_pointer_cast<RemoteFileSystemObserverWorker>(_remoteFSObserverWorker)->blackList();
+    } else
+        clearRemoteLiveSnapshotBackup();
+
     _remoteFSObserverWorker.reset();
 
     _computeFSOperationsWorker.reset();
