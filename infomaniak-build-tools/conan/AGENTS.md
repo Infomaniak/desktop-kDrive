@@ -149,9 +149,30 @@ rg -n "qt\." recipes/qt/all/conanfile.py
 
 ## Common Gotchas
 
-- **Qt login**: The Qt installer requires authentication. Three modes: `ini` (default, reads `qtaccount.ini`), `envvars` (`QT_EMAIL`/`QT_PW`), `cli` (interactive)
+- **Qt login**: GitHub Actions and `KDRIVE_TEST_CI_RUNNING_ON_CI=true` always select `credentials`,
+  requiring non-empty `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`. The installer ignores inherited JWTs
+  and account files in this mode and receives `--no-save-account`. The password is passed through the
+  process environment, never through installer arguments or generated credential files.
+  Local builds keep `ini` as the default, preferring `qtaccount.ini` and clearing competing environment credentials.
+  A missing local file falls back to `envvars` when `QT_INSTALLER_JWT_TOKEN` is non-empty, otherwise to `cli`.
+  Explicit local `credentials` uses email/password; `envvars` uses only the JWT; `cli` clears environment credentials.
+  Paths respect the current home directory, `APPDATA` on Windows, and `XDG_DATA_HOME` on Linux.
+  The recipe controls the installer environment centrally and restores the caller's variables after execution.
+  Windows `-CI` also sets `KDRIVE_TEST_CI_RUNNING_ON_CI=true`. Never print passwords or authentication tokens.
+- **GitHub Qt credentials**: All four platform build actions accept required `qt_account_email` and
+  `qt_account_password` inputs. CI, release and extended-test workflows inject the matching GitHub secrets
+  only into build steps. The former account-file provisioning helper and prepare-only switch are removed.
+  The Podman wrapper forwards credentials with `--env QT_ACCOUNT_EMAIL` and `--env QT_ACCOUNT_PASSWORD`,
+  without expanding their values in traced commands. It mounts the persistent Qt account directory only
+  outside CI, for local INI authentication.
 - **macOS universal**: Only Release mode produces universal binaries; Debug compiles for current arch only
 - **Local remote**: The script auto-registers a `localrecipes` remote pointing to `recipes/`. If the URL changes, it is recreated
+- **CI recipe updates**: Both dependency scripts enable global `conan install --update` in GitHub Actions or when
+  `KDRIVE_TEST_CI_RUNNING_ON_CI=true`; PowerShell also enables it with `-CI`. The Linux Podman wrapper forwards
+  both CI environment variables into the build container. Local builds opt in with `--update` or `-Update`.
+  Keep `--build=missing`: unchanged recipes reuse available binaries, while missing binaries for new revisions or
+  configurations are built. Updates can also advance dependencies using version ranges and recipes from ConanCenter.
+  Volatile runners need a persistent/restored cache or a binary remote to reuse newly built packages across runs.
 - **Poco components**: 22+ components with recursive dependency tree. Enable/disable via `enable_*` options
 - **openssl-macos vs openssl**: macOS uses `openssl-macos` (universal), other platforms use `openssl` from Conan Center
 
