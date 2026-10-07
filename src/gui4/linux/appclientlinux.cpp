@@ -119,6 +119,7 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
             {QStringLiteral("activitiesController"), QVariant::fromValue<QObject *>(&_activitiesController)},
             {QStringLiteral("manyDeletesController"), QVariant::fromValue<QObject *>(&_manyDeletesController)},
             {QStringLiteral("storageController"), QVariant::fromValue<QObject *>(&_storageController)},
+            {QStringLiteral("searchController"), QVariant::fromValue<QObject *>(&_searchController)},
             {QStringLiteral("onboardingSessionManager"), QVariant::fromValue<QObject *>(&_onboardingSessionManager)},
             {QStringLiteral("systemTrayController"), QVariant::fromValue<QObject *>(&_systemTrayController)},
     });
