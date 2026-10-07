@@ -21,8 +21,12 @@
 #include "server/comm/guijobs/abstractguijob.h"
 #include "libcommon/utility/types.h"
 
+#include <optional>
+#include <vector>
+
 namespace KDC {
 
+class DbNode;
 class SyncPal;
 
 // This job is used to quickly resolve a HardlinkNotSupportedError. Such errors occur on Windows when a file is hardlinked into
@@ -46,7 +50,33 @@ class ErrorQuickResolveHardlinkJob : public AbstractGuiJob {
         ExitInfo serializeOutputParms() override { return ExitCode::Ok; }
         ExitInfo process() override;
 
-        ExitInfo quickResolve(const std::shared_ptr<SyncPal> &syncPal);
+        ExitInfo quickResolve(const std::shared_ptr<SyncPal> &syncPal) const;
+
+        // Fetches the reported node from the sync database. Only the file nodes are accepted.
+        ExitInfo fetchFileDbNode(const std::shared_ptr<SyncPal> &syncPal, DbNode &dbNode) const;
+        // Builds the absolute path of the reported item and checks that it is located under the sync root.
+        ExitInfo getSeedPath(const SyncPath &localPath, SyncPath &seedPath) const;
+        // Checks that the reported item is a regular file referring to the reported node. seedExists is set to false if the item
+        // does not exist anymore.
+        ExitInfo checkSeedItem(const SyncPath &seedPath, bool &seedExists) const;
+        // Retrieves the local node id of the item located at path, without following symbolic links. nodeId is set to
+        // std::nullopt if the item does not exist.
+        ExitInfo getLocalNodeId(const SyncPath &path, std::optional<NodeId> &nodeId) const;
+        // Hard removes all the links of the reported file located under the sync root, after saving a copy of the file into the
+        // rescue folder if it is not in sync with the database.
+        ExitInfo removeLinks(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, const SyncPath &seedPath) const;
+        // Retrieves all the links of the reported file located under the sync root, including the seed path.
+        ExitInfo getLinkPathsUnderSyncRoot(const SyncPath &localPath, const SyncPath &seedPath,
+                                           std::vector<SyncPath> &linkPaths) const;
+        // Saves a copy of the reported file into the rescue folder.
+        ExitInfo rescueFile(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode, const SyncPath &seedPath) const;
+        // Hard removes the links that still refer to the reported node, the seed path last.
+        ExitInfo deleteLinks(const std::shared_ptr<SyncPal> &syncPal, const std::vector<SyncPath> &linkPaths,
+                             const SyncPath &seedPath) const;
+        // Removes the reported node from the sync database.
+        ExitInfo deleteDbNode(const std::shared_ptr<SyncPal> &syncPal, const DbNode &dbNode) const;
+        // Removes the reported error from the parameters database.
+        ExitInfo deleteParmsDbError() const;
 
         friend class TestGuiCommChannel;
         friend class TestErrorQuickResolveHardlinkJob;
