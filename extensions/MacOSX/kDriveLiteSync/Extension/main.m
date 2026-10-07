@@ -258,24 +258,29 @@ static BOOL processAuthRename(const es_message_t *msg)
     }
         
     // Check that the file is being monitored
-    NSString *filePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
+    NSString *sourcePath = [NSString stringWithUTF8String:msg->event.rename.source->path.data];
     
     NSString *syncFolderPath = nil;
-    if (!(g_xpcService && [g_xpcService isFileMonitored:filePath syncFolderPath:&syncFolderPath])) {
+    if (!(g_xpcService && [g_xpcService isFileMonitored:sourcePath syncFolderPath:&syncFolderPath])) {
         return FALSE;
     }
     
+    if (msg->event.rename.destination_type != ES_DESTINATION_TYPE_NEW_PATH) {
+        return FALSE;
+    }
+    
+    NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
+
     if (isExtendedLogEnabled()) {
-        NSLog(@"[KD] Move file %s to destination %s",
-              msg->event.rename.source->path.data, msg->event.rename.destination.new_path.dir->path.data);
+        NSLog(@"[KD] Move file %@ to destination %@", sourcePath, destinationPath);
     }
     
     // Check file status
-    long bufferLength = getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
+    long bufferLength = getxattr([sourcePath UTF8String], [EXT_ATTR_STATUS UTF8String], NULL, 0, 0, 0);
     if (bufferLength >= 0) {
         char status[bufferLength];
-        if (getxattr([filePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
-            NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", filePath, errno);
+        if (getxattr([sourcePath UTF8String], [EXT_ATTR_STATUS UTF8String], status, bufferLength, 0, 0) != bufferLength) {
+            NSLog(@"[KD] ERROR: fgetxattr() failed for file %@: %d", sourcePath, errno);
             return FALSE;
         }
         
@@ -286,21 +291,23 @@ static BOOL processAuthRename(const es_message_t *msg)
     else {
         return FALSE;
     }
-    
-    NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
-    NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
-    
+        
     // Check if the destination is the Trash
-    NSURL *sourceURL = [NSURL fileURLWithPath:filePath];
+    NSURL *sourceURL = [NSURL fileURLWithPath:sourcePath];
     NSURL *trashURL = trashURLForFileURL(sourceURL);
+    NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
     if ([destinationURL isEqual:trashURL]) {
-        NSLog(@"[KD] Moving monitored file %s to trash.", filePath.UTF8String);
+        NSLog(@"[KD] Moving monitored file %@ to trash.", sourcePath);
         return FALSE;
     }
     
-    // Check that the destination is not in the sync folder
-    if (![destinationPath hasPrefix:syncFolderPath]) {
-        NSLog(@"[KD] Moving monitored file %s to %s, outside of sync folder.", filePath.UTF8String, destinationPath.UTF8String);
+    // Check if the destination is outside the sync folder
+    NSString *standardizedSyncFolderPath = [syncFolderPath stringByStandardizingPath];
+    NSString *standardizedDestinationPath = [destinationPath stringByStandardizingPath];
+    NSString *syncFolderPrefix = [standardizedSyncFolderPath stringByAppendingString:@"/"];
+    if (![standardizedDestinationPath isEqualToString:standardizedSyncFolderPath]
+        && ![standardizedDestinationPath hasPrefix:syncFolderPrefix]) {
+        NSLog(@"[KD] Moving monitored file %@ to %@, outside of sync folder.", sourcePath, destinationPath);
         return TRUE;
     }
     
