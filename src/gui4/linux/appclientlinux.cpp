@@ -96,6 +96,10 @@ void AppClientLinux::setupQmlEngine(const QIcon &appIcon) {
                                                              "ManyDeletesController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<StorageController>(AppConstants::Qml::moduleUri, 1, 0, "StorageController",
                                                          "StorageController is owned by AppClientLinux.");
+    (void) qmlRegisterUncreatableType<SearchResultModel>(AppConstants::Qml::moduleUri, 1, 0, "SearchResultModel",
+                                                         "SearchResultModel is owned by SearchController.");
+    (void) qmlRegisterUncreatableType<SearchController>(AppConstants::Qml::moduleUri, 1, 0, "SearchController",
+                                                        "SearchController is owned by AppClientLinux.");
     (void) qmlRegisterUncreatableType<OnboardingSyncConfigurationController>(
             AppConstants::Qml::moduleUri, 1, 0, "OnboardingSyncConfigurationController",
             "OnboardingSyncConfigurationController is owned by OnboardingSession.");
@@ -392,6 +396,7 @@ void AppClientLinux::retranslatePresentation() {
     _systemTrayController.retranslate();
     _activitiesController.retranslate();
     _storageController.retranslate();
+    _searchController.retranslate();
     _settingsSyncActivationController.retranslate();
     _excludedFoldersController.retranslate();
 
