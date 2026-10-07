@@ -20,13 +20,16 @@
 
 #include "app/cache/appcache.h"
 #include "app/cache/parametersstore.h"
+#include "app/services/commservice.h"
 #include "app/services/parametersservice.h"
 #include "config.h"
 #include "libcommon/log/sentry/handler.h"
+#include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/utility.h"
 
 #include <QGuiApplication>
 #include <QLoggingCategory>
+#include <QPointer>
 #include <QSettings>
 
 #include <algorithm>
@@ -41,6 +44,7 @@ Q_LOGGING_CATEGORY(lcSentryService, "gui.v4.sentry", QtInfoMsg)
 constexpr char settingsOrganization[] = "Infomaniak";
 constexpr char settingsApplication[] = APPLICATION_NAME;
 constexpr char sentryConsentKey[] = "sentry/enabled";
+QString appUid;
 
 QString normalizedDisplayServer(const QString &platformPlugin) {
     if (platformPlugin.contains(QStringLiteral("wayland"), Qt::CaseInsensitive)) {
@@ -70,11 +74,12 @@ QString normalizedDesktopEnvironment(const QString &desktopEnvironment) {
 namespace KDC {
 
 SentryService::SentryService(ParametersService &parametersService, AppCache &appCache, ParametersStore &parametersStore,
-                             QObject *const parent) :
+                             const CommService &commService, QObject *const parent) :
     QObject(parent),
     _parametersService(parametersService),
     _appCache(appCache),
-    _parametersStore(parametersStore) {
+    _parametersStore(parametersStore),
+    _commService(commService) {
     (void) connect(&_parametersStore, &ParametersStore::parametersChanged, this,
                    &SentryService::reconcileConsentWithParametersStore);
     updateLinuxRuntimeTags();
@@ -155,6 +160,34 @@ void SentryService::updateLinuxRuntimeTags() {
     handler->setTag("os.packaging", qEnvironmentVariable("APPIMAGE").isEmpty() ? "other" : "appimage");
     handler->setTag("qt.version", qVersion());
     handler->setTag("qt.platform_plugin", platformPlugin.toStdString());
+
+    if (!appUid.isEmpty()) {
+        handler->setAppUUID(appUid.toStdString());
+    }
+}
+
+void SentryService::fetchAppUid() {
+    if (_appUidRequested) {
+        return;
+    }
+    _appUidRequested = true;
+
+    _commService.requestGetAppState(AppStateKey::AppUid, [self = QPointer(this)](const ExitInfo &exitInfo, const QString &value) {
+        if (!self) {
+            return;
+        }
+
+        if (!exitInfo || value.isEmpty()) {
+            qCWarning(lcSentryService) << "Cannot read app UID for Sentry tag | code:" << exitInfo.code()
+                                       << "/ cause:" << exitInfo.cause();
+            return;
+        }
+
+        appUid = value;
+        if (isInitialized()) {
+            updateLinuxRuntimeTags();
+        }
+    });
 }
 
 bool SentryService::isInitialized() {
