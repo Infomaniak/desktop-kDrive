@@ -840,9 +840,8 @@ void TestGuiCommChannel::testDriveSearchJob() {
 }
 
 void TestGuiCommChannel::testDriveSearchJobOutcome() {
-    const std::list<SearchInfo> results{
-            SearchInfo("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true, true),
-            SearchInfo("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false, false)};
+    const std::list results{SearchInfo("1000", Str("toto"), NodeType::File, Str("toto"), 10, 10, true, true),
+                            SearchInfo("2000", Str("titi"), NodeType::Directory, Str("titi"), 100, 100, false, false)};
 
     {
         // A successful search returns its results, whether more exist, and the cursor of the next page.
