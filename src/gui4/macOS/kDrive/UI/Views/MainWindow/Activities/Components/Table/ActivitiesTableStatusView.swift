@@ -184,20 +184,32 @@ struct ActivitiesTableStatusView: View {
 
         Task { @MainActor in
             @InjectService var nodeURLGenerator: NodeURLGenerator
-            let url = try await nodeURLGenerator.shareURL(for: context.node.remoteID, driveDbId: context.drive.dbId)
+            do {
+                let url = try await nodeURLGenerator.shareURL(for: context.node.remoteID, driveDbId: context.drive.dbId)
 
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(url.absoluteString, forType: .string)
+                let pasteboard = NSPasteboard.general
+                pasteboard.clearContents()
+                pasteboard.setString(url.absoluteString, forType: .string)
 
-            loadingIndicatorShower.show(
-                SidebarNotificationState(
-                    icon: .init(icon: KDriveResources.checkmarkCircle.image, tint: ColorToken.Status.Medium.success.asNSColor),
-                    text: .init(text: KDriveLocalizable.linkCopiedToClipboardTitle),
-                    showLoader: false,
-                    duration: SidebarNotificationState.defaultDuration
+                loadingIndicatorShower.show(
+                    SidebarNotificationState(
+                        icon: .init(icon: KDriveResources.checkmarkCircle.image, tint: ColorToken.Status.Medium.success.asNSColor),
+                        text: .init(text: KDriveLocalizable.linkCopiedToClipboardTitle),
+                        showLoader: false,
+                        duration: SidebarNotificationState.defaultDuration
+                    )
                 )
-            )
+            } catch {
+                IKLogger.general.error("Failed to copy share link: \(error)")
+                loadingIndicatorShower.show(
+                    SidebarNotificationState(
+                        icon: .init(icon: KDriveResources.warning.image, tint: ColorToken.Status.Medium.warning.asNSColor),
+                        text: .init(text: KDriveLocalizable.errorCopyingShareLink),
+                        showLoader: false,
+                        duration: SidebarNotificationState.defaultDuration
+                    )
+                )
+            }
         }
     }
 
