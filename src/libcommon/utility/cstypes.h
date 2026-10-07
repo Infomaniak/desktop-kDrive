@@ -172,6 +172,8 @@ enum class ExitCause {
     SyncDeletionFailed,
     InvalidLinkTarget,
     MoveThroughSymlink, // The local move is forbidden because an intermediate component of the path is a symbolic link
+    HardlinkNotSupported, // Some operations are not supported on hard links in Windows LiteSync when two hard links point to
+                          // different LiteSync roots.
     EnumEnd
 };
 
