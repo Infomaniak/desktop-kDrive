@@ -77,6 +77,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testIsPathOnMountedDisk);
         CPPUNIT_TEST(testCopyFileOrDirectory);
         CPPUNIT_TEST(testGetPathWithCanonicalParent);
+        CPPUNIT_TEST(testGetPathsWithNodeId);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -119,6 +120,7 @@ class TestIo : public CppUnit::TestFixture, public TestBase {
         void testReadOnly();
         void testCopyFileOrDirectory();
         void testGetPathWithCanonicalParent();
+        void testGetPathsWithNodeId();
 
     private:
         void testGetItemTypeSimpleCases();

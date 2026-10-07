@@ -265,6 +265,101 @@ void TestErrorQuickResolveHardlinkJob::testMissingFile() {
                            !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
 }
 
+void TestErrorQuickResolveHardlinkJob::testRemovedReportedLink() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const std::string content("Hello, World!");
+    const NodeId nodeId = createFileAndDbNode(fileName, content);
+
+    // The links under the sync root share the same name, so that the name of the rescue copy does not depend on the order in
+    // which they are found.
+    const SyncPath filePath = _localTempDir.path() / fileName;
+    const SyncPath linkPath1 = _localTempDir.path() / Str("dir1") / linkName;
+    const SyncPath linkPath2 = _localTempDir.path() / Str("dir2") / linkName;
+    const SyncPath outsideLinkPath = _localOtherDir.path() / Str("link_outside.txt");
+    for (const auto &linkPath: {linkPath1, linkPath2, outsideLinkPath}) {
+        std::error_code ec;
+        (void) std::filesystem::create_directories(linkPath.parent_path(), ec);
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the parent directory: " + ec.message(), !ec);
+        std::filesystem::create_hard_link(filePath, linkPath, ec);
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink: " + ec.message(), !ec);
+    }
+
+    // Remove the link reported in the error.
+    std::error_code ec;
+    const bool removed = std::filesystem::remove(filePath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to remove the reported link: " + ec.message(), removed && !ec);
+
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
+    runQuickResolve(nodeId, SyncPath(fileName), errorDbId);
+
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
+    CPPUNIT_ASSERT_MESSAGE("A hardlink under the sync root has not been deleted", !pathExists(linkPath1));
+    CPPUNIT_ASSERT_MESSAGE("A hardlink under the sync root has not been deleted", !pathExists(linkPath2));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink outside of the sync root has been deleted", pathExists(outsideLinkPath));
+
+    // The remaining links are not located at the path stored in the database: a single copy of the file must have been saved
+    // into the rescue folder.
+    const SyncPath rescueFolderPath = _localTempDir.path() / FileRescuer::rescueFolderName();
+    const SyncPath rescueFilePath = rescueFolderPath / linkName;
+    CPPUNIT_ASSERT_MESSAGE("The file has not been rescued", pathExists(rescueFilePath));
+    CPPUNIT_ASSERT_MESSAGE("The file has been rescued more than once", !pathExists(rescueFolderPath / Str("link1 (1).txt")));
+
+    std::ifstream rescueFile(rescueFilePath, std::ios::binary);
+    const std::string rescuedContent((std::istreambuf_iterator<char>(rescueFile)), std::istreambuf_iterator<char>());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("The rescued file content does not match", content, rescuedContent);
+}
+
+void TestErrorQuickResolveHardlinkJob::testMovedFile() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName movedFileName = Str("moved1.txt");
+    const std::string content("Hello, World!");
+    const NodeId nodeId = createFileAndDbNode(fileName, content);
+
+    // Move the file into a subdirectory of the sync root after the error was reported.
+    const SyncPath movedFilePath = _localTempDir.path() / Str("dir1") / movedFileName;
+    std::error_code ec;
+    (void) std::filesystem::create_directory(movedFilePath.parent_path(), ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the directory: " + ec.message(), !ec);
+    std::filesystem::rename(_localTempDir.path() / fileName, movedFilePath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to move the file: " + ec.message(), !ec);
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("The moved file must keep its node id", nodeId, localNodeId(movedFilePath));
+
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
+    runQuickResolve(nodeId, SyncPath(fileName), errorDbId);
+
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The error has not been deleted from the parameters database", !errorExistsInDb(errorDbId));
+    CPPUNIT_ASSERT_MESSAGE("The moved file has not been deleted", !pathExists(movedFilePath));
+
+    // The file is not located at the path stored in the database anymore: a copy must have been saved into the rescue folder.
+    const SyncPath rescueFilePath = _localTempDir.path() / FileRescuer::rescueFolderName() / movedFileName;
+    CPPUNIT_ASSERT_MESSAGE("The file has not been rescued", pathExists(rescueFilePath));
+
+    std::ifstream rescueFile(rescueFilePath, std::ios::binary);
+    const std::string rescuedContent((std::istreambuf_iterator<char>(rescueFile)), std::istreambuf_iterator<char>());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("The rescued file content does not match", content, rescuedContent);
+}
+
+void TestErrorQuickResolveHardlinkJob::testLinkSearchFailure() {
+    const SyncName fileName = Str("file1.txt");
+    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!");
+
+    // Remove the sync root, as if it was not accessible anymore: the reported path is missing and the sync root cannot be
+    // searched.
+    std::error_code ec;
+    (void) std::filesystem::remove_all(_localTempDir.path(), ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to remove the sync root: " + ec.message(), !ec);
+
+    const ErrorDbId errorDbId = insertHardlinkError(nodeId, SyncPath(fileName));
+    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, SyncPath(fileName), errorDbId);
+    CPPUNIT_ASSERT_MESSAGE("The job must fail if the links of the file cannot be searched",
+                           exitInfo.code() == ExitCode::SystemError);
+    CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The error has been deleted from the parameters database", errorExistsInDb(errorDbId));
+}
+
 void TestErrorQuickResolveHardlinkJob::testLinkOutsideSyncRoot() {
     const SyncName fileName = Str("file1.txt");
     const SyncName linkName = Str("link1.txt");

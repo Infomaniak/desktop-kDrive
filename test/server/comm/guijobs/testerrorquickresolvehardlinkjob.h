@@ -37,6 +37,9 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         CPPUNIT_TEST(testInSyncFile);
         CPPUNIT_TEST(testModifiedFile);
         CPPUNIT_TEST(testMissingFile);
+        CPPUNIT_TEST(testRemovedReportedLink);
+        CPPUNIT_TEST(testMovedFile);
+        CPPUNIT_TEST(testLinkSearchFailure);
         CPPUNIT_TEST(testLinkOutsideSyncRoot);
         CPPUNIT_TEST(testRescueFilenameCollision);
         CPPUNIT_TEST(testUnknownNode);
@@ -62,8 +65,21 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// removing all the links and deleting the node from the database.
         void testModifiedFile();
 
-        /// The file does not exist anymore: only the node is deleted from the database.
+        /// The file has no link left under the sync root: only the node is deleted from the database.
         void testMissingFile();
+
+        /// The reported link has been removed but the file still has links under the sync root: they are found by node id and
+        /// removed, after saving a single copy of the file into the rescue folder, as they are not located at the path stored in
+        /// the database. A hardlink located outside of the sync root is kept.
+        void testRemovedReportedLink();
+
+        /// The file has been moved after the error was reported: it is found by node id at its new location and removed, after
+        /// saving a copy of the file into the rescue folder.
+        void testMovedFile();
+
+        /// The reported path does not exist anymore and the links of the file cannot be searched, e.g. because the sync root is
+        /// not accessible: the job must fail without deleting the node and the error, as links of the file may remain.
+        void testLinkSearchFailure();
 
         /// A hardlink located outside of the sync root is kept, the links under the sync root are removed.
         void testLinkOutsideSyncRoot();
