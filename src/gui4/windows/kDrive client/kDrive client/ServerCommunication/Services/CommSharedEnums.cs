@@ -97,7 +97,6 @@ namespace Infomaniak.kDrive.Types
         ERROR_RESOLVE_CONFLICTS,
         ERROR_RESOLVE_CONFLICTS_QUICK,
         ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY,
-        ERROR_QUICK_RESOLVE_HARDLINK,
         EXCLTEMPL_GETEXCLUDED,
         EXCLTEMPL_GETLIST,
         EXCLTEMPL_SETUSERLIST,
@@ -124,7 +123,10 @@ namespace Infomaniak.kDrive.Types
         UPDATER_VERSION_INFO,
         UPDATER_STATE,
         UPDATER_START_INSTALLER,
-        UPDATER_SKIP_VERSION
+        UPDATER_SKIP_VERSION,
+
+        // Appended to the end of the enum: the request numbers are serialized as ordinals and must match the C++ enum.
+        ERROR_QUICK_RESOLVE_HARDLINK
     };
 
     public enum SignalNum

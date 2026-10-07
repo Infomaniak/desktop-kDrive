@@ -105,7 +105,6 @@ enum class RequestNum {
     ERROR_RESOLVE_CONFLICTS,
     ERROR_RESOLVE_CONFLICTS_QUICK,
     ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY,
-    ERROR_QUICK_RESOLVE_HARDLINK,
     EXCLTEMPL_GETEXCLUDED,
     EXCLTEMPL_GETLIST,
     EXCLTEMPL_SETUSERLIST,
@@ -138,6 +137,8 @@ enum class RequestNum {
     UPDATER_STATE,
     UPDATER_START_INSTALLER,
     UPDATER_SKIP_VERSION,
+    ERROR_QUICK_RESOLVE_HARDLINK, // Appended to the end of the enum: the request numbers are serialized and must not be
+                                  // renumbered by an insertion in the middle of the enum.
     EnumEnd
 };
 
@@ -229,8 +230,6 @@ inline std::string toString(RequestNum e) {
             return "ERROR_RESOLVE_CONFLICTS_QUICK";
         case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY:
             return "ERROR_RESOLVE_UNSUPPORTED_CHAR_LEGACY";
-        case RequestNum::ERROR_QUICK_RESOLVE_HARDLINK:
-            return "ERROR_QUICK_RESOLVE_HARDLINK";
         case RequestNum::EXCLTEMPL_GETEXCLUDED:
             return "EXCLTEMPL_GETEXCLUDED";
         case RequestNum::EXCLTEMPL_GETLIST:
@@ -291,6 +290,8 @@ inline std::string toString(RequestNum e) {
             return "UPDATER_START_INSTALLER";
         case RequestNum::UPDATER_SKIP_VERSION:
             return "UPDATER_SKIP_VERSION";
+        case RequestNum::ERROR_QUICK_RESOLVE_HARDLINK:
+            return "ERROR_QUICK_RESOLVE_HARDLINK";
         default:
             return "No conversion to string available";
     }
