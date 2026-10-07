@@ -92,22 +92,24 @@ ExitInfo DriveSearchJob::process() {
     SearchJob searchJob(sync.driveDbId(), _syncDbId, CommonUtility::commString2Str(_searchString),
                         CommonUtility::commString2Str(_cursor));
     const ExitInfo searchExitInfo = searchJob.runSynchronously();
-    for (const auto &searchInfo: searchJob.searchResults()) {
-        _searchInfoList.push_back(searchInfo);
-    }
 
+    return applySearchOutcome(searchExitInfo, searchJob.searchResults(), searchJob.hasMore(), searchJob.cursor());
+}
+
+ExitInfo DriveSearchJob::applySearchOutcome(const ExitInfo &searchExitInfo, const std::list<SearchInfo> &results,
+                                            const bool hasMore, const std::string &nextCursor) {
     // An item whose local state cannot be read is still returned, as not available locally: that failure alone keeps the
     // results. Any other failure (network, HTTP, malformed item ending the page early) reaches the client.
     const bool onlyLocalStateUnreadable =
             searchExitInfo.code() == ExitCode::SystemError && searchExitInfo.cause() == ExitCause::FileAccessError;
     if (!searchExitInfo && !onlyLocalStateUnreadable) {
         LOG_WARN(_logger, "Error in SearchJob::runSynchronously: " << searchExitInfo);
-        _searchInfoList.clear();
         return searchExitInfo;
     }
 
-    _hasMore = searchJob.hasMore();
-    _nextCursor = CommonUtility::str2CommString(searchJob.cursor());
+    _searchInfoList.assign(results.begin(), results.end());
+    _hasMore = hasMore;
+    _nextCursor = CommonUtility::str2CommString(nextCursor);
 
     return ExitCode::Ok;
 }

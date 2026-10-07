@@ -21,6 +21,9 @@
 #include "server/comm/guijobs/abstractguijob.h"
 #include "libcommon/info/searchinfo.h"
 
+#include <list>
+#include <string>
+
 namespace KDC {
 
 class DriveSearchJob : public AbstractGuiJob {
@@ -42,6 +45,9 @@ class DriveSearchJob : public AbstractGuiJob {
         ExitInfo deserializeInputParms() override;
         ExitInfo serializeOutputParms() override;
         ExitInfo process() override;
+        // Fills the output parameters from the outcome of the search request, or returns the failure to report.
+        ExitInfo applySearchOutcome(const ExitInfo &searchExitInfo, const std::list<SearchInfo> &results, bool hasMore,
+                                    const std::string &nextCursor);
 
         friend class TestGuiCommChannel;
 };
