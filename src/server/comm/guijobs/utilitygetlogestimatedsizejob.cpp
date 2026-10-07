@@ -49,7 +49,7 @@ ExitInfo UtilityGetLogEstimatedSizeJob::process() {
     IoError ioError = IoError::Success;
     const bool res = LogUploadJob::getLogDirEstimatedSize(_logSize, ioError);
     if (!res || ioError != IoError::Success) {
-        LOG_WARN(_logger, "Error in LogUploadJob::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError));
+        LOG_WARN(_logger, "Error in LogUploadJob::getLogDirEstimatedSize: " << ioError);
         addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
         return ExitCode::SystemError;
     }
