@@ -18,8 +18,12 @@
 
 #include "localpaths.h"
 
+#include "libcommon/utility/utility.h"
+
 #include <QDir>
 #include <QFileInfo>
+
+#include <algorithm>
 
 using namespace Qt::StringLiterals;
 
@@ -68,6 +72,29 @@ QString makeUniqueLocalPath(const QString &path, const std::function<bool(const 
         }
     }
     return {};
+}
+
+std::optional<SyncPath> resolveExistingPathBelowSyncRoot(const SyncPath &syncRoot, const SyncPath &relativePath) {
+    if (relativePath.has_root_path() ||
+        std::ranges::any_of(relativePath, [](const SyncPath &component) { return component == SyncPath{".."}; })) {
+        return std::nullopt;
+    }
+
+    const SyncPath rootPath = syncRoot.lexically_normal();
+    const QFileInfo rootInfo{Path2QStr(rootPath)};
+    const QFileInfo targetInfo{Path2QStr((rootPath / relativePath).lexically_normal())};
+    if (!rootInfo.exists() || !rootInfo.isDir() || !targetInfo.exists()) {
+        return std::nullopt;
+    }
+
+    const auto canonicalRootPath = QStr2Path(rootInfo.canonicalFilePath());
+    const auto canonicalTargetPath = QStr2Path(targetInfo.canonicalFilePath());
+    if (canonicalRootPath.empty() || canonicalTargetPath.empty() ||
+        !CommonUtility::isSubDir(canonicalRootPath, canonicalTargetPath)) {
+        return std::nullopt;
+    }
+
+    return canonicalTargetPath;
 }
 
 } // namespace KDC
