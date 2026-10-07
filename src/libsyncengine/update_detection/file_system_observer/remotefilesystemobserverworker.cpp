@@ -1589,13 +1589,13 @@ void RemoteFileSystemObserverWorker::resume() {
 }
 
 void RemoteFileSystemObserverWorker::setBlackList(RemoteNodeIdSet blackList) {
-    std::scoped_lock lock(_blackListMutex);
+    const std::scoped_lock lock(_blackListMutex);
 
     _blackList = std::move(blackList);
 };
 
 const RemoteNodeIdSet &RemoteFileSystemObserverWorker::blackList() const {
-    std::scoped_lock lock(_blackListMutex);
+    const std::scoped_lock lock(_blackListMutex);
 
     return _blackList;
 };
