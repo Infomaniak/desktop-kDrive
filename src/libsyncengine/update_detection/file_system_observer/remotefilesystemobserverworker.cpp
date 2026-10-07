@@ -438,10 +438,7 @@ ExitInfo RemoteFileSystemObserverWorker::processListingContinueResponse(const Re
 
     // Look for new actions
     if (const auto exitInfo = processActions(dataObj->getArray(actionsKey), dataObj->getArray(actionsFilesKey)); !exitInfo) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Error in "
-                         "RemoteFileSystemObserverWorker::processActions: "
-                                 << exitInfo);
+        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processActions: " << exitInfo);
         tryToInvalidateSnapshot();
 
         return exitInfo;
@@ -494,32 +491,46 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     }
 
     // Retrieve changes
-    setUpdateFlagValue(true);
+    const auto mainProcessingTask = [this](const RemoteNodeId &remoteDirId, CursorData &cursorData_, bool &hasMore_) -> ExitInfo {
+        if (stopAsked()) return ExitCode::Ok;
+
+        std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
+        if (const auto exitInfo = runListingContinueJob(remoteDirId, job, cursorData_); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::runListingContinueJob: " << exitInfo);
+
+            return exitInfo;
+        }
+
+        if (const auto exitInfo = processListingContinueResponse(remoteDirId, job, cursorData_, hasMore_); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processListingContinueResponse: " << exitInfo);
+
+            return exitInfo;
+        }
+
+        // Save the most recently used listing cursor now that the current page of `listing/continue` response has been fully
+        // processed.
+        if (const auto exitInfo = saveListingCursor(remoteDirId, cursorData_); !exitInfo) {
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
+
+            return exitInfo;
+        }
+
+        return ExitCode::Ok;
+    };
 
     ExitInfo exitInfo = ExitCode::Ok;
     bool hasMore = true;
     constexpr Count maxListingPageCount = 100000; // To detect and avoid potential infinite loop.
     Count pageCount = 1;
+
+    setUpdateFlagValue(true);
+
     while (hasMore && pageCount < maxListingPageCount) {
         hasMore = false;
 
-        if (stopAsked()) {
-            exitInfo = ExitCode::Ok;
-            break;
-        }
-
-        std::shared_ptr<ContinueFileListWithCursorJob> job = nullptr;
-        exitInfo = runListingContinueJob(remoteDirId, job, cursorData);
+        exitInfo = mainProcessingTask(remoteDirId, cursorData, hasMore);
         if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::runListingContinueJob: " << exitInfo);
-
-            break;
-        }
-
-        exitInfo = processListingContinueResponse(remoteDirId, job, cursorData, hasMore);
-        if (!exitInfo) {
-            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::processListingContinueResponse: " << exitInfo);
-
+            LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::mainProcessingTask: " << exitInfo);
             break;
         }
 
@@ -534,12 +545,6 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
             (void) clearListingCursor(remoteDirId);
         }
         return exitInfo;
-    }
-
-    // Save the most recently used listing cursor now that the `listing/continue` response has been fully processed.
-    exitInfo = saveListingCursor(remoteDirId, cursorData);
-    if (!exitInfo) {
-        LOG_SYNCPAL_WARN(_logger, "Error in RemoteFileSystemObserverWorker::saveListingCursor: " << exitInfo);
     }
 
     return exitInfo;
@@ -1387,7 +1392,7 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     const auto listingFullTimerEnd = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
     bool resetTimer = elapsedTime.count() > 3600; // 1h
-    if (_listingFullCounter > 60) {
+    if (_listingFullCount > 60) {
         // If there is more than 1 listing/full request per minute for
         // an hour -> send a sentry
         sentry::Handler::captureMessage(sentry::Level::Warning, "RemoteFileSystemObserverWorker::countListingRequests",
@@ -1396,11 +1401,11 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     }
 
     if (resetTimer) {
-        _listingFullCounter = 0;
+        _listingFullCount = 0;
         _listingFullTimer = listingFullTimerEnd;
     }
 
-    _listingFullCounter++;
+    _listingFullCount++;
 }
 
 void RemoteFileSystemObserverWorker::ActionInfo::setPath(const KDC::SyncName &remotePath) {
