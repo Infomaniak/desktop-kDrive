@@ -30,7 +30,6 @@ env:
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
   KDRIVE_TEST_CI_EXTENDED_TEST : true
   KDRIVE_SENTRY_ENVIRONMENT: "ci_tests"
-  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
 
 jobs:
   Windows-extended-tests:
@@ -70,6 +69,8 @@ jobs:
 
       - name: Build kDrive desktop
         env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           WINDOWS_DEBUG_CERT_THUMBPRINT: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
         run: |
             & "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Launch-VsDevShell.ps1" `
@@ -158,6 +159,9 @@ jobs:
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
       - name: Build kDrive desktop
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
         run : ./infomaniak-build-tools/macos/build-ci.sh
 
       - name: Grant tests script execute permission
@@ -202,6 +206,9 @@ jobs:
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
       - name: Build kDrive desktop
+        env:
+          QT_ACCOUNT_EMAIL: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          QT_ACCOUNT_PASSWORD: ${{ secrets.QT_ACCOUNT_PASSWORD }}
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh -u
 
       - name: Grant tests script execute permission
