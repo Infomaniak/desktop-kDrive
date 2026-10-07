@@ -30,6 +30,7 @@
 namespace KDC {
 
 class CommService;
+struct DriveSearchResult;
 class MainSelectionStore;
 
 /**
@@ -81,7 +82,7 @@ class SearchController final : public QObject {
         Q_INVOKABLE void loadMore();
         // Opens a local result with the desktop services, any other result in the web app. With `revealInFolder`, a local
         // result opens its parent folder instead; a remote result ignores it.
-        Q_INVOKABLE void openResult(int row, bool revealInFolder = false) const;
+        Q_INVOKABLE void openResult(int32_t row, bool revealInFolder = false) const;
 
         void retranslate();
 
@@ -96,6 +97,8 @@ class SearchController final : public QObject {
         void reset();
         void startSearch();
         void requestPage(bool firstPage);
+        void handlePageResponse(uint64_t generation, SyncDbId syncDbId, bool firstPage, const ExitInfo &exitInfo,
+                                const DriveSearchResult &searchResult);
         void handleSelectionChanged();
         void refreshSelection();
         void setState(State state);

@@ -20,6 +20,7 @@
 
 #include "app/fileiconresolver.h"
 #include "libcommon/info/searchinfo.h"
+#include "libcommon/utility/types.h"
 
 #include <QAbstractListModel>
 #include <QHash>
@@ -27,7 +28,6 @@
 
 #include <cstdint>
 #include <optional>
-#include <unordered_set>
 #include <vector>
 
 namespace KDC {
@@ -62,7 +62,7 @@ class SearchResultModel final : public QAbstractListModel {
         int32_t appendPage(const std::vector<SearchInfo> &results);
         void clear();
 
-        [[nodiscard]] std::optional<SearchInfo> result(int row) const;
+        [[nodiscard]] std::optional<SearchInfo> result(int32_t row) const;
 
         // Refreshes the locale-dependent texts after a language change.
         void retranslate();
@@ -76,7 +76,7 @@ class SearchResultModel final : public QAbstractListModel {
         [[nodiscard]] Row makeRow(const SearchInfo &info) const;
 
         std::vector<Row> _rows;
-        std::unordered_set<NodeId> _nodeIds;
+        NodeSet _nodeIds;
         FileIconResolver _fileIconResolver;
 };
 
