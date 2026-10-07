@@ -60,7 +60,7 @@ void CachePopulator::startPopulation(const PopulationMode mode) {
 }
 
 void CachePopulator::loadParameters(const PopulationMode mode, const uint64_t generation) {
-    _commService.requestParametersInfo([this, mode, generation](const ExitInfo &exitInfo, const ParametersInfo &parametersInfo) {
+    _commService.requestParametersInfo([this, mode, generation](const ExitInfo &exitInfo, const Parameters &parameters) {
         if (generation != _populationGeneration) {
             return;
         }
@@ -69,7 +69,7 @@ void CachePopulator::loadParameters(const PopulationMode mode, const uint64_t ge
             return;
         }
 
-        _parametersStore.replaceParametersInfo(parametersInfo);
+        _parametersStore.replaceParameters(parameters);
         markBranchCompleted(mode, PopulationBranch::Parameters);
     });
 }

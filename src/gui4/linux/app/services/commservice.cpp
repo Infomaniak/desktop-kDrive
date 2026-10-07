@@ -189,9 +189,9 @@ void CommService::registerSyncHandlers(SignalDispatcher &dispatcher) {
     dispatcher.registerHandler(SignalNum::SYNC_COMPLETEDITEM, [this](const Poco::DynamicStruct &params) {
         SyncDbId syncDbId = 0;
         CommonUtility::readValueFromStruct(params, msgParamSyncDbId, syncDbId);
-        SyncFileItemInfo info;
-        info.fromDynamicStruct(params[msgParamItemInfo].extract<Poco::DynamicStruct>());
-        emit itemCompleted(syncDbId, info);
+        SyncFileItem item;
+        item.fromDynamicStruct(params[msgParamItemInfo].extract<Poco::DynamicStruct>());
+        emit itemCompleted(syncDbId, item);
     });
 
     dispatcher.registerHandler(SignalNum::SYNC_NOTIFY_MANY_DELETES, [this](const Poco::DynamicStruct &params) {
@@ -720,10 +720,10 @@ void CommService::requestNodeCreateMissingFolders(const UserDbId userDbId, const
 
 // -- Parameters ----------------------------------------------------------
 
-void CommService::requestParametersInfo(const ParametersInfoCallback &callback) const {
+void CommService::requestParametersInfo(const ParametersCallback &callback) const {
     _ipcClient.sendRequest(RequestNum::PARAMETERS_INFO, {},
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &result) {
-                               ParametersInfo info;
+                               Parameters info;
                                if (exitInfo) {
                                    info.fromDynamicStruct(result[msgParamParametersInfo].extract<Poco::DynamicStruct>());
                                }
@@ -731,10 +731,10 @@ void CommService::requestParametersInfo(const ParametersInfoCallback &callback) 
                            });
 }
 
-void CommService::requestParametersUpdate(const ParametersInfo &parametersInfo, const VoidCallback &callback) const {
+void CommService::requestParametersUpdate(const Parameters &parameters, const VoidCallback &callback) const {
     Poco::DynamicStruct params;
     Poco::DynamicStruct infoStruct;
-    parametersInfo.toDynamicStruct(infoStruct);
+    parameters.toDynamicStruct(infoStruct);
     params[msgParamParametersInfo] = infoStruct;
     _ipcClient.sendRequest(RequestNum::PARAMETERS_UPDATE, params,
                            [callback](const ExitInfo &exitInfo, const Poco::DynamicStruct &) { callback(exitInfo); });

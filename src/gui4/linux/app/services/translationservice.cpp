@@ -93,9 +93,9 @@ QString languageDisplayName(const Language language) {
 TranslationService::TranslationService(ParametersStore &parametersStore, QObject *const parent) :
     QObject(parent),
     _parametersStore(parametersStore) {
-    (void) connect(&parametersStore, &ParametersStore::parametersInfoChanged, this, [this] {
-        if (const auto parametersInfo = _parametersStore.parametersInfo()) {
-            applyLanguage(parametersInfo->language());
+    (void) connect(&parametersStore, &ParametersStore::parametersChanged, this, [this] {
+        if (const auto parameters = _parametersStore.parameters()) {
+            applyLanguage(parameters->language());
         }
     });
 }
