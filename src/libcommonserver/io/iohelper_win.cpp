@@ -1068,6 +1068,110 @@ bool IoHelper::getLongPathName(const SyncPath &path, SyncPath &longPathName, IoE
     return true;
 }
 
+// Get the device path (e.g. L"\\Device\\HarddiskVolume3") of the volume containing the item indicated by `path`.
+// Returns an empty string if the volume device path could not be retrieved.
+static std::wstring getVolumeDevicePath(const SyncPath &path) noexcept {
+    try {
+        wchar_t volumeMountPoint[MAX_PATH + 1] = {};
+        if (!GetVolumeNameForVolumeMountPointW(path.root_path().wstring().c_str(), volumeMountPoint, MAX_PATH)) {
+            return {};
+        }
+        std::wstring volumeName(volumeMountPoint); // e.g. L"\\?\Volume{GUID}\"
+        if (volumeName.starts_with(L"\\\\?\\") && volumeName.ends_with(L"\\")) {
+            volumeName = volumeName.substr(4, volumeName.size() - 5);
+        }
+
+        wchar_t volumeDevicePath[MAX_PATH + 1] = {};
+        if (QueryDosDeviceW(volumeName.c_str(), volumeDevicePath, MAX_PATH) == 0) {
+            return {};
+        }
+        return volumeDevicePath;
+    } catch (const std::exception &e) {
+        LOG_WARN(logger(), "Exception in getVolumeDevicePath: error=" << e.what());
+        return {};
+    }
+}
+
+bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError) noexcept {
+    hardlinkPaths.clear();
+    ioError = IoError::Success;
+
+    bool exists = false;
+    if (!checkIfPathExists(seedPath, exists, ioError, PathCheckOption::Insensitive)) {
+        return false;
+    }
+    if (!exists) {
+        ioError = IoError::NoSuchFileOrDirectory;
+        return false;
+    }
+
+    try {
+        // All the hardlinks of a given item are located on the same volume as the item itself. The link names returned by
+        // FindFirstFileNameW are device paths (e.g. L"\Device\HarddiskVolume3\dir\file.txt"): replace the device prefix
+        // with the root path of the seed path (e.g. L"C:\") to get regular paths.
+        const std::wstring devicePathPrefix = getVolumeDevicePath(seedPath);
+        if (devicePathPrefix.empty()) {
+            // Could not retrieve the volume device path: only the seed path can be provided.
+            hardlinkPaths.push_back(seedPath);
+            return true;
+        }
+
+        const std::wstring seedPathStr = seedPath.wstring();
+        std::wstring linkName(MAX_PATH, L'\0');
+        DWORD linkNameLength = static_cast<DWORD>(linkName.size());
+        HANDLE handle = FindFirstFileNameW(seedPathStr.c_str(), 0, &linkNameLength, linkName.data());
+        if (handle == INVALID_HANDLE_VALUE) {
+            if (const DWORD lastError = GetLastError(); lastError != ERROR_MORE_DATA) {
+                ioError = dWordError2ioError(lastError, logger());
+                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(seedPath, ioError));
+                return false;
+            }
+            // The provided buffer was too small: linkNameLength now holds the required buffer size, in WCHARs.
+            linkName.resize(linkNameLength);
+            handle = FindFirstFileNameW(seedPathStr.c_str(), 0, &linkNameLength, linkName.data());
+            if (handle == INVALID_HANDLE_VALUE) {
+                ioError = dWordError2ioError(GetLastError(), logger());
+                LOGW_WARN(logger(), L"Error in FindFirstFileNameW: " << Utility::formatIoError(seedPath, ioError));
+                return false;
+            }
+        }
+
+        do {
+            const std::wstring linkNameStr(linkName.data());
+            if (linkNameStr.starts_with(devicePathPrefix) && linkNameStr.length() > devicePathPrefix.length()) {
+                hardlinkPaths.push_back(SyncPath(seedPath.root_path()) / linkNameStr.substr(devicePathPrefix.length()));
+            }
+
+            linkNameLength = static_cast<DWORD>(linkName.size());
+            if (!FindNextFileNameW(handle, &linkNameLength, linkName.data())) {
+                if (const DWORD lastError = GetLastError(); lastError == ERROR_NO_MORE_FILES) {
+                    break;
+                } else if (lastError == ERROR_MORE_DATA) {
+                    // The provided buffer was too small: linkNameLength now holds the required buffer size, in WCHARs.
+                    linkName.resize(linkNameLength);
+                    continue;
+                } else {
+                    ioError = dWordError2ioError(lastError, logger());
+                    (void) FindClose(handle);
+                    LOGW_WARN(logger(), L"Error in FindNextFileNameW: " << Utility::formatIoError(seedPath, ioError));
+                    return false;
+                }
+            }
+        } while (true);
+        (void) FindClose(handle);
+    } catch (const std::exception &e) {
+        ioError = IoError::Unknown;
+        LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());
+        return false;
+    }
+
+    // Make sure the seed path is part of the result, even if the enumeration did not return it.
+    if (hardlinkPaths.empty()) hardlinkPaths.push_back(seedPath);
+
+    return true;
+}
+}
+
 bool IoHelper::getShortPathName(const SyncPath &path, SyncPath &shortPathName, IoError &ioError) {
     shortPathName.clear();
     ioError = IoError::Success;

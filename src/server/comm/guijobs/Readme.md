@@ -160,6 +160,7 @@ Each request includes a **unique `id`** for correlation.
 | Request                                 | Description                                                       |
 | --------------------------------------- | ----------------------------------------------------------------- |
 | [LoginRequestToken](#loginrequesttoken) | Add a user via OAuth2 token (emits `UserAdded` or `UserUpdated`). |
+| [ErrorQuickResolveHardlink](#errorquickresolvehardlink) | Remove all the hardlinks of a file under the sync root to quickly resolve a `HardlinkNotSupportedError`. |
 
 ---
 
@@ -257,6 +258,44 @@ Retrieves database IDs of all users.
   "params": {
     "userDbIdList": [] // Empty list on failure
   }
+}
+```
+
+</details>
+---
+<details id="errorquickresolvehardlink">
+<summary><b>ErrorQuickResolveHardlink</b> — Quickly resolve a HardlinkNotSupportedError</summary>
+
+**Description:**
+Removes the node of the errored file from the sync database, saves a copy of the file into the rescue folder if the local file
+is not in sync with the database, and hard removes all the links of the file located under the sync root. The next
+synchronization will see the remote file as a new item and will download it again as a standard file.
+Emits `ErrorRemoved` upon success.
+
+#### Request
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.ErrorQuickResolveHardlink,
+  "params": {
+    "syncDbId": 10,
+    "errorDbId": 123,
+    "nodeId": "<local node id of the errored file>",
+    "path": "<relative local path of the errored file>"
+  }
+}
+```
+
+#### Successful Response
+
+```json
+{
+  "type": 1,
+  "id": 42,
+  "num": (int)RequestNum.ErrorQuickResolveHardlink,
+  "params": {}
 }
 ```
 

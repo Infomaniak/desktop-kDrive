@@ -683,6 +683,27 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
+#if !defined(KD_WINDOWS)
+bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError) noexcept {
+    hardlinkPaths.clear();
+    ioError = IoError::Success;
+
+    bool exists = false;
+    if (!checkIfPathExists(seedPath, exists, ioError, PathCheckOption::Insensitive)) {
+        return false;
+    }
+    if (!exists) {
+        ioError = IoError::NoSuchFileOrDirectory;
+        return false;
+    }
+
+    // Hardlink enumeration is only implemented on Windows, where hardlinks across different sync roots are not supported
+    // by the sync engine.
+    hardlinkPaths.push_back(seedPath);
+    return true;
+}
+#endif
+
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *const filestat, IoError &ioError, PathCheckOption option) noexcept {
     ioError = IoError::Success;
 

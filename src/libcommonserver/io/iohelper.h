@@ -216,6 +216,18 @@ struct IoHelper {
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
                                                     NodeId &otherNodeId, IoError &ioError, PathCheckOption option) noexcept;
 
+        //! Get all the existing paths pointing to the item indicated by the seed path, including the seed path itself.
+        /*!
+          On Windows, the links are enumerated from the file system using the item file index (inode), so every hardlink
+          pointing to the same item is returned. On the other platforms, only the seed path is returned.
+          \param seedPath is the file system path of an existing item, used as the starting point of the enumeration.
+          \param hardlinkPaths is set with the absolute paths of all the links pointing to the same item, including seedPath.
+          \param ioError holds the error returned when an underlying OS API call fails.
+          \return true if no unexpected error occurred, false otherwise. If the item indicated by seedPath does not exist,
+          ioError is set with IoError::NoSuchFileOrDirectory.
+         */
+        static bool getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError) noexcept;
+
         //! Checks whether any intermediate component (i.e., any ancestor directory) of the specified path is a link that
         //! the operating system follows during path resolution: a symbolic link, or a junction on Windows.
         /*!

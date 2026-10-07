@@ -74,6 +74,7 @@ set(server_SRCS
     ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.h ${server_srcs_path}/comm/guijobs/errorsyncrefreshjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsjob.cpp
     ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.h ${server_srcs_path}/comm/guijobs/errorresolveconflictsquickjob.cpp
+    ${server_srcs_path}/comm/guijobs/errorquickresolvehardlinkjob.h ${server_srcs_path}/comm/guijobs/errorquickresolvehardlinkjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.h ${server_srcs_path}/comm/guijobs/excltemplgetexcludedjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplgetlistjob.cpp
     ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.h ${server_srcs_path}/comm/guijobs/excltemplsetlistjob.cpp

@@ -53,6 +53,7 @@
 #include "errorlistjob.h"
 #include "errorresolveconflictsjob.h"
 #include "errorresolveconflictsquickjob.h"
+#include "errorquickresolvehardlinkjob.h"
 #include "errordeletejob.h"
 #include "errorsyncrefreshjob.h"
 #if defined(KD_MACOS)
@@ -126,6 +127,7 @@ GuiJobFactory::GuiJobFactory() {
                 {RequestNum::ERROR_INFOLIST, makeShared<ErrorListJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS, makeShared<ErrorResolveConflictsJob>},
                 {RequestNum::ERROR_RESOLVE_CONFLICTS_QUICK, makeShared<ErrorResolveConflictsQuickJob>},
+                {RequestNum::ERROR_QUICK_RESOLVE_HARDLINK, makeShared<ErrorQuickResolveHardlinkJob>},
                 {RequestNum::ERROR_DELETE, makeShared<ErrorDeleteJob>},
                 {RequestNum::ERROR_SYNC_REFRESH, makeShared<ErrorSyncRefreshJob>},
 #if defined(KD_MACOS)
