@@ -19,6 +19,7 @@
 #include "testerrorquickresolvehardlinkjob.h"
 
 #include "libcommon/utility/types.h"
+#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/vfs/vfs.h"
@@ -29,6 +30,7 @@
 #include "mocks/libcommonserver/db/mockdb.h"
 #include "server/comm/guijobs/errorquickresolvehardlinkjob.h"
 
+#include <version.h>
 #include <filesystem>
 #include <fstream>
 
@@ -87,8 +89,8 @@ NodeId TestErrorQuickResolveHardlinkJob::createFileAndDbNode(const SyncName &nam
     if (!linkName.empty()) {
         const SyncPath linkPath = _localTempDir.path() / linkName;
         std::error_code ec;
-        CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink: " + ec.message(),
-                               std::filesystem::create_hard_link(filePath, linkPath, ec));
+        std::filesystem::create_hard_link(filePath, linkPath, ec);
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink: " + ec.message(), !ec);
     }
 
     FileStat fileStat;
@@ -100,7 +102,7 @@ NodeId TestErrorQuickResolveHardlinkJob::createFileAndDbNode(const SyncName &nam
     // inserted file node is reconstructed as "name".
     bool found = false;
     DbNodeId rootDbNodeId = 0;
-    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, "1", rootDbNodeId, found));
+    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, NodeId("1"), rootDbNodeId, found));
     CPPUNIT_ASSERT_MESSAGE("Root node not found in the sync database", found);
 
     DbNode fileDbNode(0, rootDbNodeId, name, name, std::to_string(fileStat.inode), std::string("r_") + SyncName2Str(name),
@@ -186,7 +188,7 @@ void TestErrorQuickResolveHardlinkJob::testMissingFile() {
     // Insert a node referencing an inode that does not exist in the file system.
     bool found = false;
     DbNodeId rootDbNodeId = 0;
-    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, "1", rootDbNodeId, found));
+    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, NodeId("1"), rootDbNodeId, found));
     CPPUNIT_ASSERT(found);
 
     const NodeId nodeId("999999");
@@ -215,8 +217,8 @@ void TestErrorQuickResolveHardlinkJob::testLinkOutsideSyncRoot() {
     // Create a hardlink located outside of the sync root. It must be kept.
     const SyncPath outsideLinkPath = _localOtherDir.path() / outsideLinkName;
     std::error_code ec;
-    CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink outside of the sync root: " + ec.message(),
-                           std::filesystem::create_hard_link(_localTempDir.path() / fileName, outsideLinkPath, ec));
+    std::filesystem::create_hard_link(_localTempDir.path() / fileName, outsideLinkPath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink outside of the sync root: " + ec.message(), !ec);
 
     runQuickResolve(nodeId, SyncPath(fileName));
 
