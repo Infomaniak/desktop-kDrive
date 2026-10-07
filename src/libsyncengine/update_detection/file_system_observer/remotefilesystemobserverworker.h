@@ -47,6 +47,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void resume() override;
 
         Count listingFullCount() const { return _listingFullCount; };
+        const RemoteNodeIdSet &blackList() const;
+        void setBlackList(RemoteNodeIdSet blackList);
 
     protected:
         void execute() override;
@@ -143,6 +145,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo clearListingCursors();
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
+        mutable std::mutex _blackListMutex; // Mutex to protect access to the _blackList member variable.
         Count _listingFullCount = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
