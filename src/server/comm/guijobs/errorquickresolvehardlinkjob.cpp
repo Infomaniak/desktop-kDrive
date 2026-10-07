@@ -188,7 +188,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
 
         // Hard remove all the links located under the sync root.
         for (const auto &path: hardlinkPathsUnderSyncRoot) {
-            GenericLocalDeleteJob deleteJob(path, nullptr, GenericLocalDeleteJob::ForceHardDelete::Yes);
+            GenericLocalDeleteJob deleteJob(path, syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes);
             if (ExitInfo exitInfo = deleteJob.runSynchronously(); !exitInfo) {
                 LOGW_WARN(_logger, L"Failed to delete " << Utility::formatSyncPath(path) << L": " << exitInfo);
                 return exitInfo;
