@@ -34,7 +34,10 @@
 #include "libparms/db/parmsdb.h"
 #include "mocks/libcommonserver/db/mockdb.h"
 
+#include <Poco/URI.h>
+
 #include <filesystem>
+#include <map>
 #include <sstream>
 
 using namespace CppUnit;
@@ -280,6 +283,36 @@ void TestSearchJob::testHandleResponseTwice() {
     }
 
     CPPUNIT_ASSERT_EQUAL(size_t{1}, job.searchResults().size());
+}
+
+void TestSearchJob::testSetQueryParameters() {
+    const auto queryParameters = [](SearchJob &job) {
+        Poco::URI uri("https://api.example/search");
+        job.setQueryParameters(uri);
+        std::map<std::string, std::string> parameters;
+        for (const auto &[key, value]: uri.getQueryParameters()) {
+            parameters[key] = value;
+        }
+        return parameters;
+    };
+
+    // A search string of 3 characters or less is searched by name. A first page is requested without cursor.
+    SearchJob firstPageJob(_driveDbId, "doc");
+    auto parameters = queryParameters(firstPageJob);
+    CPPUNIT_ASSERT_EQUAL(std::string("doc"), parameters["name"]);
+    CPPUNIT_ASSERT(!parameters.contains("query"));
+    CPPUNIT_ASSERT(!parameters.contains("cursor"));
+    CPPUNIT_ASSERT_EQUAL(std::string("relevance"), parameters["order_by"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("desc"), parameters["order"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("50"), parameters["limit"]);
+    CPPUNIT_ASSERT_EQUAL(std::string("path"), parameters["with"]);
+
+    // A longer search string is a full-text query. A next page is requested with the cursor of the previous one.
+    SearchJob nextPageJob(_driveDbId, "document", "cursor1");
+    parameters = queryParameters(nextPageJob);
+    CPPUNIT_ASSERT_EQUAL(std::string("document"), parameters["query"]);
+    CPPUNIT_ASSERT(!parameters.contains("name"));
+    CPPUNIT_ASSERT_EQUAL(std::string("cursor1"), parameters["cursor"]);
 }
 
 #if defined(KD_MACOS) || defined(KD_WINDOWS)

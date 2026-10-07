@@ -40,6 +40,7 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         CPPUNIT_TEST(testHandleResponseIsHydratedWithVfsOff);
         CPPUNIT_TEST(testHandleResponseAdvancedSync);
         CPPUNIT_TEST(testHandleResponseTwice);
+        CPPUNIT_TEST(testSetQueryParameters);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -57,6 +58,7 @@ class TestSearchJob : public CppUnit::TestFixture, public TestBase {
         void testHandleResponseIsHydratedWithVfsOff();
         void testHandleResponseAdvancedSync();
         void testHandleResponseTwice();
+        void testSetQueryParameters();
 
     private:
         const DriveDbId _driveDbId = 1;
