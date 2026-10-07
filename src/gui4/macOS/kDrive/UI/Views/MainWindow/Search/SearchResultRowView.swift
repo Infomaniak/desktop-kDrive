@@ -27,7 +27,10 @@ struct SearchResultRowView: View {
     @State private var isHovered = false
 
     private var openInBrowserTooltip: String {
-        KDriveLocalizable.searchResultOpenInBrowserTooltip
+        // A file available locally only opens remotely when it is dehydrated while sync is paused.
+        file.isAvailableLocally
+            ? KDriveLocalizable.searchResultOpenInBrowserSyncPausedTooltip
+            : KDriveLocalizable.searchResultOpenInBrowserTooltip
     }
 
     var body: some View {
@@ -108,6 +111,22 @@ struct SearchResultRowView: View {
             modifiedDate: Date(),
             size: 2048,
             isAvailableLocally: false,
+            isHydrated: false
+        ),
+        opensLocally: false
+    )
+}
+
+#Preview("Dehydrated while sync is paused") {
+    SearchResultRowView(
+        file: UISearchResponse(
+            id: "3",
+            name: "Online-only file.xlsx",
+            type: .file,
+            path: "/Documents/Online-only file.xlsx",
+            modifiedDate: Date(),
+            size: 4096,
+            isAvailableLocally: true,
             isHydrated: false
         ),
         opensLocally: false
