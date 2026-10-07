@@ -144,7 +144,7 @@ void TestSearchJob::testHandleResponseSharedPath() {
 
     // A shared item synchronized under the local "Shared" folder is available locally.
     std::error_code ec;
-    std::filesystem::create_directories(_localTempDir.path() / "Shared" / "testdir", ec);
+    (void) std::filesystem::create_directories(_localTempDir.path() / "Shared" / "testdir", ec);
     CPPUNIT_ASSERT_MESSAGE("Failed to create test directory", !ec);
 
     SearchJob availableJob(_driveDbId, "doc");
