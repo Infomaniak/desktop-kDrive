@@ -265,7 +265,7 @@ void TestErrorQuickResolveHardlinkJob::testRescueFilenameCollision() {
 
     // The file content may differ from the remote version: a copy must have been saved into the rescue folder with a
     // suffixed name.
-    const SyncPath suffixedRescueFilePath = rescueFolderPath / (Str("file1 (1)") + Str(".txt"));
+    const SyncPath suffixedRescueFilePath = rescueFolderPath / (Str("file1 (1)") + Str2SyncName(".txt"));
     CPPUNIT_ASSERT_MESSAGE("The file has not been rescued with a suffixed name", pathExists(suffixedRescueFilePath));
     std::ifstream suffixedRescueFile(suffixedRescueFilePath, std::ios::binary);
     const std::string suffixedRescuedContent((std::istreambuf_iterator<char>(suffixedRescueFile)),
