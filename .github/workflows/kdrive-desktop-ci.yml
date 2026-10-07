@@ -22,7 +22,6 @@ env:
   KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
   KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
   KDRIVE_TEST_CI_RUNNING_ON_CI: true
-  QT_INSTALLER_JWT_TOKEN: ${{ secrets.QT_INSTALLER_JWT_TOKEN }}
   QT_QPA_PLATFORM: offscreen
 
 jobs:
@@ -38,6 +37,8 @@ jobs:
       - name: Build Windows
         uses: ./.github/actions/build_windows
         with:
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           debug_cert: ${{ secrets.WINDOWS_DEBUG_CERT_FILE_B64 }}
           debug_cert_pass: ${{ secrets.WINDOWS_DEBUG_CERT_PASSWORD }}
           debug_cert_thumbprint: ${{ secrets.WINDOWS_DEBUG_CERT_THUMBPRINT }}
@@ -51,6 +52,9 @@ jobs:
           submodules: recursive
       - name: Build Linux
         uses: ./.github/actions/build_linux_amd
+        with:
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
 
   build-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -62,6 +66,8 @@ jobs:
       - name: Build macOS
         uses: ./.github/actions/build_macos
         with:
+          qt_account_email: ${{ secrets.QT_ACCOUNT_EMAIL }}
+          qt_account_password: ${{ secrets.QT_ACCOUNT_PASSWORD }}
           keychain_password: ${{ secrets.KEYCHAIN_PASSWORD }}
 
 

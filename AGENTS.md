@@ -63,6 +63,10 @@ clang-format -i <file>
 > **New Norms:** If the user corrects you (e.g., "Don't use X, use Y"), add that rule to the "Local norms" section immediately so you don't make the same mistake again.
 
 ### Local Norms
+- In CI, refresh Conan dependencies on every run with `--update` while keeping `--build=missing`; local builds opt in.
+- Authenticate Qt in CI using `QT_ACCOUNT_EMAIL` and `QT_ACCOUNT_PASSWORD`, with `--no-save-account`; keep INI authentication for local builds.
+- Keep ad hoc Conan recipe verification scripts local; do not include them in a PR unless explicitly requested.
+- For `PR.md`, follow the `pr-description-writer` skill's bilingual format: French in `<details>`, then English. Keep the title in English.
 - In versioned documentation such as `AGENTS.md`, use repo-relative paths, not hardcoded absolute filesystem paths.
 - For project crash lookups, use the self-hosted Sentry instance at `https://sentry-desktop.infomaniak.com`, not Sentry SaaS.
 - For Linux builds/validation, use `infomaniak-build-tools/linux/build-release-via-podman.sh` rather than direct `cmake --build`.
