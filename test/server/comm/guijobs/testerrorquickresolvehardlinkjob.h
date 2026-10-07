@@ -35,6 +35,10 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         CPPUNIT_TEST(testModifiedFile);
         CPPUNIT_TEST(testMissingFile);
         CPPUNIT_TEST(testLinkOutsideSyncRoot);
+        CPPUNIT_TEST(testRescueFilenameCollision);
+        CPPUNIT_TEST(testUnknownNode);
+        CPPUNIT_TEST(testInvalidPath);
+        CPPUNIT_TEST(testNodeIdMismatch);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -56,6 +60,22 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// A hardlink located outside of the sync root is kept, the links under the sync root are removed.
         void testLinkOutsideSyncRoot();
 
+        /// A file whose rescue copy name is already used in the rescue folder: the existing rescue copy is preserved and
+        /// the file is saved with a suffixed name.
+        void testRescueFilenameCollision();
+
+        /// A node id that is not present in the sync database: the job must reject the request without touching the file
+        /// system.
+        void testUnknownNode();
+
+        /// An absolute path or a path escaping the sync root: the job must reject the request without touching the file
+        /// system.
+        void testInvalidPath();
+
+        /// The item located at the reported path refers to another node than the reported node id: the job must reject the
+        /// request without touching the file system.
+        void testNodeIdMismatch();
+
     private:
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
@@ -69,6 +89,9 @@ class TestErrorQuickResolveHardlinkJob : public CppUnit::TestFixture, public Tes
         /// node.
         NodeId createFileAndDbNode(const SyncName &name, const std::string &content, const SyncName &linkName = {},
                                    int64_t dbNodeSizeOffset = 0);
+
+        /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and returns its exit info.
+        ExitInfo runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath);
 
         /// Runs ErrorQuickResolveHardlinkJob::quickResolve on the current syncPal and asserts that it succeeds.
         void runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath);

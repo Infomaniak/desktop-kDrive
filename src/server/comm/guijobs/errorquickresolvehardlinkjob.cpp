@@ -22,6 +22,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
+#include "libparms/db/parmsdb.h"
 #include "libsyncengine/db/dbnode.h"
 #include "libsyncengine/jobs/local/genericlocaldeletejob.h"
 #include "libsyncengine/jobs/local/localcopyjob.h"
@@ -100,9 +101,38 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
         LOGW_WARN(_logger, L"Error in SyncDb::node for node id " << CommonUtility::s2ws(_nodeId));
         return ExitCode::DbError;
     }
+    if (!nodeFound) {
+        // The node is no longer in the sync database: reject the request before any file system operation, as the next
+        // synchronization already handles the item.
+        LOGW_WARN(_logger, L"Node not found in the sync database for node id " << CommonUtility::s2ws(_nodeId));
+        return ExitCode::InvalidOperation;
+    }
+
+    // The path is provided by the GUI: reject any empty, absolute or escaping path before any file system operation.
+    if (_relativeLocalPath.empty() || _relativeLocalPath.is_absolute()) {
+        LOGW_WARN(_logger, L"The reported path is empty or absolute: " << Utility::formatSyncPath(_relativeLocalPath));
+        return ExitCode::InvalidOperation;
+    }
+    const SyncPath seedPath = localPath / _relativeLocalPath;
+    std::error_code canonicalEc;
+    const SyncPath canonicalSeedPath = std::filesystem::weakly_canonical(seedPath, canonicalEc);
+    if (canonicalEc) {
+        LOGW_WARN(_logger, L"Error in std::filesystem::weakly_canonical for " << Utility::formatSyncPath(seedPath) << L": "
+                                                                              << Utility::formatStdError(canonicalEc));
+        return ExitCode::SystemError;
+    }
+    const SyncPath canonicalLocalPath = std::filesystem::weakly_canonical(localPath, canonicalEc);
+    if (canonicalEc) {
+        LOGW_WARN(_logger, L"Error in std::filesystem::weakly_canonical for " << Utility::formatSyncPath(localPath) << L": "
+                                                                              << Utility::formatStdError(canonicalEc));
+        return ExitCode::SystemError;
+    }
+    if (!CommonUtility::isDescendantOrEqual(canonicalSeedPath, canonicalLocalPath)) {
+        LOGW_WARN(_logger, L"The reported path is located outside of the sync root: " << Utility::formatSyncPath(seedPath));
+        return ExitCode::InvalidOperation;
+    }
 
     // Enumerate all the existing paths of the file, starting from the path reported in the error.
-    const SyncPath seedPath = localPath / _relativeLocalPath;
     std::vector<SyncPath> hardlinkPaths;
     IoError ioError = IoError::Success;
     if (!IoHelper::getHardlinkPaths(seedPath, hardlinkPaths, ioError, localPath)) {
@@ -113,6 +143,20 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
             LOGW_WARN(_logger, L"Error in IoHelper::getHardlinkPaths for " << Utility::formatSyncPath(seedPath) << L": "
                                                                            << Utility::formatIoError(ioError));
             return ExitCode::SystemError;
+        }
+    } else {
+        // The seed path still exists: check that it refers to the node reported in the error, so that no other item can be
+        // removed by mistake.
+        NodeId seedNodeId;
+        if (!IoHelper::getNodeId(seedPath, seedNodeId)) {
+            LOGW_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(seedPath));
+            return ExitCode::SystemError;
+        }
+        if (seedNodeId != _nodeId) {
+            LOGW_WARN(_logger, L"The item located at " << Utility::formatSyncPath(seedPath)
+                                                       << L" does not refer to the reported node "
+                                                       << CommonUtility::s2ws(_nodeId));
+            return ExitCode::InvalidOperation;
         }
     }
 
@@ -157,8 +201,8 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
             SyncPath relativeDestinationPath;
             uint16_t counter = 0;
             do {
-                const SyncName suffix =
-                        Str(" (") + Str2SyncName(std::to_string(counter)) + Str(")"); // TODO : use format when fully moved to c++20
+                const SyncName suffix = Str(" (") + Str2SyncName(std::to_string(counter)) +
+                                        Str(")"); // TODO : use format when fully moved to c++20
                 const SyncName filename = counter == 0 ? seedPath.filename().native()
                                                        : seedPath.stem().native() + suffix + seedPath.extension().native();
                 const SyncPath destinationPath = rescueFolderPath / filename;
@@ -182,12 +226,30 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
         // Remove the item from the temporary blacklist, if any, so that the file system observer processes the deletion of the
         // links and the download of the file during the next synchronization.
         syncPal->removeItemFromTmpBlacklist(_nodeId, ReplicaSide::Local);
-        if (nodeFound && dbNode.hasRemoteNodeId()) {
+        if (dbNode.hasRemoteNodeId()) {
             syncPal->removeItemFromTmpBlacklist(dbNode.nodeIdRemote().value(), ReplicaSide::Remote);
         }
 
-        // Hard remove all the links located under the sync root.
+        // Delete the seed path last: if the deletion of a link fails, the job can be retried and the seed path is then
+        // still available to enumerate the remaining links.
+        std::vector<SyncPath> pathsToDelete;
         for (const auto &path: hardlinkPathsUnderSyncRoot) {
+            if (path != seedPath) (void) pathsToDelete.push_back(path);
+        }
+        (void) pathsToDelete.push_back(seedPath);
+
+        // Hard remove all the links located under the sync root. Before each removal, check that the path still refers to
+        // the same item as the seed path, so that no other item can be removed by mistake.
+        for (const auto &path: pathsToDelete) {
+            std::error_code equivalentEc;
+            const bool isSameFile = std::filesystem::equivalent(path, seedPath, equivalentEc);
+            if (equivalentEc || !isSameFile) {
+                // The link has disappeared or the item has been replaced: skip it, the next synchronization handles it.
+                LOGW_WARN(_logger, L"Skip " << Utility::formatSyncPath(path) << L" as it does not refer to the reported item: "
+                                            << Utility::formatStdError(equivalentEc));
+                continue;
+            }
+
             GenericLocalDeleteJob deleteJob(path, syncPal->cacheDirectory(), GenericLocalDeleteJob::ForceHardDelete::Yes);
             if (ExitInfo exitInfo = deleteJob.runSynchronously(); !exitInfo) {
                 LOGW_WARN(_logger, L"Failed to delete " << Utility::formatSyncPath(path) << L": " << exitInfo);
@@ -197,19 +259,38 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
     }
 
     // Remove the node from the sync database.
-    if (nodeFound) {
-        bool deleteNodeFound = false;
-        if (!syncDb->deleteNode(dbNode.nodeId(), deleteNodeFound)) {
-            LOGW_WARN(_logger, L"Error in SyncDb::deleteNode for DB node ID=" << dbNode.nodeId());
-            return ExitCode::DbError;
-        }
-        if (!deleteNodeFound) {
-            LOGW_WARN(_logger, L"Node not found in the sync database for DB node ID=" << dbNode.nodeId());
-        }
+    bool deleteNodeFound = false;
+    if (!syncDb->deleteNode(dbNode.nodeId(), deleteNodeFound)) {
+        LOGW_WARN(_logger, L"Error in SyncDb::deleteNode for DB node ID=" << dbNode.nodeId());
+        return ExitCode::DbError;
+    }
+    if (!deleteNodeFound) {
+        LOGW_WARN(_logger, L"Node not found in the sync database for DB node ID=" << dbNode.nodeId());
     }
 
-    LOG_INFO(_logger, "Hardlink quick resolve done for syncDbId=" << _syncDbId << ", errorDbId=" << _errorDbId << ", nodeId="
-                                                                  << _nodeId);
+    // Remove the corresponding error from the parameters database, otherwise the GUI would keep displaying the error card
+    // after a restart (see ErrorDeleteJob).
+    Error error;
+    bool errorFound = false;
+    if (!ParmsDb::instance()->selectError(_errorDbId, error, errorFound)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectError");
+        return ExitCode::DbError;
+    }
+    if (errorFound) {
+        bool deleteErrorFound = false;
+        if (!ParmsDb::instance()->deleteError(_errorDbId, deleteErrorFound)) {
+            LOG_WARN(_logger, "Error in ParmsDb::deleteError");
+            return ExitCode::DbError;
+        }
+        if (!deleteErrorFound) {
+            LOG_WARN(_logger, "Error with errorDbId=" << _errorDbId << ": not found in database");
+        }
+    } else {
+        LOG_INFO(_logger, "Error with errorDbId=" << _errorDbId << ": already removed from the database");
+    }
+
+    LOG_INFO(_logger,
+             "Hardlink quick resolve done for syncDbId=" << _syncDbId << ", errorDbId=" << _errorDbId << ", nodeId=" << _nodeId);
 
     return ExitCode::Ok;
 }

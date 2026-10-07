@@ -116,14 +116,18 @@ NodeId TestErrorQuickResolveHardlinkJob::createFileAndDbNode(const SyncName &nam
     return std::to_string(fileStat.inode);
 }
 
-void TestErrorQuickResolveHardlinkJob::runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath) {
+ExitInfo TestErrorQuickResolveHardlinkJob::runQuickResolveExpect(const NodeId &nodeId, const SyncPath &relativePath) {
     ErrorQuickResolveHardlinkJob job(nullptr, 1, Poco::DynamicStruct(), nullptr);
     job._syncDbId = _syncPal->syncDbId();
     job._errorDbId = 42;
     job._nodeId = nodeId;
     job._relativeLocalPath = relativePath;
 
-    const ExitInfo exitInfo = job.quickResolve(_syncPal);
+    return job.quickResolve(_syncPal);
+}
+
+void TestErrorQuickResolveHardlinkJob::runQuickResolve(const NodeId &nodeId, const SyncPath &relativePath) {
+    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, relativePath);
     CPPUNIT_ASSERT_MESSAGE("quickResolve failed: " + std::string(exitInfo), exitInfo.code() == ExitCode::Ok);
 }
 
@@ -227,6 +231,114 @@ void TestErrorQuickResolveHardlinkJob::testLinkOutsideSyncRoot() {
     CPPUNIT_ASSERT_MESSAGE("The hardlink under the sync root has not been deleted",
                            !pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("The hardlink outside of the sync root has been deleted", pathExists(outsideLinkPath));
+    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
+                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
+}
+
+void TestErrorQuickResolveHardlinkJob::testRescueFilenameCollision() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const std::string content("Hello, World!");
+    // Make the size stored in the database differ from the actual file size: the file is not in sync with the database.
+    const NodeId nodeId = createFileAndDbNode(fileName, content, linkName, 1);
+
+    // Pre-create an item named as the rescue copy would be: it must be preserved.
+    const SyncPath rescueFolderPath = _localTempDir.path() / FileRescuer::rescueFolderName();
+    std::error_code ec;
+    std::filesystem::create_directory(rescueFolderPath, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the rescue folder: " + ec.message(), !ec);
+    const SyncPath existingRescueFilePath = rescueFolderPath / fileName;
+    const std::string existingContent("Already here");
+    {
+        std::ofstream file(existingRescueFilePath, std::ios::binary);
+        file << existingContent;
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the existing rescue copy", file.good());
+    }
+
+    runQuickResolve(nodeId, SyncPath(fileName));
+
+    CPPUNIT_ASSERT_MESSAGE("The existing rescue copy has been overwritten", pathExists(existingRescueFilePath));
+    std::ifstream existingRescueFile(existingRescueFilePath, std::ios::binary);
+    const std::string existingRescuedContent((std::istreambuf_iterator<char>(existingRescueFile)),
+                                             std::istreambuf_iterator<char>());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("The existing rescue copy content does not match", existingContent, existingRescuedContent);
+
+    // The file content may differ from the remote version: a copy must have been saved into the rescue folder with a
+    // suffixed name.
+    const SyncPath suffixedRescueFilePath = rescueFolderPath / (Str("file1 (1)") + Str(".txt"));
+    CPPUNIT_ASSERT_MESSAGE("The file has not been rescued with a suffixed name", pathExists(suffixedRescueFilePath));
+    std::ifstream suffixedRescueFile(suffixedRescueFilePath, std::ios::binary);
+    const std::string suffixedRescuedContent((std::istreambuf_iterator<char>(suffixedRescueFile)),
+                                             std::istreambuf_iterator<char>());
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("The suffixed rescue copy content does not match", content, suffixedRescuedContent);
+
+    CPPUNIT_ASSERT_MESSAGE("The node has not been deleted from the database", !nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file has not been deleted", !pathExists(_localTempDir.path() / fileName));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink has not been deleted", !pathExists(_localTempDir.path() / linkName));
+}
+
+void TestErrorQuickResolveHardlinkJob::testUnknownNode() {
+    const NodeId nodeId("999999");
+    CPPUNIT_ASSERT_MESSAGE("The node should not be in the database", !nodeExistsInDb(nodeId));
+
+    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, SyncPath(Str("file1.txt")));
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a node that is not present in the sync database",
+                           exitInfo.code() == ExitCode::InvalidOperation);
+}
+
+void TestErrorQuickResolveHardlinkJob::testInvalidPath() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const NodeId nodeId = createFileAndDbNode(fileName, "Hello, World!", linkName);
+
+    // An absolute path must be rejected.
+    ExitInfo exitInfo = runQuickResolveExpect(nodeId, _localTempDir.path() / fileName);
+    CPPUNIT_ASSERT_MESSAGE("The job must reject an absolute path", exitInfo.code() == ExitCode::InvalidOperation);
+
+    // A path escaping the sync root must be rejected.
+    exitInfo = runQuickResolveExpect(nodeId, SyncPath(Str("..")) / Str("escaped.txt"));
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a path escaping the sync root", exitInfo.code() == ExitCode::InvalidOperation);
+
+    CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(_localTempDir.path() / fileName));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
+    CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
+                           !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
+}
+
+void TestErrorQuickResolveHardlinkJob::testNodeIdMismatch() {
+    const SyncName fileName = Str("file1.txt");
+    const SyncName linkName = Str("link1.txt");
+    const std::string content("Hello, World!");
+    const SyncPath filePath = _localTempDir.path() / fileName;
+    {
+        std::ofstream file(filePath, std::ios::binary);
+        file << content;
+        CPPUNIT_ASSERT_MESSAGE("Failed to create the file", file.good());
+    }
+    std::error_code ec;
+    std::filesystem::create_hard_link(filePath, _localTempDir.path() / linkName, ec);
+    CPPUNIT_ASSERT_MESSAGE("Failed to create the hardlink: " + ec.message(), !ec);
+
+    // Insert a node referencing an inode that is not the one of the file located at the reported path.
+    bool found = false;
+    DbNodeId rootDbNodeId = 0;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->dbId(ReplicaSide::Local, NodeId("1"), rootDbNodeId, found));
+    CPPUNIT_ASSERT(found);
+    const NodeId nodeId("999999");
+    DbNode fileDbNode(0, rootDbNodeId, fileName, fileName, nodeId, "r_file1", std::nullopt, 123, 123, NodeType::File, 10);
+    bool constraintError = false;
+    DbNodeId fileDbNodeId = 0;
+    CPPUNIT_ASSERT(_syncPal->syncDb()->insertNode(fileDbNode, fileDbNodeId, constraintError));
+    CPPUNIT_ASSERT(!constraintError);
+
+    const ExitInfo exitInfo = runQuickResolveExpect(nodeId, SyncPath(fileName));
+    CPPUNIT_ASSERT_MESSAGE("The job must reject a seed path that does not refer to the reported node",
+                           exitInfo.code() == ExitCode::InvalidOperation);
+
+    CPPUNIT_ASSERT_MESSAGE("The node has been deleted from the database", nodeExistsInDb(nodeId));
+    CPPUNIT_ASSERT_MESSAGE("The file has been deleted", pathExists(filePath));
+    CPPUNIT_ASSERT_MESSAGE("The hardlink has been deleted", pathExists(_localTempDir.path() / linkName));
     CPPUNIT_ASSERT_MESSAGE("No rescue copy should have been made",
                            !pathExists(_localTempDir.path() / FileRescuer::rescueFolderName()));
 }
