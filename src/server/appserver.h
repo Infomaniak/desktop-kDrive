@@ -225,13 +225,7 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         static std::shared_ptr<CommManager> commManager() { return _commManager; }
 
-        static bool useOldCommServer() {
-#if defined(KD_WINDOWS) || defined(KD_MACOS)
-            return KDRIVE_VERSION_MAJOR < 4;
-#else
-            return true; // TODO (KDRIVE_VERSION_MAJOR < 4);
-#endif
-        }
+        static bool useOldCommServer() { return KDRIVE_VERSION_MAJOR < 4; }
 
         static bool useCommManager([[maybe_unused]] bool checkIfInitialized = true) {
 #if defined(KD_WINDOWS) || defined(KD_MACOS)
