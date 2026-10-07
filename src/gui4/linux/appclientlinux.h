@@ -144,7 +144,7 @@ class AppClientLinux : public QApplication {
         MainSelectionStore _mainSelectionStore{_appCache, this};
         MainSidebarController _mainSidebarController{_appCache, _mainSelectionStore, this};
         ParametersService _parametersService{_serverCommService, _parametersStore, this};
-        ManyDeletesController _manyDeletesController{_serverCommService, _appCache, _parametersService, this};
+        ManyDeletesController _manyDeletesController{_serverCommService, _appCache, this};
         AppRouter _appRouter{this};
         ServiceActionTracker _serviceActionTracker{this};
         ServiceEventBus _serviceEventBus{this};

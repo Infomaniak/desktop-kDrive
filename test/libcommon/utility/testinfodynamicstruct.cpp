@@ -19,10 +19,11 @@
 #include "testinfodynamicstruct.h"
 
 #include "libcommon/data/error.h"
+#include "libcommon/data/syncfileitem.h"
 #include "libcommon/info/nodeinfo.h"
-#include "libcommon/info/syncfileiteminfo.h"
 
 #include <cstdint>
+#include <optional>
 
 namespace KDC {
 
@@ -76,36 +77,56 @@ void TestInfoDynamicStruct::testNodeInfoRoundTrip() {
     CPPUNIT_ASSERT_EQUAL(false, parsed.accessDenied());
 }
 
-void TestInfoDynamicStruct::testSyncFileItemInfoRoundTrip() {
-    SyncFileItemInfo source(NodeType::Directory, QString("docs/report.txt"), QString("docs/report-final.txt"), QString("local-9"),
-                            QString("remote-10"), SyncDirection::Down, SyncFileInstruction::Update, SyncFileStatus::Syncing,
-                            ConflictType::MoveCreate, InconsistencyType::PathLength, CancelType::TmpBlacklisted);
-    source.setError(QString("temporary error"));
-    source.setSize(int64_t{2048});
-    source.setProgress(int32_t{73});
+void TestInfoDynamicStruct::testSyncFileItemRoundTrip() {
+    SyncFileItem source(NodeType::Directory, SyncPath("docs/report.txt"), SyncPath("docs/report-final.txt"), NodeId("local-9"),
+                        NodeId("remote-10"), SyncDirection::Down, SyncFileInstruction::Update, SyncFileStatus::Syncing,
+                        ConflictType::MoveCreate, InconsistencyType::PathLength, CancelType::TmpBlacklisted, int64_t{2048},
+                        false);
+    source.setError("temporary error");
+    source.setProgress(int16_t{73});
     source.setOperationId(UniqueId{555});
 
     Poco::DynamicStruct dstruct;
     source.toDynamicStruct(dstruct);
 
-    SyncFileItemInfo parsed;
+    SyncFileItem parsed;
     parsed.fromDynamicStruct(dstruct);
 
     CPPUNIT_ASSERT_EQUAL(NodeType::Directory, parsed.type());
-    CPPUNIT_ASSERT_EQUAL(std::string("docs/report.txt"), parsed.path().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("docs/report-final.txt"), parsed.newPath().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("local-9"), parsed.localNodeId().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("remote-10"), parsed.remoteNodeId().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("docs/report.txt"), parsed.path().string());
+    CPPUNIT_ASSERT(parsed.newPath().has_value());
+    CPPUNIT_ASSERT_EQUAL(std::string("docs/report-final.txt"), parsed.newPath()->string());
+    CPPUNIT_ASSERT(parsed.localNodeId().has_value());
+    CPPUNIT_ASSERT_EQUAL(std::string("local-9"), *parsed.localNodeId());
+    CPPUNIT_ASSERT(parsed.remoteNodeId().has_value());
+    CPPUNIT_ASSERT_EQUAL(std::string("remote-10"), *parsed.remoteNodeId());
     CPPUNIT_ASSERT_EQUAL(SyncDirection::Down, parsed.direction());
     CPPUNIT_ASSERT_EQUAL(SyncFileInstruction::Update, parsed.instruction());
     CPPUNIT_ASSERT_EQUAL(SyncFileStatus::Syncing, parsed.status());
     CPPUNIT_ASSERT_EQUAL(ConflictType::MoveCreate, parsed.conflict());
     CPPUNIT_ASSERT_EQUAL(InconsistencyType::PathLength, parsed.inconsistency());
     CPPUNIT_ASSERT_EQUAL(CancelType::TmpBlacklisted, parsed.cancelType());
-    CPPUNIT_ASSERT_EQUAL(std::string("temporary error"), parsed.error().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("temporary error"), parsed.error());
     CPPUNIT_ASSERT_EQUAL(int64_t{2048}, parsed.size());
-    CPPUNIT_ASSERT_EQUAL(int32_t{73}, parsed.progress());
+    CPPUNIT_ASSERT_EQUAL(73, parsed.progress());
     CPPUNIT_ASSERT_EQUAL(UniqueId{555}, parsed.operationId());
+}
+
+void TestInfoDynamicStruct::testSyncFileItemRoundTripWithoutOptionalValues() {
+    const SyncFileItem source(NodeType::File, SyncPath("docs/new.txt"), std::nullopt, std::nullopt, std::nullopt,
+                              SyncDirection::Up, SyncFileInstruction::Put, SyncFileStatus::Success, ConflictType::None,
+                              InconsistencyType::None, CancelType::None, int64_t{0}, false);
+
+    Poco::DynamicStruct dstruct;
+    source.toDynamicStruct(dstruct);
+
+    SyncFileItem parsed;
+    parsed.fromDynamicStruct(dstruct);
+
+    CPPUNIT_ASSERT_EQUAL(std::string("docs/new.txt"), parsed.path().string());
+    CPPUNIT_ASSERT(!parsed.newPath().has_value());
+    CPPUNIT_ASSERT(!parsed.localNodeId().has_value());
+    CPPUNIT_ASSERT(!parsed.remoteNodeId().has_value());
 }
 
 } // namespace KDC

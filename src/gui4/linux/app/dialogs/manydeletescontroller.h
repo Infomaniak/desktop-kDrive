@@ -30,7 +30,6 @@ namespace KDC {
 
 class AppCache;
 class CommService;
-class ParametersService;
 
 /**
  * Process-long presentation controller for server-reported mass deletion warnings.
@@ -55,8 +54,7 @@ class ManyDeletesController final : public QObject {
         };
         Q_ENUM(Severity)
 
-        explicit ManyDeletesController(CommService &commService, AppCache &appCache, ParametersService &parametersService,
-                                       QObject *parent = nullptr);
+        explicit ManyDeletesController(CommService &commService, AppCache &appCache, QObject *parent = nullptr);
 
         [[nodiscard]] Severity severity() const;
         [[nodiscard]] bool visible() const { return !_notifications.empty(); }
@@ -96,7 +94,6 @@ class ManyDeletesController final : public QObject {
 
         CommService &_commService;
         AppCache &_appCache;
-        ParametersService &_parametersService;
         std::deque<Notification> _notifications;
         bool _busy{false};
         bool _submissionFailed{false};
