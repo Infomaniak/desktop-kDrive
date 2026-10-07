@@ -258,6 +258,7 @@
 - `appclientlinux.*`: top-level app wiring (logging, QML warning forwarding, IPC lifecycle,
   dispatcher/service/coordinator ownership).
 - `app/appconstants.h`: app-level non-translatable constants, mirroring the Windows `AppConstants` role where useful.
+- `app/fileformat.*`: shared file-size formatting, aligned with the macOS and Windows clients.
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
@@ -462,8 +463,10 @@
   children, and sizes. The production adapter uses `CommService`; tests and future settings integration can provide the
   same contract without onboarding dependencies.
 - `app/syncconfiguration/localpaths.*`: local synchronization-folder rules shared by onboarding and future settings
-  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, and the free-folder
-  derivation that appends the attempt count without a separator, as the server does.
+  work: the `~`-shortened display form used at the QML boundary only, folder overlap detection, the free-folder
+  derivation that appends the attempt count without a separator, as the server does, and
+  `resolveExistingPathBelowSyncRoot`, which every "open locally" action uses so that a path never escapes the
+  synchronization root.
 - `app/syncconfiguration/remotefoldertreemodel.*`: reusable lazy `QAbstractItemModel` for selective synchronization. It
   owns canonical blacklist editing, tri-state propagation, access-denied rows, retryable child loads, and visible-row
   size loading. It must remain independent from onboarding state and synchronization database ids. A folder is included
