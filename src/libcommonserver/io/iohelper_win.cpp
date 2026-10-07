@@ -1116,19 +1116,22 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
         // There is no reliable system API to enumerate the links of an item on Windows: search for the items sharing the
         // same size and modification time (all the links of an item share these properties) while recursively iterating
         // over the search root directory, then check that they actually refer to the same file.
-        _forEachLinkCandidate(
-                seedPath, searchRoot,
-                [&seedSize, &seedModificationTime, &seedPath, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
-                    // Skip the entries that cannot be links of the seed item before comparing the file identifiers, which
-                    // requires opening the items.
-                    std::error_code entryEc;
-                    if (entry.file_size(entryEc) != seedSize || entryEc) return;
-                    if (entry.last_write_time(entryEc) != seedModificationTime || entryEc) return;
+        if (!_forEachLinkCandidate(
+                    seedPath, searchRoot,
+                    [&seedSize, &seedModificationTime, &seedPath, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
+                        // Skip the entries that cannot be links of the seed item before comparing the file identifiers, which
+                        // requires opening the items.
+                        std::error_code entryEc;
+                        if (entry.file_size(entryEc) != seedSize || entryEc) return;
+                        if (entry.last_write_time(entryEc) != seedModificationTime || entryEc) return;
 
-                    std::error_code equivalentEc;
-                    const bool isSameFile = std::filesystem::equivalent(entry.path(), seedPath, equivalentEc);
-                    if (!equivalentEc && isSameFile) hardlinkPaths.push_back(entry.path());
-                });
+                        std::error_code equivalentEc;
+                        const bool isSameFile = std::filesystem::equivalent(entry.path(), seedPath, equivalentEc);
+                        if (!equivalentEc && isSameFile) hardlinkPaths.push_back(entry.path());
+                    },
+                    ioError)) {
+            return false;
+        }
     } catch (const std::exception &e) {
         ioError = IoError::Unknown;
         LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());

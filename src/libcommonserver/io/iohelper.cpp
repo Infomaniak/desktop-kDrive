@@ -683,23 +683,26 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     return true;
 }
 
-void IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
-                                     const std::function<void(const std::filesystem::directory_entry &entry)> &visit) {
-    if (!searchRoot) return;
+bool IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
+                                     const std::function<void(const std::filesystem::directory_entry &entry)> &visit,
+                                     IoError &ioError) {
+    if (!searchRoot) return true;
 
     std::error_code ec;
     std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::skip_permission_denied, ec);
     if (ec) {
+        ioError = stdError2ioError(ec);
         LOGW_WARN(logger(),
                   L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": " << Utility::formatStdError(ec));
-        return;
+        return false;
     }
 
     for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
         if (ec) {
+            ioError = stdError2ioError(ec);
             LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
                                                                << Utility::formatStdError(ec));
-            break; // The iterator is the end iterator after a failed increment: stop the enumeration.
+            return false; // The iterator is the end iterator after a failed increment: stop the enumeration.
         }
 
         const SyncPath entryPath = it->path();
@@ -710,6 +713,8 @@ void IoHelper::_forEachLinkCandidate(const SyncPath &seedPath, const std::option
 
         visit(*it);
     }
+
+    return true;
 }
 
 #if !defined(KD_WINDOWS)
@@ -733,13 +738,18 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
 
         // There is no system API to enumerate the links of an item on POSIX systems: search for the items sharing the
         // same inode while recursively iterating over the search root directory.
-        _forEachLinkCandidate(seedPath, searchRoot, [&info, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
-            struct stat entryInfo;
-            if (::stat(entry.path().string().c_str(), &entryInfo) != 0) return;
-            if (entryInfo.st_dev == info.st_dev && entryInfo.st_ino == info.st_ino) {
-                hardlinkPaths.push_back(entry.path());
-            }
-        });
+        if (!_forEachLinkCandidate(
+                    seedPath, searchRoot,
+                    [&info, &hardlinkPaths](const std::filesystem::directory_entry &entry) {
+                        struct stat entryInfo;
+                        if (::stat(entry.path().string().c_str(), &entryInfo) != 0) return;
+                        if (entryInfo.st_dev == info.st_dev && entryInfo.st_ino == info.st_ino) {
+                            hardlinkPaths.push_back(entry.path());
+                        }
+                    },
+                    ioError)) {
+            return false;
+        }
     } catch (const std::exception &e) {
         ioError = IoError::Unknown;
         LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());

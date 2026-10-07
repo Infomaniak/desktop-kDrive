@@ -228,7 +228,8 @@ struct IoHelper {
           \param searchRoot is the directory recursively searched for additional links. When it is not provided, no search
           is performed.
           \return true if no unexpected error occurred, false otherwise. If the item indicated by seedPath does not exist,
-          ioError is set with IoError::NoSuchFileOrDirectory.
+         ioError is set with IoError::NoSuchFileOrDirectory. When false is returned because the search itself failed,
+         hardlinkPaths may be incomplete and must not be used.
          */
         static bool getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
                                      const std::optional<SyncPath> &searchRoot = std::nullopt) noexcept;
@@ -651,10 +652,18 @@ struct IoHelper {
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
         //! Invokes visit for each regular file entry of the directory tree rooted at searchRoot, except the entry indicated
-        //! by seedPath. Iteration errors are logged and interrupt the enumeration; visit is then only invoked for the entries
-        //! found before the error.
-        static void _forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
-                                          const std::function<void(const std::filesystem::directory_entry &entry)> &visit);
+        //! by seedPath.
+        /*!
+          \param seedPath is the path of the item being processed. The corresponding entry is skipped.
+          \param searchRoot is the directory recursively searched. When it is not provided, visit is never invoked.
+          \param visit is the function invoked for each candidate entry.
+          \param ioError holds the error returned when the directory iteration fails.
+          \return true if the enumeration completed, false if an iteration error occurred, in which case ioError is set
+          with the error and visit may have been invoked for only part of the entries.
+         */
+        static bool _forEachLinkCandidate(const SyncPath &seedPath, const std::optional<SyncPath> &searchRoot,
+                                          const std::function<void(const std::filesystem::directory_entry &entry)> &visit,
+                                          IoError &ioError);
 
 #if defined(KD_MACOS)
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
