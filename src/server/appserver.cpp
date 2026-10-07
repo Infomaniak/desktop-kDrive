@@ -1466,6 +1466,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     !exitinfo) {
                     LOG_WARN(_logger, "Error in stopAllSyncsTask for driveDbId=" << driveDbId << " : " << exitinfo);
                     addError(Error(ERR_ID, exitinfo));
+                    sendDriveDeletionFailed(driveDbId);
                     return;
                 }
                 if (const ExitInfo exitInfo = AppServer::deleteDrive(driveDbId); !exitInfo) {
