@@ -79,6 +79,8 @@ IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
             return IoError::FileOrDirectoryCorrupted;
         case ERROR_CANT_RESOLVE_FILENAME:
             return IoError::TooManySymbolicLinkLevels;
+        case ERROR_CLOUD_FILE_INCOMPATIBLE_HARDLINKS:
+            return IoError::HardlinkNotSupported;
         default:
             if (Log::isSet()) {
                 LOGW_WARN(logger, L"Unhandled DWORD error: " << utility_base::getErrorMessage(error));
