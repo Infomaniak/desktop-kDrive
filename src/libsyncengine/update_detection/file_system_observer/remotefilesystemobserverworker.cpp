@@ -166,7 +166,7 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const std::vector<RemoteN
     const ForcedUpdate updateFlag = initializing() || updating() ? ForcedUpdate::Asked : ForcedUpdate::None;
 
     for (const auto &remoteDirId: specialFoldersRemoteIds) {
-        if (_blackList.contains(remoteDirId)) continue;
+        if (blackList().contains(remoteDirId)) continue;
 
         bool hasChanges = false;
         if (const auto exitInfo = checkIfRemoteDirHasChanges(remoteDirId, updateFlag, longPollJobs, hasChanges); !exitInfo)
@@ -271,7 +271,8 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
 ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(bool &validSnapshotBackupExists) const {
     validSnapshotBackupExists = false;
 
-    if (!_syncPal->remoteLiveSnapshotBackup()) return ExitCode::Ok;
+    if (!_syncPal->remoteLiveSnapshotBackup().snapshot) return ExitCode::Ok;
+    if (_syncPal->remoteLiveSnapshotBackup().blacklist != blackList()) return ExitCode::Ok;
 
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
     if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
@@ -308,9 +309,9 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
 }
 
 ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
-    if (!_syncPal->remoteLiveSnapshotBackup()) return {ExitCode::LogicError, ExitCause::Unknown};
+    if (!_syncPal->remoteLiveSnapshotBackup().snapshot) return {ExitCode::LogicError, ExitCause::Unknown};
 
-    _liveSnapshot.restoreFromBackup(*_syncPal->remoteLiveSnapshotBackup());
+    _liveSnapshot.restoreFromBackup(*_syncPal->remoteLiveSnapshotBackup().snapshot);
     _liveSnapshot.setValid(true);
     _syncPal->clearRemoteLiveSnapshotBackup();
 
@@ -318,6 +319,8 @@ ExitInfo RemoteFileSystemObserverWorker::restoreRemoteSnapshotBackup() {
 }
 
 ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validSnapshotBackupExists) {
+    validSnapshotBackupExists = false;
+
     // Retrieve the list of blacklisted folders and check if it has changed.
     RemoteNodeIdSet newBlackList;
     if (const ExitInfo exitInfo =
@@ -328,22 +331,16 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
         return exitInfo;
     }
 
-    const bool blackListHasChanged = _blackList != newBlackList;
-    if (blackListHasChanged) {
-        LOG_SYNCPAL_INFO(_logger, "Blacklisted folders updated. Remote snapshot backup will be ignored.");
-        _blackList = newBlackList;
-    }
+    setBlackList(newBlackList);
 
     LOG_SYNCPAL_INFO(_logger, "Checking if a valid remote snapshot backup exists for driveDbId=" << _driveDbId << " and syncDbId="
                                                                                                  << _syncPal->syncDbId() << ".");
-    validSnapshotBackupExists = !blackListHasChanged;
-    if (!blackListHasChanged) {
-        if (const auto validBackupExitInfo = checkIfValidRemoteSnapshotBackupExists(validSnapshotBackupExists);
-            !validBackupExitInfo) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: "
-                                               << validBackupExitInfo);
-            return validBackupExitInfo;
-        }
+    validSnapshotBackupExists = false;
+    if (const auto validBackupExitInfo = checkIfValidRemoteSnapshotBackupExists(validSnapshotBackupExists);
+        !validBackupExitInfo) {
+        LOG_SYNCPAL_DEBUG(_logger, "Error in RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists: "
+                                           << validBackupExitInfo);
+        return validBackupExitInfo;
     }
 
     if (validSnapshotBackupExists) {
@@ -459,7 +456,7 @@ ExitInfo RemoteFileSystemObserverWorker::runListingContinueJob(const RemoteNodeI
     }
 
     try {
-        job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, cursorData.cursor, _blackList);
+        job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, remoteDirId, cursorData.cursor, blackList());
     } catch (const JobException &e) {
         LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
                                           << _driveDbId << ", error=" << e.what());
@@ -793,7 +790,7 @@ ExitInfo RemoteFileSystemObserverWorker::createGetItemsInRemoteDirJob(
         const RemoteNodeId &remoteDirId, std::shared_ptr<CsvFullFileListWithCursorJob> &csvFullFileListWithCursorJob) {
     csvFullFileListWithCursorJob = nullptr;
     try {
-        csvFullFileListWithCursorJob = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, _blackList,
+        csvFullFileListWithCursorJob = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, remoteDirId, blackList(),
                                                                                       CsvFullFileListWithCursorJob::Zip::On);
     } catch (const std::bad_alloc &badAllocationException) {
         return exception2ExitCode(badAllocationException);
@@ -1447,7 +1444,7 @@ ExitInfo RemoteFileSystemObserverWorker::getSpecialFoldersRemoteIds(std::vector<
 
     specialFoldersRemoteIds = {userPrivateFolderRemoteId, commonDocumentsFolderRemoteId, sharedFolderRemoteId};
     (void) std::erase_if(specialFoldersRemoteIds,
-                         [this](const auto &remoteNodeId) { return remoteNodeId.empty() || _blackList.contains(remoteNodeId); });
+                         [this](const auto &remoteNodeId) { return remoteNodeId.empty() || blackList().contains(remoteNodeId); });
 
     return ExitCode::Ok;
 }
@@ -1590,5 +1587,17 @@ void RemoteFileSystemObserverWorker::resume() {
 
     startExecutionThread();
 }
+
+void RemoteFileSystemObserverWorker::setBlackList(RemoteNodeIdSet blackList) {
+    std::scoped_lock lock(_blackListMutex);
+
+    _blackList = std::move(blackList);
+};
+
+const RemoteNodeIdSet &RemoteFileSystemObserverWorker::blackList() const {
+    std::scoped_lock lock(_blackListMutex);
+
+    return _blackList;
+};
 
 } // namespace KDC
