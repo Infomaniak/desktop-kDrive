@@ -474,6 +474,8 @@ public enum KDriveLocalizable {
   public static let errNotYetSupportedCharTitle = KDriveLocalizable.tr("Localizable", "errNotYetSupportedCharTitle", fallback: "Unsupported character")
   /// loco:6998110a3f9ff4c3230a4eb2
   public static let errorConnectingToXPCServer = KDriveLocalizable.tr("Localizable", "errorConnectingToXPCServer", fallback: "Looks like we cannot load the app…")
+  /// loco:6ac60bf864441a81870fc9d2
+  public static let errorCopyingShareLink = KDriveLocalizable.tr("Localizable", "errorCopyingShareLink", fallback: "An error occurred while copying the link.")
   /// loco:69aa7fb3753c400c81087842
   public static let errorDeletingAccount = KDriveLocalizable.tr("Localizable", "errorDeletingAccount", fallback: "An error occurred while deleting your account.")
   /// loco:6995e49c8f25367fa9049f42

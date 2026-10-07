@@ -698,6 +698,9 @@
 /* loco:6998110a3f9ff4c3230a4eb2 */
 "errorConnectingToXPCServer" = "Looks like we cannot load the app…";
 
+/* loco:6ac60bf864441a81870fc9d2 */
+"errorCopyingShareLink" = "An error occurred while copying the link.";
+
 /* loco:69aa7fb3753c400c81087842 */
 "errorDeletingAccount" = "An error occurred while deleting your account.";
 
