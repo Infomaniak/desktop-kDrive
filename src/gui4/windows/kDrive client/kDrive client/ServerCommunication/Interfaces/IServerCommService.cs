@@ -152,7 +152,8 @@ namespace Infomaniak.kDrive.ServerCommunication.Interfaces
 
         // Quickly resolves a hardlink error by removing the corresponding node from the sync database and deleting all the
         // hardlinks located under the sync root. The file is saved into the rescue folder first if it is not in sync with the
-        // database. Returns true on success.
+        // database. The server rejects the request if the error is not the hardlink error of the given sync, node and path.
+        // Returns true on success.
         Task<bool> QuickResolveHardlink(DbId syncDbId, DbId errorDbId, NodeId localNodeId, string path, CancellationToken cancellationToken);
 
         // Acknowledges the "too many deletes" notification for a sync, telling the server whether to continue or revert.

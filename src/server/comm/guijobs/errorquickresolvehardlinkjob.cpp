@@ -93,6 +93,12 @@ ExitInfo ErrorQuickResolveHardlinkJob::process() {
 }
 
 ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPal> &syncPal) const {
+    // Reject an outdated or inconsistent request before any change, so that the error removed at the end is the one of the
+    // processed node.
+    if (ExitInfo exitInfo = checkParmsDbError(); !exitInfo) {
+        return exitInfo;
+    }
+
     // Fetch the corresponding node in the sync database. Deleting this node removes both replicas, so the next synchronization
     // will see the remote file as a new item and will download it again as a standard file.
     DbNode dbNode;
@@ -127,6 +133,39 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
 
     LOG_INFO(_logger,
              "Hardlink quick resolve done for syncDbId=" << _syncDbId << ", errorDbId=" << _errorDbId << ", nodeId=" << _nodeId);
+
+    return ExitCode::Ok;
+}
+
+ExitInfo ErrorQuickResolveHardlinkJob::checkParmsDbError() const {
+    Error error;
+    bool errorFound = false;
+    if (!ParmsDb::instance()->selectError(_errorDbId, error, errorFound)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectError for errorDbId=" << _errorDbId);
+        return ExitCode::DbError;
+    }
+    if (!errorFound) {
+        LOG_WARN(_logger, "Error not found in the parameters database for errorDbId=" << _errorDbId);
+        return ExitCode::InvalidOperation;
+    }
+
+    if (error.level() != ErrorLevel::Node || error.exitCode() != ExitCode::SystemError ||
+        error.exitCause() != ExitCause::HardlinkNotSupported) {
+        LOG_WARN(_logger, "The error with errorDbId=" << _errorDbId << " is not a hardlink error: level="
+                                                      << toString(error.level()) << ", exitCode=" << toString(error.exitCode())
+                                                      << ", exitCause=" << toString(error.exitCause()));
+        return ExitCode::InvalidOperation;
+    }
+
+    // Paths are compared element by element, so the result does not depend on the directory separator used by the GUI.
+    if (error.syncDbId() != _syncDbId || _nodeId.empty() || error.localNodeId() != _nodeId ||
+        error.path() != _relativeLocalPath) {
+        LOGW_WARN(_logger, L"The error with errorDbId=" << _errorDbId << L" does not match the reported item: syncDbId="
+                                                        << error.syncDbId() << L", nodeId="
+                                                        << CommonUtility::s2ws(error.localNodeId()) << L", path="
+                                                        << Utility::formatSyncPath(error.path()));
+        return ExitCode::InvalidOperation;
+    }
 
     return ExitCode::Ok;
 }
@@ -394,26 +433,15 @@ ExitInfo ErrorQuickResolveHardlinkJob::deleteDbNode(const std::shared_ptr<SyncPa
 }
 
 ExitInfo ErrorQuickResolveHardlinkJob::deleteParmsDbError() const {
-    // Remove the corresponding error from the parameters database, otherwise the GUI would keep displaying the error card after a
-    // restart (see ErrorDeleteJob).
-    Error error;
+    // Remove the reported error from the parameters database, otherwise the GUI would keep displaying the error card after a
+    // restart (see ErrorDeleteJob). The error has been checked by checkParmsDbError.
     bool errorFound = false;
-    if (!ParmsDb::instance()->selectError(_errorDbId, error, errorFound)) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectError");
+    if (!ParmsDb::instance()->deleteError(_errorDbId, errorFound)) {
+        LOG_WARN(_logger, "Error in ParmsDb::deleteError for errorDbId=" << _errorDbId);
         return ExitCode::DbError;
     }
     if (!errorFound) {
         LOG_INFO(_logger, "Error with errorDbId=" << _errorDbId << ": already removed from the database");
-        return ExitCode::Ok;
-    }
-
-    bool deleteErrorFound = false;
-    if (!ParmsDb::instance()->deleteError(_errorDbId, deleteErrorFound)) {
-        LOG_WARN(_logger, "Error in ParmsDb::deleteError");
-        return ExitCode::DbError;
-    }
-    if (!deleteErrorFound) {
-        LOG_WARN(_logger, "Error with errorDbId=" << _errorDbId << ": not found in database");
     }
 
     return ExitCode::Ok;
