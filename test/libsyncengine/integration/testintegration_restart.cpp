@@ -126,8 +126,6 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
     // replica.
     CPPUNIT_ASSERT(testHelper.stopSync());
 
-    const auto listingFullCountBeforeRemoteChanges = getFullListingCount();
-
     const Operations remoteOperations{Str2SyncName(R"({
         "operations" : [
             { "type": "Create", "itemType": "Directory", "path": "X", "name": "XD" },
@@ -144,7 +142,7 @@ void TestIntegration::testSyncRestartWithRemoteChanges() {
 
     // Restarting SyncPal should not trigger a full listing, but a continue listing instead, as the changes have already been
     // detected and processed.
-    CPPUNIT_ASSERT_EQUAL(listingFullCountBeforeRemoteChanges, getFullListingCount());
+    CPPUNIT_ASSERT_EQUAL(Count{0}, getFullListingCount());
 
     const Situation expectedSituation{Str2SyncName(R"({
         "content" : [
