@@ -267,9 +267,11 @@ Retrieves database IDs of all users.
 <summary><b>ErrorQuickResolveHardlink</b> — Quickly resolve a HardlinkNotSupportedError</summary>
 
 **Description:**
-Removes the node of the errored file from the sync database, saves a copy of the file into the rescue folder if the local file
-is not in sync with the database, and hard removes all the links of the file located under the sync root. The next
-synchronization will see the remote file as a new item and will download it again as a standard file.
+Saves a copy of the errored file into the rescue folder if the local file is not in sync with the database, hard removes all
+the links of the file located under the sync root, then removes the node of the file from the sync database and the error
+from the parameters database. The next synchronization will see the remote file as a new item and will download it again as
+a standard file. The request is rejected if the node is not a file of the sync database, if the path is empty, absolute,
+located outside of the sync root or a link (symbolic link, junction or alias), or if it does not refer to the node.
 Emits `ErrorRemoved` upon success.
 
 #### Request
