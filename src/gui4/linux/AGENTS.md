@@ -261,8 +261,8 @@
 - `app/fileiconresolver.*`: reusable, cached `QMimeDatabase::MatchExtension` classifier mapping local file names to the
   semantic document-icon asset names consumed by QML views.
 - `app/dialogs/manydeletescontroller.*`: process-long controller for mass-deletion warnings. It owns the feature FIFO,
-  same-sync severity escalation, hard-warning acknowledgement, soft-warning preference mutation, and web-trash action;
-  it requests main-window presentation without owning window routing.
+  same-sync severity escalation, hard-warning acknowledgement, soft-warning opt-out (`AppStateKey::NotifyBeforeDelete`,
+  read by the sync engine), and web-trash action; it requests main-window presentation without owning window routing.
 - `app/systraycontroller.*`: Linux system tray ownership, 5-state tray icon selection derived from `AppCache` plus
   updater availability, GNOME-compatible tray menu actions, fallback-to-window startup behavior, retry loop for late
   tray availability, and main QML window show/hide behavior.
@@ -414,7 +414,7 @@
 - `app/cache/onboardingstate.*`: session-owned onboarding selected user, selected available-drive keys, and pending sync
   configs. Advanced-settings validation replaces the complete selected-drive config map atomically so cancelling a
   modal never leaks a partially edited drive.
-- `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`ParametersInfo`). It is
+- `app/cache/parametersstore.*`: process-wide cache for server-owned application parameters (`Parameters`). It is
   populated during the bootstrap sequence next to the product graph snapshot, but remains separate from `AppCache`
   because the server is still the persistence source of truth for application settings. It stores only the last
   server-confirmed snapshot; update workflows publish a new value only after `PARAMETERS_UPDATE` succeeds.

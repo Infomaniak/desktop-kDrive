@@ -38,7 +38,7 @@ class ParametersStore;
  *
  * Role: own Linux v4 Sentry consent reconciliation, delayed initialization, runtime context, user identity, and UI/process
  * capture helpers.
- * Non-role: decide server-side persistence; the server remains the source of truth for ParametersInfo.
+ * Non-role: decide server-side persistence; the server remains the source of truth for Parameters.
  */
 class SentryService final : public QObject {
         Q_OBJECT
