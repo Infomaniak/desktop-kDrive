@@ -136,7 +136,7 @@ int32_t SearchResultModel::appendPage(const std::vector<SearchInfo> &results) {
 
     const auto firstRow = static_cast<int>(_rows.size());
     beginInsertRows(QModelIndex(), firstRow, firstRow + static_cast<int>(newRows.size()) - 1);
-    _rows.insert(_rows.end(), std::make_move_iterator(newRows.begin()), std::make_move_iterator(newRows.end()));
+    (void) _rows.insert(_rows.end(), std::make_move_iterator(newRows.begin()), std::make_move_iterator(newRows.end()));
     endInsertRows();
 
     return static_cast<int32_t>(newRows.size());
@@ -153,7 +153,7 @@ void SearchResultModel::clear() {
     endResetModel();
 }
 
-std::optional<SearchInfo> SearchResultModel::result(const int row) const {
+std::optional<SearchInfo> SearchResultModel::result(const int32_t row) const {
     if (row < 0 || static_cast<size_t>(row) >= _rows.size()) {
         return std::nullopt;
     }

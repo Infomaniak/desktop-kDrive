@@ -115,7 +115,7 @@ void SearchController::loadMore() {
     requestPage(false);
 }
 
-void SearchController::openResult(const int row, const bool revealInFolder) const {
+void SearchController::openResult(const int32_t row, const bool revealInFolder) const {
     const auto result = _model.result(row);
     const auto context = _selectionStore.currentSyncContext();
     if (!result.has_value() || !context.has_value()) {
@@ -226,45 +226,50 @@ void SearchController::requestPage(const bool firstPage) {
     _commService.requestDriveSearch(
             syncDbId, _activeQuery, cursor,
             [guard, generation, syncDbId, firstPage](const ExitInfo &exitInfo, const DriveSearchResult &searchResult) {
-                if (!guard) {
-                    return;
+                if (guard) {
+                    guard->handlePageResponse(generation, syncDbId, firstPage, exitInfo, searchResult);
                 }
-
-                if (generation != guard->_requestGeneration) {
-                    qCDebug(lcSearchController) << "Outdated drive search response ignored | generation:" << generation
-                                                << "| currentGeneration:" << guard->_requestGeneration;
-                    return;
-                }
-
-                if (!exitInfo) {
-                    qCWarning(lcSearchController) << "Drive search failed | syncDbId:" << syncDbId
-                                                  << "| generation:" << generation << "| firstPage:" << firstPage
-                                                  << "| exitCode:" << exitInfo.code() << "| exitCause:" << exitInfo.cause();
-                    if (firstPage) {
-                        guard->_model.clear();
-                        guard->setState(State::Error);
-                    } else {
-                        guard->_loadingMore = false;
-                        guard->_nextPageFailed = true;
-                        emit guard->paginationChanged();
-                    }
-                    return;
-                }
-
-                const int32_t addedRows = firstPage ? guard->_model.replace(searchResult.searchInfoList)
-                                                    : guard->_model.appendPage(searchResult.searchInfoList);
-                qCDebug(lcSearchController) << "Drive search page received | generation:" << generation
-                                            << "| firstPage:" << firstPage
-                                            << "| receivedRows:" << searchResult.searchInfoList.size()
-                                            << "| addedRows:" << addedRows << "| totalRows:" << guard->_model.rowCount()
-                                            << "| hasMore:" << searchResult.hasMore;
-
-                guard->_hasMore = searchResult.hasMore;
-                guard->_cursor = searchResult.cursor;
-                guard->_loadingMore = false;
-                guard->setState(guard->_model.rowCount() > 0 ? State::Results : State::Empty);
-                emit guard->paginationChanged();
             });
+}
+
+/**
+ * Applies the response to a page request, unless a newer query, selection, or closing made it outdated. A failed first
+ * page shows the Error state; a failed next page keeps the displayed results and offers to retry it.
+ */
+void SearchController::handlePageResponse(const uint64_t generation, const SyncDbId syncDbId, const bool firstPage,
+                                          const ExitInfo &exitInfo, const DriveSearchResult &searchResult) {
+    if (generation != _requestGeneration) {
+        qCDebug(lcSearchController) << "Outdated drive search response ignored | generation:" << generation
+                                    << "| currentGeneration:" << _requestGeneration;
+        return;
+    }
+
+    if (!exitInfo) {
+        qCWarning(lcSearchController) << "Drive search failed | syncDbId:" << syncDbId << "| generation:" << generation
+                                      << "| firstPage:" << firstPage << "| exitCode:" << exitInfo.code()
+                                      << "| exitCause:" << exitInfo.cause();
+        if (firstPage) {
+            _model.clear();
+            setState(State::Error);
+        } else {
+            _loadingMore = false;
+            _nextPageFailed = true;
+            emit paginationChanged();
+        }
+        return;
+    }
+
+    const int32_t addedRows =
+            firstPage ? _model.replace(searchResult.searchInfoList) : _model.appendPage(searchResult.searchInfoList);
+    qCDebug(lcSearchController) << "Drive search page received | generation:" << generation << "| firstPage:" << firstPage
+                                << "| receivedRows:" << searchResult.searchInfoList.size() << "| addedRows:" << addedRows
+                                << "| totalRows:" << _model.rowCount() << "| hasMore:" << searchResult.hasMore;
+
+    _hasMore = searchResult.hasMore;
+    _cursor = searchResult.cursor;
+    _loadingMore = false;
+    setState(_model.rowCount() > 0 ? State::Results : State::Empty);
+    emit paginationChanged();
 }
 
 /** Restarts the current query on the newly selected synchronization, whose drive may differ. */
