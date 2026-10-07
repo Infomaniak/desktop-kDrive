@@ -2374,7 +2374,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             IoError ioError = IoError::Success;
             const bool res = LogUploadJob::getLogDirEstimatedSize(logSize, ioError);
             if (!res || ioError != IoError::Success) {
-                LOG_WARN(_logger, "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError));
+                LOG_WARN(_logger, "Error in LogArchiver::getLogDirEstimatedSize: " << ioError);
 
                 addError(Error(ERR_ID, ExitCode::SystemError, ExitCause::Unknown));
                 resultStream << ExitCode::SystemError;
