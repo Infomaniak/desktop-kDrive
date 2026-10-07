@@ -61,6 +61,10 @@ struct StateIndicator: StatusIndicator {
     )
 }
 
+private enum ShareLinkCopyError: Error {
+    case pasteboardWriteFailed
+}
+
 struct ActivitiesTableStatusView: View {
     let context: UISynchroNodeContext
 
@@ -179,7 +183,9 @@ struct ActivitiesTableStatusView: View {
 
                 let pasteboard = NSPasteboard.general
                 pasteboard.clearContents()
-                pasteboard.setString(url.absoluteString, forType: .string)
+                guard pasteboard.setString(url.absoluteString, forType: .string) else {
+                    throw ShareLinkCopyError.pasteboardWriteFailed
+                }
 
                 loadingIndicatorShower.show(
                     SidebarNotificationState(
