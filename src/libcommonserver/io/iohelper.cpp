@@ -684,22 +684,60 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 }
 
 #if !defined(KD_WINDOWS)
-bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError) noexcept {
+bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
+        const std::optional<SyncPath> &searchRoot) noexcept {
     hardlinkPaths.clear();
     ioError = IoError::Success;
 
-    bool exists = false;
-    if (!checkIfPathExists(seedPath, exists, ioError, PathCheckOption::Insensitive)) {
-        return false;
-    }
-    if (!exists) {
-        ioError = IoError::NoSuchFileOrDirectory;
+    try {
+        struct stat info;
+        if (::stat(seedPath.string().c_str(), &info) != 0) {
+            ioError = posixError2ioError(errno);
+            LOGW_WARN(logger(), L"Error in IoHelper::stat for " << Utility::formatSyncPath(seedPath) << L": "
+                                                                << Utility::formatIoError(ioError));
+            return false;
+        }
+
+        hardlinkPaths.push_back(seedPath);
+        // Only regular files can have hardlinks. If the item has a single link, there is nothing else to search.
+        if (!S_ISREG(info.st_mode) || info.st_nlink == 1 || !searchRoot) return true;
+
+        // There is no system API to enumerate the links of an item on POSIX systems: search for the items sharing the
+        // same inode while recursively iterating over the search root directory.
+        std::error_code ec;
+        std::filesystem::recursive_directory_iterator it(*searchRoot, std::filesystem::directory_options::skip_permission_denied,
+                                                         ec);
+        if (ec) {
+            LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
+                                                               << Utility::formatStdError(ec));
+            return true; // The seed path has already been added to the result.
+        }
+
+        for (const auto end = std::filesystem::recursive_directory_iterator(); it != end; it.increment(ec)) {
+            if (ec) {
+                LOGW_WARN(logger(), L"Error while iterating over " << Utility::formatSyncPath(*searchRoot) << L": "
+                                                                   << Utility::formatStdError(ec));
+                break; // The iterator is the end iterator after a failed increment: stop the enumeration.
+            }
+
+            const SyncPath entryPath = it->path();
+            if (entryPath == seedPath) continue;
+
+            std::error_code entryEc;
+            if (!it->is_regular_file(entryEc) || entryEc) continue;
+
+            struct stat entryInfo;
+            if (::stat(entryPath.string().c_str(), &entryInfo) != 0) continue;
+            if (entryInfo.st_dev == info.st_dev && entryInfo.st_ino == info.st_ino) {
+                hardlinkPaths.push_back(entryPath);
+            }
+        }
+    } catch (const std::exception &e) {
+        ioError = IoError::Unknown;
+        LOG_WARN(logger(), "Exception in IoHelper::getHardlinkPaths: error=" << e.what());
         return false;
     }
 
-    // Hardlink enumeration is only implemented on Windows, where hardlinks across different sync roots are not supported
-    // by the sync engine.
-    hardlinkPaths.push_back(seedPath);
     return true;
 }
 #endif

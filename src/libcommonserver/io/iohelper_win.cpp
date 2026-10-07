@@ -1092,7 +1092,8 @@ static std::wstring getVolumeDevicePath(const SyncPath &path) noexcept {
     }
 }
 
-bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError) noexcept {
+bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> &hardlinkPaths, IoError &ioError,
+        const std::optional<SyncPath> &) noexcept {
     hardlinkPaths.clear();
     ioError = IoError::Success;
 

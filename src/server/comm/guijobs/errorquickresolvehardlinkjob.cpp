@@ -105,7 +105,7 @@ ExitInfo ErrorQuickResolveHardlinkJob::quickResolve(const std::shared_ptr<SyncPa
     const SyncPath seedPath = localPath / _relativeLocalPath;
     std::vector<SyncPath> hardlinkPaths;
     IoError ioError = IoError::Success;
-    if (!IoHelper::getHardlinkPaths(seedPath, hardlinkPaths, ioError)) {
+    if (!IoHelper::getHardlinkPaths(seedPath, hardlinkPaths, ioError, localPath)) {
         if (ioError == IoError::NoSuchFileOrDirectory) {
             // The file does not exist anymore. Only remove the node from the database so that the file is downloaded again.
             LOGW_WARN(_logger, L"The file does not exist anymore: " << Utility::formatSyncPath(seedPath));
