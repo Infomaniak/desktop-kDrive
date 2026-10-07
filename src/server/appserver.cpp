@@ -756,7 +756,6 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
     // Delete the drive
     if (const ExitInfo exitInfo = ServerRequests::deleteDrive(driveDbId); !exitInfo) {
         LOG_WARN(_logger, "Error in Requests::deleteDrive: code=" << exitInfo);
-        if (useOldCommServer()) sendDriveDeletionFailed(driveDbId);
         return exitInfo;
     }
 
@@ -765,6 +764,7 @@ ExitInfo AppServer::deleteDrive(const DriveDbId driveDbId) {
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(drive.accountDbId(), driveList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+        sendDriveRemoved(driveDbId);
     } else if (!driveList.empty() || !deleteAccount(drive.accountDbId())) {
         sendDriveRemoved(driveDbId); // Useless if deleteAccount succeeds, sendAccountRemoved already updates the drive list.
                                      // May even cause a crash if both are processed concurrently on the GUI side.
@@ -790,7 +790,6 @@ ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
     const ExitInfo exitInfo = ServerRequests::deleteSync(syncDbId);
     if (!exitInfo) {
         LOG_WARN(_logger, "Error in Requests::deleteSync: " << exitInfo);
-        if (useOldCommServer()) sendSyncDeletionFailed(syncDbId);
         return exitInfo;
     }
 
@@ -799,6 +798,7 @@ ExitInfo AppServer::deleteSync(const SyncDbId syncDbId) {
     if (!ParmsDb::instance()->selectAllSyncs(sync.driveDbId(), syncList)) {
         LOG_WARN(_logger,
                  "Error in ParmsDb::selectAllSyncs, unable to check if the drive has remaining syncs, keep the drive for safety");
+        sendSyncRemoved(syncDbId);
     } else if (!syncList.empty() || !deleteDrive(sync.driveDbId())) {
         sendSyncRemoved(syncDbId); // Useless if deleteDrive is called, sendDriveRemoved already updates the sync list.
                                    // May even cause a crash if both sendDriveRemoved and sendSyncRemoved are processed
@@ -814,6 +814,8 @@ void AppServer::deleteSyncAsBackgroundTask(const SyncDbId syncDbId) {
             !exitInfo) // This task can be long, hence blocking, on Windows.
         {
             LOG_WARN(_logger, "Error in stopSyncTask for syncDbId=" << syncDbId << " : " << exitInfo);
+            addError(Error(ERR_ID, exitInfo));
+            sendSyncDeletionFailed(syncDbId);
             return;
         }
 
@@ -1726,8 +1728,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 if (const auto exitInfo = initSyncPal(syncInfo, blackList, !startPostponed, std::chrono::seconds(0), false, true);
                     !exitInfo) {
-                    if (const ExitInfo stopExitInfo =
-                                stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
+                    if (const ExitInfo stopExitInfo = stopSyncTask(syncInfo.dbId(), SyncPal::DbBehaviorAfterStop::Remove);
                         !stopExitInfo) {
                         LOG_WARN(_logger, "Error in stopSyncTask for syncDbId=" << syncInfo.dbId() << " : " << stopExitInfo);
                         addError(Error(ERR_ID, stopExitInfo));
