@@ -1137,28 +1137,35 @@ bool IoHelper::getHardlinkPaths(const SyncPath &seedPath, std::vector<SyncPath> 
             }
         }
 
-        do {
+        bool enumerationDone = false;
+        while (!enumerationDone) {
             const std::wstring linkNameStr(linkName.data());
             if (linkNameStr.starts_with(devicePathPrefix) && linkNameStr.length() > devicePathPrefix.length()) {
                 hardlinkPaths.push_back(SyncPath(seedPath.root_path()) / linkNameStr.substr(devicePathPrefix.length()));
             }
 
-            linkNameLength = static_cast<DWORD>(linkName.size());
-            if (!FindNextFileNameW(handle, &linkNameLength, linkName.data())) {
-                if (const DWORD lastError = GetLastError(); lastError == ERROR_NO_MORE_FILES) {
+            // Retry loop: grow the buffer and call FindNextFileNameW again when it fails with ERROR_MORE_DATA, without
+            // processing the truncated link name left in the buffer by the failed call.
+            while (true) {
+                linkNameLength = static_cast<DWORD>(linkName.size());
+                if (FindNextFileNameW(handle, &linkNameLength, linkName.data())) break;
+                const DWORD lastError = GetLastError();
+                if (lastError == ERROR_NO_MORE_FILES || lastError == ERROR_HANDLE_EOF) {
+                    // FindNextFileNameW signals the end of the enumeration with ERROR_NO_MORE_FILES or, on some Windows
+                    // versions, with ERROR_HANDLE_EOF.
+                    enumerationDone = true;
                     break;
-                } else if (lastError == ERROR_MORE_DATA) {
-                    // The provided buffer was too small: linkNameLength now holds the required buffer size, in WCHARs.
-                    linkName.resize(linkNameLength);
-                    continue;
-                } else {
+                }
+                if (lastError != ERROR_MORE_DATA) {
                     ioError = dWordError2ioError(lastError, logger());
                     (void) FindClose(handle);
                     LOGW_WARN(logger(), L"Error in FindNextFileNameW: " << Utility::formatIoError(seedPath, ioError));
                     return false;
                 }
+                // The provided buffer was too small: linkNameLength now holds the required buffer size, in WCHARs.
+                linkName.resize(linkNameLength);
             }
-        } while (true);
+        }
         (void) FindClose(handle);
     } catch (const std::exception &e) {
         ioError = IoError::Unknown;
