@@ -355,15 +355,15 @@ void TestSyncPalWorker::MockSyncPal::freeSnapshotsCopies() {
 
 ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::checkIfRemoteDirHasChanges(const RemoteNodeId &,
                                                                                            const ForcedUpdate,
-                                                                                           const LongPollJobMap &,
+                                                                                           const std::shared_ptr<LongPollJob> &,
                                                                                            bool &hasChanges) {
     hasChanges = false;
 
     return ExitCode::Ok;
 }
 
-ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJobs(
-        const std::vector<RemoteNodeId> &, RemoteFileSystemObserverWorker::LongPollJobMap &) {
+ExitInfo TestSyncPalWorker::MockRemoteFileSystemObserverWorker::updateLongPollJobs(const RemoteNodeId &,
+                                                                                   std::shared_ptr<LongPollJob> &) {
     if (!_networkAvailable) return ExitCode::NetworkError;
 
     return ExitCode::Ok;

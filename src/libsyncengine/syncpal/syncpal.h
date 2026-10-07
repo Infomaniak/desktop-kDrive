@@ -464,8 +464,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitInfo selectSync(Sync &sync);
         ExitInfo updateSync(const Sync &sync);
 
-        ExitInfo setFolderCursor(SpecialRemoteFolder specialFolder, const CursorData &cursorData);
-        ExitInfo getFolderCursor(SpecialRemoteFolder specialFolder, CursorData &cursorData);
+        ExitInfo setRootFolderCursor(const CursorData &cursorData);
+        ExitInfo getRootFolderCursor(CursorData &cursorData);
+        ExitInfo setCustomTargetFolderCursor(const CursorData &cursorData);
+        ExitInfo getCustomTargetFolderCursor(CursorData &cursorData);
 
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();

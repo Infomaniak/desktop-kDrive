@@ -134,8 +134,7 @@ class Sync : public BaseSync {
              const std::filesystem::path &targetPath, const NodeId &targetNodeId = NodeId(), bool paused = false,
              bool supportVfs = false, VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
-             const std::string &navigationPaneClsid = std::string(), CursorStore cursorStore = defaultCursorStore,
-             bool toDelete = false, SyncTime vfsRegisteredAt = 0);
+             const std::string &navigationPaneClsid = std::string(), bool toDelete = false, SyncTime vfsRegisteredAt = 0);
 
         [[nodiscard]] const NodeId &localNodeId() const { return _localNodeId; }
         void setLocalNodeId(const NodeId &localNodeId) { _localNodeId = localNodeId; }
@@ -147,27 +146,17 @@ class Sync : public BaseSync {
         void setDbPath(const std::filesystem::path &dbPath) { _dbPath = dbPath; }
         [[nodiscard]] bool hasFullyCompleted() const { return _hasFullyCompleted; }
         void setHasFullyCompleted(const bool hasFullyCompleted) { _hasFullyCompleted = hasFullyCompleted; }
-        [[nodiscard]] const CursorStore &getCursorStore() const { return _cursorStore; };
-        void setCursorStore(const CursorStore &cursors) {
-            _cursorStore = cursors;
-            for (const auto specialFolder: {SpecialRemoteFolder::Private, SpecialRemoteFolder::CommonDocuments,
-                                            SpecialRemoteFolder::Shared, SpecialRemoteFolder::CustomTarget}) {
-                if (!_cursorStore.contains(specialFolder)) _cursorStore[specialFolder] = {};
-            }
-        }
-        void setFolderCursor(const SpecialRemoteFolder specialFolder, const CursorData &cursorData) {
-            _cursorStore[specialFolder] = cursorData;
-        }
+
+        /// Cursor of the listing requests made for the root folder of the remote drive.
+        [[nodiscard]] const CursorData &rootFolderCursor() const { return _rootFolderCursor; }
+        void setRootFolderCursor(const CursorData &cursorData) { _rootFolderCursor = cursorData; }
+
+        /// Cursor of the listing requests made for the target folder of an advanced synchronization.
+        [[nodiscard]] const CursorData &customTargetFolderCursor() const { return _customTargetFolderCursor; }
+        void setCustomTargetFolderCursor(const CursorData &cursorData) { _customTargetFolderCursor = cursorData; }
+
         [[nodiscard]] bool toDelete() const { return _toDelete; }
         void setToDelete(const bool toDelete) { _toDelete = toDelete; }
-
-        void getFolderCursor(const SpecialRemoteFolder specialFolder, CursorData &cursorData) const {
-            if (!_cursorStore.contains(specialFolder)) {
-                cursorData = {};
-            } else
-                cursorData = _cursorStore.at(specialFolder);
-        }
-
 
     private:
         NodeId _localNodeId;
@@ -175,7 +164,8 @@ class Sync : public BaseSync {
         bool _notificationsDisabled{false};
         std::filesystem::path _dbPath;
         bool _hasFullyCompleted{false};
-        CursorStore _cursorStore = defaultCursorStore;
+        CursorData _rootFolderCursor;
+        CursorData _customTargetFolderCursor;
         bool _toDelete{false};
 };
 
