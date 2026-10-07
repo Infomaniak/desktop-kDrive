@@ -17,7 +17,6 @@
  */
 
 #include "csvfullfilelistwithcursorjob.h"
-#include "jobs/network/kDrive_API/apitranslator.h"
 
 #include "jobs/network/jobexceptions.h"
 
@@ -38,11 +37,6 @@ CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(const DriveDbId drive
     _zip(zip),
     _snapshotItemHandler(userDbId(), driveId(), _logger) {
     _customTimeout = apiTimout + 15;
-
-    if (const auto exitInfo = ApiTranslator::translateV2ToV3(userDbId(), driveId(), _remoteDirId); !exitInfo) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ApiTranslator::translateV2ToV3: " << exitInfo);
-        throw JobException("Translation error in CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob.");
-    }
 
     if (_zip == Zip::On) addRawHeader("Accept-Encoding", "gzip");
 }
