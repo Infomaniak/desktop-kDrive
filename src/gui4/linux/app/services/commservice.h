@@ -31,8 +31,8 @@
 #include "libcommon/info/nodeconflictinfo.h"
 #include "libcommon/info/nodeinfo.h"
 #include "libcommon/info/searchinfo.h"
-#include "libcommon/info/parametersinfo.h"
-#include "libcommon/info/syncfileiteminfo.h"
+#include "libcommon/data/parameters.h"
+#include "libcommon/data/syncfileitem.h"
 #include "libcommon/utility/cstypes.h"
 #include "libcommon/utility/types.h"
 
@@ -120,7 +120,7 @@ class CommService : public QObject {
         using NodeInfoCallback = std::function<void(const ExitInfo &, const NodeInfo &)>;
         using NodeInfoListCallback = std::function<void(const ExitInfo &, const std::vector<NodeInfo> &)>;
         using FolderSizeCallback = std::function<void(const ExitInfo &, int64_t)>;
-        using ParametersInfoCallback = std::function<void(const ExitInfo &, const ParametersInfo &)>;
+        using ParametersCallback = std::function<void(const ExitInfo &, const Parameters &)>;
         using ErrorListCallback = std::function<void(const ExitInfo &, const std::vector<Error> &)>;
         using ExclusionTemplateListCallback = std::function<void(const ExitInfo &, const std::vector<ExclusionTemplate> &)>;
         using UpdateStateCallback = std::function<void(const ExitInfo &, UpdateState)>;
@@ -197,8 +197,8 @@ class CommService : public QObject {
                                              const SyncPath &relativePath, const NodeIdCallback &callback) const;
 
         // --- Parameters ---
-        void requestParametersInfo(const ParametersInfoCallback &callback) const;
-        void requestParametersUpdate(const ParametersInfo &parametersInfo, const VoidCallback &callback) const;
+        void requestParametersInfo(const ParametersCallback &callback) const;
+        void requestParametersUpdate(const Parameters &parameters, const VoidCallback &callback) const;
 
         // --- Blacklist ---
         void requestBlacklistedNodeList(SyncDbId syncDbId, const NodeIdListCallback &callback) const;
@@ -250,7 +250,7 @@ class CommService : public QObject {
         void syncUpdated(const BaseSync &info);
         void syncRemoved(SyncDbId syncDbId);
         void syncProgressInfo(SyncDbId syncDbId, const KDC::SyncRuntimeInfo &runtimeInfo);
-        void itemCompleted(SyncDbId syncDbId, const SyncFileItemInfo &info);
+        void itemCompleted(SyncDbId syncDbId, const SyncFileItem &item);
         void manyDeletesNotification(SyncDbId syncDbId, TooManyDeletesNotificationType notificationType, Count itemCount);
 
         // --- Error ---

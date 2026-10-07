@@ -215,9 +215,9 @@ void OnboardingSyncCreationCoordinator::handleCreationFailure(const bool cacheRe
      * original selection would risk creating duplicate syncs or choosing new suffixed local folders.
      *
      * Account and drive creation also happen before sync creation and are not one database transaction. A failed SYNC_ADD
-     * can therefore leave a newly persisted parent without a synchronization and without its normal ACCOUNT_ADDED or
-     * DRIVE_ADDED push. The coordinator asks CachePopulator to rebuild the graph parent-first so drive selection can
-     * distinguish an actual classic synchronization from a partially persisted parent.
+     * can therefore leave a newly persisted parent without a synchronization; the server still pushes its ACCOUNT_ADDED or
+     * DRIVE_ADDED before the error response. The coordinator asks CachePopulator to rebuild the graph parent-first so drive
+     * selection can distinguish an actual classic synchronization from a partially persisted parent.
      *
      * The coordinator stops at the first failure. Keys that completed successfully were already removed from the queue and
      * OnboardingState. Failed and not-yet-attempted selections stay in OnboardingState so the user can review them. Returning

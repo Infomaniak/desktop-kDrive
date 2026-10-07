@@ -25,28 +25,28 @@ namespace KDC {
 ParametersStore::ParametersStore(QObject *const parent) :
     QObject(parent) {}
 
-std::optional<ParametersInfo> ParametersStore::parametersInfo() const {
-    return _parametersInfo;
+std::optional<Parameters> ParametersStore::parameters() const {
+    return _parameters;
 }
 
-void ParametersStore::replaceParametersInfo(const ParametersInfo &parametersInfo) {
-    if (_parametersInfo.has_value() && *_parametersInfo == parametersInfo) {
+void ParametersStore::replaceParameters(const Parameters &parameters) {
+    if (_parameters.has_value() && *_parameters == parameters) {
         return;
     }
 
-    _parametersInfo = parametersInfo;
+    _parameters = parameters;
     qCInfo(lcParametersStore) << "Parameters snapshot updated";
-    emit parametersInfoChanged();
+    emit parametersChanged();
 }
 
 void ParametersStore::clear() {
-    if (!_parametersInfo.has_value()) {
+    if (!_parameters.has_value()) {
         return;
     }
 
-    _parametersInfo.reset();
+    _parameters.reset();
     qCInfo(lcParametersStore) << "Parameters snapshot cleared";
-    emit parametersInfoChanged();
+    emit parametersChanged();
 }
 
 } // namespace KDC

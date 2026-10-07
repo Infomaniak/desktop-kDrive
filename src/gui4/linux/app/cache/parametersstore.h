@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/info/parametersinfo.h"
+#include "libcommon/data/parameters.h"
 
 #include <QLoggingCategory>
 #include <QObject>
@@ -32,7 +32,7 @@ namespace KDC {
 /**
  * Process-wide cache for server-owned application parameters.
  *
- * Role: hold the latest server-confirmed ParametersInfo snapshot fetched from bootstrap or a successful
+ * Role: hold the latest server-confirmed Parameters snapshot fetched from bootstrap or a successful
  * PARAMETERS_UPDATE. The server remains the persistence source of truth; screen-level drafts belong to the UI/view
  * model that owns the edit workflow.
  */
@@ -45,16 +45,16 @@ class ParametersStore final : public QObject {
         /**
          * Last server-confirmed parameters snapshot.
          */
-        [[nodiscard]] std::optional<ParametersInfo> parametersInfo() const;
+        [[nodiscard]] std::optional<Parameters> parameters() const;
 
-        void replaceParametersInfo(const ParametersInfo &parametersInfo);
+        void replaceParameters(const Parameters &parameters);
         void clear();
 
     signals:
-        void parametersInfoChanged();
+        void parametersChanged();
 
     private:
-        std::optional<ParametersInfo> _parametersInfo;
+        std::optional<Parameters> _parameters;
 };
 
 } // namespace KDC
