@@ -482,8 +482,16 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Direct download callback
         void directDownloadCallback(UniqueId jobId);
 
-        std::shared_ptr<ConstSnapshot> remoteLiveSnapshotBackup() const { return _remoteLiveSnapshotBackup; }
-        void clearRemoteLiveSnapshotBackup() { _remoteLiveSnapshotBackup.reset(); }
+        struct RemoteLiveSnapshotBackup {
+                std::shared_ptr<ConstSnapshot> snapshot;
+                RemoteNodeIdSet blacklist;
+        };
+
+        RemoteLiveSnapshotBackup remoteLiveSnapshotBackup() const { return _remoteLiveSnapshotBackup; }
+        void clearRemoteLiveSnapshotBackup() {
+            _remoteLiveSnapshotBackup.snapshot.reset();
+            _remoteLiveSnapshotBackup.blacklist.clear();
+        }
 
     private:
         // Finalize the pin/hydration state of a direct download job and stop tracking it.
@@ -505,7 +513,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         mutable std::mutex _progressInfoMutex;
 
-        std::shared_ptr<ConstSnapshot> _remoteLiveSnapshotBackup{nullptr};
+        RemoteLiveSnapshotBackup _remoteLiveSnapshotBackup{nullptr, RemoteNodeIdSet{}};
 
         // TODO : Refactor to not use friend classes (should be reserved for test purpose).
         friend class SyncPalWorker;
