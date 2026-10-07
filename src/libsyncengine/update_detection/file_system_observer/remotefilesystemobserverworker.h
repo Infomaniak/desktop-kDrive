@@ -46,6 +46,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         // - does set the updating flag to `true` in order to trigger the `longpoll` and `listing/continue` requests.
         void resume() override;
 
+        Count listingFullCount() const { return _listingFullCount; };
+
     protected:
         void execute() override;
         ExitInfo generateInitialSnapshot() override;
@@ -141,7 +143,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         [[nodiscard]] ExitInfo clearListingCursors();
 
         RemoteNodeIdSet _blackList; // A list of user-selected folders not to be synchronized.
-        int _listingFullCounter = 0;
+        Count _listingFullCount = 0;
         std::chrono::steady_clock::time_point _listingFullTimer = std::chrono::steady_clock::now();
 
         [[nodiscard]] bool syncIsAdvancedWithNonRootFolder() const;
