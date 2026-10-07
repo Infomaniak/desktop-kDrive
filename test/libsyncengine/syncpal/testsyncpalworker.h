@@ -121,9 +121,8 @@ class TestSyncPalWorker : public CppUnit::TestFixture {
 
             private:
                 bool _networkAvailable{true};
-                ExitInfo updateLongPollJobs(const std::vector<RemoteNodeId> &remoteDirIds,
-                                            RemoteFileSystemObserverWorker::LongPollJobMap &longPollJobs) override;
-                ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &, ForcedUpdate, const LongPollJobMap &,
+                ExitInfo updateLongPollJobs(const RemoteNodeId &remoteDirId, std::shared_ptr<LongPollJob> &longPollJob) override;
+                ExitInfo checkIfRemoteDirHasChanges(const RemoteNodeId &, ForcedUpdate, const std::shared_ptr<LongPollJob> &,
                                                     bool &hasChanges) override;
                 ExitInfo generateInitialSnapshot() override;
         };
