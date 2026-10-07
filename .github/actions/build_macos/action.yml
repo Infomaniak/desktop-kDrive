@@ -27,8 +27,12 @@ inputs:
 runs:
     using: "composite"
     steps:
-      - name: Set up macOS build
-        uses: ./.github/actions/setup_macos_build
+      - name: Prepare Python environment
+        shell: bash
+        run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          python -m pip install 'conan==2.25.2'
 
       - name: Clean-up XCode DerivedData
         run : rm -rf /Users/runner/Library/Developer/Xcode/DerivedData
