@@ -52,35 +52,11 @@ static void initDispatchQueue(void)
     g_event_queue = dispatch_queue_create("event_queue", queue_attrs);
 }
 
-uid_t activeConsoleUserUID(void)
-{
-    uid_t uid = 0;
-    gid_t gid = 0;
-
-    CFStringRef username =
-        SCDynamicStoreCopyConsoleUser(NULL, &uid, &gid);
-
-    if (username) {
-        CFRelease(username);
-    }
-
-    return uid;
-}
-
-NSURL *trashURLForFileURL(NSURL *fileURL)
+NSURL *trashURLForFileURL(uid_t uid, NSURL *fileURL)
 {
     if (!fileURL) {
         return nil;
     }
-    
-    // Retrieval of the file path volume
-    NSURL *volumeURL = nil;
-    if (![fileURL getResourceValue:&volumeURL forKey:NSURLVolumeURLKey error:nil]) {
-        return nil;
-    }
-
-    // Retrieving the UID of the currently active graphical session
-    uid_t uid = activeConsoleUserUID();
 
     // Retrieval of the HOME path volume for the UID
     struct passwd *pw = getpwuid(uid);
@@ -91,6 +67,12 @@ NSURL *trashURLForFileURL(NSURL *fileURL)
     NSURL *homeURL = [NSURL fileURLWithPath:@(pw->pw_dir) isDirectory:YES];
     NSURL *homeVolumeURL = nil;
     if (![homeURL getResourceValue:&homeVolumeURL forKey:NSURLVolumeURLKey error:nil]) {
+        return nil;
+    }
+
+    // Retrieval of the file path volume
+    NSURL *volumeURL = nil;
+    if (![fileURL getResourceValue:&volumeURL forKey:NSURLVolumeURLKey error:nil]) {
         return nil;
     }
 
@@ -265,12 +247,16 @@ static BOOL processAuthRename(const es_message_t *msg)
         return FALSE;
     }
     
-    if (msg->event.rename.destination_type != ES_DESTINATION_TYPE_NEW_PATH) {
+    NSString *destinationPath = nil;
+    if (msg->event.rename.destination_type == ES_DESTINATION_TYPE_NEW_PATH) {
+        destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
+    } else if (msg->event.rename.destination_type == ES_DESTINATION_TYPE_EXISTING_FILE) {
+        NSString *existingPath = [NSString stringWithUTF8String:msg->event.rename.destination.existing_file->path.data];
+        destinationPath = [existingPath stringByDeletingLastPathComponent];
+    } else {
         return FALSE;
     }
     
-    NSString *destinationPath = [NSString stringWithUTF8String:msg->event.rename.destination.new_path.dir->path.data];
-
     if (isExtendedLogEnabled()) {
         NSLog(@"[KD] Move file %@ to destination %@", sourcePath, destinationPath);
     }
@@ -293,8 +279,9 @@ static BOOL processAuthRename(const es_message_t *msg)
     }
         
     // Check if the destination is the Trash
+    uid_t uid = audit_token_to_euid(msg->process->audit_token);
     NSURL *sourceURL = [NSURL fileURLWithPath:sourcePath];
-    NSURL *trashURL = trashURLForFileURL(sourceURL);
+    NSURL *trashURL = trashURLForFileURL(uid, sourceURL);
     NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
     if ([destinationURL isEqual:trashURL]) {
         NSLog(@"[KD] Moving monitored file %@ to trash.", sourcePath);

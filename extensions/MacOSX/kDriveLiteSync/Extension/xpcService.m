@@ -54,7 +54,7 @@ const NSString *timeoutBlockKey = @"timeoutBlock";
     }
     
     for (NSString *path in _registeredFoldersMap) {
-        if ([filePath hasPrefix:path]) {
+        if ([filePath hasPrefix:[path stringByAppendingString:@"/"]]) {
             if (folderPath) {
                 *folderPath = [path copy];
             }
