@@ -68,14 +68,16 @@ namespace Infomaniak.kDrive.CustomControls.Errors.Templates.Node
                 bool success = await commService.QuickResolveHardlink(Error.Sync.DbId, Error.DbId, Error.LocalNodeId, Error.Path, CancellationToken.None);
                 if (!success)
                 {
-                    Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}");
+                    Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}",
+                        "HardlinkError: Failed to quickly resolve the hardlink error");
                     Utility.ShowUnexpectedErrorTeachingTip();
                 }
                 // On success, the server sends an ErrorRemoved signal that removes the error card from the UI.
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}. Exception: {ex.Message}");
+                Logger.LogError($"Failed to quickly resolve the hardlink error with DbId {Error.DbId}. Exception: {ex.Message}",
+                    "HardlinkError: Failed to quickly resolve the hardlink error");
                 Utility.ShowUnexpectedErrorTeachingTip();
             }
         }
