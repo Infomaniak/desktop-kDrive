@@ -126,7 +126,7 @@ ExitInfo SearchJob::getLocalProperties(const SyncPath &itemPath, LocalProperties
             LOGW_WARN(_logger, L"IoHelper::checkIfFileIsDehydrated failed for " << Utility::formatIoError(itemPath, ioError));
             return {ExitCode::SystemError, ExitCause::FileAccessError};
         } else {
-            localProperties.isAvailableLocally = true;
+            localProperties.isAvailableLocally = ioError != IoError::NoSuchFileOrDirectory;
             localProperties.isHydrated = !isDehydrated;
         }
     }
