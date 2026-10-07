@@ -159,9 +159,11 @@
   and spacing, containing two independent 28 x 28 circular hover surfaces.
 - Use the same resting surface for the main-toolbar Support and Pause/Settings controls, and the same stronger hover
   surface for all three buttons.
-- Render the future main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
+- Render the main-toolbar Search action as a standalone 36 px circular icon-only button, without a text label,
   and center its 16 px magnifier with 10 px between the SVG and each horizontal edge. Reuse the Support button component
   so both outer circles remain identical.
+- Search has no Figma: copy the macOS gui4 search sheet (`src/gui4/macOS/kDrive/UI/Views/MainWindow/Search/`) for its
+  geometry, states, and wording. Keep the API result order (relevance); never re-sort results on the client.
 - Render text that comes from the server or the filesystem (file, folder, drive, or user names, paths) with
   `textFormat: Text.PlainText`: the default `AutoText` interprets a name such as `<b>x</b>` as markup. `IKToolTip`
   already forces plain text.
@@ -538,6 +540,9 @@
       presentation, and empty state. Size and status columns have fixed widths; only the name/folder boundary is
       draggable. It consumes `ActivitiesController` and `ActivityListModel`; it must not call IPC or own activity
       history.
+    - `ui/windows/main/search/`: search dialog, a `Popup` hosted by `Main.qml` with the IKModal conventions and opened by
+      the toolbar button or Ctrl+F. Pages load near the end of the list, after a page too short to fill the viewport, or
+      with Down on the last row. It consumes `SearchController`; it must not call IPC.
     - `ui/windows/main/home/animations/`: versioned generated QML animations for Home statuses. Instantiate finite
       status animations only while their state is active so that they start when the status becomes visible.
     - `ui/windows/waiting/`: app-level preloading screen shown whenever the main window is opened before the initial IPC
