@@ -111,6 +111,7 @@ class COMMONSERVER_EXPORT Db {
         bool addTextColumnIfMissing(const std::string &tableName, const std::string &columnName);
         bool addColumnIfMissing(const std::string &tableName, const std::string &columnName, const std::string &requestId,
                                 const std::string &request);
+        bool dropColumnIfExists(const std::string &tableName, const std::string &columnName);
 
         /**
          * @brief Create and prepare a request. It is the user's responsibility to free the request.
