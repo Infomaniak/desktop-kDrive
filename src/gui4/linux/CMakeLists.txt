@@ -56,6 +56,10 @@ set(GUI_SOURCE_FILES # C++ files for the GUI application
         app/mainwindow/homestateresolver.h
         app/mainwindow/networkstatusobserver.cpp
         app/mainwindow/networkstatusobserver.h
+        app/mainwindow/searchcontroller.cpp
+        app/mainwindow/searchcontroller.h
+        app/mainwindow/searchresultmodel.cpp
+        app/mainwindow/searchresultmodel.h
         app/mainwindow/storagecontroller.cpp
         app/mainwindow/storagecontroller.h
         app/mainwindow/storagescanner.cpp
