@@ -205,7 +205,7 @@ void AppClientLinux::setupSignalConnections() {
     (void) connect(&_systemTrayController, &SystemTrayController::openMainWindowRequested, this, &AppClientLinux::openMainWindow);
     (void) connect(&_appCache, &AppCache::syncsChanged, this, &AppClientLinux::handleConfiguredSyncsChanged);
     (void) connect(&_appCache, &AppCache::usersChanged, &_sentryService, &SentryService::updateAuthenticatedUser);
-    (void) connect(&_parametersStore, &ParametersStore::parametersInfoChanged, this, &AppClientLinux::updateLoggerSettings);
+    (void) connect(&_parametersStore, &ParametersStore::parametersChanged, this, &AppClientLinux::updateLoggerSettings);
     (void) connect(&_systemTrayController, &SystemTrayController::quitRequested, this, &AppClientLinux::requestQuit);
 }
 
@@ -272,24 +272,24 @@ void AppClientLinux::handleBootstrapCompletion() {
 }
 
 void AppClientLinux::updateLoggerSettings() {
-    const auto parametersInfo = _parametersStore.parametersInfo();
-    if (!parametersInfo) {
+    const auto parameters = _parametersStore.parameters();
+    if (!parameters) {
         return;
     }
 
     auto *const logger = Logger::instance();
     // Expiration waits for the confirmed option: purging at startup could delete logs the user asked to keep.
-    const bool purgeOldLogs = parametersInfo->purgeOldLogs();
+    const bool purgeOldLogs = parameters->purgeOldLogs();
     const bool purgeOldLogsChanged = _appliedPurgeOldLogs != purgeOldLogs;
     if (purgeOldLogsChanged) {
         logger->setLogExpire(std::chrono::days(purgeOldLogs ? CommonUtility::logsPurgeRate : 0));
         _appliedPurgeOldLogs = purgeOldLogs;
     }
 
-    if (parametersInfo->useLog() && !logger->isLoggingToFile()) {
+    if (parameters->useLog() && !logger->isLoggingToFile()) {
         logger->setupLogDir();
         logger->enterNextLogFile();
-    } else if (!parametersInfo->useLog() && logger->isLoggingToFile()) {
+    } else if (!parameters->useLog() && logger->isLoggingToFile()) {
         logger->disableLog();
     }
 
@@ -297,10 +297,10 @@ void AppClientLinux::updateLoggerSettings() {
         logger->purgeExpiredLogFiles();
     }
 
-    if (logger->minLogLevel() != toInt(parametersInfo->logLevel())) {
-        logger->setMinLogLevel(toInt(parametersInfo->logLevel()));
+    if (logger->minLogLevel() != toInt(parameters->logLevel())) {
+        logger->setMinLogLevel(toInt(parameters->logLevel()));
         qCInfo(lcAppClientLinux) << "Logger minimum level updated from parameters | level:"
-                                 << QString::fromStdString(toString(parametersInfo->logLevel()));
+                                 << QString::fromStdString(toString(parameters->logLevel()));
     }
 }
 

@@ -27,8 +27,8 @@ namespace KDC {
 // ParametersService. Keeping this binding here lets the service serialize mutations without depending on IPC details.
 ParametersService::ParametersService(const CommService &commService, ParametersStore &parametersStore, QObject *const parent) :
     ParametersService(
-            [&commService](const ParametersInfo &parametersInfo, const UpdateCallback &callback) {
-                commService.requestParametersUpdate(parametersInfo, callback);
+            [&commService](const Parameters &parameters, const UpdateCallback &callback) {
+                commService.requestParametersUpdate(parameters, callback);
             },
             parametersStore, parent) {}
 
@@ -39,8 +39,8 @@ UpdateStatusService::UpdateStatusService(const CommService &commService, const P
     UpdateStatusService(
             [&commService](const CommService::UpdateStateCallback &callback) { commService.requestUpdaterState(callback); },
             [&commService, &parametersStore](const CommService::VersionInfoCallback &callback) {
-                const auto parametersInfo = parametersStore.parametersInfo();
-                const auto channel = parametersInfo ? parametersInfo->distributionChannel() : DistributionChannel::Unknown;
+                const auto parameters = parametersStore.parameters();
+                const auto channel = parameters ? parameters->distributionChannel() : DistributionChannel::Unknown;
                 commService.requestUpdaterVersionInfo(channel, callback);
             },
             parent) {
