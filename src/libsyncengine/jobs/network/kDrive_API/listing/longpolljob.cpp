@@ -25,7 +25,7 @@ namespace KDC {
 
 static const uint32_t apiTimout = 50;
 
-LongPollJob::LongPollJob(const DriveDbId driveDbId, Cursor cursor, const NodeSet &blacklist /*= {}*/) :
+LongPollJob::LongPollJob(const DriveDbId driveDbId, Cursor cursor, const RemoteNodeIdSet &blacklist /*= {}*/) :
     AbstractListingJob(ApiType::NotifyDrive, driveDbId, blacklist),
     _cursor(std::move(cursor)) {
     _customTimeout = apiTimout + 5; // Must be < 1 min (VPNs' default timeout)
