@@ -24,7 +24,7 @@ namespace KDC {
 
 class LongPollJob final : public AbstractListingJob {
     public:
-        LongPollJob(DriveDbId driveDbId, Cursor cursor, const NodeSet &blacklist = {});
+        LongPollJob(DriveDbId driveDbId, Cursor cursor, const RemoteNodeIdSet &blacklist = {});
         Cursor cursor() const { return _cursor; }
 
     protected:
