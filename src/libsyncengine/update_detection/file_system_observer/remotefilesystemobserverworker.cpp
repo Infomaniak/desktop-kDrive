@@ -274,6 +274,8 @@ ExitInfo RemoteFileSystemObserverWorker::checkIfValidRemoteSnapshotBackupExists(
 
     if (!_syncPal->remoteLiveSnapshotBackup().snapshot) return ExitCode::Ok;
     if (_syncPal->remoteLiveSnapshotBackup().blacklist != blackList()) return ExitCode::Ok;
+    if (_syncPal->remoteLiveSnapshotBackup().exclusionTemplates != ExclusionTemplateCache::instance()->exclusionTemplates())
+        return ExitCode::Ok;
 
     std::vector<RemoteNodeId> specialFoldersRemoteIds;
     if (const auto exitInfo = getSpecialFoldersRemoteIds(specialFoldersRemoteIds); !exitInfo) {
@@ -360,6 +362,7 @@ ExitInfo RemoteFileSystemObserverWorker::handleRemoteSnapshotBackup(bool &validS
 
     _syncPal->clearRemoteLiveSnapshotBackup();
     (void) clearListingCursors();
+    invalidateSnapshot();
 
     return ExitCode::Ok;
 }
@@ -538,8 +541,9 @@ ExitInfo RemoteFileSystemObserverWorker::processEvents(const RemoteNodeId &remot
     setUpdateFlagValue(false);
 
     if (!exitInfo) {
-        // Clear the cursor if the listing request failed on the first page, to avoid being stuck with a broken cursor.
-        if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr} && pageCount == 1) {
+        // Clear the cursor if the listing request is invalid to avoid being stuck with a broken cursor.
+        if (exitInfo == ExitInfo{ExitCode::BackError, ExitCause::HttpErr}) {
+            invalidateSnapshot();
             (void) clearListingCursor(remoteDirId);
         }
         return exitInfo;
@@ -1305,6 +1309,7 @@ ExitInfo RemoteFileSystemObserverWorker::removeItemFromSnapshot(const NodeId &id
 
     LOG_SYNCPAL_WARN(_logger, "Fail to remove item for ID: " << id);
     invalidateSnapshot();
+
     return ExitCode::BackError;
 }
 
