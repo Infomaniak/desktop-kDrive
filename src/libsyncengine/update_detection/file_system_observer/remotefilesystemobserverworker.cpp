@@ -261,6 +261,7 @@ ExitInfo RemoteFileSystemObserverWorker::clearListingCursors() {
         clearCursorExitInfo = clearListingCursor(specialFolderRemoteId);
         if (!clearCursorExitInfo) {
             LOG_WARN(_logger, "Error in RemoteFileSystemObserverWorker::clearListingCursor: " << clearCursorExitInfo);
+            break; // Stop on first error to report it to caller
         }
     }
 
