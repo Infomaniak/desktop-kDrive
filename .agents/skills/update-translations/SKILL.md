@@ -68,10 +68,13 @@ Portuguese `pt`, Polish `pl`, Norwegian `nb`, Finnish `fi`, Danish `da`, Greek `
 Loco locale, then verify that the pinned `import_loco` release supports its Windows language-to-country mapping before
 adding it to the GUI import configs (see Part 1 for the exact changes).
 
-Run the full pass below — both parts, **every language** of the enum — only when the user explicitly asks for a
-global refresh ("update all translations", "make sure every language is translated", or similar). In the default
-PR-scoped run, apply the scoped instructions of Part 1 and Part 2 to the keys and strings the PR touches, across
-every language those pipelines cover:
+**Scoped-run invariant (default).** Every string the PR adds or changes must be translated in every language of the
+pipelines the PR touches (each `client_<code>.ts` for Part 2, every Loco locale for Part 1). Nothing else is
+required: out-of-scope `unfinished` entries and untranslated Loco assets stay as they are and are reported, not
+fixed — a scoped run is not expected to end with zero unfinished work.
+
+**Full-run invariants (only when the user explicitly asks for a global refresh — "update all translations", "make
+sure every language is translated", or similar):**
 - Qt: for every non-English language, `client_<code>.ts` must exist and contain no `unfinished` entry; create a missing
   file by running lupdate on it (it generates the skeleton). English is the source language and must not get a
   `client_en.ts` file.
@@ -170,12 +173,13 @@ for f in translations/client_*.ts; do "$LUPDATE" src -no-obsolete -ts "$f"; done
 
 ### Translation scope (default: the PR only)
 
-Translate the `unfinished` entries, directly in the file (no DeepL, no external service). By default, translate only
-the entries that belong to the current PR: entries whose `<location>` file is changed by the PR and whose line falls
-inside one of the PR's diff hunks for that file (the string is new, or its English text was changed).
+By default, translate only the `unfinished` entries that belong to the current PR, directly in the file (no DeepL, no
+external service): entries whose `<location>` file is changed by the PR and whose line falls inside one of the PR's
+diff hunks for that file (the string is new, or its English text was changed).
 
 **Leave every other `unfinished` entry exactly as it is** — pre-existing gaps, entries from files the PR does not
-touch, strings from other in-flight work — and list them in the report. Do not clean them up. Translate *every*
+touch, strings from other in-flight work — and list them in the report. Do not clean them up: a scoped run is not
+expected to end with zero `unfinished` entries, and that is the correct outcome. Translate *every*
 `unfinished` entry, in every `client_*.ts`, only when the user explicitly asks for a full translation pass.
 
 Translation rules (apply to whichever entries are translated):
@@ -207,19 +211,21 @@ Translation rules (apply to whichever entries are translated):
   ```bash
   python3 -c "import glob, xml.dom.minidom; [xml.dom.minidom.parse(f) for f in glob.glob('translations/client_*.ts')]"
   ```
-- Check the remaining `unfinished` entries:
+- Unfinished entries, scoped run (default): non-empty output of the check below is expected, because out-of-scope gaps
+  stay unfinished by design. List their sources and check that none belongs to a string of the PR (the rest is
+  reported, not fixed):
+  ```bash
+  grep -l 'type="unfinished"' translations/client_*.ts
+  grep -B3 'type="unfinished"' translations/client_*.ts | grep -o 'filename="[^"]*"' | sort -u
+  ```
+- Unfinished entries, full run (translate everything): the check below must print nothing.
   ```bash
   grep -l 'type="unfinished"' translations/client_*.ts
   ```
-  Scoped run: entries outside the PR scope are expected to remain unfinished by design. List the sources that still
-  have unfinished entries and check that none belongs to a string of the PR (the rest is reported, not fixed):
-  ```bash
-  grep -B3 'type="unfinished"' translations/client_*.ts | grep -o 'filename="[^"]*"' | sort -u
-  ```
-  Full run (translate everything): this must print nothing.
-- Loco: re-run `list_locales` (needs mcp-loco) and confirm every locale reports `untranslated: 0` when the Loco part
-  ran. Every language of the `Language` enum must be covered. Scoped run: check only the PR's assets —
-  `get_translations` on each of them must return a text for every locale.
+- Loco, scoped run (default): check only the PR's assets — `get_translations` (needs mcp-loco) on each of them must
+  return a text for every locale. Untranslated assets unrelated to the PR are reported, not fixed.
+- Loco, full run: re-run `list_locales` (needs mcp-loco) and confirm every locale reports `untranslated: 0`. Every
+  language of the `Language` enum must be covered.
 - Never commit or push unless the user explicitly asks.
 
 ## Error handling
