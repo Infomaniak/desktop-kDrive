@@ -260,10 +260,12 @@ void AddDriveLocalFolderWidget::updateUI() {
     const QDir dir(_localFolderPath);
     _folderNameLabel->setTextFormat(Qt::PlainText);
     _folderNameLabel->setText(dir.dirName());
-    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
+    _folderPathLabel->setText(
+            QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath.toHtmlEscaped()));
 
     if (_localFolderPath != _defaultLocalFolderPath) {
-        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName().toHtmlEscaped()));
+        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive")
+                                    .arg(dir.dirName().toHtmlEscaped()));
         _infoWidget->setVisible(true);
     } else {
         _infoWidget->setVisible(false);
